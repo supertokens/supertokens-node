@@ -58,6 +58,38 @@ export default function Github(input: ProviderInput): TypeProvider {
         input.config.tokenEndpoint = "https://github.com/login/oauth/access_token";
     }
 
+    if (input.config.validateAccessToken === undefined) {
+        input.config.validateAccessToken = async ({ accessToken, clientConfig }) => {
+            const basicAuthToken = Buffer.from(
+                `${clientConfig.clientId}:${clientConfig.clientSecret === undefined ? "" : clientConfig.clientSecret}`
+            ).toString("base64");
+
+            const applicationsResponse = await fetch(
+                `https://api.github.com/applications/${clientConfig.clientId}/token`,
+                {
+                    headers: {
+                        Authorization: `Basic ${basicAuthToken}`,
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        access_token: accessToken,
+                    }),
+                }
+            );
+
+            if (applicationsResponse.status !== 200) {
+                throw new Error("Invalid access token");
+            }
+
+            const body = await applicationsResponse.json();
+
+            if (body.app === undefined || body.app.client_id !== clientConfig.clientId) {
+                throw new Error("Access token does not belong to your application");
+            }
+        };
+    }
+
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {
@@ -73,6 +105,14 @@ export default function Github(input: ProviderInput): TypeProvider {
         };
 
         originalImplementation.getUserInfo = async function (input) {
+            if (originalImplementation.config.validateAccessToken !== undefined) {
+                await originalImplementation.config.validateAccessToken({
+                    accessToken: input.oAuthTokens.access_token,
+                    clientConfig: originalImplementation.config,
+                    userContext: input.userContext,
+                });
+            }
+
             const headers = {
                 Authorization: `Bearer ${input.oAuthTokens.access_token}`,
                 Accept: "application/vnd.github.v3+json",
