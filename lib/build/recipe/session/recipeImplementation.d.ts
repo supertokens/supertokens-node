@@ -10,8 +10,6 @@ export declare type Helpers = {
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
 };
-export declare const JWKCacheMaxAgeInMs = 60000;
-export declare const protectedProps: string[];
 export default function getRecipeInterface(
     querier: Querier,
     config: TypeNormalisedInput,

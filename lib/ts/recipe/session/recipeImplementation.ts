@@ -22,6 +22,7 @@ import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { JWKCacheCooldownInMs, JWKCacheMaxAgeInMs, protectedProps } from "./constants";
 
 export type Helpers = {
     querier: Querier;
@@ -30,21 +31,6 @@ export type Helpers = {
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
 };
-
-const JWKCacheCooldownInMs = 500;
-export const JWKCacheMaxAgeInMs = 60000;
-
-export const protectedProps = [
-    "sub",
-    "iat",
-    "exp",
-    "sessionHandle",
-    "parentRefreshTokenHash1",
-    "refreshTokenHash1",
-    "antiCsrfToken",
-    "rsub",
-    "tId",
-];
 
 export default function getRecipeInterface(
     querier: Querier,

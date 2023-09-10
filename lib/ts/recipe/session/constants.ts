@@ -21,3 +21,18 @@ export const SIGNOUT_API_PATH = "/signout";
 export const availableTokenTransferMethods: TokenTransferMethod[] = ["cookie", "header"];
 
 export const hundredYearsInMs = 3153600000000;
+
+export const JWKCacheCooldownInMs = 500;
+export const JWKCacheMaxAgeInMs = 60000;
+
+export const protectedProps = [
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken",
+    "rsub",
+    "tId",
+];

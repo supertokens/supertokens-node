@@ -33,7 +33,7 @@ let EmailVerification = require("../../recipe/emailverification");
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
-let { protectedProps } = require("../../lib/build/recipe/session/recipeImplementation");
+let { protectedProps } = require("../../lib/build/recipe/session/constants");
 let { PrimitiveClaim } = require("../../lib/build/recipe/session/claimBaseClasses/primitiveClaim");
 
 describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, function () {

@@ -11,7 +11,7 @@ import SuperTokens from "../../supertokens";
 import { getRequiredClaimValidators } from "./utils";
 import { getRidFromHeader, isAnIpAddress, normaliseHttpMethod, setRequestInUserContextIfNotDefined } from "../../utils";
 import { logDebugMessage } from "../../logger";
-import { availableTokenTransferMethods } from "./constants";
+import { availableTokenTransferMethods, protectedProps } from "./constants";
 import { clearSession, getAntiCsrfTokenFromHeaders, getToken, setCookie } from "./cookieAndHeaders";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
@@ -358,6 +358,10 @@ export async function createNewSessionInRequest({
         ...accessTokenPayload,
         iss: issuer,
     };
+
+    for (const prop of protectedProps) {
+        delete finalAccessTokenPayload[prop];
+    }
 
     for (const claim of claimsAddedByOtherRecipes) {
         const update = await claim.build(userId, recipeUserId, tenantId, userContext);
