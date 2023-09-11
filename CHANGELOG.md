@@ -7,13 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Added
+## [15.1.1] - 2023-08-14
 
--   The Dashboard recipe now accepts a new `admins` property which can be used to give Dashboard Users write privileges for the user dashboard.
+### Fixes
 
-### Changes
-
--   Dashboard APIs now return a status code `403` for all non-GET requests if the currently logged in Dashboard User is not listed in the `admins` array
+-   Improve edge function compatibility by removing our `raw-body` dependency.
 
 ## [15.1.0] - 2023-08-14
 
