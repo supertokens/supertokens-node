@@ -49,7 +49,7 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
         logDebugMessage("User Dashboard: Providing 'admins' has no effect when using an apiKey.");
     }
 
-    let admins: string[] = [];
+    let admins: string[] | undefined;
 
     if (config?.admins !== undefined) {
         admins = config.admins.map((email) => normaliseEmail(email));

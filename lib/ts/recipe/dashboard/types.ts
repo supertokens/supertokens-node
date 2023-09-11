@@ -31,7 +31,7 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     apiKey?: string;
-    admins: string[];
+    admins?: string[];
     authMode: AuthMode;
     override: {
         functions: (

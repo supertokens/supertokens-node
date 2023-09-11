@@ -59,21 +59,25 @@ export default function getRecipeImplementation(): RecipeInterface {
 
                     const admins = input.config.admins;
 
-                    // If the user has provided no admins, allow
-                    if (admins.length === 0) {
+                    if (admins === undefined) {
                         return true;
                     }
 
-                    const emailInHeaders = input.req.getHeaderValue("email");
+                    if (admins.length === 0) {
+                        logDebugMessage("User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin");
+                        throw new RecipeError();
+                    }
 
-                    if (emailInHeaders === undefined) {
+                    const userEmail = sessionVerificationResponse.email;
+
+                    if (userEmail === undefined || typeof userEmail !== "string") {
                         logDebugMessage(
                             "User Dashboard: Returning Unauthorised because no email was provided in headers"
                         );
                         return false;
                     }
 
-                    if (!admins.includes(emailInHeaders)) {
+                    if (!admins.includes(userEmail)) {
                         logDebugMessage("User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin");
                         throw new RecipeError();
                     }
