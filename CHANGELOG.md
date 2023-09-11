@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Now supporting FDI 1.18
 -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
 -   The `fetchValue` callback of claims now take a new `recipeUserId` param
+-   Now ignoring protected props in the payload in `createNewSession` and `createNewSessionWithoutRequestResponse`
 
 -   EmailPassword:
     -   removed `getUserById`, `getUserByEmail`
