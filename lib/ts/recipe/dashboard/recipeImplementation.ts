@@ -68,7 +68,7 @@ export default function getRecipeImplementation(): RecipeInterface {
 
                     if (emailInHeaders === undefined) {
                         logDebugMessage(
-                            "User Dashboard: Returniing OPERATION_NOT_ALLOWED because no email was provided in headers"
+                            "User Dashboard: Returning Unauthorised because no email was provided in headers"
                         );
                         return false;
                     }
