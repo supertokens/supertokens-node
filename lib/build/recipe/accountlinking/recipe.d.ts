@@ -89,7 +89,6 @@ export default class Recipe extends RecipeModule {
         user?: User;
         newEmail: string;
         isVerified: boolean;
-        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {

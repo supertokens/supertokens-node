@@ -129,7 +129,6 @@ export default class Wrapper {
     ): Promise<boolean>;
     static isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
     static isEmailChangeAllowed(
-        tenantId: string,
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,

@@ -140,7 +140,6 @@ export default class Wrapper {
     }
 
     static async isEmailChangeAllowed(
-        tenantId: string,
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
@@ -152,7 +151,6 @@ export default class Wrapper {
             user,
             newEmail,
             isVerified,
-            tenantId,
             userContext,
         });
     }

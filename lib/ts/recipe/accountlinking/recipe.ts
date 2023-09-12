@@ -624,7 +624,6 @@ export default class Recipe extends RecipeModule {
         user?: User;
         newEmail: string;
         isVerified: boolean;
-        tenantId: string;
         userContext: any;
     }): Promise<boolean> => {
         /**
@@ -648,80 +647,86 @@ export default class Recipe extends RecipeModule {
             throw new Error("Passed in recipe user id does not exist");
         }
 
-        let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-            tenantId: input.tenantId,
-            accountInfo: {
-                email: input.newEmail,
-            },
-            doUnionOfAccountInfo: false,
-            userContext: input.userContext,
-        });
+        for (const tenantId of user.tenantIds) {
+            let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: user.tenantIds[0],
+                accountInfo: {
+                    email: input.newEmail,
+                },
+                doUnionOfAccountInfo: false,
+                userContext: input.userContext,
+            });
 
-        let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
-        if (primaryUserForNewEmail.length > 1) {
-            throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
-        }
-
-        if (user.isPrimaryUser) {
-            // this is condition one from the above comment.
-            if (primaryUserForNewEmail.length === 1 && primaryUserForNewEmail[0].id !== user.id) {
-                logDebugMessage(
-                    "isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email"
-                );
-                return false;
-            }
-            logDebugMessage(
-                "isEmailChangeAllowed: returning true cause input user is primary and new email doesn't belong to any other primary user"
-            );
-            return true;
-        } else {
-            if (input.isVerified) {
-                logDebugMessage(
-                    "isEmailChangeAllowed: returning true cause input user is not a primary and new email is verified"
-                );
-                return true;
+            let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
+            if (primaryUserForNewEmail.length > 1) {
+                throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
             }
 
-            if (user.loginMethods[0].email === input.newEmail) {
-                logDebugMessage(
-                    "isEmailChangeAllowed: returning true cause input user is not a primary and new email is same as the older one"
-                );
-                return true;
-            }
-
-            if (primaryUserForNewEmail.length === 1) {
-                let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
-                    user.loginMethods[0],
-                    primaryUserForNewEmail[0],
-                    input.tenantId,
-                    input.userContext
-                );
-
-                if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+            if (user.isPrimaryUser) {
+                // this is condition one from the above comment.
+                if (primaryUserForNewEmail.length === 1 && primaryUserForNewEmail[0].id !== user.id) {
                     logDebugMessage(
-                        "isEmailChangeAllowed: returning true cause input user is not a primary there exists a primary user exists with the new email, but the dev does not have account linking enabled."
+                        "isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email"
                     );
-                    return true;
+                    return false;
+                }
+                logDebugMessage(
+                    `isEmailChangeAllowed: can change on ${tenantId} cause input user is primary and new email doesn't belong to any other primary user`
+                );
+                continue;
+            } else {
+                if (input.isVerified) {
+                    logDebugMessage(
+                        `isEmailChangeAllowed: can change on ${tenantId} cause input user is not a primary and new email is verified`
+                    );
+                    continue;
                 }
 
-                if (!shouldDoAccountLinking.shouldRequireVerification) {
+                if (user.loginMethods[0].email === input.newEmail) {
                     logDebugMessage(
-                        "isEmailChangeAllowed: returning true cause input user is not a primary there exists a primary user exists with the new email, but the dev does not require email verification."
+                        `isEmailChangeAllowed: can change on ${tenantId} cause input user is not a primary and new email is same as the older one`
                     );
-                    return true;
+                    continue;
+                }
+
+                if (primaryUserForNewEmail.length === 1) {
+                    let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                        user.loginMethods[0],
+                        primaryUserForNewEmail[0],
+                        tenantId,
+                        input.userContext
+                    );
+
+                    if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                        logDebugMessage(
+                            `isEmailChangeAllowed: can change on ${tenantId} cause input user is not a primary there exists a primary user exists with the new email, but the dev does not have account linking enabled.`
+                        );
+                        continue;
+                    }
+
+                    if (!shouldDoAccountLinking.shouldRequireVerification) {
+                        logDebugMessage(
+                            `isEmailChangeAllowed: can change on ${tenantId} cause input user is not a primary there exists a primary user exists with the new email, but the dev does not require email verification.`
+                        );
+                        continue;
+                    }
+
+                    logDebugMessage(
+                        "isEmailChangeAllowed: returning false cause input user is not a primary there exists a primary user exists with the new email."
+                    );
+                    return false;
                 }
 
                 logDebugMessage(
-                    "isEmailChangeAllowed: returning false cause input user is not a primary there exists a primary user exists with the new email."
+                    `isEmailChangeAllowed: can change on ${tenantId} cause input user is not a primary no primary user exists with the new email`
                 );
-                return false;
+                continue;
             }
-
-            logDebugMessage(
-                "isEmailChangeAllowed: returning true cause input user is not a primary no primary user exists with the new email"
-            );
-            return true;
         }
+        logDebugMessage(
+            "isEmailChangeAllowed: returning true cause email change can happen on all tenants the user is part of"
+        );
+        return true;
     };
 
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified = async (input: {

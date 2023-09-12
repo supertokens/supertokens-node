@@ -186,7 +186,6 @@ export default function getAPIInterface(): APIInterface {
                     user: existingUsers[0],
                     isVerified: emailInfo.isVerified,
                     newEmail: emailInfo.id,
-                    tenantId,
                     userContext,
                 });
 

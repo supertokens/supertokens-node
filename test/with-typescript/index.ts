@@ -1811,12 +1811,7 @@ async function accountLinkingFuncsTest() {
     const linkResult = await AccountLinking.createPrimaryUserIdOrLinkAccounts("public", tpSignUp.recipeUserId);
 
     return {
-        canChangeEmail: await AccountLinking.isEmailChangeAllowed(
-            "public",
-            tpSignUp.recipeUserId,
-            "asfd@asfd.asfd",
-            true
-        ),
+        canChangeEmail: await AccountLinking.isEmailChangeAllowed(tpSignUp.recipeUserId, "asfd@asfd.asfd", true),
         canSignIn: await AccountLinking.isSignInAllowed("public", tpSignUp.recipeUserId),
         canSignUp: await AccountLinking.isSignUpAllowed(
             "public",
