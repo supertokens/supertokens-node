@@ -313,3 +313,10 @@ export async function postWithFetch(
         resp: resp!,
     };
 }
+
+export function normaliseEmail(email: string): string {
+    email = email.trim();
+    email = email.toLowerCase();
+
+    return email;
+}

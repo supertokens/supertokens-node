@@ -103,6 +103,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 We've added a generic `User` class instead of
 
+## [15.2.0] - 2023-09-11
+
+### Added
+
+-   The Dashboard recipe now accepts a new `admins` property which can be used to give Dashboard Users write privileges for the user dashboard.
+
+### Changes
+
+-   Dashboard APIs now return a status code `403` for all non-GET requests if the currently logged in Dashboard User is not listed in the `admins` array
+
+## [15.1.1] - 2023-08-14
+
+### Fixes
+
+-   Improve edge function compatibility by removing our `raw-body` dependency.
+
 ## [15.1.0] - 2023-08-14
 
 ### Changes
@@ -599,6 +615,14 @@ We've added a generic `User` class instead of
             }
         }
         ```
+
+### SDK and core compatibility
+
+-   Compatible with Core>=6.0.0 (CDI 4.0)
+-   Compatible with frontend SDKs:
+    -   supertokens-auth-react@0.34.0
+    -   supertokens-web-js@0.7.0
+    -   supertokens-website@17.0.2
 
 ## [14.1.3] - 2023-07-03
 

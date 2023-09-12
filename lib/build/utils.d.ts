@@ -49,3 +49,4 @@ export declare function postWithFetch(
           error: any;
       }
 >;
+export declare function normaliseEmail(email: string): string;

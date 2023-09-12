@@ -14,7 +14,7 @@
  */
 
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { sendNon200ResponseWithMessage } from "../../utils";
+import { normaliseEmail, sendNon200ResponseWithMessage } from "../../utils";
 import { DASHBOARD_API } from "./constants";
 import {
     APIInterface,
@@ -32,6 +32,7 @@ import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 import RecipeUserId from "../../recipeUserId";
 import { User } from "../../types";
+import { logDebugMessage } from "../../logger";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
@@ -40,10 +41,21 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
         ...(config === undefined ? {} : config.override),
     };
 
+    if (config?.apiKey !== undefined && config?.admins !== undefined) {
+        logDebugMessage("User Dashboard: Providing 'admins' has no effect when using an apiKey.");
+    }
+
+    let admins: string[] | undefined;
+
+    if (config?.admins !== undefined) {
+        admins = config.admins.map((email) => normaliseEmail(email));
+    }
+
     return {
         ...config,
         override,
         authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
+        admins,
     };
 }
 
