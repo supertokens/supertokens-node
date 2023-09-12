@@ -36,6 +36,10 @@ type Response =
     | {
           status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
           error: string;
+      }
+    | {
+          status: "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+          error: string;
       };
 
 const updateEmailForRecipeId = async (
@@ -181,6 +185,16 @@ const updateEmailForRecipeId = async (
             };
         }
 
+        if (
+            updateResult.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR" ||
+            updateResult.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR"
+        ) {
+            return {
+                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                reason: updateResult.reason,
+            };
+        }
+
         return {
             status: "OK",
         };
@@ -259,6 +273,10 @@ const updatePhoneForRecipeId = async (
     | {
           status: "PHONE_ALREADY_EXISTS_ERROR";
       }
+    | {
+          status: "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
+      }
 > => {
     if (recipeId === "passwordless") {
         let isValidPhone = true;
@@ -302,6 +320,12 @@ const updatePhoneForRecipeId = async (
         if (updateResult.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR") {
             return {
                 status: "PHONE_ALREADY_EXISTS_ERROR",
+            };
+        }
+        if (updateResult.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                status: updateResult.status,
+                reason: updateResult.reason,
             };
         }
 
@@ -471,7 +495,7 @@ export const userPut = async (
         if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
             return {
                 error: emailUpdateResponse.reason,
-                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                status: emailUpdateResponse.status,
             };
         }
 
@@ -488,6 +512,13 @@ export const userPut = async (
             tenantId,
             userContext
         );
+
+        if (phoneUpdateResponse.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                error: phoneUpdateResponse.reason,
+                status: phoneUpdateResponse.status,
+            };
+        }
 
         if (phoneUpdateResponse.status !== "OK") {
             return phoneUpdateResponse;

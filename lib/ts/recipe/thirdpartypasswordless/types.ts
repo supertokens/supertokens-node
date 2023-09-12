@@ -251,15 +251,19 @@ export type RecipeInterface = {
         email?: string | null;
         phoneNumber?: string | null;
         userContext: any;
-    }) => Promise<{
-        status:
-            | "OK"
-            | "UNKNOWN_USER_ID_ERROR"
-            | "EMAIL_ALREADY_EXISTS_ERROR"
-            | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
-            | "EMAIL_CHANGE_NOT_ALLOWED_ERROR"
-            | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
-    }>;
+    }) => Promise<
+        | {
+              status:
+                  | "OK"
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
 
     revokeAllCodes: (
         input:
