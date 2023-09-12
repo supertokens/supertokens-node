@@ -72,7 +72,7 @@ export default function getRecipeImplementation(): RecipeInterface {
 
                     if (userEmail === undefined || typeof userEmail !== "string") {
                         logDebugMessage(
-                            "User Dashboard: Returning Unauthorised because no email was provided in headers"
+                            "User Dashboard: Returning Unauthorised because no email was returned from the core. Should never come here"
                         );
                         return false;
                     }
