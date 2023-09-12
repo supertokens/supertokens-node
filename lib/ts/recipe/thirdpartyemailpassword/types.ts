@@ -351,6 +351,10 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | {
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
+                }
+              | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
               | GeneralErrorResponse
@@ -371,6 +375,10 @@ export type APIInterface = {
                     status: "OK";
                     user: GlobalUser;
                     session: SessionContainerInterface;
+                }
+              | {
+                    status: "SIGN_UP_NOT_ALLOWED";
+                    reason: string;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";

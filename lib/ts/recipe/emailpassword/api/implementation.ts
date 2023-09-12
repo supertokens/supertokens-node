@@ -13,7 +13,6 @@ export default function getAPIImplementation(): APIInterface {
     return {
         emailExistsGET: async function ({
             email,
-            userContext,
             tenantId,
         }: {
             email: string;
@@ -27,32 +26,6 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            // this api impl checks for the same email across all recipes
-            // and not just email password recipe cause this API is used during
-            // sign up, and if we allow sign up with the same email that already exists
-            // even though it's not an email password user, then there is a case where
-            // if the user clicks on the email verification link after by mistake, and
-            // this is an attacker signing up, then the attacker can get access to the account.
-            // Instead, the user should go via the password reset flow which will create this
-            // account.
-
-            let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                newUser: {
-                    recipeId: "emailpassword",
-                    email,
-                },
-                isVerified: false,
-                tenantId,
-                userContext,
-            });
-
-            if (!isSignUpAllowed) {
-                return {
-                    status: "OK",
-                    exists: true,
-                };
-            }
-
             // even if the above returns true, we still need to check if there
             // exists an email password user with the same email cause the function
             // above does not check for that.
@@ -602,6 +575,10 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "WRONG_CREDENTIALS_ERROR";
               }
+            | {
+                  status: "SIGN_IN_NOT_ALLOWED";
+                  reason: string;
+              }
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -635,7 +612,9 @@ export default function getAPIImplementation(): APIInterface {
 
             if (!isSignInAllowed) {
                 return {
-                    status: "WRONG_CREDENTIALS_ERROR",
+                    status: "SIGN_IN_NOT_ALLOWED",
+                    reason:
+                        "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
                 };
             }
 
@@ -682,6 +661,10 @@ export default function getAPIImplementation(): APIInterface {
                   user: User;
               }
             | {
+                  status: "SIGN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+            | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
             | GeneralErrorResponse
@@ -709,7 +692,9 @@ export default function getAPIImplementation(): APIInterface {
 
             if (!isSignUpAllowed) {
                 return {
-                    status: "EMAIL_ALREADY_EXISTS_ERROR",
+                    status: "SIGN_UP_NOT_ALLOWED",
+                    reason:
+                        "Cannot sign up due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_007)",
                 };
             }
 
