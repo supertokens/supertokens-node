@@ -694,7 +694,7 @@ export default function getAPIImplementation(): APIInterface {
                 return {
                     status: "SIGN_UP_NOT_ALLOWED",
                     reason:
-                        "Cannot sign up due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_007)",
+                        "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
                 };
             }
 
