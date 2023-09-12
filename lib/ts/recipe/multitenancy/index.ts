@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -144,7 +145,7 @@ export default class Wrapper {
 
     static async associateUserToTenant(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
         | {
@@ -163,14 +164,14 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.associateUserToTenant({
             tenantId,
-            userId,
+            recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
     static async disassociateUserFromTenant(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
         | {
@@ -184,7 +185,7 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.disassociateUserFromTenant({
             tenantId,
-            userId,
+            recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

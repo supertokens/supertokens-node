@@ -73,25 +73,25 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return response;
         },
 
-        associateUserToTenant: async function ({ tenantId, userId }) {
+        associateUserToTenant: async function ({ tenantId, recipeUserId }) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user`
                 ),
                 {
-                    userId,
+                    userId: recipeUserId.getAsString(), // TODO: update CDI
                 }
             );
             return response;
         },
 
-        disassociateUserFromTenant: async function ({ tenantId, userId }) {
+        disassociateUserFromTenant: async function ({ tenantId, recipeUserId }) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user/remove`
                 ),
                 {
-                    userId,
+                    userId: recipeUserId.getAsString(), // TODO: update CDI
                 }
             );
             return response;
