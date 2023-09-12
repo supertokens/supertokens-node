@@ -584,7 +584,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             assert(response.status === "OK");
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -658,7 +657,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -734,12 +732,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
             await AccountLinking.linkAccounts(recipeUserId, user.id);
 
-            let isAllowed = await AccountLinking.isEmailChangeAllowed(
-                "public",
-                recipeUserId,
-                "test@example.com",
-                false
-            );
+            let isAllowed = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com", false);
             assert(isAllowed === true);
 
             response = await EmailPassword.updateEmailOrPassword({

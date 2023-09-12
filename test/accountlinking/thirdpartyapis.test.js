@@ -1283,7 +1283,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
         });
 
-        it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED even though isEmailChangeAllowed returns true if primary user exists with same email, new email is verified for recipe user, but not for primary user", async function () {
+        it("signInUpPOST returns OK if isEmailChangeAllowed returns true and primary user exists with same email, new email is verified for recipe user, but not for primary user", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -1376,13 +1376,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     })
             );
 
-            assert.strictEqual(response.body.status, "SIGN_IN_UP_NOT_ALLOWED");
-            assert.strictEqual(
-                response.body.reason,
-                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)"
-            );
-            assert(
-                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
+            assert.strictEqual(response.body.status, "OK");
+            assert.strictEqual(response.body.createdNewRecipeUser, false);
+            assert.strictEqual(response.body.user.id, tpUser2.id);
+            assert.strictEqual(response.body.user.loginMethods.length, 2);
+
+            const tokens = extractInfoFromResponse(response);
+            const session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            assert.strictEqual(session.getUserId(), tpUser2.id);
+            assert.strictEqual(session.getRecipeUserId().getAsString(), tpUser.id);
+            assert.notEqual(
+                await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED),
+                undefined
             );
         });
 

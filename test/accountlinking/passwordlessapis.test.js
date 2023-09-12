@@ -39,6 +39,7 @@ const request = require("supertest");
 
 // phoneNumber based accounts can't exist in other recipes now,
 const createCodeBehaviours = [
+    // calling signUpPOST fails but not linked account, if email exists in some non email password, primary user, with account linking enabled, and email verification required
     // calling signUpPOST fails if email exists in some non email password primary user - account linking enabled and email verification
     {
         // only: true,
@@ -60,14 +61,6 @@ const createCodeBehaviours = [
         // only: true,
         pwlessUser: undefined,
         otherRecipeUser: { verified: false, primary: false },
-        accountLinking: { enabled: true, requiresVerification: true },
-        expect: { status: "SIGN_IN_UP_NOT_ALLOWED" },
-    },
-    // calling signUpPOST fails but not linked account, if email exists in some non email password, primary user, with account linking enabled, and email verification required
-    {
-        // only: true,
-        pwlessUser: undefined,
-        otherRecipeUser: { verified: false, primary: true },
         accountLinking: { enabled: true, requiresVerification: true },
         expect: { status: "SIGN_IN_UP_NOT_ALLOWED" },
     },
@@ -175,12 +168,6 @@ const consumeCodeBehaviours = [
         expect: { status: "OK", isPrimary: true, userId: "other" },
     },
 
-    {
-        pwlessUser: undefined,
-        otherRecipeUser: undefined,
-        accountLinking: { enabled: true, requiresVerification: true },
-        expect: { status: "OK", isPrimary: true, userId: "self" },
-    },
     {
         pwlessUser: undefined,
         otherRecipeUser: undefined,
@@ -403,7 +390,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             assert.strictEqual(createCodeResponse.status, "OK");
         });
 
-        it("calling createCodePOST fails, if email exists in some non passwordless, non primary user, with account linking enabled, and email verification required", async function () {
+        it("calling createCodePOST fails during sign up, if email exists in some non passwordless, non primary user, with account linking enabled, and email verification required", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -486,7 +473,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             });
         });
 
-        it("calling createCodePOST fails, if email exists in some non passwordless, non primary user, with account linking enabled, and email verification required", async function () {
+        it("calling createCodePOST returns OK during sign in, if email exists in some non passwordless, non primary user, with account linking enabled, and email verification required", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -565,12 +552,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                         }
                     })
             );
-            assert(createCodeResponse !== undefined);
-            assert.deepStrictEqual(createCodeResponse, {
-                status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason:
-                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-            });
+            assert.notEqual(createCodeResponse, undefined);
+            assert.strictEqual(createCodeResponse.status, "OK");
         });
 
         describe("signup", () => {

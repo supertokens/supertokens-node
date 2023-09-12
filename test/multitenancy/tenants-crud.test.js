@@ -315,13 +315,13 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password1");
-        const userId = user.user.id;
+        const userId = user.user.loginMethods[0].recipeUserId;
 
         await Multitenancy.associateUserToTenant("t1", userId);
         await Multitenancy.associateUserToTenant("t2", userId);
         await Multitenancy.associateUserToTenant("t3", userId);
 
-        let newUser = await SuperTokens.getUser(userId);
+        let newUser = await SuperTokens.getUser(userId.getAsString());
 
         assert.strictEqual(newUser.loginMethods[0].tenantIds.length, 4); // public + 3 tenants created above
 
@@ -329,7 +329,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         await Multitenancy.disassociateUserFromTenant("t2", userId);
         await Multitenancy.disassociateUserFromTenant("t3", userId);
 
-        newUser = await SuperTokens.getUser(userId);
+        newUser = await SuperTokens.getUser(userId.getAsString());
 
         assert(newUser.loginMethods[0].tenantIds.length === 1); // only public
     });

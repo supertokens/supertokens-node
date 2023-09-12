@@ -1302,7 +1302,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
-            response = await AccountLinking.isEmailChangeAllowed("public", recipeUserId, "test@example.com", false);
+            response = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com", false);
 
             assert(response === false);
         });
@@ -1374,7 +1374,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -1441,7 +1440,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(response.user.loginMethods[0].recipeUserId);
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -1499,7 +1497,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(response.user.loginMethods[0].recipeUserId);
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -1566,7 +1563,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.user.isPrimaryUser === true);
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -1624,7 +1620,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(response.user.loginMethods[0].recipeUserId);
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -1696,7 +1691,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.user.isPrimaryUser === true);
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
@@ -1762,7 +1756,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.user.isPrimaryUser === true);
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
@@ -1834,7 +1827,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 true
@@ -1903,7 +1895,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false
@@ -1977,7 +1968,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
@@ -2055,7 +2045,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
@@ -2118,7 +2107,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
-                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test2@example.com",
                 false
@@ -2261,7 +2249,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(isAllowed);
         });
 
-        it("calling isSignInAllowed returns false if user exists with same email, but is not a primary user, and email verification is required", async function () {
+        it("calling isSignInAllowed returns true for non-verified non-primary user if no other user exists with the same email", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -2297,11 +2285,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             let isAllowed = await AccountLinking.isSignInAllowed("public", user.user.loginMethods[0].recipeUserId);
 
-            assert(!isAllowed);
-            assert(
-                (await ProcessState.getInstance().waitForEvent(
+            assert(isAllowed);
+            assert.strictEqual(
+                await ProcessState.getInstance().waitForEvent(
                     PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
-                )) !== undefined
+                ),
+                undefined
             );
         });
 

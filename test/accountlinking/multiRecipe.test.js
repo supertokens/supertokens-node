@@ -75,7 +75,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multiRecipe.tes
             assert.strictEqual(consumeCodeResponse.body.status, "OK");
         });
 
-        it("allows not sign in with unverified recipe user even when there is a verified one w/ the same email", async function () {
+        it("should not allow sign in with unverified recipe user when there is a verified one w/ the same email", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             const shouldDoLinking = {
                 shouldAutomaticallyLink: true,
@@ -118,7 +118,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multiRecipe.tes
                     })
             );
             assert.notStrictEqual(res, undefined);
-            assert.strictEqual(res.body.status, "WRONG_CREDENTIALS_ERROR");
+            assert.strictEqual(res.body.status, "SIGN_IN_NOT_ALLOWED");
         });
     });
 });
