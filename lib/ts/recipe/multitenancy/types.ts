@@ -149,15 +149,10 @@ export type RecipeInterface = {
         tenantId: string;
         recipeUserId: RecipeUserId;
         userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              wasAssociated: boolean;
-          }
-        | {
-              status: "DISASSOCIATION_NOT_ALLOWED_ERROR";
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        wasAssociated: boolean;
+    }>;
 };
 
 export type APIOptions = {

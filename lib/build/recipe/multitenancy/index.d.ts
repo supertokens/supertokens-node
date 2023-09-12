@@ -110,15 +110,10 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              wasAssociated: boolean;
-          }
-        | {
-              status: "DISASSOCIATION_NOT_ALLOWED_ERROR";
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        wasAssociated: boolean;
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createOrUpdateTenant: typeof Wrapper.createOrUpdateTenant;

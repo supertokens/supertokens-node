@@ -173,15 +173,10 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              wasAssociated: boolean;
-          }
-        | {
-              status: "DISASSOCIATION_NOT_ALLOWED_ERROR";
-          }
-    > {
+    ): Promise<{
+        status: "OK";
+        wasAssociated: boolean;
+    }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.disassociateUserFromTenant({
             tenantId,
