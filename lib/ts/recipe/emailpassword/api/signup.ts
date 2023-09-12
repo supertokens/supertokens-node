@@ -53,7 +53,7 @@ export default async function signUpAPI(
         });
     } else if (result.status === "GENERAL_ERROR") {
         send200Response(options.res, result);
-    } else {
+    } else if (result.status === "EMAIL_ALREADY_EXISTS_ERROR") {
         throw new STError({
             type: STError.FIELD_ERROR,
             payload: [
@@ -64,6 +64,8 @@ export default async function signUpAPI(
             ],
             message: "Error in input formFields",
         });
+    } else {
+        send200Response(options.res, result);
     }
     return true;
 }
