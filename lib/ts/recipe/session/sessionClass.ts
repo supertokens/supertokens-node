@@ -15,11 +15,12 @@
 import { buildFrontToken, clearSession, setAntiCsrfTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
-import { Helpers, protectedProps } from "./recipeImplementation";
+import { Helpers } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
 import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
+import { protectedProps } from "./constants";
 
 export default class Session implements SessionContainerInterface {
     constructor(

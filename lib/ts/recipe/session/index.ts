@@ -32,6 +32,7 @@ import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInReque
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { protectedProps } from "./constants";
 
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -89,6 +90,10 @@ export default class SessionWrapper {
             ...accessTokenPayload,
             iss: issuer,
         };
+
+        for (const prop of protectedProps) {
+            delete finalAccessTokenPayload[prop];
+        }
 
         let user = await getUser(recipeUserId.getAsString(), userContext);
         let userId = recipeUserId.getAsString();

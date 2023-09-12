@@ -129,7 +129,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(parsedHeader.kid.startsWith("s-"));
         });
 
-        it("should throw an error when adding protected props", async function () {
+        it("should ignore protected props", async function () {
             const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
@@ -156,7 +156,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                             },
                         })
                     )
-                    .expect(400)
+                    .expect(200)
                     .end((err, resp) => {
                         if (err) {
                             rej(err);
@@ -167,9 +167,12 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             );
 
             let cookies = extractInfoFromResponse(res);
-            assert.strictEqual(cookies.accessTokenFromAny, undefined);
-            assert.strictEqual(cookies.refreshTokenFromAny, undefined);
-            assert.strictEqual(cookies.frontToken, undefined);
+            assert.notEqual(cookies.accessTokenFromAny, undefined);
+            assert.notEqual(cookies.refreshTokenFromAny, undefined);
+            assert.notEqual(cookies.frontToken, undefined);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.notEqual(parsedToken.payload.sub, "asdf");
         });
 
         it("should make sign in/up return a 500 when adding protected props", async function () {

@@ -18,11 +18,12 @@ import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
+import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { JWKCacheMaxAgeInMs } from "./constants";
 
 /**
  * @description call this to "login" a user.
