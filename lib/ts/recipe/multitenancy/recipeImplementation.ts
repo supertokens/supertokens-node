@@ -79,7 +79,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user`
                 ),
                 {
-                    userId: recipeUserId.getAsString(), // TODO: update CDI
+                    recipeUserId: recipeUserId.getAsString(),
                 }
             );
             return response;
@@ -91,7 +91,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user/remove`
                 ),
                 {
-                    userId: recipeUserId.getAsString(), // TODO: update CDI
+                    recipeUserId: recipeUserId.getAsString(),
                 }
             );
             return response;
