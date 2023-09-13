@@ -93,7 +93,7 @@ export declare type RecipeInterface = {
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-              user: User;
+              primaryUserId: string;
           }
         | {
               status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -136,6 +136,7 @@ export declare type RecipeInterface = {
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
               user: User;
           }
         | {

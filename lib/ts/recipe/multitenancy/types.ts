@@ -141,8 +141,11 @@ export type RecipeInterface = {
                   | "UNKNOWN_USER_ID_ERROR"
                   | "EMAIL_ALREADY_EXISTS_ERROR"
                   | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
-                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
-                  | "ASSOCIATION_NOT_ALLOWED_ERROR";
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "ASSOCIATION_NOT_ALLOWED_ERROR";
+              reason: string;
           }
     >;
     disassociateUserFromTenant: (input: {

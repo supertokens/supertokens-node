@@ -1,5 +1,5 @@
 import * as express from "express";
-import Supertokens, { RecipeUserId, User } from "../..";
+import Supertokens, { RecipeUserId, User, getUser } from "../..";
 import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
@@ -1768,7 +1768,11 @@ async function accountLinkingFuncsTest() {
         if (createResp.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             throw new Error(createResp.status);
         }
-        user = createResp.user;
+        if (createResp.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+            user = (await getUser(createResp.primaryUserId))!;
+        } else {
+            user = createResp.user;
+        }
     } else {
         user = signUpResp.user;
     }
