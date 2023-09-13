@@ -126,13 +126,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert.deepStrictEqual(res.body, {
-                status: "FIELD_ERROR",
-                formFields: [
-                    {
-                        id: "email",
-                        error: "This email already exists. Please sign in instead.",
-                    },
-                ],
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                status: "SIGN_UP_NOT_ALLOWED",
             });
         });
 
@@ -328,13 +324,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert.deepStrictEqual(res.body, {
-                status: "FIELD_ERROR",
-                formFields: [
-                    {
-                        id: "email",
-                        error: "This email already exists. Please sign in instead.",
-                    },
-                ],
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                status: "SIGN_UP_NOT_ALLOWED",
             });
         });
 
@@ -427,13 +419,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert.deepStrictEqual(res.body, {
-                status: "FIELD_ERROR",
-                formFields: [
-                    {
-                        id: "email",
-                        error: "This email already exists. Please sign in instead.",
-                    },
-                ],
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                status: "SIGN_UP_NOT_ALLOWED",
             });
         });
 
@@ -892,13 +880,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert.deepStrictEqual(res.body, {
-                status: "FIELD_ERROR",
-                formFields: [
-                    {
-                        id: "email",
-                        error: "This email already exists. Please sign in instead.",
-                    },
-                ],
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                status: "SIGN_UP_NOT_ALLOWED",
             });
         });
 
@@ -977,13 +961,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert.deepStrictEqual(res.body, {
-                status: "FIELD_ERROR",
-                formFields: [
-                    {
-                        id: "email",
-                        error: "This email already exists. Please sign in instead.",
-                    },
-                ],
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                status: "SIGN_UP_NOT_ALLOWED",
             });
         });
 

@@ -1249,37 +1249,15 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            try {
-                await Session.createNewSessionWithoutRequestResponse(
-                    "public",
-                    supertokens.convertToRecipeUserId("random"),
-                    {
-                        sessionHandle: "new string",
-                    }
-                );
-                assert(false);
-            } catch (err) {
-                assert.strictEqual(
-                    err.message,
-                    "SuperTokens core threw an error for a POST request to path: '/public/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
-                );
-            }
+            const session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                supertokens.convertToRecipeUserId("testRecipeUserId"),
+                {
+                    rsub: "new string",
+                }
+            );
 
-            try {
-                await Session.createNewSessionWithoutRequestResponse(
-                    "public",
-                    supertokens.convertToRecipeUserId("random"),
-                    {
-                        rsub: "new string",
-                    }
-                );
-                assert(false);
-            } catch (err) {
-                assert.strictEqual(
-                    err.message,
-                    "SuperTokens core threw an error for a POST request to path: '/public/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
-                );
-            }
+            assert.strictEqual(session.getAccessTokenPayload().rsub, "testRecipeUserId");
         });
     });
 

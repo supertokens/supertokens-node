@@ -906,13 +906,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
             assert(res2 !== undefined);
             assert.deepStrictEqual(res2.body, {
-                status: "FIELD_ERROR",
-                formFields: [
-                    {
-                        id: "email",
-                        error: "This email already exists. Please sign in instead.",
-                    },
-                ],
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                status: "SIGN_UP_NOT_ALLOWED",
             });
 
             let res = await new Promise((resolve) =>
@@ -1037,13 +1033,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
             assert(res2 !== undefined);
             assert.deepStrictEqual(res2.body, {
-                status: "FIELD_ERROR",
-                formFields: [
-                    {
-                        id: "email",
-                        error: "This email already exists. Please sign in instead.",
-                    },
-                ],
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                status: "SIGN_UP_NOT_ALLOWED",
             });
 
             let res = await new Promise((resolve) =>
