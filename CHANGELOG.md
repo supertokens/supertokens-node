@@ -147,6 +147,48 @@ We've added a generic `User` class instead of the old recipe specific ones. The 
 
 Some functions now require you to pass a `RecipeUserId` instead of a string user id. If you are using our auth recipes, you can find the recipeUserId as: `user.loginMethods[0].recipeUserId` (you'll need to worry about selecting the right login method after enabling account linking). Alternatively, if you already have a string user id you can convert it to a `RecipeUserId` using `supertokens.convertToRecipeUserId(userIdString)`
 
+#### Checking if a new primary user was created
+
+-   You can check if a new primary user created by `ThirdParty.manuallyCreateOrUpdateUser`, `signInUp`, `signInUpPOST`, `Passwordless.consumeCode` or `consumeCodePOST` (and their combination recipe counterparts):
+
+```
+    // Here res refers to the result the function/api functions mentioned above.
+    const isNewPrimaryUser = res.createdNewRecipeUser && res.user.loginMethod.length === 1;
+```
+
+-   You can check if a new primary user was created by `EmailPassword.signUp`, `signUpPOST` or `createNewRecipeUser` (and their ThirdParyEmailPassword counterparts) by:
+
+```
+    const isNewPrimaryUser = res.user.loginMethod.length === 1;
+```
+
+#### Changing user emails
+
+-   We recommend that you check if the email change of a user is allowed, before calling the update function
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/change-email-post-login) for more information
+
+```
+import {isEmailChangeAllowed} from "supertokens-node/recipe/accountlinking";
+/// ...
+app.post("/change-email", verifySession(), async (req: SessionRequest, res: express.Response) => {
+    let session = req.session!;
+    let email = req.body.email;
+
+    // ...
+    if (!(await isEmailChangeAllowed(session.getRecipeUserId(), email, false))) {
+        // this can come here if you have enabled the account linking feature, and
+        // if there is a security risk in changing this user's email.
+    }
+
+    // Update the email
+    let resp = await ThirdPartyEmailPassword.updateEmailOrPassword({
+        recipeUserId: session.getRecipeUserId(),
+        email: email,
+    });
+    // ...
+});
+```
+
 ## [15.2.0] - 2023-09-11
 
 ### Added
