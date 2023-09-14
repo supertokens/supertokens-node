@@ -361,13 +361,19 @@ app.post("/test/setFlow", (req, res) => {
 });
 
 app.post("/setupTenant", async (req, res) => {
-    const { tenantId, mockLoginMethods } = req.body;
+    const { tenantId, loginMethods, coreConfig } = req.body;
     let coreResp = await Multitenancy.createOrUpdateTenant(tenantId, {
-        emailPasswordEnabled: mockLoginMethods.emailPassword?.enabled === true,
-        thirdPartyEnabled: mockLoginMethods.thirdParty?.enabled === true,
-        passwordlessEnabled: mockLoginMethods.passwordless?.enabled === true,
-        coreConfig: {},
+        emailPasswordEnabled: loginMethods.emailPassword?.enabled === true,
+        thirdPartyEnabled: loginMethods.thirdParty?.enabled === true,
+        passwordlessEnabled: loginMethods.passwordless?.enabled === true,
+        coreConfig,
     });
+
+    if (loginMethods.thirdParty.providers !== undefined) {
+        for (const provider of loginMethods.thirdParty.providers) {
+            await Multitenancy.createOrUpdateThirdPartyConfig(tenantId, provider);
+        }
+    }
     res.send(coreResp);
 });
 
@@ -445,6 +451,7 @@ app.get("/test/featureFlags", (req, res) => {
     available.push("generalerror");
     available.push("userroles");
     available.push("multitenancy");
+    available.push("multitenancyManagementEndpoints");
     available.push("accountlinking");
     available.push("recipeConfig");
 
