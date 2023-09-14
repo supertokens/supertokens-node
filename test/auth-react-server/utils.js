@@ -98,6 +98,14 @@ module.exports.startST = async function (config = {}) {
     const host = config.host ?? "localhost";
     const port = config.port ?? 9000;
 
+    const notUsingTestApp =
+        process.env.REAL_DB_TEST !== "true" || host !== "localhost" || port !== 9000 || config.noApp === true;
+    if (config.coreConfig && notUsingTestApp) {
+        for (const [k, v] of Object.entries(config.coreConfig)) {
+            await module.exports.setKeyValueInConfig(k, v);
+        }
+    }
+
     return new Promise(async (resolve, reject) => {
         let installationPath = process.env.INSTALL_PATH;
         let pidsBefore = await getListOfPids();
@@ -137,7 +145,7 @@ module.exports.startST = async function (config = {}) {
                     console.log(`Application started on http://localhost:${process.env.NODE_PORT | 8080}`);
                     console.log(`processId: ${nonIntersection[0]}`);
 
-                    if (process.env.REAL_DB_TEST !== "true" || host !== "localhost" || port !== 9000 || config.noApp) {
+                    if (notUsingTestApp) {
                         return resolve(`http://${host}:${port}`);
                     }
 

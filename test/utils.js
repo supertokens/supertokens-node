@@ -266,7 +266,9 @@ module.exports.killAllSTCoresOnly = async function () {
 module.exports.startST = async function (config = {}) {
     const host = config.host ?? "localhost";
     const port = config.port ?? 8080;
-    if (config.coreConfig && (host !== "localhost" || port !== 8080 || config.noApp === true)) {
+    const notUsingTestApp =
+        process.env.REAL_DB_TEST !== "true" || host !== "localhost" || port !== 8080 || config.noApp === true;
+    if (config.coreConfig && notUsingTestApp) {
         for (const [k, v] of Object.entries(config.coreConfig)) {
             await module.exports.setKeyValueInConfig(k, v);
         }
@@ -307,7 +309,7 @@ module.exports.startST = async function (config = {}) {
             } else {
                 if (!returned) {
                     returned = true;
-                    if (host !== "localhost" || port !== 8080 || config.noApp) {
+                    if (notUsingTestApp) {
                         return resolve(`http://${host}:${port}`);
                     }
                     try {
