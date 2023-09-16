@@ -204,13 +204,13 @@ Some functions now require you to pass a `RecipeUserId` instead of a string user
 
 ```
     // Here res refers to the result the function/api functions mentioned above.
-    const isNewUser = res.createdNewRecipeUser && res.user.loginMethod.length === 1;
+    const isNewUser = res.createdNewRecipeUser && res.user.loginMethods.length === 1;
 ```
 
--   You can check if a new primary user was created by `EmailPassword.signUp`, `signUpPOST` or `createNewRecipeUser` (and their ThirdParyEmailPassword counterparts) by:
+-   In the emailpassword sign up API, you can check if a user signed up by:
 
 ```
-    const isNewUser = res.user.loginMethod.length === 1;
+    const isNewUser = res.user.loginMethods.length === 1;
 ```
 
 #### Changing user emails
