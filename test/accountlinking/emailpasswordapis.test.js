@@ -45,6 +45,88 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
     });
 
     describe("signUpPOST tests", function () {
+        it("calling signUpPOST returns email already exists if an EP user exsits with the same email even with account linking turned on", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let tpUser = await EmailPassword.signUp("public", "test@example.com", "password123");
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password123",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            const responseInfo = res.body;
+
+            assert(responseInfo.status === "FIELD_ERROR");
+            assert(responseInfo.formFields.length === 1);
+            assert(responseInfo.formFields[0].id === "email");
+            assert(responseInfo.formFields[0].error === "This email already exists. Please sign in instead.");
+        });
+
         it("calling signUpPOST fails if email exists in some non email password primary user - account linking enabled and email verification required", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({

@@ -691,6 +691,24 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (!isSignUpAllowed) {
+                const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo: {
+                        email,
+                    },
+                    doUnionOfAccountInfo: false,
+                    userContext,
+                });
+                if (
+                    conflictingUsers.some((u) =>
+                        u.loginMethods.some((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email))
+                    )
+                ) {
+                    return {
+                        status: "EMAIL_ALREADY_EXISTS_ERROR",
+                    };
+                }
+
                 return {
                     status: "SIGN_UP_NOT_ALLOWED",
                     reason:
