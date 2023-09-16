@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
--   Now only supporting CDI 4.0
+-   Now only supporting CDI 4.0. Compatible with core version >= 7.0
 -   Now supporting FDI 1.18
 -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
 -   The `fetchValue` callback of claims now take a new `recipeUserId` param
@@ -19,9 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `createdNewUser` has been renamed to `createdNewRecipeUser` in sign up related APIs and functions
 
 -   EmailPassword:
-    -   removed `getUserById`, `getUserByEmail`
-    -   added `consumePasswordResetToken`
-    -   added an overrideable `createNewRecipeUser` function that is called during sign up and in the “invitation link” flow
+    -   removed `getUserById`, `getUserByEmail`. You should use `supertokens.getUser`, and `supertokens. listUsersByAccountInfo` instead
+    -   added `consumePasswordResetToken`. This function allows the consumption of the reset password token without changing the password. It will return OK if the token was valid.
+    -   added an overrideable `createNewRecipeUser` function that is called during sign up and password reset flow (in case a new email password user is being created on the fly). This is mostly for internal use.
     -   `recipeUserId` is added to the input of `getContent` of the email delivery config
     -   `email` was added to the input of `createResetPasswordToken` , `sendResetPasswordEmail`, `createResetPasswordLink`
     -   `updateEmailOrPassword` :
@@ -147,13 +147,13 @@ We've added a generic `User` class instead of the old recipe specific ones. The 
 
 Some functions now require you to pass a `RecipeUserId` instead of a string user id. If you are using our auth recipes, you can find the recipeUserId as: `user.loginMethods[0].recipeUserId` (you'll need to worry about selecting the right login method after enabling account linking). Alternatively, if you already have a string user id you can convert it to a `RecipeUserId` using `supertokens.convertToRecipeUserId(userIdString)`
 
-#### Checking if a new primary user was created
+#### Checking if a user signed up or signed in
 
--   You can check if a new primary user created by `ThirdParty.manuallyCreateOrUpdateUser`, `signInUp`, `signInUpPOST`, `Passwordless.consumeCode` or `consumeCodePOST` (and their combination recipe counterparts):
+-   In the emailpassword sign up / passwordless consumeCode / social login signinup APIs, you can check if a user signed up by:
 
 ```
     // Here res refers to the result the function/api functions mentioned above.
-    const isNewPrimaryUser = res.createdNewRecipeUser && res.user.loginMethod.length === 1;
+    const isNewUser = res.createdNewRecipeUser && res.user.loginMethod.length === 1;
 ```
 
 -   You can check if a new primary user was created by `EmailPassword.signUp`, `signUpPOST` or `createNewRecipeUser` (and their ThirdParyEmailPassword counterparts) by:
