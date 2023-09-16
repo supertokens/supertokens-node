@@ -9,12 +9,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [16.0.0] - 2023-08-XX
 
+### Overview
+
+#### Introducing account-linking
+
+With this release, we are introducing a new AccountLinking recipe, this will let you:
+
+-   link accounts automatically,
+-   implement manual account linking flows.
+
+Check our [guide](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview) for more information.
+
+To use this you'll need compatible versions:
+
+-   Core>=7.0.0
+-   supertokens-node>=16.0.0 (support is pending in other backend SDKs)
+-   supertokens-website>=17.0.3
+-   supertokens-web-js>=0.8.0
+-   supertokens-auth-react>=0.35.0
+
+#### The new User object and primary vs non-primary users
+
+In this release, we've removed the recipes specific user types and instead introduced a new `User` class to support the "Primary user" concept introduced by account linking
+
+-   The new `User` class now provides the same interface for all recipes.
+-   It contains an `isPrimary` field that you can use to differentiate between primary and recipe users
+-   The `loginMethods` array contains objects that covers all props of the old (recipe specific) user types, with the exception of the id. Please check the migration section below to get the exact mapping between old and new props.
+-   Non-primary users:
+    -   The `loginMethods` array should contain exactly 1 element.
+    -   `user.id` will be the same as `user.loginMethods[0].recipeUserId.getAsString()`.
+    -   `user.id` will change if it is linked to another user.
+    -   They can become a primary user if, and only if there are no other primary users with the same email, third party info or phone number as this user across all the tenants that this user is a part of.
+-   Primary users
+    -   The `loginMethods` array can have 1 or more elements, each corresponding to a single recipe user.
+    -   `user.id` will not change even if other users are linked to it.
+    -   Other non-primary users can be linked to it. The user ID of the linked accounts will now be the primary users ID.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview#primary-user-vs-non-primary-user) for more information about differences between primary and recipe users.
+
+#### Primary vs RecipeUserId
+
+Because of account linking we've introduced a new Primary user concept (see above). In most cases, you should only use the primary user id (`user.id` or `session.getUserId()`) if you are associating data to users. Still, in some cases you need to specifically refer to a login method, which is covered by the new `RecipeUserId` class:
+
+-   You can get it:
+    -   From a session by: `session.getRecipeUserId()`.
+    -   By finding the appropriate entry in the `loginMethods` array of a `User` object (see above): `user.loginMethods[0].recipeUserId`.
+-   It wraps a simple string value that you can get by calling `recipeUserId.getAsString()`.
+-   We've introduced it to differentiate between primary and recipe user ids in our APIs on a type level.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object#primary-vs-recipe-user-id) for more information.
+
 ### Breaking changes
 
 -   Now only supporting CDI 4.0. Compatible with core version >= 7.0
 -   Now supporting FDI 1.18
--   removed the recipe specific `User` type, now all functions are using the new generic `User` type
--   The `fetchValue` callback of claims now take a new `recipeUserId` param
+-   Removed the recipe specific `User` type, now all functions are using the new generic `User` type.
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object) for more information.
+-   The `build` function and the `fetchValue` callback of session claims now take a new `recipeUserId` param.
+    -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+    -   This will affect all custom claims as well built on our base classes.
 -   Now ignoring protected props in the payload in `createNewSession` and `createNewSessionWithoutRequestResponse`
 -   `createdNewUser` has been renamed to `createdNewRecipeUser` in sign up related APIs and functions
 
@@ -28,9 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   now takes `recipeUserId` instead of `userId`
         -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
     -   `signIn`:
-        -   returns `recipeUserId`
+        -   returns new `recipeUserId` prop in the `status: OK` case
     -   `signUp`:
-        -   returns `recipeUserId`
+        -   returns new `recipeUserId` prop in the `status: OK` case
     -   `signInPOST`:
         -   can return status `SIGN_IN_NOT_ALLOWED`
     -   `signUpPOST`:
@@ -93,9 +144,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
     -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during sign up and in the “invitation link” flow
     -   `emailPasswordSignIn`:
-        -   returns `recipeUserId`
+        -   returns new `recipeUserId` prop in the `status: OK` case
     -   `emailPasswordSignUp`:
-        -   returns `recipeUserId`
+        -   returns new `recipeUserId` prop in the `status: OK` case
     -   `emailPasswordSignInPOST`:
         -   can return status `SIGN_IN_NOT_ALLOWED`
     -   `emailPasswordSignUpPOST`:
@@ -149,7 +200,7 @@ Some functions now require you to pass a `RecipeUserId` instead of a string user
 
 #### Checking if a user signed up or signed in
 
--   In the emailpassword sign up / passwordless consumeCode / social login signinup APIs, you can check if a user signed up by:
+-   In the passwordless consumeCode / social login signinup APIs, you can check if a user signed up by:
 
 ```
     // Here res refers to the result the function/api functions mentioned above.
@@ -159,7 +210,7 @@ Some functions now require you to pass a `RecipeUserId` instead of a string user
 -   You can check if a new primary user was created by `EmailPassword.signUp`, `signUpPOST` or `createNewRecipeUser` (and their ThirdParyEmailPassword counterparts) by:
 
 ```
-    const isNewPrimaryUser = res.user.loginMethod.length === 1;
+    const isNewUser = res.user.loginMethod.length === 1;
 ```
 
 #### Changing user emails
