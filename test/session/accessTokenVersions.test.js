@@ -175,6 +175,86 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert.notEqual(parsedToken.payload.sub, "asdf");
         });
 
+        it("should ignore protected props when creating from prev payload", async function () {
+            const connectionURI = await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            const app = getTestExpressApp();
+
+            const testPropValue = Date.now();
+            let res = await new Promise((res, rej) =>
+                request(app)
+                    .post("/create")
+                    .type("application/json")
+                    .send(
+                        JSON.stringify({
+                            payload: {
+                                custom: testPropValue,
+                            },
+                            userId: "user1",
+                        })
+                    )
+                    .expect(200)
+                    .end((err, resp) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res(resp);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert.notEqual(cookies.accessTokenFromAny, undefined);
+            assert.notEqual(cookies.refreshTokenFromAny, undefined);
+            assert.notEqual(cookies.frontToken, undefined);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.equal(parsedToken.payload.sub, "user1");
+
+            let res2 = await new Promise((res, rej) =>
+                request(app)
+                    .post("/create")
+                    .type("application/json")
+                    .send(
+                        JSON.stringify({
+                            payload: {
+                                ...parsedToken.payload,
+                            },
+                            userId: "user2",
+                        })
+                    )
+                    .expect(200)
+                    .end((err, resp) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res(resp);
+                        }
+                    })
+            );
+
+            let cookies2 = extractInfoFromResponse(res2);
+            assert.notEqual(cookies2.accessTokenFromAny, undefined);
+            assert.notEqual(cookies2.refreshTokenFromAny, undefined);
+            assert.notEqual(cookies2.frontToken, undefined);
+
+            const parsedToken2 = parseJWTWithoutSignatureVerification(cookies2.accessTokenFromAny);
+            assert.notEqual(parsedToken2.payload.sessionHandle, parsedToken.payload.sessionHandle);
+            assert.equal(parsedToken2.payload.sub, "user2");
+            assert.equal(parsedToken2.payload.custom, testPropValue);
+        });
+
         it("should make sign in/up return a 500 when adding protected props", async function () {
             const connectionURI = await startST();
             SuperTokens.init({
@@ -1042,12 +1122,13 @@ function getTestExpressApp() {
     app.use(json());
 
     app.post("/create", async (req, res) => {
+        const userId = req.body.userId || "";
         try {
             await Session.createNewSession(
                 req,
                 res,
                 "public",
-                SuperTokens.convertToRecipeUserId(""),
+                SuperTokens.convertToRecipeUserId(userId),
                 req.body.payload,
                 {}
             );
