@@ -51,11 +51,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -83,7 +83,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -123,12 +123,12 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -156,7 +156,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -193,11 +193,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //- check for token theft detection
     it("koa token theft detection", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -207,7 +207,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                        onTokenTheftDetected: async (sessionHandle, userId, recipeUserId, request, response) => {
                             response.sendJSONResponse({
                                 success: true,
                             });
@@ -231,7 +231,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -316,11 +316,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //- check for token theft detection
     it("koa token theft detection with auto refresh middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -335,7 +335,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -413,11 +413,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //check basic usage of session
     it("test basic usage of express sessions", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -432,7 +432,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -568,11 +568,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test signout API works", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -586,7 +586,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -631,12 +631,12 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //check basic usage of session
     it("test basic usage of express sessions with auto refresh", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -652,7 +652,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -785,11 +785,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //check session verify for with / without anti-csrf present
     it("test express session verify with anti-csrf present", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -803,7 +803,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "id1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             ctx.body = "";
         });
 
@@ -868,11 +868,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present express", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -887,7 +887,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "id1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             ctx.body = "";
         });
 
@@ -955,11 +955,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //check revoking session(s)**
     it("test revoking express sessions", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -972,11 +972,18 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
         router.post("/usercreate", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "someUniqueUserId", {}, {});
+            await Session.createNewSession(
+                ctx,
+                ctx,
+                "public",
+                SuperTokens.convertToRecipeUserId("someUniqueUserId"),
+                {},
+                {}
+            );
             ctx.body = "";
         });
         router.post("/session/revoke", async (ctx, _) => {
@@ -1091,11 +1098,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //check manipulating session data
     it("test manipulating session data with express", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -1109,7 +1116,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
         router.post("/updateSessionData", async (ctx, _) => {
@@ -1241,11 +1248,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
 
     //check manipulating jwt payload
     it("test manipulating jwt payload with express", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -1258,7 +1265,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "user1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId("user1"), {}, {});
             ctx.body = "";
         });
         router.post("/updateAccessTokenPayload", async (ctx, _) => {
@@ -1311,7 +1318,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1336,7 +1343,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
@@ -1379,7 +1386,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1403,7 +1410,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
@@ -1434,6 +1441,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
                 "sub",
                 "iss",
                 "tId",
+                "rsub",
             ])
         );
         //invalid session handle when updating the jwt payload
@@ -1455,11 +1463,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("sending custom response koa", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1507,11 +1515,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1562,11 +1570,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that tags request respond with correct tags", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1620,11 +1628,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1684,11 +1692,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that search results correct output for multiple search items", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1748,11 +1756,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1812,11 +1820,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1879,11 +1887,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1946,11 +1954,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -2054,11 +2062,11 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
     });
 
     it("test that search results correct output for 'provider: google, phone: 1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

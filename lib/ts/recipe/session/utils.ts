@@ -30,9 +30,10 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import RecipeUserId from "../../recipeUserId";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -68,7 +69,8 @@ export async function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
     _: string,
-    __: BaseRequest,
+    __: RecipeUserId,
+    ___: BaseRequest,
     response: BaseResponse
 ) {
     await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} });
@@ -176,10 +178,18 @@ export function validateAndNormaliseUserInput(
         onTokenTheftDetected: async (
             sessionHandle: string,
             userId: string,
+            recipeUserId: RecipeUserId,
             request: BaseRequest,
             response: BaseResponse
         ) => {
-            return await sendTokenTheftDetectedResponse(recipeInstance, sessionHandle, userId, request, response);
+            return await sendTokenTheftDetectedResponse(
+                recipeInstance,
+                sessionHandle,
+                userId,
+                recipeUserId,
+                request,
+                response
+            );
         },
         onTryRefreshToken: async (message: string, request: BaseRequest, response: BaseResponse) => {
             return await sendTryRefreshTokenResponse(recipeInstance, message, request, response);
@@ -284,6 +294,7 @@ export async function getRequiredClaimValidators(
     const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
         {
             userId: session.getUserId(),
+            recipeUserId: session.getRecipeUserId(),
             tenantId: session.getTenantId(),
             claimValidatorsAddedByOtherRecipes,
             userContext,

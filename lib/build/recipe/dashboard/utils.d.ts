@@ -1,21 +1,15 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
-import {
-    EmailPasswordUser,
-    PasswordlessUser,
-    RecipeIdForUser,
-    ThirdPartyUser,
-    TypeInput,
-    TypeNormalisedInput,
-} from "./types";
+import type { BaseRequest, BaseResponse } from "../../framework";
+import { RecipeIdForUser, TypeInput, TypeNormalisedInput, UserWithFirstAndLastName } from "./types";
+import RecipeUserId from "../../recipeUserId";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
 export declare function sendUnauthorisedAccess(res: BaseResponse): void;
 export declare function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser;
 export declare function getUserForRecipeId(
-    userId: string,
+    recipeUserId: RecipeUserId,
     recipeId: string
 ): Promise<{
-    user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined;
+    user: UserWithFirstAndLastName | undefined;
     recipe:
         | "emailpassword"
         | "thirdparty"

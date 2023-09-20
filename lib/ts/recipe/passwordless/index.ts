@@ -17,12 +17,12 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     RecipeInterface,
-    User,
     APIOptions,
     APIInterface,
     TypePasswordlessEmailDeliveryInput,
     TypePasswordlessSmsDeliveryInput,
 } from "./types";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -40,8 +40,8 @@ export default class Wrapper {
         ) & { tenantId: string; userInputCode?: string; userContext?: any }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
@@ -52,8 +52,8 @@ export default class Wrapper {
         userContext?: any;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewCodeForDevice({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
@@ -74,33 +74,13 @@ export default class Wrapper {
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
-            userContext: {},
             ...input,
-        });
-    }
-
-    static getUserById(input: { userId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userContext: {}, ...input });
-    }
-
-    static getUserByEmail(input: { email: string; tenantId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({
-            userContext: {},
-            ...input,
-            tenantId: input.tenantId,
-        });
-    }
-
-    static getUserByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({
-            userContext: {},
-            ...input,
-            tenantId: input.tenantId,
+            userContext: input.userContext ?? {},
         });
     }
 
     static updateUser(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
@@ -122,43 +102,43 @@ export default class Wrapper {
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
     static revokeCode(input: { codeId: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
     static listCodesByEmail(input: { email: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
     static listCodesByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPhoneNumber({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
     static listCodesByDeviceId(input: { deviceId: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
     static listCodesByPreAuthSessionId(input: { preAuthSessionId: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPreAuthSessionId({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
@@ -176,8 +156,8 @@ export default class Wrapper {
               }
     ) {
         return Recipe.getInstanceOrThrowError().createMagicLink({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
@@ -195,22 +175,22 @@ export default class Wrapper {
               }
     ) {
         return Recipe.getInstanceOrThrowError().signInUp({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
     static async sendEmail(input: TypePasswordlessEmailDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 
     static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
-            userContext: {},
             ...input,
+            userContext: input.userContext ?? {},
         });
     }
 }
@@ -222,12 +202,6 @@ export let Error = Wrapper.Error;
 export let createCode = Wrapper.createCode;
 
 export let consumeCode = Wrapper.consumeCode;
-
-export let getUserByEmail = Wrapper.getUserByEmail;
-
-export let getUserById = Wrapper.getUserById;
-
-export let getUserByPhoneNumber = Wrapper.getUserByPhoneNumber;
 
 export let listCodesByDeviceId = Wrapper.listCodesByDeviceId;
 
@@ -249,7 +223,7 @@ export let createMagicLink = Wrapper.createMagicLink;
 
 export let signInUp = Wrapper.signInUp;
 
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface };
 
 export let sendEmail = Wrapper.sendEmail;
 

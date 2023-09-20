@@ -20,7 +20,9 @@ import { logDebugMessage } from "../../logger";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
+import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { JWKCacheCooldownInMs, JWKCacheMaxAgeInMs, protectedProps } from "./constants";
 
 export type Helpers = {
     querier: Querier;
@@ -29,20 +31,6 @@ export type Helpers = {
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
 };
-
-const JWKCacheCooldownInMs = 500;
-export const JWKCacheMaxAgeInMs = 60000;
-
-export const protectedProps = [
-    "sub",
-    "iat",
-    "exp",
-    "sessionHandle",
-    "parentRefreshTokenHash1",
-    "refreshTokenHash1",
-    "antiCsrfToken",
-    "tId",
-];
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -86,13 +74,14 @@ export default function getRecipeInterface(
 
     let obj: RecipeInterface = {
         createNewSession: async function ({
-            userId,
+            recipeUserId,
             accessTokenPayload = {},
             sessionDataInDatabase = {},
             disableAntiCsrf,
             tenantId,
         }: {
             userId: string;
+            recipeUserId: RecipeUserId;
             disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
@@ -104,7 +93,7 @@ export default function getRecipeInterface(
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 tenantId,
-                userId,
+                recipeUserId,
                 disableAntiCsrf === true,
                 accessTokenPayload,
                 sessionDataInDatabase
@@ -120,6 +109,7 @@ export default function getRecipeInterface(
                 response.antiCsrfToken,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 payload,
                 undefined,
                 true,
@@ -220,6 +210,7 @@ export default function getRecipeInterface(
                 antiCsrfToken,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 payload,
                 undefined,
                 response.accessToken !== undefined,
@@ -233,6 +224,7 @@ export default function getRecipeInterface(
             this: RecipeInterface,
             input: {
                 userId: string;
+                recipeUserId: RecipeUserId;
                 accessTokenPayload: any;
                 claimValidators: SessionClaimValidator[];
                 userContext: any;
@@ -251,6 +243,7 @@ export default function getRecipeInterface(
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
                     const value = await validator.claim.fetchValue(
                         input.userId,
+                        input.recipeUserId,
                         accessTokenPayload.tId === undefined ? DEFAULT_TENANT_ID : accessTokenPayload.tId,
                         input.userContext
                     );
@@ -280,32 +273,6 @@ export default function getRecipeInterface(
             return {
                 invalidClaims,
                 accessTokenPayloadUpdate,
-            };
-        },
-
-        validateClaimsInJWTPayload: async function (
-            this: RecipeInterface,
-            input: {
-                userId: string;
-                jwtPayload: JSONObject;
-                claimValidators: SessionClaimValidator[];
-                userContext: any;
-            }
-        ): Promise<{
-            status: "OK";
-            invalidClaims: ClaimValidationError[];
-        }> {
-            // We skip refetching here, because we have no way of updating the JWT payload here
-            // if we have access to the entire session other methods can be used to do validation while updating
-            const invalidClaims = await validateClaimsInPayload(
-                input.claimValidators,
-                input.jwtPayload,
-                input.userContext
-            );
-
-            return {
-                status: "OK",
-                invalidClaims,
             };
         },
 
@@ -350,6 +317,7 @@ export default function getRecipeInterface(
                 response.antiCsrfToken,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 payload,
                 undefined,
                 true,
@@ -370,6 +338,7 @@ export default function getRecipeInterface(
                   session: {
                       handle: string;
                       userId: string;
+                      recipeUserId: RecipeUserId;
                       userDataInJWT: any;
                       tenantId: string;
                   };
@@ -398,6 +367,7 @@ export default function getRecipeInterface(
                 session: {
                     handle: response.session.handle,
                     userId: response.session.userId,
+                    recipeUserId: new RecipeUserId(response.session.recipeUserId),
                     userDataInJWT: response.session.userDataInJWT,
                     tenantId: response.session.tenantId,
                 },
@@ -409,24 +379,41 @@ export default function getRecipeInterface(
             userId,
             tenantId,
             revokeAcrossAllTenants,
+            revokeSessionsForLinkedAccounts,
         }: {
             userId: string;
+            revokeSessionsForLinkedAccounts: boolean;
             tenantId?: string;
             revokeAcrossAllTenants?: boolean;
         }) {
-            return SessionFunctions.revokeAllSessionsForUser(helpers, userId, tenantId, revokeAcrossAllTenants);
+            return SessionFunctions.revokeAllSessionsForUser(
+                helpers,
+                userId,
+                revokeSessionsForLinkedAccounts,
+                tenantId,
+                revokeAcrossAllTenants
+            );
         },
 
         getAllSessionHandlesForUser: function ({
             userId,
+            fetchSessionsForAllLinkedAccounts,
             tenantId,
             fetchAcrossAllTenants,
         }: {
             userId: string;
+            fetchSessionsForAllLinkedAccounts: boolean;
             tenantId?: string;
             fetchAcrossAllTenants?: boolean;
+            userContext: any;
         }): Promise<string[]> {
-            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, tenantId, fetchAcrossAllTenants);
+            return SessionFunctions.getAllSessionHandlesForUser(
+                helpers,
+                userId,
+                fetchSessionsForAllLinkedAccounts,
+                tenantId,
+                fetchAcrossAllTenants
+            );
         },
 
         revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
@@ -495,6 +482,7 @@ export default function getRecipeInterface(
             }
             const accessTokenPayloadUpdate = await input.claim.build(
                 sessionInfo.userId,
+                sessionInfo.recipeUserId,
                 sessionInfo.tenantId,
                 input.userContext
             );

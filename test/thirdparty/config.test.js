@@ -37,11 +37,11 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
     });
 
     it("test config for thirdparty module, no provider passed", async function () {
-        await startST();
+        const connectionURI = await startST();
         try {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -63,10 +63,10 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
     });
 
     it("test minimum config for thirdparty module, custom provider", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

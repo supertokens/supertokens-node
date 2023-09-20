@@ -12,41 +12,35 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailPasswordEmailDeliveryInput, RecipeInterface } from "../../../types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
 import { createAndSendEmailUsingSupertokensService } from "../../../passwordResetFunctions";
 import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
-    private recipeInterfaceImpl: RecipeInterface;
     private isInServerlessEnv: boolean;
     private appInfo: NormalisedAppinfo;
 
-    constructor(recipeInterfaceImpl: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
-        this.recipeInterfaceImpl = recipeInterfaceImpl;
+    constructor(appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         this.isInServerlessEnv = isInServerlessEnv;
         this.appInfo = appInfo;
     }
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        let user = await this.recipeInterfaceImpl.getUserById({
-            userId: input.user.id,
-            userContext: input.userContext,
-        });
-        if (user === undefined) {
-            throw Error("this should never come here");
-        }
         // we add this here cause the user may have overridden the sendEmail function
         // to change the input email and if we don't do this, the input email
         // will get reset by the getUserById call above.
-        user.email = input.user.email;
         try {
             if (!this.isInServerlessEnv) {
-                createAndSendEmailUsingSupertokensService(this.appInfo, user, input.passwordResetLink).catch((_) => {});
+                createAndSendEmailUsingSupertokensService(
+                    this.appInfo,
+                    input.user,
+                    input.passwordResetLink
+                ).catch((_) => {});
             } else {
                 // see https://github.com/supertokens/supertokens-node/pull/135
-                await createAndSendEmailUsingSupertokensService(this.appInfo, user, input.passwordResetLink);
+                await createAndSendEmailUsingSupertokensService(this.appInfo, input.user, input.passwordResetLink);
             }
         } catch (_) {}
     };

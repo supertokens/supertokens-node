@@ -41,11 +41,11 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
     });
 
     describe("createNewSession", () => {
-        it("should create a V4 token", async function () {
-            await startST();
+        it("should create a V5 token", async function () {
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -76,18 +76,18 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.frontToken !== undefined);
 
             const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-            assert.strictEqual(parsedToken.version, 4);
+            assert.strictEqual(parsedToken.version, 5);
 
             const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
             assert.strictEqual(typeof parsedHeader.kid, "string");
             assert(parsedHeader.kid.startsWith("d-"));
         });
 
-        it("should create a V4 token signed by a static key if set in session recipe config", async function () {
-            await startST();
+        it("should create a V5 token signed by a static key if set in session recipe config", async function () {
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -122,18 +122,18 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.frontToken !== undefined);
 
             const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-            assert.strictEqual(parsedToken.version, 4);
+            assert.strictEqual(parsedToken.version, 5);
 
             const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
             assert.strictEqual(typeof parsedHeader.kid, "string");
             assert(parsedHeader.kid.startsWith("s-"));
         });
 
-        it("should throw an error when adding protected props", async function () {
-            await startST();
+        it("should ignore protected props", async function () {
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -156,7 +156,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                             },
                         })
                     )
-                    .expect(400)
+                    .expect(200)
                     .end((err, resp) => {
                         if (err) {
                             rej(err);
@@ -167,16 +167,99 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             );
 
             let cookies = extractInfoFromResponse(res);
-            assert.strictEqual(cookies.accessTokenFromAny, undefined);
-            assert.strictEqual(cookies.refreshTokenFromAny, undefined);
-            assert.strictEqual(cookies.frontToken, undefined);
+            assert.notEqual(cookies.accessTokenFromAny, undefined);
+            assert.notEqual(cookies.refreshTokenFromAny, undefined);
+            assert.notEqual(cookies.frontToken, undefined);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.notEqual(parsedToken.payload.sub, "asdf");
+        });
+
+        it("should ignore protected props when creating from prev payload", async function () {
+            const connectionURI = await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            const app = getTestExpressApp();
+
+            const testPropValue = Date.now();
+            let res = await new Promise((res, rej) =>
+                request(app)
+                    .post("/create")
+                    .type("application/json")
+                    .send(
+                        JSON.stringify({
+                            payload: {
+                                custom: testPropValue,
+                            },
+                            userId: "user1",
+                        })
+                    )
+                    .expect(200)
+                    .end((err, resp) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res(resp);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert.notEqual(cookies.accessTokenFromAny, undefined);
+            assert.notEqual(cookies.refreshTokenFromAny, undefined);
+            assert.notEqual(cookies.frontToken, undefined);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.equal(parsedToken.payload.sub, "user1");
+
+            let res2 = await new Promise((res, rej) =>
+                request(app)
+                    .post("/create")
+                    .type("application/json")
+                    .send(
+                        JSON.stringify({
+                            payload: {
+                                ...parsedToken.payload,
+                            },
+                            userId: "user2",
+                        })
+                    )
+                    .expect(200)
+                    .end((err, resp) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res(resp);
+                        }
+                    })
+            );
+
+            let cookies2 = extractInfoFromResponse(res2);
+            assert.notEqual(cookies2.accessTokenFromAny, undefined);
+            assert.notEqual(cookies2.refreshTokenFromAny, undefined);
+            assert.notEqual(cookies2.frontToken, undefined);
+
+            const parsedToken2 = parseJWTWithoutSignatureVerification(cookies2.accessTokenFromAny);
+            assert.notEqual(parsedToken2.payload.sessionHandle, parsedToken.payload.sessionHandle);
+            assert.equal(parsedToken2.payload.sub, "user2");
+            assert.equal(parsedToken2.payload.custom, testPropValue);
         });
 
         it("should make sign in/up return a 500 when adding protected props", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -237,10 +320,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("mergeIntoAccessTokenPayload", () => {
         it("should help migrating a v2 token using protected props", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -270,7 +353,6 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             const legacyRefreshToken = legacySessionResp.refreshToken.token;
 
             const app = getTestExpressApp();
-
             let mergeRes = await new Promise((res, rej) =>
                 request(app)
                     .post("/merge-into-payload")
@@ -321,12 +403,12 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookiesAfterRefresh.refreshTokenFromAny !== undefined);
             assert(cookiesAfterRefresh.frontToken !== undefined);
 
-            assert.strictEqual(parseJWTWithoutSignatureVerification(cookiesAfterRefresh.accessTokenFromAny).version, 4);
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookiesAfterRefresh.accessTokenFromAny).version, 5);
 
             const parsedTokenAfterRefresh = parseJWTWithoutSignatureVerification(
                 cookiesAfterRefresh.accessTokenFromAny
             );
-            assert.strictEqual(parsedTokenAfterRefresh.version, 4);
+            assert.strictEqual(parsedTokenAfterRefresh.version, 5);
             assert.strictEqual(parsedTokenAfterRefresh.payload.sub, "test-user-id");
             assert.strictEqual(parsedTokenAfterRefresh.payload.appSub, "asdf");
 
@@ -338,10 +420,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should help migrating a v2 token using protected props when called using session handle", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -391,10 +473,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.refreshTokenFromAny !== undefined);
             assert(cookies.frontToken !== undefined);
 
-            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 4);
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 5);
 
             const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-            assert.strictEqual(parsedToken.version, 4);
+            assert.strictEqual(parsedToken.version, 5);
             assert.strictEqual(parsedToken.payload.sub, "test-user-id");
             assert.strictEqual(parsedToken.payload.appSub, "asdf");
 
@@ -406,10 +488,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("verifySession", () => {
         it("should validate v2 tokens", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -464,10 +546,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v2 tokens with check database enabled", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -551,11 +633,176 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             });
         });
 
-        it("should validate v4 tokens with check database enabled", async function () {
-            await startST();
+        it("should validate v4 tokens", async function () {
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "3.0";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {},
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyToken = legacySessionResp.accessToken.token;
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(
+                new Set(Object.keys(res.body.payload)),
+                new Set([
+                    "antiCsrfToken",
+                    "exp",
+                    "iat",
+                    "parentRefreshTokenHash1",
+                    "refreshTokenHash1",
+                    "sessionHandle",
+                    "sub",
+                    "tId",
+                ])
+            );
+            delete res.body.payload;
+            assert.deepStrictEqual(res.body, {
+                message: true,
+                sessionExists: true,
+                sessionHandle: legacySessionResp.session.handle,
+            });
+        });
+
+        it("should validate v4 tokens with check database enabled", async function () {
+            const connectionURI = await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "3.0";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {},
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyToken = legacySessionResp.accessToken.token;
+
+            const app = getTestExpressApp();
+
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/revoke-session")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let resDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify-checkdb")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(401)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(resDBCheck.body, { message: "unauthorised" });
+
+            let resNoDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(
+                new Set(Object.keys(resNoDBCheck.body.payload)),
+                new Set([
+                    "antiCsrfToken",
+                    "exp",
+                    "iat",
+                    "parentRefreshTokenHash1",
+                    "refreshTokenHash1",
+                    "sessionHandle",
+                    "sub",
+                    "tId",
+                ])
+            );
+            delete resNoDBCheck.body.payload;
+
+            assert.deepStrictEqual(resNoDBCheck.body, {
+                message: true,
+                sessionExists: true,
+                sessionHandle: legacySessionResp.session.handle,
+            });
+        });
+
+        it("should validate v5 tokens with check database enabled", async function () {
+            const connectionURI = await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -634,10 +881,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should not validate token signed by a static key if not set in session recipe config", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -674,7 +921,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             resetAll();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -708,10 +955,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("refresh session", () => {
         it("should refresh legacy sessions to new version", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -758,14 +1005,14 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.refreshTokenFromAny !== undefined);
             assert(cookies.frontToken !== undefined);
 
-            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 4);
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 5);
         });
 
         it("should throw when refreshing legacy session with protected prop in payload", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -875,8 +1122,16 @@ function getTestExpressApp() {
     app.use(json());
 
     app.post("/create", async (req, res) => {
+        const userId = req.body.userId || "";
         try {
-            await Session.createNewSession(req, res, "public", "", req.body.payload, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId(userId),
+                req.body.payload,
+                {}
+            );
             res.status(200).send("");
         } catch (ex) {
             res.status(400).json({ message: ex.message });

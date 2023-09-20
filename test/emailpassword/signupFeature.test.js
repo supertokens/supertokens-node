@@ -54,11 +54,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     // * check if disable api, the default signup API does not work - you get a 404
     it("test that if disable api, the default signup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -97,11 +97,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
      */
 
     it("test signUpAPI works when input is fine", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -123,15 +123,15 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
     });
 
     it("test signUpAPI throws an error in case of a duplicate email", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -153,7 +153,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
 
         response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(response.status === 200);
@@ -166,11 +166,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
     });
 
     it("test signUpAPI throws an error for email and password with invalid syntax", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -208,11 +208,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
      *        - formField elements have no id or no value field
      * */
     it("test bad input, not a JSON to /signup API", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -248,11 +248,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
     });
 
     it("test bad input, no POST body to /signup API", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -284,11 +284,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
     });
 
     it("test bad input, Input is JSON, but wrong structure to /signup API", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -323,11 +323,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
     });
 
     it("test bad input, formFields is not an array in /signup API", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -364,11 +364,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
     });
 
     it("test bad input, formField elements have no id or no value field in /signup API", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -411,10 +411,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     //* Make sure that a successful sign up yields a session
     it("test that a successful signup yields a session", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -458,11 +458,11 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
     //If not provided by the user, it should not result in an error
 
     it("test that if not provided by the user, it should not result in an error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -519,17 +519,17 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     //- If provided by the user, and custom fields are there, only those should be sent
     it("test that if provided by the user, and custom fields are there, only those are sent, using handlePostSignUp", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let customFormFields = "";
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -610,12 +610,12 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     //If provided by the user, and no custom fields are there, then the formFields param must sbe empty
     it("test that if provided by the user, and no custom fields are there, then formFields must be empty, using handlePostSignUp", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let customFormFields = "";
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -693,10 +693,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
      *        - Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handlePostSignup as that type
      */
     it("test formFields added in config but not in inout to signup, check error about it being missing", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -730,10 +730,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     //- Good test case without optional
     it("test valid formFields without optional", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -790,15 +790,15 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     //- Bad test case without optional (something is missing, and it's not optional)
     it("test bad case input to signup without optional", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -860,10 +860,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     //- Good test case with optionals
     it("test good case input to signup with optional", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -921,15 +921,15 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     //- Input formFields has no email field (and not in config)
     it("test input formFields has no email field", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -969,10 +969,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     // Input formFields has no password field (and not in config
     it("test inut formFields has no password field", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1012,10 +1012,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     // Input form field has different number of custom fields than in config form fields)
     it("test input form field has a different number of custom fields than in config form fields", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1078,10 +1078,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     // Input form field has same number of custom fields as in config form field, but some ids mismatch
     it("test input form field has the same number of custom fields than in config form fields, but ids mismatch", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1152,10 +1152,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     // Test custom field validation error (one and two custom fields)
     it("test custom field validation error", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1234,10 +1234,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     //Test password field validation error
     it("test signup password field validation error", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1284,10 +1284,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     //Test email field validation error
     it("test signup email field validation error", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1334,10 +1334,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
     //Make sure that the input email is trimmed
     it("test that input email is trimmed", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1378,17 +1378,17 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         );
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     // Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handlePostSignUp as that type
     it("test that non string value in formFields array and it passes through the signup API and it is sent to the handlePostSignUp", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let customFormFields = "";
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

@@ -39,10 +39,10 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test default backward compatibility api being called: reset password", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -95,10 +95,10 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test default backward compatibility api being called, error message not sent back to user: reset password", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -152,13 +152,12 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test backward compatibility: reset password", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let passwordResetURL = undefined;
-        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -168,12 +167,15 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             recipeList: [
                 EmailPassword.init({
                     emailDelivery: {
-                        service: {
-                            sendEmail: async (input) => {
-                                email = input.user.email;
-                                passwordResetURL = input.passwordResetLink;
-                                timeJoined = input.user.timeJoined;
-                            },
+                        override: (originalImplementation) => {
+                            return {
+                                ...originalImplementation,
+                                sendEmail: async function (input) {
+                                    email = input.user.email;
+                                    passwordResetURL = input.passwordResetLink;
+                                    timeJoined = input.user.timeJoined;
+                                },
+                            };
                         },
                     },
                 }),
@@ -204,15 +206,14 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(passwordResetURL, undefined);
-        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test backward compatibility: reset password (non existent user)", async function () {
-        await startST();
+        const connectionURI = await startST();
         let functionCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -222,10 +223,13 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             recipeList: [
                 EmailPassword.init({
                     emailDelivery: {
-                        service: {
-                            sendEmail: async (input) => {
-                                functionCalled = true;
-                            },
+                        override: (originalImplementation) => {
+                            return {
+                                ...originalImplementation,
+                                sendEmail: async function (input) {
+                                    functionCalled = true;
+                                },
+                            };
                         },
                     },
                 }),
@@ -274,14 +278,14 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test custom override: reset password", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let passwordResetURL = undefined;
         let type = undefined;
         let appName = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -346,7 +350,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test smtp service: reset password", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let passwordResetURL = undefined;
         let outerOverrideCalled = false;
@@ -354,7 +358,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         let getContentCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -440,10 +444,10 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test default backward compatibility api being called: email verify", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -462,7 +466,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -499,10 +503,10 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test default backward compatibility api being called, error message not sent back to user: email verify", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -521,7 +525,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -559,13 +563,13 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test backward compatibility: email verify", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let emailVerifyURL = undefined;
         let userIdInCb = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -575,12 +579,15 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             recipeList: [
                 EmailVerification.init({
                     emailDelivery: {
-                        service: {
-                            sendEmail: async (input) => {
-                                email = input.user.email;
-                                userIdInCb = input.user.id;
-                                emailVerifyURL = input.emailVerifyLink;
-                            },
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async (input) => {
+                                    email = input.user.email;
+                                    userIdInCb = input.user.recipeUserId.getAsString();
+                                    emailVerifyURL = input.emailVerifyLink;
+                                },
+                            };
                         },
                     },
                 }),
@@ -594,7 +601,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -614,14 +621,14 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test custom override: email verify", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let emailVerifyURL = undefined;
         let type = undefined;
         let appName = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -654,7 +661,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -687,7 +694,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
     });
 
     it("test smtp service: email verify", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let emailVerifyURL = undefined;
         let outerOverrideCalled = false;
@@ -695,7 +702,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         let getContentCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -759,7 +766,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());

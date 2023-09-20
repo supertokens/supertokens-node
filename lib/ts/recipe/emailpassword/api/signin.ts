@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 
@@ -48,7 +48,7 @@ export default async function signInAPI(
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            user: result.user,
+            ...getBackwardsCompatibleUserInfo(options.req, result),
         });
     } else {
         send200Response(options.res, result);

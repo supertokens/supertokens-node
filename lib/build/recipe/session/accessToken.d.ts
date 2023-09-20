@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
+import RecipeUserId from "../../recipeUserId";
 export declare function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
     jwks: jose.JWTVerifyGetKey,
@@ -8,6 +9,7 @@ export declare function getInfoFromAccessToken(
 ): Promise<{
     sessionHandle: string;
     userId: string;
+    recipeUserId: RecipeUserId;
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;

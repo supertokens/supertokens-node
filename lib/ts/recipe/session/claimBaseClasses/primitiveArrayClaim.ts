@@ -1,9 +1,11 @@
+import RecipeUserId from "../../../recipeUserId";
 import { JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
     public readonly fetchValue: (
         userId: string,
+        recipeUserId: RecipeUserId,
         tenantId: string,
         userContext: any
     ) => Promise<T[] | undefined> | T[] | undefined;

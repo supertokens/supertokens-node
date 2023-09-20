@@ -24,11 +24,11 @@ describe(`getRolesThatHavePermissions: ${printPath(
 
     describe("getRolesThatHavePermissions", () => {
         it("get roles that have permissions", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -66,11 +66,11 @@ describe(`getRolesThatHavePermissions: ${printPath(
         });
 
         it("get roles for unknown permission", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

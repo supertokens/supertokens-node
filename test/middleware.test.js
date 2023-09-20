@@ -51,10 +51,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
     // check that disabling default API actually disables it (for session)
     it("test disabling default API actually disables it", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -97,10 +97,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -111,7 +111,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 Session.init({
                     getTokenTransferMethod: () => "cookie",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res) => {
                             res.setStatusCode(403);
                             return res.sendJSONResponse({
                                 message: "token theft detected",
@@ -124,7 +124,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("testing-userId"),
+                {},
+                {}
+            );
             res.status(200).json({ message: true });
         });
 
@@ -272,7 +279,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         assert(r2Optional === false);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
@@ -280,7 +287,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }
@@ -374,11 +381,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with auto refresh", async function () {
-        await setKeyValueInConfig(2);
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -390,7 +396,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res) => {
                             res.setStatusCode(403);
                             return res.sendJSONResponse({
                                 message: "token theft detected",
@@ -406,7 +412,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("testing-userId"),
+                {},
+                {}
+            );
             res.status(200).json({ message: true });
         });
 
@@ -657,11 +670,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config", async function () {
-        await setKeyValueInConfig(2);
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -676,7 +688,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res) => {
                             res.setStatusCode(403);
                             return res.sendJSONResponse({
                                 message: "token theft detected",
@@ -690,7 +702,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("testing-userId"),
+                {},
+                {}
+            );
             res.status(200).json({ message: true });
         });
 
@@ -945,11 +964,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config with auto refresh", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -964,7 +983,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res) => {
                             res.setStatusCode(403);
                             return res.sendJSONResponse({
                                 message: "token theft detected",
@@ -981,7 +1000,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("testing-userId"),
+                {},
+                {}
+            );
             res.status(200).json({ message: true });
         });
 
@@ -1238,12 +1264,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     // https://github.com/supertokens/supertokens-node/pull/108
     // An expired access token is used and we see that try refresh token error is thrown
     it("test session verify middleware with expired access token and session required false", async function () {
-        await setKeyValueInConfig("access_token_validity", 2);
-        await startST();
+        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
 
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1258,7 +1283,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res, next) => {
                             res.statusCode = 403;
                             return res.json({
                                 message: "token theft detected",
@@ -1275,7 +1300,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("testing-userId"),
+                {},
+                {}
+            );
             res.status(200).json({ message: true });
         });
 
@@ -1372,11 +1404,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     // https://github.com/supertokens/supertokens-node/pull/108
     // A session exists, is refreshed, then is revoked, and then we try and use the access token (after first refresh), and we see that unauthorised error is called.
     it("test session verify middleware with old access token and session required false", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1391,7 +1423,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res, next) => {
                             res.statusCode = 403;
                             return res.json({
                                 message: "token theft detected",
@@ -1408,7 +1440,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("testing-userId"),
+                {},
+                {}
+            );
             res.status(200).json({ message: true });
         });
 
@@ -1586,11 +1625,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     // https://github.com/supertokens/supertokens-node/pull/108
     // A session doesn't exist, and we call verifySession, and it let's go through
     it("test session verify middleware with no session and session required false", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1605,7 +1644,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res, next) => {
                             res.statusCode = 403;
                             return res.json({
                                 message: "token theft detected",
@@ -1649,11 +1688,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware without error handler added", async function () {
-        await setKeyValueInConfig("access_token_validity", 5);
-        await startST();
+        const connectionURI = await startST({ coreConfig: { access_token_validity: 5 } });
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1664,7 +1702,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 Session.init({
                     getTokenTransferMethod: () => "cookie",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                        onTokenTheftDetected: (sessionHandle, userId, recipeUserId, req, res) => {
                             res.setStatusCode(403);
                             return res.sendJSONResponse({
                                 message: "token theft detected",
@@ -1681,7 +1719,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("testing-userId"),
+                {},
+                {}
+            );
             res.status(200).json({ message: true });
         });
 

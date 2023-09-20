@@ -69,11 +69,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
     });
 
     it("test the default route and it should revoke the session", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -179,11 +179,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
     });
 
     it("test that disabling default route and calling the API returns 404", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -228,11 +228,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
     });
 
     it("test that calling the API without a session should return OK", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -271,13 +271,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
     });
 
     it("test that signout API reutrns try refresh token, refresh session and signout should return OK", async function () {
-        await setKeyValueInConfig("access_token_validity", 2);
-
-        await startST();
+        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

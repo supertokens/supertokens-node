@@ -17,7 +17,6 @@ import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import STError from "./error";
 
@@ -28,11 +27,10 @@ import authorisationUrlAPI from "./api/authorisationUrl";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import { GetEmailForUserIdFunc } from "../emailverification/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -74,11 +72,6 @@ export default class Recipe extends RecipeModule {
         }
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
-            if (emailVerificationRecipe !== undefined) {
-                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
-            }
-
             const mtRecipe = MultitenancyRecipe.getInstance();
             if (mtRecipe !== undefined) {
                 mtRecipe.staticThirdPartyProviders = this.config.signInAndUpFeature.providers;
@@ -182,19 +175,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    // helper functions...
-    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            return {
-                status: "OK",
-                email: userInfo.email,
-            };
-        }
-        return {
-            status: "UNKNOWN_USER_ID_ERROR",
-        };
     };
 }

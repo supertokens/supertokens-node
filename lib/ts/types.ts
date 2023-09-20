@@ -17,6 +17,7 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
+import { RecipeLevelUser } from "./recipe/accountlinking/types";
 
 export type AppInfo = {
     appName: string;
@@ -72,4 +73,29 @@ export interface JSONObject {
 export type GeneralErrorResponse = {
     status: "GENERAL_ERROR";
     message: string;
+};
+
+export type User = {
+    id: string; // primaryUserId or recipeUserId
+    timeJoined: number; // minimum timeJoined value from linkedRecipes
+    isPrimaryUser: boolean;
+    tenantIds: string[];
+    emails: string[];
+    phoneNumbers: string[];
+    thirdParty: {
+        id: string;
+        userId: string;
+    }[];
+    loginMethods: (RecipeLevelUser & {
+        verified: boolean;
+        hasSameEmailAs: (email: string | undefined) => boolean;
+        hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
+        hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
+        toJson: () => any;
+    })[];
+
+    // this function will be used in the send200Response function in utils to
+    // convert this object to JSON before sending it to the client. So that in RecipeLevelUser
+    // the recipeUserId can be converted to string from the RecipeUserId object type.
+    toJson: () => any;
 };

@@ -17,6 +17,14 @@ declare type Response =
     | {
           status: "INVALID_PHONE_ERROR";
           error: string;
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          error: string;
+      }
+    | {
+          status: "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+          error: string;
       };
 export declare const userPut: (
     _: APIInterface,

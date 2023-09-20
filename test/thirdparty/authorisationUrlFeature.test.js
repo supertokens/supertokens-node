@@ -71,12 +71,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test that using development OAuth keys will use the development authorisation url", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         // testing with the google OAuth development key
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -133,12 +133,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test calling authorisation url API with empty init", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         // testing with the google OAuth development key
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -179,12 +179,12 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test calling authorisation url API with empty init with dynamic third party provider", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         // testing with the google OAuth development key
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -239,10 +239,10 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test minimum config for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -287,10 +287,10 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test thirdparty provider doesn't exist", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -329,10 +329,10 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test invalid GET params for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

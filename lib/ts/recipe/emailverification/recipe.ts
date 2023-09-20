@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForUserIdFunc } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForRecipeUserIdFunc } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -25,13 +25,19 @@ import emailVerifyAPI from "./api/emailVerify";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import SessionRecipe from "../session/recipe";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
+import { SessionContainerInterface } from "../session/types";
+import SessionError from "../session/error";
+import Session from "../session";
+import { getUser } from "../..";
+import RecipeUserId from "../../recipeUserId";
+import { logDebugMessage } from "../../logger";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -47,8 +53,6 @@ export default class Recipe extends RecipeModule {
 
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
 
-    getEmailForUserIdFuncsFromOtherRecipes: GetEmailForUserIdFunc[] = [];
-
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -63,7 +67,9 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.getEmailForRecipeUserId)
+            );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
@@ -188,18 +194,37 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        if (this.config.getEmailForUserId !== undefined) {
-            const userRes = await this.config.getEmailForUserId(userId, userContext);
+    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc = async (user, recipeUserId, userContext) => {
+        if (this.config.getEmailForRecipeUserId !== undefined) {
+            const userRes = await this.config.getEmailForRecipeUserId(recipeUserId, userContext);
             if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
                 return userRes;
             }
         }
 
-        for (const getEmailForUserId of this.getEmailForUserIdFuncsFromOtherRecipes) {
-            const res = await getEmailForUserId(userId, userContext);
-            if (res.status !== "UNKNOWN_USER_ID_ERROR") {
-                return res;
+        if (user === undefined) {
+            user = await getUser(recipeUserId.getAsString(), userContext);
+
+            if (user === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            }
+        }
+
+        for (let i = 0; i < user.loginMethods.length; i++) {
+            let currLM = user.loginMethods[i];
+            if (currLM.recipeUserId.getAsString() === recipeUserId.getAsString()) {
+                if (currLM.email !== undefined) {
+                    return {
+                        email: currLM.email,
+                        status: "OK",
+                    };
+                } else {
+                    return {
+                        status: "EMAIL_DOES_NOT_EXIST_ERROR",
+                    };
+                }
             }
         }
 
@@ -208,7 +233,149 @@ export default class Recipe extends RecipeModule {
         };
     };
 
-    addGetEmailForUserIdFunc = (func: GetEmailForUserIdFunc): void => {
-        this.getEmailForUserIdFuncsFromOtherRecipes.push(func);
+    getPrimaryUserIdForRecipeUser = async (recipeUserId: RecipeUserId, userContext: any): Promise<string> => {
+        // We extract this into its own function like this cause we want to make sure that
+        // this recipe does not get the email of the user ID from the getUser function.
+        // In fact, there is a test "email verification recipe uses getUser function only in getEmailForRecipeUserId"
+        // which makes sure that this function is only called in 3 places in this recipe:
+        // - this function
+        // - getEmailForRecipeUserId function (above)
+        // - after verification to get the updated user in verifyEmailUsingToken
+        // We want to isolate the result of calling this function as much as possible
+        // so that the consumer of the getUser function does not read the email
+        // from the primaryUser. Hence, this function only returns the string ID
+        // and nothing else from the primaryUser.
+        let primaryUser = await getUser(recipeUserId.getAsString(), userContext);
+        if (primaryUser === undefined) {
+            // This can come here if the user is using session + email verification
+            // recipe with a user ID that is not known to supertokens. In this case,
+            // we do not allow linking for such users.
+            return recipeUserId.getAsString();
+        }
+        return primaryUser?.id;
+    };
+
+    updateSessionIfRequiredPostEmailVerification = async (input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        session: SessionContainerInterface | undefined;
+        recipeUserIdWhoseEmailGotVerified: RecipeUserId;
+        userContext: any;
+    }): Promise<SessionContainerInterface | undefined> => {
+        let primaryUserId = await this.getPrimaryUserIdForRecipeUser(
+            input.recipeUserIdWhoseEmailGotVerified,
+            input.userContext
+        );
+
+        // if a session exists in the API, then we can update the session
+        // claim related to email verification
+        if (input.session !== undefined) {
+            logDebugMessage("updateSessionIfRequiredPostEmailVerification got session");
+            // Due to linking, we will have to correct the current
+            // session's user ID. There are four cases here:
+            // --> (Case 1) User signed up and did email verification and the new account
+            // became a primary user (user ID no change)
+            // --> (Case 2) User signed up and did email verification and the new account got linked
+            // to another primary user (user ID change)
+            // --> (Case 3) This is post login account linking, in which the account that got verified
+            // got linked to the session's account (user ID of account has changed to the session's user ID)
+            // -->  (Case 4) This is post login account linking, in which the account that got verified
+            // got linked to ANOTHER primary account (user ID of account has changed to a different user ID != session.getUserId, but
+            // we should ignore this since it will result in the user's session changing.)
+
+            if (
+                input.session.getRecipeUserId().getAsString() === input.recipeUserIdWhoseEmailGotVerified.getAsString()
+            ) {
+                logDebugMessage(
+                    "updateSessionIfRequiredPostEmailVerification the session belongs to the verified user"
+                );
+                // this means that the session's login method's account is the
+                // one that just got verified and that we are NOT doing post login
+                // account linking. So this is only for (Case 1) and (Case 2)
+
+                if (input.session.getUserId() === primaryUserId) {
+                    logDebugMessage(
+                        "updateSessionIfRequiredPostEmailVerification the session userId matches the primary user id, so we are only refreshing the claim"
+                    );
+                    // if the session's primary user ID is equal to the
+                    // primary user ID that the account was linked to, then
+                    // this means that the new account became a primary user (Case 1)
+                    // We also have the sub cases here that the account that just
+                    // got verified was already linked to the session's primary user ID,
+                    // but either way, we don't need to change any user ID.
+
+                    // In this case, all we do is to update the emailverification claim if it's
+                    // not already set to true (it is ok to assume true cause this function
+                    // is only called when the email is verified).
+                    if ((await input.session.getClaimValue(EmailVerificationClaim)) !== true) {
+                        try {
+                            // EmailVerificationClaim will be based on the recipeUserId
+                            // and not the primary user ID.
+                            await input.session.fetchAndSetClaim(EmailVerificationClaim, input.userContext);
+                        } catch (err) {
+                            // This should never happen, since we've just set the status above.
+                            if ((err as Error).message === "UNKNOWN_USER_ID") {
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Unknown User ID provided",
+                                });
+                            }
+                            throw err;
+                        }
+                    }
+
+                    return;
+                } else {
+                    logDebugMessage(
+                        "updateSessionIfRequiredPostEmailVerification the session user id doesn't match the primary user id, so we are revoking all sessions and creating a new one"
+                    );
+                    // if the session's primary user ID is NOT equal to the
+                    // primary user ID that the account that it was linked to, then
+                    // this means that the new account got linked to another primary user (Case 2)
+
+                    // In this case, we need to update the session's user ID by creating
+                    // a new session
+
+                    // Revoke all session belonging to session.getRecipeUserId()
+                    // We do not really need to do this, but we do it anyway.. no harm.
+                    await Session.revokeAllSessionsForUser(
+                        input.recipeUserIdWhoseEmailGotVerified.getAsString(),
+                        false,
+                        input.session.getTenantId(),
+                        input.userContext
+                    );
+
+                    // create a new session and return that..
+                    return await Session.createNewSession(
+                        input.req,
+                        input.res,
+                        input.session.getTenantId(),
+                        input.session.getRecipeUserId(),
+                        {},
+                        {},
+                        input.userContext
+                    );
+                }
+            } else {
+                logDebugMessage(
+                    "updateSessionIfRequiredPostEmailVerification the verified user doesn't match the session"
+                );
+                // this means that the session's login method's account was NOT the
+                // one that just got verified and that we ARE doing post login
+                // account linking. So this is only for (Case 3) and (Case 4)
+
+                // In both case 3 and case 4, we do not want to change anything in the
+                // current session in terms of user ID or email verification claim (since
+                // both of these refer to the current logged in user and not the newly
+                // linked user's account).
+
+                return undefined;
+            }
+        } else {
+            logDebugMessage("updateSessionIfRequiredPostEmailVerification got no session");
+            // the session is updated when the is email verification GET API is called
+            // so we don't do anything in this API.
+            return undefined;
+        }
     };
 }

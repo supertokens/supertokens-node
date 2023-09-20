@@ -64,11 +64,11 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
         });
 
         it("should update using a handle if claim fetchValue returns a value", async () => {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -79,7 +79,12 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             await Session.fetchAndSetClaim(res.getHandle(), TrueClaim);
 

@@ -12,40 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
+import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
 import STError from "../../../error";
-import SuperTokens from "../../../supertokens";
+import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
 
 export type Response = {
     status: "OK";
     nextPaginationToken?: string;
-    users: {
-        recipeId: string;
-        user: {
-            id: string;
-            timeJoined: number;
-            firstName?: string;
-            lastName?: string;
-            tenantIds: string[];
-        } & (
-            | {
-                  email: string;
-              }
-            | {
-                  email: string;
-                  thirdParty: {
-                      id: string;
-                      userId: string;
-                  };
-              }
-            | {
-                  email?: string;
-                  phoneNumber?: string;
-              }
-        );
-    }[];
+    users: UserWithFirstAndLastName[];
 };
 
 export default async function usersGet(
@@ -79,13 +55,21 @@ export default async function usersGet(
 
     let paginationToken = options.req.getKeyValueFromQuery("paginationToken");
     const query = getSearchParamsFromURL(options.req.getOriginalURL());
-    let usersResponse = await SuperTokens.getInstanceOrThrowError().getUsers({
-        query,
-        timeJoinedOrder: timeJoinedOrder,
-        limit: parseInt(limit),
-        paginationToken,
-        tenantId,
-    });
+
+    let usersResponse =
+        timeJoinedOrder === "DESC"
+            ? await getUsersNewestFirst({
+                  tenantId,
+                  query,
+                  limit: parseInt(limit),
+                  paginationToken,
+              })
+            : await getUsersOldestFirst({
+                  tenantId,
+                  query,
+                  limit: parseInt(limit),
+                  paginationToken,
+              });
 
     // If the UserMetaData recipe has been initialised, fetch first and last name
     try {
@@ -94,33 +78,27 @@ export default async function usersGet(
         // Recipe has not been initialised, return without first name and last name
         return {
             status: "OK",
-            users: usersResponse.users,
+            users: usersResponse.users.map((u) => u.toJson()),
             nextPaginationToken: usersResponse.nextPaginationToken,
         };
     }
 
-    let updatedUsersArray: {
-        recipeId: string;
-        user: any;
-    }[] = [];
+    let updatedUsersArray: UserWithFirstAndLastName[] = [];
     let metaDataFetchPromises: (() => Promise<any>)[] = [];
 
     for (let i = 0; i < usersResponse.users.length; i++) {
-        const userObj = usersResponse.users[i];
+        const userObj = usersResponse.users[i].toJson();
         metaDataFetchPromises.push(
             (): Promise<any> =>
                 new Promise(async (resolve, reject) => {
                     try {
-                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.user.id, userContext);
+                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.id, userContext);
                         const { first_name, last_name } = userMetaDataResponse.metadata;
 
                         updatedUsersArray[i] = {
-                            recipeId: userObj.recipeId,
-                            user: {
-                                ...userObj.user,
-                                firstName: first_name,
-                                lastName: last_name,
-                            },
+                            ...userObj,
+                            firstName: first_name,
+                            lastName: last_name,
                         };
                         resolve(true);
                     } catch (e) {

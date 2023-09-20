@@ -21,10 +21,10 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
     });
 
     it("Test that with default config discovery configuration is as expected", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -48,10 +48,10 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
     });
 
     it("Test that with default config discovery configuration is as expected with api base path", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -76,10 +76,10 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
     });
 
     it("Test that with default config discovery configuration is as expected with custom issuer", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

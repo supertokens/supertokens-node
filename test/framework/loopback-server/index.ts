@@ -3,13 +3,21 @@ import { post, response, RestApplication, RestBindings, MiddlewareContext } from
 import { middleware } from "../../../framework/loopback";
 import { verifySession } from "../../../recipe/session/framework/loopback";
 import Session from "../../../recipe/session";
+import SuperTokens from "../../..";
 
 class Create {
     constructor(@inject(RestBindings.Http.CONTEXT) private ctx: MiddlewareContext) {}
     @post("/create")
     @response(200)
     async handler() {
-        await Session.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
+        await Session.createNewSession(
+            this.ctx,
+            this.ctx,
+            "public",
+            SuperTokens.convertToRecipeUserId("userId"),
+            {},
+            {}
+        );
         return {};
     }
 }
@@ -19,7 +27,14 @@ class CreateThrowing {
     @post("/create-throw")
     @response(200)
     async handler() {
-        await Session.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
+        await Session.createNewSession(
+            this.ctx,
+            this.ctx,
+            "public",
+            SuperTokens.convertToRecipeUserId("userId"),
+            {},
+            {}
+        );
         throw new Session.Error({
             message: "unauthorised",
             type: Session.Error.UNAUTHORISED,

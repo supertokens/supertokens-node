@@ -2,13 +2,14 @@
 import { ParsedJWTInfo } from "./jwt";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
+import RecipeUserId from "../../recipeUserId";
 /**
  * @description call this to "login" a user.
  */
 export declare function createNewSession(
     helpers: Helpers,
     tenantId: string,
-    userId: string,
+    recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
     accessTokenPayload?: any,
     sessionDataInDatabase?: any
@@ -26,6 +27,7 @@ export declare function getSession(
     session: {
         handle: string;
         userId: string;
+        recipeUserId: RecipeUserId;
         userDataInJWT: any;
         expiryTime: number;
         tenantId: string;
@@ -61,6 +63,7 @@ export declare function refreshSession(
 export declare function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
+    revokeSessionsForLinkedAccounts: boolean,
     tenantId?: string,
     revokeAcrossAllTenants?: boolean
 ): Promise<string[]>;
@@ -70,6 +73,7 @@ export declare function revokeAllSessionsForUser(
 export declare function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
+    fetchSessionsForAllLinkedAccounts: boolean,
     tenantId?: string,
     fetchAcrossAllTenants?: boolean
 ): Promise<string[]>;

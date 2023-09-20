@@ -15,7 +15,7 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
+import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default class Wrapper {
@@ -42,6 +42,7 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        isVerified: boolean,
         userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
@@ -49,32 +50,7 @@ export default class Wrapper {
             thirdPartyUserId,
             email,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            userContext,
-        });
-    }
-
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
-
-    static getUsersByEmail(tenantId: string, email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({
-            email,
-            tenantId,
-            userContext,
-        });
-    }
-
-    static getUserByThirdPartyInfo(
-        tenantId: string,
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        userContext: any = {}
-    ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
-            tenantId,
+            isVerified,
             userContext,
         });
     }
@@ -88,10 +64,4 @@ export let getProvider = Wrapper.getProvider;
 
 export let manuallyCreateOrUpdateUser = Wrapper.manuallyCreateOrUpdateUser;
 
-export let getUserById = Wrapper.getUserById;
-
-export let getUsersByEmail = Wrapper.getUsersByEmail;
-
-export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
-
-export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };
+export type { RecipeInterface, APIInterface, APIOptions, TypeProvider };

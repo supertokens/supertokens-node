@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import {
@@ -7,12 +7,12 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     getEmailDeliveryConfig: (
-        recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -51,12 +51,6 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
-export declare type User = {
-    id: string;
-    email: string;
-    timeJoined: number;
-    tenantIds: string[];
-};
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
@@ -78,6 +72,22 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    createNewRecipeUser(input: {
+        email: string;
+        password: string;
+        tenantId: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -92,15 +102,20 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUserByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User | undefined>;
+    /**
+     * We pass in the email as well to this function cause the input userId
+     * may not be associated with an emailpassword account. In this case, we
+     * need to know which email to use to create an emailpassword account later on.
+     */
     createResetPasswordToken(input: {
         userId: string;
+        email: string;
         tenantId: string;
         userContext: any;
     }): Promise<
@@ -112,26 +127,22 @@ export declare type RecipeInterface = {
               status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
-    resetPasswordUsingToken(input: {
+    consumePasswordResetToken(input: {
         token: string;
-        newPassword: string;
         tenantId: string;
         userContext: any;
     }): Promise<
         | {
               status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
+              email: string;
+              userId: string;
           }
         | {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
     updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext: any;
@@ -140,6 +151,10 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
           }
         | {
               status: "PASSWORD_POLICY_VIOLATED_ERROR";
@@ -186,6 +201,10 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                 }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
     passwordResetPOST:
@@ -202,10 +221,15 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    userId?: string;
+                    email: string;
+                    user: User;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+                }
+              | {
+                    status: "PASSWORD_POLICY_VIOLATED_ERROR";
+                    failureReason: string;
                 }
               | GeneralErrorResponse
           >);
@@ -224,6 +248,10 @@ export declare type APIInterface = {
                     status: "OK";
                     user: User;
                     session: SessionContainerInterface;
+                }
+              | {
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
@@ -247,6 +275,10 @@ export declare type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | {
+                    status: "SIGN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
               | GeneralErrorResponse
@@ -256,6 +288,7 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
+        recipeUserId: RecipeUserId | undefined;
         email: string;
     };
     passwordResetLink: string;

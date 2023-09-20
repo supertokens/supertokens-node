@@ -23,6 +23,7 @@ const {
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
+    assertJSONEquals,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -57,10 +58,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     /*
      */
     it("test that disabling api, the default signin API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -125,10 +126,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     Setting  invalid email or password values in the request body when sending a request to /signin 
     */
     it("test singinAPI works when input is fine", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -179,10 +180,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test password must be of type string in input", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -232,10 +233,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test email must be of type string in input", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -288,10 +289,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     Setting the email value in form field as random@gmail.com causes the test to fail
     */
     it("test singinAPI throws an error when email does not match", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -343,10 +344,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     passing the correct password "validpass123" causes the test to fail
     */
     it("test singinAPI throws an error if password is incorrect", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -404,10 +405,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     setting valid JSON body to /singin API
     */
     it("test bad input, not a JSON to /signin API", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -451,10 +452,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     setting valid formFields JSON body to /singin API
     */
     it("test bad input, no POST body to /signin API", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -494,10 +495,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     setting valid JSON body to /singin API
     */
     it("test bad input, input is Json but incorrect structure to /signin API", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -539,10 +540,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     Passing invalid credentials to the /signin API fails the test
     */
     it("test that a successfull signin yields a session", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -615,11 +616,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     having the email start with "test" (requierment of the custom validator) will cause the test to fail
     */
     it("test custom email validators to sign up and make sure they are applied to sign in", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -690,13 +691,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     sending the correct password "valid" will cause the test to fail
     */
     it("test custom password validators to sign up and make sure they are applied to sign in", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let failsValidatorCtr = 0;
         let passesValidatorCtr = 0;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -772,11 +773,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     sending the correct password to the /signin API will cause the test to fail
     */
     it("test password field validation error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -826,11 +827,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     //sending the correct email to the /signin API will cause the test to fail
 
     it("test email field validation error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -881,11 +882,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     // Input formFields has no email field
     //passing the email field in formFields will cause the test to fail
     it("test formFields has no email field", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -930,11 +931,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     // Input formFields has no password field
     //passing the password field in formFields will cause the test to fail
     it("test formFields has no password field", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -981,11 +982,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     passing email with valid syntax and correct password will cause the test to fail
     */
     it("test invalid email and wrong password", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1040,11 +1041,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
      *    - User exists
      */
     it("test getUserByEmail when user does not exist", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1056,7 +1057,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert((await EmailPassword.getUserByEmail("public", "random@gmail.com")) === undefined);
+        assert(
+            (
+                await STExpress.listUsersByAccountInfo("public", {
+                    email: "random@gmail.com",
+                })
+            ).length === 0
+        );
 
         const app = express();
 
@@ -1069,60 +1076,23 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(signUpResponse.status === 200);
 
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await EmailPassword.getUserByEmail("public", "random@gmail.com");
+        let userInfo = (
+            await STExpress.listUsersByAccountInfo("public", {
+                email: "random@gmail.com",
+            })
+        )[0];
 
-        assert(userInfo.email === signUpUserInfo.email);
-        assert(userInfo.id === signUpUserInfo.id);
-    });
-
-    /*
-     * Test getUserById
-     *        - User does not exist
-     *        - User exists
-     */
-    it("test getUserById when user does not exist", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
-        });
-
-        let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
-
-        assert((await EmailPassword.getUserById("randomID")) === undefined);
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(signUpResponse.text).status === "OK");
-        assert(signUpResponse.status === 200);
-
-        let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await EmailPassword.getUserById(signUpUserInfo.id);
-
-        assert(userInfo.email === signUpUserInfo.email);
+        assert(userInfo.emails[0] === signUpUserInfo.emails[0]);
         assert(userInfo.id === signUpUserInfo.id);
     });
 
     it("test the handlePostSignIn function", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let customUser = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1138,7 +1108,19 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                                 signInPOST: async (formFields, options) => {
                                     let response = await oI.signInPOST(formFields, options);
                                     if (response.status === "OK") {
-                                        customUser = response.user;
+                                        customUser = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete customUser.loginMethods[0].hasSameEmailAs;
+                                        delete customUser.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete customUser.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete customUser.toJson;
                                     }
                                     return response;
                                 },
@@ -1205,6 +1187,6 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 })
         );
         assert(customUser !== undefined);
-        assert.deepStrictEqual(response.user, customUser);
+        assertJSONEquals(response.user, customUser);
     });
 });

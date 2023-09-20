@@ -13,7 +13,7 @@
  * under the License.
  */
 import { HEADER_RID } from "../../constants";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods } from "./constants";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";

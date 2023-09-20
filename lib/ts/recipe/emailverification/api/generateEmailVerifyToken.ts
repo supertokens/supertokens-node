@@ -36,7 +36,7 @@ export default async function generateEmailVerifyToken(
 
     const result = await apiImplementation.generateEmailVerifyTokenPOST({
         options,
-        session: session!,
+        session: session,
         userContext,
     });
 

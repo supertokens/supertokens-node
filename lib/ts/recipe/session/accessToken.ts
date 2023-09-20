@@ -17,6 +17,7 @@ import STError from "./error";
 import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
 import { ProcessState, PROCESS_STATE } from "../../processState";
+import RecipeUserId from "../../recipeUserId";
 import { logDebugMessage } from "../../logger";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
@@ -27,6 +28,7 @@ export async function getInfoFromAccessToken(
 ): Promise<{
     sessionHandle: string;
     userId: string;
+    recipeUserId: RecipeUserId;
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;
@@ -78,6 +80,9 @@ export async function getInfoFromAccessToken(
                 : sanitizeNumberInput(payload.iat)! * 1000;
         let userData = jwtInfo.version === 2 ? payload.userData : payload;
         let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
+
+        // we use ?? below cause recipeUserId may be undefined for JWTs that are of an older version.
+        let recipeUserId = new RecipeUserId(sanitizeStringInput(payload.rsub) ?? userId);
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
@@ -103,6 +108,7 @@ export async function getInfoFromAccessToken(
             antiCsrfToken,
             expiryTime,
             timeCreated,
+            recipeUserId,
             tenantId,
         };
     } catch (err) {
@@ -118,7 +124,34 @@ export async function getInfoFromAccessToken(
 }
 
 export function validateAccessTokenStructure(payload: any, version: number) {
-    if (version >= 3) {
+    if (version >= 5) {
+        if (
+            typeof payload.sub !== "string" ||
+            typeof payload.exp !== "number" ||
+            typeof payload.iat !== "number" ||
+            typeof payload.sessionHandle !== "string" ||
+            typeof payload.refreshTokenHash1 !== "string" ||
+            typeof payload.rsub !== "string"
+        ) {
+            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
+            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            // it would come here if we change the structure of the JWT.
+            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        }
+    } else if (version >= 4) {
+        if (
+            typeof payload.sub !== "string" ||
+            typeof payload.exp !== "number" ||
+            typeof payload.iat !== "number" ||
+            typeof payload.sessionHandle !== "string" ||
+            typeof payload.refreshTokenHash1 !== "string"
+        ) {
+            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
+            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            // it would come here if we change the structure of the JWT.
+            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        }
+    } else if (version >= 3) {
         if (
             typeof payload.sub !== "string" ||
             typeof payload.exp !== "number" ||

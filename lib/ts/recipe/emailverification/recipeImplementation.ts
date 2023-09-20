@@ -1,15 +1,22 @@
-import { RecipeInterface, User } from "./";
+import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import RecipeUserId from "../../recipeUserId";
+import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
+import type AccountLinkingRecipe from "../accountlinking/recipe";
+import { getUser } from "../..";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc
+): RecipeInterface {
     return {
         createEmailVerificationToken: async function ({
-            userId,
+            recipeUserId,
             email,
             tenantId,
         }: {
-            userId: string;
+            recipeUserId: RecipeUserId;
             email: string;
             tenantId: string;
         }): Promise<
@@ -22,7 +29,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify/token`),
                 {
-                    userId,
+                    userId: recipeUserId.getAsString(),
                     email,
                 }
             );
@@ -40,11 +47,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         verifyEmailUsingToken: async function ({
             token,
+            attemptAccountLinking,
             tenantId,
+            userContext,
         }: {
             token: string;
+            attemptAccountLinking: boolean;
             tenantId: string;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
+            userContext: any;
+        }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
                 {
@@ -53,10 +64,34 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 }
             );
             if (response.status === "OK") {
+                const recipeUserId = new RecipeUserId(response.userId);
+                if (attemptAccountLinking) {
+                    // TODO: this should ideally come from the api response
+                    const updatedUser = await getUser(recipeUserId.getAsString());
+
+                    if (updatedUser) {
+                        // before attempting this, we must check that the email that got verified
+                        // from the ID is the one that is currently associated with the ID (since
+                        // email verification can be done for any combination of (user id, email)
+                        // and not necessarily the email that is currently associated with the ID)
+                        let emailInfo = await getEmailForRecipeUserId(updatedUser, recipeUserId, userContext);
+                        if (emailInfo.status === "OK" && emailInfo.email === response.email) {
+                            // we do this here to prevent cyclic dependencies.
+                            // TODO: Fix this.
+                            let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
+                            await AccountLinking.createPrimaryUserIdOrLinkAccounts({
+                                tenantId,
+                                user: updatedUser,
+                                userContext,
+                            });
+                        }
+                    }
+                }
+
                 return {
                     status: "OK",
                     user: {
-                        id: response.userId,
+                        recipeUserId,
                         email: response.email,
                     },
                 };
@@ -67,32 +102,41 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
         },
 
-        isEmailVerified: async function ({ userId, email }: { userId: string; email: string }): Promise<boolean> {
+        isEmailVerified: async function ({
+            recipeUserId,
+            email,
+        }: {
+            recipeUserId: RecipeUserId;
+            email: string;
+        }): Promise<boolean> {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
-                userId,
+                userId: recipeUserId.getAsString(),
                 email,
             });
             return response.isVerified;
         },
 
         revokeEmailVerificationTokens: async function (input: {
-            userId: string;
+            recipeUserId: RecipeUserId;
             email: string;
             tenantId: string;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/user/email/verify/token/remove`),
                 {
-                    userId: input.userId,
+                    userId: input.recipeUserId.getAsString(),
                     email: input.email,
                 }
             );
             return { status: "OK" };
         },
 
-        unverifyEmail: async function (input: { userId: string; email: string }): Promise<{ status: "OK" }> {
+        unverifyEmail: async function (input: {
+            recipeUserId: RecipeUserId;
+            email: string;
+        }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/remove"), {
-                userId: input.userId,
+                userId: input.recipeUserId.getAsString(),
                 email: input.email,
             });
             return { status: "OK" };

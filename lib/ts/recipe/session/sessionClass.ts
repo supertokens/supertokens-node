@@ -15,10 +15,12 @@
 import { buildFrontToken, clearSession, setAntiCsrfTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
-import { Helpers, protectedProps } from "./recipeImplementation";
+import { Helpers } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
 import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { logDebugMessage } from "../../logger";
+import RecipeUserId from "../../recipeUserId";
+import { protectedProps } from "./constants";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -29,11 +31,16 @@ export default class Session implements SessionContainerInterface {
         protected antiCsrfToken: string | undefined,
         protected sessionHandle: string,
         protected userId: string,
+        protected recipeUserId: RecipeUserId,
         protected userDataInAccessToken: any,
         protected reqResInfo: ReqResInfo | undefined,
         protected accessTokenUpdated: boolean,
         protected tenantId: string
     ) {}
+
+    getRecipeUserId(_userContext?: any): RecipeUserId {
+        return this.recipeUserId;
+    }
 
     async revokeSession(userContext?: any) {
         await this.helpers.getRecipeImpl().revokeSession({
@@ -209,6 +216,7 @@ export default class Session implements SessionContainerInterface {
         let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
             accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
+            recipeUserId: this.getRecipeUserId(userContext),
             claimValidators,
             userContext,
         });
@@ -232,7 +240,12 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        const update = await claim.build(this.getUserId(userContext), this.getTenantId(), userContext);
+        const update = await claim.build(
+            this.getUserId(userContext),
+            this.getRecipeUserId(userContext),
+            this.getTenantId(),
+            userContext
+        );
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 

@@ -3,6 +3,7 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
+import { RecipeLevelUser } from "./recipe/accountlinking/types";
 export declare type AppInfo = {
     appName: string;
     websiteDomain: string;
@@ -50,4 +51,24 @@ export interface JSONObject {
 export declare type GeneralErrorResponse = {
     status: "GENERAL_ERROR";
     message: string;
+};
+export declare type User = {
+    id: string;
+    timeJoined: number;
+    isPrimaryUser: boolean;
+    tenantIds: string[];
+    emails: string[];
+    phoneNumbers: string[];
+    thirdParty: {
+        id: string;
+        userId: string;
+    }[];
+    loginMethods: (RecipeLevelUser & {
+        verified: boolean;
+        hasSameEmailAs: (email: string | undefined) => boolean;
+        hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
+        hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
+        toJson: () => any;
+    })[];
+    toJson: () => any;
 };

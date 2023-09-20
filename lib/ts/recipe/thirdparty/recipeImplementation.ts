@@ -1,115 +1,166 @@
-import { RecipeInterface, User, ProviderInput } from "./types";
+import { RecipeInterface, ProviderInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
+import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
+import RecipeUserId from "../../recipeUserId";
+import { getUser } from "../..";
+import { User as UserType } from "../../types";
+import { User } from "../../user";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
-        signInUp: async function ({
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-            oAuthTokens,
-            rawUserInfoFromProvider,
-            tenantId,
-        }: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-            email: string;
-            oAuthTokens: { [key: string]: any };
-            rawUserInfoFromProvider: {
-                fromIdTokenPayload?: { [key: string]: any };
-                fromUserInfoAPI?: { [key: string]: any };
-            };
-            tenantId: string;
-        }): Promise<{
-            status: "OK";
-            createdNewUser: boolean;
-            user: User;
-            oAuthTokens: { [key: string]: any };
-            rawUserInfoFromProvider: {
-                fromIdTokenPayload?: { [key: string]: any };
-                fromUserInfoAPI?: { [key: string]: any };
-            };
-        }> {
+        manuallyCreateOrUpdateUser: async function (
+            this: RecipeInterface,
+            {
+                thirdPartyId,
+                thirdPartyUserId,
+                email,
+                isVerified,
+                tenantId,
+                userContext,
+            }: {
+                thirdPartyId: string;
+                thirdPartyUserId: string;
+                email: string;
+                isVerified: boolean;
+                tenantId: string;
+                userContext: any;
+            }
+        ): Promise<
+            | { status: "OK"; createdNewRecipeUser: boolean; user: UserType; recipeUserId: RecipeUserId }
+            | {
+                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                  reason: string;
+              }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
             let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
                 thirdPartyId,
                 thirdPartyUserId,
-                email: { id: email },
+                email: { id: email, isVerified },
             });
+
+            if (response.status !== "OK") {
+                return response;
+            }
+
+            response.user = new User(response.user);
+            response.recipeUserId = new RecipeUserId(response.recipeUserId);
+
+            await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                user: response.user,
+                recipeUserId: response.recipeUserId,
+                userContext,
+            });
+
+            // we do this so that we get the updated user (in case the above
+            // function updated the verification status) and can return that
+            response.user = (await getUser(response.recipeUserId.getAsString(), userContext))!;
+
+            if (!response.createdNewUser) {
+                // Unlike in the sign up scenario, we do not do account linking here
+                // cause we do not want sign in to change the potentially user ID of a user
+                // due to linking when this function is called by the dev in their API.
+                // If we did account linking
+                // then we would have to ask the dev to also change the session
+                // in such API calls.
+                // In the case of sign up, since we are creating a new user, it's fine
+                // to link there since there is no user id change really from the dev's
+                // point of view who is calling the sign up recipe function.
+                return {
+                    status: "OK",
+                    createdNewRecipeUser: response.createdNewUser,
+                    user: response.user,
+                    recipeUserId: response.recipeUserId,
+                };
+            }
+
+            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                tenantId,
+                user: response.user,
+                userContext,
+            });
+
             return {
                 status: "OK",
-                createdNewUser: response.createdNewUser,
-                user: response.user,
+                createdNewRecipeUser: response.createdNewUser,
+                user: updatedUser,
+                recipeUserId: response.recipeUserId,
+            };
+        },
+
+        signInUp: async function (
+            this: RecipeInterface,
+            {
+                thirdPartyId,
+                thirdPartyUserId,
+                email,
+                isVerified,
+                tenantId,
+                userContext,
                 oAuthTokens,
                 rawUserInfoFromProvider,
-            };
-        },
-
-        manuallyCreateOrUpdateUser: async function ({
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-            tenantId,
-        }: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-            email: string;
-            tenantId: string;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
+            }: {
+                thirdPartyId: string;
+                thirdPartyUserId: string;
+                email: string;
+                isVerified: boolean;
+                tenantId: string;
+                userContext: any;
+                oAuthTokens: { [key: string]: any };
+                rawUserInfoFromProvider: {
+                    fromIdTokenPayload?: { [key: string]: any };
+                    fromUserInfoAPI?: { [key: string]: any };
+                };
+            }
+        ): Promise<
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: UserType;
+                  recipeUserId: RecipeUserId;
+                  oAuthTokens: { [key: string]: any };
+                  rawUserInfoFromProvider: {
+                      fromIdTokenPayload?: { [key: string]: any };
+                      fromUserInfoAPI?: { [key: string]: any };
+                  };
+              }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
+            let response = await this.manuallyCreateOrUpdateUser({
                 thirdPartyId,
                 thirdPartyUserId,
-                email: { id: email },
+                email,
+                tenantId,
+                isVerified,
+                userContext,
             });
-            return {
-                status: "OK",
-                createdNewUser: response.createdNewUser,
-                user: response.user,
-            };
-        },
 
-        getUserById: async function ({ userId }: { userId: string }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                userId,
-            });
-            if (response.status === "OK") {
-                return response.user;
-            } else {
-                return undefined;
+            if (response.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+                return {
+                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                    reason:
+                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
+                };
             }
-        },
 
-        getUsersByEmail: async function ({ email, tenantId }: { email: string; tenantId: string }): Promise<User[]> {
-            let users: User[] = [];
-            users = (
-                await querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/users/by-email`), {
-                    email,
-                })
-            ).users;
-
-            return users;
-        },
-
-        getUserByThirdPartyInfo: async function ({
-            thirdPartyId,
-            thirdPartyUserId,
-            tenantId,
-        }: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-            tenantId: string;
-        }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/user`), {
-                thirdPartyId,
-                thirdPartyUserId,
-            });
             if (response.status === "OK") {
-                return response.user;
-            } else {
-                return undefined;
+                return {
+                    ...response,
+                    oAuthTokens,
+                    rawUserInfoFromProvider,
+                };
             }
+
+            return response;
         },
 
         getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {

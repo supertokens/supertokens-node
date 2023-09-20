@@ -148,10 +148,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test that disable api, the default signinup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -217,10 +217,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config without code for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -262,10 +262,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -298,10 +300,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
-        assert.strictEqual(response2.body.createdNewUser, false);
-        assert.strictEqual(response2.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response2.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response2.body.user.email, "email@test.com");
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
 
         let cookies2 = extractInfoFromResponse(response2);
         assert.notStrictEqual(cookies2.accessToken, undefined);
@@ -316,10 +320,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test missing redirectURIInfo and oAuthTokens", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -360,10 +364,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -411,10 +415,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -426,8 +432,13 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.accessTokenDomain, undefined);
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, "remove");
-
-        assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
+            true
+        );
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -454,10 +465,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
-        assert.strictEqual(response2.body.createdNewUser, false);
-        assert.strictEqual(response2.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response2.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response2.body.user.email, "email@test.com");
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
 
         let cookies2 = extractInfoFromResponse(response2);
         assert.notStrictEqual(cookies2.accessToken, undefined);
@@ -472,10 +485,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config for thirdparty module, email unverified", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -523,10 +536,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -539,14 +554,20 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, "remove");
 
-        assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), false);
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
+            false
+        );
     });
 
     it("test thirdparty provider doesn't exist", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -594,10 +615,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test email not returned in getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -647,10 +668,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test error thrown from getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -706,10 +727,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test invalid POST params for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -824,131 +845,5 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
         );
         assert.strictEqual(response8.statusCode, 200);
-    });
-
-    it("test getUserById when user does not exist", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                ThirdPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider1],
-                    },
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-        });
-
-        let thirdPartyRecipe = ThirdPartyRecipe.getInstanceOrThrowError();
-
-        assert.strictEqual(await ThirdParty.getUserById("randomID"), undefined);
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        nock("https://test.com").post("/oauth/token").reply(200, {});
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://localhost.org",
-                        redirectURIQueryParams: {
-                            code: "32432432",
-                        },
-                    },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.statusCode, 200);
-
-        let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdParty.getUserById(signUpUserInfo.id);
-
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
-        assert.strictEqual(userInfo.id, signUpUserInfo.id);
-    });
-
-    it("test getUserByThirdPartyInfo when user does not exist", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                ThirdPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider1],
-                    },
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-        });
-
-        let thirdPartyRecipe = ThirdPartyRecipe.getInstanceOrThrowError();
-
-        assert.strictEqual(await ThirdParty.getUserByThirdPartyInfo("public", "custom", "user"), undefined);
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        nock("https://test.com").post("/oauth/token").reply(200, {});
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://localhost.org",
-                        redirectURIQueryParams: {
-                            code: "32432432",
-                        },
-                    },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.statusCode, 200);
-
-        let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdParty.getUserByThirdPartyInfo("public", "custom", "user");
-
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
-        assert.strictEqual(userInfo.id, signUpUserInfo.id);
     });
 });

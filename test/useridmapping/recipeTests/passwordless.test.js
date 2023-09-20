@@ -23,10 +23,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("consumeCode", () => {
         it("create a passwordless user and map their userId, signIn again and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -108,10 +108,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserById", () => {
         it("create a passwordless user and map their userId, call getUserById and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -171,9 +171,7 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await PasswordlessRecipe.getUserById({
-                userId: externalId,
-            });
+            let response = await STExpress.getUser(externalId);
             assert.ok(response !== undefined);
             assert.strictEqual(response.id, externalId);
         });
@@ -181,10 +179,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserByEmail", () => {
         it("create a passwordless user and map their userId, call getUserByEmail and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -244,21 +242,20 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await PasswordlessRecipe.getUserByEmail({
-                tenantId: "public",
+            let response = await STExpress.listUsersByAccountInfo("public", {
                 email,
             });
             assert.ok(response !== undefined);
-            assert.strictEqual(response.id, externalId);
+            assert.strictEqual(response[0].id, externalId);
         });
     });
 
     describe("getUserByPhoneNumber", () => {
         it("create a passwordless user and map their userId, call getUserByPhoneNumber and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -318,21 +315,20 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await PasswordlessRecipe.getUserByPhoneNumber({
-                tenantId: "public",
+            let response = await STExpress.listUsersByAccountInfo("public", {
                 phoneNumber,
             });
             assert.ok(response !== undefined);
-            assert.strictEqual(response.id, externalId);
+            assert.strictEqual(response[0].id, externalId);
         });
     });
 
     describe("updateUser", () => {
         it("create a passwordless user and map their userId, call updateUser to add their email and retrieve the user to see if the changes are reflected", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -394,19 +390,18 @@ describe(`userIdMapping with passwordless: ${printPath(
             });
 
             let updateUserResponse = await PasswordlessRecipe.updateUser({
-                userId: externalId,
+                recipeUserId: STExpress.convertToRecipeUserId(externalId),
                 email,
             });
             assert.strictEqual(updateUserResponse.status, "OK");
 
             // retrieve user
-            let response = await PasswordlessRecipe.getUserByPhoneNumber({
-                tenantId: "public",
+            let response = await STExpress.listUsersByAccountInfo("public", {
                 phoneNumber,
             });
-            assert.strictEqual(response.id, externalId);
-            assert.strictEqual(response.phoneNumber, phoneNumber);
-            assert.strictEqual(response.email, email);
+            assert.strictEqual(response[0].id, externalId);
+            assert.strictEqual(response[0].phoneNumbers[0], phoneNumber);
+            assert.strictEqual(response[0].emails[0], email);
         });
     });
 });

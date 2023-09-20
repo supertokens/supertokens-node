@@ -124,10 +124,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test that disable api, the default signinup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -191,11 +191,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test that if disable api, the default signup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -228,10 +228,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test minimum config with one provider", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -277,20 +277,26 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
-        assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
+            true
+        );
     });
 
     it("test signUpAPI works when input is fine", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -312,11 +318,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
     });
 
     it("test handlePostSignUpIn gets set correctly", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         process.env.userId = "";
         process.env.loginType = "";
@@ -326,7 +332,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -390,7 +396,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test handlePostSignUp gets set correctly", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         process.env.userId = "";
         process.env.loginType = "";
@@ -400,7 +406,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -447,11 +453,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
     // will test that the error is correctly propagated to the required sub-recipe
     it("test signUpAPI throws an error in case of a duplicate email (emailpassword)", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -473,7 +479,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
 
         response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(response.status === 200);
@@ -487,10 +493,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
     // NO_EMAIL_GIVEN_BY_PROVIDER thrown from sub recipe
     it("test email not returned in getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -538,10 +544,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test error thrown from getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -594,137 +600,12 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.deepStrictEqual(response1.body, { message: "error from getProfileInfo" });
     });
 
-    it("test getUserById when user does not exist", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                ThirdPartyEmailPassword.init({
-                    providers: [this.customProvider1],
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-        });
-
-        let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserById("randomID"), undefined);
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        nock("https://test.com").post("/oauth/token").reply(200, {});
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
-                        redirectURIQueryParams: {
-                            code: "abcdefghj",
-                        },
-                    },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.statusCode, 200);
-
-        let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyEmailPassword.getUserById(signUpUserInfo.id);
-
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
-        assert.strictEqual(userInfo.id, signUpUserInfo.id);
-    });
-
-    it("test getUserByThirdPartyInfo when user does not exist", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                ThirdPartyEmailPassword.init({
-                    providers: [this.customProvider1],
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-        });
-
-        let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-
-        assert.strictEqual(
-            await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user"),
-            undefined
-        );
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        nock("https://test.com").post("/oauth/token").reply(200, {});
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
-                        redirectURIQueryParams: {
-                            code: "abcdefghj",
-                        },
-                    },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.statusCode, 200);
-
-        let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user");
-
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
-        assert.strictEqual(userInfo.id, signUpUserInfo.id);
-    });
-
     it("test getUserCount and pagination works fine", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -759,7 +640,8 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             "public",
             "google",
             "randomUserId",
-            "test@example.com"
+            "test@example.com",
+            false
         );
 
         assert((await STExpress.getUserCount()) === 2);
@@ -772,8 +654,8 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         let usersOldest = await STExpress.getUsersOldestFirst({ tenantId: "public" });
         assert(usersOldest.nextPaginationToken === undefined);
         assert(usersOldest.users.length === 3);
-        assert(usersOldest.users[0].recipeId === "emailpassword");
-        assert(usersOldest.users[0].user.email === "random@gmail.com");
+        assert(usersOldest.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersOldest.users[0].emails[0] === "random@gmail.com");
 
         let usersNewest = await STExpress.getUsersNewestFirst({
             tenantId: "public",
@@ -781,8 +663,8 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         });
         assert(usersNewest.nextPaginationToken !== undefined);
         assert(usersNewest.users.length === 2);
-        assert(usersNewest.users[0].recipeId === "emailpassword");
-        assert(usersNewest.users[0].user.email === "random1@gmail.com");
+        assert(usersNewest.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersNewest.users[0].emails[0] === "random1@gmail.com");
 
         let usersNewest2 = await STExpress.getUsersNewestFirst({
             tenantId: "public",
@@ -790,16 +672,16 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         });
         assert(usersNewest2.nextPaginationToken === undefined);
         assert(usersNewest2.users.length === 1);
-        assert(usersNewest2.users[0].recipeId === "emailpassword");
-        assert(usersNewest2.users[0].user.email === "random@gmail.com");
+        assert(usersNewest2.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersNewest2.users[0].emails[0] === "random@gmail.com");
     });
 
     it("updateEmailOrPassword function test for third party login", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -831,8 +713,12 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
         assert.strictEqual(
-            await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user"),
-            undefined
+            (
+                await STExpress.listUsersByAccountInfo("public", {
+                    thirdParty: { id: "custom", userId: "user" },
+                })
+            ).length,
+            0
         );
 
         const app = express();
@@ -867,14 +753,16 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             assert.strictEqual(response.statusCode, 200);
 
             let signUpUserInfo = response.body.user;
-            let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user");
+            let userInfo = await STExpress.listUsersByAccountInfo("public", {
+                thirdParty: { id: "custom", userId: "user" },
+            });
 
-            assert.strictEqual(userInfo.email, signUpUserInfo.email);
-            assert.strictEqual(userInfo.id, signUpUserInfo.id);
+            assert.strictEqual(userInfo[0].emails[0], signUpUserInfo.emails[0]);
+            assert.strictEqual(userInfo[0].id, signUpUserInfo.id);
 
             try {
                 await ThirdPartyEmailPassword.updateEmailOrPassword({
-                    userId: userInfo.id,
+                    recipeUserId: STExpress.convertToRecipeUserId(userInfo[0].id),
                     email: "test2@example.com",
                 });
                 throw new Error("test failed");
@@ -914,24 +802,21 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             assert.strictEqual(response.statusCode, 200);
 
             let signUpUserInfo = response.body.user;
-
             let r = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                userId: signUpUserInfo.id,
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id),
                 email: "test2@example.com",
                 password: "haha@1234",
             });
 
             assert(r.status === "OK");
-
             let r2 = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                userId: signUpUserInfo.id + "123",
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id + "123"),
                 email: "test2@example.com",
             });
 
             assert(r2.status === "UNKNOWN_USER_ID_ERROR");
-
             let r3 = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                userId: signUpUserInfo.id,
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id),
                 email: "test2@example.com",
                 password: "test",
             });

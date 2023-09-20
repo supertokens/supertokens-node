@@ -1,12 +1,14 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForUserIdFunc } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForRecipeUserIdFunc } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
+import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -15,7 +17,6 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserIdFuncsFromOtherRecipes: GetEmailForUserIdFunc[];
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -42,6 +43,13 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    getEmailForUserId: GetEmailForUserIdFunc;
-    addGetEmailForUserIdFunc: (func: GetEmailForUserIdFunc) => void;
+    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc;
+    getPrimaryUserIdForRecipeUser: (recipeUserId: RecipeUserId, userContext: any) => Promise<string>;
+    updateSessionIfRequiredPostEmailVerification: (input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        session: SessionContainerInterface | undefined;
+        recipeUserIdWhoseEmailGotVerified: RecipeUserId;
+        userContext: any;
+    }) => Promise<SessionContainerInterface | undefined>;
 }

@@ -57,11 +57,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -85,7 +85,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -111,11 +111,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -139,7 +139,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -160,11 +160,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     //- check for token theft detection
     it("token theft detection", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -174,7 +174,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                        onTokenTheftDetected: async (sessionHandle, userId, recipeUserId, request, response) => {
                             response.sendJSONResponse({
                                 success: true,
                             });
@@ -197,7 +197,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -262,11 +262,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // - check for token theft detection
     it("token theft detection with auto refresh middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -279,7 +279,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -338,11 +338,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // - check for token theft detection without error handler
     it("token theft detection with auto refresh middleware without error handler", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -353,7 +353,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -412,11 +412,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // - check if session verify middleware responds with a nice error even without the global error handler
     it("test session verify middleware without error handler added", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -449,11 +449,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // check basic usage of session
     it("test basic usage of sessions", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -464,7 +464,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -562,11 +562,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test signout API works", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -577,7 +577,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -608,11 +608,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // check basic usage of session
     it("test basic usage of sessions with auto refresh", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -624,7 +624,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -723,11 +723,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // check session verify for with / without anti-csrf present
     it("test session verify with anti-csrf present", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -738,7 +738,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "id1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             return res.send("").code(200);
         });
 
@@ -784,11 +784,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -801,7 +801,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         await this.server.register(FastifyFramework.plugin);
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "id1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             return res.send("").code(200);
         });
 
@@ -850,11 +850,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     //check revoking session(s)**
     it("test revoking sessions", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -865,11 +865,18 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
         this.server.post("/usercreate", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "someUniqueUserId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("someUniqueUserId"),
+                {},
+                {}
+            );
             return res.send("").code(200);
         });
         this.server.post("/session/revoke", async (req, res) => {
@@ -939,11 +946,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     //check manipulating session data
     it("test manipulating session data", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -954,7 +961,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -1066,11 +1073,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1081,7 +1088,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "user1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("user1"), {}, {});
             return res.send("").code(200);
         });
 
@@ -1142,7 +1149,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1161,7 +1168,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await this.server.inject({
@@ -1192,7 +1199,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1210,7 +1217,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //retrieve the changed jwt payload
         let response3 = await this.server.inject({
@@ -1235,6 +1242,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 "sub",
                 "iss",
                 "tId",
+                "rsub",
             ])
         );
         //invalid session handle when updating the jwt payload
@@ -1250,11 +1258,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("sending custom response fastify", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1296,11 +1304,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("generating email verification token without payload", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1351,11 +1359,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test same cookie is not getting set multiple times", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1368,7 +1376,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         await this.server.register(FastifyFramework.plugin);
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "id1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             return res.send("").code(200);
         });
 
@@ -1383,11 +1391,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1430,11 +1438,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that tags request respond with correct tags", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1481,11 +1489,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1534,11 +1542,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that search results correct output for multiple search terms", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1587,11 +1595,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1640,11 +1648,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1696,11 +1704,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1752,11 +1760,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1849,11 +1857,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
     });
 
     it("test that search results correct output for 'provider: google, phone: 1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "fastify",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

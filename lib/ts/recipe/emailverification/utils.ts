@@ -57,7 +57,7 @@ export function validateAndNormaliseUserInput(
     }
     return {
         mode: config.mode,
-        getEmailForUserId: config.getEmailForUserId,
+        getEmailForRecipeUserId: config.getEmailForRecipeUserId,
         override,
         getEmailDeliveryConfig,
     };

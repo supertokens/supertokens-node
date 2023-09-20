@@ -20,7 +20,7 @@ export const userMetaDataGet: APIFunction = async (
 ): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 
-    if (userId === undefined) {
+    if (userId === undefined || userId === "") {
         throw new STError({
             message: "Missing required parameter 'userId'",
             type: STError.BAD_INPUT_ERROR,

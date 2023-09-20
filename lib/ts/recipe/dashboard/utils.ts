@@ -13,29 +13,25 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import { normaliseEmail, sendNon200ResponseWithMessage } from "../../utils";
 import { DASHBOARD_API } from "./constants";
 import {
     APIInterface,
-    EmailPasswordUser,
-    PasswordlessUser,
     RecipeIdForUser,
     RecipeInterface,
-    ThirdPartyUser,
     TypeInput,
     TypeNormalisedInput,
+    UserWithFirstAndLastName,
 } from "./types";
+import AccountLinking from "../accountlinking/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import PasswordlessRecipe from "../passwordless/recipe";
-import EmailPassword from "../emailpassword";
-import ThirdParty from "../thirdparty";
-import Passwordless from "../passwordless";
-import ThirdPartyEmailPassword from "../thirdpartyemailpassword";
 import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
-import ThirdPartyPasswordless from "../thirdpartypasswordless";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
+import RecipeUserId from "../../recipeUserId";
+import { User } from "../../types";
 import { logDebugMessage } from "../../logger";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
@@ -72,10 +68,10 @@ export function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser {
 }
 
 export async function getUserForRecipeId(
-    userId: string,
+    recipeUserId: RecipeUserId,
     recipeId: string
 ): Promise<{
-    user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined;
+    user: UserWithFirstAndLastName | undefined;
     recipe:
         | "emailpassword"
         | "thirdparty"
@@ -84,7 +80,34 @@ export async function getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 }> {
-    let user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined;
+    let userResponse = await _getUserForRecipeId(recipeUserId, recipeId);
+    let user: UserWithFirstAndLastName | undefined = undefined;
+    if (userResponse.user !== undefined) {
+        user = {
+            ...userResponse.user,
+            firstName: "",
+            lastName: "",
+        };
+    }
+    return {
+        user,
+        recipe: userResponse.recipe,
+    };
+}
+
+async function _getUserForRecipeId(
+    recipeUserId: RecipeUserId,
+    recipeId: string
+): Promise<{
+    user: User | undefined;
+    recipe:
+        | "emailpassword"
+        | "thirdparty"
+        | "passwordless"
+        | "thirdpartyemailpassword"
+        | "thirdpartypasswordless"
+        | undefined;
+}> {
     let recipe:
         | "emailpassword"
         | "thirdparty"
@@ -93,123 +116,90 @@ export async function getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 
+    const user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
+        userId: recipeUserId.getAsString(),
+        userContext: {},
+    });
+
+    if (user === undefined) {
+        return {
+            user: undefined,
+            recipe: undefined,
+        };
+    }
+
+    const loginMethod = user.loginMethods.find(
+        (m) => m.recipeId === recipeId && m.recipeUserId.getAsString() === recipeUserId.getAsString()
+    );
+
+    if (loginMethod === undefined) {
+        return {
+            user: undefined,
+            recipe: undefined,
+        };
+    }
+
     if (recipeId === EmailPasswordRecipe.RECIPE_ID) {
         try {
-            const userResponse = await EmailPassword.getUserById(userId);
-
-            if (userResponse !== undefined) {
-                user = {
-                    ...userResponse,
-                    firstName: "",
-                    lastName: "",
-                };
-                recipe = "emailpassword";
-            }
+            // we detect if this recipe has been init or not..
+            EmailPasswordRecipe.getInstanceOrThrowError();
+            recipe = "emailpassword";
         } catch (e) {
             // No - op
         }
 
-        if (user === undefined) {
+        if (recipe === undefined) {
             try {
-                const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartyemailpassword";
-                }
+                // we detect if this recipe has been init or not..
+                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+                recipe = "thirdpartyemailpassword";
             } catch (e) {
                 // No - op
             }
         }
     } else if (recipeId === ThirdPartyRecipe.RECIPE_ID) {
         try {
-            const userResponse = await ThirdParty.getUserById(userId);
-
-            if (userResponse !== undefined) {
-                user = {
-                    ...userResponse,
-                    firstName: "",
-                    lastName: "",
-                };
-                recipe = "thirdparty";
-            }
+            ThirdPartyRecipe.getInstanceOrThrowError();
+            recipe = "thirdparty";
         } catch (e) {
             // No - op
         }
 
-        if (user === undefined) {
+        if (recipe === undefined) {
             try {
-                const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartyemailpassword";
-                }
+                // we detect if this recipe has been init or not..
+                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+                recipe = "thirdpartyemailpassword";
             } catch (e) {
                 // No - op
             }
         }
 
-        if (user === undefined) {
+        if (recipe === undefined) {
             try {
-                const userResponse = await ThirdPartyPasswordless.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartypasswordless";
-                }
+                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+                recipe = "thirdpartypasswordless";
             } catch (e) {
                 // No - op
             }
         }
     } else if (recipeId === PasswordlessRecipe.RECIPE_ID) {
         try {
-            const userResponse = await Passwordless.getUserById({
-                userId,
-            });
-
-            if (userResponse !== undefined) {
-                user = {
-                    ...userResponse,
-                    firstName: "",
-                    lastName: "",
-                };
-                recipe = "passwordless";
-            }
+            PasswordlessRecipe.getInstanceOrThrowError();
+            recipe = "passwordless";
         } catch (e) {
             // No - op
         }
 
-        if (user === undefined) {
+        if (recipe === undefined) {
             try {
-                const userResponse = await ThirdPartyPasswordless.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartypasswordless";
-                }
+                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+                recipe = "thirdpartypasswordless";
             } catch (e) {
                 // No - op
             }
         }
     }
-
     return {
         user,
         recipe,

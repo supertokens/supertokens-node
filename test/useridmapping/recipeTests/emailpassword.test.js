@@ -23,10 +23,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
     describe("getUserById", () => {
         it("create an emailPassword user and map their userId, retrieve the user info using getUserById and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -54,7 +54,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserById(superTokensUserId);
+                let response = await STExpress.getUser(superTokensUserId);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -68,28 +68,28 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info using the superTokensUserId, the id in the response should be the externalId
             {
-                let response = await EmailPasswordRecipe.getUserById(superTokensUserId);
+                let response = await STExpress.getUser(superTokensUserId);
                 assert.ok(response !== undefined);
                 assert.strictEqual(response.id, externalId);
-                assert.strictEqual(response.email, email);
+                assert.strictEqual(response.emails[0], email);
             }
 
             // retrieve the users info using the externalId, the id in the response should be the externalId
             {
-                let response = await EmailPasswordRecipe.getUserById(externalId);
+                let response = await STExpress.getUser(externalId);
                 assert.ok(response !== undefined);
                 assert.strictEqual(response.id, externalId);
-                assert.strictEqual(response.email, email);
+                assert.strictEqual(response.emails[0], email);
             }
         });
     });
 
     describe("getUserByEmail", () => {
         it("create an emailPassword user and map their userId, retrieve the user info using getUserByEmail and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -117,8 +117,8 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
-                assert.strictEqual(response.id, superTokensUserId);
+                let response = await STExpress.listUsersByAccountInfo("public", { email });
+                assert.strictEqual(response[0].id, superTokensUserId);
             }
 
             let externalId = "externalId";
@@ -131,20 +131,20 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info using email, the id in the response should be the externalId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
+                let response = await STExpress.listUsersByAccountInfo("public", { email });
                 assert.ok(response !== undefined);
-                assert.strictEqual(response.id, externalId);
-                assert.strictEqual(response.email, email);
+                assert.strictEqual(response[0].id, externalId);
+                assert.strictEqual(response[0].emails[0], email);
             }
         });
     });
 
     describe("signIn", () => {
         it("create an emailPassword user and map their userId, signIn, check that the userRetrieved has the mapped userId", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -172,8 +172,8 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
-                assert.strictEqual(response.id, superTokensUserId);
+                let response = await STExpress.listUsersByAccountInfo("public", { email });
+                assert.strictEqual(response[0].id, superTokensUserId);
             }
 
             let externalId = "externalId";
@@ -193,10 +193,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
     describe("password reset", () => {
         it("create an emailPassword user and map their userId, and do a password reset using the external id, check that it gets reset", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -224,8 +224,8 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
-                assert.strictEqual(response.id, superTokensUserId);
+                let response = await STExpress.listUsersByAccountInfo("public", { email });
+                assert.strictEqual(response[0].id, superTokensUserId);
             }
 
             // map the userId
@@ -237,19 +237,25 @@ describe(`userIdMapping with emailpassword: ${printPath(
             // create the password resestToken
             let createResetPasswordTokenResponse = await EmailPasswordRecipe.createResetPasswordToken(
                 "public",
-                externalId
+                externalId,
+                email
             );
             assert.strictEqual(createResetPasswordTokenResponse.status, "OK");
 
             // reset the password
             const newPassword = "newTestPass123";
-            let resetPasswordUsingTokenResponse = await EmailPasswordRecipe.resetPasswordUsingToken(
+            let resetPasswordUsingTokenResponse = await EmailPasswordRecipe.consumePasswordResetToken(
                 "public",
-                createResetPasswordTokenResponse.token,
-                newPassword
+                createResetPasswordTokenResponse.token
             );
             assert.strictEqual(resetPasswordUsingTokenResponse.status, "OK");
             assert.strictEqual(resetPasswordUsingTokenResponse.userId, externalId);
+
+            let resp = await EmailPasswordRecipe.updateEmailOrPassword({
+                recipeUserId: STExpress.convertToRecipeUserId(externalId),
+                password: newPassword,
+            });
+            assert.strictEqual(resp.status, "OK");
 
             // check that the password is reset by signing in
             let response = await EmailPasswordRecipe.signIn("public", email, newPassword);
@@ -260,10 +266,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
     describe("update email and password", () => {
         it("create an emailPassword user and map their userId, update their email and password using the externalId", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -291,8 +297,8 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
-                assert.strictEqual(response.id, superTokensUserId);
+                let response = await STExpress.listUsersByAccountInfo("public", { email });
+                assert.strictEqual(response[0].id, superTokensUserId);
             }
 
             // map the userId
@@ -307,7 +313,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             {
                 {
                     const response = await EmailPasswordRecipe.updateEmailOrPassword({
-                        userId: externalId,
+                        recipeUserId: STExpress.convertToRecipeUserId(externalId),
                         email: updatedEmail,
                     });
                     assert.strictEqual(response.status, "OK");
@@ -326,7 +332,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             {
                 {
                     const response = await EmailPasswordRecipe.updateEmailOrPassword({
-                        userId: externalId,
+                        recipeUserId: STExpress.convertToRecipeUserId(externalId),
                         password: updatedPassword,
                     });
                     assert.strictEqual(response.status, "OK");

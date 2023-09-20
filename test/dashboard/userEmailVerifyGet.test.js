@@ -23,10 +23,10 @@ describe(`User Dashboard userEmailVerifyGet: ${printPath("[test/dashboard/userEm
     });
 
     it("Test that api returns correct value for email verification", async () => {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -60,7 +60,7 @@ describe(`User Dashboard userEmailVerifyGet: ${printPath("[test/dashboard/userEm
 
         let emailVerifyResponse = await new Promise((res) => {
             request(app)
-                .get(emailVerificationUrl + "?email=test@supertokens.com&userId=" + user.id)
+                .get(emailVerificationUrl + "?email=test@supertokens.com&recipeUserId=" + user.id)
                 .set("Authorization", "Bearer testapikey")
                 .end((err, response) => {
                     if (err) {
@@ -71,10 +71,13 @@ describe(`User Dashboard userEmailVerifyGet: ${printPath("[test/dashboard/userEm
                 });
         });
 
-        assert(emailVerifyResponse.status === "OK");
-        assert(emailVerifyResponse.isVerified === false);
+        assert.strictEqual(emailVerifyResponse.status, "OK");
+        assert.strictEqual(emailVerifyResponse.isVerified, false);
 
-        const tokenResponse = await EmailVerification.createEmailVerificationToken("public", user.id);
+        const tokenResponse = await EmailVerification.createEmailVerificationToken(
+            "public",
+            user.loginMethods[0].recipeUserId
+        );
         assert(tokenResponse.status === "OK");
 
         const verificationResponse = await EmailVerification.verifyEmailUsingToken("public", tokenResponse.token);
@@ -83,7 +86,7 @@ describe(`User Dashboard userEmailVerifyGet: ${printPath("[test/dashboard/userEm
 
         emailVerifyResponse = await new Promise((res) => {
             request(app)
-                .get(emailVerificationUrl + "?email=test@supertokens.com&userId=" + user.id)
+                .get(emailVerificationUrl + "?email=test@supertokens.com&recipeUserId=" + user.id)
                 .set("Authorization", "Bearer testapikey")
                 .end((err, response) => {
                     if (err) {
@@ -94,7 +97,7 @@ describe(`User Dashboard userEmailVerifyGet: ${printPath("[test/dashboard/userEm
                 });
         });
 
-        assert(emailVerifyResponse.status === "OK");
-        assert(emailVerifyResponse.isVerified === true);
+        assert.strictEqual(emailVerifyResponse.status, "OK");
+        assert.strictEqual(emailVerifyResponse.isVerified, true);
     });
 });

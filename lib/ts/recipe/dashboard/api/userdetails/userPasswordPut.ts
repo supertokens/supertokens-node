@@ -4,7 +4,7 @@ import EmailPasswordRecipe from "../../../emailpassword/recipe";
 import EmailPassword from "../../../emailpassword";
 import ThirdPartyEmailPasswordRecipe from "../../../thirdpartyemailpassword/recipe";
 import ThirdPartyEmailPassword from "../../../thirdpartyemailpassword";
-import { FORM_FIELD_PASSWORD_ID } from "../../../emailpassword/constants";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
     | {
@@ -22,12 +22,12 @@ export const userPasswordPut = async (
     userContext: any
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
-    const userId = requestBody.userId;
+    const recipeUserId = requestBody.recipeUserId;
     const newPassword = requestBody.newPassword;
 
-    if (userId === undefined || typeof userId !== "string") {
+    if (recipeUserId === undefined || typeof recipeUserId !== "string") {
         throw new STError({
-            message: "Required parameter 'userId' is missing or has an invalid type",
+            message: "Required parameter 'recipeUserId' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -59,73 +59,51 @@ export const userPasswordPut = async (
     }
 
     if (recipeToUse === "emailpassword") {
-        let passwordFormFields = EmailPasswordRecipe.getInstanceOrThrowError().config.signUpFeature.formFields.filter(
-            (field) => field.id === FORM_FIELD_PASSWORD_ID
-        );
+        const updateResponse = await EmailPassword.updateEmailOrPassword({
+            recipeUserId: new RecipeUserId(recipeUserId),
+            password: newPassword,
+            tenantIdForPasswordPolicy: tenantId,
+            userContext,
+        });
 
-        let passwordValidationError = await passwordFormFields[0].validate(newPassword, tenantId);
-
-        if (passwordValidationError !== undefined) {
-            return {
-                status: "INVALID_PASSWORD_ERROR",
-                error: passwordValidationError,
-            };
-        }
-
-        const passwordResetToken = await EmailPassword.createResetPasswordToken(tenantId, userId, userContext);
-
-        if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
+        if (
+            updateResponse.status === "UNKNOWN_USER_ID_ERROR" ||
+            updateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
+            updateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR"
+        ) {
             // Techincally it can but its an edge case so we assume that it wont
             throw new Error("Should never come here");
+        } else if (updateResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+            return {
+                status: "INVALID_PASSWORD_ERROR",
+                error: updateResponse.failureReason,
+            };
         }
-
-        const passwordResetResponse = await EmailPassword.resetPasswordUsingToken(
-            tenantId,
-            passwordResetToken.token,
-            newPassword,
-            userContext
-        );
-
-        if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
-            throw new Error("Should never come here");
-        }
-
         return {
             status: "OK",
         };
     }
 
-    let passwordFormFields = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError().config.signUpFeature.formFields.filter(
-        (field) => field.id === FORM_FIELD_PASSWORD_ID
-    );
+    const updateResponse = await ThirdPartyEmailPassword.updateEmailOrPassword({
+        recipeUserId: new RecipeUserId(recipeUserId),
+        password: newPassword,
+        tenantIdForPasswordPolicy: tenantId,
+        userContext,
+    });
 
-    let passwordValidationError = await passwordFormFields[0].validate(newPassword, tenantId);
-
-    if (passwordValidationError !== undefined) {
-        return {
-            status: "INVALID_PASSWORD_ERROR",
-            error: passwordValidationError,
-        };
-    }
-
-    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(tenantId, userId, userContext);
-
-    if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
+    if (
+        updateResponse.status === "UNKNOWN_USER_ID_ERROR" ||
+        updateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
+        updateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR"
+    ) {
         // Techincally it can but its an edge case so we assume that it wont
         throw new Error("Should never come here");
+    } else if (updateResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+        return {
+            status: "INVALID_PASSWORD_ERROR",
+            error: updateResponse.failureReason,
+        };
     }
-
-    const passwordResetResponse = await ThirdPartyEmailPassword.resetPasswordUsingToken(
-        tenantId,
-        passwordResetToken.token,
-        newPassword,
-        userContext
-    );
-
-    if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
-        throw new Error("Should never come here");
-    }
-
     return {
         status: "OK",
     };

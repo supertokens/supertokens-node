@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
@@ -42,11 +42,11 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - minimal config
     */
     it("test minimum config with EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -91,14 +91,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - adding custom validators for phone and email and making sure that they are called
     */
     it("test adding custom validators for phone and email with EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isValidateEmailAddressCalled = false;
         let isValidatePhoneNumberCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -198,13 +198,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
      */
 
     it("test custom function to send email with EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomEmailCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -276,13 +276,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
      */
 
     it("test custom function to send text SMS with EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomTextMessageCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -352,11 +352,11 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - minimal input works
     */
     it("test minimum config with phone contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -396,12 +396,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test if validatePhoneNumber is called with phone contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isValidatePhoneNumberCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -465,13 +465,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             // If you return a string from the function, the API throws a GENERIC ERROR
 
             await killAllST();
-            await startST();
+            const connectionURI = await startST();
 
             isValidatePhoneNumberCalled = false;
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -529,13 +529,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE and phone contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         let isOtherInputValid = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -606,12 +606,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomTextMessage with flowType: MAGIC_LINK and phone contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -672,12 +672,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
     */
     it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE_AND_MAGIC_LINK and phone contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -739,12 +739,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomTextMessage, if error is thrown, it should contain a general error in the response", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomTextMessageCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -809,11 +809,11 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test minimum config with email contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -854,12 +854,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test if validateEmailAddress is called with email contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isValidateEmailAddressCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -923,13 +923,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             // If you return a string from the function, the API throws a GENERIC ERROR
 
             await killAllST();
-            await startST();
+            const connectionURI = await startST();
 
             isValidateEmailAddressCalled = false;
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -986,13 +986,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomEmail with flowType: USER_INPUT_CODE and email contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         let isOtherInputValid = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1063,12 +1063,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomEmail with flowType: MAGIC_LINK and email contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1129,12 +1129,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
     */
     it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE_AND_MAGIC_LINK and email contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1196,12 +1196,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomEmail, if error is thrown, the status in the response should be a general error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomEmailCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1268,14 +1268,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test missing compulsory configs throws an error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         {
             // missing flowType
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -1299,13 +1299,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         {
             await killAllST();
-            await startST();
+            const connectionURI = await startST();
 
             // missing contactMethod
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -1336,14 +1336,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test passing getCustomUserInputCode using different codes", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let customCode = undefined;
         let userCodeSent = undefined;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1425,7 +1425,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     });
 
     it("test passing getCustomUserInputCode using the same code", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         // using the same customCode
         let customCode = "customCode";
@@ -1433,7 +1433,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1520,13 +1520,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
     // Check basic override usage
     it("test basic override usage in passwordless", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let customDeviceId = "customDeviceId";
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

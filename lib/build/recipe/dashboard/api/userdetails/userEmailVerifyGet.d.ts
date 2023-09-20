@@ -1,3 +1,3 @@
 // @ts-nocheck
 import { APIFunction } from "../../types";
-export declare const userEmailverifyGet: APIFunction;
+export declare const userEmailVerifyGet: APIFunction;

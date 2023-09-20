@@ -72,10 +72,10 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
     });
 
     it("test the generate token api with valid input, email not verified", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -109,10 +109,10 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
     });
 
     it("test the generate token api with valid input, email verified and test error", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -137,9 +137,14 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         assert(response.status === 200);
 
         let userId = JSON.parse(response.text).user.id;
+        let email = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(
+            "public",
+            STExpress.convertToRecipeUserId(userId),
+            email
+        );
         await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
@@ -150,10 +155,10 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
     });
 
     it("test the generate token api with valid input, no session and check output", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -191,14 +196,14 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
     });
 
     it("test that providing your own email callback and make sure it is called", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInfo = null;
         let emailToken = null;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -253,14 +258,14 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
     });
 
     it("test that providing your own email callback and make sure it is called (thirdparty user)", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInfo = null;
         let emailToken = null;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -317,11 +322,11 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
     });
 
     it("test the email verify API with invalid token and check error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

@@ -22,11 +22,11 @@ describe(`deleteRole: ${printPath("[test/userroles/deleteRole.test.js]")}`, func
 
     describe("deleteRole", () => {
         it("create roles, add them to a user and delete one of the roles", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -78,11 +78,11 @@ describe(`deleteRole: ${printPath("[test/userroles/deleteRole.test.js]")}`, func
         });
 
         it("delete a role that does not exist", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

@@ -1,7 +1,8 @@
 import { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
-import EmailVerificationRecipe from "../../../emailverification/recipe";
 import EmailVerification from "../../../emailverification";
+import EmailVerificationRecipe from "../../../emailverification/recipe";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
     | {
@@ -12,18 +13,18 @@ type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       };
 
-export const userEmailverifyGet: APIFunction = async (
+export const userEmailVerifyGet: APIFunction = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {
     const req = options.req;
-    const userId = req.getKeyValueFromQuery("userId");
+    const recipeUserId = req.getKeyValueFromQuery("recipeUserId");
 
-    if (userId === undefined) {
+    if (recipeUserId === undefined) {
         throw new STError({
-            message: "Missing required parameter 'userId'",
+            message: "Missing required parameter 'recipeUserId'",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -36,7 +37,7 @@ export const userEmailverifyGet: APIFunction = async (
         };
     }
 
-    const response = await EmailVerification.isEmailVerified(userId, undefined, userContext);
+    const response = await EmailVerification.isEmailVerified(new RecipeUserId(recipeUserId), undefined, userContext);
     return {
         status: "OK",
         isVerified: response,

@@ -13,11 +13,12 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type UserInfo = {
     thirdPartyUserId: string;
@@ -92,18 +93,6 @@ export type TypeProvider = {
     getUserInfo: (input: { oAuthTokens: any; userContext: any }) => Promise<UserInfo>;
 };
 
-export type User = {
-    // https://github.com/supertokens/core-driver-interface/wiki#third-party-user
-    id: string;
-    timeJoined: number;
-    email: string;
-    thirdParty: {
-        id: string;
-        userId: string;
-    };
-    tenantIds: string[];
-};
-
 export type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];
 };
@@ -144,17 +133,6 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-
-    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
-
-    getUserByThirdPartyInfo(input: {
-        thirdPartyId: string;
-        thirdPartyUserId: string;
-        tenantId: string;
-        userContext: any;
-    }): Promise<User | undefined>;
-
     getProvider(input: {
         thirdPartyId: string;
         tenantId: string;
@@ -166,6 +144,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
             fromIdTokenPayload?: { [key: string]: any };
@@ -173,24 +152,47 @@ export type RecipeInterface = {
         };
         tenantId: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-        oAuthTokens: { [key: string]: any };
-        rawUserInfoFromProvider: {
-            fromIdTokenPayload?: { [key: string]: any };
-            fromUserInfoAPI?: { [key: string]: any };
-        };
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              recipeUserId: RecipeUserId;
+              user: User;
+              oAuthTokens: { [key: string]: any };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: { [key: string]: any };
+                  fromUserInfoAPI?: { [key: string]: any };
+              };
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 
     manuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 };
 
 export type APIOptions = {
@@ -245,7 +247,7 @@ export type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };
@@ -255,6 +257,10 @@ export type APIInterface = {
                     };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
 

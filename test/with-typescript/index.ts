@@ -1,5 +1,5 @@
 import * as express from "express";
-import Supertokens from "../..";
+import Supertokens, { RecipeUserId, User, getUser } from "../..";
 import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
@@ -28,6 +28,7 @@ import { BooleanClaim, PrimitiveClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
+import AccountLinking from "../../recipe/accountlinking";
 
 UserRoles.init({
     override: {
@@ -935,6 +936,7 @@ let sessionConfig: SessionTypeInput = {
                         getAccessTokenPayload: session.getAccessTokenPayload,
                         getSessionDataFromDatabase: session.getSessionDataFromDatabase,
                         getUserId: session.getUserId,
+                        getRecipeUserId: session.getRecipeUserId,
                         getTenantId: session.getTenantId,
                         revokeSession: session.revokeSession,
                         updateSessionDataInDatabase: session.updateSessionDataInDatabase,
@@ -965,7 +967,6 @@ let sessionConfig: SessionTypeInput = {
                 getClaimValue: originalImpl.getClaimValue,
                 removeClaim: originalImpl.removeClaim,
                 validateClaims: originalImpl.validateClaims,
-                validateClaimsInJWTPayload: originalImpl.validateClaimsInJWTPayload,
             };
         },
     },
@@ -1160,11 +1161,15 @@ Supertokens.init({
                             // we check if the email exists in SuperTokens. If not,
                             // then the sign in should be handled by you.
                             if (
-                                (await supertokensImpl.getUserByEmail({
-                                    email: input.email,
-                                    tenantId: input.tenantId,
-                                    userContext: input.userContext,
-                                })) === undefined
+                                (
+                                    await Supertokens.listUsersByAccountInfo(
+                                        "public",
+                                        {
+                                            email: input.email,
+                                        },
+                                        input.userContext
+                                    )
+                                ).length === 0
                             ) {
                                 // TODO: sign in from your db
                                 // example return value if credentials don't match
@@ -1178,24 +1183,6 @@ Supertokens.init({
                         signUp: async (input) => {
                             // all new users are created in SuperTokens;
                             return supertokensImpl.signUp(input);
-                        },
-                        getUserByEmail: async (input) => {
-                            let superTokensUser = await supertokensImpl.getUserByEmail(input);
-                            if (superTokensUser === undefined) {
-                                let email = input.email;
-                                // TODO: fetch and return user info from your database...
-                            } else {
-                                return superTokensUser;
-                            }
-                        },
-                        getUserById: async (input) => {
-                            let superTokensUser = await supertokensImpl.getUserById(input);
-                            if (superTokensUser === undefined) {
-                                let userId = input.userId;
-                                // TODO: fetch and return user info from your database...
-                            } else {
-                                return superTokensUser;
-                            }
                         },
                     };
                 },
@@ -1298,7 +1285,12 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        let session = await Session.createNewSession(options.req, options.res, "public", user.id);
+                        let session = await Session.createNewSession(
+                            options.req,
+                            options.res,
+                            "public",
+                            Supertokens.convertToRecipeUserId(user.id)
+                        );
                         return {
                             status: "OK",
                             session,
@@ -1338,7 +1330,7 @@ Session.init({
                     input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
-                        ...(await boolClaim.build(input.userId, input.tenantId, input.userContext)),
+                        ...(await boolClaim.build(input.userId, input.recipeUserId, input.tenantId, input.userContext)),
                         lastTokenRefresh: Date.now(),
                     };
                     return originalImplementation.createNewSession(input);
@@ -1359,25 +1351,14 @@ Session.validateClaimsForSessionHandle(
     { test: 1 }
 );
 
-Session.validateClaimsInJWTPayload("public", "userId", {});
-Session.validateClaimsInJWTPayload("public", "userId", {}, (globalClaimValidators) => [
-    ...globalClaimValidators,
-    boolClaim.validators.isTrue(),
-]);
-Session.validateClaimsInJWTPayload(
-    "public",
-    "userId",
-    {},
-    (globalClaimValidators, userId) => [...globalClaimValidators, stringClaim.validators.startsWith(userId)],
-    { test: 1 }
-);
 EmailVerification.sendEmail({
     tenantId: "public",
     emailVerifyLink: "",
     type: "EMAIL_VERIFICATION",
     user: {
-        email: "",
         id: "",
+        email: "",
+        recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
 });
 
@@ -1388,6 +1369,7 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
+        recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
 });
 ThirdPartyEmailPassword.sendEmail({
@@ -1397,6 +1379,7 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
+        recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
     userContext: {},
 });
@@ -1561,7 +1544,8 @@ Passwordless.init({
                             });
                             return {
                                 status: "OK",
-                                createdNewUser: user.createdNewUser,
+                                createdNewRecipeUser: user.createdNewRecipeUser,
+                                recipeUserId: user.recipeUserId,
                                 user: user.user,
                             };
                         }
@@ -1689,7 +1673,10 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
 async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
     const userId = "user-id"; // This would be fetched from somewhere
 
-    const session = await Session.createNewSessionWithoutRequestResponse("public", userId);
+    const session = await Session.createNewSessionWithoutRequestResponse(
+        "public",
+        Supertokens.convertToRecipeUserId(userId)
+    );
 
     const tokens = session.getAllSessionTokensDangerously();
     if (tokens.accessAndFrontTokenUpdated) {
@@ -1745,6 +1732,8 @@ ThirdPartyPasswordless.init({
     flowType: "MAGIC_LINK",
 });
 
+const recipeUserId = new Supertokens.RecipeUserId("asdf");
+
 Session.init({
     override: {
         openIdFeature: {
@@ -1763,3 +1752,78 @@ Session.init({
         },
     },
 });
+
+async function accountLinkingFuncsTest() {
+    const signUpResp = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw");
+    if (signUpResp.status !== "OK") {
+        return signUpResp;
+    }
+
+    let user: User;
+    if (
+        !signUpResp.user.isPrimaryUser &&
+        (await AccountLinking.canCreatePrimaryUser(signUpResp.user.loginMethods[0].recipeUserId))
+    ) {
+        const createResp = await AccountLinking.createPrimaryUser(Supertokens.convertToRecipeUserId("asdf"));
+        if (createResp.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            throw new Error(createResp.status);
+        }
+        if (createResp.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+            user = (await getUser(createResp.primaryUserId))!;
+        } else {
+            user = createResp.user;
+        }
+    } else {
+        user = signUpResp.user;
+    }
+
+    const signUpResp2 = await EmailPassword.signUp("public", "asdf2@asdf.asfd", "testpw");
+    if (signUpResp2.status !== "OK") {
+        return signUpResp2;
+    }
+    const linkResp = await AccountLinking.linkAccounts(signUpResp2.recipeUserId, user.id);
+
+    if (linkResp.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+        throw new Error("Should never happen");
+    }
+    if (
+        linkResp.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
+        linkResp.status === "OK"
+    ) {
+        user = linkResp.user;
+    } else {
+        throw new Error(linkResp.status);
+    }
+
+    const unlinkResp = await AccountLinking.unlinkAccount(signUpResp2.recipeUserId);
+
+    if (unlinkResp.wasRecipeUserDeleted) {
+        console.log("User deleted: " + signUpResp2.recipeUserId.getAsString());
+    }
+
+    const tpSignUp = await ThirdParty.manuallyCreateOrUpdateUser("public", "mytp", "tpuser", "asfd@asfd.asdf", false);
+    if (tpSignUp.status !== "OK") {
+        return tpSignUp;
+    }
+    // This should be true
+    const canLink = await AccountLinking.canLinkAccounts(tpSignUp.recipeUserId, user.id);
+
+    // This should be the same as the primary user above
+    const toLink = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId("public", tpSignUp.recipeUserId);
+
+    // This should be the same primary user as toLink updated with the new link
+    const linkResult = await AccountLinking.createPrimaryUserIdOrLinkAccounts("public", tpSignUp.recipeUserId);
+
+    return {
+        canChangeEmail: await AccountLinking.isEmailChangeAllowed(tpSignUp.recipeUserId, "asfd@asfd.asfd", true),
+        canSignIn: await AccountLinking.isSignInAllowed("public", tpSignUp.recipeUserId),
+        canSignUp: await AccountLinking.isSignUpAllowed(
+            "public",
+            {
+                recipeId: "passwordless",
+                email: "asdf@asdf.asdf",
+            },
+            true
+        ),
+    };
+}

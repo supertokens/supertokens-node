@@ -26,8 +26,8 @@ import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./framework";
-import { TypeFramework } from "./framework/types";
+import type { BaseRequest, BaseResponse } from "./framework";
+import type { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
@@ -170,60 +170,6 @@ export default class SuperTokens {
             }
         );
         return Number(response.count);
-    };
-
-    getUsers = async (input: {
-        timeJoinedOrder: "ASC" | "DESC";
-        limit?: number;
-        paginationToken?: string;
-        includeRecipeIds?: string[];
-        query?: object;
-        tenantId: string;
-    }): Promise<{
-        users: { recipeId: string; user: any }[];
-        nextPaginationToken?: string;
-    }> => {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            throw new Error(
-                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUsersOldestFirst() or <YourRecipe>.getUsersNewestFirst() instead (for example, EmailPassword.getUsersOldestFirst())"
-            );
-        }
-        let includeRecipeIdsStr = undefined;
-        if (input.includeRecipeIds !== undefined) {
-            includeRecipeIdsStr = input.includeRecipeIds.join(",");
-        }
-        let response = await querier.sendGetRequest(new NormalisedURLPath(`/${input.tenantId}/users`), {
-            ...input.query,
-            includeRecipeIds: includeRecipeIdsStr,
-            timeJoinedOrder: input.timeJoinedOrder,
-            limit: input.limit,
-            paginationToken: input.paginationToken,
-        });
-
-        const users: { recipeId: string; user: any }[] = response.users;
-        return {
-            users,
-            nextPaginationToken: response.nextPaginationToken,
-        };
-    };
-
-    deleteUser = async (input: { userId: string }): Promise<{ status: "OK" }> => {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let cdiVersion = await querier.getAPIVersion();
-        if (maxVersion("2.10", cdiVersion) === cdiVersion) {
-            // delete user is only available >= CDI 2.10
-            await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
-                userId: input.userId,
-            });
-
-            return {
-                status: "OK",
-            };
-        } else {
-            throw new global.Error("Please upgrade the SuperTokens core to >= 3.7.0");
-        }
     };
 
     createUserIdMapping = async function (input: {
