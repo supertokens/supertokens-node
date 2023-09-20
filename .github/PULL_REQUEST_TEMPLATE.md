@@ -36,7 +36,6 @@
 -   [ ] If have added a new web framework, update the `add-ts-no-check.js` file to include that
 -   [ ] If added a new recipe / api interface, then make sure that the implementation of it uses NON arrow functions only (like `someFunc: function () {..}`).
 -   [ ] If added a new recipe, then make sure to expose it inside the recipe folder present in the root of this repo. We also need to expose its types.
--   [ ] If added a new **auth recipe**, make sure to change the function implementation of `assertNewUserInfoPassedContainsTheRightFields` in accountlinking/recipe.ts to take into account that recipe's input types during sign in / up.
 
 ## Remaining TODOs for this PR
 
