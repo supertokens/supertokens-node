@@ -594,8 +594,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
             let sessionTokens = extractInfoFromResponse(res);
             let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
-            assert(session.getUserId() === tpUser.user.id);
-            assert(session.getUserId() !== session.getRecipeUserId().getAsString());
+            assert.notStrictEqual(session.getUserId(), session.getRecipeUserId().getAsString());
+            assert.strictEqual(session.getUserId(), tpUser.user.id);
             let didAsserts = false;
             for (let i = 0; i < epUser.loginMethods.length; i++) {
                 if (epUser.loginMethods[i].recipeId === "emailpassword") {
@@ -961,11 +961,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     })
             );
             assert(res !== undefined);
-            assert.deepStrictEqual(res.body, {
-                reason:
-                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                status: "SIGN_UP_NOT_ALLOWED",
-            });
+            const responseInfo = res.body;
+
+            assert(responseInfo.status === "FIELD_ERROR");
+            assert(responseInfo.formFields.length === 1);
+            assert(responseInfo.formFields[0].id === "email");
+            assert(responseInfo.formFields[0].error === "This email already exists. Please sign in instead.");
         });
 
         it("calling signUpPOST fails if email exists in email password user, non primary user - account linking enabled, and email verification required", async function () {
@@ -1042,11 +1043,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     })
             );
             assert(res !== undefined);
-            assert.deepStrictEqual(res.body, {
-                reason:
-                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                status: "SIGN_UP_NOT_ALLOWED",
-            });
+            const responseInfo = res.body;
+
+            assert(responseInfo.status === "FIELD_ERROR");
+            assert(responseInfo.formFields.length === 1);
+            assert(responseInfo.formFields[0].id === "email");
+            assert(responseInfo.formFields[0].error === "This email already exists. Please sign in instead.");
         });
 
         it("calling signUpPOST fails if email exists in email password primary user - account linking enabled and email verification not required", async function () {
