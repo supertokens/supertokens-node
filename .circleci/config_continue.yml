@@ -73,7 +73,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
             - test-unit:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -83,7 +83,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
                   matrix:
                       parameters:
                           cdi-version: placeholder
@@ -96,7 +96,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
             - test-authreact:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -106,7 +106,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
             - test-success:
                   requires:
                       - test-unit
