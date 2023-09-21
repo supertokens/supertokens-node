@@ -180,6 +180,7 @@ Because of account linking we've introduced a new Primary user concept (see abov
 -   Added `getUser`, `listUsersByAccountInfo`, `convertToRecipeUserId` to the main exports
 -   Updated compilation target of typescript to ES2017 to make debugging easier.
 -   Added account-linking recipe
+-   Added `twitter` as a built-in thirdparty provider
 
 ### Migration guide
 
