@@ -56,7 +56,8 @@ npm i
 cd ../../
 cd ../project/test/auth-react-server
 npm i
-TEST_MODE=testing node . &
+mkdir -p ../../test_report
+DEBUG=com.supertokens TEST_MODE=testing node . > ../../test_report/backend.log &
 pid=$!
 cd ../../../supertokens-auth-react/
 
