@@ -11,6 +11,7 @@ import {
     GoogleWorkspaces,
     Linkedin,
     Okta,
+    Twitter,
 } from ".";
 import {
     ProviderClientConfig,
@@ -63,6 +64,8 @@ function createProvider(input: ProviderInput): TypeProvider {
         return Okta(input);
     } else if (input.config.thirdPartyId.startsWith("linkedin")) {
         return Linkedin(input);
+    } else if (input.config.thirdPartyId.startsWith("twitter")) {
+        return Twitter(input);
     } else if (input.config.thirdPartyId.startsWith("boxy-saml")) {
         return BoxySAML(input);
     }
