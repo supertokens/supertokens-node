@@ -1,4 +1,4 @@
-import { RecipeInterface, User } from "../types";
+import { RecipeInterface } from "../types";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
@@ -6,6 +6,9 @@ import { RecipeInterface as ThirdPartyRecipeInterface, TypeProvider } from "../.
 import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
+import { getUser } from "../../../";
+import { User } from "../../../types";
+import RecipeUserId from "../../../recipeUserId";
 
 import { TypeNormalisedInput } from "../../emailpassword/types";
 import { ProviderInput } from "../../thirdparty/types";
@@ -23,12 +26,24 @@ export default function getRecipeInterface(
     );
 
     return {
+        createNewEmailPasswordRecipeUser: async function (input: {
+            email: string;
+            password: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<
+            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
+            return await originalEmailPasswordImplementation.createNewRecipeUser.bind(DerivedEP(this))(input);
+        },
         emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
 
@@ -37,7 +52,7 @@ export default function getRecipeInterface(
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
 
@@ -45,6 +60,7 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            isVerified: boolean;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
                 fromIdTokenPayload?: { [key: string]: any };
@@ -52,16 +68,23 @@ export default function getRecipeInterface(
             };
             tenantId: string;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-            createdNewUser: boolean;
-            user: User;
-            oAuthTokens: { [key: string]: any };
-            rawUserInfoFromProvider: {
-                fromIdTokenPayload?: { [key: string]: any };
-                fromUserInfoAPI?: { [key: string]: any };
-            };
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: User;
+                  recipeUserId: RecipeUserId;
+                  oAuthTokens: { [key: string]: any };
+                  rawUserInfoFromProvider: {
+                      fromIdTokenPayload?: { [key: string]: any };
+                      fromUserInfoAPI?: { [key: string]: any };
+                  };
+              }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
 
@@ -69,9 +92,20 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            isVerified: boolean;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+        }): Promise<
+            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+            | {
+                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                  reason: string;
+              }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
             return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);
         },
 
@@ -84,69 +118,23 @@ export default function getRecipeInterface(
             return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },
 
-        getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
-            let user: User | undefined = await originalEmailPasswordImplementation.getUserById.bind(DerivedEP(this))(
-                input
-            );
-            if (user !== undefined) {
-                return user;
-            }
-            return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
-        },
-
-        getUsersByEmail: async function ({
-            email,
-            tenantId,
-            userContext,
-        }: {
-            email: string;
-            tenantId: string;
-            userContext: any;
-        }): Promise<User[]> {
-            let userFromEmailPass: User | undefined = await originalEmailPasswordImplementation.getUserByEmail.bind(
-                DerivedEP(this)
-            )({ email, tenantId, userContext });
-
-            let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
-                DerivedTP(this)
-            )({ email, tenantId, userContext });
-
-            if (userFromEmailPass !== undefined) {
-                return [...usersFromThirdParty, userFromEmailPass];
-            }
-            return usersFromThirdParty;
-        },
-
-        getUserByThirdPartyInfo: async function (input: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-            tenantId: string;
-            userContext: any;
-        }): Promise<User | undefined> {
-            return originalThirdPartyImplementation.getUserByThirdPartyInfo.bind(DerivedTP(this))(input);
-        },
-
         createResetPasswordToken: async function (input: {
             userId: string;
+            email: string;
             tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return originalEmailPasswordImplementation.createResetPasswordToken.bind(DerivedEP(this))(input);
         },
 
-        resetPasswordUsingToken: async function (input: {
-            token: string;
-            newPassword: string;
-            tenantId: string;
-            userContext: any;
-        }) {
-            return originalEmailPasswordImplementation.resetPasswordUsingToken.bind(DerivedEP(this))(input);
+        consumePasswordResetToken: async function (input: { token: string; tenantId: string; userContext: any }) {
+            return originalEmailPasswordImplementation.consumePasswordResetToken.bind(DerivedEP(this))(input);
         },
 
         updateEmailOrPassword: async function (
             this: RecipeInterface,
             input: {
-                userId: string;
+                recipeUserId: RecipeUserId;
                 email?: string;
                 password?: string;
                 userContext: any;
@@ -157,14 +145,27 @@ export default function getRecipeInterface(
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
               }
+            | {
+                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                  reason: string;
+              }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
-            let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
+            let user = await getUser(input.recipeUserId.getAsString(), input.userContext);
             if (user === undefined) {
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",
                 };
-            } else if (user.thirdParty !== undefined) {
+            }
+            let inputUserIdIsPointingToEmailPasswordUser =
+                user.loginMethods.find((lM) => {
+                    return (
+                        lM.recipeId === "emailpassword" &&
+                        lM.recipeUserId.getAsString() === input.recipeUserId.getAsString()
+                    );
+                }) !== undefined;
+
+            if (!inputUserIdIsPointingToEmailPasswordUser) {
                 throw new Error("Cannot update email or password of a user who signed up using third party login.");
             }
             return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input);

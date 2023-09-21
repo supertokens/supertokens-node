@@ -3,6 +3,7 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static createOrUpdateTenant(
@@ -89,7 +90,7 @@ export default class Wrapper {
     }>;
     static associateUserToTenant(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
         | {
@@ -103,10 +104,14 @@ export default class Wrapper {
                   | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
                   | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
           }
+        | {
+              status: "ASSOCIATION_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
     >;
     static disassociateUserFromTenant(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<{
         status: "OK";

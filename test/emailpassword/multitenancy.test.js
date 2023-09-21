@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startSTWithMultitenancy, stopST, killAllST, cleanST, resetAll } = require("../utils");
-let STExpress = require("../../");
+let SuperTokens = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
@@ -42,10 +42,10 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test recipe functions", async function () {
-        await startSTWithMultitenancy();
-        STExpress.init({
+        const connectionURI = await startSTWithMultitenancy();
+        SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -68,9 +68,9 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
         assert(user1.user.id !== user3.user.id);
         assert(user2.user.id !== user3.user.id);
 
-        assert.deepEqual(user1.user.tenantIds, ["t1"]);
-        assert.deepEqual(user2.user.tenantIds, ["t2"]);
-        assert.deepEqual(user3.user.tenantIds, ["t3"]);
+        assert.deepEqual(user1.user.loginMethods[0].tenantIds, ["t1"]);
+        assert.deepEqual(user2.user.loginMethods[0].tenantIds, ["t2"]);
+        assert.deepEqual(user3.user.loginMethods[0].tenantIds, ["t3"]);
 
         // Sign in
         let sUser1 = await EmailPassword.signIn("t1", "test@example.com", "password1");
@@ -82,44 +82,62 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
         assert(sUser3.user.id === user3.user.id);
 
         // get user by id
-        let gUser1 = await EmailPassword.getUserById(user1.user.id);
-        let gUser2 = await EmailPassword.getUserById(user2.user.id);
-        let gUser3 = await EmailPassword.getUserById(user3.user.id);
+        let gUser1 = await SuperTokens.getUser(user1.user.id);
+        let gUser2 = await SuperTokens.getUser(user2.user.id);
+        let gUser3 = await SuperTokens.getUser(user3.user.id);
 
-        assert.deepEqual(gUser1, user1.user);
-        assert.deepEqual(gUser2, user2.user);
-        assert.deepEqual(gUser3, user3.user);
-
-        // get user by email
-        let gUserByEmail1 = await EmailPassword.getUserByEmail("t1", "test@example.com");
-        let gUserByEmail2 = await EmailPassword.getUserByEmail("t2", "test@example.com");
-        let gUserByEmail3 = await EmailPassword.getUserByEmail("t3", "test@example.com");
-
-        assert.deepEqual(gUserByEmail1, user1.user);
-        assert.deepEqual(gUserByEmail2, user2.user);
-        assert.deepEqual(gUserByEmail3, user3.user);
+        assert.deepEqual(gUser1.toJson(), user1.user.toJson());
+        assert.deepEqual(gUser2.toJson(), user2.user.toJson());
+        assert.deepEqual(gUser3.toJson(), user3.user.toJson());
 
         // create password reset token
-        let passwordResetLink1 = await EmailPassword.createResetPasswordToken("t1", user1.user.id);
-        let passwordResetLink2 = await EmailPassword.createResetPasswordToken("t2", user2.user.id);
-        let passwordResetLink3 = await EmailPassword.createResetPasswordToken("t3", user3.user.id);
+        let passwordResetLink1 = await EmailPassword.createResetPasswordToken("t1", user1.user.id, "test@example.com");
+        let passwordResetLink2 = await EmailPassword.createResetPasswordToken("t2", user2.user.id, "test@example.com");
+        let passwordResetLink3 = await EmailPassword.createResetPasswordToken("t3", user3.user.id, "test@example.com");
 
         assert(passwordResetLink1.token !== undefined);
         assert(passwordResetLink2.token !== undefined);
         assert(passwordResetLink3.token !== undefined);
 
         // reset password using token
-        await EmailPassword.resetPasswordUsingToken("t1", passwordResetLink1.token, "newpassword1");
-        await EmailPassword.resetPasswordUsingToken("t2", passwordResetLink2.token, "newpassword2");
-        await EmailPassword.resetPasswordUsingToken("t3", passwordResetLink3.token, "newpassword3");
+        const consumeRes1 = await EmailPassword.consumePasswordResetToken("t1", passwordResetLink1.token);
+        const consumeRes2 = await EmailPassword.consumePasswordResetToken("t2", passwordResetLink2.token);
+        const consumeRes3 = await EmailPassword.consumePasswordResetToken("t3", passwordResetLink3.token);
+
+        assert.strictEqual(consumeRes1.status, "OK");
+        assert.strictEqual(consumeRes2.status, "OK");
+        assert.strictEqual(consumeRes3.status, "OK");
+
+        await EmailPassword.updateEmailOrPassword({
+            recipeUserId: user1.user.loginMethods[0].recipeUserId,
+            email: "test@example.com",
+            password: "newpassword1",
+            tenantIdForPasswordPolicy: "t1",
+        });
+
+        await EmailPassword.updateEmailOrPassword({
+            recipeUserId: user2.user.loginMethods[0].recipeUserId,
+            email: "test@example.com",
+            password: "newpassword2",
+            tenantIdForPasswordPolicy: "t2",
+        });
+        await EmailPassword.updateEmailOrPassword({
+            recipeUserId: user3.user.loginMethods[0].recipeUserId,
+            email: "test@example.com",
+            password: "newpassword3",
+        });
 
         // new password should work
         sUser1 = await EmailPassword.signIn("t1", "test@example.com", "newpassword1");
         sUser2 = await EmailPassword.signIn("t2", "test@example.com", "newpassword2");
         sUser3 = await EmailPassword.signIn("t3", "test@example.com", "newpassword3");
 
-        assert.deepEqual(sUser1.user, user1.user);
-        assert.deepEqual(sUser2.user, user2.user);
-        assert.deepEqual(sUser3.user, user3.user);
+        assert.strictEqual(sUser1.status, "OK");
+        assert.strictEqual(sUser2.status, "OK");
+        assert.strictEqual(sUser3.status, "OK");
+
+        assert.deepEqual(sUser1.user.toJson(), user1.user.toJson());
+        assert.deepEqual(sUser2.user.toJson(), user2.user.toJson());
+        assert.deepEqual(sUser3.user.toJson(), user3.user.toJson());
     });
 });

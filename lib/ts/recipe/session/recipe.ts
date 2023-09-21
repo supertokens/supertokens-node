@@ -37,7 +37,7 @@ import {
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
@@ -96,7 +96,9 @@ export default class SessionRecipe extends RecipeModule {
         if (SessionRecipe.instance !== undefined) {
             return SessionRecipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error(
+            "Initialisation not done. Did you forget to call the SuperTokens.init or Session.init function?"
+        );
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -211,6 +213,7 @@ export default class SessionRecipe extends RecipeModule {
                 return await this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,
+                    err.payload.recipeUserId,
                     request,
                     response
                 );

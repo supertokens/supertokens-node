@@ -58,10 +58,10 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test minimum config for third party provider google", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -151,10 +151,10 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing additional params, check they are present in authorisation url for thirdparty provider google", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -224,10 +224,10 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for thirdparty provider google", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -292,14 +292,14 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test minimum config for third party provider facebook", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -387,14 +387,14 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for third party provider facebook", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -457,14 +457,14 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test minimum config for third party provider github", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -552,14 +552,14 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test additional params, check they are present in authorisation url for third party provider github", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -627,14 +627,14 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for third party provider github", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -697,7 +697,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test minimum config for third party provider apple", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let additionalConfig = {
@@ -708,7 +708,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -799,7 +799,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing additional params, check they are present in authorisation url for third party provider apple", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let additionalConfig = {
@@ -810,7 +810,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -879,7 +879,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test passing scopes in config for third party provider apple", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let additionalConfig = {
@@ -890,7 +890,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -954,7 +954,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it.skip("test passing invalid privateKey in config for third party provider apple", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let clientId = "test";
         let additionalConfig = {
@@ -964,7 +964,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         };
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1002,11 +1002,11 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     });
 
     it("test duplicate provider", async function () {
-        await startST();
+        const connectionURI = await startST();
         try {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

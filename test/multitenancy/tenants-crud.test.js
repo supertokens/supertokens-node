@@ -36,10 +36,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test creation of tenants", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -63,10 +63,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test get tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -105,10 +105,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test update tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -142,10 +142,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test delete tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -178,10 +178,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test creation of thirdParty config", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -212,10 +212,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test deletion of thirdparty id", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -248,10 +248,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test updation of thirdparty provider", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -292,10 +292,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test user association and disassociation with tenants", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -315,22 +315,22 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password1");
-        const userId = user.user.id;
+        const userId = user.user.loginMethods[0].recipeUserId;
 
         await Multitenancy.associateUserToTenant("t1", userId);
         await Multitenancy.associateUserToTenant("t2", userId);
         await Multitenancy.associateUserToTenant("t3", userId);
 
-        let newUser = await EmailPassword.getUserById(userId);
+        let newUser = await SuperTokens.getUser(userId.getAsString());
 
-        assert(newUser.tenantIds.length === 4); // public + 3 tenants created above
+        assert.strictEqual(newUser.loginMethods[0].tenantIds.length, 4); // public + 3 tenants created above
 
         await Multitenancy.disassociateUserFromTenant("t1", userId);
         await Multitenancy.disassociateUserFromTenant("t2", userId);
         await Multitenancy.disassociateUserFromTenant("t3", userId);
 
-        newUser = await EmailPassword.getUserById(userId);
+        newUser = await SuperTokens.getUser(userId.getAsString());
 
-        assert(newUser.tenantIds.length === 1); // only public
+        assert(newUser.loginMethods[0].tenantIds.length === 1); // only public
     });
 });

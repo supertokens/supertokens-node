@@ -17,6 +17,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { ProviderConfig, ProviderInput } from "../thirdparty/types";
 import { GeneralErrorResponse } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
@@ -128,7 +129,7 @@ export type RecipeInterface = {
     // User tenant association
     associateUserToTenant: (input: {
         tenantId: string;
-        userId: string;
+        recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<
         | {
@@ -142,10 +143,14 @@ export type RecipeInterface = {
                   | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
                   | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
           }
+        | {
+              status: "ASSOCIATION_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
     >;
     disassociateUserFromTenant: (input: {
         tenantId: string;
-        userId: string;
+        recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<{
         status: "OK";

@@ -3,12 +3,12 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     RecipeInterface,
-    User,
     APIOptions,
     APIInterface,
     TypePasswordlessEmailDeliveryInput,
     TypePasswordlessSmsDeliveryInput,
 } from "./types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -73,8 +73,9 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
-              user: User;
+              createdNewRecipeUser: boolean;
+              user: import("../../types").User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -85,21 +86,24 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserById(input: { userId: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByEmail(input: { email: string; tenantId: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByPhoneNumber(input: {
-        phoneNumber: string;
-        tenantId: string;
-        userContext?: any;
-    }): Promise<User | undefined>;
     static updateUser(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
-    }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status:
+                  | "OK"
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
     static revokeAllCodes(
         input:
             | {
@@ -169,8 +173,9 @@ export default class Wrapper {
               }
     ): Promise<{
         status: string;
-        createdNewUser: boolean;
-        user: User;
+        createdNewRecipeUser: boolean;
+        recipeUserId: RecipeUserId;
+        user: import("../../types").User;
     }>;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {
@@ -187,9 +192,6 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let createCode: typeof Wrapper.createCode;
 export declare let consumeCode: typeof Wrapper.consumeCode;
-export declare let getUserByEmail: typeof Wrapper.getUserByEmail;
-export declare let getUserById: typeof Wrapper.getUserById;
-export declare let getUserByPhoneNumber: typeof Wrapper.getUserByPhoneNumber;
 export declare let listCodesByDeviceId: typeof Wrapper.listCodesByDeviceId;
 export declare let listCodesByEmail: typeof Wrapper.listCodesByEmail;
 export declare let listCodesByPhoneNumber: typeof Wrapper.listCodesByPhoneNumber;
@@ -200,6 +202,6 @@ export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
 export declare let signInUp: typeof Wrapper.signInUp;
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

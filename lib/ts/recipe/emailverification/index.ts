@@ -15,8 +15,15 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
+import {
+    RecipeInterface,
+    APIOptions,
+    APIInterface,
+    UserEmailInfo,
+    TypeEmailVerificationEmailDeliveryInput,
+} from "./types";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
+import RecipeUserId from "../../recipeUserId";
 import { getEmailVerifyLink } from "./utils";
 
 export default class Wrapper {
@@ -28,9 +35,9 @@ export default class Wrapper {
 
     static async createEmailVerificationToken(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext: any = {}
     ): Promise<
         | {
               status: "OK";
@@ -41,7 +48,7 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -54,18 +61,18 @@ export default class Wrapper {
         }
 
         return await recipeInstance.recipeInterfaceImpl.createEmailVerificationToken({
-            userId,
+            recipeUserId,
             email: email!,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
     static async createEmailVerificationLink(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext: any = {}
     ): Promise<
         | {
               status: "OK";
@@ -76,7 +83,7 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const appInfo = recipeInstance.getAppInfo();
 
-        let emailVerificationToken = await createEmailVerificationToken(tenantId, userId, email, userContext);
+        let emailVerificationToken = await createEmailVerificationToken(tenantId, recipeUserId, email, userContext);
         if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
             return {
                 status: "EMAIL_ALREADY_VERIFIED_ERROR",
@@ -97,8 +104,9 @@ export default class Wrapper {
     static async sendEmailVerificationEmail(
         tenantId: string,
         userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext: any = {}
     ): Promise<
         | {
               status: "OK";
@@ -108,7 +116,7 @@ export default class Wrapper {
         if (email === undefined) {
             const recipeInstance = Recipe.getInstanceOrThrowError();
 
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -120,7 +128,7 @@ export default class Wrapper {
             }
         }
 
-        let emailVerificationLink = await this.createEmailVerificationLink(tenantId, userId, email, userContext);
+        let emailVerificationLink = await this.createEmailVerificationLink(tenantId, recipeUserId, email, userContext);
 
         if (emailVerificationLink.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
             return {
@@ -132,6 +140,7 @@ export default class Wrapper {
             type: "EMAIL_VERIFICATION",
             user: {
                 id: userId,
+                recipeUserId: recipeUserId,
                 email: email!,
             },
             emailVerifyLink: emailVerificationLink.link,
@@ -143,18 +152,24 @@ export default class Wrapper {
         };
     }
 
-    static async verifyEmailUsingToken(tenantId: string, token: string, userContext?: any) {
+    static async verifyEmailUsingToken(
+        tenantId: string,
+        token: string,
+        attemptAccountLinking: boolean = true,
+        userContext: any = {}
+    ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
             token,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            attemptAccountLinking,
+            userContext,
         });
     }
 
-    static async isEmailVerified(userId: string, email?: string, userContext?: any) {
+    static async isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
 
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
@@ -166,20 +181,25 @@ export default class Wrapper {
         }
 
         return await recipeInstance.recipeInterfaceImpl.isEmailVerified({
-            userId,
-            email: email!,
-            userContext: userContext === undefined ? {} : userContext,
+            recipeUserId,
+            email,
+            userContext,
         });
     }
 
-    static async revokeEmailVerificationTokens(tenantId: string, userId: string, email?: string, userContext?: any) {
+    static async revokeEmailVerificationTokens(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        email?: string,
+        userContext: any = {}
+    ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         // If the dev wants to delete the tokens for an old email address of the user they can pass the address
         // but redeeming those tokens would have no effect on isEmailVerified called without the old address
         // so in general that is not necessary either.
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -193,19 +213,18 @@ export default class Wrapper {
                 throw new global.Error("Unknown User ID provided without email");
             }
         }
-
         return await recipeInstance.recipeInterfaceImpl.revokeEmailVerificationTokens({
-            userId,
+            recipeUserId,
             email: email!,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async unverifyEmail(userId: string, email?: string, userContext?: any) {
+    static async unverifyEmail(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -218,18 +237,17 @@ export default class Wrapper {
             }
         }
         return await recipeInstance.recipeInterfaceImpl.unverifyEmail({
-            userId,
-            email: email!,
-            userContext: userContext === undefined ? {} : userContext,
+            recipeUserId,
+            email,
+            userContext,
         });
     }
 
     static async sendEmail(input: TypeEmailVerificationEmailDeliveryInput & { userContext?: any }) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
             ...input,
-            tenantId: input.tenantId,
+            userContext: input.userContext ?? {},
         });
     }
 }
@@ -252,7 +270,7 @@ export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens
 
 export let unverifyEmail = Wrapper.unverifyEmail;
 
-export type { RecipeInterface, APIOptions, APIInterface, User };
+export type { RecipeInterface, APIOptions, APIInterface, UserEmailInfo };
 
 export let sendEmail = Wrapper.sendEmail;
 

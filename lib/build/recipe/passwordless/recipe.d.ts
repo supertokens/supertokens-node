@@ -4,11 +4,10 @@ import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from ".
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GetEmailForUserIdFunc } from "../emailverification/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -71,8 +70,8 @@ export default class Recipe extends RecipeModule {
               }
     ) => Promise<{
         status: string;
-        createdNewUser: boolean;
-        user: import("./types").User;
+        createdNewRecipeUser: boolean;
+        recipeUserId: import("../..").RecipeUserId;
+        user: import("../../types").User;
     }>;
-    getEmailForUserId: GetEmailForUserIdFunc;
 }

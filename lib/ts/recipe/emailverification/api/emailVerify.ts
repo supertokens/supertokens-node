@@ -62,6 +62,9 @@ export default async function emailVerify(
             userContext,
         });
         if (response.status === "OK") {
+            // if there is a new session, it will be
+            // automatically added to the response by the createNewSession function call
+            // inside the verifyEmailPOST function.
             result = { status: "OK" };
         } else {
             result = response;
@@ -79,7 +82,7 @@ export default async function emailVerify(
         );
         result = await apiImplementation.isEmailVerifiedGET({
             options,
-            session: session!,
+            session,
             userContext,
         });
     }

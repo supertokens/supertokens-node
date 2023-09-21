@@ -65,10 +65,10 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
         const sessionConfig = { exposeAccessTokenToFrontendInCookieBasedAuth, getTokenTransferMethod: () => "cookie" };
         describe("createNewSession", () => {
             it("should attach the appropriate tokens", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -98,10 +98,10 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
         describe("mergeIntoAccessTokenPayload", () => {
             it("should attach the appropriate tokens", async () => {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -156,10 +156,10 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
         describe("verifySession", () => {
             it("should attach the appropriate tokens after refresh", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -218,10 +218,10 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
 
         describe("refresh session", () => {
             it("should attach the appropriate tokens", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -286,7 +286,14 @@ function getTestExpressApp() {
 
     app.post("/create", async (req, res) => {
         try {
-            await Session.createNewSession(req, res, "public", "", req.body.payload, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId(""),
+                req.body.payload,
+                {}
+            );
             res.status(200).send("");
         } catch (ex) {
             res.status(400).json({ message: ex.message });

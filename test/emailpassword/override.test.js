@@ -12,7 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    assertJSONEquals,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -23,6 +33,7 @@ let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLD
 let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
 const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
+let AccountLinking = require("../../recipe/accountlinking");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
@@ -42,11 +53,11 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding functions tests", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -54,6 +65,34 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (response !== undefined) {
+                                        user = {
+                                            ...response,
+                                            loginMethods: [
+                                                {
+                                                    ...response.loginMethods[0],
+                                                    recipeUserId: response.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
+                                    }
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
                 EmailPassword.init({
                     override: {
                         functions: (oI) => {
@@ -62,20 +101,39 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                 signUp: async (input) => {
                                     let response = await oI.signUp(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
                                 signIn: async (input) => {
                                     let response = await oI.signIn(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
-                                    return response;
-                                },
-                                getUserById: async (input) => {
-                                    let response = await oI.getUserById(input);
-                                    user = response;
                                     return response;
                                 },
                             };
@@ -94,13 +152,15 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await EmailPassword.getUserById(userId));
+            let user = await STExpress.getUser(userId);
+            user.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
+            res.json(user);
         });
 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signUpResponse.body.user, user);
+        assertJSONEquals(signUpResponse.body.user, user);
 
         user = undefined;
         assert.strictEqual(user, undefined);
@@ -131,7 +191,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signInResponse.user, user);
+        assertJSONEquals(signInResponse.user, user);
 
         user = undefined;
         assert.strictEqual(user, undefined);
@@ -153,16 +213,16 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(userByIdResponse, user);
+        assertJSONEquals(userByIdResponse, user);
     });
 
     it("overriding api tests", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let emailExists = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -178,14 +238,38 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                 signUpPOST: async (input) => {
                                     let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
                                 signInPOST: async (input) => {
                                     let response = await oI.signInPOST(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
@@ -208,11 +292,6 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.use(errorHandler());
 
-        app.get("/user", async (req, res) => {
-            let userId = req.query.userId;
-            res.json(await EmailPassword.getUserById(userId));
-        });
-
         let emailExistsResponse = await new Promise((resolve) =>
             request(app)
                 .get("/auth/signup/email/exists")
@@ -233,7 +312,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signUpResponse.body.user, user);
+        assertJSONEquals(signUpResponse.body.user, user);
 
         emailExistsResponse = await new Promise((resolve) =>
             request(app)
@@ -282,15 +361,15 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signInResponse.user, user);
+        assertJSONEquals(signInResponse.user, user);
     });
 
     it("overriding functions tests, throws error", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -298,6 +377,24 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (input.userContext.shouldError === undefined) {
+                                        return response;
+                                    }
+                                    throw {
+                                        error: "get user error",
+                                    };
+                                },
+                            };
+                        },
+                    },
+                }),
                 EmailPassword.init({
                     override: {
                         functions: (oI) => {
@@ -314,12 +411,6 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                     await oI.signIn(input);
                                     throw {
                                         error: "signin error",
-                                    };
-                                },
-                                getUserById: async (input) => {
-                                    await oI.getUserById(input);
-                                    throw {
-                                        error: "get user error",
                                     };
                                 },
                             };
@@ -339,7 +430,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         app.get("/user", async (req, res, next) => {
             try {
                 let userId = req.query.userId;
-                res.json(await EmailPassword.getUserById(userId));
+                res.json(await STExpress.getUser(userId, { shouldError: true }));
             } catch (err) {
                 next(err);
             }
@@ -404,12 +495,12 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding api tests, throws error", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let emailExists = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -458,7 +549,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await EmailPassword.getUserById(userId));
+            res.json(await SuperTokens.getUser(userId));
         });
 
         app.use((err, req, res, next) => {

@@ -2,8 +2,8 @@
 import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./framework";
-import { TypeFramework } from "./framework/types";
+import type { BaseRequest, BaseResponse } from "./framework";
+import type { TypeFramework } from "./framework/types";
 export default class SuperTokens {
     private static instance;
     framework: TypeFramework;
@@ -28,25 +28,6 @@ export default class SuperTokens {
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (includeRecipeIds?: string[] | undefined, tenantId?: string | undefined) => Promise<number>;
-    getUsers: (input: {
-        timeJoinedOrder: "ASC" | "DESC";
-        limit?: number;
-        paginationToken?: string;
-        includeRecipeIds?: string[];
-        query?: object;
-        tenantId: string;
-    }) => Promise<{
-        users: {
-            recipeId: string;
-            user: any;
-        }[];
-        nextPaginationToken?: string | undefined;
-    }>;
-    deleteUser: (input: {
-        userId: string;
-    }) => Promise<{
-        status: "OK";
-    }>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;

@@ -11,12 +11,13 @@ import SuperTokens from "../../supertokens";
 import { getRequiredClaimValidators } from "./utils";
 import { getRidFromHeader, isAnIpAddress, normaliseHttpMethod, setRequestInUserContextIfNotDefined } from "../../utils";
 import { logDebugMessage } from "../../logger";
-import { availableTokenTransferMethods } from "./constants";
+import { availableTokenTransferMethods, protectedProps } from "./constants";
 import { clearSession, getAntiCsrfTokenFromHeaders, getToken, setCookie } from "./cookieAndHeaders";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import { NormalisedAppinfo } from "../../types";
 import SessionError from "./error";
+import RecipeUserId from "../../recipeUserId";
 
 // We are defining this here (and not exporting it) to reduce the scope of legacy code
 const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
@@ -321,6 +322,7 @@ export async function createNewSessionInRequest({
     recipeInstance,
     accessTokenPayload,
     userId,
+    recipeUserId,
     config,
     appInfo,
     sessionDataInDatabase,
@@ -332,6 +334,7 @@ export async function createNewSessionInRequest({
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;
+    recipeUserId: RecipeUserId;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
@@ -356,8 +359,12 @@ export async function createNewSessionInRequest({
         iss: issuer,
     };
 
+    for (const prop of protectedProps) {
+        delete finalAccessTokenPayload[prop];
+    }
+
     for (const claim of claimsAddedByOtherRecipes) {
-        const update = await claim.build(userId, tenantId, userContext);
+        const update = await claim.build(userId, recipeUserId, tenantId, userContext);
         finalAccessTokenPayload = {
             ...finalAccessTokenPayload,
             ...update,
@@ -389,6 +396,7 @@ export async function createNewSessionInRequest({
     const disableAntiCsrf = outputTransferMethod === "header";
     const session = await recipeInstance.recipeInterfaceImpl.createNewSession({
         userId,
+        recipeUserId,
         accessTokenPayload: finalAccessTokenPayload,
         sessionDataInDatabase,
         disableAntiCsrf,

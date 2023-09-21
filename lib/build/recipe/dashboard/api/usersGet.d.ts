@@ -1,33 +1,9 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
+import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
 export declare type Response = {
     status: "OK";
     nextPaginationToken?: string;
-    users: {
-        recipeId: string;
-        user: {
-            id: string;
-            timeJoined: number;
-            firstName?: string;
-            lastName?: string;
-            tenantIds: string[];
-        } & (
-            | {
-                  email: string;
-              }
-            | {
-                  email: string;
-                  thirdParty: {
-                      id: string;
-                      userId: string;
-                  };
-              }
-            | {
-                  email?: string;
-                  phoneNumber?: string;
-              }
-        );
-    }[];
+    users: UserWithFirstAndLastName[];
 };
 export default function usersGet(
     _: APIInterface,

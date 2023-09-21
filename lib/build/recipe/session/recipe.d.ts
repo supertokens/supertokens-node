@@ -12,7 +12,7 @@ import {
 import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OpenIdRecipe from "../openid/recipe";
 export default class SessionRecipe extends RecipeModule {
     private static instance;

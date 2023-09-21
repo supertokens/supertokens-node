@@ -46,10 +46,10 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test rid with session and non existant API in session recipe gives 404", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -80,10 +80,10 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test no rid with existent API does not give 404", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -113,10 +113,10 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test rid as anti-csrf with existent API does not give 404", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -147,10 +147,10 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test random rid with existent API gives 404", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -181,10 +181,10 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("custom response express", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -199,11 +199,12 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    const res = await oI.emailExistsGET(input);
                                     input.options.res.setStatusCode(201);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
-                                    return oI.emailExistsGET(input);
+                                    return res;
                                 },
                             };
                         },

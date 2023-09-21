@@ -36,29 +36,10 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type DeviceType = DeviceTypeOriginal;
-
-export type User = (
-    | {
-          // passwordless user properties
-          email?: string;
-          phoneNumber?: string;
-      }
-    | {
-          // third party user properties
-          email: string;
-          thirdParty: {
-              id: string;
-              userId: string;
-          };
-      }
-) & {
-    id: string;
-    timeJoined: number;
-    tenantIds: string[];
-};
 
 export type TypeInput = (
     | {
@@ -140,27 +121,11 @@ export type TypeNormalisedInput = (
 };
 
 export type RecipeInterface = {
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-
-    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
-
-    getUserByPhoneNumber: (input: {
-        phoneNumber: string;
-        tenantId: string;
-        userContext: any;
-    }) => Promise<User | undefined>;
-
-    getUserByThirdPartyInfo(input: {
-        thirdPartyId: string;
-        thirdPartyUserId: string;
-        tenantId: string;
-        userContext: any;
-    }): Promise<User | undefined>;
-
     thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
             fromIdTokenPayload?: { [key: string]: any };
@@ -168,24 +133,42 @@ export type RecipeInterface = {
         };
         tenantId: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-        oAuthTokens: { [key: string]: any };
-        rawUserInfoFromProvider: {
-            fromIdTokenPayload?: { [key: string]: any };
-            fromUserInfoAPI?: { [key: string]: any };
-        };
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+              oAuthTokens: { [key: string]: any };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: { [key: string]: any };
+                  fromUserInfoAPI?: { [key: string]: any };
+              };
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 
     thirdPartyManuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+    }): Promise<
+        | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
@@ -251,8 +234,9 @@ export type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -263,13 +247,23 @@ export type RecipeInterface = {
     >;
 
     updatePasswordlessUser: (input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext: any;
-    }) => Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
-    }>;
+    }) => Promise<
+        | {
+              status:
+                  | "OK"
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
 
     revokeAllCodes: (
         input:
@@ -360,7 +354,7 @@ export type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };
@@ -370,6 +364,10 @@ export type APIInterface = {
                     };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
 
@@ -395,6 +393,10 @@ export type APIInterface = {
                     deviceId: string;
                     preAuthSessionId: string;
                     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
+                }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
                 }
               | GeneralErrorResponse
           >);
@@ -430,7 +432,7 @@ export type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                 }
@@ -441,6 +443,10 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
               | { status: "RESTART_FLOW_ERROR" }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
           >);
 
     passwordlessUserEmailExistsGET:

@@ -12,7 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, killAllSTCoresOnly } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    setKeyValueInConfig,
+    killAllSTCoresOnly,
+    mockRequest,
+} = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
@@ -25,6 +34,7 @@ const { maxVersion } = require("../lib/build/utils");
 const { fail } = require("assert");
 const sinon = require("sinon");
 const request = require("http");
+const { default: RecipeUserId } = require("../lib/build/recipeUserId");
 
 /* TODO:
 - the opposite of the above (check that if signing key changes, things are still fine) condition
@@ -57,11 +67,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, things are still fine", async function () {
-        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
+        }); // 5 seconds is the update interval
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -75,7 +86,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -192,11 +203,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via token query, old tokens don't query the core", async function () {
-        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
+        }); // 5 seconds is the update interval
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -209,7 +221,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const oldSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -218,7 +230,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -229,7 +241,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const newSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -275,11 +287,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
-        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
+        }); // 5 seconds is the update interval
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -292,7 +305,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -303,7 +316,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -356,11 +369,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
-        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
+        }); // 5 seconds is the update interval
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -375,7 +389,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
 
             {},
@@ -387,7 +401,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -441,11 +455,16 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("test reducing access token signing key update interval time", async function () {
-        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.0041"); // 10 seconds
-        await startST();
+        const appId = "testapp-" + Date.now();
+        const connectionURI = await startST({
+            appId,
+            coreConfig: {
+                access_token_dynamic_signing_key_update_interval: "0.0041", // 10 seconds
+            },
+        });
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -458,7 +477,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -485,7 +504,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await setupST();
 
         // start server again
-        await startST();
+        await startST({
+            appId,
+            coreConfig: {
+                access_token_dynamic_signing_key_update_interval: "0.0041", // 10 seconds
+            },
+        });
 
         {
             await SessionFunctions.getSession(
@@ -506,7 +530,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -583,12 +607,15 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("no access token signing key update", async function () {
-        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.0011"); // 4 seconds
-        await setKeyValueInConfig("access_token_signing_key_dynamic", "false");
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: {
+                access_token_signing_key_dynamic: "false",
+                access_token_dynamic_signing_key_update_interval: "0.0011", // 4 seconds
+            },
+        });
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -609,7 +636,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "public",
-            "",
+            new RecipeUserId(""),
             false,
             {},
             {}

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import {
@@ -12,14 +12,8 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
-export declare type User = {
-    id: string;
-    email?: string;
-    phoneNumber?: string;
-    timeJoined: number;
-    tenantIds: string[];
-};
+import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
@@ -148,8 +142,9 @@ export declare type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -160,21 +155,24 @@ export declare type RecipeInterface = {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    getUserByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<User | undefined>;
-    getUserByPhoneNumber: (input: {
-        phoneNumber: string;
-        tenantId: string;
-        userContext: any;
-    }) => Promise<User | undefined>;
     updateUser: (input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext: any;
-    }) => Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
-    }>;
+    }) => Promise<
+        | {
+              status:
+                  | "OK"
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
     revokeAllCodes: (
         input:
             | {
@@ -257,6 +255,10 @@ export declare type APIInterface = {
               preAuthSessionId: string;
               flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
           }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
         | GeneralErrorResponse
     >;
     resendCodePOST?: (
@@ -293,7 +295,7 @@ export declare type APIInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
               session: SessionContainerInterface;
           }
@@ -305,6 +307,10 @@ export declare type APIInterface = {
         | GeneralErrorResponse
         | {
               status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
           }
     >;
     emailExistsGET?: (input: {

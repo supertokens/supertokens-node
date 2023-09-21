@@ -1,14 +1,21 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
+import {
+    RecipeInterface,
+    APIOptions,
+    APIInterface,
+    UserEmailInfo,
+    TypeEmailVerificationEmailDeliveryInput,
+} from "./types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<
@@ -22,7 +29,7 @@ export default class Wrapper {
     >;
     static createEmailVerificationLink(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<
@@ -37,6 +44,7 @@ export default class Wrapper {
     static sendEmailVerificationEmail(
         tenantId: string,
         userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<
@@ -50,27 +58,28 @@ export default class Wrapper {
     static verifyEmailUsingToken(
         tenantId: string,
         token: string,
+        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: UserEmailInfo;
           }
         | {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    static isEmailVerified(userId: string, email?: string, userContext?: any): Promise<boolean>;
+    static isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<{
         status: string;
     }>;
     static unverifyEmail(
-        userId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<{
@@ -91,6 +100,6 @@ export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
-export type { RecipeInterface, APIOptions, APIInterface, User };
+export type { RecipeInterface, APIOptions, APIInterface, UserEmailInfo };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export { EmailVerificationClaim } from "./emailVerificationClaim";

@@ -16,7 +16,7 @@ import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import STError from "./error";
 import {
     TypeInput,
@@ -97,9 +97,7 @@ export default class Recipe extends RecipeModule {
          */
         this.emailDelivery =
             ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(
-                      this.config.getEmailDeliveryConfig(emailPasswordRecipeImplementation, this.isInServerlessEnv)
-                  )
+                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig(this.isInServerlessEnv))
                 : ingredients.emailDelivery;
 
         this.emailPasswordRecipe =

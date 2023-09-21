@@ -15,7 +15,7 @@
 
 import SuperTokensError from "../../error";
 import error from "../../error";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
@@ -83,7 +83,7 @@ export default class Recipe extends RecipeModule {
     // This stub is required to implement RecipeModule
     handleAPIRequest = async (
         _: string,
-        ______: string | undefined, // TODO tenantId
+        _tenantId: string | undefined,
         __: BaseRequest,
         ___: BaseResponse,
         ____: normalisedURLPath,

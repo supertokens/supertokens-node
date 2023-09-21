@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
+const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST, removeAppAndTenants } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -217,11 +217,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test built-in provider computed config from static config", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -313,11 +313,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
                 it(`should work for ${provider.config.thirdPartyId} with override ${JSON.stringify(
                     overrideVal.input
                 )}`, async function () {
-                    await startSTWithMultitenancy();
+                    const connectionURI = await startSTWithMultitenancy();
 
                     STExpress.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -437,11 +437,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
                 it(`should work for ${provider.config.thirdPartyId} with override ${JSON.stringify(
                     overrideVal.input
                 )}`, async function () {
-                    await startSTWithMultitenancy();
+                    const connectionURI = await startSTWithMultitenancy();
 
                     STExpress.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -488,11 +488,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test built-in provider computed config from core config", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -517,11 +517,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when only one clientType is provided from static", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -550,11 +550,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are more than one clientType from static", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -590,11 +590,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there is one clientType from core", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -615,11 +615,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are more than one clientType from core", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -647,11 +647,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are same clientTypes from static and core", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -695,11 +695,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test clientType matching when there are different clientTypes from static and core", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -737,10 +737,12 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test getProvider and signInUp on an app and tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy({ noApp: true });
+
+        await removeAppAndTenants("a1");
 
         // Create app
-        await fetch("http://localhost:8080/recipe/multitenancy/app", {
+        await fetch(`http://localhost:8080/recipe/multitenancy/app`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -822,10 +824,10 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "google");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "googleuser");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "google");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "googleuser");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         await Multitenancy.createOrUpdateTenant("t1", {
             emailPasswordEnabled: true,
@@ -856,10 +858,10 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "google");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "googleuser");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "google");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "googleuser");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
         assert.deepEqual(response1.body.user.tenantIds, ["t1"]);
     });
 });

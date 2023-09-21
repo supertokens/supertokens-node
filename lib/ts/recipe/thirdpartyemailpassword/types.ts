@@ -22,11 +22,9 @@ import {
 } from "../thirdparty/types";
 import {
     NormalisedFormField,
-    TypeFormField,
     TypeInputFormField,
     APIOptions as EmailPasswordAPIOptionsOriginal,
     TypeEmailPasswordEmailDeliveryInput,
-    RecipeInterface as EPRecipeInterface,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
@@ -34,32 +32,8 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse } from "../../types";
-
-export type User = {
-    id: string;
-    timeJoined: number;
-    email: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
-    tenantIds: string[];
-};
-
-export type TypeContextEmailPasswordSignUp = {
-    loginType: "emailpassword";
-    formFields: TypeFormField[];
-};
-
-export type TypeContextEmailPasswordSignIn = {
-    loginType: "emailpassword";
-};
-
-export type TypeContextThirdParty = {
-    loginType: "thirdparty";
-    thirdPartyAuthCodeResponse: any;
-};
+import { GeneralErrorResponse, User as GlobalUser, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
@@ -86,7 +60,6 @@ export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: ProviderInput[];
     getEmailDeliveryConfig: (
-        emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     override: {
@@ -99,17 +72,6 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-
-    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
-
-    getUserByThirdPartyInfo(input: {
-        thirdPartyId: string;
-        thirdPartyUserId: string;
-        tenantId: string;
-        userContext: any;
-    }): Promise<User | undefined>;
-
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
         clientType?: string;
@@ -121,6 +83,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
             fromIdTokenPayload?: { [key: string]: any };
@@ -128,64 +91,111 @@ export type RecipeInterface = {
         };
         tenantId: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-        oAuthTokens: { [key: string]: any };
-        rawUserInfoFromProvider: {
-            fromIdTokenPayload?: { [key: string]: any };
-            fromUserInfoAPI?: { [key: string]: any };
-        };
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+              oAuthTokens: { [key: string]: any };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: { [key: string]: any };
+                  fromUserInfoAPI?: { [key: string]: any };
+              };
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 
     thirdPartyManuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 
     emailPasswordSignUp(input: {
         email: string;
         password: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
+
+    createNewEmailPasswordRecipeUser(input: {
+        email: string;
+        password: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
 
     emailPasswordSignIn(input: {
         email: string;
         password: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+    >;
 
     createResetPasswordToken(input: {
         userId: string;
+        email: string;
         tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
-    resetPasswordUsingToken(input: {
+    consumePasswordResetToken(input: {
         token: string;
-        newPassword: string;
         tenantId: string;
         userContext: any;
     }): Promise<
         | {
               status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
+              email: string;
+              userId: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
 
     updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext: any;
@@ -194,6 +204,10 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
     >;
@@ -249,6 +263,10 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
 
@@ -266,11 +284,13 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    userId?: string;
+                    email: string;
+                    user: GlobalUser;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
               | GeneralErrorResponse
           >);
 
@@ -297,8 +317,8 @@ export type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
-                    user: User;
+                    createdNewRecipeUser: boolean;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };
                     rawUserInfoFromProvider: {
@@ -307,6 +327,10 @@ export type APIInterface = {
                     };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
 
@@ -323,8 +347,12 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
+                }
+              | {
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
@@ -345,8 +373,12 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
+                }
+              | {
+                    status: "SIGN_UP_NOT_ALLOWED";
+                    reason: string;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";

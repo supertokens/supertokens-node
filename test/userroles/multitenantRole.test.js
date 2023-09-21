@@ -38,10 +38,10 @@ describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js
     });
 
     it("test that different roles can be assigned for the same user for each tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -62,10 +62,11 @@ describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password1");
         const userId = user.user.id;
+        const recipeUserId = user.user.loginMethods[0].recipeUserId;
 
-        await Multitenancy.associateUserToTenant("t1", userId);
-        await Multitenancy.associateUserToTenant("t2", userId);
-        await Multitenancy.associateUserToTenant("t3", userId);
+        await Multitenancy.associateUserToTenant("t1", recipeUserId);
+        await Multitenancy.associateUserToTenant("t2", recipeUserId);
+        await Multitenancy.associateUserToTenant("t3", recipeUserId);
 
         await UserRolesRecipe.createNewRoleOrAddPermissions("role1", []);
         await UserRolesRecipe.createNewRoleOrAddPermissions("role2", []);

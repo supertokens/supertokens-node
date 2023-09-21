@@ -33,11 +33,11 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
 
     describe("createNewSession", () => {
         it("should create access token payload w/ session claims", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -53,7 +53,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                                 createNewSession: async (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
-                                        ...(await TrueClaim.build(input.userId, input.userContext)),
+                                        ...(await TrueClaim.build(input.userId, input.recipeUserId, input.userContext)),
                                     };
                                     return oI.createNewSession(input);
                                 },
@@ -64,10 +64,15 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 10);
+            assert.equal(Object.keys(payload).length, 11);
             assert.ok(payload["iss"], "http://api.supertokens.io/auth");
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
@@ -75,10 +80,10 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
         });
 
         it("should create access token payload wo/ session claims with an undefined value", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -96,7 +101,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                                         ...input.accessTokenPayload,
                                         ...(await UndefinedClaim.build(
                                             input.userId,
-                                            input.accessTokenPayload,
+                                            input.recipeUserId,
                                             input.userContext
                                         )),
                                     };
@@ -109,13 +114,18 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 9);
+            assert.equal(Object.keys(payload).length, 10);
         });
 
         it("should merge claims and the passed access token payload obj", async function () {
-            await startST();
+            const connectionURI = await startST();
             const payloadParam = { initial: true };
             const custom2 = { undef: undefined, nullProp: null, inner: "asdf" };
             const customClaims = {
@@ -125,7 +135,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             };
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -141,7 +151,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                                 createNewSession: async (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
-                                        ...(await TrueClaim.build(input.userId, input.userContext)),
+                                        ...(await TrueClaim.build(input.userId, input.recipeUserId, input.userContext)),
                                         ...customClaims,
                                     };
                                     return oI.createNewSession(input);
@@ -153,13 +163,19 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId", payloadParam);
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId"),
+                payloadParam
+            );
 
             // The passed object should be unchanged
             assert.strictEqual(Object.keys(payloadParam).length, 1);
 
             const payload = res.getAccessTokenPayload();
-            assert.strictEqual(Object.keys(payload).length, 14); // 5 + 9 standard
+            assert.strictEqual(Object.keys(payload).length, 15); // 5 + 10 standard
             // We have the prop from the payload param
             assert.strictEqual(payload["initial"], true);
             // We have the boolean claim

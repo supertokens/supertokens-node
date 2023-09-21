@@ -37,10 +37,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersOldestFirst", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -69,12 +69,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test1@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test1@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -101,10 +101,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersOldestFirst with search queries", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -137,13 +137,19 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         users = await getUsersOldestFirst({ tenantId: "public", query: { email: "john" } });
         assert.strictEqual(users.users.length, 1);
+        assert.strictEqual(users.users[0].emails[0], "john@gmail.com");
+        assert.strictEqual(users.users[0].phoneNumbers[0], undefined);
+        assert.strictEqual(users.users[0].thirdParty[0], undefined);
+        assert.strictEqual(users.users[0].loginMethods[0].email, "john@gmail.com");
+        assert.strictEqual(users.users[0].loginMethods[0].phoneNumber, undefined);
+        assert.strictEqual(users.users[0].loginMethods[0].thirdParty, undefined);
     });
 
     it("test getUsersNewestFirst", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -172,12 +178,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test4@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test4@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test3@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test3@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -204,10 +210,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersNewestFirst with search queries", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -243,10 +249,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUserCount", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

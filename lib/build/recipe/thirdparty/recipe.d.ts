@@ -4,8 +4,7 @@ import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from ".
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../framework";
-import { GetEmailForUserIdFunc } from "../emailverification/types";
+import type { BaseRequest, BaseResponse } from "../../framework";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -38,5 +37,4 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _request: BaseRequest, _response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    getEmailForUserId: GetEmailForUserIdFunc;
 }

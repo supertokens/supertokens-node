@@ -3,7 +3,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     RecipeInterface,
-    User,
     APIInterface,
     PasswordlessAPIOptions,
     ThirdPartyAPIOptions,
@@ -11,6 +10,7 @@ import {
 } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -25,20 +25,24 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        isVerified: boolean,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-    }>;
-    static getUserByThirdPartyInfo(
-        tenantId: string,
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        userContext?: any
-    ): Promise<User | undefined>;
-    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(tenantId: string, email: string, userContext?: any): Promise<User[]>;
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: import("../../types").User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
     static createCode(
         input: (
             | {
@@ -100,8 +104,9 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
-              user: User;
+              createdNewRecipeUser: boolean;
+              user: import("../../types").User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -112,19 +117,24 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserByPhoneNumber(input: {
-        phoneNumber: string;
-        tenantId: string;
-        userContext?: any;
-    }): Promise<User | undefined>;
     static updatePasswordlessUser(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
-    }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status:
+                  | "OK"
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
     static revokeAllCodes(
         input:
             | {
@@ -194,8 +204,9 @@ export default class Wrapper {
               }
     ): Promise<{
         status: string;
-        createdNewUser: boolean;
-        user: import("../passwordless/types").User;
+        createdNewRecipeUser: boolean;
+        recipeUserId: RecipeUserId;
+        user: import("../../types").User;
     }>;
     static sendEmail(
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
@@ -213,12 +224,8 @@ export declare let Error: typeof SuperTokensError;
 export declare let thirdPartyGetProvider: typeof Wrapper.thirdPartyGetProvider;
 export declare let thirdPartyManuallyCreateOrUpdateUser: typeof Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 export declare let passwordlessSignInUp: typeof Wrapper.passwordlessSignInUp;
-export declare let getUserById: typeof Wrapper.getUserById;
-export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
-export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let createCode: typeof Wrapper.createCode;
 export declare let consumeCode: typeof Wrapper.consumeCode;
-export declare let getUserByPhoneNumber: typeof Wrapper.getUserByPhoneNumber;
 export declare let listCodesByDeviceId: typeof Wrapper.listCodesByDeviceId;
 export declare let listCodesByEmail: typeof Wrapper.listCodesByEmail;
 export declare let listCodesByPhoneNumber: typeof Wrapper.listCodesByPhoneNumber;
@@ -228,6 +235,6 @@ export declare let updatePasswordlessUser: typeof Wrapper.updatePasswordlessUser
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
-export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
+export type { RecipeInterface, TypeProvider, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

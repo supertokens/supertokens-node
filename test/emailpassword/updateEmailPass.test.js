@@ -37,10 +37,10 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
     });
 
     it("test updateEmailPass", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -67,7 +67,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         let res = await signIn("public", "test@gmail.com", "testPass123");
 
         await updateEmailOrPassword({
-            userId: res.user.id,
+            recipeUserId: STExpress.convertToRecipeUserId(res.user.id),
             email: "test2@gmail.com",
             password: "testPass",
             applyPasswordPolicy: false,
@@ -79,10 +79,10 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
     });
 
     it("test updateEmailPass with failing password validation", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -127,7 +127,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         let res = await signIn("public", "test@gmail.com", "testPass123");
 
         const res2 = await updateEmailOrPassword({
-            userId: res.user.id,
+            userId: STExpress.convertToRecipeUserId(res.user.id),
             email: "test2@gmail.com",
             password: "test",
         });
@@ -137,10 +137,10 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
     });
 
     it("test updateEmailPass with passing password validation", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -185,7 +185,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         let res = await signIn("public", "test@gmail.com", "testPass123");
 
         const res2 = await updateEmailOrPassword({
-            userId: res.user.id,
+            recipeUserId: STExpress.convertToRecipeUserId(res.user.id),
             email: "test2@gmail.com",
             password: "testPass2",
         });
@@ -194,10 +194,10 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
     });
 
     it("test updateEmailPass with failing default password validation", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -224,7 +224,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         let res = await signIn("public", "test@gmail.com", "testPass123");
 
         const res2 = await updateEmailOrPassword({
-            userId: res.user.id,
+            userId: STExpress.convertToRecipeUserId(res.user.id),
             email: "test2@gmail.com",
             password: "1",
         });

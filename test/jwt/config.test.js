@@ -20,10 +20,10 @@ describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
     });
 
     it("Test that the default config sets values correctly for JWT recipe", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -45,10 +45,10 @@ describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
     });
 
     it("Test that the config sets values correctly for JWT recipe when jwt validity is set", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

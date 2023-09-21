@@ -39,10 +39,10 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test default backward compatibility api being called: passwordless login", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -107,14 +107,14 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test backward compatibility: passwordless login", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
         let userInputCode = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -167,7 +167,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test custom override: passwordless login", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -176,7 +176,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let appName = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -247,7 +247,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test smtp service: passwordless login", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let codeLifetime = undefined;
         let userInputCode = undefined;
@@ -257,7 +257,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let getContentCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -347,10 +347,10 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test default backward compatibility api being called, error message sent back to user: passwordless login", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -422,10 +422,10 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test default backward compatibility api being called: resend code api", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -508,7 +508,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test backward compatibility: resend code api", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -516,7 +516,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let sendCustomEmailCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -587,7 +587,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test custom override: resend code api", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -598,7 +598,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let loginCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -694,7 +694,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test smtp service: resend code api", async function () {
-        await startST();
+        const connectionURI = await startST();
         let email = undefined;
         let codeLifetime = undefined;
         let urlWithLinkCode = undefined;
@@ -704,7 +704,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let getContentCalled = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -822,10 +822,10 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
     });
 
     it("test default backward compatibility api being called, error message sent back to user: resend code api", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

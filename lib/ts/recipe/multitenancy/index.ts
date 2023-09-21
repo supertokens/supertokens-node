@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -144,7 +145,7 @@ export default class Wrapper {
 
     static async associateUserToTenant(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
         | {
@@ -158,18 +159,22 @@ export default class Wrapper {
                   | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
                   | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
           }
+        | {
+              status: "ASSOCIATION_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
     > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.associateUserToTenant({
             tenantId,
-            userId,
+            recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
     static async disassociateUserFromTenant(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -178,7 +183,7 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.disassociateUserFromTenant({
             tenantId,
-            userId,
+            recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

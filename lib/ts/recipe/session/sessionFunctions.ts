@@ -18,10 +18,12 @@ import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
+import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { JWKCacheMaxAgeInMs } from "./constants";
 
 /**
  * @description call this to "login" a user.
@@ -29,7 +31,7 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 export async function createNewSession(
     helpers: Helpers,
     tenantId: string,
-    userId: string,
+    recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
     accessTokenPayload: any = {},
     sessionDataInDatabase: any = {}
@@ -39,13 +41,13 @@ export async function createNewSession(
         sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
 
     const requestBody = {
-        userId,
-        userDataInJWT: accessTokenPayload,
+        userId: recipeUserId.getAsString(),
+        userDataInJWT: { ...accessTokenPayload },
         userDataInDatabase: sessionDataInDatabase,
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
-    const response = await helpers.querier.sendPostRequest(
+    let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath(`/${tenantId}/recipe/session`),
         requestBody
     );
@@ -54,6 +56,7 @@ export async function createNewSession(
         session: {
             handle: response.session.handle,
             userId: response.session.userId,
+            recipeUserId: new RecipeUserId(response.session.recipeUserId),
             userDataInJWT: response.session.userDataInJWT,
             tenantId: response.session.tenantId,
         },
@@ -84,6 +87,7 @@ export async function getSession(
     session: {
         handle: string;
         userId: string;
+        recipeUserId: RecipeUserId;
         userDataInJWT: any;
         expiryTime: number;
         tenantId: string;
@@ -210,6 +214,7 @@ export async function getSession(
             session: {
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
+                recipeUserId: accessTokenInfo.recipeUserId,
                 userDataInJWT: accessTokenInfo.userData,
                 expiryTime: accessTokenInfo.expiryTime,
                 tenantId: accessTokenInfo.tenantId,
@@ -228,6 +233,7 @@ export async function getSession(
     };
 
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
+
     if (response.status === "OK") {
         delete response.status;
         return {
@@ -235,6 +241,7 @@ export async function getSession(
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
+                recipeUserId: new RecipeUserId(response.session.recipeUserId),
                 expiryTime:
                     response.accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
                     accessTokenInfo?.expiryTime || // if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
@@ -271,7 +278,6 @@ export async function getSessionInformation(
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");
     }
-
     let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/recipe/session`), {
         sessionHandle,
     });
@@ -283,6 +289,7 @@ export async function getSessionInformation(
             timeCreated: response.timeCreated,
             expiry: response.expiry,
             userId: response.userId,
+            recipeUserId: new RecipeUserId(response.recipeUserId),
             sessionDataInDatabase: response.userDataInDatabase,
             customClaimsInAccessTokenPayload: response.userDataInJWT,
             tenantId: response.tenantId,
@@ -319,11 +326,13 @@ export async function refreshSession(
     }
 
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
+
     if (response.status === "OK") {
         return {
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
+                recipeUserId: new RecipeUserId(response.session.recipeUserId),
                 userDataInJWT: response.session.userDataInJWT,
                 tenantId: response.session.tenantId,
             },
@@ -350,6 +359,7 @@ export async function refreshSession(
         throw new STError({
             message: "Token theft detected",
             payload: {
+                recipeUserId: new RecipeUserId(response.session.recipeUserId),
                 userId: response.session.userId,
                 sessionHandle: response.session.handle,
             },
@@ -365,15 +375,16 @@ export async function refreshSession(
 export async function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
+    revokeSessionsForLinkedAccounts: boolean,
     tenantId?: string,
     revokeAcrossAllTenants?: boolean
 ): Promise<string[]> {
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
     }
-
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
         userId,
+        revokeSessionsForLinkedAccounts,
         revokeAcrossAllTenants,
     });
     return response.sessionHandlesRevoked;
@@ -385,15 +396,16 @@ export async function revokeAllSessionsForUser(
 export async function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
+    fetchSessionsForAllLinkedAccounts: boolean,
     tenantId?: string,
     fetchAcrossAllTenants?: boolean
 ): Promise<string[]> {
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
     }
-
     let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/user`), {
         userId,
+        fetchSessionsForAllLinkedAccounts,
         fetchAcrossAllTenants,
     });
     return response.sessionHandles;
@@ -404,7 +416,7 @@ export async function getAllSessionHandlesForUser(
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
 export async function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean> {
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/recipe/session/remove`), {
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
         sessionHandles: [sessionHandle],
     });
     return response.sessionHandlesRevoked.length === 1;
@@ -447,7 +459,7 @@ export async function updateAccessTokenPayload(
 ): Promise<boolean> {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath(`/recipe/jwt/data`), {
+    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
         sessionHandle,
         userDataInJWT: newAccessTokenPayload,
     });

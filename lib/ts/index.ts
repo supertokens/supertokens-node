@@ -15,12 +15,19 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
+import { User as UserType } from "./types";
+import AccountLinking from "./recipe/accountlinking/recipe";
+import { AccountInfo } from "./recipe/accountlinking/types";
+import RecipeUserId from "./recipeUserId";
+import { User } from "./user";
 
 // For Express
 export default class SuperTokensWrapper {
     static init = SuperTokens.init;
 
     static Error = SuperTokensError;
+    static RecipeUserId = RecipeUserId;
+    static User = User;
 
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
@@ -35,14 +42,15 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
-        query?: object;
+        query?: { [key: string]: string };
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
+        return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
+            userContext: undefined,
         });
     }
 
@@ -51,20 +59,15 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
-        query?: object;
+        query?: { [key: string]: string };
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: UserType[];
         nextPaginationToken?: string;
     }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
+        return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "DESC",
             ...input,
-        });
-    }
-
-    static deleteUser(userId: string) {
-        return SuperTokens.getInstanceOrThrowError().deleteUser({
-            userId,
+            userContext: undefined,
         });
     }
 
@@ -97,6 +100,37 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
 
+    static async getUser(userId: string, userContext?: any) {
+        return await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
+            userId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async listUsersByAccountInfo(
+        tenantId: string,
+        accountInfo: AccountInfo,
+        doUnionOfAccountInfo: boolean = false,
+        userContext?: any
+    ) {
+        return await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId,
+            accountInfo,
+            doUnionOfAccountInfo,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = true, userContext?: any) {
+        return await AccountLinking.getInstance().recipeInterfaceImpl.deleteUser({
+            userId,
+            removeAllLinkedAccounts,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static convertToRecipeUserId(recipeUserId: string): RecipeUserId {
+        return new RecipeUserId(recipeUserId);
+    }
+
     static getRequestFromUserContext(userContext: any | undefined) {
         return SuperTokens.getInstanceOrThrowError().getRequestFromUserContext(userContext);
     }
@@ -122,6 +156,15 @@ export let deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping;
 
 export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
 
+export let getUser = SuperTokensWrapper.getUser;
+
+export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
+
+export let convertToRecipeUserId = SuperTokensWrapper.convertToRecipeUserId;
+
 export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserContext;
 
 export let Error = SuperTokensWrapper.Error;
+
+export { default as RecipeUserId } from "./recipeUserId";
+export { User } from "./user";

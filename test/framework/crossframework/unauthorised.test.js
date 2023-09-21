@@ -2,6 +2,7 @@ const { addCrossFrameworkTests } = require("../crossFramework.testgen");
 let Session = require("../../../recipe/session");
 const { extractInfoFromResponse } = require("../../utils");
 let assert = require("assert");
+const SuperTokens = require("../../..");
 
 addCrossFrameworkTests(
     (setup, callServer, tokenTransferMethod) => {
@@ -9,9 +10,6 @@ addCrossFrameworkTests(
             it("should clear all response cookies during refresh", async () => {
                 await setup({
                     stConfig: {
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
                         appInfo: {
                             apiDomain: "http://api.supertokens.io",
                             appName: "SuperTokens",
@@ -44,7 +42,14 @@ addCrossFrameworkTests(
                             path: "/create",
                             method: "post",
                             handler: async (req, res, next) => {
-                                await Session.createNewSession(req, res, "public", "id1", {}, {});
+                                await Session.createNewSession(
+                                    req,
+                                    res,
+                                    "public",
+                                    SuperTokens.convertToRecipeUserId("id1"),
+                                    {},
+                                    {}
+                                );
                                 res.setStatusCode(200);
                                 res.sendJSONResponse("");
                                 return res.response;
@@ -105,9 +110,6 @@ addCrossFrameworkTests(
             it("test revoking a session after createNewSession with throwing unauthorised error", async function () {
                 await setup({
                     stConfig: {
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
                         appInfo: {
                             apiDomain: "http://api.supertokens.io",
                             appName: "SuperTokens",
@@ -125,7 +127,14 @@ addCrossFrameworkTests(
                             path: "/create-throw",
                             method: "post",
                             handler: async (req, res, next) => {
-                                await Session.createNewSession(req, res, "public", "id1", {}, {});
+                                await Session.createNewSession(
+                                    req,
+                                    res,
+                                    "public",
+                                    SuperTokens.convertToRecipeUserId("id1"),
+                                    {},
+                                    {}
+                                );
                                 next(
                                     new Session.Error({
                                         message: "unauthorised",
@@ -173,9 +182,6 @@ addCrossFrameworkTests(
             it("should return a 401 for invalid tokens", async function () {
                 await setup({
                     stConfig: {
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
                         appInfo: {
                             apiDomain: "http://api.supertokens.io",
                             appName: "SuperTokens",

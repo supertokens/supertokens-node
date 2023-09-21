@@ -24,6 +24,7 @@ let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLD
 let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
 const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
+let ThirdParty = require("../../recipe/thirdparty");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let generatePasswordResetToken = require("../../lib/build/recipe/emailpassword/api/generatePasswordResetToken").default;
 let passwordReset = require("../../lib/build/recipe/emailpassword/api/passwordReset").default;
@@ -61,10 +62,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
      *      - check that the generated password reset link is correct
      */
     it("test email validation checks in generate token API", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -106,14 +107,14 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test that generated password link is correct", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let resetURL = "";
         let tokenInfo = "";
         let ridInfo = "";
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -180,10 +181,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
      *        - input is valid, check that password has changed (call sign in)
      */
     it("test password validation", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -248,10 +249,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test token missing from input", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -290,10 +291,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test invalid token input", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -333,13 +334,13 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test valid token input and passoword has changed", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let passwordResetUserId = undefined;
         let token = "";
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -348,15 +349,23 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             },
             recipeList: [
                 EmailPassword.init({
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async (input) => {
+                                    token = input.passwordResetLink.split("?")[1].split("&")[0].split("=")[1];
+                                },
+                            };
+                        },
+                    },
                     override: {
                         apis: (oI) => {
                             return {
                                 ...oI,
                                 passwordResetPOST: async function (input) {
                                     let resp = await oI.passwordResetPOST(input);
-                                    if (resp.userId !== undefined) {
-                                        passwordResetUserId = resp.userId;
-                                    }
+                                    passwordResetUserId = resp.user.id;
                                     return resp;
                                 },
                             };
@@ -430,12 +439,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 })
         );
 
-        let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.12") === currCDIVersion) {
-            assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
-        } else {
-            assert(passwordResetUserId === undefined);
-        }
+        assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
 
         let failureResponse = await new Promise((resolve) =>
             request(app)
@@ -490,5 +494,172 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(successResponse.status === "OK");
         assert(successResponse.user.id === userInfo.id);
         assert(successResponse.user.email === userInfo.email);
+    });
+
+    describe("createPasswordResetToken tests", function () {
+        it("createPasswordResetToken with random user ID fails", async function () {
+            const connectionURI = await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init()],
+            });
+
+            let resetPassword = await EmailPassword.createResetPasswordToken("public", "random", "test@example.com");
+
+            assert(resetPassword.status === "UNKNOWN_USER_ID_ERROR");
+        });
+
+        it("createPasswordResetToken with primary user, non email password succeeds", async function () {
+            const connectionURI = await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
+
+            let tokenInfo = await EmailPassword.createResetPasswordToken("public", user.user.id, "test@example.com");
+
+            assert.strictEqual(tokenInfo.status, "OK");
+        });
+    });
+
+    describe("consumePasswordResetToken tests", function () {
+        it("consumePasswordResetToken works when token is valid", async function () {
+            const connectionURI = await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init()],
+            });
+
+            let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
+
+            let resetPassword = await EmailPassword.createResetPasswordToken(
+                "public",
+                user.user.id,
+                "test@example.com"
+            );
+
+            let info = await EmailPassword.consumePasswordResetToken("public", resetPassword.token);
+
+            assert(info.status === "OK");
+            assert(info.userId === user.user.id);
+            assert(info.email === "test@example.com");
+        });
+
+        it("consumePasswordResetToken returns RESET_PASSWORD_INVALID_TOKEN_ERROR error if the token does not exist", async function () {
+            const connectionURI = await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init()],
+            });
+
+            let info = await EmailPassword.consumePasswordResetToken("public", "random");
+
+            assert(info.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
+        });
+
+        it("consumePasswordResetToken with primary user, non email password succeeds", async function () {
+            const connectionURI = await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
+
+            let tokenInfo = await EmailPassword.createResetPasswordToken("public", user.user.id, "test@example.com");
+
+            let info = await EmailPassword.consumePasswordResetToken("public", tokenInfo.token);
+
+            assert(info.status === "OK");
+            assert(info.userId === user.user.id);
+            assert(info.email === "test@example.com");
+        });
     });
 });

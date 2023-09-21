@@ -24,11 +24,11 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
 
     describe("createNewRoleOrAddPermissions", () => {
         it("create a new role", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -51,13 +51,13 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("create the same role twice", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const role = "role";
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -88,14 +88,14 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("create a role with permissions", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const role = "role";
             const permissions = ["permission1"];
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -127,14 +127,14 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("add new permissions to a role", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const role = "role";
             const permissions = ["permission1"];
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -179,14 +179,14 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
         });
 
         it("add duplicate permission", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const role = "role";
             const permissions = ["permission1"];
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

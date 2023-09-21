@@ -38,11 +38,11 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
         });
 
         it("should get the right value", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -69,18 +69,23 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const res = await session.getClaimValue(TrueClaim);
             assert.equal(res, true);
         });
 
         it("should get the right value using session handle", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -107,7 +112,12 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const res = await Session.getClaimValue(session.getHandle(), TrueClaim);
             assert.deepStrictEqual(res, {
@@ -117,11 +127,11 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
         });
 
         it("should work for not existing handle", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

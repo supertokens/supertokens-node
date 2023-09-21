@@ -61,10 +61,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with valid input, email not verified
     it("test the generate token api with valid input, email not verified", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -99,10 +99,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     //Call the API with valid input, email verified and test error
     it("test the generate token api with valid input, email verified and test error", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -127,9 +127,14 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(response.status === 200);
 
         let userId = JSON.parse(response.text).user.id;
+        let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(
+            "public",
+            STExpress.convertToRecipeUserId(userId),
+            emailId
+        );
         await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
@@ -141,10 +146,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with no session and see the output
     it("test the generate token api with valid input, no session and check output", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -183,12 +188,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with an expired access token and see that try refresh token is returned
     it("test the generate token api with an expired access token and see that try refresh token is returned", async function () {
-        await setKeyValueInConfig("access_token_validity", 2);
-        await startST();
+        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -260,14 +264,14 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Provide your own email callback and make sure that is called
     it("test that providing your own email callback and make sure it is called", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInfo = null;
         let emailToken = null;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -316,7 +320,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response2.text).status === "OK");
         assert(Object.keys(JSON.parse(response2.text)).length === 1);
 
-        assert(userInfo.id === userId);
+        assert(userInfo.recipeUserId.getAsString() === userId);
         assert(userInfo.email === "test@gmail.com");
         assert(emailToken !== null);
     });
@@ -334,12 +338,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
           - Call the API with an expired access token and see that try refresh token is returned
     */
     it("test the email verify API with valid input", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let token = null;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -403,11 +407,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with an invalid token and see the error
     it("test the email verify API with invalid token and check error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -451,11 +455,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // token is not of type string from input
     it("test the email verify API with token of not type string", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -499,14 +503,14 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // provide a handlePostEmailVerification callback and make sure it's called on success verification
     it("test that the handlePostEmailVerification callback is called on successfull verification, if given", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInfoFromCallback = null;
         let token = null;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -583,19 +587,19 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         // wait for the callback to be called...
         await new Promise((res) => setTimeout(res, 500));
 
-        assert(userInfoFromCallback.id === userId);
+        assert(userInfoFromCallback.recipeUserId.getAsString() === userId);
         assert(userInfoFromCallback.email === "test@gmail.com");
     });
 
     // Call the API with valid input
     it("test the email verify with valid input, using the get method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let token = null;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -675,11 +679,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with no session and see the error
     it("test the email verify with no session, using the get method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -720,14 +724,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
     // Call the API with an expired access token and see that try refresh token is returned
     it("test the email verify with an expired access token, using the get method", async function () {
-        await setKeyValueInConfig("access_token_validity", 2);
-        await startST();
+        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
 
         let token = null;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -843,13 +846,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the email verify API with valid input, overriding apis", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let user = undefined;
         let token = null;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -921,18 +924,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === "OK");
         assert(Object.keys(response2).length === 1);
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
     it("test the email verify API with valid input, overriding functions", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let user = undefined;
         let token = null;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1004,18 +1007,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === "OK");
         assert(Object.keys(response2).length === 1);
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
     it("test the email verify API with valid input, overriding apis throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let user = undefined;
         let token = null;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1095,18 +1098,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
     it("test the email verify API with valid input, overriding functions throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let user = undefined;
         let token = null;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1186,15 +1189,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
     it("test the generate token api with valid input, and then remove token", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1223,12 +1226,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response.text).status === "OK");
         assert(response.status === 200);
 
-        let userId = JSON.parse(response.text).user.id;
+        let userId = STExpress.convertToRecipeUserId(JSON.parse(response.text).user.id);
         let infoFromResponse = extractInfoFromResponse(response);
 
         let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, "test@gmail.com");
 
-        await EmailVerification.revokeEmailVerificationTokens("public", userId);
+        await EmailVerification.revokeEmailVerificationTokens("public", userId, "test@gmail.com");
 
         {
             let response = await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
@@ -1237,10 +1240,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     it("test the generate token api with valid input, verify and then unverify email", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1269,27 +1272,28 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response.text).status === "OK");
         assert(response.status === 200);
 
-        let userId = JSON.parse(response.text).user.id;
+        let userId = STExpress.convertToRecipeUserId(JSON.parse(response.text).user.id);
+        let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        const verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
+        const verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, emailId);
 
         await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
-        assert(await EmailVerification.isEmailVerified(userId));
+        assert(await EmailVerification.isEmailVerified(userId, emailId));
 
-        await EmailVerification.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId, emailId);
 
-        assert(!(await EmailVerification.isEmailVerified(userId)));
+        assert(!(await EmailVerification.isEmailVerified(userId, emailId)));
     });
 
     it("test the email verify API with deleted user", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let token = null;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1339,49 +1343,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.deepStrictEqual(response.body, { message: "unauthorised" });
     });
 
-    it("should work with getEmailForUserId returning errors", async () => {
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailVerification.init({
-                    mode: "OPTIONAL",
-                    getEmailForUserId: (userId) =>
-                        userId === "testuserid"
-                            ? { status: "EMAIL_DOES_NOT_EXIST_ERROR" }
-                            : { status: "UNKNOWN_USER_ID_ERROR" },
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-        });
-
-        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("public", "testuserid"), {
-            status: "OK",
-        });
-
-        let caughtError;
-        try {
-            await EmailVerification.revokeEmailVerificationTokens("public", "nouserid");
-        } catch (err) {
-            caughtError = err;
-        }
-
-        assert.ok(caughtError);
-        assert.strictEqual(caughtError.message, "Unknown User ID provided without email");
-    });
-
     it("test that generate email verification token API updates session claims", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1423,10 +1390,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(response.body.status, "OK");
         assert.strictEqual(response.status, 200);
 
-        let userId = response.body.user.id;
+        let userId = STExpress.convertToRecipeUserId(response.body.user.id);
+        let emailId = response.body.user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
         let antiCsrfToken = infoFromResponse.antiCsrf;
-        let token = await EmailVerification.createEmailVerificationToken("public", userId);
+        let token = await EmailVerification.createEmailVerificationToken("public", userId, emailId);
         await EmailVerification.verifyEmailUsingToken("public", token.token);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
@@ -1443,7 +1411,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(infoFromResponse2.frontToken, undefined);
 
         // now we mark the email as unverified and try again
-        await EmailVerification.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId, emailId);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);

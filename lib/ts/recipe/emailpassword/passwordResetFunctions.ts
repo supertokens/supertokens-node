@@ -13,13 +13,15 @@
  * under the License.
  */
 
-import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { postWithFetch } from "../../utils";
 
 export async function createAndSendEmailUsingSupertokensService(
     appInfo: NormalisedAppinfo,
-    user: User,
+    user: {
+        id: string;
+        email: string;
+    },
     passwordResetURLWithToken: string
 ) {
     // related issue: https://github.com/supertokens/supertokens-node/issues/38

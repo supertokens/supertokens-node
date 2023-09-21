@@ -13,6 +13,7 @@ import {
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -20,14 +21,14 @@ export default class SessionWrapper {
         req: any,
         res: any,
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         userContext?: any
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
         tenantId: string,
-        userId: string,
+        recipeUserId: RecipeUserId,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
@@ -50,20 +51,6 @@ export default class SessionWrapper {
               invalidClaims: ClaimValidationError[];
           }
     >;
-    static validateClaimsInJWTPayload(
-        tenantId: string,
-        userId: string,
-        jwtPayload: JSONObject,
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            userId: string,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
-    }>;
     static getSession(req: any, res: any): Promise<SessionContainer>;
     static getSession(
         req: any,
@@ -138,8 +125,18 @@ export default class SessionWrapper {
         antiCsrfToken?: string,
         userContext?: any
     ): Promise<SessionContainer>;
-    static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
-    static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
+    static revokeAllSessionsForUser(
+        userId: string,
+        revokeSessionsForLinkedAccounts?: boolean,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<string[]>;
+    static getAllSessionHandlesForUser(
+        userId: string,
+        fetchSessionsForAllLinkedAccounts?: boolean,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
     static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;
@@ -214,7 +211,6 @@ export declare let fetchAndSetClaim: typeof SessionWrapper.fetchAndSetClaim;
 export declare let setClaimValue: typeof SessionWrapper.setClaimValue;
 export declare let getClaimValue: typeof SessionWrapper.getClaimValue;
 export declare let removeClaim: typeof SessionWrapper.removeClaim;
-export declare let validateClaimsInJWTPayload: typeof SessionWrapper.validateClaimsInJWTPayload;
 export declare let validateClaimsForSessionHandle: typeof SessionWrapper.validateClaimsForSessionHandle;
 export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;

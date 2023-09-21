@@ -1,4 +1,4 @@
 {
     "_comment": "contains a list of core-driver interfaces branch names that this core supports",
-    "versions": ["3.0"]
+    "versions": ["4.0"]
 }

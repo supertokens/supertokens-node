@@ -36,9 +36,10 @@ import {
     USER_PASSWORD_API,
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
+    UNLINK_USER,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import dashboard from "./api/dashboard";
 import error from "../../error";
 import validateKey from "./api/validateKey";
@@ -46,7 +47,7 @@ import apiKeyProtector from "./api/apiKeyProtector";
 import usersGet from "./api/usersGet";
 import usersCountGet from "./api/usersCountGet";
 import { userGet } from "./api/userdetails/userGet";
-import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
+import { userEmailVerifyGet } from "./api/userdetails/userEmailVerifyGet";
 import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
 import { userSessionsGet } from "./api/userdetails/userSessionsGet";
 import { userDelete } from "./api/userdetails/userDelete";
@@ -61,6 +62,7 @@ import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
 import listTenants from "./api/listTenants";
+import { userUnlink } from "./api/userdetails/userUnlinkGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -245,6 +247,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "get",
             },
+            {
+                id: UNLINK_USER,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(UNLINK_USER)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -301,7 +309,7 @@ export default class Recipe extends RecipeModule {
             }
         } else if (id === USER_EMAIL_VERIFY_API) {
             if (req.getMethod() === "get") {
-                apiFunction = userEmailverifyGet;
+                apiFunction = userEmailVerifyGet;
             }
 
             if (req.getMethod() === "put") {
@@ -335,6 +343,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = analyticsPost;
         } else if (id === TENANTS_LIST_API) {
             apiFunction = listTenants;
+        } else if (id === UNLINK_USER) {
+            apiFunction = userUnlink;
         }
 
         // If the id doesnt match any APIs return false

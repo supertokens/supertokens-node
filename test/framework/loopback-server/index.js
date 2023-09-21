@@ -30,12 +30,20 @@ const rest_1 = require("@loopback/rest");
 const loopback_1 = require("../../../framework/loopback");
 const loopback_2 = require("../../../recipe/session/framework/loopback");
 const session_1 = __importDefault(require("../../../recipe/session"));
+const supertokens_1 = __importDefault(require("../../.."));
 let Create = class Create {
     constructor(ctx) {
         this.ctx = ctx;
     }
     async handler() {
-        await session_1.default.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
+        await session_1.default.createNewSession(
+            this.ctx,
+            this.ctx,
+            "public",
+            supertokens_1.convertToRecipeUserId("userId"),
+            {},
+            {}
+        );
         return {};
     }
 };
@@ -46,7 +54,14 @@ let CreateThrowing = class CreateThrowing {
         this.ctx = ctx;
     }
     async handler() {
-        await session_1.default.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
+        await session_1.default.createNewSession(
+            this.ctx,
+            this.ctx,
+            "public",
+            supertokens_1.convertToRecipeUserId("userId"),
+            {},
+            {}
+        );
         throw new session_1.default.Error({
             message: "unauthorised",
             type: session_1.default.Error.UNAUTHORISED,

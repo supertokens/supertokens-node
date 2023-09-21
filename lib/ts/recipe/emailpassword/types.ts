@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import {
@@ -21,13 +21,13 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     getEmailDeliveryConfig: (
-        recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -71,13 +71,6 @@ export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
 
-export type User = {
-    id: string;
-    email: string;
-    timeJoined: number;
-    tenantIds: string[];
-};
-
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
@@ -96,44 +89,69 @@ export type RecipeInterface = {
         password: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
+
+    // this function is meant only for creating the recipe in the core and nothing else.
+    // we added this even though signUp exists cause devs may override signup expecting it
+    // to be called just during sign up. But we also need a version of signing up which can be
+    // called during operations like creating a user during password reset flow.
+    createNewRecipeUser(input: {
+        email: string;
+        password: string;
+        tenantId: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
 
     signIn(input: {
         email: string;
         password: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-
-    getUserByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User | undefined>;
-
+    /**
+     * We pass in the email as well to this function cause the input userId
+     * may not be associated with an emailpassword account. In this case, we
+     * need to know which email to use to create an emailpassword account later on.
+     */
     createResetPasswordToken(input: {
-        userId: string;
+        userId: string; // the id can be either recipeUserId or primaryUserId
+        email: string;
         tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
-    resetPasswordUsingToken(input: {
+    consumePasswordResetToken(input: {
         token: string;
-        newPassword: string;
         tenantId: string;
         userContext: any;
     }): Promise<
         | {
               status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
+              email: string;
+              userId: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
 
     updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId; // the id should only be a recipeUserId cause if we give just an id
+        // and a password, and if there are multiple emailpassword accounts, we do not know
+        // for which one to update the password for.
         email?: string;
         password?: string;
         userContext: any;
@@ -142,6 +160,10 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
     >;
@@ -188,6 +210,10 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
 
@@ -205,11 +231,13 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    userId?: string;
+                    email: string;
+                    user: User;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
               | GeneralErrorResponse
           >);
 
@@ -228,6 +256,10 @@ export type APIInterface = {
                     status: "OK";
                     user: User;
                     session: SessionContainerInterface;
+                }
+              | {
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
@@ -252,6 +284,10 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | {
+                    status: "SIGN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
               | GeneralErrorResponse
@@ -262,6 +298,7 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
+        recipeUserId: RecipeUserId | undefined;
         email: string;
     };
     passwordResetLink: string;

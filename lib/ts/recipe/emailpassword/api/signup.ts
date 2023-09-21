@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
@@ -49,11 +49,11 @@ export default async function signUpAPI(
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            user: result.user,
+            ...getBackwardsCompatibleUserInfo(options.req, result),
         });
     } else if (result.status === "GENERAL_ERROR") {
         send200Response(options.res, result);
-    } else {
+    } else if (result.status === "EMAIL_ALREADY_EXISTS_ERROR") {
         throw new STError({
             type: STError.FIELD_ERROR,
             payload: [
@@ -64,6 +64,8 @@ export default async function signUpAPI(
             ],
             message: "Error in input formFields",
         });
+    } else {
+        send200Response(options.res, result);
     }
     return true;
 }

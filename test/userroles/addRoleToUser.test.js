@@ -22,11 +22,11 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
 
     describe("addRoleToUserTest", () => {
         it("add a role to a user", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -70,11 +70,11 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
         });
 
         it("add duplicate role to the user", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -125,11 +125,11 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
         });
 
         it("add unknown role to the user", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

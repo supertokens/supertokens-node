@@ -8,7 +8,7 @@ export class UserRoleClaimClass extends PrimitiveArrayClaim<string> {
     constructor() {
         super({
             key: "st-role",
-            async fetchValue(userId, tenantId, userContext) {
+            async fetchValue(userId, _recipeUserId, tenantId, userContext) {
                 const recipe = UserRoleRecipe.getInstanceOrThrowError();
                 const res = await recipe.recipeInterfaceImpl.getRolesForUser({
                     userId,

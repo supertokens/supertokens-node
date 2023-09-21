@@ -1,5 +1,6 @@
 // @ts-nocheck
 import STError from "../../error";
+import RecipeUserId from "../../recipeUserId";
 import { ClaimValidationError } from "./types";
 export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED";
@@ -24,6 +25,7 @@ export default class SessionError extends STError {
                   type: "TOKEN_THEFT_DETECTED";
                   payload: {
                       userId: string;
+                      recipeUserId: RecipeUserId;
                       sessionHandle: string;
                   };
               }

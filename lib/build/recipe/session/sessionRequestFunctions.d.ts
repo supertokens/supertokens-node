@@ -2,6 +2,7 @@
 import Recipe from "./recipe";
 import { VerifySessionOptions, RecipeInterface, TypeNormalisedInput, SessionContainerInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare function getSessionFromRequest({
     req,
     res,
@@ -37,6 +38,7 @@ export declare function createNewSessionInRequest({
     recipeInstance,
     accessTokenPayload,
     userId,
+    recipeUserId,
     config,
     appInfo,
     sessionDataInDatabase,
@@ -48,6 +50,7 @@ export declare function createNewSessionInRequest({
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;
+    recipeUserId: RecipeUserId;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;

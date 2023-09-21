@@ -38,10 +38,10 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
     // disable the email exists API, and check that calling it returns a 404.
     it("test that if disable api, the default email exists API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -89,10 +89,10 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
     // email exists
     it("test good input, email exists", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -135,10 +135,10 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
     //email does not exist
     it("test good input, email does not exists", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -177,10 +177,10 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
     // testing error is correctly handled by the sub-recipe
     it("test bad input, do not pass email", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

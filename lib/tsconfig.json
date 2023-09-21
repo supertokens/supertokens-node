@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES2016",
+        "target": "ES2017",
         "strictNullChecks": true,
         "declaration": true,
         "module": "commonJS",

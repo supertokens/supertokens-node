@@ -71,11 +71,11 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             process.env.user = undefined;
             await killAllST();
             await setupST();
-            await startST();
+            const connectionURI = await startST();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -133,7 +133,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     });
                     const respJson = await res.json();
                     assert.deepStrictEqual(respJson.status, "OK");
-                    assert.deepStrictEqual(respJson.user.email, "john.doe@supertokens.io");
+                    assert.deepStrictEqual(respJson.user.emails[0], "john.doe@supertokens.io");
                     assert.strictEqual(respJson.user.id, process.env.user);
                     assert.notStrictEqual(res.headers.get("front-token"), undefined);
                     const tokens = getSessionTokensFromResponse(res);
@@ -170,7 +170,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     const respJson = await res.json();
 
                     assert.deepStrictEqual(respJson.status, "OK");
-                    assert.deepStrictEqual(respJson.user.email, "john.doe@supertokens.io");
+                    assert.deepStrictEqual(respJson.user.emails[0], "john.doe@supertokens.io");
                     assert(res.headers.get("front-token") !== undefined);
                     tokens = getSessionTokensFromResponse(res);
                     assert.notEqual(tokens.access, undefined);
@@ -375,7 +375,14 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 handler: async (request, response) => {
                     const session = await superTokensNextWrapper(
                         async () => {
-                            return await Session.createNewSession(request, response, "public", "1", {}, {});
+                            return await Session.createNewSession(
+                                request,
+                                response,
+                                "public",
+                                SuperTokens.convertToRecipeUserId("1"),
+                                {},
+                                {}
+                            );
                         },
                         request,
                         response
@@ -405,11 +412,11 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             process.env.user = undefined;
             await killAllST();
             await setupST();
-            await startST();
+            const connectionURI = await startST();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -526,11 +533,11 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             process.env.user = undefined;
             await killAllST();
             await setupST();
-            await startST();
+            const connectionURI = await startST();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

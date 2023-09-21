@@ -1,9 +1,15 @@
 // @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
+import { User as UserType } from "./types";
+import { AccountInfo } from "./recipe/accountlinking/types";
+import RecipeUserId from "./recipeUserId";
+import { User } from "./user";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
+    static RecipeUserId: typeof RecipeUserId;
+    static User: typeof User;
     static getAllCORSHeaders(): string[];
     static getUserCount(includeRecipeIds?: string[], tenantId?: string): Promise<number>;
     static getUsersOldestFirst(input: {
@@ -11,12 +17,11 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
-        query?: object;
+        query?: {
+            [key: string]: string;
+        };
     }): Promise<{
-        users: {
-            recipeId: string;
-            user: any;
-        }[];
+        users: UserType[];
         nextPaginationToken?: string;
     }>;
     static getUsersNewestFirst(input: {
@@ -24,18 +29,12 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
-        query?: object;
+        query?: {
+            [key: string]: string;
+        };
     }): Promise<{
-        users: {
-            recipeId: string;
-            user: any;
-        }[];
+        users: UserType[];
         nextPaginationToken?: string;
-    }>;
-    static deleteUser(
-        userId: string
-    ): Promise<{
-        status: "OK";
     }>;
     static createUserIdMapping(input: {
         superTokensUserId: string;
@@ -81,6 +80,21 @@ export default class SuperTokensWrapper {
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
+    static getUser(userId: string, userContext?: any): Promise<UserType | undefined>;
+    static listUsersByAccountInfo(
+        tenantId: string,
+        accountInfo: AccountInfo,
+        doUnionOfAccountInfo?: boolean,
+        userContext?: any
+    ): Promise<UserType[]>;
+    static deleteUser(
+        userId: string,
+        removeAllLinkedAccounts?: boolean,
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+    }>;
+    static convertToRecipeUserId(recipeUserId: string): RecipeUserId;
     static getRequestFromUserContext(userContext: any | undefined): import("./framework").BaseRequest | undefined;
 }
 export declare let init: typeof SuperTokens.init;
@@ -93,5 +107,10 @@ export declare let createUserIdMapping: typeof SuperTokensWrapper.createUserIdMa
 export declare let getUserIdMapping: typeof SuperTokensWrapper.getUserIdMapping;
 export declare let deleteUserIdMapping: typeof SuperTokensWrapper.deleteUserIdMapping;
 export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
+export declare let getUser: typeof SuperTokensWrapper.getUser;
+export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
+export declare let convertToRecipeUserId: typeof SuperTokensWrapper.convertToRecipeUserId;
 export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getRequestFromUserContext;
 export declare let Error: typeof SuperTokensError;
+export { default as RecipeUserId } from "./recipeUserId";
+export { User } from "./user";

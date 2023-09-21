@@ -13,6 +13,7 @@ import UserMetadataRecipe from "../../../usermetadata/recipe";
 import UserMetadata from "../../../usermetadata";
 import { FORM_FIELD_EMAIL_ID } from "../../../emailpassword/constants";
 import { defaultValidateEmail, defaultValidatePhoneNumber } from "../../../passwordless/utils";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
     | {
@@ -31,11 +32,19 @@ type Response =
     | {
           status: "INVALID_PHONE_ERROR";
           error: string;
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          error: string;
+      }
+    | {
+          status: "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+          error: string;
       };
 
 const updateEmailForRecipeId = async (
     recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
-    userId: string,
+    recipeUserId: RecipeUserId,
     email: string,
     tenantId: string,
     userContext: any
@@ -49,6 +58,10 @@ const updateEmailForRecipeId = async (
       }
     | {
           status: "EMAIL_ALREADY_EXISTS_ERROR";
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
       }
 > => {
     if (recipeId === "emailpassword") {
@@ -66,7 +79,7 @@ const updateEmailForRecipeId = async (
         }
 
         const emailUpdateResponse = await EmailPassword.updateEmailOrPassword({
-            userId,
+            recipeUserId,
             email,
             userContext,
         });
@@ -75,6 +88,13 @@ const updateEmailForRecipeId = async (
             return {
                 status: "EMAIL_ALREADY_EXISTS_ERROR",
             };
+        } else if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                reason: emailUpdateResponse.reason,
+            };
+        } else if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
+            throw new Error("Should never come here");
         }
 
         return {
@@ -97,7 +117,7 @@ const updateEmailForRecipeId = async (
         }
 
         const emailUpdateResponse = await ThirdPartyEmailPassword.updateEmailOrPassword({
-            userId,
+            recipeUserId,
             email,
             userContext,
         });
@@ -106,9 +126,12 @@ const updateEmailForRecipeId = async (
             return {
                 status: "EMAIL_ALREADY_EXISTS_ERROR",
             };
-        }
-
-        if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
+        } else if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                reason: emailUpdateResponse.reason,
+            };
+        } else if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
             throw new Error("Should never come here");
         }
 
@@ -147,7 +170,7 @@ const updateEmailForRecipeId = async (
         }
 
         const updateResult = await Passwordless.updateUser({
-            userId,
+            recipeUserId,
             email,
             userContext,
         });
@@ -159,6 +182,16 @@ const updateEmailForRecipeId = async (
         if (updateResult.status === "EMAIL_ALREADY_EXISTS_ERROR") {
             return {
                 status: "EMAIL_ALREADY_EXISTS_ERROR",
+            };
+        }
+
+        if (
+            updateResult.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR" ||
+            updateResult.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR"
+        ) {
+            return {
+                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                reason: updateResult.reason,
             };
         }
 
@@ -197,7 +230,7 @@ const updateEmailForRecipeId = async (
         }
 
         const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            userId,
+            recipeUserId,
             email,
             userContext,
         });
@@ -225,7 +258,7 @@ const updateEmailForRecipeId = async (
 
 const updatePhoneForRecipeId = async (
     recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
-    userId: string,
+    recipeUserId: RecipeUserId,
     phone: string,
     tenantId: string,
     userContext: any
@@ -239,6 +272,10 @@ const updatePhoneForRecipeId = async (
       }
     | {
           status: "PHONE_ALREADY_EXISTS_ERROR";
+      }
+    | {
+          status: "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
       }
 > => {
     if (recipeId === "passwordless") {
@@ -271,7 +308,7 @@ const updatePhoneForRecipeId = async (
         }
 
         const updateResult = await Passwordless.updateUser({
-            userId,
+            recipeUserId,
             phoneNumber: phone,
             userContext,
         });
@@ -283,6 +320,12 @@ const updatePhoneForRecipeId = async (
         if (updateResult.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR") {
             return {
                 status: "PHONE_ALREADY_EXISTS_ERROR",
+            };
+        }
+        if (updateResult.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                status: updateResult.status,
+                reason: updateResult.reason,
             };
         }
 
@@ -321,7 +364,7 @@ const updatePhoneForRecipeId = async (
         }
 
         const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            userId,
+            recipeUserId,
             phoneNumber: phone,
             userContext,
         });
@@ -354,16 +397,16 @@ export const userPut = async (
     userContext: any
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
-    const userId = requestBody.userId;
+    const recipeUserId = requestBody.recipeUserId;
     const recipeId = requestBody.recipeId;
     const firstName = requestBody.firstName;
     const lastName = requestBody.lastName;
     const email = requestBody.email;
     const phone = requestBody.phone;
 
-    if (userId === undefined || typeof userId !== "string") {
+    if (recipeUserId === undefined || typeof recipeUserId !== "string") {
         throw new STError({
-            message: "Required parameter 'userId' is missing or has an invalid type",
+            message: "Required parameter 'recipeUserId' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -410,7 +453,7 @@ export const userPut = async (
         });
     }
 
-    let userResponse = await getUserForRecipeId(userId, recipeId);
+    let userResponse = await getUserForRecipeId(new RecipeUserId(recipeUserId), recipeId);
 
     if (userResponse.user === undefined || userResponse.recipe === undefined) {
         throw new Error("Should never come here");
@@ -436,18 +479,25 @@ export const userPut = async (
                 metaDataUpdate["last_name"] = lastName.trim();
             }
 
-            await UserMetadata.updateUserMetadata(userId, metaDataUpdate, userContext);
+            await UserMetadata.updateUserMetadata(userResponse.user.id, metaDataUpdate, userContext);
         }
     }
 
     if (email.trim() !== "") {
         const emailUpdateResponse = await updateEmailForRecipeId(
             userResponse.recipe,
-            userId,
+            new RecipeUserId(recipeUserId),
             email.trim(),
             tenantId,
             userContext
         );
+
+        if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                error: emailUpdateResponse.reason,
+                status: emailUpdateResponse.status,
+            };
+        }
 
         if (emailUpdateResponse.status !== "OK") {
             return emailUpdateResponse;
@@ -457,11 +507,18 @@ export const userPut = async (
     if (phone.trim() !== "") {
         const phoneUpdateResponse = await updatePhoneForRecipeId(
             userResponse.recipe,
-            userId,
+            new RecipeUserId(recipeUserId),
             phone.trim(),
             tenantId,
             userContext
         );
+
+        if (phoneUpdateResponse.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                error: phoneUpdateResponse.reason,
+                status: phoneUpdateResponse.status,
+            };
+        }
 
         if (phoneUpdateResponse.status !== "OK") {
             return phoneUpdateResponse;

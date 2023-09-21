@@ -1,6 +1,6 @@
 // @ts-nocheck
 import error from "../../error";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
@@ -18,7 +18,7 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
         _: string,
-        ______: string | undefined,
+        _tenantId: string | undefined,
         __: BaseRequest,
         ___: BaseResponse,
         ____: normalisedURLPath,

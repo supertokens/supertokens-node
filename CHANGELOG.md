@@ -7,6 +7,239 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.0.0] - 2023-08-XX
+
+### Overview
+
+#### Introducing account-linking
+
+With this release, we are introducing a new AccountLinking recipe, this will let you:
+
+-   link accounts automatically,
+-   implement manual account linking flows.
+
+Check our [guide](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview) for more information.
+
+To use this you'll need compatible versions:
+
+-   Core>=7.0.0
+-   supertokens-node>=16.0.0 (support is pending in other backend SDKs)
+-   supertokens-website>=17.0.3
+-   supertokens-web-js>=0.8.0
+-   supertokens-auth-react>=0.35.0
+
+#### The new User object and primary vs non-primary users
+
+In this release, we've removed the recipes specific user types and instead introduced a new `User` class to support the "Primary user" concept introduced by account linking
+
+-   The new `User` class now provides the same interface for all recipes.
+-   It contains an `isPrimary` field that you can use to differentiate between primary and recipe users
+-   The `loginMethods` array contains objects that covers all props of the old (recipe specific) user types, with the exception of the id. Please check the migration section below to get the exact mapping between old and new props.
+-   Non-primary users:
+    -   The `loginMethods` array should contain exactly 1 element.
+    -   `user.id` will be the same as `user.loginMethods[0].recipeUserId.getAsString()`.
+    -   `user.id` will change if it is linked to another user.
+    -   They can become a primary user if, and only if there are no other primary users with the same email, third party info or phone number as this user across all the tenants that this user is a part of.
+-   Primary users
+    -   The `loginMethods` array can have 1 or more elements, each corresponding to a single recipe user.
+    -   `user.id` will not change even if other users are linked to it.
+    -   Other non-primary users can be linked to it. The user ID of the linked accounts will now be the primary users ID.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview#primary-user-vs-non-primary-user) for more information about differences between primary and recipe users.
+
+#### Primary vs RecipeUserId
+
+Because of account linking we've introduced a new Primary user concept (see above). In most cases, you should only use the primary user id (`user.id` or `session.getUserId()`) if you are associating data to users. Still, in some cases you need to specifically refer to a login method, which is covered by the new `RecipeUserId` class:
+
+-   You can get it:
+    -   From a session by: `session.getRecipeUserId()`.
+    -   By finding the appropriate entry in the `loginMethods` array of a `User` object (see above): `user.loginMethods[0].recipeUserId`.
+-   It wraps a simple string value that you can get by calling `recipeUserId.getAsString()`.
+-   We've introduced it to differentiate between primary and recipe user ids in our APIs on a type level.
+-   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object#primary-vs-recipe-user-id) for more information.
+
+### Breaking changes
+
+-   Now only supporting CDI 4.0. Compatible with core version >= 7.0
+-   Now supporting FDI 1.18
+-   Removed the recipe specific `User` type, now all functions are using the new generic `User` type.
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/user-object) for more information.
+-   The `build` function and the `fetchValue` callback of session claims now take a new `recipeUserId` param.
+    -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+    -   This will affect all custom claims as well built on our base classes.
+-   Now ignoring protected props in the payload in `createNewSession` and `createNewSessionWithoutRequestResponse`
+-   `createdNewUser` has been renamed to `createdNewRecipeUser` in sign up related APIs and functions
+
+-   EmailPassword:
+    -   removed `getUserById`, `getUserByEmail`. You should use `supertokens.getUser`, and `supertokens. listUsersByAccountInfo` instead
+    -   added `consumePasswordResetToken`. This function allows the consumption of the reset password token without changing the password. It will return OK if the token was valid.
+    -   added an overrideable `createNewRecipeUser` function that is called during sign up and password reset flow (in case a new email password user is being created on the fly). This is mostly for internal use.
+    -   `recipeUserId` is added to the input of `getContent` of the email delivery config
+    -   `email` was added to the input of `createResetPasswordToken` , `sendResetPasswordEmail`, `createResetPasswordLink`
+    -   `updateEmailOrPassword` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   `signIn`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `signUp`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `signInPOST`:
+        -   can return status `SIGN_IN_NOT_ALLOWED`
+    -   `signUpPOST`:
+        -   can return status `SIGN_UP_NOT_ALLOWED`
+    -   `generatePasswordResetTokenPOST`:
+        -   can now return `PASSWORD_RESET_NOT_ALLOWED`
+    -   `passwordResetPOST`:
+        -   now returns the `user` and the `email` whose password was reset
+        -   can now return `PASSWORD_POLICY_VIOLATED_ERROR`
+-   EmailVerification:
+    -   `createEmailVerificationToken`, `createEmailVerificationLink`, `isEmailVerified`, `revokeEmailVerificationTokens` , `unverifyEmail`:
+        -   now takes `recipeUserId` instead of `userId`
+    -   `sendEmailVerificationEmail` :
+        -   now takes an additional `recipeUserId` parameter
+    -   `verifyEmailUsingToken`:
+        -   now takes a new `attemptAccountLinking` parameter
+        -   returns the `recipeUserId` instead of `id`
+    -   `sendEmail` now requires a new `recipeUserId` as part of the user info
+    -   `getEmailForUserId` config option was renamed to `getEmailForRecipeUserId`
+    -   `verifyEmailPOST`, `generateEmailVerifyTokenPOST`: returns an optional `newSession` in case the current user session needs to be updated
+-   Passwordless:
+    -   removed `getUserById`, `getUserByEmail`, `getUserByPhoneNumber`
+    -   `updateUser` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return `"EMAIL_CHANGE_NOT_ALLOWED_ERROR` and `PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR` statuses
+    -   `createCodePOST` and `consumeCodePOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   Session:
+    -   access tokens and session objects now contain the recipe user id
+    -   Support for new access token version
+    -   `recipeUserId` is now added to the payload of the `TOKEN_THEFT_DETECTED` error
+    -   `createNewSession`: now takes `recipeUserId` instead of `userId`
+    -   Removed `validateClaimsInJWTPayload`
+    -   `revokeAllSessionsForUser` now takes an optional `revokeSessionsForLinkedAccounts` param
+    -   `getAllSessionHandlesForUser` now takes an optional `fetchSessionsForAllLinkedAccounts` param
+    -   `regenerateAccessToken` return value now includes `recipeUserId`
+    -   `getGlobalClaimValidators` and `validateClaims` now get a new `recipeUserId` param
+    -   Added `getRecipeUserId` to the session class
+-   ThirdParty:
+    -   The `signInUp` override:
+        -   gets a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `manuallyCreateOrUpdateUser`:
+        -   gets a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserById`
+    -   `signInUpPOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   ThirdPartyEmailPassword:
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserById`
+    -   `thirdPartyManuallyCreateOrUpdateUser`:
+        -   now get a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   The `thirdPartySignInUp` override:
+        -   now get a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `email` was added to the input of `createResetPasswordToken` , `sendResetPasswordEmail`, `createResetPasswordLink`
+    -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during email password sign up and in the “invitation link” flow
+    -   added `consumePasswordResetToken`
+    -   `updateEmailOrPassword` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during sign up and in the “invitation link” flow
+    -   `emailPasswordSignIn`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `emailPasswordSignUp`:
+        -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `emailPasswordSignInPOST`:
+        -   can return status `SIGN_IN_NOT_ALLOWED`
+    -   `emailPasswordSignUpPOST`:
+        -   can return status `SIGN_UP_NOT_ALLOWED`
+    -   `generatePasswordResetTokenPOST`:
+        -   can now return `PASSWORD_RESET_NOT_ALLOWED`
+    -   `passwordResetPOST`:
+        -   now returns the `user` and the `email` whose password was reset
+        -   can now return `PASSWORD_POLICY_VIOLATED_ERROR`
+    -   `thirdPartySignInUpPOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   ThirdPartyPasswordless:
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserByPhoneNumber`, `getUserById`
+    -   `thirdPartyManuallyCreateOrUpdateUser`:
+        -   gets a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   The `thirdPartySignInUp` override:
+        -   gets a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `updatePasswordlessUser`:
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return `"EMAIL_CHANGE_NOT_ALLOWED_ERROR` and `PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR` statuses
+    -   `thirdPartySignInUpPOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+    -   `createCodePOST` and `consumeCodePOST` can now return `SIGN_IN_UP_NOT_ALLOWED`
+-   Multitenancy:
+    -   `associateUserToTenant` can now return `ASSOCIATION_NOT_ALLOWED_ERROR`
+    -   `associateUserToTenant` and `disassociateUserFromTenant` now take `RecipeUserId` instead of a string user id
+
+### Changes
+
+-   Added `RecipeUserId` and a generic `User` class
+-   Added `getUser`, `listUsersByAccountInfo`, `convertToRecipeUserId` to the main exports
+-   Updated compilation target of typescript to ES2017 to make debugging easier.
+-   Added account-linking recipe
+
+### Migration guide
+
+#### New User structure
+
+We've added a generic `User` class instead of the old recipe specific ones. The mapping of old props to new in case you are not using account-linking:
+
+-   `user.id` stays `user.id` (or `user.loginMethods[0].recipeUserId` in case you need `RecipeUserId`)
+-   `user.email` becomes `user.emails[0]`
+-   `user.phoneNumber` becomes `user.phoneNumbers[0]`
+-   `user.thirdParty` becomes `user.thirdParty[0]`
+-   `user.timeJoined` is still `user.timeJoined`
+-   `user.tenantIds` is still `user.tenantIds`
+
+#### RecipeUserId
+
+Some functions now require you to pass a `RecipeUserId` instead of a string user id. If you are using our auth recipes, you can find the recipeUserId as: `user.loginMethods[0].recipeUserId` (you'll need to worry about selecting the right login method after enabling account linking). Alternatively, if you already have a string user id you can convert it to a `RecipeUserId` using `supertokens.convertToRecipeUserId(userIdString)`
+
+#### Checking if a user signed up or signed in
+
+-   In the passwordless consumeCode / social login signinup APIs, you can check if a user signed up by:
+
+```
+    // Here res refers to the result the function/api functions mentioned above.
+    const isNewUser = res.createdNewRecipeUser && res.user.loginMethods.length === 1;
+```
+
+-   In the emailpassword sign up API, you can check if a user signed up by:
+
+```
+    const isNewUser = res.user.loginMethods.length === 1;
+```
+
+#### Changing user emails
+
+-   We recommend that you check if the email change of a user is allowed, before calling the update function
+    -   Check [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/change-email-post-login) for more information
+
+```
+import {isEmailChangeAllowed} from "supertokens-node/recipe/accountlinking";
+/// ...
+app.post("/change-email", verifySession(), async (req: SessionRequest, res: express.Response) => {
+    let session = req.session!;
+    let email = req.body.email;
+
+    // ...
+    if (!(await isEmailChangeAllowed(session.getRecipeUserId(), email, false))) {
+        // this can come here if you have enabled the account linking feature, and
+        // if there is a security risk in changing this user's email.
+    }
+
+    // Update the email
+    let resp = await ThirdPartyEmailPassword.updateEmailOrPassword({
+        recipeUserId: session.getRecipeUserId(),
+        email: email,
+    });
+    // ...
+});
+```
+
 ## [15.2.0] - 2023-09-11
 
 ### Added

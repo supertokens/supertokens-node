@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import {
     TypeInput as EmailDeliveryTypeInput,
@@ -22,12 +22,14 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
+import { User } from "../../types";
 
 export type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
-        userId: string,
+    getEmailForRecipeUserId?: (
+        recipeUserId: RecipeUserId,
         userContext: any
     ) => Promise<
         | {
@@ -50,8 +52,8 @@ export type TypeNormalisedInput = {
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
-        userId: string,
+    getEmailForRecipeUserId?: (
+        recipeUserId: RecipeUserId,
         userContext: any
     ) => Promise<
         | {
@@ -69,14 +71,14 @@ export type TypeNormalisedInput = {
     };
 };
 
-export type User = {
-    id: string;
+export type UserEmailInfo = {
+    recipeUserId: RecipeUserId;
     email: string;
 };
 
 export type RecipeInterface = {
     createEmailVerificationToken(input: {
-        userId: string;
+        recipeUserId: RecipeUserId; // must be a recipeUserId
         email: string;
         tenantId: string;
         userContext: any;
@@ -90,20 +92,21 @@ export type RecipeInterface = {
 
     verifyEmailUsingToken(input: {
         token: string;
+        attemptAccountLinking: boolean;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
+    }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
 
-    isEmailVerified(input: { userId: string; email: string; userContext: any }): Promise<boolean>;
+    isEmailVerified(input: { recipeUserId: RecipeUserId; email: string; userContext: any }): Promise<boolean>;
 
     revokeEmailVerificationTokens(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email: string;
         tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK" }>;
 
-    unverifyEmail(input: { userId: string; email: string; userContext: any }): Promise<{ status: "OK" }>;
+    unverifyEmail(input: { recipeUserId: RecipeUserId; email: string; userContext: any }): Promise<{ status: "OK" }>;
 };
 
 export type APIOptions = {
@@ -127,7 +130,9 @@ export type APIInterface = {
               userContext: any;
               session?: SessionContainerInterface;
           }) => Promise<
-              { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
+              | { status: "OK"; user: UserEmailInfo; newSession?: SessionContainerInterface }
+              | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
+              | GeneralErrorResponse
           >);
 
     isEmailVerifiedGET:
@@ -140,6 +145,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                     isVerified: boolean;
+                    newSession?: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);
@@ -150,21 +156,30 @@ export type APIInterface = {
               options: APIOptions;
               userContext: any;
               session: SessionContainerInterface;
-          }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | GeneralErrorResponse>);
+          }) => Promise<
+              | { status: "OK" }
+              | { status: "EMAIL_ALREADY_VERIFIED_ERROR"; newSession?: SessionContainerInterface }
+              | GeneralErrorResponse
+          >);
 };
 
 export type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: {
+        // we have the id here cause when sending the email, we have
+        // the user's session. Therefore, it makes sense to also primary the
+        // primary user's ID.
         id: string;
+        recipeUserId: RecipeUserId;
         email: string;
     };
     emailVerifyLink: string;
     tenantId: string;
 };
 
-export type GetEmailForUserIdFunc = (
-    userId: string,
+export type GetEmailForRecipeUserIdFunc = (
+    user: User | undefined,
+    recipeUserId: RecipeUserId,
     userContext: any
 ) => Promise<
     | {

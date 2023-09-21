@@ -1,6 +1,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response = {
     status: "OK";
@@ -13,12 +14,12 @@ export const userEmailVerifyPut = async (
     userContext: any
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
-    const userId = requestBody.userId;
+    const recipeUserId = requestBody.recipeUserId;
     const verified = requestBody.verified;
 
-    if (userId === undefined || typeof userId !== "string") {
+    if (recipeUserId === undefined || typeof recipeUserId !== "string") {
         throw new STError({
-            message: "Required parameter 'userId' is missing or has an invalid type",
+            message: "Required parameter 'recipeUserId' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -33,7 +34,7 @@ export const userEmailVerifyPut = async (
     if (verified) {
         const tokenResponse = await EmailVerification.createEmailVerificationToken(
             tenantId,
-            userId,
+            new RecipeUserId(recipeUserId),
             undefined,
             userContext
         );
@@ -55,7 +56,7 @@ export const userEmailVerifyPut = async (
             throw new Error("Should not come here");
         }
     } else {
-        await EmailVerification.unverifyEmail(userId, undefined, userContext);
+        await EmailVerification.unverifyEmail(new RecipeUserId(recipeUserId), undefined, userContext);
     }
 
     return {
