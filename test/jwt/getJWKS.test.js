@@ -115,6 +115,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
         });
 
         assert(response !== undefined);
+        assert(Object.keys(response).length === 1);
         assert(response.keys !== undefined);
         assert(response.keys.length > 0);
         assert.strictEqual(headers["cache-control"], "max-age=60, must-revalidate");
