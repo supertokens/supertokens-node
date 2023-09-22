@@ -31,7 +31,9 @@ export default function getAPIImplementation(): APIInterface {
                 options.res.setHeader("Cache-Control", `max-age=${resp.validityInSeconds}, must-revalidate`, false);
             }
 
-            return resp;
+            return {
+                keys: resp.keys,
+            };
         },
     };
 }
