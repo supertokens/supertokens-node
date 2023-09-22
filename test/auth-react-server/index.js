@@ -217,6 +217,7 @@ app.post("/beforeeach", async (req, res) => {
         await killAllST();
         await setupST();
     }
+    initST();
     res.send();
 });
 
