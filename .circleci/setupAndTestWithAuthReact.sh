@@ -70,6 +70,8 @@ cd ../../../supertokens-auth-react/
 # flag will not be checked because Auth0 is used as a provider so that the Thirdparty tests can run reliably. 
 # In versions lower than 0.18 Github is used as the provider.
 
+export CIRCLE_NODE_TOTAL;
+export CIRCLE_NODE_INDEX;
 SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
 then
