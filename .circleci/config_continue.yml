@@ -32,6 +32,7 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         resource_class: large
+        parallelism: 4
         steps:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
@@ -46,6 +47,7 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
         resource_class: large
+        parallelism: 4
         steps:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
@@ -100,7 +102,6 @@ workflows:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           only: /test-cicd\/.*/
-                  parallelism: 4
             - test-authreact:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -111,7 +112,6 @@ workflows:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           only: /test-cicd\/.*/
-                  parallelism: 4
             - test-success:
                   requires:
                       - test-unit

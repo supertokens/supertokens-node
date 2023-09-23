@@ -49,4 +49,9 @@ cd ../
 echo $SUPERTOKENS_API_KEY > apiPassword
 ./utils/setupTestEnvLocal
 cd ../project/
-INSTALL_PATH=../supertokens-root npm test
+
+if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
+    SPEC_FILES=$(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/*.test.js')
+fi
+
+INSTALL_PATH=../supertokens-root npm test -- $SPEC_FILES
