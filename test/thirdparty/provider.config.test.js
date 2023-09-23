@@ -23,6 +23,7 @@ let ThirdParty = require("../../lib/build/recipe/thirdparty");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
+const { default: fetch } = require("cross-fetch");
 let { middleware, errorHandler } = require("../../framework/express");
 
 const privateKey =
