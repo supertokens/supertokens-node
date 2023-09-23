@@ -100,6 +100,7 @@ workflows:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           only: /test-cicd\/.*/
+                  parallelism: 4
             - test-authreact:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -110,6 +111,7 @@ workflows:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           only: /test-cicd\/.*/
+                  parallelism: 4
             - test-success:
                   requires:
                       - test-unit

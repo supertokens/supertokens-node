@@ -59,7 +59,12 @@ npm i git+https://github.com:supertokens/supertokens-node.git#$3
 npm i
 cd ../../
 npm i -d
-SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
+
+if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
+    SPEC_FILES=$(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/*.test.js')
+fi
+
+SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test -- $SPEC_FILES
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"
