@@ -240,6 +240,12 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
 });
 ```
 
+## [15.2.1] - 2023-09-22
+
+### Fixes
+
+-   Fixes an issue where the response for the JWKs API would contain additional properties
+
 ## [15.2.0] - 2023-09-11
 
 ### Added
