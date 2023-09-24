@@ -30,7 +30,7 @@ fi
 pluginInterfaceTag=$(echo $pluginInterfaceInfo | jq .tag | tr -d '"')
 pluginInterfaceVersion=$(echo $pluginInterfaceInfo | jq .version | tr -d '"')
 
-echo "Testing($CIRCLE_NODE_TOTAL/$CIRCLE_NODE_INDEX) with FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
+echo "Testing with FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
 
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git

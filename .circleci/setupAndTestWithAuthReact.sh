@@ -30,7 +30,7 @@ fi
 pluginInterfaceTag=$(echo $pluginInterfaceInfo | jq .tag | tr -d '"')
 pluginInterfaceVersion=$(echo $pluginInterfaceInfo | jq .version | tr -d '"')
 
-echo "Testing($CIRCLE_NODE_TOTAL/$CIRCLE_NODE_INDEX) with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
+echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
 
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git
@@ -47,7 +47,7 @@ echo $SUPERTOKENS_API_KEY > apiPassword
 cd ../
 git clone git@github.com:supertokens/supertokens-auth-react.git
 cd supertokens-auth-react
-git checkout test/split
+git checkout $2
 npm run init
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ./test/server/
@@ -59,7 +59,7 @@ npm i
 mkdir -p ../../test_report
 
 echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion" >> ../../test_report/backend.log
-DEBUG=com.supertokens TEST_MODE=testing node . >> ../../test_report/backend.log &
+DEBUG=com.supertokens TEST_MODE=testing node . >> ../../test_report/backend.log 2>&1 &
 pid=$!
 cd ../../../supertokens-auth-react/
 

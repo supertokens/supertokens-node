@@ -47,7 +47,7 @@ echo $SUPERTOKENS_API_KEY > apiPassword
 cd ../
 git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
-git checkout test/split
+git checkout $2
 cd ../project/test/frontendIntegration/
 npm i -d
 TEST_MODE=testing node . &
