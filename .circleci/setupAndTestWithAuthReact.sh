@@ -56,7 +56,10 @@ npm i
 cd ../../
 cd ../project/test/auth-react-server
 npm i
-TEST_MODE=testing node . &
+mkdir -p ../../test_report
+
+echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion" >> ../../test_report/backend.log
+DEBUG=com.supertokens TEST_MODE=testing node . >> ../../test_report/backend.log 2>&1 &
 pid=$!
 cd ../../../supertokens-auth-react/
 
@@ -67,7 +70,7 @@ cd ../../../supertokens-auth-react/
 # flag will not be checked because Auth0 is used as a provider so that the Thirdparty tests can run reliably. 
 # In versions lower than 0.18 Github is used as the provider.
 
-SKIP_OAUTH=true npm run test-with-non-node
+MOCHA_FILE=test_report/report_node.xml SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"
