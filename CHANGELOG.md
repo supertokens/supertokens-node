@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.0.1] - 2023-09-25
+
+### Changes
+
+-   Added `validateAccessToken` to the configuration for social login providers, this function allows you to verify the access token returned by the social provider
+
 ## [16.0.0] - 2023-08-XX
 
 ### Overview
@@ -180,7 +186,6 @@ Because of account linking we've introduced a new Primary user concept (see abov
 -   Added `getUser`, `listUsersByAccountInfo`, `convertToRecipeUserId` to the main exports
 -   Updated compilation target of typescript to ES2017 to make debugging easier.
 -   Added account-linking recipe
--   Added `validateAccessToken` to the configuration for social login providers, this function allows you to verify the access token returned by the social provider
 
 ### Migration guide
 
