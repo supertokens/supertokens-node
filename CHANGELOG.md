@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changes
 
--   Added `validateAccessToken` to the configuration for social login providers, this function allows you to verify the access token returned by the social provider
+-   Added `validateAccessToken` to the configuration for social login providers, this function allows you to verify the access token returned by the social provider. If you are using Github as a provider, there is a default implmentation provided for this function.
 
 ## [16.0.0] - 2023-08-XX
 
