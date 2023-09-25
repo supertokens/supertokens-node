@@ -30,6 +30,14 @@ export default function Google(input: ProviderInput): TypeProvider {
         ...input.config.authorizationEndpointQueryParams,
     };
 
+    // if (input.config.validateAccessToken === undefined) {
+    //     input.config.validateAccessToken = async ({ accessTokenPayload, clientConfig }) => {
+    //         if (accessTokenPayload.aud !== clientConfig.clientId) {
+    //             throw Error("accessTokenPayload.aud does not match clientId");
+    //         }
+    //     };
+    // }
+
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {

@@ -335,6 +335,19 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
             }
 
+            /**
+             * This is intentionally not part of the above if block. This is because the user may want to validate the access
+             * token payload even if the user info API has not been provided by the provider. In this case they would get an
+             * empty object and they can fail if they always expect a non-empty object.
+             */
+            if (impl.config.validateAccessToken !== undefined) {
+                await impl.config.validateAccessToken({
+                    accessToken: accessToken,
+                    clientConfig: impl.config,
+                    userContext,
+                });
+            }
+
             const userInfoResult = getSupertokensUserInfoResultFromRawUserInfo(impl.config, rawUserInfoFromProvider);
 
             return {
