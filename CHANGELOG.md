@@ -180,6 +180,7 @@ Because of account linking we've introduced a new Primary user concept (see abov
 -   Added `getUser`, `listUsersByAccountInfo`, `convertToRecipeUserId` to the main exports
 -   Updated compilation target of typescript to ES2017 to make debugging easier.
 -   Added account-linking recipe
+-   Added `validateAccessToken` to the configuration for social login providers, this function allows you to verify the access token returned by the social provider
 
 ### Migration guide
 
