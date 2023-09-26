@@ -6,7 +6,6 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_RID } from "./constants";
-import fetch from "cross-fetch";
 import crossFetch from "cross-fetch";
 
 export const doFetch: typeof fetch = (...args) => {
