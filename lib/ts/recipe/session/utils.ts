@@ -147,7 +147,7 @@ export function validateAndNormaliseUserInput(
     );
 
     let cookieSameSite: "strict" | "lax" | "none" =
-        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
+        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain() || protocolOfAPIDomain !== protocolOfWebsiteDomain
             ? "none"
             : "lax";
     cookieSameSite =

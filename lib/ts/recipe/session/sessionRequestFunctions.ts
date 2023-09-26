@@ -384,7 +384,7 @@ export async function createNewSessionInRequest({
         !config.cookieSecure &&
         !(
             (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
-            (appInfo.topLevelWebsiteDomain === "localhost" || isAnIpAddress(appInfo.topLevelWebsiteDomain))
+            (appInfo.topLevelWebsiteDomain() === "localhost" || isAnIpAddress(appInfo.topLevelWebsiteDomain()))
         )
     ) {
         // We can allow insecure cookie when both website & API domain are localhost or an IP

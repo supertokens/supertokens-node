@@ -69,12 +69,14 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
 
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(
-        websiteDomainFunction({
-            originalRequest: undefined,
-            userContext: {},
-        }).getAsStringDangerous()
-    );
+    const topLevelWebsiteDomain = () => {
+        return getTopLevelDomainForSameSiteResolution(
+            websiteDomainFunction({
+                originalRequest: undefined,
+                userContext: {},
+            }).getAsStringDangerous()
+        );
+    };
 
     return {
         appName: appInfo.appName,
