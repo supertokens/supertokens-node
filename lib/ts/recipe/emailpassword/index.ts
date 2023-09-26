@@ -123,6 +123,7 @@ export default class Wrapper {
                 recipeId: recipeInstance.getRecipeId(),
                 token: token.token,
                 tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                userContext,
             }),
         };
     }

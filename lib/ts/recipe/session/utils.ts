@@ -137,7 +137,14 @@ export function validateAndNormaliseUserInput(
             ? new NormalisedURLPath("/")
             : new NormalisedURLPath(config.accessTokenPath);
     let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
-    let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
+    let protocolOfWebsiteDomain = getURLProtocol(
+        appInfo
+            .websiteDomain({
+                originalRequest: undefined,
+                userContext: {},
+            })
+            .getAsStringDangerous()
+    );
 
     let cookieSameSite: "strict" | "lax" | "none" =
         appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain

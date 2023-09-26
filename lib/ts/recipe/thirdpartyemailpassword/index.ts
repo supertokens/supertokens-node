@@ -146,6 +146,7 @@ export default class Wrapper {
                 recipeId: recipeInstance.getRecipeId(),
                 token: token.token,
                 tenantId,
+                userContext,
             }),
         };
     }

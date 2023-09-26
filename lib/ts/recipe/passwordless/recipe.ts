@@ -39,6 +39,7 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+import { getRequestFromUserContext } from "../..";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -243,7 +244,12 @@ export default class Recipe extends RecipeModule {
         const appInfo = this.getAppInfo();
 
         let magicLink =
-            appInfo.websiteDomain.getAsStringDangerous() +
+            appInfo
+                .websiteDomain({
+                    originalRequest: getRequestFromUserContext(input.userContext),
+                    userContext: input.userContext,
+                })
+                .getAsStringDangerous() +
             appInfo.websiteBasePath.getAsStringDangerous() +
             "/verify" +
             "?rid=" +

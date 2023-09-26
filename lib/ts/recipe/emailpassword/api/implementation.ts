@@ -106,6 +106,7 @@ export default function getAPIImplementation(): APIInterface {
                     token: response.token,
                     recipeId: options.recipeId,
                     tenantId,
+                    userContext,
                 });
 
                 logDebugMessage(`Sending password reset email to ${email}`);

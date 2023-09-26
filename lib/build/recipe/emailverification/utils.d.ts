@@ -12,4 +12,5 @@ export declare function getEmailVerifyLink(input: {
     token: string;
     recipeId: string;
     tenantId: string;
+    userContext: any;
 }): string;

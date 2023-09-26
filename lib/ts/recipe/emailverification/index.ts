@@ -97,6 +97,7 @@ export default class Wrapper {
                 token: emailVerificationToken.token,
                 recipeId: recipeInstance.getRecipeId(),
                 tenantId,
+                userContext,
             }),
         };
     }

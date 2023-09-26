@@ -73,7 +73,10 @@ export default async function analyticsPost(
 
     const { apiDomain, websiteDomain, appName } = options.appInfo;
     const data = {
-        websiteDomain: websiteDomain.getAsStringDangerous(),
+        websiteDomain: websiteDomain({
+            originalRequest: undefined,
+            userContext: {},
+        }).getAsStringDangerous(),
         apiDomain: apiDomain.getAsStringDangerous(),
         appName,
         sdk: "node",

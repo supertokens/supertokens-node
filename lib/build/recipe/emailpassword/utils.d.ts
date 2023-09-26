@@ -26,4 +26,5 @@ export declare function getPasswordResetLink(input: {
     token: string;
     recipeId: string;
     tenantId: string;
+    userContext: any;
 }): string;

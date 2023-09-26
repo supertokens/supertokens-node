@@ -28,6 +28,7 @@ import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import { getRequestFromUserContext } from "../..";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -253,9 +254,15 @@ export function getPasswordResetLink(input: {
     token: string;
     recipeId: string;
     tenantId: string;
+    userContext: any;
 }): string {
     return (
-        input.appInfo.websiteDomain.getAsStringDangerous() +
+        input.appInfo
+            .websiteDomain({
+                originalRequest: getRequestFromUserContext(input.userContext),
+                userContext: input.userContext,
+            })
+            .getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
         "/reset-password?token=" +
         input.token +
