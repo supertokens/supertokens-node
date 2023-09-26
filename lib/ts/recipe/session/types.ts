@@ -111,7 +111,7 @@ export type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
-    cookieSameSite: "strict" | "lax" | "none";
+    cookieSameSite: () => "strict" | "lax" | "none";
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;

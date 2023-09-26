@@ -146,14 +146,18 @@ export function validateAndNormaliseUserInput(
             .getAsStringDangerous()
     );
 
-    let cookieSameSite: "strict" | "lax" | "none" =
-        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain() || protocolOfAPIDomain !== protocolOfWebsiteDomain
+    let cookieSameSite: () => "strict" | "lax" | "none" = () => {
+        return appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain() ||
+            protocolOfAPIDomain !== protocolOfWebsiteDomain
             ? "none"
             : "lax";
-    cookieSameSite =
-        config === undefined || config.cookieSameSite === undefined
-            ? cookieSameSite
-            : normaliseSameSiteOrThrowError(config.cookieSameSite);
+    };
+
+    if (config !== undefined && config.cookieSameSite !== undefined) {
+        let normalisedCookieSameSite = normaliseSameSiteOrThrowError(config.cookieSameSite);
+
+        cookieSameSite = () => normalisedCookieSameSite;
+    }
 
     let cookieSecure =
         config === undefined || config.cookieSecure === undefined
@@ -176,7 +180,7 @@ export function validateAndNormaliseUserInput(
 
     let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
         config === undefined || config.antiCsrf === undefined
-            ? cookieSameSite === "none"
+            ? cookieSameSite() === "none"
                 ? "VIA_CUSTOM_HEADER"
                 : "NONE"
             : config.antiCsrf;

@@ -168,7 +168,7 @@ export function setCookie(
 ) {
     let domain = config.cookieDomain;
     let secure = config.cookieSecure;
-    let sameSite = config.cookieSameSite;
+    let sameSite = config.cookieSameSite();
     let path = "";
     if (pathType === "refreshTokenPath") {
         path = config.refreshTokenPath.getAsStringDangerous();

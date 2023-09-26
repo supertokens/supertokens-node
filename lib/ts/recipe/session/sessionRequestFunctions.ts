@@ -380,7 +380,7 @@ export async function createNewSessionInRequest({
 
     if (
         outputTransferMethod === "cookie" &&
-        config.cookieSameSite === "none" &&
+        config.cookieSameSite() === "none" &&
         !config.cookieSecure &&
         !(
             (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
