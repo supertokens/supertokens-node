@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import fetch from "cross-fetch";
+import { doFetch } from "../../../utils";
 import { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
 
@@ -79,14 +79,14 @@ export default function Github(input: ProviderInput): TypeProvider {
             };
             const rawResponse: { [key: string]: any } = {};
 
-            const emailInfoResp = await fetch("https://api.github.com/user/emails", { headers });
+            const emailInfoResp = await doFetch("https://api.github.com/user/emails", { headers });
             if (emailInfoResp.status >= 400) {
                 throw new Error(`Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.text()}`);
             }
             const emailInfo = await emailInfoResp.json();
             rawResponse.emails = emailInfo;
 
-            const userInfoResp = await fetch("https://api.github.com/user", { headers });
+            const userInfoResp = await doFetch("https://api.github.com/user", { headers });
             if (userInfoResp.status >= 400) {
                 throw new Error(`Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.text()}`);
             }

@@ -1,6 +1,8 @@
 // @ts-nocheck
 import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
 import type { BaseRequest, BaseResponse } from "./framework";
+import fetch from "cross-fetch";
+export declare const doFetch: typeof fetch;
 export declare function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined;
 export declare function maxVersion(version1: string, version2: string): string;
 export declare function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo;

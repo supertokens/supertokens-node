@@ -12,9 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import fetch, { Response } from "cross-fetch";
-
-import { getLargestVersionFromIntersection } from "./utils";
+import { doFetch, getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -58,7 +56,7 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                let response = await fetch(url, {
+                let response = await doFetch(url, {
                     method: "GET",
                     headers,
                 });
@@ -132,7 +130,7 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return fetch(url, {
+                return doFetch(url, {
                     method: "POST",
                     body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
@@ -167,7 +165,7 @@ export class Querier {
                 const searchParams = new URLSearchParams(params);
                 finalURL.search = searchParams.toString();
 
-                return fetch(finalURL.toString(), {
+                return doFetch(finalURL.toString(), {
                     method: "DELETE",
                     body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
@@ -206,7 +204,7 @@ export class Querier {
                     Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
                 );
                 finalURL.search = searchParams.toString();
-                return await fetch(finalURL.toString(), {
+                return doFetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
@@ -243,7 +241,7 @@ export class Querier {
                     Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
                 );
                 finalURL.search = searchParams.toString();
-                return await fetch(finalURL.toString(), {
+                return doFetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
@@ -273,7 +271,7 @@ export class Querier {
                     };
                 }
 
-                return fetch(url, {
+                return doFetch(url, {
                     method: "PUT",
                     body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
@@ -348,10 +346,10 @@ export class Querier {
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") || err.message.includes("ECONNREFUSED"))
             ) {
-                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1, retryInfoMap);
+                return this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1, retryInfoMap);
             }
 
-            if (err instanceof Response) {
+            if ("status" in err && "text" in err) {
                 if (err.status === RATE_LIMIT_STATUS_CODE) {
                     const retriesLeft = retryInfoMap[url];
 
@@ -363,7 +361,7 @@ export class Querier {
 
                         await new Promise((resolve) => setTimeout(resolve, delay));
 
-                        return await this.sendRequestHelper(path, method, requestFunc, numberOfTries, retryInfoMap);
+                        return this.sendRequestHelper(path, method, requestFunc, numberOfTries, retryInfoMap);
                     }
                 }
 

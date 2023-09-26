@@ -7,6 +7,14 @@ import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_RID } from "./constants";
 import fetch from "cross-fetch";
+import crossFetch from "cross-fetch";
+
+export const doFetch: typeof fetch = (...args) => {
+    if (typeof fetch !== "undefined") {
+        return fetch(...args);
+    }
+    return crossFetch(...args);
+};
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -189,7 +197,7 @@ export async function postWithFetch(
     let error;
     let resp: { status: number; body: any };
     try {
-        const fetchResp = await fetch(url, {
+        const fetchResp = await doFetch(url, {
             method: "POST",
             body: JSON.stringify(body),
             headers,
