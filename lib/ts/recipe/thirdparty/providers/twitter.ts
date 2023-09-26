@@ -13,7 +13,11 @@
  * under the License.
  */
 import { ProviderInput, TypeProvider } from "../types";
-import NewProvider from "./custom";
+import NewProvider, {
+    DEV_OAUTH_REDIRECT_URL,
+    getActualClientIdFromDevelopmentClientId,
+    isUsingDevelopmentClientId,
+} from "./custom";
 import { doPostRequest } from "./utils";
 
 export default function Twitter(input: ProviderInput): TypeProvider {
@@ -64,15 +68,26 @@ export default function Twitter(input: ProviderInput): TypeProvider {
         };
 
         originalImplementation.exchangeAuthCodeForOAuthTokens = async function (input) {
+            let clientId = originalImplementation.config.clientId;
+            let redirectUri = input.redirectURIInfo.redirectURIOnProviderDashboard;
+
+            // We need to do this because we don't call the original implementation
+            /* Transformation needed for dev keys BEGIN */
+            if (isUsingDevelopmentClientId(originalImplementation.config.clientId)) {
+                clientId = getActualClientIdFromDevelopmentClientId(originalImplementation.config.clientId);
+                redirectUri = DEV_OAUTH_REDIRECT_URL;
+            }
+            /* Transformation needed for dev keys END */
+
             const basicAuthToken = Buffer.from(
-                `${originalImplementation.config.clientId}:${originalImplementation.config.clientSecret}`,
+                `${clientId}:${originalImplementation.config.clientSecret}`,
                 "utf8"
             ).toString("base64");
             const twitterOauthTokenParams = {
                 grant_type: "authorization_code",
-                client_id: originalImplementation.config.clientId,
+                client_id: clientId,
                 code_verifier: input.redirectURIInfo.pkceCodeVerifier,
-                redirect_uri: input.redirectURIInfo.redirectURIOnProviderDashboard,
+                redirect_uri: redirectUri,
                 code: input.redirectURIInfo.redirectURIQueryParams.code,
                 ...originalImplementation.config.tokenEndpointBodyParams,
             };
