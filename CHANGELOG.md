@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Added `twitter` as a built-in thirdparty provider
 
-## [16.0.0] - 2023-08-XX
+## [16.0.0] - 2023-09-25
 
 ### Overview
 
@@ -241,6 +241,12 @@ app.post("/change-email", verifySession(), async (req: SessionRequest, res: expr
     // ...
 });
 ```
+
+## [15.2.1] - 2023-09-22
+
+### Fixes
+
+-   Fixes an issue where the response for the JWKs API would contain additional properties
 
 ## [15.2.0] - 2023-09-11
 

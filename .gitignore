@@ -9,3 +9,4 @@ apiPassword
 releasePassword
 .tmp
 .idea
+/test_report

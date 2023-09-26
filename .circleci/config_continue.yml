@@ -32,6 +32,7 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         resource_class: large
+        parallelism: 4
         steps:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
@@ -46,6 +47,7 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
         resource_class: large
+        parallelism: 4
         steps:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
@@ -55,6 +57,9 @@ jobs:
             - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./authReact.sh)
+            - store_artifacts:
+                  path: test_report/backend.log
+                  destination: logs
             - slack/status
     test-success:
         docker:
@@ -73,7 +78,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
             - test-unit:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -83,7 +88,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
                   matrix:
                       parameters:
                           cdi-version: placeholder
@@ -96,7 +101,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
             - test-authreact:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -106,7 +111,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          ignore: /.*/
+                          only: /test-cicd\/.*/
             - test-success:
                   requires:
                       - test-unit
