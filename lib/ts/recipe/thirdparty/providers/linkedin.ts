@@ -37,7 +37,7 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
             const config = await oGetConfig(input);
 
             if (config.scope === undefined) {
-                config.scope = ["r_emailaddress", "r_liteprofile"];
+                config.scope = ["email", "profile"];
             }
 
             return config;
