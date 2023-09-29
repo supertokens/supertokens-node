@@ -284,7 +284,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: " Lax " })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
 
             resetAll();
         }
@@ -302,7 +302,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "None " })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "none");
 
             resetAll();
         }
@@ -320,7 +320,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: " STRICT " })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "strict");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "strict");
 
             resetAll();
         }
@@ -384,7 +384,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "lax" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
 
             resetAll();
         }
@@ -402,7 +402,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "none" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "none");
 
             resetAll();
         }
@@ -420,7 +420,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "strict" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "strict");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "strict");
 
             resetAll();
         }
@@ -438,7 +438,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
 
             resetAll();
         }
@@ -847,7 +847,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
             });
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -868,7 +868,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
 
             resetAll();
@@ -890,7 +890,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -911,7 +911,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -932,7 +932,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "none");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -953,7 +953,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -974,7 +974,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
@@ -994,7 +994,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
             });
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
@@ -1014,7 +1014,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "none");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -1034,7 +1034,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
@@ -1186,7 +1186,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite() === "none");
 
             resetAll();
         }
@@ -1206,7 +1206,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite(), "lax");
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, true);
         assert.equal(
             SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous(),
