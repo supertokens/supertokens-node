@@ -94,6 +94,16 @@ describe("SuperTokens Example Basic tests", function () {
             const userList = await SuperTokensNode.listUsersByAccountInfo("public", { email });
             const user = userList[0];
             const callApiBtn = await page.waitForSelector(".ProtectedHome_sessionButton__ihFAK");
+
+            // we save the cookies..
+            let originalCookies = (await page._client.send("Network.getAllCookies")).cookies;
+
+            // we set the old cookies with invalid access token
+            originalCookies = originalCookies.map(c =>
+                c.name === "sAccessToken" || c.name === "st-access-token" ? { ...c, value: "broken" } : c
+            );
+            await page.setCookie(...originalCookies);
+            
             let setAlertContent;
             let alertContent = new Promise((res) => (setAlertContent = res));
             page.on("dialog", async (dialog) => {
