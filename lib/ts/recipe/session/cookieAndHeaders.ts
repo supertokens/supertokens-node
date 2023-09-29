@@ -46,7 +46,7 @@ export function clearSession(config: TypeNormalisedInput, res: BaseResponse, tra
     // If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        setToken(config, res, token, "", 0, transferMethod);
+        setToken(config, res, token, "", 0, transferMethod, undefined, {});
     }
 
     res.removeHeader(antiCsrfHeaderKey);
@@ -125,7 +125,9 @@ export function setToken(
     tokenType: TokenType,
     value: string,
     expires: number,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    req: BaseRequest | undefined,
+    userContext: any
 ) {
     logDebugMessage(`setToken: Setting ${tokenType} token as ${transferMethod}`);
     if (transferMethod === "cookie") {
@@ -135,7 +137,9 @@ export function setToken(
             getCookieNameFromTokenType(tokenType),
             value,
             expires,
-            tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath"
+            tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath",
+            req,
+            userContext
         );
     } else if (transferMethod === "header") {
         setHeader(res, getResponseHeaderNameForTokenType(tokenType), value);
@@ -164,11 +168,16 @@ export function setCookie(
     name: string,
     value: string,
     expires: number,
-    pathType: "refreshTokenPath" | "accessTokenPath"
+    pathType: "refreshTokenPath" | "accessTokenPath",
+    req: BaseRequest | undefined,
+    userContext: any
 ) {
     let domain = config.cookieDomain;
     let secure = config.cookieSecure;
-    let sameSite = config.cookieSameSite();
+    let sameSite = config.cookieSameSite({
+        request: req,
+        userContext,
+    });
     let path = "";
     if (pathType === "refreshTokenPath") {
         path = config.refreshTokenPath.getAsStringDangerous();

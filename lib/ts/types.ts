@@ -34,7 +34,7 @@ export type NormalisedAppinfo = {
     websiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    topLevelWebsiteDomain: () => string;
+    topLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;

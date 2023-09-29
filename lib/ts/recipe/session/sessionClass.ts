@@ -167,7 +167,9 @@ export default class Session implements SessionContainerInterface {
                     this.accessToken,
                     this.frontToken,
                     this.helpers.config,
-                    this.reqResInfo.transferMethod
+                    this.reqResInfo.transferMethod,
+                    this.reqResInfo.req,
+                    {}
                 );
             }
         } else {
@@ -272,7 +274,15 @@ export default class Session implements SessionContainerInterface {
         if (this.accessTokenUpdated) {
             const { res, transferMethod } = info;
 
-            setAccessTokenInResponse(res, this.accessToken, this.frontToken, this.helpers.config, transferMethod);
+            setAccessTokenInResponse(
+                res,
+                this.accessToken,
+                this.frontToken,
+                this.helpers.config,
+                transferMethod,
+                info.req,
+                {}
+            );
             if (this.refreshToken !== undefined) {
                 setToken(
                     this.helpers.config,
@@ -280,7 +290,9 @@ export default class Session implements SessionContainerInterface {
                     "refresh",
                     this.refreshToken.token,
                     this.refreshToken.expiry,
-                    transferMethod
+                    transferMethod,
+                    info.req,
+                    {}
                 );
             }
             if (this.antiCsrfToken !== undefined) {

@@ -146,8 +146,11 @@ export function validateAndNormaliseUserInput(
             .getAsStringDangerous()
     );
 
-    let cookieSameSite: () => "strict" | "lax" | "none" = () => {
-        return appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain() ||
+    let cookieSameSite: (input: {
+        request: BaseRequest | undefined;
+        userContext: any;
+    }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        return appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain(input) ||
             protocolOfAPIDomain !== protocolOfWebsiteDomain
             ? "none"
             : "lax";
@@ -180,7 +183,10 @@ export function validateAndNormaliseUserInput(
 
     let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
         config === undefined || config.antiCsrf === undefined
-            ? cookieSameSite() === "none"
+            ? cookieSameSite({
+                  request: undefined,
+                  userContext: {},
+              }) === "none"
                 ? "VIA_CUSTOM_HEADER"
                 : "NONE"
             : config.antiCsrf;
@@ -264,7 +270,9 @@ export function setAccessTokenInResponse(
     accessToken: string,
     frontToken: string,
     config: TypeNormalisedInput,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    req: BaseRequest | undefined,
+    userContext: any
 ) {
     setFrontTokenInHeaders(res, frontToken);
     setToken(
@@ -277,7 +285,9 @@ export function setAccessTokenInResponse(
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
         // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
         Date.now() + hundredYearsInMs,
-        transferMethod
+        transferMethod,
+        req,
+        userContext
     );
 
     if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
@@ -291,7 +301,9 @@ export function setAccessTokenInResponse(
             // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
             // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
             Date.now() + hundredYearsInMs,
-            "header"
+            "header",
+            req,
+            userContext
         );
     }
 }

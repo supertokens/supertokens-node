@@ -237,7 +237,7 @@ export async function refreshSessionInRequest({
         // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
         if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
             logDebugMessage("refreshSession: cleared legacy id refresh token because refresh token was not found");
-            setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+            setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
         }
 
         logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
@@ -285,7 +285,7 @@ export async function refreshSessionInRequest({
                 logDebugMessage(
                     "refreshSession: cleared legacy id refresh token because refresh is clearing other tokens"
                 );
-                setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+                setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
             }
         }
         throw ex;
@@ -309,7 +309,7 @@ export async function refreshSessionInRequest({
     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
         logDebugMessage("refreshSession: cleared legacy id refresh token after successful refresh");
-        setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+        setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
     }
 
     return session;
@@ -380,11 +380,23 @@ export async function createNewSessionInRequest({
 
     if (
         outputTransferMethod === "cookie" &&
-        config.cookieSameSite() === "none" &&
+        config.cookieSameSite({
+            request: req,
+            userContext,
+        }) === "none" &&
         !config.cookieSecure &&
         !(
             (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
-            (appInfo.topLevelWebsiteDomain() === "localhost" || isAnIpAddress(appInfo.topLevelWebsiteDomain()))
+            (appInfo.topLevelWebsiteDomain({
+                request: req,
+                userContext,
+            }) === "localhost" ||
+                isAnIpAddress(
+                    appInfo.topLevelWebsiteDomain({
+                        request: req,
+                        userContext,
+                    })
+                ))
         )
     ) {
         // We can allow insecure cookie when both website & API domain are localhost or an IP

@@ -23,7 +23,9 @@ export declare function setToken(
     tokenType: TokenType,
     value: string,
     expires: number,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    req: BaseRequest | undefined,
+    userContext: any
 ): void;
 export declare function setHeader(res: BaseResponse, name: string, value: string): void;
 /**
@@ -43,6 +45,8 @@ export declare function setCookie(
     name: string,
     value: string,
     expires: number,
-    pathType: "refreshTokenPath" | "accessTokenPath"
+    pathType: "refreshTokenPath" | "accessTokenPath",
+    req: BaseRequest | undefined,
+    userContext: any
 ): void;
 export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;
