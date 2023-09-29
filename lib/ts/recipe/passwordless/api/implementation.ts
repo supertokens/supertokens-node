@@ -243,7 +243,7 @@ export default function getAPIImplementation(): APIInterface {
                 magicLink =
                     input.options.appInfo
                         .websiteDomain({
-                            originalRequest: input.options.req,
+                            request: input.options.req,
                             userContext: input.userContext,
                         })
                         .getAsStringDangerous() +
@@ -387,7 +387,7 @@ export default function getAPIImplementation(): APIInterface {
                         magicLink =
                             input.options.appInfo
                                 .websiteDomain({
-                                    originalRequest: input.options.req,
+                                    request: input.options.req,
                                     userContext: input.userContext,
                                 })
                                 .getAsStringDangerous() +

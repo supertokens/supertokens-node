@@ -7,7 +7,7 @@ import { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
 export declare type AppInfo = {
     appName: string;
-    websiteDomain: string | ((input: { originalRequest: BaseRequest | undefined; userContext: any }) => string);
+    websiteDomain: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -15,7 +15,7 @@ export declare type AppInfo = {
 };
 export declare type NormalisedAppinfo = {
     appName: string;
-    websiteDomain: (input: { originalRequest: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
+    websiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
     topLevelWebsiteDomain: () => string;

@@ -246,7 +246,7 @@ export default class Recipe extends RecipeModule {
         let magicLink =
             appInfo
                 .websiteDomain({
-                    originalRequest: getRequestFromUserContext(input.userContext),
+                    request: getRequestFromUserContext(input.userContext),
                     userContext: input.userContext,
                 })
                 .getAsStringDangerous() +

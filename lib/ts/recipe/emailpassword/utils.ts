@@ -259,7 +259,7 @@ export function getPasswordResetLink(input: {
     return (
         input.appInfo
             .websiteDomain({
-                originalRequest: getRequestFromUserContext(input.userContext),
+                request: getRequestFromUserContext(input.userContext),
                 userContext: input.userContext,
             })
             .getAsStringDangerous() +

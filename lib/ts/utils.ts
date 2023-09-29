@@ -59,7 +59,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
 
-    let websiteDomainFunction = (input: { originalRequest: BaseRequest | undefined; userContext: any }) => {
+    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: any }) => {
         let domain = appInfo.websiteDomain;
         if (typeof domain === "function") {
             domain = domain(input);
@@ -72,7 +72,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     const topLevelWebsiteDomain = () => {
         return getTopLevelDomainForSameSiteResolution(
             websiteDomainFunction({
-                originalRequest: undefined,
+                request: undefined,
                 userContext: {},
             }).getAsStringDangerous()
         );

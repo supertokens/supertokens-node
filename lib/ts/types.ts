@@ -22,7 +22,7 @@ import { BaseRequest } from "./framework";
 
 export type AppInfo = {
     appName: string;
-    websiteDomain: string | ((input: { originalRequest: BaseRequest | undefined; userContext: any }) => string);
+    websiteDomain: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -31,7 +31,7 @@ export type AppInfo = {
 
 export type NormalisedAppinfo = {
     appName: string;
-    websiteDomain: (input: { originalRequest: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
+    websiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
     topLevelWebsiteDomain: () => string;
