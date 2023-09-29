@@ -34,8 +34,19 @@ const EmailPassword = require("supertokens-node/recipe/emailpassword");
 // Run the tests in a DOM environment.
 require("jsdom-global")();
 
-const apiDomain = "http://localhost:3001";
-const websiteDomain = "http://localhost:3000";
+let deployInfo;
+
+if (process.env.TEST_DEPLOYED_VERSION) {
+    deployInfo = require("../deployInfo.json");
+
+    if (!deployInfo.deploy_url) {
+        throw new Error("Deployment failed or json error. " + JSON.stringify(deployInfo));
+    }
+}
+
+const apiDomain = deployInfo?.deploy_url ?? "http://localhost:3000";
+const websiteDomain = deployInfo?.deploy_url ?? "http://localhost:3000";
+
 SuperTokensNode.init({
     supertokens: {
         // We are running these tests without running a local ST instance
@@ -80,8 +91,19 @@ describe("SuperTokens Example Basic tests", function () {
             ]);
             await submitForm(page);
             await page.waitForNavigation();
-            const user = await EmailPassword.getUserByEmail("public", email);
+            const userList = await SuperTokensNode.listUsersByAccountInfo("public", { email });
+            const user = userList[0];
             const callApiBtn = await page.waitForSelector(".ProtectedHome_sessionButton__ihFAK");
+
+            // we save the cookies..
+            let originalCookies = (await page._client.send("Network.getAllCookies")).cookies;
+
+            // we set the old cookies with invalid access token
+            originalCookies = originalCookies.map((c) =>
+                c.name === "sAccessToken" || c.name === "st-access-token" ? { ...c, value: "broken" } : c
+            );
+            await page.setCookie(...originalCookies);
+
             let setAlertContent;
             let alertContent = new Promise((res) => (setAlertContent = res));
             page.on("dialog", async (dialog) => {

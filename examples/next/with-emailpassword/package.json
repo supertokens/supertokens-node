@@ -1,6 +1,7 @@
 {
     "private": true,
     "scripts": {
+        "postinstall": "../../../updateLibInExample",
         "dev": "next dev",
         "build": "next build",
         "start": "next start"
