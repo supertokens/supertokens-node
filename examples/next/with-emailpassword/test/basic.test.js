@@ -34,8 +34,19 @@ const EmailPassword = require("supertokens-node/recipe/emailpassword");
 // Run the tests in a DOM environment.
 require("jsdom-global")();
 
-const apiDomain = "http://localhost:3001";
-const websiteDomain = "http://localhost:3000";
+let deployInfo;
+
+if (process.env.TEST_DEPLOYED_VERSION) {
+    deployInfo = require("../deployInfo.json");
+
+    if (!deployInfo.deploy_url) {
+        throw new Error("Deployment failed or json error. " + JSON.stringify(deployInfo));
+    }
+}
+
+const apiDomain = deployInfo?.deploy_url ?? "http://localhost:3000";
+const websiteDomain = deployInfo?.deploy_url ?? "http://localhost:3000";
+
 SuperTokensNode.init({
     supertokens: {
         // We are running these tests without running a local ST instance

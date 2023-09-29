@@ -1,0 +1,28 @@
+name: "Test edge function compatibility"
+on: push
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        env:
+            NETLIFY_AUTH_TOKEN: ${{ secrets.netlify_auth_token }}
+        defaults:
+            run:
+                working-directory: examples/next/with-emailpassword
+        steps:
+            - uses: actions/checkout@v2
+            - run: echo $GITHUB_REF_NAME
+            - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
+            - run: npm install
+            - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
+            - run: |
+                  (netlify deploy --json --auth=$NETLIFY_AUTH_TOKEN > deployInfo.json) && ( \
+                    (echo "=========== Test attempt 1 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 2 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 3 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) \
+                  )
+            - name: The job has failed
+              if: ${{ failure() }}
+              uses: actions/upload-artifact@v3
+              with:
+                  name: screenshots
+                  path: ./**/*screenshot.jpeg
