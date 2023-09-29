@@ -18,8 +18,11 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 let ThirdParty = require("../../lib/build/recipe/thirdparty");
+let Session = require("../../lib/build/recipe/session");
 let { middleware, errorHandler } = require("../../framework/express");
 let nock = require("nock");
+let express = require("express");
+const request = require("supertest");
 
 const privateKey =
     "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----";
@@ -1051,5 +1054,194 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 `The providers array has multiple entries for the same third party provider.`
             );
         }
+    });
+
+    it("Test that sign in up fails if validateAccessToken throws", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                override: (original) => {
+                                    return {
+                                        ...original,
+                                        exchangeAuthCodeForOAuthTokens: async (input) => {
+                                            return {
+                                                access_token: "wrongaccesstoken",
+                                                id_token: "wrongidtoken",
+                                            };
+                                        },
+                                    };
+                                },
+                                config: {
+                                    thirdPartyId: "custom",
+                                    clients: [
+                                        {
+                                            clientId: "test2",
+                                            clientSecret: "test-secret2",
+                                        },
+                                    ],
+                                    validateAccessToken: async ({ accessToken }) => {
+                                        if (accessToken === "wrongaccesstoken") {
+                                            throw new Error("Invalid access token");
+                                        }
+
+                                        return;
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // default error handler for app
+        app.use(function (err, req, res, next) {
+            res.status(500).send(err.message);
+        });
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve({
+                            status: res.status,
+                            message: res.text,
+                        });
+                    }
+                })
+        );
+
+        assert.strictEqual(response.status, 500);
+        assert.strictEqual(response.message, "Invalid access token");
+    });
+
+    it("Test that sign in up works if validateAccessToken does not throw", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                override: (original) => {
+                                    return {
+                                        ...original,
+                                        exchangeAuthCodeForOAuthTokens: async (input) => {
+                                            return {
+                                                access_token: "accesstoken",
+                                                id_token: "idtoken",
+                                            };
+                                        },
+                                        getUserInfo: async function ({ oAuthTokens }) {
+                                            const time = Date.now();
+                                            return {
+                                                thirdPartyUserId: "" + time,
+                                                email: {
+                                                    id: `johndoeprovidertest+${time}@supertokens.com`,
+                                                    isVerified: true,
+                                                },
+                                            };
+                                        },
+                                    };
+                                },
+                                config: {
+                                    thirdPartyId: "custom",
+                                    clients: [
+                                        {
+                                            clientId: "test2",
+                                            clientSecret: "test-secret2",
+                                        },
+                                    ],
+                                    validateAccessToken: async ({ accessToken }) => {
+                                        if (accessToken === "accesstoken") {
+                                            return;
+                                        }
+
+                                        throw new Error("Unexpected access token");
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // default error handler for app
+        app.use(function (err, req, res, next) {
+            res.status(500).send(err.message);
+        });
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve({
+                            status: res.status,
+                            body: res.body,
+                        });
+                    }
+                })
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.body.status, "OK");
     });
 });
