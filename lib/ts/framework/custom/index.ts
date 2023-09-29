@@ -12,9 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export const version = "16.2.1";
 
-export const cdiSupported = ["4.0"];
+import { CustomFrameworkWrapper } from "./framework";
+export { PreParsedRequest, CollectingResponse } from "./framework";
 
-// Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
-export const dashboardVersion = "0.8";
+export const middleware = CustomFrameworkWrapper.middleware;
+export const errorHandler = CustomFrameworkWrapper.errorHandler;

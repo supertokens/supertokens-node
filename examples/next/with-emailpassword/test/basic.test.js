@@ -99,11 +99,11 @@ describe("SuperTokens Example Basic tests", function () {
             let originalCookies = (await page._client.send("Network.getAllCookies")).cookies;
 
             // we set the old cookies with invalid access token
-            originalCookies = originalCookies.map(c =>
+            originalCookies = originalCookies.map((c) =>
                 c.name === "sAccessToken" || c.name === "st-access-token" ? { ...c, value: "broken" } : c
             );
             await page.setCookie(...originalCookies);
-            
+
             let setAlertContent;
             let alertContent = new Promise((res) => (setAlertContent = res));
             page.on("dialog", async (dialog) => {
