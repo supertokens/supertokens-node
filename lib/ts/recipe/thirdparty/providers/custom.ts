@@ -305,6 +305,14 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 }
             }
 
+            if (impl.config.validateAccessToken !== undefined && accessToken !== undefined) {
+                await impl.config.validateAccessToken({
+                    accessToken: accessToken,
+                    clientConfig: impl.config,
+                    userContext,
+                });
+            }
+
             if (accessToken && impl.config.userInfoEndpoint !== undefined) {
                 const headers: { [key: string]: string } = {
                     Authorization: "Bearer " + accessToken,
