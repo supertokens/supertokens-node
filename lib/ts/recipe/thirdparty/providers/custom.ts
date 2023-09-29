@@ -305,6 +305,14 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 }
             }
 
+            if (impl.config.validateAccessToken !== undefined && accessToken !== undefined) {
+                await impl.config.validateAccessToken({
+                    accessToken: accessToken,
+                    clientConfig: impl.config,
+                    userContext,
+                });
+            }
+
             if (accessToken && impl.config.userInfoEndpoint !== undefined) {
                 const headers: { [key: string]: string } = {
                     Authorization: "Bearer " + accessToken,
@@ -333,19 +341,6 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
 
                 const userInfoFromAccessToken = await doGetRequest(impl.config.userInfoEndpoint, queryParams, headers);
                 rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
-            }
-
-            /**
-             * This is intentionally not part of the above if block. This is because the user may want to validate the access
-             * token payload even if the user info API has not been provided by the provider. In this case they would get an
-             * empty object and they can fail if they always expect a non-empty object.
-             */
-            if (impl.config.validateAccessToken !== undefined) {
-                await impl.config.validateAccessToken({
-                    accessToken: accessToken,
-                    clientConfig: impl.config,
-                    userContext,
-                });
             }
 
             const userInfoResult = getSupertokensUserInfoResultFromRawUserInfo(impl.config, rawUserInfoFromProvider);
