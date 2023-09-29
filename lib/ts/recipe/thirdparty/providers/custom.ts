@@ -5,7 +5,7 @@ import { getProviderConfigForClient } from "./configUtils";
 import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
 
 const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
-const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
+export const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
 
 // If Third Party login is used with one of the following development keys, then the dev authorization url and the redirect url will be used.
 const DEV_OAUTH_CLIENT_IDS = [
@@ -14,7 +14,7 @@ const DEV_OAUTH_CLIENT_IDS = [
 ];
 const DEV_KEY_IDENTIFIER = "4398792-";
 
-function isUsingDevelopmentClientId(client_id: string): boolean {
+export function isUsingDevelopmentClientId(client_id: string): boolean {
     return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);
 }
 
@@ -303,6 +303,14 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                         userContext,
                     });
                 }
+            }
+
+            if (impl.config.validateAccessToken !== undefined && accessToken !== undefined) {
+                await impl.config.validateAccessToken({
+                    accessToken: accessToken,
+                    clientConfig: impl.config,
+                    userContext,
+                });
             }
 
             if (accessToken && impl.config.userInfoEndpoint !== undefined) {

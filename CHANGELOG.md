@@ -5,13 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [unreleased]
-
 ## [16.0.1] - 2023-09-25
 
 ### Changes
 
 -   Using built-in fetch whenever available instead of cross-fetch
+
+## [16.2.0] - 2023-09-29
+
+### Changes
+
+-   Added `validateAccessToken` to the configuration for social login providers, this function allows you to verify the access token returned by the social provider. If you are using Github as a provider, there is a default implmentation provided for this function.
+
+## [16.1.0] - 2023-09-26
+
+-   Added `twitter` as a built-in thirdparty provider
 
 ## [16.0.0] - 2023-09-25
 
