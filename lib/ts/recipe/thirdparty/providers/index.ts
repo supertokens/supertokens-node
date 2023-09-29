@@ -10,6 +10,7 @@ import ProviderLinkedin from "./linkedin";
 import ProviderOkta from "./okta";
 import ProviderBitbucket from "./bitbucket";
 import ProviderGitlab from "./gitlab";
+import ProviderTwitter from "./twitter";
 
 export let ActiveDirectory = ProviderActiveDirectory;
 export let BoxySAML = ProviderBoxySAML;
@@ -23,3 +24,4 @@ export let Linkedin = ProviderLinkedin;
 export let Okta = ProviderOkta;
 export let Bitbucket = ProviderBitbucket;
 export let Gitlab = ProviderGitlab;
+export let Twitter = ProviderTwitter;
