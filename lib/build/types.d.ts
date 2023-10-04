@@ -7,7 +7,11 @@ import { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
 export declare type AppInfo = {
     appName: string;
-    origin: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
+    /**
+     * @deprecated Use `origin` instead
+     */
+    websiteDomain?: string;
+    origin?: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
