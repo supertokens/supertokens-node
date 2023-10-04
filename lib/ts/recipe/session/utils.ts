@@ -246,7 +246,7 @@ export function validateAndNormaliseUserInput(
                 ? defaultGetTokenTransferMethod
                 : config.getTokenTransferMethod,
         cookieDomain,
-        cookieSameSite,
+        getCookieSameSite: cookieSameSite,
         cookieSecure,
         sessionExpiredStatusCode,
         errorHandlers,

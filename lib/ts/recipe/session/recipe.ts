@@ -65,7 +65,7 @@ export default class SessionRecipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         logDebugMessage("session init: antiCsrf: " + this.config.antiCsrf);
         logDebugMessage("session init: cookieDomain: " + this.config.cookieDomain);
-        logDebugMessage("session init: cookieSameSite: " + this.config.cookieSameSite);
+        logDebugMessage("session init: cookieSameSite: " + this.config.getCookieSameSite);
         logDebugMessage("session init: cookieSecure: " + this.config.cookieSecure);
         logDebugMessage("session init: refreshTokenPath: " + this.config.refreshTokenPath.getAsStringDangerous());
         logDebugMessage("session init: sessionExpiredStatusCode: " + this.config.sessionExpiredStatusCode);

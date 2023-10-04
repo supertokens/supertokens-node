@@ -174,7 +174,7 @@ export function setCookie(
 ) {
     let domain = config.cookieDomain;
     let secure = config.cookieSecure;
-    let sameSite = config.cookieSameSite({
+    let sameSite = config.getCookieSameSite({
         request: req,
         userContext,
     });

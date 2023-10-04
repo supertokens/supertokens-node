@@ -380,7 +380,7 @@ export async function createNewSessionInRequest({
 
     if (
         outputTransferMethod === "cookie" &&
-        config.cookieSameSite({
+        config.getCookieSameSite({
             request: req,
             userContext,
         }) === "none" &&
