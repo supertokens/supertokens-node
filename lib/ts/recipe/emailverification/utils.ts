@@ -73,7 +73,7 @@ export function getEmailVerifyLink(input: {
 }): string {
     return (
         input.appInfo
-            .websiteDomain({
+            .getOrigin({
                 request: getRequestFromUserContext(input.userContext),
                 userContext: input.userContext,
             })

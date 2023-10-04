@@ -71,7 +71,7 @@ export default async function analyticsPost(
         };
     }
 
-    const { apiDomain, websiteDomain, appName } = options.appInfo;
+    const { apiDomain, getOrigin: websiteDomain, appName } = options.appInfo;
     const data = {
         websiteDomain: websiteDomain({
             request: undefined,

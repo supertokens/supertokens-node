@@ -242,7 +242,7 @@ export default function getAPIImplementation(): APIInterface {
             if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                 magicLink =
                     input.options.appInfo
-                        .websiteDomain({
+                        .getOrigin({
                             request: input.options.req,
                             userContext: input.userContext,
                         })
@@ -386,7 +386,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                         magicLink =
                             input.options.appInfo
-                                .websiteDomain({
+                                .getOrigin({
                                     request: input.options.req,
                                     userContext: input.userContext,
                                 })

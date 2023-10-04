@@ -980,7 +980,7 @@ let config: TypeInput = {
     appInfo: {
         apiDomain: "",
         appName: "",
-        websiteDomain: "",
+        origin: "",
     },
     recipeList: [Session.init(sessionConfig), EmailPassword.init(epConfig)],
     isInServerlessEnv: true,
@@ -1110,7 +1110,7 @@ Supertokens.init({
     appInfo: {
         apiDomain: "",
         appName: "",
-        websiteDomain: "",
+        origin: "",
     },
     recipeList: [
         Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE", cookieDomain: "" }),
@@ -1127,7 +1127,7 @@ Supertokens.init({
     appInfo: {
         apiDomain: "",
         appName: "",
-        websiteDomain: "",
+        origin: "",
     },
     recipeList: [
         Session.init({
@@ -1424,7 +1424,7 @@ Supertokens.init({
     appInfo: {
         apiDomain: "",
         appName: "",
-        websiteDomain: "",
+        origin: "",
     },
     recipeList: [
         Dashboard.init({
@@ -1501,7 +1501,7 @@ Supertokens.init({
     appInfo: {
         apiDomain: "..",
         appName: "..",
-        websiteDomain: "..",
+        origin: "..",
     },
     recipeList: [JWT.init()],
 });
