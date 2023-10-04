@@ -25,11 +25,12 @@ import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import SessionRecipe from "../session/recipe";
 import { ProviderInput } from "../thirdparty/types";
-import { LOGIN_METHODS_API } from "./constants";
-import { AllowedDomainsClaim } from "./multiFactorAuthClaim";
+import { GET_MFA_INFO } from "./constants";
+import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import loginMethodsAPI from "./api/loginMethods";
+import mfaInfoAPI from "./api/mfaInfo";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -61,8 +62,6 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
-
-        this.getAllowedDomainsForTenantId = this.config.getAllowedDomainsForTenantId;
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -84,7 +83,7 @@ export default class Recipe extends RecipeModule {
                 if (Recipe.instance.getAllowedDomainsForTenantId !== undefined) {
                     PostSuperTokensInitCallbacks.addPostInitCallback(() => {
                         try {
-                            SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(AllowedDomainsClaim);
+                            SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(MultiFactorAuthClaim);
                         } catch {
                             // Skip adding claims if session recipe is not initialised
                         }
@@ -111,9 +110,9 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(LOGIN_METHODS_API),
-                id: LOGIN_METHODS_API,
-                disabled: this.apiImpl.loginMethodsGET === undefined,
+                pathWithoutApiBasePath: new NormalisedURLPath(GET_MFA_INFO),
+                id: GET_MFA_INFO,
+                disabled: this.apiImpl.mfaInfoGET === undefined,
             },
         ];
     };
@@ -136,8 +135,8 @@ export default class Recipe extends RecipeModule {
             res,
             staticThirdPartyProviders: this.staticThirdPartyProviders,
         };
-        if (id === LOGIN_METHODS_API) {
-            return await loginMethodsAPI(this.apiImpl, tenantId, options, userContext);
+        if (id === GET_MFA_INFO) {
+            return await mfaInfoAPI(this.apiImpl, tenantId, options, userContext);
         }
         throw new Error("should never come here");
     };
@@ -153,4 +152,33 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
+
+    async completeFactorInSession({
+        session,
+        factor,
+        userContext,
+    }: {
+        session: SessionContainerInterface;
+        factor: string;
+        userContext: any;
+    }) {
+        const currentValue = await session.getClaimValue(MultiFactorAuthClaim);
+        const completed = {
+            ...currentValue?.c,
+            [factor]: Math.floor(Date.now() / 1000),
+        };
+
+        const requirements = await this.config.getMFARequirementsForSession(
+            session.getUserId(),
+            session.getRecipeUserId(),
+            session.getTenantId(),
+            userContext
+        );
+        const next = MultiFactorAuthClaim.buildNextArray(completed, requirements);
+
+        await session.setClaimValue(MultiFactorAuthClaim, {
+            c: completed,
+            n: next,
+        });
+    }
 }

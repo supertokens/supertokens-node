@@ -23,7 +23,19 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 
     return {
-        getAllowedDomainsForTenantId: config?.getAllowedDomainsForTenantId,
+        firstFactors: config?.firstFactors,
+        getMFARequirementsForFactorSetup:
+            config?.getMFARequirementsForFactorSetup ??
+            (() => {
+                // TODO: the default should be 2FA if any secondary factors are set up, otherwise we only require the first factor to be completed
+                return [];
+            }),
+        getMFARequirementsForSession:
+            config?.getMFARequirementsForSession ??
+            (() => {
+                // TODO: the default should be 2FA (so any 2 factors)
+                return [];
+            }),
         override,
     };
 }

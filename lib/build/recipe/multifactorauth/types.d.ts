@@ -1,33 +1,17 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
- *
- * This software is licensed under the Apache License, Version 2.0 (the
- * "License") as published by the Apache Software Foundation.
- *
- * You may not use this file except in compliance with the License. You may
- * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
-
-export type MFARequirement =
+export declare type MFARequirement =
     | {
           id: string;
           params?: any;
       }
     | string;
-
-export type MFARequirementList = (
+export declare type MFARequirementList = (
     | {
           oneOf: MFARequirement[];
       }
@@ -36,15 +20,12 @@ export type MFARequirementList = (
       }
     | MFARequirement
 )[];
-
-export type MFAClaimValue = {
+export declare type MFAClaimValue = {
     c: Record<string, number>;
     n: string[];
 };
-
-export type TypeInput = {
+export declare type TypeInput = {
     firstFactors?: string[];
-
     getMFARequirementsForSession?: (
         userId: string,
         recipeUserId: RecipeUserId,
@@ -57,7 +38,6 @@ export type TypeInput = {
         tenantId: string | undefined,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
-
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -66,10 +46,8 @@ export type TypeInput = {
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-
-export type TypeNormalisedInput = {
+export declare type TypeNormalisedInput = {
     firstFactors?: string[];
-
     getMFARequirementsForSession: (
         userId: string,
         recipeUserId: RecipeUserId,
@@ -82,7 +60,6 @@ export type TypeNormalisedInput = {
         tenantId: string | undefined,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
-
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -91,8 +68,7 @@ export type TypeNormalisedInput = {
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-
-export type RecipeInterface = {
+export declare type RecipeInterface = {
     getFirstFactors: (input: { tenantId: string }) => Promise<string[]>;
     isAllowedToSetupFactor: (input: {
         tenantId: string;
@@ -101,28 +77,38 @@ export type RecipeInterface = {
         userContext: any;
     }) => Promise<boolean>;
     getFactorsSetupForUser: (input: { userId: string; userContext: any }) => Promise<string[]>;
-
     enableFactorForUser: (input: {
         userId: string;
         factorId: string;
         userContext: any;
-    }) => Promise<{ status: "OK"; newEnabledFactors: string[] }>;
+    }) => Promise<{
+        status: "OK";
+        newEnabledFactors: string[];
+    }>;
     enableFactorForTenant: (input: {
         tenantId: string;
         factorId: string;
         userContext: any;
-    }) => Promise<{ status: "OK"; newEnabledFactors: string[] }>;
+    }) => Promise<{
+        status: "OK";
+        newEnabledFactors: string[];
+    }>;
     getEnabledFactorsForUser: (input: {
         userId: string;
         userContext: any;
-    }) => Promise<{ status: "OK"; enabledFactors: string[] }>;
+    }) => Promise<{
+        status: "OK";
+        enabledFactors: string[];
+    }>;
     getEnabledFactorsForTenant: (input: {
         tenantId: string;
         userContext: any;
-    }) => Promise<{ status: "OK"; enabledFactors: string[] }>;
+    }) => Promise<{
+        status: "OK";
+        enabledFactors: string[];
+    }>;
 };
-
-export type APIOptions = {
+export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
@@ -130,8 +116,7 @@ export type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-
-export type APIInterface = {
+export declare type APIInterface = {
     mfaInfoGET: (input: {
         tenantId: string;
         options: APIOptions;

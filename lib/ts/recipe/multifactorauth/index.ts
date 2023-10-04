@@ -15,38 +15,54 @@
 
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
-import { ProviderConfig } from "../thirdparty/types";
-import { AllowedDomainsClaim } from "./multiFactorAuthClaim";
-import RecipeUserId from "../../recipeUserId";
+import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async createOrUpdateTenant(
-        tenantId: string,
-        config?: {
-            emailPasswordEnabled?: boolean;
-            passwordlessEnabled?: boolean;
-            thirdPartyEnabled?: boolean;
-            coreConfig?: { [key: string]: any };
-        },
+    static MultiFactorAuthClaim = MultiFactorAuthClaim;
+
+    static async enableFactorForUser(
+        userId: string,
+        factorId: string,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        createdNew: boolean;
-    }> {
+    ): Promise<{ status: "OK"; newEnabledFactors: string[] }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
-        return recipeInstance.recipeInterfaceImpl.createOrUpdateTenant({
-            tenantId,
-            config,
+        return recipeInstance.recipeInterfaceImpl.enableFactorForUser({
+            userId,
+            factorId,
             userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async enableFactorForTenant(
+        tenantId: string,
+        factorId: string,
+        userContext?: any
+    ): Promise<{ status: "OK"; newEnabledFactors: string[] }> {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.recipeInterfaceImpl.enableFactorForTenant({
+            tenantId,
+            factorId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async completeFactorInSession(session: SessionContainerInterface, factor: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().completeFactorInSession({
+            session,
+            factor,
+            userContext: userContext ?? {},
         });
     }
 }
 
 export let init = Wrapper.init;
 
-export let createOrUpdateTenant = Wrapper.createOrUpdateTenant;
+export let enableFactorForTenant = Wrapper.enableFactorForTenant;
+export let enableFactorForUser = Wrapper.enableFactorForUser;
+export let completeFactorInSession = Wrapper.completeFactorInSession;
 
-export { AllowedDomainsClaim };
+export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };
