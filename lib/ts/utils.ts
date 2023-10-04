@@ -88,7 +88,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
                 : new NormalisedURLPath(appInfo.websiteBasePath),
         apiGatewayPath,
         topLevelAPIDomain,
-        topLevelWebsiteDomain,
+        getTopLevelWebsiteDomain: topLevelWebsiteDomain,
     };
 }
 

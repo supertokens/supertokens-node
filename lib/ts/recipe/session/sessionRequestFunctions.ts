@@ -387,12 +387,12 @@ export async function createNewSessionInRequest({
         !config.cookieSecure &&
         !(
             (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
-            (appInfo.topLevelWebsiteDomain({
+            (appInfo.getTopLevelWebsiteDomain({
                 request: req,
                 userContext,
             }) === "localhost" ||
                 isAnIpAddress(
-                    appInfo.topLevelWebsiteDomain({
+                    appInfo.getTopLevelWebsiteDomain({
                         request: req,
                         userContext,
                     })

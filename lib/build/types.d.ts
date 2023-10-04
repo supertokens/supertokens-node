@@ -18,7 +18,7 @@ export declare type NormalisedAppinfo = {
     getOrigin: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    topLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;
+    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;

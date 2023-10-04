@@ -150,7 +150,7 @@ export function validateAndNormaliseUserInput(
         request: BaseRequest | undefined;
         userContext: any;
     }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: any }) => {
-        return appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain(input) ||
+        return appInfo.topLevelAPIDomain !== appInfo.getTopLevelWebsiteDomain(input) ||
             protocolOfAPIDomain !== protocolOfWebsiteDomain
             ? "none"
             : "lax";
