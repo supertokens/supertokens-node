@@ -16,11 +16,14 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../types";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 import Session from "../../session";
 
-export default async function removeDevice(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function removeDevice(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.removeDevicePOST === undefined) {
         return false;
     }
@@ -35,7 +38,6 @@ export default async function removeDevice(apiImplementation: APIInterface, opti
         });
     }
 
-    const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.removeDevicePOST({
         session,
         deviceName,

@@ -29,7 +29,8 @@ export default class TotpRecipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
-        __: HTTPMethod
+        __: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];

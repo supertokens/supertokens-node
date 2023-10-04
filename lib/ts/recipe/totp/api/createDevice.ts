@@ -15,11 +15,14 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 import Session from "../../session";
 
-export default async function createDevice(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function createDevice(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.createDevicePOST === undefined) {
         return false;
     }
@@ -33,7 +36,6 @@ export default async function createDevice(apiImplementation: APIInterface, opti
 
     let { deviceName } = await options.req.getJSONBody();
 
-    const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.createDevicePOST({
         session,
         deviceName,

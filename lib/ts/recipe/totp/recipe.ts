@@ -135,7 +135,8 @@ export default class TotpRecipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
-        __: HTTPMethod
+        __: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         const options = {
             config: this.config,
@@ -147,15 +148,15 @@ export default class TotpRecipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === CREATE_DEVICE_API) {
-            return await createDeviceAPI(this.apiImpl, options);
+            return await createDeviceAPI(this.apiImpl, options, userContext);
         } else if (id == VERIFY_DEVICE_API) {
-            return await verifyDeviceAPI(this.apiImpl, options);
+            return await verifyDeviceAPI(this.apiImpl, options, userContext);
         } else if (id == VERIFY_CODE_API) {
-            return await verifyCodeAPI(this.apiImpl, options);
+            return await verifyCodeAPI(this.apiImpl, options, userContext);
         } else if (id == REMOVE_DEVICE_API) {
-            return await removeDeviceAPI(this.apiImpl, options);
+            return await removeDeviceAPI(this.apiImpl, options, userContext);
         } else if (id == LIST_DEVICE_API) {
-            return await listDevicesAPI(this.apiImpl, options);
+            return await listDevicesAPI(this.apiImpl, options, userContext);
         }
 
         return false;
