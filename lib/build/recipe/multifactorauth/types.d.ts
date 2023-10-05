@@ -31,13 +31,19 @@ export declare type TypeInput = {
         recipeUserId: RecipeUserId,
         tenantId: string,
         session: SessionContainer | undefined,
+        factorsSetUpByTheUser: string[],
         enabledFactors: string[],
+        enabledFactorsForTenant: string[],
         completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
     getMFARequirementsForFactorSetup?: (
         factorId: string,
         session: SessionContainer,
+        factorsSetUpByTheUser: string[],
+        enabledFactors: string[],
+        enabledFactorsForTenant: string[],
+        completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
     override?: {
@@ -55,13 +61,19 @@ export declare type TypeNormalisedInput = {
         recipeUserId: RecipeUserId,
         tenantId: string,
         session: SessionContainer | undefined,
+        factorsSetUpByTheUser: string[],
         enabledFactors: string[],
+        enabledFactorsForTenant: string[],
         completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
     getMFARequirementsForFactorSetup: (
         factorId: string,
         session: SessionContainer,
+        factorsSetUpByTheUser: string[],
+        enabledFactors: string[],
+        enabledFactorsForTenant: string[],
+        completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
     override: {

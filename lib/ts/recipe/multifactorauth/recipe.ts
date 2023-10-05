@@ -168,12 +168,29 @@ export default class Recipe extends RecipeModule {
             [factor]: Math.floor(Date.now() / 1000),
         };
 
+        const setupUserFactors = await this.recipeInterfaceImpl.getFactorsSetupForUser({
+            userId: session.getUserId(),
+            tenantId: session.getTenantId(),
+            userContext,
+        });
+        const enabledUserFactors = await this.recipeInterfaceImpl.getEnabledFactorsForUser({
+            userId: session.getUserId(),
+            tenantId: session.getTenantId(),
+            userContext,
+        });
+        const tenantFactors = await this.recipeInterfaceImpl.getEnabledFactorsForTenant({
+            tenantId: session.getTenantId(),
+            userContext,
+        });
+
         const requirements = await this.config.getGlobalMFARequirements(
             session.getUserId(),
             session.getRecipeUserId(),
             session.getTenantId(),
             session,
-            [], // TODO: this should call getEnabledFactorsForX
+            setupUserFactors,
+            enabledUserFactors.enabledFactors,
+            tenantFactors.enabledFactors,
             completed,
             userContext
         );
