@@ -17,7 +17,8 @@ export declare function doPostRequest(
     },
     headers?: {
         [key: string]: string;
-    }
+    },
+    validateStatusCode?: (status: number) => void
 ): Promise<any>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,

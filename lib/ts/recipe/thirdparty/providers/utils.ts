@@ -39,7 +39,8 @@ export async function doGetRequest(
 export async function doPostRequest(
     url: string,
     params: { [key: string]: any },
-    headers?: { [key: string]: string }
+    headers?: { [key: string]: string },
+    validateStatusCode?: (status: number) => void
 ): Promise<any> {
     if (headers === undefined) {
         headers = {};
@@ -58,6 +59,11 @@ export async function doPostRequest(
         body,
         headers,
     });
+
+    // This lets callers verify the status code, if invalid this function should throw an error
+    if (validateStatusCode !== undefined) {
+        validateStatusCode(response.status);
+    }
 
     if (response.status >= 400) {
         logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
