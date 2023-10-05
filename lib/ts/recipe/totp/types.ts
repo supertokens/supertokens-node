@@ -49,13 +49,20 @@ export type TypeNormalisedInput = {
 export type RecipeInterface = {
     createDevice: (input: {
         userId: string;
-        deviceName: string;
+        deviceName?: string;
         skew?: number;
         period?: number;
         userIdentifierInfo?: string;
         userContext: any;
     }) => Promise<
-        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCodeString: string }
+        | {
+              status: "OK";
+              issuerName: string;
+              secret: string;
+              userIdentifier?: string;
+              qrCodeString: string;
+              deviceName: string;
+          }
         | { status: "DEVICE_ALREADY_EXISTS_ERROR" }
     >;
     verifyCode: (input: {

@@ -32,7 +32,7 @@ export declare type TypeNormalisedInput = {
 export declare type RecipeInterface = {
     createDevice: (input: {
         userId: string;
-        deviceName: string;
+        deviceName?: string;
         skew?: number;
         period?: number;
         userIdentifierInfo?: string;
@@ -44,6 +44,7 @@ export declare type RecipeInterface = {
               secret: string;
               userIdentifier?: string;
               qrCodeString: string;
+              deviceName: string;
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";

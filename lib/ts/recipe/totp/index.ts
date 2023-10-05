@@ -23,7 +23,7 @@ export default class Wrapper {
 
     static createDevice(input: {
         userId: string;
-        deviceName: string;
+        deviceName?: string;
         skew?: number;
         period?: number;
         userContext?: any;

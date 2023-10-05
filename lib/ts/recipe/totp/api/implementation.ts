@@ -15,47 +15,26 @@
 
 import { APIInterface } from "../types";
 import TotpRecipe from "../recipe";
-import SessionError from "../../session/error";
 // import { MfaClaim, completeFactorInSession } from '../../mfa';
 
 export default function getAPIImplementation(): APIInterface {
     return {
         createDevicePOST: async function ({ session, options, deviceName, userContext }) {
+            // TODO: validate claims to check if createDevice can be allowed
+
             let userIdentifierInfo: string | undefined = undefined;
+
             const emailOrPhoneInfo = await TotpRecipe.getInstanceOrThrowError().getUserIdentifierInfoForUserId(
                 session.getUserId(),
                 userContext
             );
             if (emailOrPhoneInfo.status === "OK") {
                 userIdentifierInfo = emailOrPhoneInfo.info;
-            } else if (emailOrPhoneInfo.status === "UNKNOWN_USER_ID_ERROR") {
-                throw new SessionError({
-                    type: SessionError.UNAUTHORISED,
-                    message: "Unknown User ID provided",
-                });
-            }
-
-            const listDevicesResponse = await options.recipeImplementation.listDevices({
-                userId: session.getUserId(),
-                userContext,
-            });
-            const devices = listDevicesResponse.devices;
-            const verifiedDeviceCount = devices.filter((device) => device.verified).length;
-
-            if (verifiedDeviceCount > 0) {
-                // TODO: We need to assert that all factors have been completed
-                // before actually creating the device.
-                // await session.assertClaims(MfaClaim.validators.hasCompletedAllFactors(), userContext);
-            }
-
-            if (deviceName === undefined) {
-                // We need to set the device name:
-                deviceName = `TOTP Device ${devices.length + 1}`; // Assuming no one creates a device in the same format
             }
 
             const args = { deviceName, userId: session.getUserId(), userIdentifierInfo, userContext };
             let response = await options.recipeImplementation.createDevice(args);
-            return { ...response, deviceName };
+            return { ...response };
         },
 
         verifyCodePOST: async function ({ session, options, totp, userContext }) {

@@ -46,6 +46,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 issuerName,
                 userIdentifier,
                 secret: response.secret,
+                deviceName: response.deviceName,
                 qrCodeString: encodeURI(
                     `otpauth://totp/${issuerName}${userIdentifier !== undefined ? ":" + userIdentifier : ""}` +
                         `?secret=${response.secret}&issuer=${issuerName}`

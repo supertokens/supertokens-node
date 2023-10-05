@@ -6,7 +6,7 @@ export default class Wrapper {
     static Error: typeof SuperTokensError;
     static createDevice(input: {
         userId: string;
-        deviceName: string;
+        deviceName?: string;
         skew?: number;
         period?: number;
         userContext?: any;
@@ -17,6 +17,7 @@ export default class Wrapper {
               secret: string;
               userIdentifier?: string | undefined;
               qrCodeString: string;
+              deviceName: string;
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
