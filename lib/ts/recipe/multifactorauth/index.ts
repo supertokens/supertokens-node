@@ -24,6 +24,7 @@ export default class Wrapper {
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
     static async enableFactorForUser(
+        tenantId: string,
         userId: string,
         factorId: string,
         userContext?: any
@@ -32,6 +33,7 @@ export default class Wrapper {
         return recipeInstance.recipeInterfaceImpl.enableFactorForUser({
             userId,
             factorId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

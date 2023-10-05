@@ -168,10 +168,13 @@ export default class Recipe extends RecipeModule {
             [factor]: Math.floor(Date.now() / 1000),
         };
 
-        const requirements = await this.config.getMFARequirementsForSession(
+        const requirements = await this.config.getGlobalMFARequirements(
             session.getUserId(),
             session.getRecipeUserId(),
             session.getTenantId(),
+            session,
+            [], // TODO: this should call getEnabledFactorsForX
+            completed,
             userContext
         );
         const next = MultiFactorAuthClaim.buildNextArray(completed, requirements);

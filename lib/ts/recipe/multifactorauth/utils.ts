@@ -30,8 +30,8 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
                 // TODO: the default should be 2FA if any secondary factors are set up, otherwise we only require the first factor to be completed
                 return [];
             }),
-        getMFARequirementsForSession:
-            config?.getMFARequirementsForSession ??
+        getGlobalMFARequirements:
+            config?.getGlobalMFARequirements ??
             (() => {
                 // TODO: the default should be 2FA (so any 2 factors)
                 return [];

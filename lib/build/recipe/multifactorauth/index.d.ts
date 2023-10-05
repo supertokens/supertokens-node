@@ -7,6 +7,7 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static MultiFactorAuthClaim: import("./multiFactorAuthClaim").MultiFactorAuthClaimClass;
     static enableFactorForUser(
+        tenantId: string,
         userId: string,
         factorId: string,
         userContext?: any

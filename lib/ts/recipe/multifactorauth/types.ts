@@ -23,7 +23,7 @@ import { SessionContainerInterface } from "../session/types";
 export type MFARequirement =
     | {
           id: string;
-          params?: any;
+          maxAgeInSeconds?: number;
       }
     | string;
 
@@ -45,16 +45,18 @@ export type MFAClaimValue = {
 export type TypeInput = {
     firstFactors?: string[];
 
-    getMFARequirementsForSession?: (
+    getGlobalMFARequirements?: (
         userId: string,
         recipeUserId: RecipeUserId,
-        tenantId: string | undefined,
+        tenantId: string,
+        session: SessionContainer | undefined,
+        enabledFactors: string[],
+        completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
     getMFARequirementsForFactorSetup?: (
         factorId: string,
         session: SessionContainer,
-        tenantId: string | undefined,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
 
@@ -70,16 +72,18 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     firstFactors?: string[];
 
-    getMFARequirementsForSession: (
+    getGlobalMFARequirements: (
         userId: string,
         recipeUserId: RecipeUserId,
-        tenantId: string | undefined,
+        tenantId: string,
+        session: SessionContainer | undefined,
+        enabledFactors: string[],
+        completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
     getMFARequirementsForFactorSetup: (
         factorId: string,
         session: SessionContainer,
-        tenantId: string | undefined,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
 
@@ -93,16 +97,16 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getFirstFactors: (input: { tenantId: string }) => Promise<string[]>;
     isAllowedToSetupFactor: (input: {
         tenantId: string;
         session: SessionContainerInterface;
         factorId: string;
         userContext: any;
     }) => Promise<boolean>;
-    getFactorsSetupForUser: (input: { userId: string; userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { userId: string; tenantId: string; userContext: any }) => Promise<string[]>;
 
     enableFactorForUser: (input: {
+        tenantId: string;
         userId: string;
         factorId: string;
         userContext: any;
@@ -114,6 +118,7 @@ export type RecipeInterface = {
     }) => Promise<{ status: "OK"; newEnabledFactors: string[] }>;
     getEnabledFactorsForUser: (input: {
         userId: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<{ status: "OK"; enabledFactors: string[] }>;
     getEnabledFactorsForTenant: (input: {
