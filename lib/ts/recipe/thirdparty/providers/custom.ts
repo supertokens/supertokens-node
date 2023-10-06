@@ -3,6 +3,7 @@ import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
 import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
+import { logDebugMessage } from "../../../logger";
 
 const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
 export const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
@@ -340,6 +341,20 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 }
 
                 const userInfoFromAccessToken = await doGetRequest(impl.config.userInfoEndpoint, queryParams, headers);
+
+                if (userInfoFromAccessToken.status >= 400) {
+                    logDebugMessage(
+                        `Received response with status ${
+                            userInfoFromAccessToken.status
+                        } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                    );
+                    throw new Error(
+                        `Received response with status ${
+                            userInfoFromAccessToken.status
+                        } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                    );
+                }
+
                 rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
             }
 

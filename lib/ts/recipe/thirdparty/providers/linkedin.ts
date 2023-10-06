@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { logDebugMessage } from "../../../logger";
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 import { doGetRequest } from "./utils";
@@ -65,12 +66,38 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
             const userInfoFromAccessToken = await doGetRequest("https://api.linkedin.com/v2/me", undefined, headers);
             rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
 
+            if (userInfoFromAccessToken.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${
+                        userInfoFromAccessToken.status
+                    } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                );
+                throw new Error(
+                    `Received response with status ${
+                        userInfoFromAccessToken.status
+                    } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                );
+            }
+
             const emailAPIURL = "https://api.linkedin.com/v2/emailAddress";
             const userInfoFromEmail = await doGetRequest(
                 emailAPIURL,
                 { q: "members", projection: "(elements*(handle~))" },
                 headers
             );
+
+            if (userInfoFromEmail.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${
+                        userInfoFromEmail.status
+                    } and body ${await userInfoFromEmail.response.clone().text()}`
+                );
+                throw new Error(
+                    `Received response with status ${
+                        userInfoFromEmail.status
+                    } and body ${await userInfoFromEmail.response.clone().text()}`
+                );
+            }
 
             if (userInfoFromEmail.response.elements && userInfoFromEmail.response.elements.length > 0) {
                 rawUserInfoFromProvider.fromUserInfoAPI.email =

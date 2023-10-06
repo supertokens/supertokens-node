@@ -17,6 +17,7 @@ import { ProviderInput, TypeProvider } from "../types";
 import { doGetRequest } from "./utils";
 
 import NewProvider from "./custom";
+import { logDebugMessage } from "../../../logger";
 
 export default function Bitbucket(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -74,6 +75,19 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 undefined,
                 headers
             );
+
+            if (userInfoFromAccessToken.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${
+                        userInfoFromAccessToken.status
+                    } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                );
+                throw new Error(
+                    `Received response with status ${
+                        userInfoFromAccessToken.status
+                    } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                );
+            }
             rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
 
             const userInfoFromEmail = await doGetRequest(
@@ -81,6 +95,19 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 undefined,
                 headers
             );
+
+            if (userInfoFromEmail.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${
+                        userInfoFromEmail.status
+                    } and body ${await userInfoFromEmail.response.clone().text()}`
+                );
+                throw new Error(
+                    `Received response with status ${
+                        userInfoFromEmail.status
+                    } and body ${await userInfoFromEmail.response.clone().text()}`
+                );
+            }
 
             rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.response;
 

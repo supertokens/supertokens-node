@@ -29,10 +29,6 @@ export async function doGetRequest(
         headers: headers,
     });
 
-    if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-    }
     const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
@@ -105,8 +101,17 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
         normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()
     );
 
-    oidcInfoMap[issuer] = oidcInfo;
-    return oidcInfo;
+    if (oidcInfo.status >= 400) {
+        logDebugMessage(
+            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.response.clone().text()}`
+        );
+        throw new Error(
+            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.response.clone().text()}`
+        );
+    }
+
+    oidcInfoMap[issuer] = oidcInfo.response;
+    return oidcInfo.response;
 }
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<ProviderConfigForClientType> {
