@@ -27,4 +27,4 @@ jobs:
                   name: screenshots
                   path: |
                       ./**/*screenshot.jpeg
-                      deployInfo.json
+                      ./**/deployInfo.json
