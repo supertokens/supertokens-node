@@ -6,6 +6,7 @@ jobs:
         env:
             NETLIFY_AUTH_TOKEN: ${{ secrets.netlify_auth_token }}
             NETLIFY_SITE_ID: ${{ secrets.netlify_site_id }}
+            TEST_DEPLOYED_VERSION: true
         defaults:
             run:
                 working-directory: examples/next/with-emailpassword
