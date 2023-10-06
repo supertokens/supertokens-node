@@ -32,7 +32,10 @@ export async function doGetRequest(
     const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
-    return respData;
+    return {
+        response: respData,
+        status: response.status,
+    };
 }
 
 export async function doPostRequest(

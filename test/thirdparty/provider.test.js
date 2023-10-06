@@ -1147,6 +1147,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
     it("Test that sign in up works if validateAccessToken does not throw", async function () {
         const connectionURI = await startST();
+        let overridenValidateCalled = false;
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1185,6 +1186,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                         },
                                     ],
                                     validateAccessToken: async ({ accessToken }) => {
+                                        overridenValidateCalled = true;
                                         if (accessToken === "accesstoken") {
                                             return;
                                         }
@@ -1240,6 +1242,8 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                     },
                 })
                 .end((err, res) => {
+                    console.log(err);
+                    console.log(res);
                     if (err) {
                         resolve(undefined);
                     } else {
@@ -1251,6 +1255,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 })
         );
 
+        assert.equal(overridenValidateCalled, true);
         assert.strictEqual(response.status, 200);
         assert.strictEqual(response.body.status, "OK");
 
