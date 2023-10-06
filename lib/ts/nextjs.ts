@@ -37,7 +37,7 @@ function next(
 }
 
 type PartialNextRequest = {
-    method: HTTPMethod;
+    method: string;
     url: string;
     headers: Headers;
     formData: () => any;
@@ -85,7 +85,7 @@ export default class NextJS {
             );
 
             return new PreParsedRequest({
-                method: req.method,
+                method: req.method as HTTPMethod,
                 url: req.url,
                 query: query,
                 headers: req.headers,

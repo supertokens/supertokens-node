@@ -1,7 +1,6 @@
 // @ts-nocheck
-import { HTTPMethod } from "./types";
 declare type PartialNextRequest = {
-    method: HTTPMethod;
+    method: string;
     url: string;
     headers: Headers;
     formData: () => any;
