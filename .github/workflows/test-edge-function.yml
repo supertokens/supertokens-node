@@ -16,8 +16,10 @@ jobs:
             - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
             - run: npm install
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
+            - run: netlify deploy --debug --prod --build --json --auth=$NETLIFY_AUTH_TOKEN > deployInfo.json
+            - run: cat deployInfo.json
             - run: |
-                  (netlify deploy --prod --build --json --auth=$NETLIFY_AUTH_TOKEN > deployInfo.json) && ( \
+                  ( \
                     (echo "=========== Test attempt 1 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
                     (echo "=========== Test attempt 2 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
                     (echo "=========== Test attempt 3 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) \
@@ -29,4 +31,3 @@ jobs:
                   name: screenshots
                   path: |
                       ./**/*screenshot.jpeg
-                      ./**/deployInfo.json
