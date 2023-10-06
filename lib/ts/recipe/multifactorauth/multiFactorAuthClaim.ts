@@ -1,4 +1,5 @@
 import RecipeUserId from "../../recipeUserId";
+import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
@@ -7,8 +8,15 @@ import { MFAClaimValue, MFARequirementList } from "./types";
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
  * */
 export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
+    public validators: {
+        passesMFARequirements: (requirements?: MFARequirementList) => SessionClaimValidator;
+    };
     constructor(key?: string) {
         super(key ?? "st-mfa");
+
+        this.validators = {
+            passesMFARequirements: (_requirements?: MFARequirementList) => ({} as SessionClaimValidator), // TODO
+        };
     }
 
     public buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList) {
@@ -22,6 +30,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         _tenantId: string | undefined,
         _userContext: any
     ) => {
+        // TODO
         return {
             c: {},
             n: [],

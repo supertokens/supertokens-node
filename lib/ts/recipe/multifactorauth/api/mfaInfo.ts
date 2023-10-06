@@ -19,7 +19,6 @@ import Session from "../../session";
 
 export default async function mfaInfo(
     apiImplementation: APIInterface,
-    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -37,7 +36,6 @@ export default async function mfaInfo(
     );
 
     let response = await apiImplementation.mfaInfoGET({
-        tenantId,
         options,
         session,
         userContext,

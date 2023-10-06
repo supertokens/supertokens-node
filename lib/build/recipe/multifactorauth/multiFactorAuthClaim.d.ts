@@ -1,5 +1,6 @@
 // @ts-nocheck
 import RecipeUserId from "../../recipeUserId";
+import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
@@ -7,6 +8,9 @@ import { MFAClaimValue, MFARequirementList } from "./types";
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
  * */
 export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
+    validators: {
+        passesMFARequirements: (requirements?: MFARequirementList) => SessionClaimValidator;
+    };
     constructor(key?: string);
     buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList): never[];
     fetchValue: (

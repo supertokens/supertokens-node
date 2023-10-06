@@ -16,14 +16,12 @@
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import SessionRecipe from "../session/recipe";
 import { ProviderInput } from "../thirdparty/types";
 import { GET_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
@@ -31,6 +29,8 @@ import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from ".
 import { validateAndNormaliseUserInput } from "./utils";
 import mfaInfoAPI from "./api/mfaInfo";
 import { SessionContainerInterface } from "../session/types";
+import SessionRecipe from "../session/recipe";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -80,16 +80,14 @@ export default class Recipe extends RecipeModule {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
 
-                if (Recipe.instance.getAllowedDomainsForTenantId !== undefined) {
-                    PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                        try {
-                            SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(MultiFactorAuthClaim);
-                        } catch {
-                            // Skip adding claims if session recipe is not initialised
-                        }
-                    });
-                }
+                // We do not want to add the MFA claim as a global claim (which would make createNewSession set it up)
+                // because we want to add it in the sign-in APIs manually.
 
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
+                        MultiFactorAuthClaim.validators.passesMFARequirements()
+                    );
+                });
                 return Recipe.instance;
             } else {
                 throw new Error("Multitenancy recipe has already been initialised. Please check your code for bugs.");
@@ -119,7 +117,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        tenantId: string,
+        _tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
@@ -136,7 +134,7 @@ export default class Recipe extends RecipeModule {
             staticThirdPartyProviders: this.staticThirdPartyProviders,
         };
         if (id === GET_MFA_INFO) {
-            return await mfaInfoAPI(this.apiImpl, tenantId, options, userContext);
+            return await mfaInfoAPI(this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");
     };
@@ -173,24 +171,10 @@ export default class Recipe extends RecipeModule {
             tenantId: session.getTenantId(),
             userContext,
         });
-        const enabledUserFactors = await this.recipeInterfaceImpl.getEnabledFactorsForUser({
-            userId: session.getUserId(),
-            tenantId: session.getTenantId(),
-            userContext,
-        });
-        const tenantFactors = await this.recipeInterfaceImpl.getEnabledFactorsForTenant({
-            tenantId: session.getTenantId(),
-            userContext,
-        });
 
-        const requirements = await this.config.getGlobalMFARequirements(
-            session.getUserId(),
-            session.getRecipeUserId(),
-            session.getTenantId(),
+        const requirements = await this.config.getMFARequirementsForAuth(
             session,
             setupUserFactors,
-            enabledUserFactors.enabledFactors,
-            tenantFactors.enabledFactors,
             completed,
             userContext
         );

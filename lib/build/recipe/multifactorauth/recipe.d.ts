@@ -24,7 +24,7 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
-        tenantId: string,
+        _tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,

@@ -2,7 +2,6 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse } from "../../types";
-import RecipeUserId from "../../recipeUserId";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 export declare type MFARequirement =
@@ -26,14 +25,9 @@ export declare type MFAClaimValue = {
 };
 export declare type TypeInput = {
     firstFactors?: string[];
-    getGlobalMFARequirements?: (
-        userId: string,
-        recipeUserId: RecipeUserId,
-        tenantId: string,
+    getMFARequirementsForAuth?: (
         session: SessionContainer | undefined,
         factorsSetUpByTheUser: string[],
-        enabledFactors: string[],
-        enabledFactorsForTenant: string[],
         completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
@@ -41,8 +35,6 @@ export declare type TypeInput = {
         factorId: string,
         session: SessionContainer,
         factorsSetUpByTheUser: string[],
-        enabledFactors: string[],
-        enabledFactorsForTenant: string[],
         completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
@@ -56,14 +48,9 @@ export declare type TypeInput = {
 };
 export declare type TypeNormalisedInput = {
     firstFactors?: string[];
-    getGlobalMFARequirements: (
-        userId: string,
-        recipeUserId: RecipeUserId,
-        tenantId: string,
+    getMFARequirementsForAuth: (
         session: SessionContainer | undefined,
         factorsSetUpByTheUser: string[],
-        enabledFactors: string[],
-        enabledFactorsForTenant: string[],
         completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
@@ -71,8 +58,6 @@ export declare type TypeNormalisedInput = {
         factorId: string,
         session: SessionContainer,
         factorsSetUpByTheUser: string[],
-        enabledFactors: string[],
-        enabledFactorsForTenant: string[],
         completedFactors: Record<string, number>,
         userContext: any
     ) => Promise<MFARequirementList> | MFARequirementList;
@@ -86,44 +71,11 @@ export declare type TypeNormalisedInput = {
 };
 export declare type RecipeInterface = {
     isAllowedToSetupFactor: (input: {
-        tenantId: string;
         session: SessionContainerInterface;
         factorId: string;
         userContext: any;
     }) => Promise<boolean>;
     getFactorsSetupForUser: (input: { userId: string; tenantId: string; userContext: any }) => Promise<string[]>;
-    enableFactorForUser: (input: {
-        tenantId: string;
-        userId: string;
-        factorId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        newEnabledFactors: string[];
-    }>;
-    enableFactorForTenant: (input: {
-        tenantId: string;
-        factorId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        newEnabledFactors: string[];
-    }>;
-    getEnabledFactorsForUser: (input: {
-        userId: string;
-        tenantId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        enabledFactors: string[];
-    }>;
-    getEnabledFactorsForTenant: (input: {
-        tenantId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        enabledFactors: string[];
-    }>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -135,7 +87,6 @@ export declare type APIOptions = {
 };
 export declare type APIInterface = {
     mfaInfoGET: (input: {
-        tenantId: string;
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: any;

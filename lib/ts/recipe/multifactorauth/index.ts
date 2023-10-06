@@ -23,31 +23,19 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async enableFactorForUser(
-        tenantId: string,
-        userId: string,
-        factorId: string,
-        userContext?: any
-    ): Promise<{ status: "OK"; newEnabledFactors: string[] }> {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        return recipeInstance.recipeInterfaceImpl.enableFactorForUser({
+    static async getFactorsSetUpByUser(tenantId: string, userId: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
             userId,
-            factorId,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async enableFactorForTenant(
-        tenantId: string,
-        factorId: string,
-        userContext?: any
-    ): Promise<{ status: "OK"; newEnabledFactors: string[] }> {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        return recipeInstance.recipeInterfaceImpl.enableFactorForTenant({
-            tenantId,
+    static async isAllowedToSetupFactor(session: SessionContainerInterface, factorId: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isAllowedToSetupFactor({
             factorId,
-            userContext: userContext === undefined ? {} : userContext,
+            session,
+            userContext,
         });
     }
 
@@ -62,8 +50,6 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
-export let enableFactorForTenant = Wrapper.enableFactorForTenant;
-export let enableFactorForUser = Wrapper.enableFactorForUser;
 export let completeFactorInSession = Wrapper.completeFactorInSession;
 
 export { MultiFactorAuthClaim };

@@ -29,6 +29,7 @@ import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
 import AccountLinking from "../../recipe/accountlinking";
+import MultiFactorAuth from "../../recipe/multifactorauth";
 
 UserRoles.init({
     override: {
@@ -976,12 +977,13 @@ let epConfig: EPTypeInput = {
     override: {},
 };
 
+const appInfo = {
+    apiDomain: "",
+    appName: "",
+    websiteDomain: "",
+};
 let config: TypeInput = {
-    appInfo: {
-        apiDomain: "",
-        appName: "",
-        websiteDomain: "",
-    },
+    appInfo,
     recipeList: [Session.init(sessionConfig), EmailPassword.init(epConfig)],
     isInServerlessEnv: true,
     framework: "express",
@@ -1827,3 +1829,121 @@ async function accountLinkingFuncsTest() {
         ),
     };
 }
+
+// Basically the default impl
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        MultiFactorAuth.init({
+            // firstFactor defaults to all factors added by auth recipes
+            // emailpassword -> [emailpassword], passwordless -> [otp-phone, otp-email, link-phone, link-email], thirdparty -> [thirdparty], etc
+            firstFactors: ["emailpassword"],
+            // getMFARequirementsForAuth defaults to all factors not added as a first factor (i.e.: if the above is undefined only totp is required if initialized)
+            getMFARequirementsForAuth: () => [{ oneOf: ["totp"] }],
+            getMFARequirementsForFactorSetup: (_factorId, _session, factorsSetUpByTheUser) => {
+                // The default implementation will be something like this:
+                // if the user only has a primary factor then we return an empty array
+                // otherwise we require an additional secondary factor
+                if (factorsSetUpByTheUser.length === 1) {
+                    return [];
+                }
+                // This is basically the same as the default return value of getMFARequirementsForAuth
+                return [{ oneOf: ["totp"] }];
+            },
+        }),
+        Session.init(),
+    ],
+});
+
+// const sensitiveOperationRequirements
+MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([
+    { oneOf: ["totp", "otp-phone"] },
+    { id: "emailpassword", maxAgeInSeconds: 60 },
+]);
+
+// const noMFARequired
+MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([]);
+// const weirdlyComplexFlow
+MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([
+    { oneOf: ["emailpassword", "thirdparty"] }, // We can include the first factors here... that feels a bit weird but it works.
+    { oneOf: ["totp", "otp-phone"] }, // We require either totp or otp-phone
+    { id: "emailpassword", maxAgeInSeconds: 60 }, // then step-up
+    { allOf: ["totp", "otp-phone"] }, // finally we require whatever was not completed in the 2nd step
+]);
+
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        MultiFactorAuth.init({
+            firstFactors: ["emailpassword"],
+            getMFARequirementsForAuth: () => [{ oneOf: ["totp", "passwordless"] }],
+            getMFARequirementsForFactorSetup: (_factorId, _session, factorsSetUpByTheUser) => {
+                if (factorsSetUpByTheUser.length === 1) {
+                    // Requiring this would mean that the user has to have entered their password in the last 5 mins
+                    // The case where they run out of this during sign-in is. Here's how it would work:
+                    // 1. Start sign-in/up with a user that doesn't have a secondary factor set up.
+                    // 2. Leave for 5 mins (i.e.: finding their phone)
+                    // 3. They try to continue by adding the secondary factor but they get a 403 (claim error)
+                    // 4. Claim re-validation is triggered on the FE, but finds no errors (the FE doesn't have getMFARequirementsForFactorSetup)
+                    // 5. We handle the 403 in the factor setup screen (ideally in some re-usable way), by triggering the navigation that got us to the factor screen
+                    // 6. Before that navigation completes, we re-query the mfa info which includes what the user can set up.
+                    // 7. Seeing that the user can't set up any of the required factors we navigate them to an error screen telling them to
+                    return [
+                        {
+                            id: "emailpassword",
+                            maxAgeInSeconds: 300,
+                        },
+                    ];
+                }
+                return [{ oneOf: ["totp", "passwordless"] }];
+            },
+        }),
+        Session.init(),
+    ],
+});
+
+// Any X of List is a bit weird to implement, but also a fairly niche thing I think.
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        MultiFactorAuth.init({
+            firstFactors: ["emailpassword", "otp-phone", "link-phone"],
+            getMFARequirementsForAuth: (_session, _factors, completedFactors) => {
+                const factors = ["otp-email", "totp", "biometric"];
+                const completedFromList = factors.filter((id) => completedFactors[id] !== undefined);
+                if (completedFromList.length >= 2) {
+                    // We have completed two factors
+                    return [];
+                }
+                // Otherwise the next step is completing something from the rest of the list
+                return [{ oneOf: factors.filter((id) => completedFactors[id] === undefined) }];
+            },
+        }),
+        Session.init(),
+    ],
+});
+
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        MultiFactorAuth.init({
+            firstFactors: ["emailpassword", "otp-email", "link-email"],
+            getMFARequirementsForAuth: () => ["otp-phone"],
+            // This kind of step-up auth requirement works for other factors as well
+            getMFARequirementsForFactorSetup: () => [{ id: "otp-phone", maxAgeInSeconds: 300 }],
+        }),
+        Session.init(),
+    ],
+});
