@@ -166,12 +166,6 @@ export class HapiResponse extends BaseResponse {
         }
         return this.response.response(this.content).code(this.statusCode);
     };
-
-    redirect = (url: string, status?: number | undefined) => {
-        this.setHeader("Location", url, false);
-        this.setStatusCode(status === undefined ? 303 : status);
-        this.sendHTMLResponse("");
-    };
 }
 
 const plugin: Plugin<{}> = {

@@ -40,7 +40,6 @@ export declare class ExpressResponse extends BaseResponse {
      */
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
-    redirect: (url: string, status?: number | undefined) => void;
 }
 export interface SessionRequest extends Request {
     session?: SessionContainerInterface;

@@ -76,7 +76,6 @@ export declare class AWSResponse extends BaseResponse {
     sendResponse: (
         response?: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2 | undefined
     ) => APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
-    redirect: (url: string, status?: number | undefined) => void;
 }
 export interface SessionEventV2 extends SupertokensLambdaEventV2 {
     session?: SessionContainerInterface;

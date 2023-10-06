@@ -41,7 +41,6 @@ export declare class KoaResponse extends BaseResponse {
      */
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
-    redirect: (url: string, status?: number | undefined) => void;
 }
 export interface SessionContext extends Context {
     session?: SessionContainerInterface;

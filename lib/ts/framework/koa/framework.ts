@@ -155,12 +155,6 @@ export class KoaResponse extends BaseResponse {
             this.responseSet = true;
         }
     };
-
-    redirect = (url: string, status?: number | undefined) => {
-        this.setHeader("Location", url, false);
-        this.setStatusCode(status === undefined ? 303 : status);
-        this.sendHTMLResponse("");
-    };
 }
 
 export interface SessionContext extends Context {
