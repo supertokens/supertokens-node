@@ -11,9 +11,9 @@ import { User } from "./user";
 import { SessionContainer } from "./recipe/session";
 
 export const doFetch: typeof fetch = (...args) => {
-    // if (typeof fetch !== "undefined") {
-    //     return fetch(...args);
-    // }
+    if (typeof fetch !== "undefined") {
+        return fetch(...args);
+    }
     return crossFetch(...args);
 };
 
