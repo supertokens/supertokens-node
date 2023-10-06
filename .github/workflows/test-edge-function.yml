@@ -16,7 +16,7 @@ jobs:
             - run: npm install
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
             - run: |
-                  (netlify deploy --json --auth=$NETLIFY_AUTH_TOKEN > deployInfo.json) && ( \
+                  (netlify deploy --build --json --auth=$NETLIFY_AUTH_TOKEN > deployInfo.json) && ( \
                     (echo "=========== Test attempt 1 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
                     (echo "=========== Test attempt 2 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
                     (echo "=========== Test attempt 3 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) \
