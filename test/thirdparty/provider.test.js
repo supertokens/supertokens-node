@@ -1147,6 +1147,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
     it("Test that sign in up works if validateAccessToken does not throw", async function () {
         const connectionURI = await startST();
+        let overridenValidateCalled = false;
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1165,26 +1166,19 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                 override: (original) => {
                                     return {
                                         ...original,
-                                        exchangeAuthCodeForOAuthTokens: async (input) => {
-                                            return {
-                                                access_token: "accesstoken",
-                                                id_token: "idtoken",
-                                            };
-                                        },
-                                        getUserInfo: async function ({ oAuthTokens }) {
-                                            const time = Date.now();
-                                            return {
-                                                thirdPartyUserId: "" + time,
-                                                email: {
-                                                    id: `johndoeprovidertest+${time}@supertokens.com`,
-                                                    isVerified: true,
-                                                },
-                                            };
-                                        },
                                     };
                                 },
                                 config: {
+                                    tokenEndpoint: "http://localhost:8083/tokenendpoint",
+                                    userInfoEndpoint: "http://localhost:8083/userinfo",
                                     thirdPartyId: "custom",
+                                    userInfoMap: {
+                                        fromUserInfoAPI: {
+                                            userId: "userId",
+                                            email: "email",
+                                            emailVerified: "emailVerified",
+                                        },
+                                    },
                                     clients: [
                                         {
                                             clientId: "test2",
@@ -1192,6 +1186,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                         },
                                     ],
                                     validateAccessToken: async ({ accessToken }) => {
+                                        overridenValidateCalled = true;
                                         if (accessToken === "accesstoken") {
                                             return;
                                         }
@@ -1210,12 +1205,29 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         app.use(middleware());
 
+        app.post("/tokenendpoint", async (req, res) => {
+            res.json({
+                access_token: "accesstoken",
+                id_token: "idtoken",
+            });
+        });
+
+        app.get("/userinfo", async (req, res) => {
+            res.json({
+                userId: "testiserid",
+                email: "testinguser@supertokens.com",
+                emailVerified: "true",
+            });
+        });
+
         app.use(errorHandler());
 
         // default error handler for app
         app.use(function (err, req, res, next) {
             res.status(500).send(err.message);
         });
+
+        const server = app.listen(8083);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -1230,6 +1242,8 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                     },
                 })
                 .end((err, res) => {
+                    console.log(err);
+                    console.log(res);
                     if (err) {
                         resolve(undefined);
                     } else {
@@ -1241,7 +1255,10 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 })
         );
 
+        assert.equal(overridenValidateCalled, true);
         assert.strictEqual(response.status, 200);
         assert.strictEqual(response.body.status, "OK");
+
+        server.close();
     });
 });
