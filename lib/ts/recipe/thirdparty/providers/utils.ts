@@ -9,7 +9,8 @@ import { logDebugMessage } from "../../../logger";
 export async function doGetRequest(
     url: string,
     queryParams?: { [key: string]: string },
-    headers?: { [key: string]: string }
+    headers?: { [key: string]: string },
+    validateStatusCode?: (response: Response) => void
 ): Promise<any> {
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
@@ -26,6 +27,11 @@ export async function doGetRequest(
         headers: headers,
     });
 
+    // This lets callers verify the status code, if invalid this function should throw an error
+    if (validateStatusCode !== undefined) {
+        validateStatusCode(response.clone());
+    }
+
     if (response.status >= 400) {
         logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
         throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
@@ -40,7 +46,7 @@ export async function doPostRequest(
     url: string,
     params: { [key: string]: any },
     headers?: { [key: string]: string },
-    validateStatusCode?: (status: number) => void
+    validateStatusCode?: (response: Response) => void
 ): Promise<any> {
     if (headers === undefined) {
         headers = {};
@@ -62,7 +68,7 @@ export async function doPostRequest(
 
     // This lets callers verify the status code, if invalid this function should throw an error
     if (validateStatusCode !== undefined) {
-        validateStatusCode(response.status);
+        validateStatusCode(response.clone());
     }
 
     if (response.status >= 400) {

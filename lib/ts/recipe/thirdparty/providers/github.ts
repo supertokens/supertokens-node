@@ -12,10 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import fetch from "cross-fetch";
 import { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
-import { doPostRequest } from "./utils";
+import { doGetRequest, doPostRequest } from "./utils";
 
 function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoResponse: {
     fromIdTokenPayload?: any;
@@ -74,8 +73,8 @@ export default function Github(input: ProviderInput): TypeProvider {
                     Authorization: `Basic ${basicAuthToken}`,
                     "Content-Type": "application/json",
                 },
-                (status) => {
-                    if (status !== 200) {
+                (response) => {
+                    if (response.status !== 200) {
                         throw new Error("Invalid access token");
                     }
                 }
@@ -108,19 +107,29 @@ export default function Github(input: ProviderInput): TypeProvider {
             };
             const rawResponse: { [key: string]: any } = {};
 
-            const emailInfoResp = await fetch("https://api.github.com/user/emails", { headers });
-            if (emailInfoResp.status >= 400) {
-                throw new Error(`Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.text()}`);
-            }
-            const emailInfo = await emailInfoResp.json();
-            rawResponse.emails = emailInfo;
+            const emailInfoResp = await doGetRequest(
+                "https://api.github.com/user/emails",
+                undefined,
+                headers,
+                async (response) => {
+                    if (response.status >= 400) {
+                        throw new Error(`Getting userInfo failed with ${response.status}: ${await response.text()}`);
+                    }
+                }
+            );
+            rawResponse.emails = emailInfoResp;
 
-            const userInfoResp = await fetch("https://api.github.com/user", { headers });
-            if (userInfoResp.status >= 400) {
-                throw new Error(`Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.text()}`);
-            }
-            const userInfo = await userInfoResp.json();
-            rawResponse.user = userInfo;
+            const userInfoResp = await doGetRequest(
+                "https://api.github.com/user",
+                undefined,
+                headers,
+                async (response) => {
+                    if (response.status >= 400) {
+                        throw new Error(`Getting userInfo failed with ${response.status}: ${await response.text()}`);
+                    }
+                }
+            );
+            rawResponse.user = userInfoResp;
 
             const rawUserInfoFromProvider = {
                 fromUserInfoAPI: rawResponse,

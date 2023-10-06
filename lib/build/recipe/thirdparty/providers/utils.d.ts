@@ -8,7 +8,8 @@ export declare function doGetRequest(
     },
     headers?: {
         [key: string]: string;
-    }
+    },
+    validateStatusCode?: (response: Response) => void
 ): Promise<any>;
 export declare function doPostRequest(
     url: string,
@@ -18,7 +19,7 @@ export declare function doPostRequest(
     headers?: {
         [key: string]: string;
     },
-    validateStatusCode?: (status: number) => void
+    validateStatusCode?: (response: Response) => void
 ): Promise<any>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
