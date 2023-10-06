@@ -53,6 +53,7 @@ export declare class HapiResponse extends BaseResponse {
      */
     sendJSONResponse: (content: any) => void;
     sendResponse: (overwriteHeaders?: boolean) => ResponseObject;
+    redirect: (url: string, status?: number | undefined) => void;
 }
 export interface SessionRequest extends Request {
     session?: SessionContainerInterface;

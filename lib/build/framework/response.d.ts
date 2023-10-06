@@ -18,4 +18,5 @@ export declare abstract class BaseResponse {
     abstract setStatusCode: (statusCode: number) => void;
     abstract sendJSONResponse: (content: any) => void;
     abstract sendHTMLResponse: (html: string) => void;
+    abstract redirect: (url: string, status?: number) => void;
 }

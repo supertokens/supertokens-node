@@ -182,6 +182,10 @@ export class FastifyResponse extends BaseResponse {
             this.response.send(content);
         }
     };
+
+    redirect = (url: string) => {
+        this.response.redirect(url);
+    };
 }
 
 function plugin(fastify: FastifyInstance, _: any, done: Function) {

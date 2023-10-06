@@ -308,6 +308,12 @@ export class AWSResponse extends BaseResponse {
             return result;
         }
     };
+
+    redirect = (url: string, status?: number | undefined) => {
+        this.setHeader("Location", url, false);
+        this.setStatusCode(status === undefined ? 303 : status);
+        this.sendHTMLResponse("");
+    };
 }
 
 export interface SessionEventV2 extends SupertokensLambdaEventV2 {

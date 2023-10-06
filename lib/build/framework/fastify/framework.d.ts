@@ -41,6 +41,7 @@ export declare class FastifyResponse extends BaseResponse {
      * @param {any} content
      */
     sendJSONResponse: (content: any) => void;
+    redirect: (url: string) => void;
 }
 export interface SessionRequest extends OriginalFastifyRequest {
     session?: SessionContainerInterface;
