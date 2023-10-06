@@ -340,7 +340,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 }
 
                 const userInfoFromAccessToken = await doGetRequest(impl.config.userInfoEndpoint, queryParams, headers);
-                rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+                rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
             }
 
             const userInfoResult = getSupertokensUserInfoResultFromRawUserInfo(impl.config, rawUserInfoFromProvider);

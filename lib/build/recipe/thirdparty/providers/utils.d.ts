@@ -8,9 +8,11 @@ export declare function doGetRequest(
     },
     headers?: {
         [key: string]: string;
-    },
-    validateStatusCode?: (response: Response) => void
-): Promise<any>;
+    }
+): Promise<{
+    response: any;
+    status: number;
+}>;
 export declare function doPostRequest(
     url: string,
     params: {

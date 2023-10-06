@@ -63,7 +63,7 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
             };
 
             const userInfoFromAccessToken = await doGetRequest("https://api.linkedin.com/v2/me", undefined, headers);
-            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
 
             const emailAPIURL = "https://api.linkedin.com/v2/emailAddress";
             const userInfoFromEmail = await doGetRequest(
@@ -72,12 +72,13 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
                 headers
             );
 
-            if (userInfoFromEmail.elements && userInfoFromEmail.elements.length > 0) {
-                rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.elements[0]["handle~"].emailAddress;
+            if (userInfoFromEmail.response.elements && userInfoFromEmail.response.elements.length > 0) {
+                rawUserInfoFromProvider.fromUserInfoAPI.email =
+                    userInfoFromEmail.response.elements[0]["handle~"].emailAddress;
             }
             rawUserInfoFromProvider.fromUserInfoAPI = {
                 ...rawUserInfoFromProvider.fromUserInfoAPI,
-                ...userInfoFromEmail,
+                ...userInfoFromEmail.response,
             };
 
             return {

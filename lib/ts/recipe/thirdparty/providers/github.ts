@@ -107,29 +107,25 @@ export default function Github(input: ProviderInput): TypeProvider {
             };
             const rawResponse: { [key: string]: any } = {};
 
-            const emailInfoResp = await doGetRequest(
-                "https://api.github.com/user/emails",
-                undefined,
-                headers,
-                async (response) => {
-                    if (response.status >= 400) {
-                        throw new Error(`Getting userInfo failed with ${response.status}: ${await response.text()}`);
-                    }
-                }
-            );
-            rawResponse.emails = emailInfoResp;
+            const emailInfoResp = await doGetRequest("https://api.github.com/user/emails", undefined, headers);
 
-            const userInfoResp = await doGetRequest(
-                "https://api.github.com/user",
-                undefined,
-                headers,
-                async (response) => {
-                    if (response.status >= 400) {
-                        throw new Error(`Getting userInfo failed with ${response.status}: ${await response.text()}`);
-                    }
-                }
-            );
-            rawResponse.user = userInfoResp;
+            if (emailInfoResp.status >= 400) {
+                throw new Error(
+                    `Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.response.text()}`
+                );
+            }
+
+            rawResponse.emails = emailInfoResp.response;
+
+            const userInfoResp = await doGetRequest("https://api.github.com/user", undefined, headers);
+
+            if (userInfoResp.status >= 400) {
+                throw new Error(
+                    `Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.response.text()}`
+                );
+            }
+
+            rawResponse.user = userInfoResp.response;
 
             const rawUserInfoFromProvider = {
                 fromUserInfoAPI: rawResponse,

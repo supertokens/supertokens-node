@@ -74,7 +74,7 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 undefined,
                 headers
             );
-            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
 
             const userInfoFromEmail = await doGetRequest(
                 "https://api.bitbucket.org/2.0/user/emails",
@@ -82,11 +82,11 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 headers
             );
 
-            rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail;
+            rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.response;
 
             let email = undefined;
             let isVerified = false;
-            for (const emailInfo of userInfoFromEmail.values) {
+            for (const emailInfo of userInfoFromEmail.response.values) {
                 if (emailInfo.is_primary) {
                     email = emailInfo.email;
                     isVerified = emailInfo.is_confirmed;

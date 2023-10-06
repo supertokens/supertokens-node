@@ -9,9 +9,11 @@ import { logDebugMessage } from "../../../logger";
 export async function doGetRequest(
     url: string,
     queryParams?: { [key: string]: string },
-    headers?: { [key: string]: string },
-    validateStatusCode?: (response: Response) => void
-): Promise<any> {
+    headers?: { [key: string]: string }
+): Promise<{
+    response: any;
+    status: number;
+}> {
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
     );
@@ -26,11 +28,6 @@ export async function doGetRequest(
     let response = await fetch(finalURL.toString(), {
         headers: headers,
     });
-
-    // This lets callers verify the status code, if invalid this function should throw an error
-    if (validateStatusCode !== undefined) {
-        validateStatusCode(response.clone());
-    }
 
     if (response.status >= 400) {
         logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
