@@ -25,4 +25,6 @@ jobs:
               uses: actions/upload-artifact@v3
               with:
                   name: screenshots
-                  path: ./**/*screenshot.jpeg
+                  path: |
+                      ./**/*screenshot.jpeg
+                      deployInfo.json
