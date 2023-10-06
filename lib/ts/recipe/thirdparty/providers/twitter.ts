@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { logDebugMessage } from "../../../logger";
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider, {
     DEV_OAUTH_REDIRECT_URL,
@@ -92,9 +93,28 @@ export default function Twitter(input: ProviderInput): TypeProvider {
                 ...originalImplementation.config.tokenEndpointBodyParams,
             };
 
-            return await doPostRequest(originalImplementation.config.tokenEndpoint!, twitterOauthTokenParams, {
-                Authorization: `Basic ${basicAuthToken}`,
-            });
+            const tokenResponse = await doPostRequest(
+                originalImplementation.config.tokenEndpoint!,
+                twitterOauthTokenParams,
+                {
+                    Authorization: `Basic ${basicAuthToken}`,
+                }
+            );
+
+            if (tokenResponse.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${
+                        tokenResponse.status
+                    } and body ${await tokenResponse.response.clone().text()}`
+                );
+                throw new Error(
+                    `Received response with status ${
+                        tokenResponse.status
+                    } and body ${await tokenResponse.response.clone().text()}`
+                );
+            }
+
+            return tokenResponse.response;
         };
 
         if (oOverride !== undefined) {

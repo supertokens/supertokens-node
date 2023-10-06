@@ -10,7 +10,10 @@ export async function doGetRequest(
     url: string,
     queryParams?: { [key: string]: string },
     headers?: { [key: string]: string }
-): Promise<any> {
+): Promise<{
+    response: any;
+    status: number;
+}> {
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
     );
@@ -26,21 +29,23 @@ export async function doGetRequest(
         headers: headers,
     });
 
-    if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-    }
     const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
-    return respData;
+    return {
+        response: respData,
+        status: response.status,
+    };
 }
 
 export async function doPostRequest(
     url: string,
     params: { [key: string]: any },
     headers?: { [key: string]: string }
-): Promise<any> {
+): Promise<{
+    response: any;
+    status: number;
+}> {
     if (headers === undefined) {
         headers = {};
     }
@@ -59,14 +64,13 @@ export async function doPostRequest(
         headers,
     });
 
-    if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-    }
     const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
-    return respData;
+    return {
+        response: respData,
+        status: response.status,
+    };
 }
 
 export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
@@ -96,8 +100,17 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
         normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()
     );
 
-    oidcInfoMap[issuer] = oidcInfo;
-    return oidcInfo;
+    if (oidcInfo.status >= 400) {
+        logDebugMessage(
+            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.response.clone().text()}`
+        );
+        throw new Error(
+            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.response.clone().text()}`
+        );
+    }
+
+    oidcInfoMap[issuer] = oidcInfo.response;
+    return oidcInfo.response;
 }
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<ProviderConfigForClientType> {
