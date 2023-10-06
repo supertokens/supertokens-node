@@ -38,9 +38,11 @@ export async function doGetRequest(
 export async function doPostRequest(
     url: string,
     params: { [key: string]: any },
-    headers?: { [key: string]: string },
-    validateStatusCode?: (response: Response) => void
-): Promise<any> {
+    headers?: { [key: string]: string }
+): Promise<{
+    response: any;
+    status: number;
+}> {
     if (headers === undefined) {
         headers = {};
     }
@@ -59,19 +61,13 @@ export async function doPostRequest(
         headers,
     });
 
-    // This lets callers verify the status code, if invalid this function should throw an error
-    if (validateStatusCode !== undefined) {
-        validateStatusCode(response.clone());
-    }
-
-    if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-    }
     const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
-    return respData;
+    return {
+        response: respData,
+        status: response.status,
+    };
 }
 
 export async function verifyIdTokenFromJWKSEndpointAndGetPayload(

@@ -20,9 +20,11 @@ export declare function doPostRequest(
     },
     headers?: {
         [key: string]: string;
-    },
-    validateStatusCode?: (response: Response) => void
-): Promise<any>;
+    }
+): Promise<{
+    response: any;
+    status: number;
+}>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
     jwks: jose.JWTVerifyGetKey,

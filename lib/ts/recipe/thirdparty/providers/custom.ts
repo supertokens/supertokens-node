@@ -270,7 +270,22 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             }
             /* Transformation needed for dev keys END */
 
-            return await doPostRequest(tokenAPIURL, accessTokenAPIParams);
+            const tokenResponse = await doPostRequest(tokenAPIURL, accessTokenAPIParams);
+
+            if (tokenResponse.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${
+                        tokenResponse.status
+                    } and body ${await tokenResponse.response.clone().text()}`
+                );
+                throw new Error(
+                    `Received response with status ${
+                        tokenResponse.status
+                    } and body ${await tokenResponse.response.clone().text()}`
+                );
+            }
+
+            return tokenResponse.response;
         },
 
         getUserInfo: async function ({ oAuthTokens, userContext }): Promise<UserInfo> {
