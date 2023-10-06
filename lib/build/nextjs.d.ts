@@ -21,7 +21,8 @@ export default class NextJS {
     ): Promise<T>;
     static getAppDirRequestHandler<T extends PartialNextRequest>(
         NextResponse: typeof Response
-    ): Promise<(req: T) => Promise<Response>>;
+    ): (req: T) => Promise<Response>;
 }
 export declare let superTokensNextWrapper: typeof NextJS.superTokensNextWrapper;
+export declare let getAppDirRequestHandler: typeof NextJS.getAppDirRequestHandler;
 export {};

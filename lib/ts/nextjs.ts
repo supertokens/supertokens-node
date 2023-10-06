@@ -77,7 +77,7 @@ export default class NextJS {
         });
     }
 
-    static async getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
+    static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
         const stMiddleware = middleware<T>((req) => {
             const query = Object.fromEntries(new URL(req.url).searchParams.entries());
             const cookies: Record<string, string> = Object.fromEntries(
@@ -129,3 +129,4 @@ export default class NextJS {
     }
 }
 export let superTokensNextWrapper = NextJS.superTokensNextWrapper;
+export let getAppDirRequestHandler = NextJS.getAppDirRequestHandler;
