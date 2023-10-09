@@ -51,9 +51,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     if (appInfo.appName === undefined) {
         throw new Error("Please provide your appName inside the appInfo object when calling supertokens.init");
     }
-    if (appInfo.websiteDomain === undefined) {
-        throw new Error("Please provide your websiteDomain inside the appInfo object when calling supertokens.init");
-    }
+
     let apiGatewayPath =
         appInfo.apiGatewayPath !== undefined
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
