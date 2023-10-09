@@ -23,6 +23,7 @@ import {
     TypePasswordlessSmsDeliveryInput,
 } from "./types";
 import RecipeUserId from "../../recipeUserId";
+import { getRequestFromUserContext } from "../..";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -157,6 +158,7 @@ export default class Wrapper {
     ) {
         return Recipe.getInstanceOrThrowError().createMagicLink({
             ...input,
+            request: getRequestFromUserContext(input.userContext),
             userContext: input.userContext ?? {},
         });
     }
