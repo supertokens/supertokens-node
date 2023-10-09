@@ -55,7 +55,13 @@ export default class Session implements SessionContainerInterface {
             // If we instead clear the cookies only when revokeSession
             // returns true, it can cause this kind of a bug:
             // https://github.com/supertokens/supertokens-node/issues/343
-            clearSession(this.helpers.config, this.reqResInfo.res, this.reqResInfo.transferMethod);
+            clearSession(
+                this.helpers.config,
+                this.reqResInfo.res,
+                this.reqResInfo.transferMethod,
+                this.reqResInfo.req,
+                userContext
+            );
         }
     }
 

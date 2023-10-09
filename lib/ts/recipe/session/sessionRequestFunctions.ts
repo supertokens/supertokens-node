@@ -313,7 +313,7 @@ export async function refreshSessionInRequest({
     // We clear the tokens in all token transfer methods we are not going to overwrite
     for (const transferMethod of availableTokenTransferMethods) {
         if (transferMethod !== requestTransferMethod && refreshTokens[transferMethod] !== undefined) {
-            clearSession(config, res, transferMethod);
+            clearSession(config, res, transferMethod, req, userContext);
         }
     }
     await session.attachToRequestResponse({
@@ -438,7 +438,7 @@ export async function createNewSessionInRequest({
 
     for (const transferMethod of availableTokenTransferMethods) {
         if (transferMethod !== outputTransferMethod && getToken(req, "access", transferMethod) !== undefined) {
-            clearSession(config, res, transferMethod);
+            clearSession(config, res, transferMethod, req, userContext);
         }
     }
     logDebugMessage("createNewSession: Cleared old tokens");

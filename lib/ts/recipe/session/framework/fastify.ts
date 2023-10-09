@@ -30,7 +30,7 @@ export function verifySession(options?: VerifySessionOptions) {
             req.session = await sessionRecipe.verifySession(options, request, response, userContext);
         } catch (err) {
             const supertokens = SuperTokens.getInstanceOrThrowError();
-            await supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response, userContext);
             throw err;
         }
     };

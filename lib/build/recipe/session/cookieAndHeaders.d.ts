@@ -1,11 +1,18 @@
 // @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
-export declare function clearSessionFromAllTokenTransferMethods(config: TypeNormalisedInput, res: BaseResponse): void;
+export declare function clearSessionFromAllTokenTransferMethods(
+    config: TypeNormalisedInput,
+    res: BaseResponse,
+    request: BaseRequest | undefined,
+    userContext: any
+): void;
 export declare function clearSession(
     config: TypeNormalisedInput,
     res: BaseResponse,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    request: BaseRequest | undefined,
+    userContext: any
 ): void;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;

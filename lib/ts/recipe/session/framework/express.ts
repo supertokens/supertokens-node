@@ -33,7 +33,7 @@ export function verifySession(options?: VerifySessionOptions) {
         } catch (err) {
             try {
                 const supertokens = SuperTokens.getInstanceOrThrowError();
-                await supertokens.errorHandler(err, request, response);
+                await supertokens.errorHandler(err, request, response, userContext);
             } catch {
                 next(err);
             }

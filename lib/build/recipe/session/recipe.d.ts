@@ -42,7 +42,7 @@ export default class SessionRecipe extends RecipeModule {
         method: HTTPMethod,
         userContext: any
     ) => Promise<boolean>;
-    handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
+    handleError: (err: STError, request: BaseRequest, response: BaseResponse, userContext: any) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     verifySession: (
