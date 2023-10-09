@@ -50,7 +50,19 @@ export default class SuperTokens {
 
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
-        logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
+        const originToPrint =
+            config.appInfo.origin === undefined
+                ? undefined
+                : typeof config.appInfo.origin === "string"
+                ? config.appInfo.origin
+                : "function";
+        logDebugMessage(
+            "appInfo: " +
+                JSON.stringify({
+                    ...config.appInfo,
+                    origin: originToPrint,
+                })
+        );
 
         this.framework = config.framework !== undefined ? config.framework : "express";
         logDebugMessage("framework: " + this.framework);
