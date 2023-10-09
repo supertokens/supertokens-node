@@ -51,7 +51,11 @@ export declare type TypeInput = {
         userContext: any;
     }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
-    antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    antiCsrf?:
+        | "VIA_TOKEN"
+        | "VIA_CUSTOM_HEADER"
+        | "NONE"
+        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE");
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (
@@ -99,7 +103,11 @@ export declare type TypeNormalisedInput = {
      * new session. But because we wither set to VIA_CUSTOM_HEADER or NONE we can leave this as a string and the
      * create ne session functions always call the core with the correct value of enableAntiCsrf
      */
-    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    antiCsrf:
+        | "VIA_TOKEN"
+        | "VIA_CUSTOM_HEADER"
+        | "NONE"
+        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE");
     getTokenTransferMethod: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;

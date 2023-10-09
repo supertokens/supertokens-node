@@ -122,8 +122,17 @@ export async function getSessionFromRequest({
         doAntiCsrfCheck = false;
     }
 
-    if (doAntiCsrfCheck && config.antiCsrf === "VIA_CUSTOM_HEADER") {
-        if (config.antiCsrf === "VIA_CUSTOM_HEADER") {
+    let antiCsrf = config.antiCsrf;
+
+    if (typeof antiCsrf === "function") {
+        antiCsrf = antiCsrf({
+            request: req,
+            userContext,
+        });
+    }
+
+    if (doAntiCsrfCheck && antiCsrf === "VIA_CUSTOM_HEADER") {
+        if (antiCsrf === "VIA_CUSTOM_HEADER") {
             if (getRidFromHeader(req) === undefined) {
                 logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
                 throw new SessionError({
@@ -252,7 +261,16 @@ export async function refreshSessionInRequest({
     let disableAntiCsrf = requestTransferMethod === "header";
     const antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
 
-    if (config.antiCsrf === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
+    let antiCsrf = config.antiCsrf;
+
+    if (typeof antiCsrf === "function") {
+        antiCsrf = antiCsrf({
+            request: req,
+            userContext,
+        });
+    }
+
+    if (antiCsrf === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
         if (getRidFromHeader(req) === undefined) {
             logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new SessionError({

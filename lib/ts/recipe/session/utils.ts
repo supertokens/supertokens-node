@@ -181,15 +181,29 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
-        config === undefined || config.antiCsrf === undefined
-            ? cookieSameSite({
-                  request: undefined,
-                  userContext: {},
-              }) === "none"
-                ? "VIA_CUSTOM_HEADER"
-                : "NONE"
-            : config.antiCsrf;
+    let antiCsrf:
+        | "VIA_TOKEN"
+        | "VIA_CUSTOM_HEADER"
+        | "NONE"
+        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE") = ({
+        request,
+        userContext,
+    }) => {
+        const sameSite = cookieSameSite({
+            request,
+            userContext,
+        });
+
+        if (sameSite === "none") {
+            return "VIA_CUSTOM_HEADER";
+        }
+
+        return "NONE";
+    };
+
+    if (config !== undefined && config.antiCsrf !== undefined) {
+        antiCsrf = config.antiCsrf;
+    }
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: async (

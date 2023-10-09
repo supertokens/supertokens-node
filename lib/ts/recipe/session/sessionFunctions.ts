@@ -45,6 +45,7 @@ export async function createNewSession(
         userDataInJWT: { ...accessTokenPayload },
         userDataInDatabase: sessionDataInDatabase,
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
+        // We dont need to check if anti csrf is a function here because checking for "VIA_TOKEN" is enough
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
     let response = await helpers.querier.sendPostRequest(
@@ -202,7 +203,7 @@ export async function getSession(
                     }
                 }
             }
-        } else if (helpers.config.antiCsrf === "VIA_CUSTOM_HEADER") {
+        } else if (typeof helpers.config.antiCsrf === "string" && helpers.config.antiCsrf === "VIA_CUSTOM_HEADER") {
             // The function should never be called by this (we check this outside the function as well)
             // There we can add a bit more information to the error, so that's the primary check, this is just making sure.
             throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
@@ -319,7 +320,11 @@ export async function refreshSession(
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
 
-    if (helpers.config.antiCsrf === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
+    if (
+        typeof helpers.config.antiCsrf === "string" &&
+        helpers.config.antiCsrf === "VIA_CUSTOM_HEADER" &&
+        !disableAntiCsrf
+    ) {
         // The function should never be called by this (we check this outside the function as well)
         // There we can add a bit more information to the error, so that's the primary check, this is just making sure.
         throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
