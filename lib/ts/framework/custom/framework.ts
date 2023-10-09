@@ -18,6 +18,7 @@ import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils"
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import SuperTokens from "../../supertokens";
+import { SessionContainerInterface } from "../../recipe/session/types";
 
 type RequestInfo = {
     url: string;
@@ -27,10 +28,22 @@ type RequestInfo = {
     query: Record<string, string>;
     getJSONBody: () => Promise<any>;
     getFormBody: () => Promise<any>;
+    setSession?: (session: SessionContainerInterface) => void;
 };
 
 export class PreParsedRequest extends BaseRequest {
     private request: RequestInfo;
+
+    private _session?: SessionContainerInterface | undefined;
+    public get session(): SessionContainerInterface | undefined {
+        return this._session;
+    }
+    public set session(value: SessionContainerInterface | undefined) {
+        this._session = value;
+        if (value !== undefined && this.request.setSession !== undefined) {
+            this.request.setSession(value);
+        }
+    }
 
     constructor(request: RequestInfo) {
         super();

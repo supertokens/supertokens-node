@@ -2,6 +2,7 @@
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
+import { SessionContainerInterface } from "../../recipe/session/types";
 declare type RequestInfo = {
     url: string;
     method: HTTPMethod;
@@ -10,9 +11,13 @@ declare type RequestInfo = {
     query: Record<string, string>;
     getJSONBody: () => Promise<any>;
     getFormBody: () => Promise<any>;
+    setSession?: (session: SessionContainerInterface) => void;
 };
 export declare class PreParsedRequest extends BaseRequest {
     private request;
+    private _session?;
+    get session(): SessionContainerInterface | undefined;
+    set session(value: SessionContainerInterface | undefined);
     constructor(request: RequestInfo);
     getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
