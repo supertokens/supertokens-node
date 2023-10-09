@@ -51,11 +51,7 @@ export declare type TypeInput = {
         userContext: any;
     }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
-    antiCsrf?:
-        | "VIA_TOKEN"
-        | "VIA_CUSTOM_HEADER"
-        | "NONE"
-        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE");
+    antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (

@@ -145,8 +145,8 @@ export function validateAndNormaliseUserInput(
         let protocolOfWebsiteDomain = getURLProtocol(
             appInfo
                 .getOrigin({
-                    request: undefined,
-                    userContext: {},
+                    request: input.request,
+                    userContext: input.userContext,
                 })
                 .getAsStringDangerous()
         );

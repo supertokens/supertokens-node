@@ -61,7 +61,7 @@ export default class Session implements SessionContainerInterface {
                 this.reqResInfo.res,
                 this.reqResInfo.transferMethod,
                 this.reqResInfo.req,
-                userContext
+                userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
             );
         }
     }
@@ -176,7 +176,7 @@ export default class Session implements SessionContainerInterface {
                     this.helpers.config,
                     this.reqResInfo.transferMethod,
                     this.reqResInfo.req,
-                    makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                    userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
                 );
             }
         } else {

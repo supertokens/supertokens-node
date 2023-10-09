@@ -20,7 +20,6 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
 import fetch from "cross-fetch";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export type Response = {
     status: "OK";
@@ -76,7 +75,7 @@ export default async function analyticsPost(
     const data = {
         websiteDomain: websiteDomain({
             request: undefined,
-            userContext: makeDefaultUserContextFromAPI(options.req),
+            userContext: {},
         }).getAsStringDangerous(),
         apiDomain: apiDomain.getAsStringDangerous(),
         appName,
