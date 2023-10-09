@@ -201,6 +201,7 @@ export default function getAPIInterface(): APIInterface {
                     token: response.token,
                     recipeId: options.recipeId,
                     tenantId,
+                    request: options.req,
                     userContext,
                 });
 
