@@ -21,6 +21,7 @@ import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { protectedProps } from "./constants";
+import { makeDefaultUserContextFromAPI } from "../../utils";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -175,7 +176,7 @@ export default class Session implements SessionContainerInterface {
                     this.helpers.config,
                     this.reqResInfo.transferMethod,
                     this.reqResInfo.req,
-                    {}
+                    makeDefaultUserContextFromAPI(this.reqResInfo.req)
                 );
             }
         } else {
@@ -274,7 +275,7 @@ export default class Session implements SessionContainerInterface {
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 
-    attachToRequestResponse(info: ReqResInfo) {
+    attachToRequestResponse(info: ReqResInfo, userContext?: any) {
         this.reqResInfo = info;
 
         if (this.accessTokenUpdated) {
@@ -287,7 +288,7 @@ export default class Session implements SessionContainerInterface {
                 this.helpers.config,
                 transferMethod,
                 info.req,
-                {}
+                userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
             );
             if (this.refreshToken !== undefined) {
                 setToken(
@@ -298,7 +299,7 @@ export default class Session implements SessionContainerInterface {
                     this.refreshToken.expiry,
                     transferMethod,
                     info.req,
-                    {}
+                    userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
                 );
             }
             if (this.antiCsrfToken !== undefined) {

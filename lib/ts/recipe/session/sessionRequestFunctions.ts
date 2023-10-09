@@ -167,16 +167,19 @@ export async function getSessionFromRequest({
         // override how the session is attached to the response.
         // In that scenario the transferMethod passed to attachToRequestResponse likely doesn't
         // matter, still, we follow the general fallback logic
-        await session.attachToRequestResponse({
-            req,
-            res,
-            transferMethod:
-                requestTransferMethod !== undefined
-                    ? requestTransferMethod
-                    : allowedTransferMethod !== "any"
-                    ? allowedTransferMethod
-                    : "header",
-        });
+        await session.attachToRequestResponse(
+            {
+                req,
+                res,
+                transferMethod:
+                    requestTransferMethod !== undefined
+                        ? requestTransferMethod
+                        : allowedTransferMethod !== "any"
+                        ? allowedTransferMethod
+                        : "header",
+            },
+            userContext
+        );
     }
     return session;
 }
@@ -316,11 +319,14 @@ export async function refreshSessionInRequest({
             clearSession(config, res, transferMethod, req, userContext);
         }
     }
-    await session.attachToRequestResponse({
-        req,
-        res,
-        transferMethod: requestTransferMethod,
-    });
+    await session.attachToRequestResponse(
+        {
+            req,
+            res,
+            transferMethod: requestTransferMethod,
+        },
+        userContext
+    );
 
     logDebugMessage("refreshSession: Success!");
 
@@ -443,11 +449,14 @@ export async function createNewSessionInRequest({
     }
     logDebugMessage("createNewSession: Cleared old tokens");
 
-    await session.attachToRequestResponse({
-        req,
-        res,
-        transferMethod: outputTransferMethod,
-    });
+    await session.attachToRequestResponse(
+        {
+            req,
+            res,
+            transferMethod: outputTransferMethod,
+        },
+        userContext
+    );
     logDebugMessage("createNewSession: Attached new tokens to res");
 
     return session;
