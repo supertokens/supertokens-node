@@ -2,6 +2,7 @@
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, NormalisedFormField, TypeInputFormField } from "./types";
 import { NormalisedAppinfo } from "../../types";
+import { BaseRequest } from "../../framework";
 export declare function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
@@ -26,5 +27,6 @@ export declare function getPasswordResetLink(input: {
     token: string;
     recipeId: string;
     tenantId: string;
+    request: BaseRequest | undefined;
     userContext: any;
 }): string;
