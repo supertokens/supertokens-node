@@ -122,7 +122,7 @@ export async function getSessionFromRequest({
         doAntiCsrfCheck = false;
     }
 
-    let antiCsrf = config.antiCsrf;
+    let antiCsrf = config.antiCsrfFunctionOrString;
 
     if (typeof antiCsrf === "function") {
         antiCsrf = antiCsrf({
@@ -261,7 +261,7 @@ export async function refreshSessionInRequest({
     let disableAntiCsrf = requestTransferMethod === "header";
     const antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
 
-    let antiCsrf = config.antiCsrf;
+    let antiCsrf = config.antiCsrfFunctionOrString;
 
     if (typeof antiCsrf === "function") {
         antiCsrf = antiCsrf({

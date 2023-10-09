@@ -63,7 +63,7 @@ export default class SessionRecipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        logDebugMessage("session init: antiCsrf: " + this.config.antiCsrf);
+        logDebugMessage("session init: antiCsrf: " + this.config.antiCsrfFunctionOrString);
         logDebugMessage("session init: cookieDomain: " + this.config.cookieDomain);
         const sameSiteToPrint =
             config !== undefined && config.cookieSameSite !== undefined ? config.cookieSameSite : "default function";

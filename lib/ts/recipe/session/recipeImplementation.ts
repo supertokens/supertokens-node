@@ -135,8 +135,8 @@ export default function getRecipeInterface(
         }): Promise<SessionContainerInterface | undefined> {
             if (
                 options?.antiCsrfCheck !== false &&
-                typeof config.antiCsrf === "string" &&
-                config.antiCsrf === "VIA_CUSTOM_HEADER"
+                typeof config.antiCsrfFunctionOrString === "string" &&
+                config.antiCsrfFunctionOrString === "VIA_CUSTOM_HEADER"
             ) {
                 throw new Error(
                     "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
@@ -298,8 +298,8 @@ export default function getRecipeInterface(
         ): Promise<SessionContainerInterface> {
             if (
                 disableAntiCsrf !== true &&
-                typeof config.antiCsrf === "string" &&
-                config.antiCsrf === "VIA_CUSTOM_HEADER"
+                typeof config.antiCsrfFunctionOrString === "string" &&
+                config.antiCsrfFunctionOrString === "VIA_CUSTOM_HEADER"
             ) {
                 throw new Error(
                     "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"

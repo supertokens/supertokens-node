@@ -265,7 +265,7 @@ export function validateAndNormaliseUserInput(
         cookieSecure,
         sessionExpiredStatusCode,
         errorHandlers,
-        antiCsrf,
+        antiCsrfFunctionOrString: antiCsrf,
         override,
         invalidClaimStatusCode,
     };

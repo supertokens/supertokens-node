@@ -119,16 +119,7 @@ export type TypeNormalisedInput = {
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    /**
-     * This is intentionally kept as a string and not a function because even though the default value of this
-     * is dependent on the api domain and website domain (which is a function), it is never set to VIA_TOKEN by
-     * default.
-     *
-     * If it was there would be a problem of disableAntiCsrf not being honored correctly when the user calls create
-     * new session. But because we wither set to VIA_CUSTOM_HEADER or NONE we can leave this as a string and the
-     * create ne session functions always call the core with the correct value of enableAntiCsrf
-     */
-    antiCsrf:
+    antiCsrfFunctionOrString:
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
