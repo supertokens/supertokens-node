@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import { BaseRequest } from "../../framework";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -68,9 +69,16 @@ export function getEmailVerifyLink(input: {
     token: string;
     recipeId: string;
     tenantId: string;
+    request: BaseRequest | undefined;
+    userContext: any;
 }): string {
     return (
-        input.appInfo.websiteDomain.getAsStringDangerous() +
+        input.appInfo
+            .getOrigin({
+                request: input.request,
+                userContext: input.userContext,
+            })
+            .getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
         "/verify-email" +
         "?token=" +

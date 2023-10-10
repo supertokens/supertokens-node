@@ -469,6 +469,6 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             totalCount += count;
         }
 
-        assert(totalCount === 13);
+        assert(totalCount === 20);
     });
 });

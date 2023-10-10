@@ -21,6 +21,7 @@ import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { protectedProps } from "./constants";
+import { makeDefaultUserContextFromAPI } from "../../utils";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -55,7 +56,13 @@ export default class Session implements SessionContainerInterface {
             // If we instead clear the cookies only when revokeSession
             // returns true, it can cause this kind of a bug:
             // https://github.com/supertokens/supertokens-node/issues/343
-            clearSession(this.helpers.config, this.reqResInfo.res, this.reqResInfo.transferMethod);
+            clearSession(
+                this.helpers.config,
+                this.reqResInfo.res,
+                this.reqResInfo.transferMethod,
+                this.reqResInfo.req,
+                userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
+            );
         }
     }
 
@@ -167,7 +174,9 @@ export default class Session implements SessionContainerInterface {
                     this.accessToken,
                     this.frontToken,
                     this.helpers.config,
-                    this.reqResInfo.transferMethod
+                    this.reqResInfo.transferMethod,
+                    this.reqResInfo.req,
+                    userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
                 );
             }
         } else {
@@ -266,13 +275,21 @@ export default class Session implements SessionContainerInterface {
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 
-    attachToRequestResponse(info: ReqResInfo) {
+    attachToRequestResponse(info: ReqResInfo, userContext?: any) {
         this.reqResInfo = info;
 
         if (this.accessTokenUpdated) {
             const { res, transferMethod } = info;
 
-            setAccessTokenInResponse(res, this.accessToken, this.frontToken, this.helpers.config, transferMethod);
+            setAccessTokenInResponse(
+                res,
+                this.accessToken,
+                this.frontToken,
+                this.helpers.config,
+                transferMethod,
+                info.req,
+                userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
+            );
             if (this.refreshToken !== undefined) {
                 setToken(
                     this.helpers.config,
@@ -280,7 +297,9 @@ export default class Session implements SessionContainerInterface {
                     "refresh",
                     this.refreshToken.token,
                     this.refreshToken.expiry,
-                    transferMethod
+                    transferMethod,
+                    info.req,
+                    userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
                 );
             }
             if (this.antiCsrfToken !== undefined) {

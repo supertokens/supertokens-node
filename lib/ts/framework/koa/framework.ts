@@ -174,7 +174,7 @@ export const middleware = () => {
                 return await next();
             }
         } catch (err) {
-            return await supertokens.errorHandler(err, request, response);
+            return await supertokens.errorHandler(err, request, response, userContext);
         }
     };
 };

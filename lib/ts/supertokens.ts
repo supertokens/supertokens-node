@@ -50,7 +50,19 @@ export default class SuperTokens {
 
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
-        logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
+        const originToPrint =
+            config.appInfo.origin === undefined
+                ? undefined
+                : typeof config.appInfo.origin === "string"
+                ? config.appInfo.origin
+                : "function";
+        logDebugMessage(
+            "appInfo: " +
+                JSON.stringify({
+                    ...config.appInfo,
+                    origin: originToPrint,
+                })
+        );
 
         this.framework = config.framework !== undefined ? config.framework : "express";
         logDebugMessage("framework: " + this.framework);
@@ -369,7 +381,7 @@ export default class SuperTokens {
         }
     };
 
-    errorHandler = async (err: any, request: BaseRequest, response: BaseResponse) => {
+    errorHandler = async (err: any, request: BaseRequest, response: BaseResponse, userContext: any) => {
         logDebugMessage("errorHandler: Started");
         if (STError.isErrorFromSuperTokens(err)) {
             logDebugMessage("errorHandler: Error is from SuperTokens recipe. Message: " + err.message);
@@ -382,7 +394,7 @@ export default class SuperTokens {
                 logDebugMessage("errorHandler: Checking recipe for match: " + this.recipeModules[i].getRecipeId());
                 if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
                     logDebugMessage("errorHandler: Matched with recipeID: " + this.recipeModules[i].getRecipeId());
-                    return await this.recipeModules[i].handleError(err, request, response);
+                    return await this.recipeModules[i].handleError(err, request, response, userContext);
                 }
             }
         }

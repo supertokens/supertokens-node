@@ -276,12 +276,12 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 logDebugMessage(
                     `Received response with status ${
                         tokenResponse.status
-                    } and body ${await tokenResponse.response.clone().text()}`
+                    } and body ${await tokenResponse.rawResponse.text()}`
                 );
                 throw new Error(
                     `Received response with status ${
                         tokenResponse.status
-                    } and body ${await tokenResponse.response.clone().text()}`
+                    } and body ${await tokenResponse.rawResponse.text()}`
                 );
             }
 
@@ -361,12 +361,12 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                     logDebugMessage(
                         `Received response with status ${
                             userInfoFromAccessToken.status
-                        } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                        } and body ${await userInfoFromAccessToken.rawResponse.text()}`
                     );
                     throw new Error(
                         `Received response with status ${
                             userInfoFromAccessToken.status
-                        } and body ${await userInfoFromAccessToken.response.clone().text()}`
+                        } and body ${await userInfoFromAccessToken.rawResponse.text()}`
                     );
                 }
 

@@ -36,7 +36,7 @@ export function verifySession<T extends BaseRequest & { session?: SessionContain
         } catch (err) {
             try {
                 const supertokens = SuperTokens.getInstanceOrThrowError();
-                await supertokens.errorHandler(err, req, res);
+                await supertokens.errorHandler(err, req, res, userContext);
                 return undefined;
             } catch {
                 if (next !== undefined) {

@@ -33,7 +33,7 @@ export function verifySession(handler: Handler, verifySessionOptions?: VerifySes
             let handlerResult = await handler(event, context, callback);
             return response.sendResponse(handlerResult);
         } catch (err) {
-            await supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response, userContext);
             if (response.responseSet) {
                 return response.sendResponse({});
             }

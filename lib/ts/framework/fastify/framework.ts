@@ -194,7 +194,7 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
         try {
             await supertokens.middleware(request, response, userContext);
         } catch (err) {
-            await supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response, userContext);
         }
     });
     done();
@@ -215,7 +215,8 @@ export const errorHandler = () => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(res);
-        await supertokens.errorHandler(err, request, response);
+        let userContext = makeDefaultUserContextFromAPI(request);
+        await supertokens.errorHandler(err, request, response, userContext);
     };
 };
 

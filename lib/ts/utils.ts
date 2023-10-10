@@ -58,22 +58,45 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     if (appInfo.appName === undefined) {
         throw new Error("Please provide your appName inside the appInfo object when calling supertokens.init");
     }
-    if (appInfo.websiteDomain === undefined) {
-        throw new Error("Please provide your websiteDomain inside the appInfo object when calling supertokens.init");
-    }
+
     let apiGatewayPath =
         appInfo.apiGatewayPath !== undefined
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
 
-    const websiteDomain = new NormalisedURLDomain(appInfo.websiteDomain);
+    if (appInfo.origin === undefined && appInfo.websiteDomain === undefined) {
+        throw new Error(
+            "Please provide either origin or websiteDomain inside the appInfo object when calling supertokens.init"
+        );
+    }
+
+    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        let origin = appInfo.origin;
+
+        if (origin === undefined) {
+            origin = appInfo.websiteDomain;
+        }
+
+        // This should not be possible because we check for either origin or websiteDomain above
+        if (origin === undefined) {
+            throw new Error("Should never come here");
+        }
+
+        if (typeof origin === "function") {
+            origin = origin(input);
+        }
+        return new NormalisedURLDomain(origin);
+    };
+
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(websiteDomain.getAsStringDangerous());
+    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        return getTopLevelDomainForSameSiteResolution(websiteDomainFunction(input).getAsStringDangerous());
+    };
 
     return {
         appName: appInfo.appName,
-        websiteDomain,
+        getOrigin: websiteDomainFunction,
         apiDomain,
         apiBasePath: apiGatewayPath.appendPath(
             appInfo.apiBasePath === undefined
@@ -86,7 +109,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
                 : new NormalisedURLPath(appInfo.websiteBasePath),
         apiGatewayPath,
         topLevelAPIDomain,
-        topLevelWebsiteDomain,
+        getTopLevelWebsiteDomain: topLevelWebsiteDomain,
     };
 }
 

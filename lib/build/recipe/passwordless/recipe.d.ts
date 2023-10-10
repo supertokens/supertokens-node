@@ -48,11 +48,13 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  request: BaseRequest | undefined;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  request: BaseRequest | undefined;
                   userContext?: any;
               }
     ) => Promise<string>;

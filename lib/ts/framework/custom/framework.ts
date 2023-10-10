@@ -180,7 +180,7 @@ export const middleware = <OrigReqType = BaseRequest, OrigRespType = BaseRespons
         } catch (err) {
             if (supertokens) {
                 try {
-                    await supertokens.errorHandler(err, wrappedReq, wrappedResp);
+                    await supertokens.errorHandler(err, wrappedReq, wrappedResp, userContext);
                     return { handled: true };
                 } catch {
                     if (next) {
@@ -201,9 +201,10 @@ export const middleware = <OrigReqType = BaseRequest, OrigRespType = BaseRespons
 export const errorHandler = () => {
     return async (err: any, request: BaseRequest, response: BaseResponse, next: NextFunction) => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
+        const userContext = makeDefaultUserContextFromAPI(request);
 
         try {
-            await supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response, userContext);
         } catch (err) {
             return next(err);
         }

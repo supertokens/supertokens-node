@@ -24,6 +24,7 @@ let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
 let { isCDIVersionCompatible } = require("../utils");
+const request = require("supertest");
 
 describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]")}`, function () {
     beforeEach(async function () {
@@ -918,5 +919,89 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         assert(codeLifetime > 0);
         assert.strictEqual(result.status, 500);
         assert(message === "Request failed with status code 500");
+    });
+
+    it("Test that passwordless email uses correct origin", async function () {
+        const connectionURI = await startST();
+        let url = "";
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    if (request.getHeaderValue("origin") !== undefined) {
+                        return request.getHeaderValue("origin");
+                    }
+
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    url = input.urlWithLinkCode;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        let currentUrl = new URL(url);
+        assert(currentUrl.origin === "http://localhost:3000");
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .set("origin", "localhost:3002")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        currentUrl = new URL(url);
+        assert(currentUrl.origin === "http://localhost:3002");
     });
 });
