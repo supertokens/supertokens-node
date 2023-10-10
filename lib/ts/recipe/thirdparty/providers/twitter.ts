@@ -103,18 +103,14 @@ export default function Twitter(input: ProviderInput): TypeProvider {
 
             if (tokenResponse.status >= 400) {
                 logDebugMessage(
-                    `Received response with status ${
-                        tokenResponse.status
-                    } and body ${await tokenResponse.rawResponse.text()}`
+                    `Received response with status ${tokenResponse.status} and body ${tokenResponse.stringResponse}`
                 );
                 throw new Error(
-                    `Received response with status ${
-                        tokenResponse.status
-                    } and body ${await tokenResponse.rawResponse.text()}`
+                    `Received response with status ${tokenResponse.status} and body ${tokenResponse.stringResponse}`
                 );
             }
 
-            return tokenResponse.response;
+            return tokenResponse.jsonResponse;
         };
 
         if (oOverride !== undefined) {
