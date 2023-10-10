@@ -7,4 +7,4 @@ export declare function verifySession<
     T extends BaseRequest & {
         session?: SessionContainerInterface;
     }
->(options?: VerifySessionOptions): (req: T, res: BaseResponse, next?: NextFunction | undefined) => Promise<void>;
+>(options?: VerifySessionOptions): (req: T, res: BaseResponse, next?: NextFunction | undefined) => Promise<any>;

@@ -38,11 +38,15 @@ export async function getSessionFromRequest({
     userContext?: any;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
-    if (!res.wrapperUsed) {
-        res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-    }
-    if (!req.wrapperUsed) {
-        req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    if (configuredFramework !== "custom") {
+        if (!req.wrapperUsed) {
+            req = frameworks[configuredFramework].wrapRequest(req);
+        }
+
+        if (!res.wrapperUsed) {
+            res = frameworks[configuredFramework].wrapResponse(res);
+        }
     }
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
     logDebugMessage("getSession: Wrapping done");
@@ -190,11 +194,15 @@ export async function refreshSessionInRequest({
     recipeInterfaceImpl: RecipeInterface;
 }) {
     logDebugMessage("refreshSession: Started");
-    if (!res.wrapperUsed) {
-        res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-    }
-    if (!req.wrapperUsed) {
-        req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    if (configuredFramework !== "custom") {
+        if (!req.wrapperUsed) {
+            req = frameworks[configuredFramework].wrapRequest(req);
+        }
+
+        if (!res.wrapperUsed) {
+            res = frameworks[configuredFramework].wrapResponse(res);
+        }
     }
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
     logDebugMessage("refreshSession: Wrapping done");
@@ -341,13 +349,17 @@ export async function createNewSessionInRequest({
     tenantId: string;
 }) {
     logDebugMessage("createNewSession: Started");
-    if (!req.wrapperUsed) {
-        req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    if (configuredFramework !== "custom") {
+        if (!req.wrapperUsed) {
+            req = frameworks[configuredFramework].wrapRequest(req);
+        }
+
+        if (!res.wrapperUsed) {
+            res = frameworks[configuredFramework].wrapResponse(res);
+        }
     }
 
-    if (!res.wrapperUsed) {
-        res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-    }
     logDebugMessage("createNewSession: Wrapping done");
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
 

@@ -32,14 +32,17 @@ export function verifySession<T extends BaseRequest & { session?: SessionContain
             if (next !== undefined) {
                 next();
             }
+            return undefined;
         } catch (err) {
             try {
                 const supertokens = SuperTokens.getInstanceOrThrowError();
                 await supertokens.errorHandler(err, req, res);
+                return undefined;
             } catch {
                 if (next !== undefined) {
                     next(err);
                 }
+                return err;
             }
         }
     };
