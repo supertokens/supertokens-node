@@ -3,10 +3,10 @@ on:
     pull_request:
 
 jobs:
-    run_test_job:
+    run-test-job:
         uses: ./.github/workflows/tests.yml
-    with:
-        pluginInterfaceRepoOwnerName: supertokens
-        pluginInterfaceBranchName: master
-        coreRepoOwnerName: supertokens
-        coreBranchName: master
+        with:
+            pluginInterfaceRepoOwnerName: supertokens
+            pluginInterfaceBranchName: master
+            coreRepoOwnerName: supertokens
+            coreBranchName: master
