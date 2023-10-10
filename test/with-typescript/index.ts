@@ -6,7 +6,7 @@ import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
 import { middleware, errorHandler, SessionRequest } from "../../framework/express";
-import customFramework, { CollectingResponse } from "../../framework/custom";
+import customFramework, { CollectingResponse, PreParsedRequest } from "../../framework/custom";
 import NextJS from "../../nextjs";
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import ThirdParty from "../../recipe/thirdparty";
@@ -31,6 +31,7 @@ import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
 import AccountLinking from "../../recipe/accountlinking";
+import { verifySession as customVerifySession } from "../../recipe/session/framework/custom";
 
 UserRoles.init({
     override: {
@@ -1877,3 +1878,8 @@ async function handleCall(req: NextApiRequest): Promise<any> {
 
     return { body: baseResponse.body, headers: baseResponse.headers, status: baseResponse.statusCode };
 }
+
+class NextResponse {}
+NextJS.getAppDirRequestHandler(NextResponse);
+
+customVerifySession({ checkDatabase: true })(new PreParsedRequest({} as any), new CollectingResponse());
