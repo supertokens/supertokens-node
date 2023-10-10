@@ -30,15 +30,13 @@ export async function doGetRequest(
         headers: headers,
     });
 
-    const rawResponse = response.clone();
-
     const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
     return {
         response: respData,
         status: response.status,
-        rawResponse,
+        rawResponse: response,
     };
 }
 
@@ -69,14 +67,13 @@ export async function doPostRequest(
         headers,
     });
 
-    const rawResponse = response.clone();
     const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
     return {
         response: respData,
         status: response.status,
-        rawResponse,
+        rawResponse: response,
     };
 }
 
