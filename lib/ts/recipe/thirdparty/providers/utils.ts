@@ -13,6 +13,7 @@ export async function doGetRequest(
 ): Promise<{
     response: any;
     status: number;
+    rawResponse: Response;
 }> {
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
@@ -35,6 +36,7 @@ export async function doGetRequest(
     return {
         response: respData,
         status: response.status,
+        rawResponse: response.clone(),
     };
 }
 
@@ -45,6 +47,7 @@ export async function doPostRequest(
 ): Promise<{
     response: any;
     status: number;
+    rawResponse: Response;
 }> {
     if (headers === undefined) {
         headers = {};
@@ -70,6 +73,7 @@ export async function doPostRequest(
     return {
         response: respData,
         status: response.status,
+        rawResponse: response.clone(),
     };
 }
 
@@ -102,10 +106,10 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
 
     if (oidcInfo.status >= 400) {
         logDebugMessage(
-            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.response.clone().text()}`
+            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.rawResponse.text()}`
         );
         throw new Error(
-            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.response.clone().text()}`
+            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.rawResponse.text()}`
         );
     }
 
