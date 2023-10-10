@@ -41,6 +41,7 @@ const { join } = require("path");
 
 const users = require("./users.json");
 let assert = require("assert");
+const { CollectingResponse } = require("../framework/custom");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -83,7 +84,7 @@ module.exports.setKeyValueInConfig = async function (key, value) {
 };
 
 module.exports.extractInfoFromResponse = function (res) {
-    let antiCsrf = res.headers["anti-csrf"];
+    let headers;
     let accessToken = undefined;
     let refreshToken = undefined;
     let accessTokenExpiry = undefined;
@@ -95,49 +96,69 @@ module.exports.extractInfoFromResponse = function (res) {
     let accessTokenHttpOnly = false;
     let idRefreshTokenHttpOnly = false;
     let refreshTokenHttpOnly = false;
-    let frontToken = res.headers["front-token"];
-    let cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
-    cookies = cookies === undefined ? [] : cookies;
-    if (!Array.isArray(cookies)) {
-        cookies = [cookies];
-    }
 
-    cookies.forEach((i) => {
-        if (i.split(";")[0].split("=")[0] === "sAccessToken") {
-            /**
-             * if token is sAccessToken=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0=.eyJzZXNzaW9uSGFuZGxlIjoiMWI4NDBhOTAtMjVmYy00ZjQ4LWE2YWMtMDc0MDIzZjNjZjQwIiwidXNlcklkIjoiIiwicmVmcmVzaFRva2VuSGFzaDEiOiJjYWNhZDNlMGNhMDVkNzRlNWYzNTc4NmFlMGQ2MzJjNDhmMTg1YmZmNmUxNThjN2I2OThkZDYwMzA1NzAyYzI0IiwidXNlckRhdGEiOnt9LCJhbnRpQ3NyZlRva2VuIjoiYTA2MjRjYWItZmIwNy00NTFlLWJmOTYtNWQ3YzU2MjMwZTE4IiwiZXhwaXJ5VGltZSI6MTYyNjUxMjM3NDU4NiwidGltZUNyZWF0ZWQiOjE2MjY1MDg3NzQ1ODYsImxtcnQiOjE2MjY1MDg3NzQ1ODZ9.f1sCkjt0OduS6I6FBQDBLV5zhHXpCU2GXnbe+8OCU6HKG00TX5CM8AyFlOlqzSHABZ7jES/+5k0Ff/rdD34cczlNqICcC4a23AjJg2a097rFrh8/8V7J5fr4UrHLIM4ojZNFz1NyVyDK/ooE6I7soHshEtEVr2XsnJ4q3d+fYs2wwx97PIT82hfHqgbRAzvlv952GYt+OH4bWQE4vTzDqGN7N2OKpn9l2fiCB1Ytzr3ocHRqKuQ8f6xW1n575Q1sSs9F9TtD7lrKfFQH+//6lyKFe2Q1SDc7YU4pE5Cy9Kc/LiqiTU+gsGIJL5qtMzUTG4lX38ugF4QDyNjDBMqCKw==; Max-Age=3599; Expires=Sat, 17 Jul 2021 08:59:34 GMT; Secure; HttpOnly; SameSite=Lax; Path=/'
-             * i.split(";")[0].split("=")[1] will result in eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0
-             */
-            accessToken = decodeURIComponent(i.split(";")[0].split("=").slice(1).join("="));
-            if (i.split(";")[2].includes("Expires=")) {
-                accessTokenExpiry = i.split(";")[2].split("=")[1];
-            } else if (i.split(";")[2].includes("expires=")) {
-                accessTokenExpiry = i.split(";")[2].split("=")[1];
-            } else {
-                accessTokenExpiry = i.split(";")[3].split("=")[1];
-            }
-            if (i.split(";")[1].includes("Domain=")) {
-                accessTokenDomain = i.split(";")[1].split("=")[1];
-            }
-            accessTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
-        } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
-            refreshToken = i.split(";")[0].split("=").slice(1).join("=");
-            if (i.split(";")[2].includes("Expires=")) {
-                refreshTokenExpiry = i.split(";")[2].split("=")[1];
-            } else if (i.split(";")[2].includes("expires=")) {
-                refreshTokenExpiry = i.split(";")[2].split("=")[1];
-            } else {
-                refreshTokenExpiry = i.split(";")[3].split("=")[1];
-            }
-            if (i.split(";")[1].includes("Domain=")) {
-                refreshTokenDomain = i.split(";")[1].split("=").slice(1).join("=");
-            }
-            refreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
+    if (res instanceof CollectingResponse) {
+        const accessTokenCookie = res.cookies.find((info) => info.key === "sAccessToken");
+        if (accessTokenCookie) {
+            accessToken = accessTokenCookie.value;
+            accessTokenExpiry = new Date(accessTokenCookie.expires).toUTCString();
+            accessTokenDomain = accessTokenCookie.domain;
+            accessTokenHttpOnly = accessTokenCookie.httpOnly;
         }
-    });
+        const refreshTokenCookie = res.cookies.find((info) => info.key === "sRefreshToken");
+        if (refreshTokenCookie) {
+            refreshToken = refreshTokenCookie.value;
+            refreshTokenExpiry = new Date(refreshTokenCookie.expires).toUTCString();
+            refreshTokenDomain = refreshTokenCookie.domain;
+            refreshTokenHttpOnly = refreshTokenCookie.httpOnly;
+        }
+        headers = Object.fromEntries(res.headers.entries());
+    } else {
+        let cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
+        cookies = cookies === undefined ? [] : cookies;
+        if (!Array.isArray(cookies)) {
+            cookies = [cookies];
+        }
 
-    const refreshTokenFromHeader = res.headers["st-refresh-token"];
-    const accessTokenFromHeader = res.headers["st-access-token"];
+        cookies.forEach((i) => {
+            if (i.split(";")[0].split("=")[0] === "sAccessToken") {
+                /**
+                 * if token is sAccessToken=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0=.eyJzZXNzaW9uSGFuZGxlIjoiMWI4NDBhOTAtMjVmYy00ZjQ4LWE2YWMtMDc0MDIzZjNjZjQwIiwidXNlcklkIjoiIiwicmVmcmVzaFRva2VuSGFzaDEiOiJjYWNhZDNlMGNhMDVkNzRlNWYzNTc4NmFlMGQ2MzJjNDhmMTg1YmZmNmUxNThjN2I2OThkZDYwMzA1NzAyYzI0IiwidXNlckRhdGEiOnt9LCJhbnRpQ3NyZlRva2VuIjoiYTA2MjRjYWItZmIwNy00NTFlLWJmOTYtNWQ3YzU2MjMwZTE4IiwiZXhwaXJ5VGltZSI6MTYyNjUxMjM3NDU4NiwidGltZUNyZWF0ZWQiOjE2MjY1MDg3NzQ1ODYsImxtcnQiOjE2MjY1MDg3NzQ1ODZ9.f1sCkjt0OduS6I6FBQDBLV5zhHXpCU2GXnbe+8OCU6HKG00TX5CM8AyFlOlqzSHABZ7jES/+5k0Ff/rdD34cczlNqICcC4a23AjJg2a097rFrh8/8V7J5fr4UrHLIM4ojZNFz1NyVyDK/ooE6I7soHshEtEVr2XsnJ4q3d+fYs2wwx97PIT82hfHqgbRAzvlv952GYt+OH4bWQE4vTzDqGN7N2OKpn9l2fiCB1Ytzr3ocHRqKuQ8f6xW1n575Q1sSs9F9TtD7lrKfFQH+//6lyKFe2Q1SDc7YU4pE5Cy9Kc/LiqiTU+gsGIJL5qtMzUTG4lX38ugF4QDyNjDBMqCKw==; Max-Age=3599; Expires=Sat, 17 Jul 2021 08:59:34 GMT; Secure; HttpOnly; SameSite=Lax; Path=/'
+                 * i.split(";")[0].split("=")[1] will result in eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0
+                 */
+                accessToken = decodeURIComponent(i.split(";")[0].split("=").slice(1).join("="));
+                if (i.split(";")[2].includes("Expires=")) {
+                    accessTokenExpiry = i.split(";")[2].split("=")[1];
+                } else if (i.split(";")[2].includes("expires=")) {
+                    accessTokenExpiry = i.split(";")[2].split("=")[1];
+                } else {
+                    accessTokenExpiry = i.split(";")[3].split("=")[1];
+                }
+                if (i.split(";")[1].includes("Domain=")) {
+                    accessTokenDomain = i.split(";")[1].split("=")[1];
+                }
+                accessTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
+            } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
+                refreshToken = i.split(";")[0].split("=").slice(1).join("=");
+                if (i.split(";")[2].includes("Expires=")) {
+                    refreshTokenExpiry = i.split(";")[2].split("=")[1];
+                } else if (i.split(";")[2].includes("expires=")) {
+                    refreshTokenExpiry = i.split(";")[2].split("=")[1];
+                } else {
+                    refreshTokenExpiry = i.split(";")[3].split("=")[1];
+                }
+                if (i.split(";")[1].includes("Domain=")) {
+                    refreshTokenDomain = i.split(";")[1].split("=").slice(1).join("=");
+                }
+                refreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
+            }
+        });
+    }
+    let antiCsrf = headers["anti-csrf"];
+    let frontToken = headers["front-token"];
+
+    const refreshTokenFromHeader = headers["st-refresh-token"];
+    const accessTokenFromHeader = headers["st-access-token"];
 
     const accessTokenFromAny = accessToken === undefined ? accessTokenFromHeader : accessToken;
     const refreshTokenFromAny = refreshToken === undefined ? refreshTokenFromHeader : refreshToken;
