@@ -12,10 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Adds support for configuring multiple frontend domains to be used with the same backend
 -   Added a new `origin` property to `appInfo`, this can be configured to be a function which allows you to conditionally return the value of the frontend domain. This property will replace `websiteDomain` in a future release of `supertokens-node`
 -   `websiteDomain` inside `appInfo` is now optional. Using `origin` is recommended over using `websiteDomain`. This is not a breaking change and using `websiteDomain` will continue to work
+-   Added a "custom" framework you can use in framework normally not supported by our SDK
+-   Added a next13 app router compatible request handler.
 
 ### Fixed
 
 -   Fixed an issue where calling signinup for thirdparty recipe would result in a "clone is not a function" error
+
+### Changes
+
+-   Using built-in fetch whenever available instead of cross-fetch
+-   Improved edge-function support
 
 ## [16.2.1] - 2023-10-06
 

@@ -12,16 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export type TypeFramework = "express" | "fastify" | "hapi" | "loopback" | "koa" | "awsLambda" | "custom";
-import { BaseRequest, BaseResponse } from ".";
 
-export let SchemaFramework = {
-    type: "string",
-    enum: ["express", "fastify", "hapi", "loopback", "koa", "awsLambda", "custom"],
-};
+import { CustomFrameworkWrapper } from "./framework";
+export { PreParsedRequest, CollectingResponse } from "./framework";
 
-export interface Framework {
-    wrapRequest: (unwrapped: any) => BaseRequest;
-
-    wrapResponse: (unwrapped: any) => BaseResponse;
-}
+export const middleware = CustomFrameworkWrapper.middleware;
+export const errorHandler = CustomFrameworkWrapper.errorHandler;

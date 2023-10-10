@@ -19,7 +19,7 @@ import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
-import fetch from "cross-fetch";
+import { doFetch } from "../../../utils";
 
 export type Response = {
     status: "OK";
@@ -88,7 +88,7 @@ export default async function analyticsPost(
     };
 
     try {
-        await fetch("https://api.supertokens.com/0/st/telemetry", {
+        await doFetch("https://api.supertokens.com/0/st/telemetry", {
             method: "POST",
             body: JSON.stringify(data),
             headers: {

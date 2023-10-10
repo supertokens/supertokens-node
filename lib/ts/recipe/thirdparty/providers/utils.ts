@@ -1,10 +1,10 @@
-import fetch from "cross-fetch";
 import * as jose from "jose";
 
 import { ProviderConfigForClientType } from "../types";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { logDebugMessage } from "../../../logger";
+import { doFetch } from "../../../utils";
 
 export async function doGetRequest(
     url: string,
@@ -26,7 +26,7 @@ export async function doGetRequest(
     }
     const finalURL = new URL(url);
     finalURL.search = new URLSearchParams(queryParams).toString();
-    let response = await fetch(finalURL.toString(), {
+    let response = await doFetch(finalURL.toString(), {
         headers: headers,
     });
 
@@ -66,7 +66,7 @@ export async function doPostRequest(
     );
 
     const body = new URLSearchParams(params).toString();
-    let response = await fetch(url, {
+    let response = await doFetch(url, {
         method: "POST",
         body,
         headers,
