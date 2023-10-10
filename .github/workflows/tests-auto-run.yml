@@ -1,0 +1,12 @@
+name: "Auto run tests on open PRs"
+on:
+    pull_request:
+
+jobs:
+    run_test_job:
+        uses: ./.github/workflows/tests.yml
+    with:
+        pluginInterfaceRepoOwnerName: supertokens
+        pluginInterfaceBranchName: master
+        coreRepoOwnerName: supertokens
+        coreBranchName: master

@@ -18,6 +18,16 @@ on:
                 description: "supertokens-core repo branch name"
                 default: master
                 required: true
+    workflow_call:
+        inputs:
+            pluginInterfaceRepoOwnerName:
+                required: true
+            pluginInterfaceBranchName:
+                required: true
+            coreRepoOwnerName:
+                required: true
+            coreBranchName:
+                required: true
 jobs:
     test_job:
         name: Run tests
@@ -25,19 +35,25 @@ jobs:
         runs-on: ubuntu-latest
         container: rishabhpoddar/supertokens_website_sdk_testing
         steps:
+            - uses: actions/checkout@v3
+              with:
+                  persist-credentials: false
+            - name: Set up node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "16"
             - name: Environment variables
               run: |
                   echo "Plugin Interface Owner: ${{ github.event.inputs.pluginInterfaceRepoOwnerName }}"
                   echo "Plugin Interface Branch: ${{ github.event.inputs.pluginInterfaceBranchName }}"
                   echo "Core Owner: ${{ github.event.inputs.coreRepoOwnerName }}"
                   echo "Core Branch: ${{ github.event.inputs.coreBranchName }}"
-            - uses: actions/checkout@v2
-              with:
-                  persist-credentials: false
-            - name: Set up node
-              uses: actions/setup-node@v1
-              with:
-                  node-version: "16"
+            - name: Environment variables
+              run: |
+                  echo "Plugin Interface Owner: ${{ $PLUGIN_INTERFACE_OWNER }}"
+                  echo "Plugin Interface Branch: ${{ PLUGIN_INTERFACE_BRANCH }}"
+                  echo "Core Owner: ${{ $CORE_OWNER }}"
+                  echo "Core Branch: ${{ CORE_BRANCH }}"
             - name: Make git use https instead of ssh
               run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
             - run: npm i --force
@@ -48,7 +64,7 @@ jobs:
             - name: Update Java 2
               run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - name: Modifying modules.txt in supertokens-root
-              run: cd ../supertokens-root && echo "core,${{ github.event.inputs.coreBranchName }},${{ github.event.inputs.coreRepoOwnerName }}\nplugin-interface,${{ github.event.inputs.pluginInterfaceBranchName }},${{ github.event.inputs.pluginInterfaceRepoOwnerName }}" > modules.txt
+              run: cd ../supertokens-root && echo "core,${{ CORE_BRANCH }},${{ $CORE_OWNER }}\nplugin-interface,${{ PLUGIN_INTERFACE_BRANCH }},${{ $PLUGIN_INTERFACE_OWNER }}" > modules.txt
             - name: Contents of modules.txt
               run: cat ../supertokens-root/modules.txt
             - name: Running loadModules in supertokens-root
