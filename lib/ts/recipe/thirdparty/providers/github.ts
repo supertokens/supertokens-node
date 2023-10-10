@@ -113,7 +113,7 @@ export default function Github(input: ProviderInput): TypeProvider {
 
             if (emailInfoResp.status >= 400) {
                 throw new Error(
-                    `Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.rawResponse.text()}`
+                    `Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.stringResponse}`
                 );
             }
 
@@ -123,7 +123,7 @@ export default function Github(input: ProviderInput): TypeProvider {
 
             if (userInfoResp.status >= 400) {
                 throw new Error(
-                    `Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.rawResponse.text()}`
+                    `Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.stringResponse}`
                 );
             }
 

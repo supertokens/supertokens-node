@@ -11,9 +11,9 @@ export async function doGetRequest(
     queryParams?: { [key: string]: string },
     headers?: { [key: string]: string }
 ): Promise<{
-    response: any;
+    response: any | undefined;
     status: number;
-    rawResponse: Response;
+    stringResponse: string | undefined;
 }> {
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
@@ -30,13 +30,20 @@ export async function doGetRequest(
         headers: headers,
     });
 
-    const respData = await response.clone().json();
+    let stringResponse: string | undefined = undefined;
+    let responseData: any | undefined = undefined;
 
-    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
+    if (response.status >= 400) {
+        stringResponse = await response.text();
+    } else {
+        responseData = await response.clone().json();
+    }
+
+    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(responseData)}`);
     return {
-        response: respData,
+        response: responseData,
         status: response.status,
-        rawResponse: response,
+        stringResponse,
     };
 }
 
@@ -45,9 +52,9 @@ export async function doPostRequest(
     params: { [key: string]: any },
     headers?: { [key: string]: string }
 ): Promise<{
-    response: any;
+    response: any | undefined;
     status: number;
-    rawResponse: Response;
+    stringResponse: string | undefined;
 }> {
     if (headers === undefined) {
         headers = {};
@@ -67,13 +74,20 @@ export async function doPostRequest(
         headers,
     });
 
-    const respData = await response.clone().json();
+    let stringResponse: string | undefined = undefined;
+    let responseData: any | undefined = undefined;
 
-    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
+    if (response.status >= 400) {
+        stringResponse = await response.text();
+    } else {
+        responseData = await response.clone().json();
+    }
+
+    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(responseData)}`);
     return {
-        response: respData,
+        response: responseData,
         status: response.status,
-        rawResponse: response,
+        stringResponse,
     };
 }
 
@@ -105,12 +119,8 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     );
 
     if (oidcInfo.status >= 400) {
-        logDebugMessage(
-            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.rawResponse.text()}`
-        );
-        throw new Error(
-            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.rawResponse.text()}`
-        );
+        logDebugMessage(`Received response with status ${oidcInfo.status} and body ${await oidcInfo.stringResponse}`);
+        throw new Error(`Received response with status ${oidcInfo.status} and body ${await oidcInfo.stringResponse}`);
     }
 
     oidcInfoMap[issuer] = oidcInfo.response;

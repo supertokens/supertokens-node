@@ -80,12 +80,12 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 logDebugMessage(
                     `Received response with status ${
                         userInfoFromAccessToken.status
-                    } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                    } and body ${await userInfoFromAccessToken.stringResponse}`
                 );
                 throw new Error(
                     `Received response with status ${
                         userInfoFromAccessToken.status
-                    } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                    } and body ${await userInfoFromAccessToken.stringResponse}`
                 );
             }
             rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
@@ -100,12 +100,12 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 logDebugMessage(
                     `Received response with status ${
                         userInfoFromEmail.status
-                    } and body ${await userInfoFromEmail.rawResponse.text()}`
+                    } and body ${await userInfoFromEmail.stringResponse}`
                 );
                 throw new Error(
                     `Received response with status ${
                         userInfoFromEmail.status
-                    } and body ${await userInfoFromEmail.rawResponse.text()}`
+                    } and body ${await userInfoFromEmail.stringResponse}`
                 );
             }
 

@@ -70,12 +70,12 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
                 logDebugMessage(
                     `Received response with status ${
                         userInfoFromAccessToken.status
-                    } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                    } and body ${await userInfoFromAccessToken.stringResponse}`
                 );
                 throw new Error(
                     `Received response with status ${
                         userInfoFromAccessToken.status
-                    } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                    } and body ${await userInfoFromAccessToken.stringResponse}`
                 );
             }
 
@@ -90,12 +90,12 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
                 logDebugMessage(
                     `Received response with status ${
                         userInfoFromEmail.status
-                    } and body ${await userInfoFromEmail.rawResponse.text()}`
+                    } and body ${await userInfoFromEmail.stringResponse}`
                 );
                 throw new Error(
                     `Received response with status ${
                         userInfoFromEmail.status
-                    } and body ${await userInfoFromEmail.rawResponse.text()}`
+                    } and body ${await userInfoFromEmail.stringResponse}`
                 );
             }
 
