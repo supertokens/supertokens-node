@@ -11,9 +11,9 @@ export async function doGetRequest(
     queryParams?: { [key: string]: string },
     headers?: { [key: string]: string }
 ): Promise<{
-    response: any;
+    jsonResponse: Record<string, any> | undefined;
     status: number;
-    rawResponse: Response;
+    stringResponse: string;
 }> {
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
@@ -30,13 +30,18 @@ export async function doGetRequest(
         headers: headers,
     });
 
-    const respData = await response.clone().json();
+    const stringResponse = await response.text();
+    let jsonResponse: Record<string, any> | undefined = undefined;
 
-    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
+    if (response.status < 400) {
+        jsonResponse = JSON.parse(stringResponse);
+    }
+
+    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
     return {
-        response: respData,
+        stringResponse,
         status: response.status,
-        rawResponse: response.clone(),
+        jsonResponse,
     };
 }
 
@@ -45,9 +50,9 @@ export async function doPostRequest(
     params: { [key: string]: any },
     headers?: { [key: string]: string }
 ): Promise<{
-    response: any;
+    jsonResponse: Record<string, any> | undefined;
     status: number;
-    rawResponse: Response;
+    stringResponse: string;
 }> {
     if (headers === undefined) {
         headers = {};
@@ -67,13 +72,18 @@ export async function doPostRequest(
         headers,
     });
 
-    const respData = await response.clone().json();
+    const stringResponse = await response.text();
+    let jsonResponse: Record<string, any> | undefined = undefined;
 
-    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
+    if (response.status < 400) {
+        jsonResponse = JSON.parse(stringResponse);
+    }
+
+    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
     return {
-        response: respData,
+        stringResponse,
         status: response.status,
-        rawResponse: response.clone(),
+        jsonResponse,
     };
 }
 
@@ -105,16 +115,12 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     );
 
     if (oidcInfo.status >= 400) {
-        logDebugMessage(
-            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.rawResponse.text()}`
-        );
-        throw new Error(
-            `Received response with status ${oidcInfo.status} and body ${await oidcInfo.rawResponse.text()}`
-        );
+        logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
+        throw new Error(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
     }
 
-    oidcInfoMap[issuer] = oidcInfo.response;
-    return oidcInfo.response;
+    oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
+    return oidcInfo.jsonResponse!;
 }
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<ProviderConfigForClientType> {

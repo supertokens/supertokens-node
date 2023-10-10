@@ -10,9 +10,9 @@ export declare function doGetRequest(
         [key: string]: string;
     }
 ): Promise<{
-    response: any;
+    jsonResponse: Record<string, any> | undefined;
     status: number;
-    rawResponse: Response;
+    stringResponse: string;
 }>;
 export declare function doPostRequest(
     url: string,
@@ -23,9 +23,9 @@ export declare function doPostRequest(
         [key: string]: string;
     }
 ): Promise<{
-    response: any;
+    jsonResponse: Record<string, any> | undefined;
     status: number;
-    rawResponse: Response;
+    stringResponse: string;
 }>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,

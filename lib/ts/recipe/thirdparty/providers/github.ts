@@ -80,8 +80,8 @@ export default function Github(input: ProviderInput): TypeProvider {
             }
 
             if (
-                applicationResponse.response.app === undefined ||
-                applicationResponse.response.app.client_id !== clientConfig.clientId
+                applicationResponse.jsonResponse!.app === undefined ||
+                applicationResponse.jsonResponse!.app.client_id !== clientConfig.clientId
             ) {
                 throw new Error("Access token does not belong to your application");
             }
@@ -113,21 +113,19 @@ export default function Github(input: ProviderInput): TypeProvider {
 
             if (emailInfoResp.status >= 400) {
                 throw new Error(
-                    `Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.rawResponse.text()}`
+                    `Getting userInfo failed with ${emailInfoResp.status}: ${emailInfoResp.stringResponse}`
                 );
             }
 
-            rawResponse.emails = emailInfoResp.response;
+            rawResponse.emails = emailInfoResp.jsonResponse;
 
             const userInfoResp = await doGetRequest("https://api.github.com/user", undefined, headers);
 
             if (userInfoResp.status >= 400) {
-                throw new Error(
-                    `Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.rawResponse.text()}`
-                );
+                throw new Error(`Getting userInfo failed with ${userInfoResp.status}: ${userInfoResp.stringResponse}`);
             }
 
-            rawResponse.user = userInfoResp.response;
+            rawResponse.user = userInfoResp.jsonResponse;
 
             const rawUserInfoFromProvider = {
                 fromUserInfoAPI: rawResponse,
