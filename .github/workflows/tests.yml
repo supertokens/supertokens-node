@@ -22,12 +22,16 @@ on:
         inputs:
             pluginInterfaceRepoOwnerName:
                 required: true
+                type: string
             pluginInterfaceBranchName:
                 required: true
+                type: string
             coreRepoOwnerName:
                 required: true
+                type: string
             coreBranchName:
                 required: true
+                type: string
 jobs:
     test_job:
         name: Run tests
