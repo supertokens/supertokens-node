@@ -105,12 +105,12 @@ export default function Twitter(input: ProviderInput): TypeProvider {
                 logDebugMessage(
                     `Received response with status ${
                         tokenResponse.status
-                    } and body ${await tokenResponse.response.clone().text()}`
+                    } and body ${await tokenResponse.rawResponse.text()}`
                 );
                 throw new Error(
                     `Received response with status ${
                         tokenResponse.status
-                    } and body ${await tokenResponse.response.clone().text()}`
+                    } and body ${await tokenResponse.rawResponse.text()}`
                 );
             }
 

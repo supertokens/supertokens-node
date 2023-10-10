@@ -12,6 +12,7 @@ export declare function doGetRequest(
 ): Promise<{
     response: any;
     status: number;
+    rawResponse: Response;
 }>;
 export declare function doPostRequest(
     url: string,
@@ -24,6 +25,7 @@ export declare function doPostRequest(
 ): Promise<{
     response: any;
     status: number;
+    rawResponse: Response;
 }>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
