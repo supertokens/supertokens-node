@@ -94,6 +94,10 @@ Because of account linking we've introduced a new Primary user concept (see abov
         -   returns new `recipeUserId` prop in the `status: OK` case
     -   `signUp`:
         -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `resetPasswordUsingToken`:
+        -   removed from the recipe interface, making it no longer overrideable (directly)
+        -   the related function in the index files now call `consumePasswordResetToken` and `updateEmailOrPassword`
+        -   any necessary behaviour changes can be achieved by overriding those two function instead
     -   `signInPOST`:
         -   can return status `SIGN_IN_NOT_ALLOWED`
     -   `signUpPOST`:
@@ -154,6 +158,10 @@ Because of account linking we've introduced a new Primary user concept (see abov
     -   `updateEmailOrPassword` :
         -   now takes `recipeUserId` instead of `userId`
         -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   `resetPasswordUsingToken`:
+        -   removed from the recipe interface, making it no longer overrideable (directly)
+        -   the related function in the index files now call `consumePasswordResetToken` and `updateEmailOrPassword`
+        -   any necessary behaviour changes can be achieved by overriding those two function instead
     -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during sign up and in the “invitation link” flow
     -   `emailPasswordSignIn`:
         -   returns new `recipeUserId` prop in the `status: OK` case
