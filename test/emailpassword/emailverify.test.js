@@ -1426,4 +1426,58 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.deepStrictEqual(response.body.status, "OK");
         assert.strictEqual(infoFromResponse2.frontToken, undefined);
     });
+
+    it("test that generate email verification token API updates session claims", async function () {
+        const connectionURI = await startST();
+        let emailVerifyLink = "";
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ userContext }) => userContext.url,
+            },
+            recipeList: [
+                EmailPassword.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailVerifyLink = input.emailVerifyLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
+        await EmailVerification.sendEmailVerificationEmail("public", user.user.id, user.recipeUserId, undefined, {
+            url: "localhost:3000",
+        });
+
+        let currentUrl = new URL(emailVerifyLink);
+        assert(currentUrl.origin === "http://localhost:3000");
+
+        await EmailVerification.sendEmailVerificationEmail("public", user.user.id, user.recipeUserId, undefined, {
+            url: "localhost:3002",
+        });
+
+        currentUrl = new URL(emailVerifyLink);
+        assert(currentUrl.origin === "http://localhost:3002");
+    });
 });

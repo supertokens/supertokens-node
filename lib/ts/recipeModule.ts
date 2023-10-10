@@ -101,7 +101,7 @@ export default abstract class RecipeModule {
         userContext: any
     ): Promise<boolean>;
 
-    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>;
+    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse, userContext: any): Promise<void>;
 
     abstract getAllCORSHeaders(): string[];
 

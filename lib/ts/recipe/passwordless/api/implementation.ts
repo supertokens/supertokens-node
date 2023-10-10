@@ -241,7 +241,12 @@ export default function getAPIImplementation(): APIInterface {
             const flowType = input.options.config.flowType;
             if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                 magicLink =
-                    input.options.appInfo.websiteDomain.getAsStringDangerous() +
+                    input.options.appInfo
+                        .getOrigin({
+                            request: input.options.req,
+                            userContext: input.userContext,
+                        })
+                        .getAsStringDangerous() +
                     input.options.appInfo.websiteBasePath.getAsStringDangerous() +
                     "/verify" +
                     "?rid=" +
@@ -380,7 +385,12 @@ export default function getAPIImplementation(): APIInterface {
                     const flowType = input.options.config.flowType;
                     if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                         magicLink =
-                            input.options.appInfo.websiteDomain.getAsStringDangerous() +
+                            input.options.appInfo
+                                .getOrigin({
+                                    request: input.options.req,
+                                    userContext: input.userContext,
+                                })
+                                .getAsStringDangerous() +
                             input.options.appInfo.websiteBasePath.getAsStringDangerous() +
                             "/verify" +
                             "?rid=" +

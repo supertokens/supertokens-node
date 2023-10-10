@@ -169,7 +169,7 @@ export const middleware = () => {
         } catch (err) {
             if (supertokens) {
                 try {
-                    await supertokens.errorHandler(err, request, response);
+                    await supertokens.errorHandler(err, request, response, userContext);
                 } catch {
                     next(err);
                 }
@@ -184,8 +184,9 @@ export const errorHandler = () => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new ExpressRequest(req);
         let response = new ExpressResponse(res);
+        const userContext = makeDefaultUserContextFromAPI(request);
         try {
-            await supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response, userContext);
         } catch (err) {
             return next(err);
         }

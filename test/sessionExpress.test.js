@@ -3251,4 +3251,85 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.antiCsrf.length > 1);
         assert(res2.refreshToken.length > 1);
     });
+
+    it("Test that token transfer method works correctly when using origin function", async function () {
+        const connectionURI = await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    if (request.getHeaderValue("origin") !== undefined) {
+                        return request.getHeaderValue("origin");
+                    }
+
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                Session.init({
+                    getTokenTransferMethod: ({ req }) => {
+                        if (req.getHeaderValue("origin") === "http://localhost:3002") {
+                            return "cookie";
+                        }
+
+                        return "header";
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let headers = res.headers;
+        assert(headers["st-access-token"] !== undefined);
+        assert(headers["st-refresh-token"] !== undefined);
+        assert(headers["set-cookie"] === undefined);
+
+        res = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .set("origin", "http://localhost:3002")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        headers = res.headers;
+
+        assert(headers["st-access-token"] === undefined);
+        assert(headers["st-refresh-token"] === undefined);
+        assert(headers["set-cookie"] !== undefined);
+    });
 });

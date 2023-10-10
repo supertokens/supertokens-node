@@ -19,7 +19,7 @@ import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDelive
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "./utils";
-import { getUser } from "../..";
+import { getRequestFromUserContext, getUser } from "../..";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -123,6 +123,8 @@ export default class Wrapper {
                 recipeId: recipeInstance.getRecipeId(),
                 token: token.token,
                 tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                request: getRequestFromUserContext(userContext),
+                userContext,
             }),
         };
     }

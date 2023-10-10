@@ -86,11 +86,15 @@ export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
-    cookieSameSite: "strict" | "lax" | "none";
+    getCookieSameSite: (input: { request: BaseRequest | undefined; userContext: any }) => "strict" | "lax" | "none";
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    antiCsrfFunctionOrString:
+        | "VIA_TOKEN"
+        | "VIA_CUSTOM_HEADER"
+        | "NONE"
+        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE");
     getTokenTransferMethod: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
@@ -305,7 +309,7 @@ export interface SessionContainerInterface {
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
-    attachToRequestResponse(reqResInfo: ReqResInfo): Promise<void> | void;
+    attachToRequestResponse(reqResInfo: ReqResInfo, userContext?: any): Promise<void> | void;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

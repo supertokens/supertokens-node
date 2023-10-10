@@ -662,4 +662,96 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             assert(info.email === "test@example.com");
         });
     });
+
+    it("Test that reset password link uses the correct origin", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    if (request.getHeaderValue("origin") !== undefined) {
+                        return request.getHeaderValue("origin");
+                    }
+
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailPasswordLink = input.passwordResetLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await EmailPassword.signUp("public", "test@example.com", "password1234");
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset/token")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test@example.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        let currentUrl = new URL(emailPasswordLink);
+        assert(currentUrl.origin === "http://localhost:3000");
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset/token")
+                .set("origin", "localhost:3002")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test@example.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        currentUrl = new URL(emailPasswordLink);
+        assert(currentUrl.origin === "http://localhost:3002");
+    });
 });

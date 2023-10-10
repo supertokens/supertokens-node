@@ -25,6 +25,7 @@ import {
 import { EmailVerificationClaim } from "./emailVerificationClaim";
 import RecipeUserId from "../../recipeUserId";
 import { getEmailVerifyLink } from "./utils";
+import { getRequestFromUserContext } from "../..";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -97,6 +98,8 @@ export default class Wrapper {
                 token: emailVerificationToken.token,
                 recipeId: recipeInstance.getRecipeId(),
                 tenantId,
+                request: getRequestFromUserContext(userContext),
+                userContext,
             }),
         };
     }

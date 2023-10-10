@@ -168,7 +168,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             } catch (err) {
                 if (
                     err.message !==
-                    "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
+                    "Please provide either origin or websiteDomain inside the appInfo object when calling supertokens.init"
                 ) {
                     throw err;
                 }
@@ -284,7 +284,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: " Lax " })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
 
             resetAll();
         }
@@ -302,7 +302,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "None " })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "none");
 
             resetAll();
         }
@@ -320,7 +320,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: " STRICT " })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "strict");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "strict");
 
             resetAll();
         }
@@ -384,7 +384,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "lax" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
 
             resetAll();
         }
@@ -402,7 +402,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "none" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "none");
 
             resetAll();
         }
@@ -420,7 +420,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "strict" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "strict");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "strict");
 
             resetAll();
         }
@@ -438,7 +438,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
 
             resetAll();
         }
@@ -846,8 +846,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString === "VIA_CUSTOM_HEADER");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -867,8 +867,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "NONE");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
 
             resetAll();
@@ -889,8 +889,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "NONE");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -910,8 +910,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "NONE");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -931,8 +931,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "VIA_CUSTOM_HEADER");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "none");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -952,8 +952,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "NONE");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -973,8 +973,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "NONE");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
@@ -993,8 +993,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString === "VIA_CUSTOM_HEADER");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
@@ -1013,8 +1013,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "VIA_CUSTOM_HEADER");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "none");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
@@ -1033,8 +1033,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString({}) === "NONE");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
@@ -1053,7 +1053,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE" })],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrfFunctionOrString === "NONE");
             resetAll();
         }
 
@@ -1186,7 +1186,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
 
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "none");
 
             resetAll();
         }
@@ -1206,7 +1206,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}), "lax");
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, true);
         assert.equal(
             SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous(),
@@ -1507,5 +1507,112 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         });
 
         assert(SuperTokens.getInstanceOrThrowError().telemetryEnabled === false);
+    });
+
+    it("Test that init throws if both website domain and origin is undefined", async function () {
+        const connectionURI = await startST();
+        try {
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                },
+                recipeList: [Session.init()],
+                telemetry: false,
+            });
+            throw new Error("Init should have failed but didnt");
+        } catch (e) {
+            if (
+                e.message !==
+                "Please provide either origin or websiteDomain inside the appInfo object when calling supertokens.init"
+            ) {
+                throw e;
+            }
+        }
+    });
+
+    it("Test that init works fine when using origin", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin();
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://supertokens.io");
+    });
+
+    it("Test that init works fine when using a function for origin", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: () => "supertokens.io",
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin();
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://supertokens.io");
+    });
+
+    it("Test that origin function returns correctly", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ userContext }) => userContext.url,
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin({
+            request: undefined,
+            userContext: {
+                url: "https://test.com",
+            },
+        });
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://test.com");
+    });
+
+    it("Test that if both website domain and origin are provided, origin is used", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "test.com",
+                origin: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin();
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://supertokens.io");
     });
 });

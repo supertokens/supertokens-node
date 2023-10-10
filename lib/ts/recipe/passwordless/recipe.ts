@@ -211,11 +211,13 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  request: BaseRequest | undefined;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  request: BaseRequest | undefined;
                   userContext?: any;
               }
     ): Promise<string> => {
@@ -243,7 +245,12 @@ export default class Recipe extends RecipeModule {
         const appInfo = this.getAppInfo();
 
         let magicLink =
-            appInfo.websiteDomain.getAsStringDangerous() +
+            appInfo
+                .getOrigin({
+                    request: input.request,
+                    userContext: input.userContext,
+                })
+                .getAsStringDangerous() +
             appInfo.websiteBasePath.getAsStringDangerous() +
             "/verify" +
             "?rid=" +

@@ -200,9 +200,10 @@ const plugin: Plugin<{}> = {
                 let err = (request.response as Boom).data || request.response;
                 let req = new HapiRequest(request);
                 let res = new HapiResponse(h as ExtendedResponseToolkit);
+                const userContext = makeDefaultUserContextFromAPI(req);
                 if (err !== undefined && err !== null) {
                     try {
-                        await supertokens.errorHandler(err, req, res);
+                        await supertokens.errorHandler(err, req, res, userContext);
                         if (res.responseSet) {
                             let resObj = res.sendResponse(true);
                             (((request.app as any).lazyHeaders || []) as {

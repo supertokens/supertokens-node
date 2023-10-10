@@ -63,9 +63,17 @@ export default class SessionRecipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        logDebugMessage("session init: antiCsrf: " + this.config.antiCsrf);
+
+        const antiCsrfToLog: string =
+            typeof this.config.antiCsrfFunctionOrString === "string"
+                ? this.config.antiCsrfFunctionOrString
+                : "function";
+
+        logDebugMessage("session init: antiCsrf: " + antiCsrfToLog);
         logDebugMessage("session init: cookieDomain: " + this.config.cookieDomain);
-        logDebugMessage("session init: cookieSameSite: " + this.config.cookieSameSite);
+        const sameSiteToPrint =
+            config !== undefined && config.cookieSameSite !== undefined ? config.cookieSameSite : "default function";
+        logDebugMessage("session init: cookieSameSite: " + sameSiteToPrint);
         logDebugMessage("session init: cookieSecure: " + this.config.cookieSecure);
         logDebugMessage("session init: refreshTokenPath: " + this.config.refreshTokenPath.getAsStringDangerous());
         logDebugMessage("session init: sessionExpiredStatusCode: " + this.config.sessionExpiredStatusCode);
@@ -190,7 +198,7 @@ export default class SessionRecipe extends RecipeModule {
         }
     };
 
-    handleError = async (err: STError, request: BaseRequest, response: BaseResponse) => {
+    handleError = async (err: STError, request: BaseRequest, response: BaseResponse, userContext: any) => {
         if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
             if (err.type === STError.UNAUTHORISED) {
                 logDebugMessage("errorHandler: returning UNAUTHORISED");
@@ -200,7 +208,7 @@ export default class SessionRecipe extends RecipeModule {
                     err.payload.clearTokens === true
                 ) {
                     logDebugMessage("errorHandler: Clearing tokens because of UNAUTHORISED response");
-                    clearSessionFromAllTokenTransferMethods(this.config, response);
+                    clearSessionFromAllTokenTransferMethods(this.config, response, request, userContext);
                 }
                 return await this.config.errorHandlers.onUnauthorised(err.message, request, response);
             } else if (err.type === STError.TRY_REFRESH_TOKEN) {
@@ -209,7 +217,7 @@ export default class SessionRecipe extends RecipeModule {
             } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
                 logDebugMessage("errorHandler: returning TOKEN_THEFT_DETECTED");
                 logDebugMessage("errorHandler: Clearing tokens because of TOKEN_THEFT_DETECTED response");
-                clearSessionFromAllTokenTransferMethods(this.config, response);
+                clearSessionFromAllTokenTransferMethods(this.config, response, request, userContext);
                 return await this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,

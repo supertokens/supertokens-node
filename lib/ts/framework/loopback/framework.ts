@@ -159,7 +159,7 @@ export const middleware: Middleware = async (ctx: MiddlewareContext, next: Next)
         }
         return;
     } catch (err) {
-        return await supertokens.errorHandler(err, request, response);
+        return await supertokens.errorHandler(err, request, response, userContext);
     }
 };
 
