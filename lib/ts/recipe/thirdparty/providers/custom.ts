@@ -274,18 +274,14 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
 
             if (tokenResponse.status >= 400) {
                 logDebugMessage(
-                    `Received response with status ${
-                        tokenResponse.status
-                    } and body ${await tokenResponse.rawResponse.text()}`
+                    `Received response with status ${tokenResponse.status} and body ${tokenResponse.stringResponse}`
                 );
                 throw new Error(
-                    `Received response with status ${
-                        tokenResponse.status
-                    } and body ${await tokenResponse.rawResponse.text()}`
+                    `Received response with status ${tokenResponse.status} and body ${tokenResponse.stringResponse}`
                 );
             }
 
-            return tokenResponse.response;
+            return tokenResponse.jsonResponse;
         },
 
         getUserInfo: async function ({ oAuthTokens, userContext }): Promise<UserInfo> {
@@ -359,18 +355,14 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
 
                 if (userInfoFromAccessToken.status >= 400) {
                     logDebugMessage(
-                        `Received response with status ${
-                            userInfoFromAccessToken.status
-                        } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                        `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
                     );
                     throw new Error(
-                        `Received response with status ${
-                            userInfoFromAccessToken.status
-                        } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                        `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
                     );
                 }
 
-                rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
+                rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.jsonResponse;
             }
 
             const userInfoResult = getSupertokensUserInfoResultFromRawUserInfo(impl.config, rawUserInfoFromProvider);

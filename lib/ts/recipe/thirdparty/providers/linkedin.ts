@@ -64,18 +64,14 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
             };
 
             const userInfoFromAccessToken = await doGetRequest("https://api.linkedin.com/v2/me", undefined, headers);
-            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.response;
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.jsonResponse;
 
             if (userInfoFromAccessToken.status >= 400) {
                 logDebugMessage(
-                    `Received response with status ${
-                        userInfoFromAccessToken.status
-                    } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                    `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
                 );
                 throw new Error(
-                    `Received response with status ${
-                        userInfoFromAccessToken.status
-                    } and body ${await userInfoFromAccessToken.rawResponse.text()}`
+                    `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
                 );
             }
 
@@ -88,24 +84,21 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
 
             if (userInfoFromEmail.status >= 400) {
                 logDebugMessage(
-                    `Received response with status ${
-                        userInfoFromEmail.status
-                    } and body ${await userInfoFromEmail.rawResponse.text()}`
+                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
                 );
                 throw new Error(
-                    `Received response with status ${
-                        userInfoFromEmail.status
-                    } and body ${await userInfoFromEmail.rawResponse.text()}`
+                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
                 );
             }
 
-            if (userInfoFromEmail.response.elements && userInfoFromEmail.response.elements.length > 0) {
-                rawUserInfoFromProvider.fromUserInfoAPI.email =
-                    userInfoFromEmail.response.elements[0]["handle~"].emailAddress;
+            if (userInfoFromEmail.jsonResponse!.elements && userInfoFromEmail.jsonResponse!.elements.length > 0) {
+                rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.jsonResponse!.elements[0][
+                    "handle~"
+                ].emailAddress;
             }
             rawUserInfoFromProvider.fromUserInfoAPI = {
                 ...rawUserInfoFromProvider.fromUserInfoAPI,
-                ...userInfoFromEmail.response,
+                ...userInfoFromEmail.jsonResponse!,
             };
 
             return {
