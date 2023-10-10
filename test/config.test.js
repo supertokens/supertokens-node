@@ -1508,4 +1508,111 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
         assert(SuperTokens.getInstanceOrThrowError().telemetryEnabled === false);
     });
+
+    it("Test that init throws if both website domain and origin is undefined", async function () {
+        const connectionURI = await startST();
+        try {
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                },
+                recipeList: [Session.init()],
+                telemetry: false,
+            });
+            throw new Error("Init should have failed but didnt");
+        } catch (e) {
+            if (
+                e.message !==
+                "Please provide either origin or websiteDomain inside the appInfo object when calling supertokens.init"
+            ) {
+                throw e;
+            }
+        }
+    });
+
+    it("Test that init works fine when using origin", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin();
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://supertokens.io");
+    });
+
+    it("Test that init works fine when using a function for origin", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: () => "supertokens.io",
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin();
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://supertokens.io");
+    });
+
+    it("Test that origin function returns correctly", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ userContext }) => userContext.url,
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin({
+            request: undefined,
+            userContext: {
+                url: "https://test.com",
+            },
+        });
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://test.com");
+    });
+
+    it("Test that if both website domain and origin are provided, origin is used", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "test.com",
+                origin: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+            telemetry: false,
+        });
+
+        let originFromConfig = SuperTokens.getInstanceOrThrowError().appInfo.getOrigin();
+        assert.equal(originFromConfig.getAsStringDangerous(), "https://supertokens.io");
+    });
 });
