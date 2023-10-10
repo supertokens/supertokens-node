@@ -114,6 +114,7 @@ module.exports.extractInfoFromResponse = function (res) {
         }
         headers = Object.fromEntries(res.headers.entries());
     } else {
+        headers = res.headers;
         let cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
         cookies = cookies === undefined ? [] : cookies;
         if (!Array.isArray(cookies)) {
