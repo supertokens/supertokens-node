@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [16.3.0] - 2023-10-10
+
+### Added
+
+-   Adds support for configuring multiple frontend domains to be used with the same backend
+-   Added a new `origin` property to `appInfo`, this can be configured to be a function which allows you to conditionally return the value of the frontend domain. This property will replace `websiteDomain` in a future release of `supertokens-node`
+-   `websiteDomain` inside `appInfo` is now optional. Using `origin` is recommended over using `websiteDomain`. This is not a breaking change and using `websiteDomain` will continue to work
+
 ## [16.2.1] - 2023-10-06
 
 -   Slight refactors logic to code for social providers to make it consistent across all providers
