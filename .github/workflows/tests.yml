@@ -39,9 +39,9 @@ jobs:
             matrix: ${{ steps.set-matrix.outputs.matrix }}
         steps:
             - uses: actions/checkout@v3
-            - run: bash test/listTestsFiles.sh
+            - run: bash test/listTestFiles.sh
             - id: set-matrix
-              run: echo "::set-output name=matrix::{\"include\":$(bash test/listTestsFiles.sh)}"
+              run: echo "::set-output name=matrix::{\"include\":$(bash test/listTestFiles.sh)}"
     test_job:
         name: Run tests
         timeout-minutes: 60
