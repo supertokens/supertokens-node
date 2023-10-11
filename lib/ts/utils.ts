@@ -280,8 +280,12 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         // we treat these as the same TLDs since we can use sameSite lax for all of them.
         return "localhost";
     }
+
     let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
     if (parsedURL.domain === null) {
+        if (hostname.endsWith(".amazonaws.com") && parsedURL.tld === hostname) {
+            return hostname;
+        }
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
     }
     return parsedURL.domain;

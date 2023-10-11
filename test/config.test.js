@@ -1251,6 +1251,77 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://localhost:3000"), "localhost");
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://test.com:3567"), "test.com");
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com:3567"), "test.com");
+        assert.strictEqual(
+            getTopLevelDomainForSameSiteResolution("https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001"),
+            "https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com"
+        );
+    });
+
+    it("should work well with ec2 public urls", async function () {
+        const connectionURI = await startST();
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    appName: "Supertokens",
+                    apiDomain: "https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
+                    websiteDomain: "https://blog.supertokens.com",
+                    apiBasePath: "/",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+            });
+
+            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
+            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}), "none");
+
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    appName: "Supertokens",
+                    apiDomain: "http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
+                    websiteDomain: "http://ec2-aa-bbb-ccc-0.compute-1.amazonaws.com:3000",
+                    apiBasePath: "/",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+            });
+
+            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
+            assert(!SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
+            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}), "none");
+
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    appName: "Supertokens",
+                    apiDomain: "http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001",
+                    websiteDomain: "http://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3000",
+                    apiBasePath: "/",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+            });
+
+            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
+            assert(!SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
+            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}), "lax");
+
+            resetAll();
+        }
     });
 
     it("apiGatewayPath test", async function () {
