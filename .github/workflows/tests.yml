@@ -33,10 +33,22 @@ on:
                 required: true
                 type: string
 jobs:
+    setup:
+        runs-on: ubuntu-latest
+        outputs:
+            matrix: ${{ steps.set-matrix.outputs.matrix }}
+        steps:
+            - uses: actions/checkout@v3
+            - run: bash test/listTestsFiles.sh
+            - id: set-matrix
+              run: echo "::set-output name=matrix::{\"include\":$(bash test/findExamplesWithTests.sh)}"
     test_job:
         name: Run tests
         timeout-minutes: 60
         runs-on: ubuntu-latest
+        strategy:
+            matrix: ${{fromJson(needs.setup.outputs.matrix)}}
+            fail-fast: false
         container: rishabhpoddar/supertokens_website_sdk_testing
         steps:
             - uses: actions/checkout@v3
@@ -72,4 +84,4 @@ jobs:
             - name: Setting up supertokens-root test environment
               run: cd ../supertokens-root && bash ./utils/setupTestEnvLocal
             - name: Run tests
-              run: INSTALL_PATH=../supertokens-root npm run test
+              run: INSTALL_PATH=../supertokens-root npm run test -- --ignore "./test/**/*.test.js" ${{ matrix.testPath }}
