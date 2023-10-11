@@ -7,7 +7,6 @@ import { SessionContainerInterface } from "../session/types";
 export declare type MFARequirement =
     | {
           id: string;
-          maxAgeInSeconds?: number;
       }
     | string;
 export declare type MFARequirementList = (
@@ -25,19 +24,6 @@ export declare type MFAClaimValue = {
 };
 export declare type TypeInput = {
     firstFactors?: string[];
-    getMFARequirementsForAuth?: (
-        session: SessionContainer | undefined,
-        factorsSetUpByTheUser: string[],
-        completedFactors: Record<string, number>,
-        userContext: any
-    ) => Promise<MFARequirementList> | MFARequirementList;
-    getMFARequirementsForFactorSetup?: (
-        factorId: string,
-        session: SessionContainer,
-        factorsSetUpByTheUser: string[],
-        completedFactors: Record<string, number>,
-        userContext: any
-    ) => Promise<MFARequirementList> | MFARequirementList;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -48,19 +34,6 @@ export declare type TypeInput = {
 };
 export declare type TypeNormalisedInput = {
     firstFactors?: string[];
-    getMFARequirementsForAuth: (
-        session: SessionContainer | undefined,
-        factorsSetUpByTheUser: string[],
-        completedFactors: Record<string, number>,
-        userContext: any
-    ) => Promise<MFARequirementList> | MFARequirementList;
-    getMFARequirementsForFactorSetup: (
-        factorId: string,
-        session: SessionContainer,
-        factorsSetUpByTheUser: string[],
-        completedFactors: Record<string, number>,
-        userContext: any
-    ) => Promise<MFARequirementList> | MFARequirementList;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -71,10 +44,28 @@ export declare type TypeNormalisedInput = {
 };
 export declare type RecipeInterface = {
     isAllowedToSetupFactor: (input: {
-        session: SessionContainerInterface;
+        session: SessionContainer;
         factorId: string;
+        requirementsForAuth: MFARequirementList;
+        factorsSetUpByTheUser: string[];
+        defaultRequiredFactorsForUser: string[];
+        defaultRequiredFactorsForTenant: string[];
+        completedFactors: Record<string, number>;
         userContext: any;
     }) => Promise<boolean>;
+    getMFARequirementsForAuth: (input: {
+        session: SessionContainer;
+        factorsSetUpByTheUser: string[];
+        defaultRequiredFactorsForUser: string[];
+        defaultRequiredFactorsForTenant: string[];
+        completedFactors: Record<string, number>;
+        userContext: any;
+    }) => Promise<MFARequirementList> | MFARequirementList;
+    markFactorAsCompleteInSession: (input: {
+        session: SessionContainerInterface;
+        factor: string;
+        userContext?: any;
+    }) => Promise<void>;
     getFactorsSetupForUser: (input: { userId: string; tenantId: string; userContext: any }) => Promise<string[]>;
 };
 export declare type APIOptions = {
@@ -94,8 +85,8 @@ export declare type APIInterface = {
         | {
               status: "OK";
               factors: {
-                  canComplete: string[];
-                  canSetup: string[];
+                  isAlreadySetup: string[];
+                  isAllowedToSetup: string[];
               };
           }
         | GeneralErrorResponse

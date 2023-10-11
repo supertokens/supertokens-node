@@ -32,15 +32,38 @@ export default class Wrapper {
     }
 
     static async isAllowedToSetupFactor(session: SessionContainerInterface, factorId: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isAllowedToSetupFactor({
-            factorId,
+        let ctx = userContext ?? {};
+        const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            userId: session.getUserId(),
+            tenantId: session.getTenantId(),
+            userContext: ctx,
+        });
+        const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
+        const completedFactors = mfaClaimValue?.c ?? {};
+        const defaultMFARequirementsForUser: string[] = []; // TODO
+        const defaultMFARequirementsForTenant: string[] = []; // TODO
+        const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
             session,
+            factorsSetUpByTheUser: factorsSetup,
+            defaultRequiredFactorsForUser: defaultMFARequirementsForUser,
+            defaultRequiredFactorsForTenant: defaultMFARequirementsForTenant,
+            completedFactors,
+            userContext: ctx,
+        });
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isAllowedToSetupFactor({
+            session,
+            factorId,
+            completedFactors,
+            requirementsForAuth: requirements,
+            factorsSetUpByTheUser: factorsSetup,
+            defaultRequiredFactorsForUser: defaultMFARequirementsForUser,
+            defaultRequiredFactorsForTenant: defaultMFARequirementsForTenant,
             userContext,
         });
     }
 
-    static async completeFactorInSession(session: SessionContainerInterface, factor: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().completeFactorInSession({
+    static async markFactorAsCompleteInSession(session: SessionContainerInterface, factor: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
             session,
             factor,
             userContext: userContext ?? {},
@@ -50,7 +73,7 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
-export let completeFactorInSession = Wrapper.completeFactorInSession;
+export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
 
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

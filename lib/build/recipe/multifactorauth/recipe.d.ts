@@ -6,7 +6,6 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import { ProviderInput } from "../thirdparty/types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
-import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -34,13 +33,4 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    completeFactorInSession({
-        session,
-        factor,
-        userContext,
-    }: {
-        session: SessionContainerInterface;
-        factor: string;
-        userContext: any;
-    }): Promise<void>;
 }

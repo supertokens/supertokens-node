@@ -12,13 +12,13 @@ export default class Wrapper {
         factorId: string,
         userContext?: any
     ): Promise<boolean>;
-    static completeFactorInSession(
+    static markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factor: string,
         userContext?: any
     ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
-export declare let completeFactorInSession: typeof Wrapper.completeFactorInSession;
+export declare let markFactorAsCompleteInSession: typeof Wrapper.markFactorAsCompleteInSession;
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };
