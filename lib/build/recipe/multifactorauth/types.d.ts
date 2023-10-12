@@ -1,14 +1,10 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, User } from "../../types";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
-export declare type MFARequirement =
-    | {
-          id: string;
-      }
-    | string;
+export declare type MFARequirement = string;
 export declare type MFARequirementList = (
     | {
           oneOf: MFARequirement[];
@@ -23,7 +19,18 @@ export declare type MFAClaimValue = {
     n: string[];
 };
 export declare type TypeInput = {
-    firstFactors?: string[];
+    firstFactors?: (
+        | "emailpassword"
+        | "thirdparty"
+        | "otp-email"
+        | "otp-phone"
+        | "link-email"
+        | "link-phone"
+        | {
+              type: "custom";
+              id: string;
+          }
+    )[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -33,7 +40,18 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    firstFactors?: string[];
+    firstFactors?: (
+        | "emailpassword"
+        | "thirdparty"
+        | "otp-email"
+        | "otp-phone"
+        | "link-email"
+        | "link-phone"
+        | {
+              type: "custom";
+              id: string;
+          }
+    )[];
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -46,7 +64,7 @@ export declare type RecipeInterface = {
     isAllowedToSetupFactor: (input: {
         session: SessionContainer;
         factorId: string;
-        requirementsForAuth: MFARequirementList;
+        mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpByTheUser: string[];
         defaultRequiredFactorsForUser: string[];
         defaultRequiredFactorsForTenant: string[];
@@ -63,10 +81,10 @@ export declare type RecipeInterface = {
     }) => Promise<MFARequirementList> | MFARequirementList;
     markFactorAsCompleteInSession: (input: {
         session: SessionContainerInterface;
-        factor: string;
+        factorId: string;
         userContext?: any;
     }) => Promise<void>;
-    getFactorsSetupForUser: (input: { userId: string; tenantId: string; userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { user: User; tenantId: string; userContext: any }) => Promise<string[]>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

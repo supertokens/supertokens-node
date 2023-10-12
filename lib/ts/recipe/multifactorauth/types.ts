@@ -15,15 +15,11 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, User } from "../../types";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 
-export type MFARequirement =
-    | {
-          id: string;
-      }
-    | string;
+export type MFARequirement = string;
 
 export type MFARequirementList = (
     | {
@@ -41,7 +37,15 @@ export type MFAClaimValue = {
 };
 
 export type TypeInput = {
-    firstFactors?: string[];
+    firstFactors?: (
+        | "emailpassword"
+        | "thirdparty"
+        | "otp-email"
+        | "otp-phone"
+        | "link-email"
+        | "link-phone"
+        | { type: "custom"; id: string }
+    )[];
 
     override?: {
         functions?: (
@@ -53,7 +57,15 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    firstFactors?: string[];
+    firstFactors?: (
+        | "emailpassword"
+        | "thirdparty"
+        | "otp-email"
+        | "otp-phone"
+        | "link-email"
+        | "link-phone"
+        | { type: "custom"; id: string }
+    )[];
 
     override: {
         functions: (
@@ -68,7 +80,7 @@ export type RecipeInterface = {
     isAllowedToSetupFactor: (input: {
         session: SessionContainer;
         factorId: string;
-        requirementsForAuth: MFARequirementList;
+        mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpByTheUser: string[];
         defaultRequiredFactorsForUser: string[];
         defaultRequiredFactorsForTenant: string[];
@@ -87,10 +99,10 @@ export type RecipeInterface = {
 
     markFactorAsCompleteInSession: (input: {
         session: SessionContainerInterface;
-        factor: string;
+        factorId: string;
         userContext?: any;
     }) => Promise<void>;
-    getFactorsSetupForUser: (input: { userId: string; tenantId: string; userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { user: User; tenantId: string; userContext: any }) => Promise<string[]>;
 };
 
 export type APIOptions = {

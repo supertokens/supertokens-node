@@ -33,7 +33,7 @@ import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "multitenancy";
+    static RECIPE_ID = "multifactorauth";
 
     config: TypeNormalisedInput;
 
@@ -89,7 +89,9 @@ export default class Recipe extends RecipeModule {
                 });
                 return Recipe.instance;
             } else {
-                throw new Error("Multitenancy recipe has already been initialised. Please check your code for bugs.");
+                throw new Error(
+                    "MultiFactorAuth recipe has already been initialised. Please check your code for bugs."
+                );
             }
         };
     }

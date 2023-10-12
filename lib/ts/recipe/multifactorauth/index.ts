@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
+import { getUser } from "../..";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -24,17 +25,27 @@ export default class Wrapper {
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
     static async getFactorsSetUpByUser(tenantId: string, userId: string, userContext?: any) {
+        const ctx = userContext ?? {};
+        const user = await getUser(userId, ctx);
+        if (!user) {
+            throw new Error("UKNKNOWN_USER_ID");
+        }
+
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-            userId,
+            user,
             tenantId,
-            userContext,
+            userContext: ctx,
         });
     }
 
     static async isAllowedToSetupFactor(session: SessionContainerInterface, factorId: string, userContext?: any) {
         let ctx = userContext ?? {};
+        const user = await getUser(session.getUserId(), ctx);
+        if (!user) {
+            throw new Error("UKNKNOWN_USER_ID");
+        }
         const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-            userId: session.getUserId(),
+            user,
             tenantId: session.getTenantId(),
             userContext: ctx,
         });
@@ -54,7 +65,7 @@ export default class Wrapper {
             session,
             factorId,
             completedFactors,
-            requirementsForAuth: requirements,
+            mfaRequirementsForAuth: requirements,
             factorsSetUpByTheUser: factorsSetup,
             defaultRequiredFactorsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorsForTenant: defaultMFARequirementsForTenant,
@@ -62,10 +73,14 @@ export default class Wrapper {
         });
     }
 
-    static async markFactorAsCompleteInSession(session: SessionContainerInterface, factor: string, userContext?: any) {
+    static async markFactorAsCompleteInSession(
+        session: SessionContainerInterface,
+        factorId: string,
+        userContext?: any
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
             session,
-            factor,
+            factorId,
             userContext: userContext ?? {},
         });
     }

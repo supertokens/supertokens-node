@@ -1901,9 +1901,8 @@ Supertokens.init({
                 functions: (oI) => ({
                     ...oI,
                     getMFARequirementsForAuth: () => ["otp-phone"],
-                    // This kind of step-up auth requirement works for other factors as well
                     isAllowedToSetupFactor: (input) => {
-                        return oI.isAllowedToSetupFactor({ ...input, requirementsForAuth: [{ id: "otp-phone" }] });
+                        return oI.isAllowedToSetupFactor({ ...input, mfaRequirementsForAuth: ["otp-phone"] });
                     },
                 }),
             },

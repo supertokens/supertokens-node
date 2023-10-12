@@ -14,7 +14,7 @@ export default class Wrapper {
     ): Promise<boolean>;
     static markFactorAsCompleteInSession(
         session: SessionContainerInterface,
-        factor: string,
+        factorId: string,
         userContext?: any
     ): Promise<void>;
 }
