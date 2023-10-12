@@ -1253,7 +1253,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com:3567"), "test.com");
         assert.strictEqual(
             getTopLevelDomainForSameSiteResolution("https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com:3001"),
-            "https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com"
+            "ec2-xx-yyy-zzz-0.compute-1.amazonaws.com"
         );
     });
 
