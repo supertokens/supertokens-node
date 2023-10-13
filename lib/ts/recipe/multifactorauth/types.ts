@@ -19,7 +19,16 @@ import { GeneralErrorResponse, User } from "../../types";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 
-export type MFARequirement = string;
+export type FirstFactor =
+    | "emailpassword"
+    | "thirdparty"
+    | "otp-email"
+    | "otp-phone"
+    | "link-email"
+    | "link-phone"
+    | { type: "custom"; id: string };
+
+export type MFARequirement = FirstFactor | "totp";
 
 export type MFARequirementList = (
     | {
@@ -37,15 +46,7 @@ export type MFAClaimValue = {
 };
 
 export type TypeInput = {
-    firstFactors?: (
-        | "emailpassword"
-        | "thirdparty"
-        | "otp-email"
-        | "otp-phone"
-        | "link-email"
-        | "link-phone"
-        | { type: "custom"; id: string }
-    )[];
+    firstFactors?: FirstFactor[];
 
     override?: {
         functions?: (
@@ -57,15 +58,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    firstFactors?: (
-        | "emailpassword"
-        | "thirdparty"
-        | "otp-email"
-        | "otp-phone"
-        | "link-email"
-        | "link-phone"
-        | { type: "custom"; id: string }
-    )[];
+    firstFactors?: FirstFactor[];
 
     override: {
         functions: (

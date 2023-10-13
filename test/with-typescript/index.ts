@@ -1871,14 +1871,22 @@ Supertokens.init({
                     ...oI,
 
                     getMFARequirementsForAuth: ({ completedFactors }) => {
-                        const factors = ["otp-email", "totp", "biometric"];
-                        const completedFromList = factors.filter((id) => completedFactors[id] !== undefined);
+                        const factors = ["otp-email", "totp", { type: "custom", id: "biometric" }] as const;
+                        const completedFromList = factors.filter(
+                            (fact) => completedFactors[typeof fact === "string" ? fact : fact.id] !== undefined
+                        );
                         if (completedFromList.length >= 2) {
                             // We have completed two factors
                             return [];
                         }
                         // Otherwise the next step is completing something from the rest of the list
-                        return [{ oneOf: factors.filter((id) => completedFactors[id] === undefined) }];
+                        return [
+                            {
+                                oneOf: factors.filter(
+                                    (fact) => completedFactors[typeof fact === "string" ? fact : fact.id] === undefined
+                                ),
+                            },
+                        ];
                     },
                 }),
             },

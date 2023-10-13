@@ -4,7 +4,18 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, User } from "../../types";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
-export declare type MFARequirement = string;
+export declare type FirstFactor =
+    | "emailpassword"
+    | "thirdparty"
+    | "otp-email"
+    | "otp-phone"
+    | "link-email"
+    | "link-phone"
+    | {
+          type: "custom";
+          id: string;
+      };
+export declare type MFARequirement = FirstFactor | "totp";
 export declare type MFARequirementList = (
     | {
           oneOf: MFARequirement[];
@@ -19,18 +30,7 @@ export declare type MFAClaimValue = {
     n: string[];
 };
 export declare type TypeInput = {
-    firstFactors?: (
-        | "emailpassword"
-        | "thirdparty"
-        | "otp-email"
-        | "otp-phone"
-        | "link-email"
-        | "link-phone"
-        | {
-              type: "custom";
-              id: string;
-          }
-    )[];
+    firstFactors?: FirstFactor[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -40,18 +40,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    firstFactors?: (
-        | "emailpassword"
-        | "thirdparty"
-        | "otp-email"
-        | "otp-phone"
-        | "link-email"
-        | "link-phone"
-        | {
-              type: "custom";
-              id: string;
-          }
-    )[];
+    firstFactors?: FirstFactor[];
     override: {
         functions: (
             originalImplementation: RecipeInterface,
