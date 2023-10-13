@@ -29,6 +29,7 @@ import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
 import AccountLinking from "../../recipe/accountlinking";
+import MultiFactorAuth from "../../recipe/multifactorauth";
 
 UserRoles.init({
     override: {
@@ -976,12 +977,13 @@ let epConfig: EPTypeInput = {
     override: {},
 };
 
+const appInfo = {
+    apiDomain: "",
+    appName: "",
+    websiteDomain: "",
+};
 let config: TypeInput = {
-    appInfo: {
-        apiDomain: "",
-        appName: "",
-        websiteDomain: "",
-    },
+    appInfo,
     recipeList: [Session.init(sessionConfig), EmailPassword.init(epConfig)],
     isInServerlessEnv: true,
     framework: "express",
@@ -1827,3 +1829,92 @@ async function accountLinkingFuncsTest() {
         ),
     };
 }
+
+Supertokens.init({
+    appInfo,
+    recipeList: [EmailPassword.init(), MultiFactorAuth.init(), Session.init()],
+});
+
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        MultiFactorAuth.init({
+            // firstFactor defaults to all factors added by auth recipes
+            // emailpassword -> [emailpassword], passwordless -> [otp-phone, otp-email, link-phone, link-email], thirdparty -> [thirdparty], etc
+            firstFactors: ["emailpassword"],
+        }),
+        Session.init(),
+    ],
+});
+
+// const noMFARequired
+MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([]);
+MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([
+    { oneOf: ["emailpassword", "thirdparty"] }, // We can include the first factors here... that feels a bit weird but it works.
+    { oneOf: ["totp", "otp-phone"] }, // We require either totp or otp-phone
+]);
+
+// Any X of List is a bit weird to implement, but also a fairly niche thing I think.
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        MultiFactorAuth.init({
+            firstFactors: ["emailpassword", "otp-phone", "link-phone"],
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+
+                    getMFARequirementsForAuth: ({ completedFactors }) => {
+                        const factors = ["otp-email", "totp", { type: "custom", id: "biometric" }] as const;
+                        const completedFromList = factors.filter(
+                            (fact) => completedFactors[typeof fact === "string" ? fact : fact.id] !== undefined
+                        );
+                        if (completedFromList.length >= 2) {
+                            // We have completed two factors
+                            return [];
+                        }
+                        // Otherwise the next step is completing something from the rest of the list
+                        return [
+                            {
+                                oneOf: factors.filter(
+                                    (fact) => completedFactors[typeof fact === "string" ? fact : fact.id] === undefined
+                                ),
+                            },
+                        ];
+                    },
+                }),
+            },
+        }),
+        Session.init(),
+    ],
+});
+
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        MultiFactorAuth.init({
+            firstFactors: ["emailpassword", "otp-email", "link-email"],
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+                    getMFARequirementsForAuth: () => ["otp-phone"],
+                    isAllowedToSetupFactor: (input) => {
+                        return oI.isAllowedToSetupFactor({ ...input, mfaRequirementsForAuth: ["otp-phone"] });
+                    },
+                }),
+            },
+        }),
+        Session.init(),
+    ],
+});
