@@ -478,7 +478,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
     });
 
     describe("isEmailVerifiedGET tests", function () {
-        it("calling isEmailVerifiedGET  gives false for currently logged in user if email is not verified, and does not update session", async function () {
+        it("calling isEmailVerifiedGET  gives false for currently logged in user if email is not verified, and updates session", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -555,12 +555,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(response.body.isVerified === false);
 
             let tokens = extractInfoFromResponse(response);
-            assert(tokens.accessToken === undefined);
-            assert(tokens.accessTokenFromAny === undefined);
-            assert(tokens.accessTokenFromHeader === undefined);
+            assert.notStrictEqual(tokens.accessTokenFromAny, undefined);
         });
 
-        it("calling isEmailVerifiedGET gives true for currently logged in user if email is verified, and does not update session", async function () {
+        it("calling isEmailVerifiedGET gives true for currently logged in user if email is verified, and updates session", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -643,9 +641,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(response.body.isVerified === true);
 
             let tokens = extractInfoFromResponse(response);
-            assert(tokens.accessToken === undefined);
-            assert(tokens.accessTokenFromAny === undefined);
-            assert(tokens.accessTokenFromHeader === undefined);
+            assert.notStrictEqual(tokens.accessTokenFromAny, undefined);
         });
 
         it("calling isEmailVerifiedGET gives false for currently logged in user if email is not verified, and updates session if needed", async function () {
@@ -928,7 +924,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(userInCallback.recipeUserId.getAsString() === epUser.loginMethods[0].recipeUserId.getAsString());
         });
 
-        it("calling generateEmailVerifyTokenPOST gives already verified for currently logged in user if email is verified, and does not update session", async function () {
+        it("calling generateEmailVerifyTokenPOST gives already verified for currently logged in user if email is verified, and updates session", async function () {
             let userInCallback = undefined;
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
@@ -1021,9 +1017,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(response.body.status === "EMAIL_ALREADY_VERIFIED_ERROR");
 
             let tokens = extractInfoFromResponse(response);
-            assert(tokens.accessToken === undefined);
-            assert(tokens.accessTokenFromAny === undefined);
-            assert(tokens.accessTokenFromHeader === undefined);
+            assert.notStrictEqual(tokens.accessTokenFromAny, undefined);
 
             assert(userInCallback === undefined);
         });

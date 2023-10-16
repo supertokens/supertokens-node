@@ -19,6 +19,7 @@ let SuperTokens = require("../..");
 let CustomFramework = require("../../framework/custom");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/custom");
+let { Headers } = require("cross-fetch");
 
 describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, function () {
     beforeEach(async function () {
