@@ -93,9 +93,7 @@ export default function getAPIInterface(): APIInterface {
                         newSession,
                     };
                 } else {
-                    if ((await session.getClaimValue(EmailVerificationClaim)) !== false) {
-                        await session.setClaimValue(EmailVerificationClaim, false, userContext);
-                    }
+                    await session.setClaimValue(EmailVerificationClaim, false, userContext);
 
                     return {
                         status: "OK",
