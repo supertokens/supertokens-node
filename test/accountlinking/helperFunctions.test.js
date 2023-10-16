@@ -29,6 +29,7 @@ let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
 let EmailVerification = require("../../recipe/emailverification");
 let ThirdParty = require("../../recipe/thirdparty");
+let Multitenancy = require("../../recipe/multitenancy");
 let AccountLinking = require("../../recipe/accountlinking");
 let AccountLinkingRecipe = require("../../lib/build/recipe/accountlinking/recipe").default;
 
@@ -1137,6 +1138,70 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
     });
 
     describe("listUsersByAccountInfo tests", function () {
+        it("listUsersByAccountInfo filters by tenantId", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Multitenancy.init(),
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
+            await Multitenancy.createOrUpdateTenant("tenant1", {
+                thirdPartyEnabled: true,
+                emailPasswordEnabled: true,
+            });
+
+            const { user: pubUser } = await EmailPassword.signUp("public", "test@example.com", "password123");
+
+            const { user: t1User } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "tenant1",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+
+            let t1UserList = await supertokens.listUsersByAccountInfo("tenant1", {
+                email: "test@example.com",
+            });
+
+            assert.strictEqual(t1UserList.length, 1);
+            assert.strictEqual(t1UserList[0].id, t1User.id);
+
+            let pubUserList = await supertokens.listUsersByAccountInfo("public", {
+                email: "test@example.com",
+            });
+            assert.strictEqual(pubUserList.length, 1);
+            assert.strictEqual(pubUserList[0].id, pubUser.id);
+        });
+
         it("listUsersByAccountInfo does and properly", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
 
@@ -1239,6 +1304,67 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
 
             assert(users.length === 2);
+        });
+    });
+
+    describe("getUsers tests", function () {
+        it("getUsers filters by tenantId", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Multitenancy.init(),
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
+            await Multitenancy.createOrUpdateTenant("tenant1", {
+                thirdPartyEnabled: true,
+                emailPasswordEnabled: true,
+            });
+
+            const { user: pubUser } = await EmailPassword.signUp("public", "test@example.com", "password123");
+
+            const { user: t1User } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "tenant1",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+
+            let { users: t1UserList } = await supertokens.getUsersNewestFirst({ tenantId: "tenant1" });
+            assert.strictEqual(t1UserList.length, 1);
+            assert.strictEqual(t1UserList[0].id, t1User.id);
+
+            let { users: pubUserList } = await supertokens.getUsersNewestFirst({ tenantId: "public" });
+            assert.strictEqual(pubUserList.length, 1);
+            assert.strictEqual(pubUserList[0].id, pubUser.id);
         });
     });
 

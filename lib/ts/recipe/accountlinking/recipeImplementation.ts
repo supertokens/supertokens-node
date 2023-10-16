@@ -30,12 +30,14 @@ export default function getRecipeImplementation(
         getUsers: async function (
             this: RecipeInterface,
             {
+                tenantId,
                 timeJoinedOrder,
                 limit,
                 paginationToken,
                 includeRecipeIds,
                 query,
             }: {
+                tenantId: string;
                 timeJoinedOrder: "ASC" | "DESC";
                 limit?: number;
                 paginationToken?: string;
@@ -50,7 +52,7 @@ export default function getRecipeImplementation(
             if (includeRecipeIds !== undefined) {
                 includeRecipeIdsStr = includeRecipeIds.join(",");
             }
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+            let response = await querier.sendGetRequest(new NormalisedURLPath(`${tenantId ?? "public"}/users`), {
                 includeRecipeIds: includeRecipeIdsStr,
                 timeJoinedOrder: timeJoinedOrder,
                 limit: limit,
