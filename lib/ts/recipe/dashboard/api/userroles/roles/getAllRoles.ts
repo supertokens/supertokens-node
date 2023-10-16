@@ -1,26 +1,32 @@
-import { getAllRoles, getPermissionsForRole } from "../../../../userroles";
+import UserRoles from "../../../../userroles";
 
 import { APIFunction, APIInterface, APIOptions } from "../../../types";
 
 type Roles = Array<{ role: string; permissions: string[] }>;
 
-const allRoles: APIFunction = async (
+type Response =
+    | {
+          status: "OK";
+          roles: Roles;
+      }
+    | {
+          status: "FEATURE_NOT_ENABLED_ERROR";
+      };
+
+const getAllRoles: APIFunction = async (
     _: APIInterface,
     __: string,
     ___: APIOptions,
     userContext: any
-): Promise<{
-    status: "OK";
-    roles: Roles;
-}> => {
-    const response = await getAllRoles(userContext);
+): Promise<Response> => {
+    const response = await UserRoles.getAllRoles(userContext);
 
     let roles: Roles = [];
 
     for (let i = 0; i < response.roles.length; i++) {
         const role = response.roles[i];
         try {
-            const res = await getPermissionsForRole(role);
+            const res = await UserRoles.getPermissionsForRole(role);
 
             if (res.status === "OK") {
                 roles.push({
@@ -37,4 +43,4 @@ const allRoles: APIFunction = async (
     };
 };
 
-export default allRoles;
+export default getAllRoles;

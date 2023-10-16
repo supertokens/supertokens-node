@@ -40,6 +40,9 @@ import {
     USERROLES_LIST_API,
     USERROLES_CREATE_ROLE_API,
     USERROLES_DELETE_ROLE_API,
+    USERROLES_ADD_PERMISSIONS_API,
+    USERROLES_REMOVE_PERMISSIONS_API,
+    USERROLES_GET_PERMISSIONS_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -69,6 +72,9 @@ import { userUnlink } from "./api/userdetails/userUnlinkGet";
 import getAllRoles from "./api/userroles/roles/getAllRoles";
 import createRole from "./api/userroles/roles/createRole";
 import deleteRole from "./api/userroles/roles/deleteRole";
+import addPermissions from "./api/userroles/permissions/addPermissions";
+import removePermissionsFromRole from "./api/userroles/permissions/removePermissions";
+import getPermissionsForRole from "./api/userroles/permissions/getPermissionsForRole";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -277,6 +283,30 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "delete",
             },
+            {
+                id: USERROLES_GET_PERMISSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(USERROLES_GET_PERMISSIONS_API)
+                ),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USERROLES_ADD_PERMISSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(USERROLES_ADD_PERMISSIONS_API)
+                ),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: USERROLES_REMOVE_PERMISSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(USERROLES_REMOVE_PERMISSIONS_API)
+                ),
+                disabled: false,
+                method: "put",
+            },
         ];
     };
 
@@ -375,6 +405,12 @@ export default class Recipe extends RecipeModule {
             apiFunction = createRole;
         } else if (id === USERROLES_DELETE_ROLE_API) {
             apiFunction = deleteRole;
+        } else if (id === USERROLES_ADD_PERMISSIONS_API) {
+            apiFunction = addPermissions;
+        } else if (id === USERROLES_REMOVE_PERMISSIONS_API) {
+            apiFunction = removePermissionsFromRole;
+        } else if ((id = USERROLES_GET_PERMISSIONS_API)) {
+            apiFunction = getPermissionsForRole;
         }
 
         // If the id doesnt match any APIs return false

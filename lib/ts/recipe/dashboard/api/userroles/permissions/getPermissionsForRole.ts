@@ -3,16 +3,16 @@ import { APIInterface, APIOptions } from "../../../types";
 
 import STError from "../../../../../error";
 
-const deleteRole = async (
+const getPermissionsForRole = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
     __: any
 ): Promise<{
     status: "OK";
-    didRoleExist: boolean;
+    permissions: string[];
 }> => {
-    const role = options.req.getKeyValueFromQuery("userId");
+    const role = options.req.getKeyValueFromQuery("role");
 
     if (role === undefined) {
         throw new STError({
@@ -21,8 +21,16 @@ const deleteRole = async (
         });
     }
 
-    const response = await UserRoles.deleteRole(role);
+    const response = await UserRoles.getPermissionsForRole(role);
+
+    if (response.status === "UNKNOWN_ROLE_ERROR") {
+        return {
+            status: "OK",
+            permissions: [],
+        };
+    }
+
     return response;
 };
 
-export default deleteRole;
+export default getPermissionsForRole;
