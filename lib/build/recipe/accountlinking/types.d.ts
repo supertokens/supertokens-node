@@ -54,6 +54,7 @@ export declare type TypeNormalisedInput = {
 };
 export declare type RecipeInterface = {
     getUsers: (input: {
+        tenantId: string;
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
         paginationToken?: string;
