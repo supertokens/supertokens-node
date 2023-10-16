@@ -20,4 +20,7 @@ export declare const USERROLES_DELETE_ROLE_API = "/api/userroles/role";
 export declare const USERROLES_ADD_PERMISSIONS_API = "/api/userroles/role/permissions";
 export declare const USERROLES_GET_PERMISSIONS_API = "/api/userroles/role/permissions";
 export declare const USERROLES_REMOVE_PERMISSIONS_API = "/api/userroles/role/permissions/remove";
+export declare const USERROLES_ADD_ROLE_TO_USER_API = "/api/userroles/user/roles";
+export declare const USERROLES_REMOVE_ROLE_FROM_USER_API = "/api/userroles/user/roles";
+export declare const USERROLES_USER_ROLES_LIST_API = "/api/userroles/user/roles";
 export declare const UNLINK_USER = "/api/user/unlink";

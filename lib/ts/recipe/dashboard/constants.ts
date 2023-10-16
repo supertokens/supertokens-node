@@ -36,4 +36,8 @@ export const USERROLES_ADD_PERMISSIONS_API = "/api/userroles/role/permissions";
 export const USERROLES_GET_PERMISSIONS_API = "/api/userroles/role/permissions";
 export const USERROLES_REMOVE_PERMISSIONS_API = "/api/userroles/role/permissions/remove";
 
+export const USERROLES_ADD_ROLE_TO_USER_API = "/api/userroles/user/roles";
+export const USERROLES_REMOVE_ROLE_FROM_USER_API = "/api/userroles/user/roles";
+export const USERROLES_USER_ROLES_LIST_API = "/api/userroles/user/roles";
+
 export const UNLINK_USER = "/api/user/unlink";

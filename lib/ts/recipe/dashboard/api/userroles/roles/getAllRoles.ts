@@ -13,13 +13,8 @@ type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       };
 
-const getAllRoles: APIFunction = async (
-    _: APIInterface,
-    __: string,
-    ___: APIOptions,
-    userContext: any
-): Promise<Response> => {
-    const response = await UserRoles.getAllRoles(userContext);
+const getAllRoles: APIFunction = async (_: APIInterface, __: string, ___: APIOptions, ____: any): Promise<Response> => {
+    const response = await UserRoles.getAllRoles();
 
     let roles: Roles = [];
 

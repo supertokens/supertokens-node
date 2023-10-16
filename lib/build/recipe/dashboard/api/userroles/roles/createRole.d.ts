@@ -6,7 +6,6 @@ declare const createRole: (
     options: APIOptions,
     ___: any
 ) => Promise<{
-    status: "OK";
-    createdNewRole: boolean;
+    status: "OK" | "ROLE_ALREADY_EXITS";
 }>;
 export default createRole;

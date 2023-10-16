@@ -6,7 +6,6 @@ declare const deleteRole: (
     options: APIOptions,
     __: any
 ) => Promise<{
-    status: "OK";
-    didRoleExist: boolean;
+    status: "OK" | "ROLE_DO_NOT_EXISTS";
 }>;
 export default deleteRole;

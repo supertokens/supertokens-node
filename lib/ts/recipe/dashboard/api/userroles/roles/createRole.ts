@@ -9,8 +9,7 @@ const createRole = async (
     options: APIOptions,
     ___: any
 ): Promise<{
-    status: "OK";
-    createdNewRole: boolean;
+    status: "OK" | "ROLE_ALREADY_EXITS";
 }> => {
     const requestBody = await options.req.getJSONBody();
     const permissions = requestBody.permissions;
@@ -31,7 +30,16 @@ const createRole = async (
     }
 
     const response = await UserRoles.createNewRoleOrAddPermissions(role, permissions);
-    return response;
+
+    if (response.status === "OK" && response.createdNewRole === false) {
+        return {
+            status: "ROLE_ALREADY_EXITS",
+        };
+    }
+
+    return {
+        status: "OK",
+    };
 };
 
 export default createRole;

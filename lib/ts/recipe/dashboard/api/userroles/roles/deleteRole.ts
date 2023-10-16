@@ -9,8 +9,7 @@ const deleteRole = async (
     options: APIOptions,
     __: any
 ): Promise<{
-    status: "OK";
-    didRoleExist: boolean;
+    status: "OK" | "ROLE_DO_NOT_EXISTS";
 }> => {
     const role = options.req.getKeyValueFromQuery("userId");
 
@@ -22,7 +21,15 @@ const deleteRole = async (
     }
 
     const response = await UserRoles.deleteRole(role);
-    return response;
+
+    if (response.status === "OK" && response.didRoleExist === false) {
+        return {
+            status: "ROLE_DO_NOT_EXISTS",
+        };
+    }
+    return {
+        status: "OK",
+    };
 };
 
 export default deleteRole;
