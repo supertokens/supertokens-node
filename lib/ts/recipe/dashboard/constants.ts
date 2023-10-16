@@ -30,5 +30,7 @@ export const DASHBOARD_ANALYTICS_API = "/api/analytics";
 export const TENANTS_LIST_API = "/api/tenants/list";
 
 export const USERROLES_LIST_API = "/api/userroles/roles";
+export const USERROLES_CREATE_ROLE_API = "/api/userroles/role";
+export const USERROLES_DELETE_ROLE_API = "/api/userroles/role";
 
 export const UNLINK_USER = "/api/user/unlink";

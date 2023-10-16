@@ -1,0 +1,23 @@
+import { getPermissionsForRole as getPermissions } from "../../../../userroles";
+
+import { APIInterface, APIOptions } from "../../../types";
+
+import STError from "../../../../../error";
+
+const getPermissionsForRole = async ( _: APIInterface, ___: string, options: APIOptions, __: any)=>{
+    const role = options.req.getKeyValueFromQuery("role")
+
+    if (role === undefined) {
+        throw new STError({
+            message: "Required parameter 'role' is missing or has an invalid type",
+            type: STError.BAD_INPUT_ERROR,
+        });
+    }
+
+    const response = await getPermissions(role);
+
+    if(response.status === "OK"){
+        response.permissions
+    }
+    return []
+}
