@@ -29,4 +29,6 @@ export const SEARCH_TAGS_API = "/api/search/tags";
 export const DASHBOARD_ANALYTICS_API = "/api/analytics";
 export const TENANTS_LIST_API = "/api/tenants/list";
 
+export const USERROLES_LIST_API = "/api/userroles/roles";
+
 export const UNLINK_USER = "/api/user/unlink";

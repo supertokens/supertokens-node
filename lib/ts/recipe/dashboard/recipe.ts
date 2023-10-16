@@ -37,6 +37,7 @@ import {
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
     UNLINK_USER,
+    USERROLES_LIST_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -63,6 +64,7 @@ import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
 import listTenants from "./api/listTenants";
 import { userUnlink } from "./api/userdetails/userUnlinkGet";
+import { getAllRoles } from "../userroles";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -253,6 +255,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "get",
             },
+            {
+                id: USERROLES_LIST_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_LIST_API)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -345,6 +353,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = listTenants;
         } else if (id === UNLINK_USER) {
             apiFunction = userUnlink;
+        } else if (id === USERROLES_LIST_API) {
+            apiFunction = getAllRoles;
         }
 
         // If the id doesnt match any APIs return false
