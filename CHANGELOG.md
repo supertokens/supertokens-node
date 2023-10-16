@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 -   `getUsersNewestFirst` and `getUsersOldestFirst` will now properly filter users by tenantId.
+-   Fixes issue with missed email verification claim update that caused the frontend pre built UI to call the email verify API multiple times.
 
 ## [16.3.1] - 2023-10-12
 
