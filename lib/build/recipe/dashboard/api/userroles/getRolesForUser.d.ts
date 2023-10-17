@@ -8,9 +8,10 @@ declare const getRolesForUser: (
 ) => Promise<
     | {
           status: "OK";
+          roles: string[];
       }
     | {
-          status: "UNKNOWN_ROLE_ERROR";
+          status: "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
       }
 >;
 export default getRolesForUser;

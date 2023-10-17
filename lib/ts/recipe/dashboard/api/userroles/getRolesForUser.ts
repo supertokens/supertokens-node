@@ -1,5 +1,6 @@
 import { APIInterface, APIOptions } from "../../types";
 import UserRoles from "../../../userroles";
+import UserRolesRecipe from "../../../userroles/recipe";
 
 import STError from "../../../../error";
 
@@ -11,13 +12,22 @@ const getRolesForUser = async (
 ): Promise<
     | {
           status: "OK";
+          roles: string[];
       }
     | {
-          status: "UNKNOWN_ROLE_ERROR";
+          status: "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
       }
 > => {
     const userId = options.req.getKeyValueFromQuery("userId");
     const tenantId = options.req.getKeyValueFromQuery("tenantId") ?? "public";
+
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
 
     if (userId === undefined || typeof userId !== "string") {
         throw new STError({

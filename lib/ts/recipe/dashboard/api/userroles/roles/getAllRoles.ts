@@ -1,4 +1,5 @@
 import UserRoles from "../../../../userroles";
+import UserRolesRecipe from "../../../../userroles/recipe";
 
 import { APIFunction, APIInterface, APIOptions } from "../../../types";
 
@@ -14,6 +15,14 @@ type Response =
       };
 
 const getAllRoles: APIFunction = async (_: APIInterface, __: string, ___: APIOptions, ____: any): Promise<Response> => {
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
+
     const response = await UserRoles.getAllRoles();
 
     let roles: Roles = [];
