@@ -38,14 +38,10 @@ import {
     VALIDATE_KEY_API,
     UNLINK_USER,
     USERROLES_LIST_API,
-    USERROLES_CREATE_ROLE_API,
-    USERROLES_DELETE_ROLE_API,
-    USERROLES_ADD_PERMISSIONS_API,
+    USERROLES_ROLE_API,
     USERROLES_REMOVE_PERMISSIONS_API,
-    USERROLES_GET_PERMISSIONS_API,
-    USERROLES_ADD_ROLE_TO_USER_API,
-    USERROLES_REMOVE_ROLE_FROM_USER_API,
-    USERROLES_USER_ROLES_LIST_API,
+    USERROLES_PERMISSIONS_API,
+    USERROLES_USER_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -278,30 +274,26 @@ export default class Recipe extends RecipeModule {
                 method: "get",
             },
             {
-                id: USERROLES_CREATE_ROLE_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_CREATE_ROLE_API)),
+                id: USERROLES_ROLE_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_ROLE_API)),
                 disabled: false,
                 method: "post",
             },
             {
-                id: USERROLES_DELETE_ROLE_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_DELETE_ROLE_API)),
+                id: USERROLES_ROLE_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_ROLE_API)),
                 disabled: false,
                 method: "delete",
             },
             {
-                id: USERROLES_GET_PERMISSIONS_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(USERROLES_GET_PERMISSIONS_API)
-                ),
+                id: USERROLES_PERMISSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_PERMISSIONS_API)),
                 disabled: false,
                 method: "get",
             },
             {
-                id: USERROLES_ADD_PERMISSIONS_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(USERROLES_ADD_PERMISSIONS_API)
-                ),
+                id: USERROLES_PERMISSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_PERMISSIONS_API)),
                 disabled: false,
                 method: "put",
             },
@@ -314,26 +306,20 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
-                id: USERROLES_USER_ROLES_LIST_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(USERROLES_USER_ROLES_LIST_API)
-                ),
+                id: USERROLES_USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_USER_API)),
                 disabled: false,
                 method: "put",
             },
             {
-                id: USERROLES_ADD_ROLE_TO_USER_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(USERROLES_ADD_ROLE_TO_USER_API)
-                ),
+                id: USERROLES_USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_USER_API)),
                 disabled: false,
                 method: "put",
             },
             {
-                id: USERROLES_REMOVE_ROLE_FROM_USER_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(USERROLES_REMOVE_ROLE_FROM_USER_API)
-                ),
+                id: USERROLES_USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_USER_API)),
                 disabled: false,
                 method: "delete",
             },
@@ -431,22 +417,35 @@ export default class Recipe extends RecipeModule {
             apiFunction = userUnlink;
         } else if (id === USERROLES_LIST_API) {
             apiFunction = getAllRoles;
-        } else if (id === USERROLES_CREATE_ROLE_API) {
-            apiFunction = createRole;
-        } else if (id === USERROLES_DELETE_ROLE_API) {
-            apiFunction = deleteRole;
-        } else if (id === USERROLES_ADD_PERMISSIONS_API) {
-            apiFunction = addPermissions;
+        } else if (id === USERROLES_ROLE_API) {
+            if (req.getMethod() === "post") {
+                apiFunction = createRole;
+            }
+
+            if (req.getMethod() === "delete") {
+                apiFunction = deleteRole;
+            }
+        } else if (id === USERROLES_PERMISSIONS_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = getPermissionsForRole;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction = addPermissions;
+            }
         } else if (id === USERROLES_REMOVE_PERMISSIONS_API) {
             apiFunction = removePermissionsFromRole;
-        } else if ((id = USERROLES_GET_PERMISSIONS_API)) {
-            apiFunction = getPermissionsForRole;
-        } else if (id === USERROLES_ADD_ROLE_TO_USER_API) {
-            apiFunction = addRoleToUser;
-        } else if (id === USERROLES_USER_ROLES_LIST_API) {
-            apiFunction = getRolesForUser;
-        } else if (id === USERROLES_REMOVE_ROLE_FROM_USER_API) {
-            apiFunction = removeUserRole;
+        } else if (id === USERROLES_USER_API) {
+            if (req.getMethod() === "put") {
+                apiFunction = addRoleToUser;
+            }
+
+            if (req.getMethod() === "get") {
+                apiFunction = getRolesForUser;
+            }
+            if (req.getMethod() === "delete") {
+                apiFunction = removeUserRole;
+            }
         }
 
         // If the id doesnt match any APIs return false
