@@ -5,7 +5,7 @@ import STError from "../../../../error";
 
 const addRoleToUser = async (
     _: APIInterface,
-    ___: string,
+    tenantId: string,
     options: APIOptions,
     __: any
 ): Promise<
@@ -23,7 +23,6 @@ const addRoleToUser = async (
 
     const userId = requestBody.userId;
     const role = requestBody.role;
-    const tenantId = requestBody.tenantId ?? "public";
 
     if (role === undefined || typeof role !== "string") {
         throw new STError({

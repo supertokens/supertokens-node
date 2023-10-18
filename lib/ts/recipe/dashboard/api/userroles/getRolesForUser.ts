@@ -6,7 +6,7 @@ import STError from "../../../../error";
 
 const getRolesForUser = async (
     _: APIInterface,
-    ___: string,
+    tenantId: string,
     options: APIOptions,
     __: any
 ): Promise<
@@ -19,7 +19,6 @@ const getRolesForUser = async (
       }
 > => {
     const userId = options.req.getKeyValueFromQuery("userId");
-    const tenantId = options.req.getKeyValueFromQuery("tenantId") ?? "public";
 
     try {
         UserRolesRecipe.getInstanceOrThrowError();

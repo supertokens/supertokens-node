@@ -2,7 +2,7 @@
 import { APIInterface, APIOptions } from "../../types";
 declare const getRolesForUser: (
     _: APIInterface,
-    ___: string,
+    tenantId: string,
     options: APIOptions,
     __: any
 ) => Promise<
