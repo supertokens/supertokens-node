@@ -142,6 +142,12 @@ export default class Recipe extends RecipeModule {
                 method: "get",
             },
             {
+                id: DASHBOARD_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase("/roles")),
+                disabled: false,
+                method: "get",
+            },
+            {
                 id: SIGN_IN_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SIGN_IN_API)),
                 disabled: false,
@@ -443,6 +449,7 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "get") {
                 apiFunction = getRolesForUser;
             }
+
             if (req.getMethod() === "delete") {
                 apiFunction = removeUserRole;
             }

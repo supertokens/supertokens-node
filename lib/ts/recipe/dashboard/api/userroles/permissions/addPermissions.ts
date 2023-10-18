@@ -16,7 +16,7 @@ const addPermissions = async (
     const role = requestBody.role;
     const permissions = requestBody.permissions;
 
-    if (role === undefined || typeof role === "string") {
+    if (role === undefined || typeof role !== "string") {
         throw new STError({
             message: "Required parameter 'role' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,

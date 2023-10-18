@@ -14,7 +14,7 @@ const getPermissionsForRole = async (
 }> => {
     const role = options.req.getKeyValueFromQuery("role");
 
-    if (role === undefined) {
+    if (role === undefined || typeof role !== "string") {
         throw new STError({
             message: "Required parameter 'role' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
