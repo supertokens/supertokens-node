@@ -16,10 +16,8 @@ const removeUserRole = async (
           status: "UNKNOWN_ROLE_ERROR";
       }
 > => {
-    const requestBody = await options.req.getJSONBody();
-
-    const userId = requestBody.userId;
-    const role = requestBody.role;
+    const userId = options.req.getKeyValueFromQuery("userId");
+    const role = options.req.getKeyValueFromQuery("role");
 
     if (role === undefined || typeof role !== "string") {
         throw new STError({

@@ -15,7 +15,7 @@ const getRolesForUser = async (
           roles: string[];
       }
     | {
-          status: "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
+          status: "FEATURE_NOT_ENABLED_ERROR";
       }
 > => {
     const userId = options.req.getKeyValueFromQuery("userId");
