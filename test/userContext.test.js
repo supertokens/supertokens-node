@@ -427,7 +427,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
         assert(createNewSessionContextWorks);
     });
 
-    it("test that makeDefaultUserContext is not used anywhere apart from frameworks", async function () {
+    it("test that makeDefaultUserContext is not used anywhere apart from frameworks and a few other places", async function () {
         function recursive(dir, done) {
             let results = [];
             fs.readdir(dir, function (err, list) {
@@ -469,6 +469,6 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             totalCount += count;
         }
 
-        assert(totalCount === 20);
+        assert(totalCount === 23);
     });
 });

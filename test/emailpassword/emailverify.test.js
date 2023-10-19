@@ -1408,7 +1408,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let infoFromResponse2 = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);
         assert.deepStrictEqual(response.body.status, "EMAIL_ALREADY_VERIFIED_ERROR");
-        assert.strictEqual(infoFromResponse2.frontToken, undefined);
+        assert.notStrictEqual(infoFromResponse2.frontToken, undefined);
 
         // now we mark the email as unverified and try again
         await EmailVerification.unverifyEmail(userId, emailId);
