@@ -52,6 +52,24 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 5. If all tests pass the output should be:  
    ![node tests passing](https://github.com/supertokens/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png)
 
+### To be able to run and debug tests from vscode
+
+1. Install the extension - https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-mocha-test-adapter
+2. Add the following to your vscode settings:
+    ```json
+    {
+        // ...,
+        "mochaExplorer.env": {
+            "TEST_MODE": "testing",
+            "INSTALL_PATH": "../supertokens-root"
+        }
+    }
+    ```
+3. In `lib/tsconfig.json`, change `"sourceMap"` to `true`
+4. Run `npm run build`
+
+You should now be able to see tests on the VSCode's testing panel and run/debug from there.
+
 ## Pull Request
 
 1. Before submitting a pull request make sure all tests have passed
