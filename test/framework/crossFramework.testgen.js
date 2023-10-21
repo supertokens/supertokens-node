@@ -37,6 +37,11 @@ const loopbackRoutes = [
         verifySession: true,
     },
     {
+        path: "/session/multipleMerge",
+        method: "post",
+        verifySession: true,
+    },
+    {
         path: "/session/verify/optionalCSRF",
         method: "post",
         verifySession: true,
@@ -95,6 +100,7 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                                 route.handler(
                                     ExpressFramework.wrapRequest(req),
                                     ExpressFramework.wrapResponse(res),
+                                    req.session,
                                     next
                                 ),
                         ];
@@ -181,6 +187,7 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                                 route.handler(
                                     FastifyFramework.wrapRequest(req),
                                     FastifyFramework.wrapResponse(res),
+                                    req.session,
                                     (err) => {
                                         throw err;
                                     }
@@ -260,6 +267,7 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                                 await route.handler(
                                     HapiFramework.wrapRequest(req),
                                     HapiFramework.wrapResponse(res),
+                                    req.session,
                                     (err) => {
                                         throw err;
                                     }
@@ -334,9 +342,14 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                     for (const route of routes) {
                         const handlers = [
                             (ctx) =>
-                                route.handler(KoaFramework.wrapRequest(ctx), KoaFramework.wrapResponse(ctx), (err) => {
-                                    throw err;
-                                }),
+                                route.handler(
+                                    KoaFramework.wrapRequest(ctx),
+                                    KoaFramework.wrapResponse(ctx),
+                                    ctx.session,
+                                    (err) => {
+                                        throw err;
+                                    }
+                                ),
                         ];
                         if (route.verifySession) {
                             handlers.unshift(koaVerifySession(route.verifySessionOpts));

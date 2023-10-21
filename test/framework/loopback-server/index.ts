@@ -52,6 +52,19 @@ class Verify {
         };
     }
 }
+class MultipleMerge {
+    constructor(@inject(RestBindings.Http.CONTEXT) private ctx: MiddlewareContext) {}
+    @post("/session/multipleMerge")
+    @intercept(verifySession())
+    @response(200)
+    async handler() {
+        const session = (this.ctx as any).session as Session.SessionContainer;
+        await session.mergeIntoAccessTokenPayload({ test1: Date.now() });
+        await session.mergeIntoAccessTokenPayload({ test2: Date.now() });
+        await session.mergeIntoAccessTokenPayload({ test3: Date.now() });
+        return "";
+    }
+}
 
 class VerifyOptionalCSRF {
     constructor(@inject(RestBindings.Http.CONTEXT) private ctx: MiddlewareContext) {}
@@ -88,6 +101,7 @@ if (process.env.TEST_SKIP_MIDDLEWARE !== "true") {
 app.controller(Create);
 app.controller(CreateThrowing);
 app.controller(Verify);
+app.controller(MultipleMerge);
 app.controller(Revoke);
 app.controller(VerifyOptionalCSRF);
 module.exports = app;
