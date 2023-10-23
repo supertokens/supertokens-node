@@ -87,6 +87,25 @@ __decorate(
     null
 );
 Verify = __decorate([__param(0, core_1.inject(rest_1.RestBindings.Http.CONTEXT))], Verify);
+let MultipleMerge = class MultipleMerge {
+    constructor(ctx) {
+        this.ctx = ctx;
+    }
+    async handler() {
+        const session = this.ctx.session;
+        await session.mergeIntoAccessTokenPayload({ test1: Date.now() });
+        await session.mergeIntoAccessTokenPayload({ test2: Date.now() });
+        await session.mergeIntoAccessTokenPayload({ test3: Date.now() });
+        return "";
+    }
+};
+__decorate(
+    [rest_1.post("/session/multipleMerge"), core_1.intercept(loopback_2.verifySession()), rest_1.response(200)],
+    MultipleMerge.prototype,
+    "handler",
+    null
+);
+MultipleMerge = __decorate([__param(0, core_1.inject(rest_1.RestBindings.Http.CONTEXT))], MultipleMerge);
 let VerifyOptionalCSRF = class VerifyOptionalCSRF {
     constructor(ctx) {
         this.ctx = ctx;
@@ -135,6 +154,7 @@ if (process.env.TEST_SKIP_MIDDLEWARE !== "true") {
 app.controller(Create);
 app.controller(CreateThrowing);
 app.controller(Verify);
+app.controller(MultipleMerge);
 app.controller(Revoke);
 app.controller(VerifyOptionalCSRF);
 module.exports = app;

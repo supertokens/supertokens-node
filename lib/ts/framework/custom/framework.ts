@@ -118,7 +118,14 @@ export class CollectingResponse extends BaseResponse {
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         if (allowDuplicateKey) {
-            this.headers.append(key, value);
+            /**
+                We only want to append if it does not already exist
+                For example if the caller is trying to add front token to the access control exposed headers property
+                we do not want to append if something else had already added it
+            */
+            if (!this.headers.get(key)?.includes(value)) {
+                this.headers.append(key, value);
+            }
         } else {
             this.headers.set(key, value);
         }
