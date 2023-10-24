@@ -9,7 +9,11 @@ export declare function doGetRequest(
     headers?: {
         [key: string]: string;
     }
-): Promise<any>;
+): Promise<{
+    jsonResponse: Record<string, any> | undefined;
+    status: number;
+    stringResponse: string;
+}>;
 export declare function doPostRequest(
     url: string,
     params: {
@@ -18,7 +22,11 @@ export declare function doPostRequest(
     headers?: {
         [key: string]: string;
     }
-): Promise<any>;
+): Promise<{
+    jsonResponse: Record<string, any> | undefined;
+    status: number;
+    stringResponse: string;
+}>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
     jwks: jose.JWTVerifyGetKey,

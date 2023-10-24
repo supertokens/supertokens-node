@@ -213,7 +213,10 @@ export class AWSResponse extends BaseResponse {
         sameSite: "strict" | "lax" | "none"
     ) => {
         let serialisedCookie = serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite);
-        this.event.supertokens.response.cookies.push(serialisedCookie);
+        this.event.supertokens.response.cookies = [
+            ...this.event.supertokens.response.cookies.filter((c) => !c.startsWith(key + "=")),
+            serialisedCookie,
+        ];
     };
 
     /**
@@ -265,8 +268,18 @@ export class AWSResponse extends BaseResponse {
                 }
             }
             if (supertokensHeaders[i].allowDuplicateKey && currentValue !== undefined) {
-                let newValue = `${currentValue}, ${supertokensHeaders[i].value}`;
-                headers[supertokensHeaders[i].key] = newValue;
+                /**
+                    We only want to append if it does not already exist
+                    For example if the caller is trying to add front token to the access control exposed headers property
+                    we do not want to append if something else had already added it
+                */
+                if (
+                    typeof currentValue !== "string" ||
+                    !currentValue.includes(supertokensHeaders[i].value.toString())
+                ) {
+                    let newValue = `${currentValue}, ${supertokensHeaders[i].value}`;
+                    headers[supertokensHeaders[i].key] = newValue;
+                }
             } else {
                 headers[supertokensHeaders[i].key] = supertokensHeaders[i].value;
             }
@@ -344,7 +357,7 @@ export const middleware = (handler?: Handler): Handler => {
             });
             return response.sendResponse();
         } catch (err) {
-            await supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response, userContext);
             if (response.responseSet) {
                 return response.sendResponse();
             }

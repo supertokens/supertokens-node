@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { logDebugMessage } from "../../../logger";
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 import { doGetRequest } from "./utils";
@@ -63,7 +64,16 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
             };
 
             const userInfoFromAccessToken = await doGetRequest("https://api.linkedin.com/v2/me", undefined, headers);
-            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.jsonResponse;
+
+            if (userInfoFromAccessToken.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
+                );
+                throw new Error(
+                    `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
+                );
+            }
 
             const emailAPIURL = "https://api.linkedin.com/v2/emailAddress";
             const userInfoFromEmail = await doGetRequest(
@@ -72,12 +82,23 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
                 headers
             );
 
-            if (userInfoFromEmail.elements && userInfoFromEmail.elements.length > 0) {
-                rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.elements[0]["handle~"].emailAddress;
+            if (userInfoFromEmail.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
+                );
+                throw new Error(
+                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
+                );
+            }
+
+            if (userInfoFromEmail.jsonResponse!.elements && userInfoFromEmail.jsonResponse!.elements.length > 0) {
+                rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.jsonResponse!.elements[0][
+                    "handle~"
+                ].emailAddress;
             }
             rawUserInfoFromProvider.fromUserInfoAPI = {
                 ...rawUserInfoFromProvider.fromUserInfoAPI,
-                ...userInfoFromEmail,
+                ...userInfoFromEmail.jsonResponse!,
             };
 
             return {

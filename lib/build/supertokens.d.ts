@@ -73,6 +73,6 @@ export default class SuperTokens {
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
     middleware: (request: BaseRequest, response: BaseResponse, userContext: any) => Promise<boolean>;
-    errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
+    errorHandler: (err: any, request: BaseRequest, response: BaseResponse, userContext: any) => Promise<void>;
     getRequestFromUserContext: (userContext: any | undefined) => BaseRequest | undefined;
 }

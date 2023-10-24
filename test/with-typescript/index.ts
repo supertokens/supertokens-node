@@ -1,10 +1,12 @@
 import * as express from "express";
+import { NextApiRequest, NextApiResponse } from "next";
 import Supertokens, { RecipeUserId, User, getUser } from "../..";
 import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
 import { middleware, errorHandler, SessionRequest } from "../../framework/express";
+import customFramework, { CollectingResponse, PreParsedRequest } from "../../framework/custom";
 import NextJS from "../../nextjs";
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import ThirdParty from "../../recipe/thirdparty";
@@ -30,6 +32,7 @@ import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
 import AccountLinking from "../../recipe/accountlinking";
 import MultiFactorAuth from "../../recipe/multifactorauth";
+import { verifySession as customVerifySession } from "../../recipe/session/framework/custom";
 
 UserRoles.init({
     override: {
@@ -916,10 +919,11 @@ Multitenancy.init({
     },
 });
 
-import { TypeInput } from "../../types";
+import { HTTPMethod, TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
+import { serialize } from "cookie";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {
@@ -1918,3 +1922,55 @@ Supertokens.init({
         Session.init(),
     ],
 });
+
+const nextAppDirMiddleware = customFramework.middleware<NextApiRequest>((req) => {
+    const query = Object.fromEntries(new URL(req.url!).searchParams.entries());
+
+    return new customFramework.PreParsedRequest({
+        method: req.method as HTTPMethod,
+        url: req.url!,
+        query: query,
+        headers: req.headers,
+        cookies: req.cookies,
+        getFormBody: () => req.body,
+        getJSONBody: () => req.body,
+    });
+});
+
+// We do not have Next13 typings here, but this is almost the exact same code we will have in the app dir example
+async function handleCall(req: NextApiRequest): Promise<any> {
+    const baseResponse = new customFramework.CollectingResponse();
+
+    const { handled, error } = await nextAppDirMiddleware(req, baseResponse);
+
+    if (error) {
+        throw error;
+    }
+    if (!handled) {
+        return {
+            status: 404,
+            body: "Not Found",
+        };
+    }
+
+    for (const respCookie of baseResponse.cookies) {
+        baseResponse.headers.append(
+            "Set-Cookie",
+            serialize(respCookie.key, respCookie.value, {
+                domain: respCookie.domain,
+                expires: new Date(respCookie.expires),
+                httpOnly: respCookie.httpOnly,
+                path: respCookie.path,
+                sameSite: respCookie.sameSite,
+                secure: respCookie.secure,
+            })
+        );
+    }
+
+    return { body: baseResponse.body, headers: baseResponse.headers, status: baseResponse.statusCode };
+}
+
+class NextResponse {}
+NextJS.getAppDirRequestHandler(NextResponse);
+
+customVerifySession({ checkDatabase: true })(new PreParsedRequest({} as any), new CollectingResponse());

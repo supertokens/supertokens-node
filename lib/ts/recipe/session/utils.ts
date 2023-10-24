@@ -137,16 +137,31 @@ export function validateAndNormaliseUserInput(
             ? new NormalisedURLPath("/")
             : new NormalisedURLPath(config.accessTokenPath);
     let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
-    let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
 
-    let cookieSameSite: "strict" | "lax" | "none" =
-        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
+    let cookieSameSite: (input: {
+        request: BaseRequest | undefined;
+        userContext: any;
+    }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        let protocolOfWebsiteDomain = getURLProtocol(
+            appInfo
+                .getOrigin({
+                    request: input.request,
+                    userContext: input.userContext,
+                })
+                .getAsStringDangerous()
+        );
+
+        return appInfo.topLevelAPIDomain !== appInfo.getTopLevelWebsiteDomain(input) ||
+            protocolOfAPIDomain !== protocolOfWebsiteDomain
             ? "none"
             : "lax";
-    cookieSameSite =
-        config === undefined || config.cookieSameSite === undefined
-            ? cookieSameSite
-            : normaliseSameSiteOrThrowError(config.cookieSameSite);
+    };
+
+    if (config !== undefined && config.cookieSameSite !== undefined) {
+        let normalisedCookieSameSite = normaliseSameSiteOrThrowError(config.cookieSameSite);
+
+        cookieSameSite = () => normalisedCookieSameSite;
+    }
 
     let cookieSecure =
         config === undefined || config.cookieSecure === undefined
@@ -167,12 +182,29 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
-        config === undefined || config.antiCsrf === undefined
-            ? cookieSameSite === "none"
-                ? "VIA_CUSTOM_HEADER"
-                : "NONE"
-            : config.antiCsrf;
+    let antiCsrf:
+        | "VIA_TOKEN"
+        | "VIA_CUSTOM_HEADER"
+        | "NONE"
+        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE") = ({
+        request,
+        userContext,
+    }) => {
+        const sameSite = cookieSameSite({
+            request,
+            userContext,
+        });
+
+        if (sameSite === "none") {
+            return "VIA_CUSTOM_HEADER";
+        }
+
+        return "NONE";
+    };
+
+    if (config !== undefined && config.antiCsrf !== undefined) {
+        antiCsrf = config.antiCsrf;
+    }
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: async (
@@ -229,11 +261,11 @@ export function validateAndNormaliseUserInput(
                 ? defaultGetTokenTransferMethod
                 : config.getTokenTransferMethod,
         cookieDomain,
-        cookieSameSite,
+        getCookieSameSite: cookieSameSite,
         cookieSecure,
         sessionExpiredStatusCode,
         errorHandlers,
-        antiCsrf,
+        antiCsrfFunctionOrString: antiCsrf,
         override,
         invalidClaimStatusCode,
     };
@@ -253,7 +285,9 @@ export function setAccessTokenInResponse(
     accessToken: string,
     frontToken: string,
     config: TypeNormalisedInput,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    req: BaseRequest | undefined,
+    userContext: any
 ) {
     setFrontTokenInHeaders(res, frontToken);
     setToken(
@@ -266,7 +300,9 @@ export function setAccessTokenInResponse(
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
         // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
         Date.now() + hundredYearsInMs,
-        transferMethod
+        transferMethod,
+        req,
+        userContext
     );
 
     if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
@@ -280,7 +316,9 @@ export function setAccessTokenInResponse(
             // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
             // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
             Date.now() + hundredYearsInMs,
-            "header"
+            "header",
+            req,
+            userContext
         );
     }
 }

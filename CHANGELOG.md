@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [16.3.4] - 2023-10-22
+
+### Fixes
+
+-   Fixes an issue where sometimes the `Access-Control-Expose-Headers` header value would contain duplicates
+
+## [16.3.3] - 2023-10-19
+
+-   Tests `null` values in `ProviderConfig` saved in core
+
+## [16.3.2] - 2023-10-16
+
+### Fixes
+
+-   `getUsersNewestFirst` and `getUsersOldestFirst` will now properly filter users by tenantId.
+-   Fixes issue with missed email verification claim update that caused the frontend pre built UI to call the email verify API multiple times.
+
+## [16.3.1] - 2023-10-12
+
+### Fixes
+
+-   Handle AWS Public URLs (ending with `.amazonaws.com`) separately while extracting TLDs for SameSite attribute.
+
+## [16.3.0] - 2023-10-10
+
+### Added
+
+-   Adds support for configuring multiple frontend domains to be used with the same backend
+-   Added a new `origin` property to `appInfo`, this can be configured to be a function which allows you to conditionally return the value of the frontend domain. This property will replace `websiteDomain` in a future release of `supertokens-node`
+-   `websiteDomain` inside `appInfo` is now optional. Using `origin` is recommended over using `websiteDomain`. This is not a breaking change and using `websiteDomain` will continue to work
+-   Added a "custom" framework you can use in framework normally not supported by our SDK
+-   Added a next13 app router compatible request handler.
+
+### Fixed
+
+-   Fixed an issue where calling signinup for thirdparty recipe would result in a "clone is not a function" error
+
+### Changes
+
+-   Using built-in fetch whenever available instead of cross-fetch
+-   Improved edge-function support
+
+## [16.2.1] - 2023-10-06
+
+-   Slight refactors logic to code for social providers to make it consistent across all providers
+
 ## [16.2.0] - 2023-09-29
 
 ### Changes
@@ -90,6 +136,10 @@ Because of account linking we've introduced a new Primary user concept (see abov
         -   returns new `recipeUserId` prop in the `status: OK` case
     -   `signUp`:
         -   returns new `recipeUserId` prop in the `status: OK` case
+    -   `resetPasswordUsingToken`:
+        -   removed from the recipe interface, making it no longer overrideable (directly)
+        -   the related function in the index files now call `consumePasswordResetToken` and `updateEmailOrPassword`
+        -   any necessary behaviour changes can be achieved by overriding those two function instead
     -   `signInPOST`:
         -   can return status `SIGN_IN_NOT_ALLOWED`
     -   `signUpPOST`:
@@ -150,6 +200,10 @@ Because of account linking we've introduced a new Primary user concept (see abov
     -   `updateEmailOrPassword` :
         -   now takes `recipeUserId` instead of `userId`
         -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   `resetPasswordUsingToken`:
+        -   removed from the recipe interface, making it no longer overrideable (directly)
+        -   the related function in the index files now call `consumePasswordResetToken` and `updateEmailOrPassword`
+        -   any necessary behaviour changes can be achieved by overriding those two function instead
     -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during sign up and in the “invitation link” flow
     -   `emailPasswordSignIn`:
         -   returns new `recipeUserId` prop in the `status: OK` case

@@ -38,11 +38,15 @@ export async function getSessionFromRequest({
     userContext?: any;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
-    if (!res.wrapperUsed) {
-        res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-    }
-    if (!req.wrapperUsed) {
-        req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    if (configuredFramework !== "custom") {
+        if (!req.wrapperUsed) {
+            req = frameworks[configuredFramework].wrapRequest(req);
+        }
+
+        if (!res.wrapperUsed) {
+            res = frameworks[configuredFramework].wrapResponse(res);
+        }
     }
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
     logDebugMessage("getSession: Wrapping done");
@@ -122,8 +126,17 @@ export async function getSessionFromRequest({
         doAntiCsrfCheck = false;
     }
 
-    if (doAntiCsrfCheck && config.antiCsrf === "VIA_CUSTOM_HEADER") {
-        if (config.antiCsrf === "VIA_CUSTOM_HEADER") {
+    let antiCsrf = config.antiCsrfFunctionOrString;
+
+    if (typeof antiCsrf === "function") {
+        antiCsrf = antiCsrf({
+            request: req,
+            userContext,
+        });
+    }
+
+    if (doAntiCsrfCheck && antiCsrf === "VIA_CUSTOM_HEADER") {
+        if (antiCsrf === "VIA_CUSTOM_HEADER") {
             if (getRidFromHeader(req) === undefined) {
                 logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
                 throw new SessionError({
@@ -158,16 +171,19 @@ export async function getSessionFromRequest({
         // override how the session is attached to the response.
         // In that scenario the transferMethod passed to attachToRequestResponse likely doesn't
         // matter, still, we follow the general fallback logic
-        await session.attachToRequestResponse({
-            req,
-            res,
-            transferMethod:
-                requestTransferMethod !== undefined
-                    ? requestTransferMethod
-                    : allowedTransferMethod !== "any"
-                    ? allowedTransferMethod
-                    : "header",
-        });
+        await session.attachToRequestResponse(
+            {
+                req,
+                res,
+                transferMethod:
+                    requestTransferMethod !== undefined
+                        ? requestTransferMethod
+                        : allowedTransferMethod !== "any"
+                        ? allowedTransferMethod
+                        : "header",
+            },
+            userContext
+        );
     }
     return session;
 }
@@ -190,11 +206,15 @@ export async function refreshSessionInRequest({
     recipeInterfaceImpl: RecipeInterface;
 }) {
     logDebugMessage("refreshSession: Started");
-    if (!res.wrapperUsed) {
-        res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-    }
-    if (!req.wrapperUsed) {
-        req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    if (configuredFramework !== "custom") {
+        if (!req.wrapperUsed) {
+            req = frameworks[configuredFramework].wrapRequest(req);
+        }
+
+        if (!res.wrapperUsed) {
+            res = frameworks[configuredFramework].wrapResponse(res);
+        }
     }
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
     logDebugMessage("refreshSession: Wrapping done");
@@ -237,7 +257,7 @@ export async function refreshSessionInRequest({
         // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
         if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
             logDebugMessage("refreshSession: cleared legacy id refresh token because refresh token was not found");
-            setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+            setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
         }
 
         logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
@@ -252,7 +272,16 @@ export async function refreshSessionInRequest({
     let disableAntiCsrf = requestTransferMethod === "header";
     const antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
 
-    if (config.antiCsrf === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
+    let antiCsrf = config.antiCsrfFunctionOrString;
+
+    if (typeof antiCsrf === "function") {
+        antiCsrf = antiCsrf({
+            request: req,
+            userContext,
+        });
+    }
+
+    if (antiCsrf === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
         if (getRidFromHeader(req) === undefined) {
             logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new SessionError({
@@ -285,7 +314,7 @@ export async function refreshSessionInRequest({
                 logDebugMessage(
                     "refreshSession: cleared legacy id refresh token because refresh is clearing other tokens"
                 );
-                setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+                setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
             }
         }
         throw ex;
@@ -295,21 +324,24 @@ export async function refreshSessionInRequest({
     // We clear the tokens in all token transfer methods we are not going to overwrite
     for (const transferMethod of availableTokenTransferMethods) {
         if (transferMethod !== requestTransferMethod && refreshTokens[transferMethod] !== undefined) {
-            clearSession(config, res, transferMethod);
+            clearSession(config, res, transferMethod, req, userContext);
         }
     }
-    await session.attachToRequestResponse({
-        req,
-        res,
-        transferMethod: requestTransferMethod,
-    });
+    await session.attachToRequestResponse(
+        {
+            req,
+            res,
+            transferMethod: requestTransferMethod,
+        },
+        userContext
+    );
 
     logDebugMessage("refreshSession: Success!");
 
     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
         logDebugMessage("refreshSession: cleared legacy id refresh token after successful refresh");
-        setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+        setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
     }
 
     return session;
@@ -341,13 +373,17 @@ export async function createNewSessionInRequest({
     tenantId: string;
 }) {
     logDebugMessage("createNewSession: Started");
-    if (!req.wrapperUsed) {
-        req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+    const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
+    if (configuredFramework !== "custom") {
+        if (!req.wrapperUsed) {
+            req = frameworks[configuredFramework].wrapRequest(req);
+        }
+
+        if (!res.wrapperUsed) {
+            res = frameworks[configuredFramework].wrapResponse(res);
+        }
     }
 
-    if (!res.wrapperUsed) {
-        res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-    }
     logDebugMessage("createNewSession: Wrapping done");
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
 
@@ -380,11 +416,23 @@ export async function createNewSessionInRequest({
 
     if (
         outputTransferMethod === "cookie" &&
-        config.cookieSameSite === "none" &&
+        config.getCookieSameSite({
+            request: req,
+            userContext,
+        }) === "none" &&
         !config.cookieSecure &&
         !(
             (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
-            (appInfo.topLevelWebsiteDomain === "localhost" || isAnIpAddress(appInfo.topLevelWebsiteDomain))
+            (appInfo.getTopLevelWebsiteDomain({
+                request: req,
+                userContext,
+            }) === "localhost" ||
+                isAnIpAddress(
+                    appInfo.getTopLevelWebsiteDomain({
+                        request: req,
+                        userContext,
+                    })
+                ))
         )
     ) {
         // We can allow insecure cookie when both website & API domain are localhost or an IP
@@ -408,16 +456,19 @@ export async function createNewSessionInRequest({
 
     for (const transferMethod of availableTokenTransferMethods) {
         if (transferMethod !== outputTransferMethod && getToken(req, "access", transferMethod) !== undefined) {
-            clearSession(config, res, transferMethod);
+            clearSession(config, res, transferMethod, req, userContext);
         }
     }
     logDebugMessage("createNewSession: Cleared old tokens");
 
-    await session.attachToRequestResponse({
-        req,
-        res,
-        transferMethod: outputTransferMethod,
-    });
+    await session.attachToRequestResponse(
+        {
+            req,
+            res,
+            transferMethod: outputTransferMethod,
+        },
+        userContext
+    );
     logDebugMessage("createNewSession: Attached new tokens to res");
 
     return session;

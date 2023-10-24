@@ -6,9 +6,16 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_FDI, HEADER_RID } from "./constants";
-import fetch from "cross-fetch";
+import crossFetch from "cross-fetch";
 import { User } from "./user";
 import { SessionContainer } from "./recipe/session";
+
+export const doFetch: typeof fetch = (...args) => {
+    if (typeof fetch !== "undefined") {
+        return fetch(...args);
+    }
+    return crossFetch(...args);
+};
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -51,22 +58,45 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     if (appInfo.appName === undefined) {
         throw new Error("Please provide your appName inside the appInfo object when calling supertokens.init");
     }
-    if (appInfo.websiteDomain === undefined) {
-        throw new Error("Please provide your websiteDomain inside the appInfo object when calling supertokens.init");
-    }
+
     let apiGatewayPath =
         appInfo.apiGatewayPath !== undefined
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
 
-    const websiteDomain = new NormalisedURLDomain(appInfo.websiteDomain);
+    if (appInfo.origin === undefined && appInfo.websiteDomain === undefined) {
+        throw new Error(
+            "Please provide either origin or websiteDomain inside the appInfo object when calling supertokens.init"
+        );
+    }
+
+    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        let origin = appInfo.origin;
+
+        if (origin === undefined) {
+            origin = appInfo.websiteDomain;
+        }
+
+        // This should not be possible because we check for either origin or websiteDomain above
+        if (origin === undefined) {
+            throw new Error("Should never come here");
+        }
+
+        if (typeof origin === "function") {
+            origin = origin(input);
+        }
+        return new NormalisedURLDomain(origin);
+    };
+
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(websiteDomain.getAsStringDangerous());
+    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        return getTopLevelDomainForSameSiteResolution(websiteDomainFunction(input).getAsStringDangerous());
+    };
 
     return {
         appName: appInfo.appName,
-        websiteDomain,
+        getOrigin: websiteDomainFunction,
         apiDomain,
         apiBasePath: apiGatewayPath.appendPath(
             appInfo.apiBasePath === undefined
@@ -79,7 +109,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
                 : new NormalisedURLPath(appInfo.websiteBasePath),
         apiGatewayPath,
         topLevelAPIDomain,
-        topLevelWebsiteDomain,
+        getTopLevelWebsiteDomain: topLevelWebsiteDomain,
     };
 }
 
@@ -250,8 +280,12 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         // we treat these as the same TLDs since we can use sameSite lax for all of them.
         return "localhost";
     }
+
     let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
     if (parsedURL.domain === null) {
+        if (hostname.endsWith(".amazonaws.com") && parsedURL.tld === hostname) {
+            return hostname;
+        }
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
     }
     return parsedURL.domain;
@@ -276,7 +310,7 @@ export async function postWithFetch(
     let error;
     let resp: { status: number; body: any };
     try {
-        const fetchResp = await fetch(url, {
+        const fetchResp = await doFetch(url, {
             method: "POST",
             body: JSON.stringify(body),
             headers,

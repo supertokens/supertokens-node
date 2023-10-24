@@ -39,7 +39,7 @@ export function verifySession(options?: VerifySessionOptions): InterceptorOrKey 
         } catch (err) {
             try {
                 const supertokens = SuperTokens.getInstanceOrThrowError();
-                await supertokens.errorHandler(err, request, response);
+                await supertokens.errorHandler(err, request, response, userContext);
                 return;
             } catch {
                 // We catch and ignore since we want to re-throw the original error if handling wasn't successful

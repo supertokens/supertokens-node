@@ -30,7 +30,7 @@ export default abstract class RecipeModule {
         method: HTTPMethod,
         userContext: any
     ): Promise<boolean>;
-    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>;
+    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse, userContext: any): Promise<void>;
     abstract getAllCORSHeaders(): string[];
     abstract isErrorFromThisRecipe(err: any): err is STError;
 }

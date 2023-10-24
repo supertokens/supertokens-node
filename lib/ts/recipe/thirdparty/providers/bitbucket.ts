@@ -17,6 +17,7 @@ import { ProviderInput, TypeProvider } from "../types";
 import { doGetRequest } from "./utils";
 
 import NewProvider from "./custom";
+import { logDebugMessage } from "../../../logger";
 
 export default function Bitbucket(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -74,7 +75,16 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 undefined,
                 headers
             );
-            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+
+            if (userInfoFromAccessToken.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
+                );
+                throw new Error(
+                    `Received response with status ${userInfoFromAccessToken.status} and body ${userInfoFromAccessToken.stringResponse}`
+                );
+            }
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.jsonResponse;
 
             const userInfoFromEmail = await doGetRequest(
                 "https://api.bitbucket.org/2.0/user/emails",
@@ -82,11 +92,20 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
                 headers
             );
 
-            rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail;
+            if (userInfoFromEmail.status >= 400) {
+                logDebugMessage(
+                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
+                );
+                throw new Error(
+                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
+                );
+            }
+
+            rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.jsonResponse;
 
             let email = undefined;
             let isVerified = false;
-            for (const emailInfo of userInfoFromEmail.values) {
+            for (const emailInfo of userInfoFromEmail.jsonResponse!.values) {
                 if (emailInfo.is_primary) {
                     email = emailInfo.email;
                     isVerified = emailInfo.is_confirmed;

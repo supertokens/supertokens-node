@@ -12,9 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import fetch from "cross-fetch";
 import { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
+import { doGetRequest, doPostRequest } from "./utils";
 
 function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoResponse: {
     fromIdTokenPayload?: any;
@@ -64,27 +64,25 @@ export default function Github(input: ProviderInput): TypeProvider {
                 `${clientConfig.clientId}:${clientConfig.clientSecret === undefined ? "" : clientConfig.clientSecret}`
             ).toString("base64");
 
-            const applicationsResponse = await fetch(
+            const applicationResponse = await doPostRequest(
                 `https://api.github.com/applications/${clientConfig.clientId}/token`,
                 {
-                    headers: {
-                        Authorization: `Basic ${basicAuthToken}`,
-                        "Content-Type": "application/json",
-                    },
-                    method: "POST",
-                    body: JSON.stringify({
-                        access_token: accessToken,
-                    }),
+                    access_token: accessToken,
+                },
+                {
+                    Authorization: `Basic ${basicAuthToken}`,
+                    "Content-Type": "application/json",
                 }
             );
 
-            if (applicationsResponse.status !== 200) {
+            if (applicationResponse.status !== 200) {
                 throw new Error("Invalid access token");
             }
 
-            const body = await applicationsResponse.json();
-
-            if (body.app === undefined || body.app.client_id !== clientConfig.clientId) {
+            if (
+                applicationResponse.jsonResponse!.app === undefined ||
+                applicationResponse.jsonResponse!.app.client_id !== clientConfig.clientId
+            ) {
                 throw new Error("Access token does not belong to your application");
             }
         };
@@ -111,19 +109,23 @@ export default function Github(input: ProviderInput): TypeProvider {
             };
             const rawResponse: { [key: string]: any } = {};
 
-            const emailInfoResp = await fetch("https://api.github.com/user/emails", { headers });
-            if (emailInfoResp.status >= 400) {
-                throw new Error(`Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.text()}`);
-            }
-            const emailInfo = await emailInfoResp.json();
-            rawResponse.emails = emailInfo;
+            const emailInfoResp = await doGetRequest("https://api.github.com/user/emails", undefined, headers);
 
-            const userInfoResp = await fetch("https://api.github.com/user", { headers });
-            if (userInfoResp.status >= 400) {
-                throw new Error(`Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.text()}`);
+            if (emailInfoResp.status >= 400) {
+                throw new Error(
+                    `Getting userInfo failed with ${emailInfoResp.status}: ${emailInfoResp.stringResponse}`
+                );
             }
-            const userInfo = await userInfoResp.json();
-            rawResponse.user = userInfo;
+
+            rawResponse.emails = emailInfoResp.jsonResponse;
+
+            const userInfoResp = await doGetRequest("https://api.github.com/user", undefined, headers);
+
+            if (userInfoResp.status >= 400) {
+                throw new Error(`Getting userInfo failed with ${userInfoResp.status}: ${userInfoResp.stringResponse}`);
+            }
+
+            rawResponse.user = userInfoResp.jsonResponse;
 
             const rawUserInfoFromProvider = {
                 fromUserInfoAPI: rawResponse,

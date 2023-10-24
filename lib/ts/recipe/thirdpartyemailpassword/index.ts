@@ -21,7 +21,7 @@ import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "../emailpassword/utils";
-import { getUser } from "../..";
+import { getRequestFromUserContext, getUser } from "../..";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -146,6 +146,8 @@ export default class Wrapper {
                 recipeId: recipeInstance.getRecipeId(),
                 token: token.token,
                 tenantId,
+                request: getRequestFromUserContext(userContext),
+                userContext,
             }),
         };
     }

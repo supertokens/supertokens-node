@@ -18,10 +18,12 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
+import { BaseRequest } from "./framework";
 
 export type AppInfo = {
     appName: string;
-    websiteDomain: string;
+    websiteDomain?: string;
+    origin?: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -30,10 +32,10 @@ export type AppInfo = {
 
 export type NormalisedAppinfo = {
     appName: string;
-    websiteDomain: NormalisedURLDomain;
+    getOrigin: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    topLevelWebsiteDomain: string;
+    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;

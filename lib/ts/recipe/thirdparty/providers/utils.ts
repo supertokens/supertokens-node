@@ -1,16 +1,20 @@
-import fetch from "cross-fetch";
 import * as jose from "jose";
 
 import { ProviderConfigForClientType } from "../types";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { logDebugMessage } from "../../../logger";
+import { doFetch } from "../../../utils";
 
 export async function doGetRequest(
     url: string,
     queryParams?: { [key: string]: string },
     headers?: { [key: string]: string }
-): Promise<any> {
+): Promise<{
+    jsonResponse: Record<string, any> | undefined;
+    status: number;
+    stringResponse: string;
+}> {
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
     );
@@ -22,25 +26,34 @@ export async function doGetRequest(
     }
     const finalURL = new URL(url);
     finalURL.search = new URLSearchParams(queryParams).toString();
-    let response = await fetch(finalURL.toString(), {
+    let response = await doFetch(finalURL.toString(), {
         headers: headers,
     });
 
-    if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-    }
-    const respData = await response.clone().json();
+    const stringResponse = await response.text();
+    let jsonResponse: Record<string, any> | undefined = undefined;
 
-    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
-    return respData;
+    if (response.status < 400) {
+        jsonResponse = JSON.parse(stringResponse);
+    }
+
+    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
+    return {
+        stringResponse,
+        status: response.status,
+        jsonResponse,
+    };
 }
 
 export async function doPostRequest(
     url: string,
     params: { [key: string]: any },
     headers?: { [key: string]: string }
-): Promise<any> {
+): Promise<{
+    jsonResponse: Record<string, any> | undefined;
+    status: number;
+    stringResponse: string;
+}> {
     if (headers === undefined) {
         headers = {};
     }
@@ -53,20 +66,25 @@ export async function doPostRequest(
     );
 
     const body = new URLSearchParams(params).toString();
-    let response = await fetch(url, {
+    let response = await doFetch(url, {
         method: "POST",
         body,
         headers,
     });
 
-    if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
-    }
-    const respData = await response.clone().json();
+    const stringResponse = await response.text();
+    let jsonResponse: Record<string, any> | undefined = undefined;
 
-    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
-    return respData;
+    if (response.status < 400) {
+        jsonResponse = JSON.parse(stringResponse);
+    }
+
+    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
+    return {
+        stringResponse,
+        status: response.status,
+        jsonResponse,
+    };
 }
 
 export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
@@ -96,8 +114,13 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
         normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()
     );
 
-    oidcInfoMap[issuer] = oidcInfo;
-    return oidcInfo;
+    if (oidcInfo.status >= 400) {
+        logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
+        throw new Error(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
+    }
+
+    oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
+    return oidcInfo.jsonResponse!;
 }
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<ProviderConfigForClientType> {

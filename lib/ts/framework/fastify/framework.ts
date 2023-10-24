@@ -100,7 +100,14 @@ export class FastifyResponse extends BaseResponse {
             if (existingValue === undefined) {
                 this.response.header(key, value);
             } else if (allowDuplicateKey) {
-                this.response.header(key, existingValue + ", " + value);
+                /**
+                    We only want to append if it does not already exist
+                    For example if the caller is trying to add front token to the access control exposed headers property
+                    we do not want to append if something else had already added it
+                */
+                if (typeof existingValue !== "string" || !existingValue.includes(value)) {
+                    this.response.header(key, existingValue + ", " + value);
+                }
             } else {
                 // we overwrite the current one with the new one
                 this.response.header(key, value);
@@ -125,43 +132,16 @@ export class FastifyResponse extends BaseResponse {
         sameSite: "strict" | "lax" | "none"
     ) => {
         let serialisedCookie = serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite);
-        /**
-         * lets say if current value is undefined, prev -> undefined
-         *
-         * now if add AT,
-         * cookieValueToSetInHeader -> AT
-         * response header object will be:
-         *
-         * 'set-cookie': AT
-         *
-         * now if add RT,
-         *
-         * prev -> AT
-         * cookieValueToSetInHeader -> AT + RT
-         * and response header object will be:
-         *
-         * 'set-cookie': AT + AT + RT
-         *
-         * now if add IRT,
-         *
-         * prev -> AT + AT + RT
-         * cookieValueToSetInHeader -> IRT + AT + AT + RT
-         * and response header object will be:
-         *
-         * 'set-cookie': AT + AT + RT + IRT + AT + AT + RT
-         *
-         * To avoid this, we no longer get and use the previous value
-         *
-         * Old code:
-         *
-         * let prev: string | string[] | undefined = this.response.getHeader(COOKIE_HEADER) as
-         * | string
-         * | string[]
-         * | undefined;
-         * let cookieValueToSetInHeader = getCookieValueToSetInHeader(prev, serialisedCookie, key);
-         * this.response.header(COOKIE_HEADER, cookieValueToSetInHeader);
-         */
-        this.response.header(COOKIE_HEADER, serialisedCookie);
+
+        let oldHeaders: string | string[] | undefined = this.response.getHeader(COOKIE_HEADER);
+        if (oldHeaders === undefined) oldHeaders = [];
+        else if (!((oldHeaders as any) instanceof Array)) oldHeaders = [oldHeaders];
+
+        this.response.removeHeader(COOKIE_HEADER);
+        this.response.header(COOKIE_HEADER, [
+            ...(oldHeaders as string[]).filter((h) => !h.startsWith(key + "=")),
+            serialisedCookie,
+        ]);
     };
 
     /**
@@ -194,7 +174,7 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
         try {
             await supertokens.middleware(request, response, userContext);
         } catch (err) {
-            await supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response, userContext);
         }
     });
     done();
@@ -215,7 +195,8 @@ export const errorHandler = () => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(res);
-        await supertokens.errorHandler(err, request, response);
+        let userContext = makeDefaultUserContextFromAPI(request);
+        await supertokens.errorHandler(err, request, response, userContext);
     };
 };
 

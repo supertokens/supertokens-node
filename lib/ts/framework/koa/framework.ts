@@ -105,7 +105,14 @@ export class KoaResponse extends BaseResponse {
             if (existingValue === undefined) {
                 this.ctx.set(key, value);
             } else if (allowDuplicateKey) {
-                this.ctx.set(key, existingValue + ", " + value);
+                /**
+                    We only want to append if it does not already exist
+                    For example if the caller is trying to add front token to the access control exposed headers property
+                    we do not want to append if something else had already added it
+                */
+                if (typeof existingValue !== "string" || !existingValue.includes(value)) {
+                    this.ctx.set(key, existingValue + ", " + value);
+                }
             } else {
                 // we overwrite the current one with the new one
                 this.ctx.set(key, value);
@@ -136,6 +143,7 @@ export class KoaResponse extends BaseResponse {
             expires: new Date(expires),
             domain,
             path,
+            overwrite: true,
         });
     };
 
@@ -174,7 +182,7 @@ export const middleware = () => {
                 return await next();
             }
         } catch (err) {
-            return await supertokens.errorHandler(err, request, response);
+            return await supertokens.errorHandler(err, request, response, userContext);
         }
     };
 };

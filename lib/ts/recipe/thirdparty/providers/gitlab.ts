@@ -15,7 +15,6 @@
 
 import { TypeProvider, ProviderInput } from "../types";
 import NewProvider from "./custom";
-// import fetch from "cross-fetch";
 // import NormalisedURLDomain from "../../../normalisedURLDomain";
 
 export default function Gitlab(input: ProviderInput): TypeProvider {
@@ -102,7 +101,7 @@ export default function Gitlab(input: ProviderInput): TypeProvider {
 //     }) {
 //         let accessToken = accessTokenAPIResponse.access_token;
 //         let authHeader = `Bearer ${accessToken}`;
-//         let response = await fetch(baseUrl + "/api/v4/user", {
+//         let response = await doFetch(baseUrl + "/api/v4/user", {
 //             method: "get",
 //             headers: {
 //                 Authorization: authHeader,

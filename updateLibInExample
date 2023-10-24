@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if ! [[ -z "${COMMIT_REF}" ]]; then
+    npm i git+$REPOSITORY_URL#$COMMIT_REF
+fi
