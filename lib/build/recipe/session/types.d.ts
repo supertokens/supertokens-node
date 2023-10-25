@@ -98,7 +98,11 @@ export declare type TypeNormalisedInput = {
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
-        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE");
+        | ((input: {
+              request: BaseRequest | undefined;
+              userContext: any;
+              tenantId: string | undefined;
+          }) => "VIA_CUSTOM_HEADER" | "NONE");
     getTokenTransferMethod: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;

@@ -132,6 +132,7 @@ export async function getSessionFromRequest({
         antiCsrf = antiCsrf({
             request: req,
             userContext,
+            tenantId: undefined,
         });
     }
 
@@ -288,6 +289,7 @@ export async function refreshSessionInRequest({
         antiCsrf = antiCsrf({
             request: req,
             userContext,
+            tenantId: undefined,
         });
     }
 
