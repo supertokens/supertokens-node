@@ -245,6 +245,7 @@ export default function getAPIImplementation(): APIInterface {
                         .getOrigin({
                             request: input.options.req,
                             userContext: input.userContext,
+                            tenantId: input.tenantId,
                         })
                         .getAsStringDangerous() +
                     input.options.appInfo.websiteBasePath.getAsStringDangerous() +
@@ -389,6 +390,7 @@ export default function getAPIImplementation(): APIInterface {
                                 .getOrigin({
                                     request: input.options.req,
                                     userContext: input.userContext,
+                                    tenantId: input.tenantId,
                                 })
                                 .getAsStringDangerous() +
                             input.options.appInfo.websiteBasePath.getAsStringDangerous() +

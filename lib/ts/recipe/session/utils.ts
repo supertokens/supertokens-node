@@ -141,12 +141,18 @@ export function validateAndNormaliseUserInput(
     let cookieSameSite: (input: {
         request: BaseRequest | undefined;
         userContext: any;
-    }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        tenantId: string | undefined;
+    }) => "strict" | "lax" | "none" = (input: {
+        request: BaseRequest | undefined;
+        userContext: any;
+        tenantId: string | undefined;
+    }) => {
         let protocolOfWebsiteDomain = getURLProtocol(
             appInfo
                 .getOrigin({
                     request: input.request,
                     userContext: input.userContext,
+                    tenantId: input.tenantId,
                 })
                 .getAsStringDangerous()
         );
@@ -186,13 +192,15 @@ export function validateAndNormaliseUserInput(
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
-        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE") = ({
-        request,
-        userContext,
-    }) => {
+        | ((input: {
+              request: BaseRequest | undefined;
+              userContext: any;
+              tenantId: string | undefined;
+          }) => "VIA_CUSTOM_HEADER" | "NONE") = ({ request, userContext, tenantId }) => {
         const sameSite = cookieSameSite({
             request,
             userContext,
+            tenantId,
         });
 
         if (sameSite === "none") {

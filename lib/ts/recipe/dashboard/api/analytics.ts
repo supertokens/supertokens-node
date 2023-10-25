@@ -76,6 +76,7 @@ export default async function analyticsPost(
         websiteDomain: websiteDomain({
             request: undefined,
             userContext: {},
+            tenantId: undefined,
         }).getAsStringDangerous(),
         apiDomain: apiDomain.getAsStringDangerous(),
         appName,

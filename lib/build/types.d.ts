@@ -16,7 +16,11 @@ export declare type AppInfo = {
 };
 export declare type NormalisedAppinfo = {
     appName: string;
-    getOrigin: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
+    getOrigin: (input: {
+        request: BaseRequest | undefined;
+        userContext: any;
+        tenantId: string | undefined;
+    }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
     getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;

@@ -249,6 +249,7 @@ export default class Recipe extends RecipeModule {
                 .getOrigin({
                     request: input.request,
                     userContext: input.userContext,
+                    tenantId: input.tenantId,
                 })
                 .getAsStringDangerous() +
             appInfo.websiteBasePath.getAsStringDangerous() +

@@ -262,6 +262,7 @@ export function getPasswordResetLink(input: {
             .getOrigin({
                 request: input.request,
                 userContext: input.userContext,
+                tenantId: input.tenantId,
             })
             .getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
