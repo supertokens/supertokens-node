@@ -4,33 +4,21 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, User } from "../../types";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
-export declare type FirstFactor =
-    | "emailpassword"
-    | "thirdparty"
-    | "otp-email"
-    | "otp-phone"
-    | "link-email"
-    | "link-phone"
-    | {
-          type: "custom";
-          id: string;
-      };
-export declare type MFARequirement = FirstFactor | "totp";
 export declare type MFARequirementList = (
     | {
-          oneOf: MFARequirement[];
+          oneOf: string[];
       }
     | {
-          allOf: MFARequirement[];
+          allOf: string[];
       }
-    | MFARequirement
+    | string
 )[];
 export declare type MFAClaimValue = {
     c: Record<string, number>;
     n: string[];
 };
 export declare type TypeInput = {
-    firstFactors?: FirstFactor[];
+    firstFactors?: string[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -40,7 +28,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    firstFactors?: FirstFactor[];
+    firstFactors?: string[];
     override: {
         functions: (
             originalImplementation: RecipeInterface,
