@@ -287,7 +287,8 @@ export function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ) {
     setFrontTokenInHeaders(res, frontToken);
     setToken(
@@ -302,7 +303,8 @@ export function setAccessTokenInResponse(
         Date.now() + hundredYearsInMs,
         transferMethod,
         req,
-        userContext
+        userContext,
+        tenantId
     );
 
     if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
@@ -318,7 +320,8 @@ export function setAccessTokenInResponse(
             Date.now() + hundredYearsInMs,
             "header",
             req,
-            userContext
+            userContext,
+            tenantId
         );
     }
 }

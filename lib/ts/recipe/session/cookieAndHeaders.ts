@@ -34,7 +34,8 @@ export function clearSessionFromAllTokenTransferMethods(
     config: TypeNormalisedInput,
     res: BaseResponse,
     request: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ) {
     // We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     // This is done to handle the following use-case:
@@ -43,7 +44,7 @@ export function clearSessionFromAllTokenTransferMethods(
     // We can't know which to clear since we can't reliably query or remove the set-cookie header added to the response (causes issues in some frameworks, i.e.: hapi)
     // The safe solution in this case is to overwrite all the response cookies/headers with an empty value, which is what we are doing here
     for (const transferMethod of availableTokenTransferMethods) {
-        clearSession(config, res, transferMethod, request, userContext);
+        clearSession(config, res, transferMethod, request, userContext, tenantId);
     }
 }
 
@@ -52,12 +53,13 @@ export function clearSession(
     res: BaseResponse,
     transferMethod: TokenTransferMethod,
     request: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ) {
     // If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        setToken(config, res, token, "", 0, transferMethod, request, userContext);
+        setToken(config, res, token, "", 0, transferMethod, request, userContext, tenantId);
     }
 
     res.removeHeader(antiCsrfHeaderKey);
@@ -138,7 +140,8 @@ export function setToken(
     expires: number,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ) {
     logDebugMessage(`setToken: Setting ${tokenType} token as ${transferMethod}`);
     if (transferMethod === "cookie") {
@@ -150,7 +153,8 @@ export function setToken(
             expires,
             tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath",
             req,
-            userContext
+            userContext,
+            tenantId
         );
     } else if (transferMethod === "header") {
         setHeader(res, getResponseHeaderNameForTokenType(tokenType), value);
@@ -181,13 +185,15 @@ export function setCookie(
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath",
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ) {
     let domain = config.cookieDomain;
     let secure = config.cookieSecure;
     let sameSite = config.getCookieSameSite({
         request: req,
         userContext,
+        tenantId,
     });
     let path = "";
     if (pathType === "refreshTokenPath") {

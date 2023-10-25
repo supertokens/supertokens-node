@@ -86,7 +86,11 @@ export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
-    getCookieSameSite: (input: { request: BaseRequest | undefined; userContext: any }) => "strict" | "lax" | "none";
+    getCookieSameSite: (input: {
+        request: BaseRequest | undefined;
+        userContext: any;
+        tenantId: string | undefined;
+    }) => "strict" | "lax" | "none";
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;

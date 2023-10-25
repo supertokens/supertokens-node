@@ -5,14 +5,16 @@ export declare function clearSessionFromAllTokenTransferMethods(
     config: TypeNormalisedInput,
     res: BaseResponse,
     request: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ): void;
 export declare function clearSession(
     config: TypeNormalisedInput,
     res: BaseResponse,
     transferMethod: TokenTransferMethod,
     request: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ): void;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;
@@ -32,7 +34,8 @@ export declare function setToken(
     expires: number,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ): void;
 export declare function setHeader(res: BaseResponse, name: string, value: string): void;
 /**
@@ -54,6 +57,7 @@ export declare function setCookie(
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath",
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ): void;
 export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;

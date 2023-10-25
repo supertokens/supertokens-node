@@ -208,7 +208,7 @@ export default class SessionRecipe extends RecipeModule {
                     err.payload.clearTokens === true
                 ) {
                     logDebugMessage("errorHandler: Clearing tokens because of UNAUTHORISED response");
-                    clearSessionFromAllTokenTransferMethods(this.config, response, request, userContext);
+                    clearSessionFromAllTokenTransferMethods(this.config, response, request, userContext, undefined);
                 }
                 return await this.config.errorHandlers.onUnauthorised(err.message, request, response);
             } else if (err.type === STError.TRY_REFRESH_TOKEN) {
@@ -217,7 +217,7 @@ export default class SessionRecipe extends RecipeModule {
             } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
                 logDebugMessage("errorHandler: returning TOKEN_THEFT_DETECTED");
                 logDebugMessage("errorHandler: Clearing tokens because of TOKEN_THEFT_DETECTED response");
-                clearSessionFromAllTokenTransferMethods(this.config, response, request, userContext);
+                clearSessionFromAllTokenTransferMethods(this.config, response, request, userContext, undefined);
                 return await this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,

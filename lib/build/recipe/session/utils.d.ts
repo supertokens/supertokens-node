@@ -53,7 +53,8 @@ export declare function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: any,
+    tenantId: string | undefined
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,

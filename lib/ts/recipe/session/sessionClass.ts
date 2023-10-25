@@ -61,7 +61,8 @@ export default class Session implements SessionContainerInterface {
                 this.reqResInfo.res,
                 this.reqResInfo.transferMethod,
                 this.reqResInfo.req,
-                userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
+                userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext,
+                this.getTenantId()
             );
         }
     }
@@ -176,7 +177,8 @@ export default class Session implements SessionContainerInterface {
                     this.helpers.config,
                     this.reqResInfo.transferMethod,
                     this.reqResInfo.req,
-                    userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
+                    userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext,
+                    this.getTenantId()
                 );
             }
         } else {
@@ -288,7 +290,8 @@ export default class Session implements SessionContainerInterface {
                 this.helpers.config,
                 transferMethod,
                 info.req,
-                userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
+                userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req),
+                this.getTenantId()
             );
             if (this.refreshToken !== undefined) {
                 setToken(
@@ -299,7 +302,8 @@ export default class Session implements SessionContainerInterface {
                     this.refreshToken.expiry,
                     transferMethod,
                     info.req,
-                    userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
+                    userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req),
+                    this.getTenantId()
                 );
             }
             if (this.antiCsrfToken !== undefined) {
