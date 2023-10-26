@@ -35,6 +35,7 @@ export declare type TypeInput = {
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
+    debug?: boolean;
 };
 export declare type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;
 export declare type APIHandled = {

@@ -15,6 +15,7 @@
 
 import debug from "debug";
 import { version } from "./version";
+// import SuperTokens from "./supertokens";
 
 const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
 /*
@@ -23,12 +24,10 @@ const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
 */
 
 function logDebugMessage(message: string) {
-    if (debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
-        debug(SUPERTOKENS_DEBUG_NAMESPACE)(
-            `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
-        );
-        console.log();
-    }
+    debug(SUPERTOKENS_DEBUG_NAMESPACE)(
+        `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
+    );
+    console.log();
 }
 
 let getFileLocation = () => {
