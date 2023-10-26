@@ -15,7 +15,6 @@
 
 import debug from "debug";
 import { version } from "./version";
-// import SuperTokens from "./supertokens";
 
 const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
 /*
