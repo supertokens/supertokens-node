@@ -29,7 +29,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import type { TypeFramework } from "./framework/types";
 import STError from "./error";
-import { logDebugMessage } from "./logger";
+import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
@@ -49,6 +49,10 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
+        if (config.debug === true) {
+            enableDebugLogs();
+        }
+
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         const originToPrint =
             config.appInfo.origin === undefined
