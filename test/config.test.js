@@ -1224,7 +1224,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
         {
             logs = [];
-            debug.disable();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -1238,14 +1237,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 debug: false,
             });
             logDebugMessage("test message - should not be logged");
-            assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === false);
             assert(logs.length === 0);
             resetAll();
         }
 
         {
             logs = [];
-            debug.disable();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -1258,7 +1255,59 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             logDebugMessage("test message - should not be logged");
-            assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === false);
+            assert(logs.length === 0);
+            resetAll();
+        }
+    });
+
+    it("testing that the debug mode is set via env var", async function () {
+        let oldEnv = process.env;
+        const connectionURI = await startST();
+        let logs = []; // Used to capture the log strings
+        debug.log = function (...args) {
+            logs.push(args);
+        };
+
+        {
+            process.env = { ...oldEnv, DEBUG: "com.supertokens" };
+            let debugManual = require("debug/src/common");
+            debugManual(debug);
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+            });
+            logDebugMessage("test message successfully logged");
+            assert(logs.length > 0);
+            const logMessage = logs[logs.length - 1].find((log) => log.includes("test message successfully logged"));
+            assert(logMessage !== undefined);
+            resetAll(false);
+        }
+
+        process.env = { ...oldEnv };
+        let debugManual = require("debug/src/common");
+        debugManual(debug);
+
+        {
+            logs = [];
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+            });
+            logDebugMessage("test message - should not be logged");
             assert(logs.length === 0);
             resetAll();
         }

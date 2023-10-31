@@ -1,3 +1,5 @@
 // @ts-nocheck
+declare const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
 declare function logDebugMessage(message: string): void;
-export { logDebugMessage };
+declare function enableDebugLogs(): void;
+export { logDebugMessage, enableDebugLogs, SUPERTOKENS_DEBUG_NAMESPACE };
