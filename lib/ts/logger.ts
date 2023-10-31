@@ -54,4 +54,4 @@ let getFileLocation = () => {
     return "N/A";
 };
 
-export { logDebugMessage, enableDebugLogs, SUPERTOKENS_DEBUG_NAMESPACE };
+export { logDebugMessage, enableDebugLogs };

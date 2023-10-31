@@ -42,7 +42,7 @@ let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/utils");
 const { middleware } = require("../framework/express");
-const { SUPERTOKENS_DEBUG_NAMESPACE, logDebugMessage } = require("../lib/build/logger");
+const { logDebugMessage } = require("../lib/build/logger");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1215,7 +1215,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 debug: true,
             });
             logDebugMessage("test message successfully logged");
-            assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === true);
             assert(logs.length > 0);
             const logMessage = logs[logs.length - 1].find((log) => log.includes("test message successfully logged"));
             assert(logMessage !== undefined);
