@@ -26,6 +26,7 @@ const {
 } = require("./utils");
 const request = require("supertest");
 const express = require("express");
+const debug = require("debug");
 let STExpress = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
@@ -41,6 +42,7 @@ let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/utils");
 const { middleware } = require("../framework/express");
+const { SUPERTOKENS_DEBUG_NAMESPACE } = require("../lib/build/logger");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1188,6 +1190,64 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
             assert(SessionRecipe.getInstanceOrThrowError().config.getCookieSameSite({}) === "none");
 
+            resetAll();
+        }
+    });
+
+    it("testing that the debug mode is set", async function () {
+        const connectionURI = await startST();
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+                debug: true,
+            });
+            assert(SuperTokens.getInstanceOrThrowError().debugEnabled === true);
+            assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === true);
+            resetAll();
+        }
+
+        {
+            debug.disable();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+                debug: false,
+            });
+            assert(SuperTokens.getInstanceOrThrowError().debugEnabled === false);
+            assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === false);
+            resetAll();
+        }
+
+        {
+            debug.disable();
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+            });
+            assert(SuperTokens.getInstanceOrThrowError().debugEnabled === false);
+            assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === false);
             resetAll();
         }
     });

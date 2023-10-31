@@ -29,10 +29,9 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import type { TypeFramework } from "./framework/types";
 import STError from "./error";
-import { logDebugMessage } from "./logger";
+import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
-import debug from "debug";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -49,10 +48,16 @@ export default class SuperTokens {
 
     telemetryEnabled: boolean;
 
+    debugEnabled: boolean;
+
     constructor(config: TypeInput) {
-        if (config.debug) {
-            debug.enable("com.supertokens");
+        if (config.debug === true) {
+            this.debugEnabled = true;
+            enableDebugLogs();
+        } else {
+            this.debugEnabled = false;
         }
+
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         const originToPrint =
             config.appInfo.origin === undefined
