@@ -42,7 +42,7 @@ let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/utils");
 const { middleware } = require("../framework/express");
-const { SUPERTOKENS_DEBUG_NAMESPACE } = require("../lib/build/logger");
+const { SUPERTOKENS_DEBUG_NAMESPACE, logDebugMessage } = require("../lib/build/logger");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1196,6 +1196,11 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
     it("testing that the debug mode is set", async function () {
         const connectionURI = await startST();
+        let logs = []; // Used to capture the log strings
+        debug.log = function (...args) {
+            logs.push(args);
+        };
+
         {
             STExpress.init({
                 supertokens: {
@@ -1209,12 +1214,16 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
                 debug: true,
             });
-            assert(SuperTokens.getInstanceOrThrowError().debugEnabled === true);
+            logDebugMessage("test message successfully logged");
             assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === true);
+            assert(logs.length > 0);
+            const logMessage = logs[logs.length - 1].find((log) => log.includes("test message successfully logged"));
+            assert(logMessage !== undefined);
             resetAll();
         }
 
         {
+            logs = [];
             debug.disable();
             STExpress.init({
                 supertokens: {
@@ -1228,12 +1237,14 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
                 debug: false,
             });
-            assert(SuperTokens.getInstanceOrThrowError().debugEnabled === false);
+            logDebugMessage("test message - should not be logged");
             assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === false);
+            assert(logs.length === 0);
             resetAll();
         }
 
         {
+            logs = [];
             debug.disable();
             STExpress.init({
                 supertokens: {
@@ -1246,8 +1257,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
-            assert(SuperTokens.getInstanceOrThrowError().debugEnabled === false);
+            logDebugMessage("test message - should not be logged");
             assert(debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE) === false);
+            assert(logs.length === 0);
             resetAll();
         }
     });

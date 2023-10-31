@@ -23,10 +23,12 @@ const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
 */
 
 function logDebugMessage(message: string) {
-    debug(SUPERTOKENS_DEBUG_NAMESPACE)(
-        `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
-    );
-    console.log();
+    if (debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
+        debug(SUPERTOKENS_DEBUG_NAMESPACE)(
+            `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
+        );
+        console.log();
+    }
 }
 
 function enableDebugLogs() {

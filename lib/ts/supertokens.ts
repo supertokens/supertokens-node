@@ -48,14 +48,9 @@ export default class SuperTokens {
 
     telemetryEnabled: boolean;
 
-    debugEnabled: boolean;
-
     constructor(config: TypeInput) {
         if (config.debug === true) {
-            this.debugEnabled = true;
             enableDebugLogs();
-        } else {
-            this.debugEnabled = false;
         }
 
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
