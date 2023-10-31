@@ -29,6 +29,10 @@ function logDebugMessage(message: string) {
     console.log();
 }
 
+function enableDebugLogs() {
+    debug.enable(SUPERTOKENS_DEBUG_NAMESPACE);
+}
+
 let getFileLocation = () => {
     let errorObject = new Error();
     if (errorObject.stack === undefined) {
@@ -48,4 +52,4 @@ let getFileLocation = () => {
     return "N/A";
 };
 
-export { logDebugMessage };
+export { logDebugMessage, enableDebugLogs, SUPERTOKENS_DEBUG_NAMESPACE };
