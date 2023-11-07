@@ -5,8 +5,13 @@ declare const addPermissions: (
     ___: string,
     options: APIOptions,
     __: any
-) => Promise<{
-    status: "OK";
-    createdNewRole: boolean;
-}>;
+) => Promise<
+    | {
+          status: "OK";
+          createdNewRole: boolean;
+      }
+    | {
+          status: "FEATURE_NOT_ENABLED_ERROR";
+      }
+>;
 export default addPermissions;

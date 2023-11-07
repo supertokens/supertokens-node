@@ -1,3 +1,4 @@
+import UserRolesRecipe from "../../../../userroles/recipe";
 import UserRoles from "../../../../userroles";
 import { APIInterface, APIOptions } from "../../../types";
 
@@ -8,10 +9,21 @@ const getPermissionsForRole = async (
     ___: string,
     options: APIOptions,
     __: any
-): Promise<{
-    status: "OK";
-    permissions: string[];
-}> => {
+): Promise<
+    | {
+          status: "OK";
+          permissions: string[];
+      }
+    | { status: "FEATURE_NOT_ENABLED_ERROR" | "UNKNOWN_ROLE_ERROR" }
+> => {
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
+
     const role = options.req.getKeyValueFromQuery("role");
 
     if (role === undefined || typeof role !== "string") {
@@ -22,13 +34,6 @@ const getPermissionsForRole = async (
     }
 
     const response = await UserRoles.getPermissionsForRole(role);
-
-    if (response.status === "UNKNOWN_ROLE_ERROR") {
-        return {
-            status: "OK",
-            permissions: [],
-        };
-    }
 
     return response;
 };

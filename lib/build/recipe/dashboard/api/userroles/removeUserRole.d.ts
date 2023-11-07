@@ -5,12 +5,7 @@ declare const removeUserRole: (
     tenantId: string,
     options: APIOptions,
     __: any
-) => Promise<
-    | {
-          status: "OK";
-      }
-    | {
-          status: "UNKNOWN_ROLE_ERROR";
-      }
->;
+) => Promise<{
+    status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
+}>;
 export default removeUserRole;

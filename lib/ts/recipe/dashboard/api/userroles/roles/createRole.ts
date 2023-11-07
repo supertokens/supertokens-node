@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions } from "../../../types";
+import UserRolesRecipe from "../../../../userroles/recipe";
 import UserRoles from "../../../../userroles";
 
 import STError from "../../../../../error";
@@ -9,8 +10,16 @@ const createRole = async (
     options: APIOptions,
     ___: any
 ): Promise<{
-    status: "OK" | "ROLE_ALREADY_EXITS";
+    status: "OK" | "ROLE_ALREADY_EXITS" | "FEATURE_NOT_ENABLED_ERROR";
 }> => {
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
+
     const requestBody = await options.req.getJSONBody();
     const permissions = requestBody.permissions;
     const role = requestBody.role;
@@ -29,19 +38,9 @@ const createRole = async (
         });
     }
 
-    //TODO: check for a is this role already exists or not before creating the new role.
-
     const response = await UserRoles.createNewRoleOrAddPermissions(role, permissions);
 
-    if (response.status === "OK" && response.createdNewRole === false) {
-        return {
-            status: "ROLE_ALREADY_EXITS",
-        };
-    }
-
-    return {
-        status: "OK",
-    };
+    return response;
 };
 
 export default createRole;

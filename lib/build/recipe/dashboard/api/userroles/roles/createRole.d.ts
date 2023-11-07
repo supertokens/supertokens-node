@@ -6,6 +6,6 @@ declare const createRole: (
     options: APIOptions,
     ___: any
 ) => Promise<{
-    status: "OK" | "ROLE_ALREADY_EXITS";
+    status: "OK" | "ROLE_ALREADY_EXITS" | "FEATURE_NOT_ENABLED_ERROR";
 }>;
 export default createRole;

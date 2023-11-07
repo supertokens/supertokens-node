@@ -1,3 +1,4 @@
+import UserRolesRecipe from "../../../../userroles/recipe";
 import UserRoles from "../../../../userroles";
 import { APIInterface, APIOptions } from "../../../types";
 
@@ -9,8 +10,16 @@ const deleteRole = async (
     options: APIOptions,
     __: any
 ): Promise<{
-    status: "OK" | "ROLE_DO_NOT_EXISTS";
+    status: "OK" | "ROLE_DO_NOT_EXISTS" | "FEATURE_NOT_ENABLED_ERROR";
 }> => {
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
+
     const role = options.req.getKeyValueFromQuery("role");
 
     if (role === undefined || typeof role !== "string") {
@@ -22,14 +31,7 @@ const deleteRole = async (
 
     const response = await UserRoles.deleteRole(role);
 
-    if (response.status === "OK" && response.didRoleExist === false) {
-        return {
-            status: "ROLE_DO_NOT_EXISTS",
-        };
-    }
-    return {
-        status: "OK",
-    };
+    return response;
 };
 
 export default deleteRole;

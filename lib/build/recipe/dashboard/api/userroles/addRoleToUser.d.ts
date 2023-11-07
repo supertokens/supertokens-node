@@ -6,6 +6,6 @@ declare const addRoleToUser: (
     options: APIOptions,
     __: any
 ) => Promise<{
-    status: "OK" | "UNKNOWN_ROLE_ERROR" | "ROLE_ALREADY_ASSIGNED";
+    status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
 }>;
 export default addRoleToUser;

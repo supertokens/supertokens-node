@@ -1,3 +1,4 @@
+import UserRolesRecipe from "../../../../userroles/recipe";
 import UserRoles from "../../../../userroles";
 import { APIInterface, APIOptions } from "../../../types";
 
@@ -9,8 +10,16 @@ const removePermissionsFromRole = async (
     options: APIOptions,
     __: any
 ): Promise<{
-    status: "OK" | "UNKNOWN_ROLE_ERROR";
+    status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
 }> => {
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
+
     const requestBody = await options.req.getJSONBody();
 
     const role = requestBody.role;

@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions } from "../../types";
+import UserRolesRecipe from "../../../userroles/recipe";
 import UserRoles from "../../../userroles";
 
 import STError from "../../../../error";
@@ -8,14 +9,17 @@ const removeUserRole = async (
     tenantId: string,
     options: APIOptions,
     __: any
-): Promise<
-    | {
-          status: "OK";
-      }
-    | {
-          status: "UNKNOWN_ROLE_ERROR";
-      }
-> => {
+): Promise<{
+    status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
+}> => {
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
+
     const userId = options.req.getKeyValueFromQuery("userId");
     const role = options.req.getKeyValueFromQuery("role");
 

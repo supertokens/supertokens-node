@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions } from "../../types";
+import UserRolesRecipe from "../../../userroles/recipe";
 import UserRoles from "../../../userroles";
 
 import STError from "../../../../error";
@@ -9,8 +10,16 @@ const addRoleToUser = async (
     options: APIOptions,
     __: any
 ): Promise<{
-    status: "OK" | "UNKNOWN_ROLE_ERROR" | "ROLE_ALREADY_ASSIGNED";
+    status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
 }> => {
+    try {
+        UserRolesRecipe.getInstanceOrThrowError();
+    } catch (_) {
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
+    }
+
     const requestBody = await options.req.getJSONBody();
 
     const userId = requestBody.userId;
@@ -32,21 +41,7 @@ const addRoleToUser = async (
 
     const response = await UserRoles.addRoleToUser(tenantId, userId, role);
 
-    if (response.status === "OK" && response.didUserAlreadyHaveRole === true) {
-        return {
-            status: "ROLE_ALREADY_ASSIGNED",
-        };
-    }
-
-    if (response.status === "UNKNOWN_ROLE_ERROR") {
-        return {
-            status: "UNKNOWN_ROLE_ERROR",
-        };
-    }
-
-    return {
-        status: "OK",
-    };
+    return response;
 };
 
 export default addRoleToUser;

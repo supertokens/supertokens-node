@@ -3,7 +3,7 @@ import UserRolesRecipe from "../../../../userroles/recipe";
 
 import { APIFunction, APIInterface, APIOptions } from "../../../types";
 
-type Roles = Array<{ role: string; permissions: string[] }>;
+type Roles = { role: string; permissions: string[] }[];
 
 type Response =
     | {
