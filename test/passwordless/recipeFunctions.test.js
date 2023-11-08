@@ -379,7 +379,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert.strictEqual(resp.user.emails[0], "test@example.com");
             assert.strictEqual(resp.user.phoneNumbers[0], undefined);
             assert.strictEqual(typeof resp.user.timeJoined, "number");
-            assert.strictEqual(Object.keys(resp).length, 4);
+            assert(resp.isValidFirstFactorForTenant === undefined);
+            assert(Object.keys(resp).length === 5);
             assert.strictEqual(Object.keys(resp.user).length, 8);
 
             const emailVerified = await EmailVerification.isEmailVerified(
@@ -1023,7 +1024,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         assert(result.status === "OK");
         assert(result.createdNewRecipeUser === true);
-        assert(Object.keys(result).length === 4);
+        assert(result.isValidFirstFactorForTenant === undefined);
+        assert(Object.keys(result).length === 5);
 
         assert(result.user.phoneNumbers[0] === "+12345678901");
         assert(typeof result.user.id === "string");

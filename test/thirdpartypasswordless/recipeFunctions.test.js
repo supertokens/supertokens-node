@@ -532,7 +532,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(resp.user.emails[0] === "test@example.com");
             assert(resp.user.phoneNumbers[0] === undefined);
             assert(typeof resp.user.timeJoined === "number");
-            assert(Object.keys(resp).length === 4);
+            assert(resp.isValidFirstFactorForTenant === undefined);
+            assert(Object.keys(resp).length === 5);
             assert(Object.keys(resp.user).length === 8);
         }
 
@@ -1173,7 +1174,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         assert(result.status === "OK");
         assert(result.createdNewRecipeUser === true);
-        assert(Object.keys(result).length === 4);
+        assert(result.isValidFirstFactorForTenant === undefined);
+        assert(Object.keys(result).length === 5);
 
         assert.strictEqual(result.user.phoneNumbers[0], "+12345678901");
         assert.strictEqual(typeof result.user.id, "string");
