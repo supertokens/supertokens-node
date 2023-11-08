@@ -56,8 +56,8 @@ export default class Wrapper {
         const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
             session,
             factorsSetUpByTheUser: factorsSetup,
-            defaultRequiredFactorsForUser: defaultMFARequirementsForUser,
-            defaultRequiredFactorsForTenant: defaultMFARequirementsForTenant,
+            defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
+            defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
             completedFactors,
             userContext: ctx,
         });
@@ -67,8 +67,8 @@ export default class Wrapper {
             completedFactors,
             mfaRequirementsForAuth: requirements,
             factorsSetUpByTheUser: factorsSetup,
-            defaultRequiredFactorsForUser: defaultMFARequirementsForUser,
-            defaultRequiredFactorsForTenant: defaultMFARequirementsForTenant,
+            defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
+            defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
             userContext,
         });
     }
