@@ -1,10 +1,10 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../../types";
-declare const addPermissions: (
+declare const createRoleOrAddPermissions: (
     _: APIInterface,
-    ___: string,
+    __: string,
     options: APIOptions,
-    __: any
+    ___: any
 ) => Promise<
     | {
           status: "OK";
@@ -14,4 +14,4 @@ declare const addPermissions: (
           status: "FEATURE_NOT_ENABLED_ERROR";
       }
 >;
-export default addPermissions;
+export default createRoleOrAddPermissions;

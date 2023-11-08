@@ -5,7 +5,13 @@ declare const addRoleToUser: (
     tenantId: string,
     options: APIOptions,
     __: any
-) => Promise<{
-    status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
-}>;
+) => Promise<
+    | {
+          status: "OK";
+          didUserAlreadyHaveRole: boolean;
+      }
+    | {
+          status: "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
+      }
+>;
 export default addRoleToUser;

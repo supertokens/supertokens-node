@@ -9,9 +9,15 @@ const removeUserRole = async (
     tenantId: string,
     options: APIOptions,
     __: any
-): Promise<{
-    status: "OK" | "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
-}> => {
+): Promise<
+    | {
+          status: "OK";
+          didUserHaveRole: boolean;
+      }
+    | {
+          status: "UNKNOWN_ROLE_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
+      }
+> => {
     try {
         UserRolesRecipe.getInstanceOrThrowError();
     } catch (_) {

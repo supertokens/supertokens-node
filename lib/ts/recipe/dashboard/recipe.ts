@@ -69,14 +69,13 @@ import analyticsPost from "./api/analytics";
 import listTenants from "./api/listTenants";
 import { userUnlink } from "./api/userdetails/userUnlinkGet";
 import getAllRoles from "./api/userroles/roles/getAllRoles";
-import createRole from "./api/userroles/roles/createRole";
 import deleteRole from "./api/userroles/roles/deleteRole";
-import addPermissions from "./api/userroles/permissions/addPermissions";
 import removePermissionsFromRole from "./api/userroles/permissions/removePermissions";
 import getPermissionsForRole from "./api/userroles/permissions/getPermissionsForRole";
 import addRoleToUser from "./api/userroles/addRoleToUser";
 import getRolesForUser from "./api/userroles/getRolesForUser";
 import removeUserRole from "./api/userroles/removeUserRole";
+import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -424,8 +423,8 @@ export default class Recipe extends RecipeModule {
         } else if (id === USERROLES_LIST_API) {
             apiFunction = getAllRoles;
         } else if (id === USERROLES_ROLE_API) {
-            if (req.getMethod() === "post") {
-                apiFunction = createRole;
+            if (req.getMethod() === "put") {
+                apiFunction = createRoleOrAddPermissions;
             }
 
             if (req.getMethod() === "delete") {
@@ -434,10 +433,6 @@ export default class Recipe extends RecipeModule {
         } else if (id === USERROLES_PERMISSIONS_API) {
             if (req.getMethod() === "get") {
                 apiFunction = getPermissionsForRole;
-            }
-
-            if (req.getMethod() === "put") {
-                apiFunction = addPermissions;
             }
         } else if (id === USERROLES_REMOVE_PERMISSIONS_API) {
             apiFunction = removePermissionsFromRole;

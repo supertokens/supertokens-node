@@ -5,7 +5,13 @@ declare const deleteRole: (
     ___: string,
     options: APIOptions,
     __: any
-) => Promise<{
-    status: "OK" | "ROLE_DO_NOT_EXISTS" | "FEATURE_NOT_ENABLED_ERROR";
-}>;
+) => Promise<
+    | {
+          status: "OK";
+          didRoleExist: boolean;
+      }
+    | {
+          status: "FEATURE_NOT_ENABLED_ERROR";
+      }
+>;
 export default deleteRole;

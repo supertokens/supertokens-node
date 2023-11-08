@@ -1,21 +1,15 @@
+import { APIInterface, APIOptions } from "../../../types";
 import UserRolesRecipe from "../../../../userroles/recipe";
 import UserRoles from "../../../../userroles";
-import { APIInterface, APIOptions } from "../../../types";
 
 import STError from "../../../../../error";
 
-const addPermissions = async (
+const createRoleOrAddPermissions = async (
     _: APIInterface,
-    ___: string,
+    __: string,
     options: APIOptions,
-    __: any
-): Promise<
-    | {
-          status: "OK";
-          createdNewRole: boolean;
-      }
-    | { status: "FEATURE_NOT_ENABLED_ERROR" }
-> => {
+    ___: any
+): Promise<{ status: "OK"; createdNewRole: boolean } | { status: "FEATURE_NOT_ENABLED_ERROR" }> => {
     try {
         UserRolesRecipe.getInstanceOrThrowError();
     } catch (_) {
@@ -25,8 +19,8 @@ const addPermissions = async (
     }
 
     const requestBody = await options.req.getJSONBody();
-    const role = requestBody.role;
     const permissions = requestBody.permissions;
+    const role = requestBody.role;
 
     if (role === undefined || typeof role !== "string") {
         throw new STError({
@@ -47,4 +41,4 @@ const addPermissions = async (
     return response;
 };
 
-export default addPermissions;
+export default createRoleOrAddPermissions;
