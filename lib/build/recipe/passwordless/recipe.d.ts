@@ -75,5 +75,6 @@ export default class Recipe extends RecipeModule {
         createdNewRecipeUser: boolean;
         recipeUserId: import("../..").RecipeUserId;
         user: import("../../types").User;
+        isValidFirstFactorForTenant: boolean | undefined;
     }>;
 }

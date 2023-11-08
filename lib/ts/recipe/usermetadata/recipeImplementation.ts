@@ -30,6 +30,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
         },
 
+        updateUserMetadataInternal: function ({ userId, metadataUpdate }) {
+            return querier.sendPutRequest(new NormalisedURLPath("/recipe/user/metadata"), {
+                userId,
+                metadataUpdate,
+            });
+        },
+
         clearUserMetadata: function ({ userId }) {
             return querier.sendPostRequest(new NormalisedURLPath("/recipe/user/metadata/remove"), {
                 userId,

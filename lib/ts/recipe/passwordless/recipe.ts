@@ -315,6 +315,7 @@ export default class Recipe extends RecipeModule {
                 createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser,
                 recipeUserId: consumeCodeResponse.recipeUserId,
                 user: consumeCodeResponse.user,
+                isValidFirstFactorForTenant: consumeCodeResponse.isValidFirstFactorForTenant,
             };
         } else {
             throw new Error("Failed to create user. Please retry");

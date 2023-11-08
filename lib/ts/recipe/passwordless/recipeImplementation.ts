@@ -57,6 +57,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     createdNewRecipeUser: response.createdNewUser,
                     user: response.user,
                     recipeUserId: response.recipeUserId,
+                    isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
                 };
             }
 
@@ -74,6 +75,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 createdNewRecipeUser: response.createdNewUser,
                 user: updatedUser,
                 recipeUserId: response.recipeUserId,
+                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
             };
         },
         createCode: async function (input) {

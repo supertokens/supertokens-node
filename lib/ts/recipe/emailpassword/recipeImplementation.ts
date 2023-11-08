@@ -28,7 +28,13 @@ export default function getRecipeInterface(
                 userContext: any;
             }
         ): Promise<
-            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "OK";
+                  user: UserType;
+                  recipeUserId: RecipeUserId;
+                  isValidFirstFactorForTenant: boolean | undefined;
+              }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             const response = await this.createNewRecipeUser({
                 email,
@@ -50,6 +56,7 @@ export default function getRecipeInterface(
                 status: "OK",
                 user: updatedUser,
                 recipeUserId: response.recipeUserId,
+                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
             };
         },
 
@@ -63,6 +70,7 @@ export default function getRecipeInterface(
                   status: "OK";
                   user: User;
                   recipeUserId: RecipeUserId;
+                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -76,8 +84,12 @@ export default function getRecipeInterface(
                 }
             );
             if (resp.status === "OK") {
-                resp.user = new User(resp.user);
-                resp.recipeUserId = new RecipeUserId(resp.recipeUserId);
+                return {
+                    status: "OK",
+                    user: new User(resp.user),
+                    recipeUserId: new RecipeUserId(resp.recipeUserId),
+                    isValidFirstFactorForTenant: resp.isValidFirstFactorForTenant,
+                };
             }
             return resp;
 
@@ -96,7 +108,13 @@ export default function getRecipeInterface(
             tenantId: string;
             userContext: any;
         }): Promise<
-            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }
+            | {
+                  status: "OK";
+                  user: UserType;
+                  recipeUserId: RecipeUserId;
+                  isValidFirstFactorForTenant: boolean | undefined;
+              }
+            | { status: "WRONG_CREDENTIALS_ERROR" }
         > {
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),

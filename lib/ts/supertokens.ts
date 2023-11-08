@@ -94,20 +94,33 @@ export default class SuperTokens {
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
         let multitenancyFound = false;
+        let userMetadataFound = false;
+        let multiFactorAuthFound = false;
+
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
         // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
         let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
+        let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
+        let MultiFactorAuthRecipe = require("./recipe/multiFactorAuth/recipe").default;
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
+            } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {
+                userMetadataFound = true;
+            } else if (recipeModule.getRecipeId() === MultiFactorAuthRecipe.RECIPE_ID) {
+                multiFactorAuthFound = true;
             }
             return recipeModule;
         });
 
         if (!multitenancyFound) {
             this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
+        if (multiFactorAuthFound && !userMetadataFound) {
+            // we want user metadata to be initialized if MFA is enabled
+            this.recipeModules.push(UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv));
         }
 
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
