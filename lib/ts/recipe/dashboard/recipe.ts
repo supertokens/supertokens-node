@@ -282,7 +282,7 @@ export default class Recipe extends RecipeModule {
                 id: USERROLES_ROLE_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERROLES_ROLE_API)),
                 disabled: false,
-                method: "post",
+                method: "put",
             },
             {
                 id: USERROLES_ROLE_API,
