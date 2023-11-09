@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [16.4.1] - 2023-11-09
 
 -   Added `networkInterceptor` to the `TypeInput` config.
--   This can be used to capture/modify all the HTTP requests sent to the core.
--   Solves the issue - https://github.com/supertokens/supertokens-core/issues/865
+    -   This can be used to capture/modify all the HTTP requests sent to the core.
+    -   Solves the issue - https://github.com/supertokens/supertokens-core/issues/865
 
 ## [16.4.0] - 2023-10-26
 
