@@ -30,10 +30,12 @@ export default function getRecipeInterface(
             payload,
             validitySeconds,
             useStaticSigningKey,
+            userContext,
         }: {
             payload?: any;
             useStaticSigningKey?: boolean;
             validitySeconds?: number;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -48,13 +50,17 @@ export default function getRecipeInterface(
                 validitySeconds = config.jwtValiditySeconds;
             }
 
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
-                payload: payload ?? {},
-                validity: validitySeconds,
-                useStaticSigningKey: useStaticSigningKey !== false,
-                algorithm: "RS256",
-                jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/jwt"),
+                {
+                    payload: payload ?? {},
+                    validity: validitySeconds,
+                    useStaticSigningKey: useStaticSigningKey !== false,
+                    algorithm: "RS256",
+                    jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
+                },
+                userContext
+            );
 
             if (response.status === "OK") {
                 return {
@@ -68,10 +74,11 @@ export default function getRecipeInterface(
             }
         },
 
-        getJWKS: async function (): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
+        getJWKS: async function (userContext: any): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
             const { body, headers } = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath("/.well-known/jwks.json"),
-                {}
+                {},
+                userContext
             );
             let validityInSeconds = defaultJWKSMaxAge;
             const cacheControl = headers.get("Cache-Control");

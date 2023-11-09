@@ -79,6 +79,7 @@ export default function getRecipeInterface(
             sessionDataInDatabase = {},
             disableAntiCsrf,
             tenantId,
+            userContext,
         }: {
             userId: string;
             recipeUserId: RecipeUserId;
@@ -95,6 +96,7 @@ export default function getRecipeInterface(
                 tenantId,
                 recipeUserId,
                 disableAntiCsrf === true,
+                userContext,
                 accessTokenPayload,
                 sessionDataInDatabase
             );
@@ -127,6 +129,7 @@ export default function getRecipeInterface(
             accessToken: accessTokenString,
             antiCsrfToken,
             options,
+            userContext,
         }: {
             accessToken: string;
             antiCsrfToken?: string;
@@ -192,7 +195,8 @@ export default function getRecipeInterface(
                 accessToken,
                 antiCsrfToken,
                 options?.antiCsrfCheck !== false,
-                options?.checkDatabase === true
+                options?.checkDatabase === true,
+                userContext
             );
 
             logDebugMessage("getSession: Success!");
@@ -282,10 +286,12 @@ export default function getRecipeInterface(
 
         getSessionInformation: async function ({
             sessionHandle,
+            userContext,
         }: {
             sessionHandle: string;
+            userContext: any;
         }): Promise<SessionInformation | undefined> {
-            return SessionFunctions.getSessionInformation(helpers, sessionHandle);
+            return SessionFunctions.getSessionInformation(helpers, sessionHandle, userContext);
         },
 
         refreshSession: async function (
@@ -294,6 +300,7 @@ export default function getRecipeInterface(
                 refreshToken,
                 antiCsrfToken,
                 disableAntiCsrf,
+                userContext,
             }: { refreshToken: string; antiCsrfToken?: string; disableAntiCsrf: boolean; userContext: any }
         ): Promise<SessionContainerInterface> {
             if (
@@ -311,7 +318,8 @@ export default function getRecipeInterface(
                 helpers,
                 refreshToken,
                 antiCsrfToken,
-                disableAntiCsrf
+                disableAntiCsrf,
+                userContext
             );
 
             logDebugMessage("refreshSession: Success!");
@@ -363,10 +371,14 @@ export default function getRecipeInterface(
                     ? {}
                     : input.newAccessTokenPayload;
 
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
-                accessToken: input.accessToken,
-                userDataInJWT: newAccessTokenPayload,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/session/regenerate"),
+                {
+                    accessToken: input.accessToken,
+                    userDataInJWT: newAccessTokenPayload,
+                },
+                input.userContext
+            );
             if (response.status === "UNAUTHORISED") {
                 return undefined;
             }
@@ -388,16 +400,19 @@ export default function getRecipeInterface(
             tenantId,
             revokeAcrossAllTenants,
             revokeSessionsForLinkedAccounts,
+            userContext,
         }: {
             userId: string;
             revokeSessionsForLinkedAccounts: boolean;
             tenantId?: string;
             revokeAcrossAllTenants?: boolean;
+            userContext: any;
         }) {
             return SessionFunctions.revokeAllSessionsForUser(
                 helpers,
                 userId,
                 revokeSessionsForLinkedAccounts,
+                userContext,
                 tenantId,
                 revokeAcrossAllTenants
             );
@@ -408,6 +423,7 @@ export default function getRecipeInterface(
             fetchSessionsForAllLinkedAccounts,
             tenantId,
             fetchAcrossAllTenants,
+            userContext,
         }: {
             userId: string;
             fetchSessionsForAllLinkedAccounts: boolean;
@@ -419,27 +435,42 @@ export default function getRecipeInterface(
                 helpers,
                 userId,
                 fetchSessionsForAllLinkedAccounts,
+                userContext,
                 tenantId,
                 fetchAcrossAllTenants
             );
         },
 
-        revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
-            return SessionFunctions.revokeSession(helpers, sessionHandle);
+        revokeSession: function ({
+            sessionHandle,
+            userContext,
+        }: {
+            sessionHandle: string;
+            userContext: any;
+        }): Promise<boolean> {
+            return SessionFunctions.revokeSession(helpers, sessionHandle, userContext);
         },
 
-        revokeMultipleSessions: function ({ sessionHandles }: { sessionHandles: string[] }) {
-            return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles);
+        revokeMultipleSessions: function ({
+            sessionHandles,
+            userContext,
+        }: {
+            sessionHandles: string[];
+            userContext: any;
+        }) {
+            return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles, userContext);
         },
 
         updateSessionDataInDatabase: function ({
             sessionHandle,
             newSessionData,
+            userContext,
         }: {
             sessionHandle: string;
             newSessionData: any;
+            userContext: any;
         }): Promise<boolean> {
-            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData);
+            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData, userContext);
         },
 
         mergeIntoAccessTokenPayload: async function (
@@ -470,7 +501,12 @@ export default function getRecipeInterface(
                 }
             }
 
-            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
+            return SessionFunctions.updateAccessTokenPayload(
+                helpers,
+                sessionHandle,
+                newAccessTokenPayload,
+                userContext
+            );
         },
 
         fetchAndSetClaim: async function <T>(

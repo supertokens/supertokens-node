@@ -11,6 +11,7 @@ export declare function createNewSession(
     tenantId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
+    userContext: any,
     accessTokenPayload?: any,
     sessionDataInDatabase?: any
 ): Promise<CreateOrRefreshAPIResponse>;
@@ -22,7 +23,8 @@ export declare function getSession(
     parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
-    alwaysCheckCore: boolean
+    alwaysCheckCore: boolean,
+    userContext: any
 ): Promise<{
     session: {
         handle: string;
@@ -44,7 +46,8 @@ export declare function getSession(
  */
 export declare function getSessionInformation(
     helpers: Helpers,
-    sessionHandle: string
+    sessionHandle: string,
+    userContext: any
 ): Promise<SessionInformation | undefined>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
@@ -54,7 +57,8 @@ export declare function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    disableAntiCsrf: boolean
+    disableAntiCsrf: boolean,
+    userContext: any
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
@@ -64,6 +68,7 @@ export declare function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
     revokeSessionsForLinkedAccounts: boolean,
+    userContext: any,
     tenantId?: string,
     revokeAcrossAllTenants?: boolean
 ): Promise<string[]>;
@@ -74,6 +79,7 @@ export declare function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
+    userContext: any,
     tenantId?: string,
     fetchAcrossAllTenants?: boolean
 ): Promise<string[]>;
@@ -81,22 +87,28 @@ export declare function getAllSessionHandlesForUser(
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export declare function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean>;
+export declare function revokeSession(helpers: Helpers, sessionHandle: string, userContext: any): Promise<boolean>;
 /**
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
  */
-export declare function revokeMultipleSessions(helpers: Helpers, sessionHandles: string[]): Promise<string[]>;
+export declare function revokeMultipleSessions(
+    helpers: Helpers,
+    sessionHandles: string[],
+    userContext: any
+): Promise<string[]>;
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
 export declare function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
-    newSessionData: any
+    newSessionData: any,
+    userContext: any
 ): Promise<boolean>;
 export declare function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
-    newAccessTokenPayload: any
+    newAccessTokenPayload: any,
+    userContext: any
 ): Promise<boolean>;

@@ -18,6 +18,8 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { RATE_LIMIT_STATUS_CODE } from "./constants";
+import { NetworkInterceptor } from "./types";
+import { logDebugMessage } from "./logger";
 
 export class Querier {
     private static initCalled = false;
@@ -27,6 +29,8 @@ export class Querier {
 
     private static lastTriedIndex = 0;
     private static hostsAliveForTesting: Set<string> = new Set<string>();
+
+    private static networkInterceptor: NetworkInterceptor | undefined = undefined;
 
     private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined;
     private rIdToCore: string | undefined;
@@ -96,19 +100,25 @@ export class Querier {
         return new Querier(Querier.hosts, rIdToCore);
     }
 
-    static init(hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[], apiKey?: string) {
+    static init(
+        hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[],
+        apiKey?: string,
+        networkInterceptor?: NetworkInterceptor
+    ) {
         if (!Querier.initCalled) {
+            logDebugMessage("querier initialized");
             Querier.initCalled = true;
             Querier.hosts = hosts;
             Querier.apiKey = apiKey;
             Querier.apiVersion = undefined;
             Querier.lastTriedIndex = 0;
             Querier.hostsAliveForTesting = new Set<string>();
+            Querier.networkInterceptor = networkInterceptor;
         }
     }
 
     // path should start with "/"
-    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any): Promise<T> => {
+    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: any): Promise<T> => {
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "POST",
@@ -130,6 +140,22 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "post",
+                            headers: headers,
+                            body: body,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                    if (request.body !== undefined) {
+                        body = request.body;
+                    }
+                }
                 return doFetch(url, {
                     method: "POST",
                     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -142,7 +168,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendDeleteRequest = async (path: NormalisedURLPath, body: any, params?: any): Promise<any> => {
+    sendDeleteRequest = async (path: NormalisedURLPath, body: any, userContext: any, params?: any): Promise<any> => {
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
@@ -161,6 +187,27 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "delete",
+                            headers: headers,
+                            params: params,
+                            body: body,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                    if (request.body !== undefined) {
+                        body = request.body;
+                    }
+                    if (request.params !== undefined) {
+                        params = request.params;
+                    }
+                }
+
                 const finalURL = new URL(url);
                 const searchParams = new URLSearchParams(params);
                 finalURL.search = searchParams.toString();
@@ -179,7 +226,8 @@ export class Querier {
     // path should start with "/"
     sendGetRequest = async (
         path: NormalisedURLPath,
-        params: Record<string, boolean | number | string | undefined>
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: any
     ): Promise<any> => {
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -199,6 +247,22 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "get",
+                            headers: headers,
+                            params: params,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                    if (request.params !== undefined) {
+                        params = request.params;
+                    }
+                }
                 const finalURL = new URL(url);
                 const searchParams = new URLSearchParams(
                     Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
@@ -216,7 +280,8 @@ export class Querier {
 
     sendGetRequestWithResponseHeaders = async (
         path: NormalisedURLPath,
-        params: Record<string, boolean | number | string | undefined>
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: any
     ): Promise<{ body: any; headers: Headers }> => {
         return await this.sendRequestHelper(
             path,
@@ -236,6 +301,23 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "get",
+                            headers: headers,
+                            params: params,
+                            body: undefined,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                    if (request.params !== undefined) {
+                        params = request.params;
+                    }
+                }
                 const finalURL = new URL(url);
                 const searchParams = new URLSearchParams(
                     Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
@@ -251,7 +333,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
+    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: any): Promise<any> => {
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "PUT",
@@ -269,6 +351,23 @@ export class Querier {
                         ...headers,
                         rid: this.rIdToCore,
                     };
+                }
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "put",
+                            headers: headers,
+                            params: undefined,
+                            body: body,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                    if (request.body !== undefined) {
+                        body = request.body;
+                    }
                 }
 
                 return doFetch(url, {

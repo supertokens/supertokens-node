@@ -83,7 +83,8 @@ export default class SuperTokens {
                         basePath: new NormalisedURLPath(h.trim()),
                     };
                 }),
-            config.supertokens?.apiKey
+            config.supertokens?.apiKey,
+            config.supertokens?.networkInterceptor
         );
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");
@@ -183,7 +184,8 @@ export default class SuperTokens {
             {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
-            }
+            },
+            undefined
         );
         return Number(response.count);
     };
@@ -207,12 +209,16 @@ export default class SuperTokens {
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map"), {
-                superTokensUserId: input.superTokensUserId,
-                externalUserId: input.externalUserId,
-                externalUserIdInfo: input.externalUserIdInfo,
-                force: input.force,
-            });
+            return await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/userid/map"),
+                {
+                    superTokensUserId: input.superTokensUserId,
+                    externalUserId: input.externalUserId,
+                    externalUserIdInfo: input.externalUserIdInfo,
+                    force: input.force,
+                },
+                undefined
+            );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
         }
@@ -236,10 +242,14 @@ export default class SuperTokens {
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/userid/map"), {
-                userId: input.userId,
-                userIdType: input.userIdType,
-            });
+            let response = await querier.sendGetRequest(
+                new NormalisedURLPath("/recipe/userid/map"),
+                {
+                    userId: input.userId,
+                    userIdType: input.userIdType,
+                },
+                undefined
+            );
             return response;
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -257,11 +267,15 @@ export default class SuperTokens {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map/remove"), {
-                userId: input.userId,
-                userIdType: input.userIdType,
-                force: input.force,
-            });
+            return await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/userid/map/remove"),
+                {
+                    userId: input.userId,
+                    userIdType: input.userIdType,
+                    force: input.force,
+                },
+                undefined
+            );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
         }
@@ -277,11 +291,15 @@ export default class SuperTokens {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
-            return await querier.sendPutRequest(new NormalisedURLPath("/recipe/userid/external-user-id-info"), {
-                userId: input.userId,
-                userIdType: input.userIdType,
-                externalUserIdInfo: input.externalUserIdInfo,
-            });
+            return await querier.sendPutRequest(
+                new NormalisedURLPath("/recipe/userid/external-user-id-info"),
+                {
+                    userId: input.userId,
+                    userIdType: input.userIdType,
+                    externalUserIdInfo: input.externalUserIdInfo,
+                },
+                undefined
+            );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
         }
