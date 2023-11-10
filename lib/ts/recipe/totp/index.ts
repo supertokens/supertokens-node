@@ -1,0 +1,78 @@
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+import Recipe from "./recipe";
+import { RecipeInterface, APIOptions, APIInterface } from "./types";
+
+export default class Wrapper {
+    static init = Recipe.init;
+
+    static async createDevice(userId: string, deviceName?: string, skew?: number, period?: number, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
+            userId,
+            deviceName,
+            skew,
+            period,
+            userContext: userContext ?? {},
+        });
+    }
+
+    static async updateDevice(userId: string, existingDeviceName: string, newDeviceName: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
+            userId,
+            existingDeviceName,
+            newDeviceName,
+            userContext: userContext ?? {},
+        });
+    }
+
+    static async listDevices(userId: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
+            userId,
+            userContext: userContext ?? {},
+        });
+    }
+
+    static async removeDevice(userId: string, deviceName: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeDevice({
+            userId,
+            deviceName,
+            userContext: userContext ?? {},
+        });
+    }
+
+    static async verifyDevice(tenantId: string, userId: string, deviceName: string, totp: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyDevice({
+            tenantId,
+            userId,
+            deviceName,
+            totp,
+            userContext: userContext ?? {},
+        });
+    }
+
+    static async verifyTOTP(tenantId: string, userId: string, totp: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyTOTP({
+            tenantId,
+            userId,
+            totp,
+            userContext: userContext ?? {},
+        });
+    }
+}
+
+export let init = Wrapper.init;
+
+export type { RecipeInterface, APIOptions, APIInterface };
