@@ -26,7 +26,7 @@ export declare class Querier {
         networkInterceptor?: NetworkInterceptor
     ): void;
     sendPostRequest: <T = any>(path: NormalisedURLPath, body: any, userContext: any) => Promise<T>;
-    sendDeleteRequest: (path: NormalisedURLPath, body: any, userContext: any, params?: any) => Promise<any>;
+    sendDeleteRequest: (path: NormalisedURLPath, body: any, params: any, userContext: any) => Promise<any>;
     sendGetRequest: (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,

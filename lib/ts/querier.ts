@@ -168,7 +168,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendDeleteRequest = async (path: NormalisedURLPath, body: any, userContext: any, params?: any): Promise<any> => {
+    sendDeleteRequest = async (path: NormalisedURLPath, body: any, params: any, userContext: any): Promise<any> => {
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
@@ -308,7 +308,6 @@ export class Querier {
                             method: "get",
                             headers: headers,
                             params: params,
-                            body: undefined,
                         },
                         userContext
                     );
@@ -358,7 +357,6 @@ export class Querier {
                             url: url,
                             method: "put",
                             headers: headers,
-                            params: undefined,
                             body: body,
                         },
                         userContext
