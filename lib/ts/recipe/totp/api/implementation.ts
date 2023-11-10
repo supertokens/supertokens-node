@@ -2,14 +2,12 @@ import { APIInterface } from "../";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        createDevicePOST: async function ({ deviceName, period, skew, options, session, userContext }) {
+        createDevicePOST: async function ({ deviceName, options, session, userContext }) {
             const userId = session.getUserId();
 
             return await options.recipeImplementation.createDevice({
                 userId,
                 deviceName: deviceName,
-                period: period,
-                skew: skew,
                 userContext: userContext,
             });
         },

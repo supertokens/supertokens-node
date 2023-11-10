@@ -35,25 +35,13 @@ export default async function createDeviceAPI(
 
     const bodyParams = await options.req.getJSONBody();
     const deviceName = bodyParams.deviceName;
-    const period = bodyParams.period;
-    const skew = bodyParams.skew;
 
     if (deviceName !== undefined && typeof deviceName !== "string") {
         throw new Error("deviceName must be a string");
     }
 
-    if (period !== undefined && typeof period !== "number") {
-        throw new Error("period must be a number");
-    }
-
-    if (skew !== undefined && typeof skew !== "number") {
-        throw new Error("skew must be a number");
-    }
-
     let response = await apiImplementation.createDevicePOST({
         deviceName,
-        period,
-        skew,
         options,
         session,
         userContext,

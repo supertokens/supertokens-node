@@ -23,6 +23,9 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 
     return {
+        defaultSkew: config?.defaultSkew ?? 1,
+        defaultPeriod: config?.defaultPeriod ?? 30,
+
         override,
     };
 }

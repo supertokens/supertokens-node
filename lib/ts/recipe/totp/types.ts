@@ -19,6 +19,9 @@ import { GeneralErrorResponse } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 
 export type TypeInput = {
+    defaultSkew?: number;
+    defaultPeriod?: number;
+
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -29,6 +32,9 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    defaultSkew: number;
+    defaultPeriod: number;
+
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -126,8 +132,6 @@ export type APIOptions = {
 export type APIInterface = {
     createDevicePOST: (input: {
         deviceName?: string;
-        period?: number;
-        skew?: number;
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: any;

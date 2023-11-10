@@ -1,8 +1,9 @@
 import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { TypeNormalisedInput } from "./types";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
         createDevice: async (input: {
             userId: string;
@@ -14,9 +15,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return await querier.sendPostRequest(new NormalisedURLPath("/recipe/totp/device"), {
                 userId: input.userId,
                 deviceName: input.deviceName,
+                skew: input.skew ?? config.defaultSkew,
+                period: input.period ?? config.defaultPeriod,
                 userContext: input.userContext,
             });
         },
+
         updateDevice: (input: {
             userId: string;
             existingDeviceName: string;

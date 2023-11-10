@@ -4,6 +4,8 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 export declare type TypeInput = {
+    defaultSkew?: number;
+    defaultPeriod?: number;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -13,6 +15,8 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    defaultSkew: number;
+    defaultPeriod: number;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -107,8 +111,6 @@ export declare type APIOptions = {
 export declare type APIInterface = {
     createDevicePOST: (input: {
         deviceName?: string;
-        period?: number;
-        skew?: number;
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: any;
