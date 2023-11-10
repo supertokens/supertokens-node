@@ -13,6 +13,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [16.4.0] - 2023-10-26
+
+-   Added `debug` property to `TypeInput`. When set to `true`, it will enable debug logs.
+
+## [16.3.4] - 2023-10-22
+
+### Fixes
+
+-   Fixes an issue where sometimes the `Access-Control-Expose-Headers` header value would contain duplicates
+
+## [16.3.3] - 2023-10-19
+
+-   Tests `null` values in `ProviderConfig` saved in core
+
+## [16.4.0] - 2023-10-26
+
+-   Added `debug` property to `TypeInput`. When set to `true`, it will enable debug logs.
+
+## [16.3.4] - 2023-10-22
+
+### Fixes
+
+-   Fixes an issue where sometimes the `Access-Control-Expose-Headers` header value would contain duplicates
+
+## [16.3.3] - 2023-10-19
+
+-   Tests `null` values in `ProviderConfig` saved in core
+
 ## [16.3.2] - 2023-10-16
 
 ### Fixes

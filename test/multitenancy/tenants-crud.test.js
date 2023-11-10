@@ -211,6 +211,74 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         assert(tenantConfig.thirdParty.providers[0].clients[0].clientId === "abcd");
     });
 
+    it("test creation of thirdParty config with nulls", async function () {
+        const connectionURI = await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+
+        const thirdPartyConfig = {
+            thirdPartyId: "google",
+            clients: [{ clientId: "abcd" }],
+            authorizationEndpointQueryParams: {
+                key1: null,
+                key2: "value",
+            },
+            tokenEndpointBodyParams: {
+                key1: null,
+                key2: "value",
+            },
+            userInfoEndpointQueryParams: {
+                key1: null,
+                key2: "value",
+            },
+            userInfoEndpointHeaders: {
+                key1: null,
+                key2: "value",
+            },
+        };
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t1", thirdPartyConfig);
+
+        const tenantConfig = await Multitenancy.getTenant("t1");
+
+        assert(tenantConfig.thirdParty.providers.length === 1);
+        assert(tenantConfig.thirdParty.providers[0].thirdPartyId === "google");
+        assert(tenantConfig.thirdParty.providers[0].clients.length === 1);
+        assert(tenantConfig.thirdParty.providers[0].clients[0].clientId === "abcd");
+        assert.deepEqual(
+            tenantConfig.thirdParty.providers[0].authorizationEndpointQueryParams,
+            thirdPartyConfig.authorizationEndpointQueryParams
+        );
+        assert.deepEqual(
+            tenantConfig.thirdParty.providers[0].tokenEndpointBodyParams,
+            thirdPartyConfig.tokenEndpointBodyParams
+        );
+        assert.deepEqual(
+            tenantConfig.thirdParty.providers[0].userInfoEndpointQueryParams,
+            thirdPartyConfig.userInfoEndpointQueryParams
+        );
+        assert.deepEqual(
+            tenantConfig.thirdParty.providers[0].userInfoEndpointHeaders,
+            thirdPartyConfig.userInfoEndpointHeaders
+        );
+    });
+
     it("test deletion of thirdparty id", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({

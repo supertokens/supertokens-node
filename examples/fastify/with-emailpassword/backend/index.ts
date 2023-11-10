@@ -20,12 +20,8 @@ fastify.register(cors, {
     credentials: true,
 });
 
-(async () => {
-    await fastify.register(formDataPlugin);
-    await fastify.register(plugin);
-
-    await fastify.listen(8000);
-})();
+fastify.register(formDataPlugin);
+fastify.register(plugin);
 
 fastify.setErrorHandler(errorHandler());
 
