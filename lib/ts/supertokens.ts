@@ -166,7 +166,7 @@ export default class SuperTokens {
         return Array.from(headerSet);
     };
 
-    getUserCount = async (includeRecipeIds?: string[], tenantId?: string): Promise<number> => {
+    getUserCount = async (includeRecipeIds?: string[], tenantId?: string, userContext?: any): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
@@ -185,7 +185,7 @@ export default class SuperTokens {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
             },
-            undefined
+            userContext === undefined ? {} : userContext
         );
         return Number(response.count);
     };
@@ -195,6 +195,7 @@ export default class SuperTokens {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
+        userContext?: any;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -217,7 +218,7 @@ export default class SuperTokens {
                     externalUserIdInfo: input.externalUserIdInfo,
                     force: input.force,
                 },
-                undefined
+                input.userContext === undefined ? {} : input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -227,6 +228,7 @@ export default class SuperTokens {
     getUserIdMapping = async function (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        userContext?: any;
     }): Promise<
         | {
               status: "OK";
@@ -248,7 +250,7 @@ export default class SuperTokens {
                     userId: input.userId,
                     userIdType: input.userIdType,
                 },
-                undefined
+                input.userContext === undefined ? {} : input.userContext
             );
             return response;
         } else {
@@ -260,6 +262,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
+        userContext?: any;
     }): Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -274,7 +277,7 @@ export default class SuperTokens {
                     userIdType: input.userIdType,
                     force: input.force,
                 },
-                undefined
+                input.userContext === undefined ? {} : input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -285,6 +288,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
+        userContext?: any;
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }> {
@@ -298,7 +302,7 @@ export default class SuperTokens {
                     userIdType: input.userIdType,
                     externalUserIdInfo: input.externalUserIdInfo,
                 },
-                undefined
+                input.userContext === undefined ? {} : input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
