@@ -88,7 +88,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
         const listRes = await Totp.listDevices("testUserId");
         assert.equal(listRes.status, "OK");
         assert.equal(listRes.devices.length, 1);
-        assert.equal(listRes.devices[0].deviceName, "newDeviceName");
+        assert.equal(listRes.devices[0].name, "newDeviceName");
     });
 
     it("test remove device", async function () {
