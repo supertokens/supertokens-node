@@ -145,6 +145,7 @@ export declare type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
+              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";

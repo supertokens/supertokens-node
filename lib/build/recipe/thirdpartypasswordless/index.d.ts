@@ -33,6 +33,7 @@ export default class Wrapper {
               createdNewRecipeUser: boolean;
               user: import("../../types").User;
               recipeUserId: RecipeUserId;
+              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -107,6 +108,7 @@ export default class Wrapper {
               createdNewRecipeUser: boolean;
               user: import("../../types").User;
               recipeUserId: RecipeUserId;
+              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -207,6 +209,7 @@ export default class Wrapper {
         createdNewRecipeUser: boolean;
         recipeUserId: RecipeUserId;
         user: import("../../types").User;
+        isValidFirstFactorForTenant: boolean | undefined;
     }>;
     static sendEmail(
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {

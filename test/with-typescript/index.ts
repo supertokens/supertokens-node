@@ -1553,6 +1553,7 @@ Passwordless.init({
                                 createdNewRecipeUser: user.createdNewRecipeUser,
                                 recipeUserId: user.recipeUserId,
                                 user: user.user,
+                                isValidFirstFactorForTenant: user.isValidFirstFactorForTenant,
                             };
                         }
                     }

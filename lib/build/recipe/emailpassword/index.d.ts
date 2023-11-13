@@ -16,6 +16,7 @@ export default class Wrapper {
               status: "OK";
               user: import("../../types").User;
               recipeUserId: RecipeUserId;
+              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -31,6 +32,7 @@ export default class Wrapper {
               status: "OK";
               user: import("../../types").User;
               recipeUserId: RecipeUserId;
+              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";

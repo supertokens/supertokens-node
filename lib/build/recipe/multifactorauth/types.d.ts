@@ -4,6 +4,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, User } from "../../types";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 export declare type MFARequirementList = (
     | {
           oneOf: string[];
@@ -43,16 +44,16 @@ export declare type RecipeInterface = {
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpByTheUser: string[];
-        defaultRequiredFactorsForUser: string[];
-        defaultRequiredFactorsForTenant: string[];
+        defaultRequiredFactorIdsForUser: string[];
+        defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: any;
     }) => Promise<boolean>;
     getMFARequirementsForAuth: (input: {
         session: SessionContainer;
         factorsSetUpByTheUser: string[];
-        defaultRequiredFactorsForUser: string[];
-        defaultRequiredFactorsForTenant: string[];
+        defaultRequiredFactorIdsForUser: string[];
+        defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: any;
     }) => Promise<MFARequirementList> | MFARequirementList;
@@ -62,6 +63,49 @@ export declare type RecipeInterface = {
         userContext?: any;
     }) => Promise<void>;
     getFactorsSetupForUser: (input: { user: User; tenantId: string; userContext: any }) => Promise<string[]>;
+    createPrimaryUser: (input: {
+        recipeUserId: RecipeUserId;
+        userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+              user: User;
+              wasAlreadyAPrimaryUser: boolean;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+    >;
+    linkAccounts: (input: {
+        recipeUserId: RecipeUserId;
+        primaryUserId: string;
+        userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+              accountsAlreadyLinked: boolean;
+              user: User;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              user: User;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+        | {
+              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
+    >;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

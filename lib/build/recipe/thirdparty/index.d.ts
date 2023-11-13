@@ -24,6 +24,7 @@ export default class Wrapper {
               createdNewRecipeUser: boolean;
               user: import("../../types").User;
               recipeUserId: import("../..").RecipeUserId;
+              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

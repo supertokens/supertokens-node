@@ -28,6 +28,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                       fromIdTokenPayload?: { [key: string]: any };
                       fromUserInfoAPI?: { [key: string]: any };
                   };
+                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -45,7 +46,13 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: User;
+                  recipeUserId: RecipeUserId;
+                  isValidFirstFactorForTenant: boolean | undefined;
+              }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -67,6 +74,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                 createdNewRecipeUser: result.createdNewRecipeUser,
                 recipeUserId: result.recipeUserId,
                 user: result.user,
+                isValidFirstFactorForTenant: result.isValidFirstFactorForTenant,
             };
         },
 
