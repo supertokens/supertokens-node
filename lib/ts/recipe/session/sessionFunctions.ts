@@ -401,10 +401,13 @@ export async function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
     revokeSessionsForLinkedAccounts: boolean,
-    tenantId: string,
-    revokeAcrossAllTenants: boolean,
+    tenantId: string | undefined,
+    revokeAcrossAllTenants: boolean | undefined,
     userContext: any
 ): Promise<string[]> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath(`/${tenantId}/recipe/session/remove`),
         {
@@ -424,10 +427,13 @@ export async function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
-    tenantId: string,
-    fetchAcrossAllTenants: boolean,
+    tenantId: string | undefined,
+    fetchAcrossAllTenants: boolean | undefined,
     userContext: any
 ): Promise<string[]> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
     let response = await helpers.querier.sendGetRequest(
         new NormalisedURLPath(`/${tenantId}/recipe/session/user`),
         {

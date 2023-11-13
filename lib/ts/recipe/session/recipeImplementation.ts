@@ -408,15 +408,12 @@ export default function getRecipeInterface(
             revokeAcrossAllTenants?: boolean;
             userContext: any;
         }) {
-            if (tenantId === undefined) {
-                tenantId = DEFAULT_TENANT_ID;
-            }
             return SessionFunctions.revokeAllSessionsForUser(
                 helpers,
                 userId,
                 revokeSessionsForLinkedAccounts,
                 tenantId,
-                revokeAcrossAllTenants ?? false,
+                revokeAcrossAllTenants,
                 userContext
             );
         },
@@ -434,15 +431,12 @@ export default function getRecipeInterface(
             fetchAcrossAllTenants?: boolean;
             userContext: any;
         }): Promise<string[]> {
-            if (tenantId === undefined) {
-                tenantId = DEFAULT_TENANT_ID;
-            }
             return SessionFunctions.getAllSessionHandlesForUser(
                 helpers,
                 userId,
                 fetchSessionsForAllLinkedAccounts,
                 tenantId,
-                fetchAcrossAllTenants ?? false,
+                fetchAcrossAllTenants,
                 userContext
             );
         },
