@@ -22,13 +22,21 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { CREATE_TOTP_DEVICE, VERIFY_TOTP_DEVICE, VERIFY_TOTP } from "./constants";
+import {
+    CREATE_TOTP_DEVICE,
+    VERIFY_TOTP_DEVICE,
+    VERIFY_TOTP,
+    LIST_TOTP_DEVICES,
+    REMOVE_TOTP_DEVICE,
+} from "./constants";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 
 import createDeviceAPI from "./api/createDevice";
 import verifyDeviceAPI from "./api/verifyDevice";
 import verifyTOTPAPI from "./api/verifyTOTP";
+import listDevicesAPI from "./api/listDevices";
+import removeDeviceAPI from "./api/removeDevice";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -101,6 +109,18 @@ export default class Recipe extends RecipeModule {
                 disabled: this.apiImpl.createDevicePOST === undefined,
             },
             {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(LIST_TOTP_DEVICES),
+                id: LIST_TOTP_DEVICES,
+                disabled: this.apiImpl.listDevicesGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(REMOVE_TOTP_DEVICE),
+                id: REMOVE_TOTP_DEVICE,
+                disabled: this.apiImpl.removeDevicePOST === undefined,
+            },
+            {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(VERIFY_TOTP_DEVICE),
                 id: VERIFY_TOTP_DEVICE,
@@ -134,6 +154,10 @@ export default class Recipe extends RecipeModule {
         };
         if (id === CREATE_TOTP_DEVICE) {
             return await createDeviceAPI(this.apiImpl, options, userContext);
+        } else if (id === LIST_TOTP_DEVICES) {
+            return await listDevicesAPI(this.apiImpl, options, userContext);
+        } else if (id === REMOVE_TOTP_DEVICE) {
+            return await removeDeviceAPI(this.apiImpl, options, userContext);
         } else if (id === VERIFY_TOTP_DEVICE) {
             return await verifyDeviceAPI(this.apiImpl, options, userContext);
         } else if (id === VERIFY_TOTP) {

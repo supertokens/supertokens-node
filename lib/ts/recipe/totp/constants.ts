@@ -14,5 +14,7 @@
  */
 
 export const CREATE_TOTP_DEVICE = "/totp/device";
+export const LIST_TOTP_DEVICES = "/totp/device/list";
+export const REMOVE_TOTP_DEVICE = "/totp/device/remove";
 export const VERIFY_TOTP_DEVICE = "/totp/device/verify";
 export const VERIFY_TOTP = "/totp/verify";

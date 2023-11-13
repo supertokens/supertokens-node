@@ -125,6 +125,34 @@ export declare type APIInterface = {
           }
         | GeneralErrorResponse
     >;
+    listDevicesGET: (input: {
+        options: APIOptions;
+        session: SessionContainerInterface;
+        userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+              devices: {
+                  name: string;
+                  period: number;
+                  skew: number;
+                  verified: boolean;
+              }[];
+          }
+        | GeneralErrorResponse
+    >;
+    removeDevicePOST: (input: {
+        deviceName: string;
+        options: APIOptions;
+        session: SessionContainerInterface;
+        userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+              didDeviceExist: boolean;
+          }
+        | GeneralErrorResponse
+    >;
     verifyDevicePOST: (input: {
         deviceName: string;
         totp: string;
