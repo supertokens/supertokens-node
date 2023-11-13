@@ -13,9 +13,10 @@
  * under the License.
  */
 
+import { NormalisedAppinfo } from "../../types";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 
-export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
+export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -23,8 +24,11 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 
     return {
+        issuer: config?.issuer ?? appInfo.appName,
         defaultSkew: config?.defaultSkew ?? 1,
         defaultPeriod: config?.defaultPeriod ?? 30,
+
+        getUserIdentifierInfoForUserId: config?.getUserIdentifierInfoForUserId,
 
         override,
     };

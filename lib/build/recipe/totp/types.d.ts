@@ -3,9 +3,23 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+export declare type GetUserIdentifierInfoForUserIdFunc = (
+    userId: string,
+    userContext: any
+) => Promise<
+    | {
+          status: "OK";
+          info: string;
+      }
+    | {
+          status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+      }
+>;
 export declare type TypeInput = {
+    issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
+    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -15,8 +29,10 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    issuer: string;
     defaultSkew: number;
     defaultPeriod: number;
+    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -28,6 +44,7 @@ export declare type TypeNormalisedInput = {
 export declare type RecipeInterface = {
     createDevice: (input: {
         userId: string;
+        userIdentifierInfo?: string;
         deviceName?: string;
         skew?: number;
         period?: number;
@@ -37,6 +54,7 @@ export declare type RecipeInterface = {
               status: "OK";
               deviceName: string;
               secret: string;
+              qrCodeString: string;
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
@@ -119,6 +137,7 @@ export declare type APIInterface = {
               status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR";
               deviceName: string;
               secret: string;
+              qrCodeString: string;
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";

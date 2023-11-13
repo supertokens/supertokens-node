@@ -14,6 +14,7 @@ export default class Wrapper {
               status: "OK";
               deviceName: string;
               secret: string;
+              qrCodeString: string;
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";

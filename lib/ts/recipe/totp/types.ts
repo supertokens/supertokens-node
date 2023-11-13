@@ -18,9 +18,23 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 
+export type GetUserIdentifierInfoForUserIdFunc = (
+    userId: string,
+    userContext: any
+) => Promise<
+    | {
+          status: "OK";
+          info: string;
+      }
+    | { status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
+>;
+
 export type TypeInput = {
+    issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
+
+    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
 
     override?: {
         functions?: (
@@ -32,8 +46,11 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    issuer: string;
     defaultSkew: number;
     defaultPeriod: number;
+
+    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
 
     override: {
         functions: (
@@ -47,6 +64,7 @@ export type TypeNormalisedInput = {
 export type RecipeInterface = {
     createDevice: (input: {
         userId: string;
+        userIdentifierInfo?: string;
         deviceName?: string;
         skew?: number;
         period?: number;
@@ -56,6 +74,7 @@ export type RecipeInterface = {
               status: "OK";
               deviceName: string;
               secret: string;
+              qrCodeString: string;
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
@@ -140,6 +159,7 @@ export type APIInterface = {
               status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR";
               deviceName: string;
               secret: string;
+              qrCodeString: string;
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";

@@ -4,7 +4,13 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import {
+    APIInterface,
+    GetUserIdentifierInfoForUserIdFunc,
+    RecipeInterface,
+    TypeInput,
+    TypeNormalisedInput,
+} from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -30,4 +36,5 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
+    getUserIdentifierInfoForUserId: GetUserIdentifierInfoForUserIdFunc;
 }

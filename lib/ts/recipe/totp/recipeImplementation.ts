@@ -10,15 +10,25 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             deviceName?: string;
             skew?: number;
             period?: number;
+            userIdentifierInfo?: string;
             userContext: any;
         }) => {
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/totp/device"), {
+            const response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/totp/device"), {
                 userId: input.userId,
                 deviceName: input.deviceName,
                 skew: input.skew ?? config.defaultSkew,
                 period: input.period ?? config.defaultPeriod,
                 userContext: input.userContext,
             });
+
+            return {
+                ...response,
+                qrCodeString: encodeURI(
+                    `otpauth://totp/${config.issuer}${
+                        input.userIdentifierInfo !== undefined ? ":" + input.userIdentifierInfo : ""
+                    }` + `?secret=${response.secret}&issuer=${config.issuer}`
+                ),
+            };
         },
 
         updateDevice: (input: {
