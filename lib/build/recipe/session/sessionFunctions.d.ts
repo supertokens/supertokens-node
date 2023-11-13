@@ -11,9 +11,9 @@ export declare function createNewSession(
     tenantId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
-    userContext: any,
-    accessTokenPayload?: any,
-    sessionDataInDatabase?: any
+    accessTokenPayload: any,
+    sessionDataInDatabase: any,
+    userContext: any
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
@@ -68,9 +68,9 @@ export declare function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
     revokeSessionsForLinkedAccounts: boolean,
-    userContext: any,
-    tenantId?: string,
-    revokeAcrossAllTenants?: boolean
+    tenantId: string,
+    revokeAcrossAllTenants: boolean,
+    userContext: any
 ): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
@@ -79,9 +79,9 @@ export declare function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
-    userContext: any,
-    tenantId?: string,
-    fetchAcrossAllTenants?: boolean
+    tenantId: string,
+    fetchAcrossAllTenants: boolean,
+    userContext: any
 ): Promise<string[]>;
 /**
  * @description call to destroy one session

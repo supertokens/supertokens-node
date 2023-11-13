@@ -33,9 +33,9 @@ export async function createNewSession(
     tenantId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
-    userContext: any,
-    accessTokenPayload: any = {},
-    sessionDataInDatabase: any = {}
+    accessTokenPayload: any,
+    sessionDataInDatabase: any,
+    userContext: any
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionDataInDatabase =
@@ -401,13 +401,10 @@ export async function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
     revokeSessionsForLinkedAccounts: boolean,
-    userContext: any,
-    tenantId?: string,
-    revokeAcrossAllTenants?: boolean
+    tenantId: string,
+    revokeAcrossAllTenants: boolean,
+    userContext: any
 ): Promise<string[]> {
-    if (tenantId === undefined) {
-        tenantId = DEFAULT_TENANT_ID;
-    }
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath(`/${tenantId}/recipe/session/remove`),
         {
@@ -427,13 +424,10 @@ export async function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
-    userContext: any,
-    tenantId?: string,
-    fetchAcrossAllTenants?: boolean
+    tenantId: string,
+    fetchAcrossAllTenants: boolean,
+    userContext: any
 ): Promise<string[]> {
-    if (tenantId === undefined) {
-        tenantId = DEFAULT_TENANT_ID;
-    }
     let response = await helpers.querier.sendGetRequest(
         new NormalisedURLPath(`/${tenantId}/recipe/session/user`),
         {

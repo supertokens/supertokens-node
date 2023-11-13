@@ -96,9 +96,9 @@ export default function getRecipeInterface(
                 tenantId,
                 recipeUserId,
                 disableAntiCsrf === true,
-                userContext,
                 accessTokenPayload,
-                sessionDataInDatabase
+                sessionDataInDatabase,
+                userContext
             );
             logDebugMessage("createNewSession: Finished");
 
@@ -408,13 +408,16 @@ export default function getRecipeInterface(
             revokeAcrossAllTenants?: boolean;
             userContext: any;
         }) {
+            if (tenantId === undefined) {
+                tenantId = DEFAULT_TENANT_ID;
+            }
             return SessionFunctions.revokeAllSessionsForUser(
                 helpers,
                 userId,
                 revokeSessionsForLinkedAccounts,
-                userContext,
                 tenantId,
-                revokeAcrossAllTenants
+                revokeAcrossAllTenants ?? false,
+                userContext
             );
         },
 
@@ -431,13 +434,16 @@ export default function getRecipeInterface(
             fetchAcrossAllTenants?: boolean;
             userContext: any;
         }): Promise<string[]> {
+            if (tenantId === undefined) {
+                tenantId = DEFAULT_TENANT_ID;
+            }
             return SessionFunctions.getAllSessionHandlesForUser(
                 helpers,
                 userId,
                 fetchSessionsForAllLinkedAccounts,
-                userContext,
                 tenantId,
-                fetchAcrossAllTenants
+                fetchAcrossAllTenants ?? false,
+                userContext
             );
         },
 
