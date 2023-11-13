@@ -9,29 +9,38 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return tenantIdFromFrontend;
         },
 
-        createOrUpdateTenant: async function ({ tenantId, config }) {
-            let response = await querier.sendPutRequest(new NormalisedURLPath(`/recipe/multitenancy/tenant`), {
-                tenantId,
-                ...config,
-            });
+        createOrUpdateTenant: async function ({ tenantId, config, userContext }) {
+            let response = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/multitenancy/tenant`),
+                {
+                    tenantId,
+                    ...config,
+                },
+                userContext
+            );
 
             return response;
         },
 
-        deleteTenant: async function ({ tenantId }) {
-            let response = await querier.sendPostRequest(new NormalisedURLPath(`/recipe/multitenancy/tenant/remove`), {
-                tenantId,
-            });
+        deleteTenant: async function ({ tenantId, userContext }) {
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/multitenancy/tenant/remove`),
+                {
+                    tenantId,
+                },
+                userContext
+            );
 
             return response;
         },
 
-        getTenant: async function ({ tenantId }) {
+        getTenant: async function ({ tenantId, userContext }) {
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant`
                 ),
-                {}
+                {},
+                userContext
             );
 
             if (response.status === "TENANT_NOT_FOUND_ERROR") {
@@ -41,12 +50,16 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return response;
         },
 
-        listAllTenants: async function () {
-            let response = await querier.sendGetRequest(new NormalisedURLPath(`/recipe/multitenancy/tenant/list`), {});
+        listAllTenants: async function ({ userContext }) {
+            let response = await querier.sendGetRequest(
+                new NormalisedURLPath(`/recipe/multitenancy/tenant/list`),
+                {},
+                userContext
+            );
             return response;
         },
 
-        createOrUpdateThirdPartyConfig: async function ({ tenantId, config, skipValidation }) {
+        createOrUpdateThirdPartyConfig: async function ({ tenantId, config, skipValidation, userContext }) {
             let response = await querier.sendPutRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/config/thirdparty`
@@ -54,12 +67,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 {
                     config,
                     skipValidation,
-                }
+                },
+                userContext
             );
             return response;
         },
 
-        deleteThirdPartyConfig: async function ({ tenantId, thirdPartyId }) {
+        deleteThirdPartyConfig: async function ({ tenantId, thirdPartyId, userContext }) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${
@@ -68,31 +82,34 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 ),
                 {
                     thirdPartyId,
-                }
+                },
+                userContext
             );
             return response;
         },
 
-        associateUserToTenant: async function ({ tenantId, recipeUserId }) {
+        associateUserToTenant: async function ({ tenantId, recipeUserId, userContext }) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user`
                 ),
                 {
                     recipeUserId: recipeUserId.getAsString(),
-                }
+                },
+                userContext
             );
             return response;
         },
 
-        disassociateUserFromTenant: async function ({ tenantId, recipeUserId }) {
+        disassociateUserFromTenant: async function ({ tenantId, recipeUserId, userContext }) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user/remove`
                 ),
                 {
                     recipeUserId: recipeUserId.getAsString(),
-                }
+                },
+                userContext
             );
             return response;
         },

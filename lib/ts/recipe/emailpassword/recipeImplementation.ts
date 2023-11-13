@@ -73,7 +73,8 @@ export default function getRecipeInterface(
                 {
                     email: input.email,
                     password: input.password,
-                }
+                },
+                input.userContext
             );
             if (resp.status === "OK") {
                 resp.user = new User(resp.user);
@@ -103,7 +104,8 @@ export default function getRecipeInterface(
                 {
                     email,
                     password,
-                }
+                },
+                userContext
             );
 
             if (response.status === "OK") {
@@ -144,10 +146,12 @@ export default function getRecipeInterface(
             userId,
             email,
             tenantId,
+            userContext,
         }: {
             userId: string;
             email: string;
             tenantId: string;
+            userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
@@ -157,16 +161,19 @@ export default function getRecipeInterface(
                 {
                     userId,
                     email,
-                }
+                },
+                userContext
             );
         },
 
         consumePasswordResetToken: async function ({
             token,
             tenantId,
+            userContext,
         }: {
             token: string;
             tenantId: string;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -182,7 +189,8 @@ export default function getRecipeInterface(
                 {
                     method: "token",
                     token,
-                }
+                },
+                userContext
             );
         },
 
@@ -230,7 +238,8 @@ export default function getRecipeInterface(
                     recipeUserId: input.recipeUserId.getAsString(),
                     email: input.email,
                     password: input.password,
-                }
+                },
+                input.userContext
             );
 
             if (response.status === "OK") {

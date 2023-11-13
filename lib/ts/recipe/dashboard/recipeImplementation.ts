@@ -38,7 +38,8 @@ export default function getRecipeImplementation(): RecipeInterface {
                     new NormalisedURLPath("/recipe/dashboard/session/verify"),
                     {
                         sessionId: authHeaderValue,
-                    }
+                    },
+                    input.userContext
                 );
 
                 if (sessionVerificationResponse.status !== "OK") {

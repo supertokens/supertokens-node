@@ -8,6 +8,6 @@ export declare const getSearchTags: (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    __: any
+    userContext: any
 ) => Promise<TagsResponse>;
 export {};
