@@ -39,7 +39,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         }) => {
             return querier.sendPutRequest(new NormalisedURLPath("/recipe/totp/device"), {
                 userId: input.userId,
-                deviceName: input.existingDeviceName,
+                existingDeviceName: input.existingDeviceName,
                 newDeviceName: input.newDeviceName,
                 userContext: input.userContext,
             });

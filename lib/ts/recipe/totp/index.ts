@@ -29,18 +29,18 @@ export default class Wrapper {
         });
     }
 
+    static async listDevices(userId: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
+            userId,
+            userContext: userContext ?? {},
+        });
+    }
+
     static async updateDevice(userId: string, existingDeviceName: string, newDeviceName: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
             userId,
             existingDeviceName,
             newDeviceName,
-            userContext: userContext ?? {},
-        });
-    }
-
-    static async listDevices(userId: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
-            userId,
             userContext: userContext ?? {},
         });
     }
@@ -74,5 +74,12 @@ export default class Wrapper {
 }
 
 export let init = Wrapper.init;
+
+export let createDevice = Wrapper.createDevice;
+export let listDevices = Wrapper.listDevices;
+export let updateDevice = Wrapper.updateDevice;
+export let removeDevice = Wrapper.removeDevice;
+export let verifyDevice = Wrapper.verifyDevice;
+export let verifyTOTP = Wrapper.verifyTOTP;
 
 export type { RecipeInterface, APIOptions, APIInterface };

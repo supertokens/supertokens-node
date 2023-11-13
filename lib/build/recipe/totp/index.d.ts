@@ -20,14 +20,6 @@ export default class Wrapper {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
           }
     >;
-    static updateDevice(
-        userId: string,
-        existingDeviceName: string,
-        newDeviceName: string,
-        userContext?: any
-    ): Promise<{
-        status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR";
-    }>;
     static listDevices(
         userId: string,
         userContext?: any
@@ -39,6 +31,14 @@ export default class Wrapper {
             skew: number;
             verified: boolean;
         }[];
+    }>;
+    static updateDevice(
+        userId: string,
+        existingDeviceName: string,
+        newDeviceName: string,
+        userContext?: any
+    ): Promise<{
+        status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR";
     }>;
     static removeDevice(
         userId: string,
@@ -79,4 +79,10 @@ export default class Wrapper {
     >;
 }
 export declare let init: typeof Recipe.init;
+export declare let createDevice: typeof Wrapper.createDevice;
+export declare let listDevices: typeof Wrapper.listDevices;
+export declare let updateDevice: typeof Wrapper.updateDevice;
+export declare let removeDevice: typeof Wrapper.removeDevice;
+export declare let verifyDevice: typeof Wrapper.verifyDevice;
+export declare let verifyTOTP: typeof Wrapper.verifyTOTP;
 export type { RecipeInterface, APIOptions, APIInterface };
