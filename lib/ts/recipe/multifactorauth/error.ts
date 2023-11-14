@@ -13,13 +13,4 @@
  * under the License.
  */
 
-import STError from "../../error";
-
-export default class SessionError extends STError {
-    constructor(options: { type: "BAD_INPUT_ERROR"; message: string }) {
-        super({
-            ...options,
-        });
-        this.fromRecipe = "multifactorauth";
-    }
-}
+// import STError from "../../error";

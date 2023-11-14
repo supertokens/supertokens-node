@@ -22,7 +22,6 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { ProviderInput } from "../thirdparty/types";
 import { GET_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
@@ -42,10 +41,6 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
 
     isInServerlessEnv: boolean;
-
-    staticThirdPartyProviders: ProviderInput[] = [];
-
-    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
@@ -132,7 +127,6 @@ export default class Recipe extends RecipeModule {
             isInServerlessEnv: this.isInServerlessEnv,
             req,
             res,
-            staticThirdPartyProviders: this.staticThirdPartyProviders,
         };
         if (id === GET_MFA_INFO) {
             return await mfaInfoAPI(this.apiImpl, options, userContext);

@@ -1,34 +1,99 @@
 import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
+import UserMetadataRecipe from "../usermetadata/recipe";
+import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import RecipeUserId from "../../recipeUserId";
 import { User } from "../../user";
 import NormalisedURLPath from "../../normalisedURLPath";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        // markFactorAsCompleteInSession: async ({ session, factor, userContext }) => {
-        //     const currentValue = await session.getClaimValue(MultiFactorAuthClaim);
-        //     const completed = {
-        //         ...currentValue?.c,
-        //         [factor]: Math.floor(Date.now() / 1000),
-        //     };
-        //     const setupUserFactors = await this.recipeInterfaceImpl.getFactorsSetupForUser({
-        //         userId: session.getUserId(),
-        //         tenantId: session.getTenantId(),
-        //         userContext,
-        //     });
-        //     const requirements = await this.config.getMFARequirementsForAuth(
-        //         session,
-        //         setupUserFactors,
-        //         completed,
-        //         userContext
-        //     );
-        //     const next = MultiFactorAuthClaim.buildNextArray(completed, requirements);
-        //     await session.setClaimValue(MultiFactorAuthClaim, {
-        //         c: completed,
-        //         n: next,
-        //     });
-        // },
+        getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
+            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+                userId: user.id,
+                userContext,
+            });
+            if (metadata.status === "OK" && metadata.metadata !== undefined && metadata.metadata !== null) {
+                const factors = metadata.metadata._supertokens?.factors?.[tenantId];
+                if (factors !== undefined) {
+                    return factors;
+                }
+            }
+
+            return []; // no factors setup
+        },
+
+        getMFARequirementsForAuth: async function ({
+            factorsSetUpByTheUser,
+            defaultRequiredFactorIdsForUser,
+            defaultRequiredFactorIdsForTenant,
+            completedFactors,
+        }) {
+            const factors = [];
+            const allFactors = [...defaultRequiredFactorIdsForUser];
+            for (const factor of defaultRequiredFactorIdsForTenant) {
+                if (!allFactors.includes(factor)) {
+                    allFactors.push(factor);
+                }
+            }
+
+            for (const factor of allFactors) {
+                if (factorsSetUpByTheUser.includes(factor) && !completedFactors[factor]) {
+                    factors.push(factor);
+                }
+            }
+
+            return [{ oneOf: factors }];
+        },
+
+        isAllowedToSetupFactor: async function (
+            this: RecipeInterface,
+            {
+                session,
+                completedFactors,
+                defaultRequiredFactorIdsForTenant,
+                defaultRequiredFactorIdsForUser,
+                factorsSetUpByTheUser,
+                userContext,
+            }
+        ) {
+            const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
+                session,
+                completedFactors,
+                defaultRequiredFactorIdsForTenant,
+                defaultRequiredFactorIdsForUser,
+                factorsSetUpByTheUser,
+                userContext,
+            });
+            console.log(mfaRequirementsForAuth);
+            return false; // TODO
+        },
+
+        markFactorAsCompleteInSession: async function ({ session, factorId, userContext }) {
+            const currentValue = await session.getClaimValue(MultiFactorAuthClaim);
+            const completed = {
+                ...currentValue?.c,
+                [factorId]: Math.floor(Date.now() / 1000),
+            };
+            const setupUserFactors = await this.recipeInterfaceImpl.getFactorsSetupForUser({
+                userId: session.getUserId(),
+                tenantId: session.getTenantId(),
+                userContext,
+            });
+            const requirements = await this.config.getMFARequirementsForAuth(
+                session,
+                setupUserFactors,
+                completed,
+                userContext
+            );
+            const next = MultiFactorAuthClaim.buildNextArray(completed, requirements);
+            await session.setClaimValue(MultiFactorAuthClaim, {
+                c: completed,
+                n: next,
+            });
+        },
 
         createPrimaryUser: async function (
             this: RecipeInterface,
@@ -141,5 +206,5 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             return accountsLinkingResult;
         },
-    } as any;
+    };
 }

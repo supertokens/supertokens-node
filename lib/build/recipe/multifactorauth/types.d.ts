@@ -1,7 +1,8 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, User } from "../../types";
+import { GeneralErrorResponse } from "../../types";
+import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";

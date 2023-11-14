@@ -102,7 +102,7 @@ export default class SuperTokens {
         // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
         let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
-        let MultiFactorAuthRecipe = require("./recipe/multiFactorAuth/recipe").default;
+        let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
