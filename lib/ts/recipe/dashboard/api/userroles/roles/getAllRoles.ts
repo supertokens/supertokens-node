@@ -69,15 +69,12 @@ const getAllRoles: APIFunction = async (
         const totalPages = Math.ceil(response.roles.length / limit);
         const rolesCount = response.roles.length;
 
-        if (page > totalPages) {
-            return {
-                roles: [],
-                rolesCount,
-                totalPages,
-                status: "OK",
-            };
+        if (page > totalPages && page !== 1) {
+            throw new Error("Please provide a valid page number");
         }
-        const paginatedRoles = response.roles.slice(skip, skip + limit);
+
+        //reversing the roles to show latest created roles at first.
+        const paginatedRoles = response.roles.reverse().slice(skip, skip + limit);
 
         let roles: Roles = [];
 
@@ -93,10 +90,7 @@ const getAllRoles: APIFunction = async (
                     });
                 } else {
                     //this case should never happen.
-                    roles.push({
-                        role,
-                        permissions: [],
-                    });
+                    throw new Error("Should never come here.");
                 }
             } catch (_) {}
         }
@@ -109,7 +103,11 @@ const getAllRoles: APIFunction = async (
         };
     } else {
         const response = await UserRoles.getAllRoles();
-        return response;
+        //reversing the roles to show latest created roles at first.
+        return {
+            status: "OK",
+            roles: response.roles.reverse(),
+        };
     }
 };
 
