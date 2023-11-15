@@ -175,7 +175,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId");
+        const deviceRes = await Totp.createDevice("testUserId", "TOTP Device 0", 1, 5);
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -185,7 +185,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
 
         let otp = new OTPAuth.TOTP({
             digits: 6,
-            period: 30,
+            period: 5,
             secret: deviceRes.secret,
         }).generate();
         const verifyRes = await Totp.verifyDevice("public", "testUserId", deviceRes.deviceName, otp);
@@ -198,15 +198,75 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
         assert.equal(listRes.devices[0].verified, true);
 
         const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-        await delay(30000); // wait for new code
+        await delay(5000); // wait for new code
 
         otp = new OTPAuth.TOTP({
             digits: 6,
-            period: 30,
+            period: 5,
             secret: deviceRes.secret,
         }).generate();
 
         const verifyTotpRes = await Totp.verifyTOTP("public", "testUserId", otp);
+        assert.equal(verifyTotpRes.status, "OK");
+    });
+
+    it("test invalid totp", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
+        });
+
+        const deviceRes = await Totp.createDevice("testUserId", "TOTP Device 0", 1, 5);
+
+        assert.equal(Object.keys(deviceRes).length, 4);
+        assert.equal(deviceRes.status, "OK");
+        assert.equal(deviceRes.deviceName, "TOTP Device 0");
+        assert(deviceRes.secret !== undefined);
+        assert(deviceRes.qrCodeString !== undefined);
+
+        let otp = new OTPAuth.TOTP({
+            digits: 6,
+            period: 5,
+            secret: deviceRes.secret,
+        }).generate();
+        let verifyRes = await Totp.verifyDevice("public", "testUserId", deviceRes.deviceName, "123456");
+        assert.equal(verifyRes.status, "INVALID_TOTP_ERROR");
+        assert.equal(verifyRes.currentNumberOfFailedAttempts, 1);
+        assert.equal(verifyRes.maxNumberOfFailedAttempts, 5);
+
+        verifyRes = await Totp.verifyDevice("public", "testUserId", deviceRes.deviceName, otp);
+        assert.equal(verifyRes.status, "OK");
+
+        const listRes = await Totp.listDevices("testUserId");
+        assert.equal(listRes.status, "OK");
+        assert.equal(listRes.devices.length, 1);
+        assert.equal(listRes.devices[0].verified, true);
+
+        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        await delay(5000); // wait for new code
+
+        otp = new OTPAuth.TOTP({
+            digits: 6,
+            period: 5,
+            secret: deviceRes.secret,
+        }).generate();
+
+        let verifyTotpRes = await Totp.verifyTOTP("public", "testUserId", "123456");
+        console.log(verifyTotpRes);
+        assert.equal(verifyTotpRes.status, "INVALID_TOTP_ERROR");
+        assert.equal(verifyTotpRes.currentNumberOfFailedAttempts, 1);
+        assert.equal(verifyTotpRes.maxNumberOfFailedAttempts, 5);
+
+        verifyTotpRes = await Totp.verifyTOTP("public", "testUserId", otp);
         assert.equal(verifyTotpRes.status, "OK");
     });
 });
