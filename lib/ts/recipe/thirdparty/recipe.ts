@@ -31,6 +31,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -92,6 +93,14 @@ export default class Recipe extends RecipeModule {
                         emailDelivery: undefined,
                     }
                 );
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+                    if (mfaInstance !== undefined) {
+                        mfaInstance.addFactorsSetupFromOtherRecipes(["thirdparty"]);
+                    }
+                });
+
                 return Recipe.instance;
             } else {
                 throw new Error("ThirdParty recipe has already been initialised. Please check your code for bugs.");

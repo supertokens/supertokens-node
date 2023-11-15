@@ -44,6 +44,8 @@ import verifyTOTPAPI from "./api/verifyTOTP";
 import listDevicesAPI from "./api/listDevices";
 import removeDeviceAPI from "./api/removeDevice";
 import { getUser } from "../..";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -90,6 +92,13 @@ export default class Recipe extends RecipeModule {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+                    if (mfaInstance !== undefined) {
+                        mfaInstance.addFactorsSetupFromOtherRecipes(["totp"]);
+                    }
+                });
 
                 return Recipe.instance;
             } else {

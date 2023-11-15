@@ -8,6 +8,7 @@ import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from ".
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
+    private factorsSetupByOtherRecipes;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -30,4 +31,5 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
+    addFactorsSetupFromOtherRecipes: (factors: string[]) => void;
 }

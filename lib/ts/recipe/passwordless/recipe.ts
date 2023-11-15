@@ -39,6 +39,8 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -108,6 +110,43 @@ export default class Recipe extends RecipeModule {
                     emailDelivery: undefined,
                     smsDelivery: undefined,
                 });
+
+                let otpOrLink: string[] = [];
+                let emailOrPhone: string[] = [];
+
+                if (Recipe.instance.config.flowType === "MAGIC_LINK") {
+                    otpOrLink.push("link");
+                } else if (Recipe.instance.config.flowType === "USER_INPUT_CODE") {
+                    otpOrLink.push("otp");
+                } else {
+                    otpOrLink.push("otp");
+                    otpOrLink.push("link");
+                }
+
+                if (Recipe.instance.config.contactMethod === "EMAIL") {
+                    emailOrPhone.push("email");
+                } else if (Recipe.instance.config.contactMethod === "PHONE") {
+                    emailOrPhone.push("phone");
+                } else {
+                    emailOrPhone.push("email");
+                    emailOrPhone.push("phone");
+                }
+
+                const allFactors: string[] = [];
+                for (const ol of otpOrLink) {
+                    for (const ep of emailOrPhone) {
+                        allFactors.push(`${ol}-${ep}`);
+                    }
+                }
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+                    if (mfaInstance !== undefined) {
+                        mfaInstance.addFactorsSetupFromOtherRecipes(allFactors);
+                    }
+                });
+
                 return Recipe.instance;
             } else {
                 throw new Error("Passwordless recipe has already been initialised. Please check your code for bugs.");

@@ -34,6 +34,8 @@ export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "multifactorauth";
 
+    private factorsSetupByOtherRecipes: string[] = [];
+
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
@@ -144,5 +146,9 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
+    };
+
+    addFactorsSetupFromOtherRecipes = (factors: string[]) => {
+        this.factorsSetupByOtherRecipes.push(...factors);
     };
 }

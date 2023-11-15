@@ -8,21 +8,27 @@ import NormalisedURLPath from "../../normalisedURLPath";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
-            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
-                userId: user.id,
+        isAllowedToSetupFactor: async function (
+            this: RecipeInterface,
+            {
+                session,
+                completedFactors,
+                defaultRequiredFactorIdsForTenant,
+                defaultRequiredFactorIdsForUser,
+                factorsSetUpByTheUser,
+                userContext,
+            }
+        ) {
+            const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
+                session,
+                completedFactors,
+                defaultRequiredFactorIdsForTenant,
+                defaultRequiredFactorIdsForUser,
+                factorsSetUpByTheUser,
                 userContext,
             });
-            if (metadata.status === "OK" && metadata.metadata !== undefined && metadata.metadata !== null) {
-                const factors = metadata.metadata._supertokens?.factors?.[tenantId];
-                if (factors !== undefined) {
-                    return factors;
-                }
-            }
-
-            return []; // no factors setup
+            console.log(mfaRequirementsForAuth);
+            return false; // TODO
         },
 
         getMFARequirementsForAuth: async function ({
@@ -48,29 +54,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return [{ oneOf: factors }];
         },
 
-        isAllowedToSetupFactor: async function (
-            this: RecipeInterface,
-            {
-                session,
-                completedFactors,
-                defaultRequiredFactorIdsForTenant,
-                defaultRequiredFactorIdsForUser,
-                factorsSetUpByTheUser,
-                userContext,
-            }
-        ) {
-            const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
-                session,
-                completedFactors,
-                defaultRequiredFactorIdsForTenant,
-                defaultRequiredFactorIdsForUser,
-                factorsSetUpByTheUser,
-                userContext,
-            });
-            console.log(mfaRequirementsForAuth);
-            return false; // TODO
-        },
-
         markFactorAsCompleteInSession: async function ({ session, factorId, userContext }) {
             const currentValue = await session.getClaimValue(MultiFactorAuthClaim);
             const completed = {
@@ -92,6 +75,48 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             await session.setClaimValue(MultiFactorAuthClaim, {
                 c: completed,
                 n: next,
+            });
+        },
+
+        getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
+            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+                userId: user.id,
+                userContext,
+            });
+            if (metadata.status === "OK" && metadata.metadata !== undefined && metadata.metadata !== null) {
+                const factors = metadata.metadata._supertokens?.factors?.[tenantId];
+                if (factors !== undefined) {
+                    return factors;
+                }
+            }
+
+            return []; // no factors setup
+        },
+
+        addToDefaultRequiredFactorsForUser: async function ({ tenantId, user, factorId, userContext }) {
+            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+                userId: user.id,
+                userContext,
+            });
+
+            const metadataUpdate = {
+                ...metadata.metadata,
+                _supertokens: {
+                    ...metadata.metadata._supertokens,
+                    factors: {
+                        ...metadata.metadata._supertokens?.factors,
+                        [tenantId]: [...(metadata.metadata._supertokens?.factors?.[tenantId] ?? []), factorId],
+                    },
+                },
+            };
+
+            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+                userId: user.id,
+                metadataUpdate,
+                userContext,
             });
         },
 

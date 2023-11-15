@@ -39,6 +39,8 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -101,6 +103,14 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
                     emailDelivery: undefined,
                 });
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+                    if (mfaInstance !== undefined) {
+                        mfaInstance.addFactorsSetupFromOtherRecipes(["emailpassword"]);
+                    }
+                });
+
                 return Recipe.instance;
             } else {
                 throw new Error("Emailpassword recipe has already been initialised. Please check your code for bugs.");
