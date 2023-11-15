@@ -23,11 +23,13 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
             return {
                 ...response,
-                qrCodeString: encodeURI(
-                    `otpauth://totp/${config.issuer}${
-                        input.userIdentifierInfo !== undefined ? ":" + input.userIdentifierInfo : ""
-                    }` + `?secret=${response.secret}&issuer=${config.issuer}`
-                ),
+                qrCodeString:
+                    `otpauth://totp/${encodeURI(config.issuer)}${
+                        input.userIdentifierInfo !== undefined ? ":" + encodeURI(input.userIdentifierInfo) : ""
+                    }` +
+                    `?secret=${response.secret}&issuer=${encodeURI(config.issuer)}&digits=6&period=${
+                        input.period ?? config.defaultPeriod
+                    }`,
             };
         },
 

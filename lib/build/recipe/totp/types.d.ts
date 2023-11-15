@@ -100,7 +100,18 @@ export declare type RecipeInterface = {
               wasAlreadyVerified: boolean;
           }
         | {
-              status: "UNKNOWN_DEVICE_ERROR" | "INVALID_TOTP_ERROR" | "LIMIT_REACHED_ERROR";
+              status: "UNKNOWN_DEVICE_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
+          }
+        | {
+              status: "LIMIT_REACHED_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
+              retryAfterMs: number;
           }
     >;
     verifyTOTP: (input: {
@@ -110,10 +121,17 @@ export declare type RecipeInterface = {
         userContext: any;
     }) => Promise<
         | {
-              status: "OK" | "INVALID_TOTP_ERROR" | "UNKNOWN_USER_ID_ERROR";
+              status: "OK" | "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
           }
         | {
               status: "LIMIT_REACHED_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
               retryAfterMs: number;
           }
     >;
@@ -184,7 +202,12 @@ export declare type APIInterface = {
               wasAlreadyVerified: boolean;
           }
         | {
-              status: "UNKNOWN_DEVICE_ERROR" | "INVALID_TOTP_ERROR" | "LIMIT_REACHED_ERROR";
+              status: "UNKNOWN_DEVICE_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR" | "LIMIT_REACHED_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
           }
         | GeneralErrorResponse
     >;
@@ -195,7 +218,12 @@ export declare type APIInterface = {
         userContext: any;
     }) => Promise<
         | {
-              status: "OK" | "INVALID_TOTP_ERROR" | "UNKNOWN_USER_ID_ERROR";
+              status: "OK" | "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
           }
         | {
               status: "LIMIT_REACHED_ERROR";
