@@ -50,7 +50,9 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this)
+            );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
 
@@ -150,5 +152,9 @@ export default class Recipe extends RecipeModule {
 
     addFactorsSetupFromOtherRecipes = (factors: string[]) => {
         this.factorsSetupByOtherRecipes.push(...factors);
+    };
+
+    getFactorsSetupByOtherRecipes = () => {
+        return this.factorsSetupByOtherRecipes;
     };
 }

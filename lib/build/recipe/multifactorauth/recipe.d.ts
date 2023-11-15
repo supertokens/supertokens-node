@@ -32,4 +32,5 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     addFactorsSetupFromOtherRecipes: (factors: string[]) => void;
+    getFactorsSetupByOtherRecipes: () => string[];
 }

@@ -5,9 +5,67 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import RecipeUserId from "../../recipeUserId";
 import { User } from "../../user";
 import NormalisedURLPath from "../../normalisedURLPath";
+import type MultiFactorAuthRecipe from "./recipe";
+import TotpRecipe from "../totp/recipe";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(querier: Querier, recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
     return {
+        getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
+            const setupFactorsFromOtherRecipes = recipeInstance.getFactorsSetupByOtherRecipes();
+            const factorsSetupForUser: Set<string> = new Set();
+
+            for (const loginMethod of user.loginMethods) {
+                if (!loginMethod.tenantIds.includes(tenantId)) {
+                    continue;
+                }
+
+                if (
+                    loginMethod.recipeId === "emailpassword" &&
+                    setupFactorsFromOtherRecipes.includes("emailpassword")
+                ) {
+                    factorsSetupForUser.add("emailpassword");
+                }
+
+                if (loginMethod.recipeId === "thirdparty" && setupFactorsFromOtherRecipes.includes("thirdparty")) {
+                    factorsSetupForUser.add("thirdparty");
+                }
+
+                if (loginMethod.email !== undefined && loginMethod.verified) {
+                    if (setupFactorsFromOtherRecipes.includes("otp-email")) {
+                        factorsSetupForUser.add("otp-email");
+                    }
+                    if (setupFactorsFromOtherRecipes.includes("link-email")) {
+                        factorsSetupForUser.add("link-email");
+                    }
+                }
+
+                if (loginMethod.phoneNumber !== undefined) {
+                    if (setupFactorsFromOtherRecipes.includes("otp-phone")) {
+                        factorsSetupForUser.add("otp-phone");
+                    }
+                    if (setupFactorsFromOtherRecipes.includes("link-phone")) {
+                        factorsSetupForUser.add("link-phone");
+                    }
+                }
+            }
+
+            const totpRecipeInstance = TotpRecipe.getInstance();
+            if (totpRecipeInstance !== undefined) {
+                const deviceRes = await totpRecipeInstance.recipeInterfaceImpl.listDevices({
+                    userId: user.id,
+                    userContext,
+                });
+                for (const device of deviceRes.devices) {
+                    if (device.verified) {
+                        factorsSetupForUser.add("totp");
+                        break;
+                    }
+                }
+            }
+
+            return [...factorsSetupForUser];
+        },
+
         isAllowedToSetupFactor: async function (
             this: RecipeInterface,
             {
@@ -76,23 +134,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 c: completed,
                 n: next,
             });
-        },
-
-        getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
-            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
-                userId: user.id,
-                userContext,
-            });
-            if (metadata.status === "OK" && metadata.metadata !== undefined && metadata.metadata !== null) {
-                const factors = metadata.metadata._supertokens?.factors?.[tenantId];
-                if (factors !== undefined) {
-                    return factors;
-                }
-            }
-
-            return []; // no factors setup
         },
 
         addToDefaultRequiredFactorsForUser: async function ({ tenantId, user, factorId, userContext }) {
