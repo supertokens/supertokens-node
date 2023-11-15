@@ -60,7 +60,18 @@ export default class Wrapper {
               wasAlreadyVerified: boolean;
           }
         | {
-              status: "UNKNOWN_DEVICE_ERROR" | "INVALID_TOTP_ERROR" | "LIMIT_REACHED_ERROR";
+              status: "UNKNOWN_DEVICE_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
+          }
+        | {
+              status: "LIMIT_REACHED_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
+              retryAfterMs: number;
           }
     >;
     static verifyTOTP(
@@ -70,10 +81,17 @@ export default class Wrapper {
         userContext?: any
     ): Promise<
         | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "INVALID_TOTP_ERROR";
+              status: "OK" | "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
           }
         | {
               status: "LIMIT_REACHED_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
               retryAfterMs: number;
           }
     >;
