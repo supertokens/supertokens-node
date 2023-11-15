@@ -66,6 +66,21 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
             return [...factorsSetupForUser];
         },
 
+        getMFARequirementsForAuth: async function ({
+            defaultRequiredFactorIdsForUser,
+            defaultRequiredFactorIdsForTenant,
+        }) {
+            const allFactors: Set<string> = new Set();
+            for (const factor of defaultRequiredFactorIdsForUser) {
+                allFactors.add(factor);
+            }
+            for (const factor of defaultRequiredFactorIdsForTenant) {
+                allFactors.add(factor);
+            }
+
+            return [{ oneOf: [...allFactors] }];
+        },
+
         isAllowedToSetupFactor: async function (
             this: RecipeInterface,
             {
@@ -87,29 +102,6 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
             });
             console.log(mfaRequirementsForAuth);
             return false; // TODO
-        },
-
-        getMFARequirementsForAuth: async function ({
-            factorsSetUpByTheUser,
-            defaultRequiredFactorIdsForUser,
-            defaultRequiredFactorIdsForTenant,
-            completedFactors,
-        }) {
-            const factors = [];
-            const allFactors = [...defaultRequiredFactorIdsForUser];
-            for (const factor of defaultRequiredFactorIdsForTenant) {
-                if (!allFactors.includes(factor)) {
-                    allFactors.push(factor);
-                }
-            }
-
-            for (const factor of allFactors) {
-                if (factorsSetUpByTheUser.includes(factor) && !completedFactors[factor]) {
-                    factors.push(factor);
-                }
-            }
-
-            return [{ oneOf: factors }];
         },
 
         markFactorAsCompleteInSession: async function ({ session, factorId, userContext }) {
