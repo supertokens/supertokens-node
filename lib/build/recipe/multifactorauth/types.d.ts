@@ -70,6 +70,7 @@ export declare type RecipeInterface = {
         factorId: string;
         userContext: any;
     }) => Promise<void>;
+    getDefaultRequiredFactorsForUser(input: { user: User; tenantId: string; userContext: any }): Promise<string[]>;
     createPrimaryUser: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
