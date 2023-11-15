@@ -12,7 +12,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         passesMFARequirements: (requirements?: MFARequirementList) => SessionClaimValidator;
     };
     constructor(key?: string);
-    buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList): never[];
+    buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList): string[];
     fetchValue: (
         _userId: string,
         _recipeUserId: RecipeUserId,

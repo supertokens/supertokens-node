@@ -84,6 +84,7 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
         isAllowedToSetupFactor: async function (
             this: RecipeInterface,
             {
+                factorId,
                 session,
                 completedFactors,
                 defaultRequiredFactorIdsForTenant,
@@ -100,8 +101,9 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
                 factorsSetUpByTheUser,
                 userContext,
             });
-            console.log(mfaRequirementsForAuth);
-            return false; // TODO
+
+            const nextFactors = MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth);
+            return nextFactors.length === 0 || nextFactors.includes(factorId);
         },
 
         markFactorAsCompleteInSession: async function ({ session, factorId, userContext }) {
@@ -139,7 +141,7 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
                 ...metadata.metadata,
                 _supertokens: {
                     ...metadata.metadata._supertokens,
-                    factors: {
+                    defaultRequiredFactorIdsForUser: {
                         ...metadata.metadata._supertokens?.factors,
                         [tenantId]: [...(metadata.metadata._supertokens?.factors?.[tenantId] ?? []), factorId],
                     },

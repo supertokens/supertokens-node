@@ -19,7 +19,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         };
     }
 
-    public buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList) {
+    public buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList): string[] {
         // TODO
         return [];
     }
