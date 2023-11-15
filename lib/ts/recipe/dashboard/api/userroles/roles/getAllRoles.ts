@@ -10,7 +10,7 @@ type Response =
     | {
           status: "OK";
           totalPages: number;
-          rolesCount: number;
+          totalRolesCount: number;
           roles: Roles;
       }
     | {
@@ -67,10 +67,15 @@ const getAllRoles: APIFunction = async (
         const response = await UserRoles.getAllRoles();
 
         const totalPages = Math.ceil(response.roles.length / limit);
-        const rolesCount = response.roles.length;
+        const totalRolesCount = response.roles.length;
 
-        if (page > totalPages && page !== 1) {
-            throw new Error("Please provide a valid page number");
+        if (page > totalPages) {
+            return {
+                status: "OK",
+                roles: [],
+                totalRolesCount,
+                totalPages,
+            };
         }
 
         //reversing the roles to show latest created roles at first.
@@ -98,7 +103,7 @@ const getAllRoles: APIFunction = async (
         return {
             roles,
             totalPages,
-            rolesCount,
+            totalRolesCount,
             status: "OK",
         };
     } else {
