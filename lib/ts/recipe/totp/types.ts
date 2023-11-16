@@ -129,8 +129,6 @@ export type RecipeInterface = {
           }
         | {
               status: "LIMIT_REACHED_ERROR";
-              currentNumberOfFailedAttempts: number;
-              maxNumberOfFailedAttempts: number;
               retryAfterMs: number;
           }
     >;
@@ -150,8 +148,6 @@ export type RecipeInterface = {
           }
         | {
               status: "LIMIT_REACHED_ERROR";
-              currentNumberOfFailedAttempts: number;
-              maxNumberOfFailedAttempts: number;
               retryAfterMs: number;
           }
     >;
@@ -230,9 +226,13 @@ export type APIInterface = {
               status: "UNKNOWN_DEVICE_ERROR";
           }
         | {
-              status: "INVALID_TOTP_ERROR" | "LIMIT_REACHED_ERROR";
+              status: "INVALID_TOTP_ERROR";
               currentNumberOfFailedAttempts: number;
               maxNumberOfFailedAttempts: number;
+          }
+        | {
+              status: "LIMIT_REACHED_ERROR";
+              retryAfterMs: number;
           }
         | GeneralErrorResponse
     >;
