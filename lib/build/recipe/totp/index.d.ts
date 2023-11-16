@@ -69,8 +69,6 @@ export default class Wrapper {
           }
         | {
               status: "LIMIT_REACHED_ERROR";
-              currentNumberOfFailedAttempts: number;
-              maxNumberOfFailedAttempts: number;
               retryAfterMs: number;
           }
     >;
@@ -90,8 +88,6 @@ export default class Wrapper {
           }
         | {
               status: "LIMIT_REACHED_ERROR";
-              currentNumberOfFailedAttempts: number;
-              maxNumberOfFailedAttempts: number;
               retryAfterMs: number;
           }
     >;
