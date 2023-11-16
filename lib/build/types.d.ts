@@ -27,6 +27,7 @@ export declare type NormalisedAppinfo = {
 export declare type SuperTokensInfo = {
     connectionURI: string;
     apiKey?: string;
+    networkInterceptor?: NetworkInterceptor;
 };
 export declare type TypeInput = {
     supertokens?: SuperTokensInfo;
@@ -37,6 +38,16 @@ export declare type TypeInput = {
     isInServerlessEnv?: boolean;
     debug?: boolean;
 };
+export declare type NetworkInterceptor = (request: HttpRequest, userContext: any) => HttpRequest;
+export interface HttpRequest {
+    url: string;
+    method: HTTPMethod;
+    headers: {
+        [key: string]: string | number | string[];
+    };
+    params?: Record<string, boolean | number | string | undefined>;
+    body?: any;
+}
 export declare type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;
 export declare type APIHandled = {
     pathWithoutApiBasePath: NormalisedURLPath;

@@ -23,9 +23,9 @@ export const getSearchTags = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    __: any
+    userContext: any
 ): Promise<TagsResponse> => {
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
-    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {});
+    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {}, userContext);
     return tagsResponse;
 };
