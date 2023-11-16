@@ -69,15 +69,6 @@ const getAllRoles: APIFunction = async (
         const totalPages = Math.ceil(response.roles.length / limit);
         const totalRolesCount = response.roles.length;
 
-        if (page > totalPages) {
-            return {
-                status: "OK",
-                roles: [],
-                totalRolesCount,
-                totalPages,
-            };
-        }
-
         //reversing the roles to show latest created roles at first.
         const paginatedRoles = response.roles.reverse().slice(skip, skip + limit);
 
