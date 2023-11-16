@@ -30,6 +30,7 @@ let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe")
 let generatePasswordResetToken = require("../../lib/build/recipe/emailpassword/api/generatePasswordResetToken").default;
 let passwordReset = require("../../lib/build/recipe/emailpassword/api/passwordReset").default;
 let createResetPasswordLink = require("../../lib/build/recipe/emailpassword/index.js").createResetPasswordLink;
+let sendResetPasswordEmail = require("../../lib/build/recipe/emailpassword/index.js").sendResetPasswordEmail;
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -759,7 +760,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(currentUrl.origin === "http://localhost:3002");
     });
 
-    it("Test the reset password link", async function () {
+    it("test the reset password link", async function () {
         const connectionURI = await startST();
         let emailPasswordLink = "";
         STExpress.init({
@@ -808,7 +809,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(parsed.query.tenantId === "public");
     });
 
-    it("Test the reset password link for invalid input", async function () {
+    it("test the reset password link for invalid input", async function () {
         const connectionURI = await startST();
         let emailPasswordLink = "";
         STExpress.init({
@@ -844,6 +845,73 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         try {
             link = await createResetPasswordLink("invalidTenantId", "invlidUserId", "test@example.com");
+        } catch (err) {
+            isErr = true;
+            assert(err.message.includes("status code: 400"));
+        }
+        assert(isErr);
+    });
+
+    it("test sendResetPasswordEmail", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        user = await EmailPassword.signUp("public", "test@example.com", "password1234");
+        resp = await sendResetPasswordEmail("public", user.user.id, "test@example.com");
+        assert(resp !== undefined);
+        assert(resp.status === "OK");
+    });
+
+    it("test sendResetPasswordEmail: invalid input", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        resp = await sendResetPasswordEmail("public", "invalidUserID", "test@example.com");
+        assert(resp !== undefined);
+        assert(resp.status === "UNKNOWN_USER_ID_ERROR");
+
+        user = await EmailPassword.signUp("public", "test@example.com", "password1234");
+
+        try {
+            await sendResetPasswordEmail("invalidTenantID", user.user.id, "test@example.com");
         } catch (err) {
             isErr = true;
             assert(err.message.includes("status code: 400"));

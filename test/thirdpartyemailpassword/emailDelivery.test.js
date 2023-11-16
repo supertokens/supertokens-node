@@ -22,6 +22,7 @@ const EmailVerification = require("../../recipe/emailverification");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let createResetPasswordLink = require("../../lib/build/recipe/thirdpartyemailpassword/index.js")
     .createResetPasswordLink;
+let sendResetPasswordEmail = require("../../lib/build/recipe/thirdpartyemailpassword/index.js").sendResetPasswordEmail;
 let { SMTPService } = require("../../recipe/thirdpartyemailpassword/emaildelivery");
 let nock = require("nock");
 let supertest = require("supertest");
@@ -875,6 +876,73 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
         try {
             link = await createResetPasswordLink("invalidTenantId", "invlidUserId", "test@example.com");
+        } catch (err) {
+            isErr = true;
+            assert(err.message.includes("status code: 400"));
+        }
+        assert(isErr);
+    });
+
+    it("test sendResetPasswordEmail", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [ThirdPartyEmailPassword.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "password1234");
+        resp = await sendResetPasswordEmail("public", user.user.id, "test@example.com");
+        assert(resp !== undefined);
+        assert(resp.status === "OK");
+    });
+
+    it("test sendResetPasswordEmail: invalid input", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [ThirdPartyEmailPassword.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        resp = await sendResetPasswordEmail("public", "invalidUserID", "test@example.com");
+        assert(resp !== undefined);
+        assert(resp.status === "UNKNOWN_USER_ID_ERROR");
+
+        user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "password1234");
+
+        try {
+            await sendResetPasswordEmail("invalidTenantID", user.user.id, "test@example.com");
         } catch (err) {
             isErr = true;
             assert(err.message.includes("status code: 400"));
