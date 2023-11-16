@@ -16,9 +16,12 @@ const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
+var url = require("url");
 let { ProcessState } = require("../../lib/build/processState");
 const EmailVerification = require("../../recipe/emailverification");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+let createResetPasswordLink = require("../../lib/build/recipe/thirdpartyemailpassword/index.js")
+    .createResetPasswordLink;
 let { SMTPService } = require("../../recipe/thirdpartyemailpassword/emaildelivery");
 let nock = require("nock");
 let supertest = require("supertest");
@@ -785,5 +788,97 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         assert(getContentCalled);
         assert(sendRawEmailCalled);
         assert.notStrictEqual(emailVerifyURL, undefined);
+    });
+
+    it("Test the reset password link", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailPasswordLink = input.passwordResetLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "password1234");
+        link = await createResetPasswordLink("public", user.user.id, "test@example.com");
+        assert(link !== undefined);
+        assert(link.status === "OK");
+
+        parsed = url.parse(link.link, true);
+
+        assert(parsed.pathname === "/auth/reset-password");
+        assert(parsed.query.token !== undefined);
+        assert(parsed.query.rid === "thirdpartyemailpassword");
+        assert(parsed.query.tenantId === "public");
+    });
+
+    it("Test the reset password link for invalid input", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailPasswordLink = input.passwordResetLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        let link = await createResetPasswordLink("public", "invlidUserId", "test@example.com");
+        assert(link !== undefined);
+        assert(link.status === "UNKNOWN_USER_ID_ERROR");
+
+        try {
+            link = await createResetPasswordLink("invalidTenantId", "invlidUserId", "test@example.com");
+        } catch (err) {
+            isErr = true;
+            assert(err.message.includes("status code: 400"));
+        }
+        assert(isErr);
     });
 });

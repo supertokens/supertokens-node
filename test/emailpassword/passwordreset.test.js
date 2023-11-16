@@ -18,6 +18,7 @@ let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
+var url = require("url");
 let { ProcessState } = require("../../lib/build/processState");
 let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
 let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
@@ -28,6 +29,7 @@ let ThirdParty = require("../../recipe/thirdparty");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let generatePasswordResetToken = require("../../lib/build/recipe/emailpassword/api/generatePasswordResetToken").default;
 let passwordReset = require("../../lib/build/recipe/emailpassword/api/passwordReset").default;
+let createResetPasswordLink = require("../../lib/build/recipe/emailpassword/index.js").createResetPasswordLink;
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -130,6 +132,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                                 resetURL = input.passwordResetLink.split("?")[0];
                                 tokenInfo = searchParams.get("token");
                                 ridInfo = searchParams.get("rid");
+                                tenantInfo = searchParams.get("tenantId");
                             },
                         },
                     },
@@ -171,6 +174,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert.notStrictEqual(tokenInfo, undefined);
         assert.notStrictEqual(tokenInfo, null);
         assert.strictEqual(ridInfo, "emailpassword");
+        assert.strictEqual(tenantInfo, "public");
     });
 
     /*
@@ -753,5 +757,97 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         currentUrl = new URL(emailPasswordLink);
         assert(currentUrl.origin === "http://localhost:3002");
+    });
+
+    it("Test the reset password link", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailPasswordLink = input.passwordResetLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        user = await EmailPassword.signUp("public", "test@example.com", "password1234");
+        link = await createResetPasswordLink("public", user.user.id, "test@example.com");
+        assert(link !== undefined);
+        assert(link.status === "OK");
+
+        parsed = url.parse(link.link, true);
+
+        assert(parsed.pathname === "/auth/reset-password");
+        assert(parsed.query.token !== undefined);
+        assert(parsed.query.rid === "emailpassword");
+        assert(parsed.query.tenantId === "public");
+    });
+
+    it("Test the reset password link for invalid input", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailPasswordLink = input.passwordResetLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        let link = await createResetPasswordLink("public", "invlidUserId", "test@example.com");
+        assert(link !== undefined);
+        assert(link.status === "UNKNOWN_USER_ID_ERROR");
+
+        try {
+            link = await createResetPasswordLink("invalidTenantId", "invlidUserId", "test@example.com");
+        } catch (err) {
+            isErr = true;
+            assert(err.message.includes("status code: 400"));
+        }
+        assert(isErr);
     });
 });
