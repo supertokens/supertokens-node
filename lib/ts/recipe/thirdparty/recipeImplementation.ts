@@ -39,11 +39,15 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                   reason: string;
               }
         > {
-            let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
-                thirdPartyId,
-                thirdPartyUserId,
-                email: { id: email, isVerified },
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId}/recipe/signinup`),
+                {
+                    thirdPartyId,
+                    thirdPartyUserId,
+                    email: { id: email, isVerified },
+                },
+                userContext
+            );
 
             if (response.status !== "OK") {
                 return response;

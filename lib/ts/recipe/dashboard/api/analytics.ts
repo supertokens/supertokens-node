@@ -29,7 +29,7 @@ export default async function analyticsPost(
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    __: any
+    userContext: any
 ): Promise<Response> {
     // If telemetry is disabled, dont send any event
     if (!SuperTokens.getInstanceOrThrowError().telemetryEnabled) {
@@ -58,7 +58,7 @@ export default async function analyticsPost(
     let numberOfUsers: number;
     try {
         let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {}, userContext);
         if (response.exists) {
             telemetryId = response.telemetryId;
         }

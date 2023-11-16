@@ -18,7 +18,12 @@ import { send200Response } from "../../../utils";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 
-export default async function signOut(_: APIInterface, ___: string, options: APIOptions, __: any): Promise<boolean> {
+export default async function signOut(
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (options.config.authMode === "api-key") {
         send200Response(options.res, { status: "OK" });
     } else {
@@ -27,7 +32,8 @@ export default async function signOut(_: APIInterface, ___: string, options: API
         const sessionDeleteResponse = await querier.sendDeleteRequest(
             new NormalisedURLPath("/recipe/dashboard/session"),
             {},
-            { sessionId: sessionIdFormAuthHeader }
+            { sessionId: sessionIdFormAuthHeader },
+            userContext
         );
         send200Response(options.res, sessionDeleteResponse);
     }
