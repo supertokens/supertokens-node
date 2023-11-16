@@ -93,8 +93,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     };
 
     public buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[] {
-        const nextArray: Set<string> = new Set();
         for (const req of requirements) {
+            const nextArray: Set<string> = new Set();
+
             if (typeof req === "string") {
                 if (completedClaims[req] === undefined) {
                     nextArray.add(req);
@@ -119,8 +120,12 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     }
                 }
             }
+
+            if (nextArray.size > 0) {
+                [...nextArray];
+            }
         }
-        return [...nextArray];
+        return [];
     }
 
     public fetchValue = (
