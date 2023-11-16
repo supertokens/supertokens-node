@@ -426,7 +426,6 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "put") {
                 apiFunction = createRoleOrAddPermissions;
             }
-
             if (req.getMethod() === "delete") {
                 apiFunction = deleteRole;
             }
@@ -440,11 +439,9 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "put") {
                 apiFunction = addRoleToUser;
             }
-
             if (req.getMethod() === "get") {
                 apiFunction = getRolesForUser;
             }
-
             if (req.getMethod() === "delete") {
                 apiFunction = removeUserRole;
             }
