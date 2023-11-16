@@ -139,3 +139,8 @@ export declare type APIInterface = {
         | GeneralErrorResponse
     >;
 };
+export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
+    tenantId: string,
+    user: User,
+    userContext: any
+) => Promise<string[]>;

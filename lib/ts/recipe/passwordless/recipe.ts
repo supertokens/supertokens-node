@@ -41,6 +41,7 @@ import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } 
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import { User } from "../../user";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -143,7 +144,33 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
                     if (mfaInstance !== undefined) {
-                        mfaInstance.addFactorsSetupFromOtherRecipes(allFactors);
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (tenantId: string, user: User) => {
+                            let factors: string[] = [];
+                            for (const loginMethod of user.loginMethods) {
+                                if (!loginMethod.tenantIds.includes(tenantId)) {
+                                    continue;
+                                }
+
+                                if (loginMethod.email !== undefined && loginMethod.verified) {
+                                    if (allFactors.includes("otp-email")) {
+                                        factors.push("otp-email");
+                                    }
+                                    if (allFactors.includes("link-email")) {
+                                        factors.push("link-email");
+                                    }
+                                }
+
+                                if (loginMethod.phoneNumber !== undefined) {
+                                    if (allFactors.includes("otp-phone")) {
+                                        factors.push("otp-phone");
+                                    }
+                                    if (allFactors.includes("link-phone")) {
+                                        factors.push("link-phone");
+                                    }
+                                }
+                            }
+                            return factors;
+                        });
                     }
                 });
 

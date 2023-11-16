@@ -4,11 +4,18 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import {
+    APIInterface,
+    GetFactorsSetupForUserFromOtherRecipesFunc,
+    RecipeInterface,
+    TypeInput,
+    TypeNormalisedInput,
+} from "./types";
+import { User } from "../../user";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
-    private factorsSetupByOtherRecipes;
+    private getFactorsSetupForUserFromOtherRecipesFuncs;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -31,6 +38,6 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    addFactorsSetupFromOtherRecipes: (factors: string[]) => void;
-    getFactorsSetupByOtherRecipes: () => string[];
+    addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
+    getFactorsSetupForUser: (tenantId: string, user: User, userContext: any) => Promise<string[]>;
 }

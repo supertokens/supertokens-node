@@ -24,17 +24,24 @@ import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { GET_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import {
+    APIInterface,
+    GetFactorsSetupForUserFromOtherRecipesFunc,
+    RecipeInterface,
+    TypeInput,
+    TypeNormalisedInput,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import mfaInfoAPI from "./api/mfaInfo";
 import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import { User } from "../../user";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "multifactorauth";
 
-    private factorsSetupByOtherRecipes: string[] = [];
+    private getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
 
     config: TypeNormalisedInput;
 
@@ -150,11 +157,19 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    addFactorsSetupFromOtherRecipes = (factors: string[]) => {
-        this.factorsSetupByOtherRecipes.push(...factors);
+    addGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {
+        this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    getFactorsSetupByOtherRecipes = () => {
-        return this.factorsSetupByOtherRecipes;
+    getFactorsSetupForUser = async (tenantId: string, user: User, userContext: any) => {
+        let factorIds: string[] = [];
+
+        for (const func of this.getFactorsSetupForUserFromOtherRecipesFuncs) {
+            let result = await func(tenantId, user, userContext);
+            if (result !== undefined) {
+                factorIds = factorIds.concat(result);
+            }
+        }
+        return factorIds;
     };
 }

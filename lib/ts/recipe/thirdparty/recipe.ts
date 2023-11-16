@@ -32,6 +32,7 @@ import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import { User } from "../../user";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -97,7 +98,18 @@ export default class Recipe extends RecipeModule {
                 PostSuperTokensInitCallbacks.addPostInitCallback(() => {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
-                        mfaInstance.addFactorsSetupFromOtherRecipes(["thirdparty"]);
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (tenantId: string, user: User) => {
+                            for (const loginMethod of user.loginMethods) {
+                                if (!loginMethod.tenantIds.includes(tenantId)) {
+                                    continue;
+                                }
+
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                    return ["thirdparty"];
+                                }
+                            }
+                            return [];
+                        });
                     }
                 });
 
