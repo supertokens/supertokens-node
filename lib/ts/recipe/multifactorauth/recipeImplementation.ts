@@ -137,7 +137,7 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
                 userContext,
             });
 
-            const factorIds = metadata.metadata._supertokens?.factors?.[tenantId] ?? [];
+            const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser?.[tenantId] ?? [];
             if (factorIds.includes(factorId)) {
                 return;
             }
@@ -169,7 +169,7 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
                 userContext,
             });
 
-            return metadata.metadata._supertokens?.factors?.[tenantId] ?? [];
+            return metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser?.[tenantId] ?? [];
         },
 
         createPrimaryUser: async function (
