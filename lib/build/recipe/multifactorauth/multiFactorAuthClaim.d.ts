@@ -8,11 +8,11 @@ import { MFAClaimValue, MFARequirementList } from "./types";
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
  * */
 export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
-    validators: {
-        passesMFARequirements: (requirements?: MFARequirementList) => SessionClaimValidator;
-    };
     constructor(key?: string);
-    buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList): string[];
+    validators: {
+        passesMFARequirements: (requirements?: MFARequirementList, id?: string) => SessionClaimValidator;
+    };
+    buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
     fetchValue: (
         _userId: string,
         _recipeUserId: RecipeUserId,
