@@ -774,20 +774,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     return "localhost:3000";
                 },
             },
-            recipeList: [
-                EmailPassword.init({
-                    emailDelivery: {
-                        override: (original) => {
-                            return {
-                                ...original,
-                                sendEmail: async (input) => {
-                                    emailPasswordLink = input.passwordResetLink;
-                                },
-                            };
-                        },
-                    },
-                }),
-            ],
+            recipeList: [EmailPassword.init()],
         });
 
         const app = express();
@@ -866,7 +853,20 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     return "localhost:3000";
                 },
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [
+                EmailPassword.init({
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailPasswordLink = input.passwordResetLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
         });
 
         const app = express();
@@ -879,6 +879,13 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         resp = await sendResetPasswordEmail("public", user.user.id, "test@example.com");
         assert(resp !== undefined);
         assert(resp.status === "OK");
+
+        parsed = url.parse(emailPasswordLink, true);
+
+        assert(parsed.pathname === "/auth/reset-password");
+        assert(parsed.query.token !== undefined);
+        assert(parsed.query.rid === "emailpassword");
+        assert(parsed.query.tenantId === "public");
     });
 
     it("test sendResetPasswordEmail: invalid input", async function () {
