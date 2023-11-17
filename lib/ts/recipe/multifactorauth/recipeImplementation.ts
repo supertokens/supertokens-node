@@ -8,8 +8,13 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import type MultiFactorAuthRecipe from "./recipe";
 import { getUser } from "../..";
 import Session from "../session";
+import { TypeNormalisedInput } from "./types";
 
-export default function getRecipeInterface(querier: Querier, recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    config: TypeNormalisedInput,
+    recipeInstance: MultiFactorAuthRecipe
+): RecipeInterface {
     return {
         getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
             return await recipeInstance.getFactorsSetupForUser(tenantId, user, userContext);
@@ -239,7 +244,7 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
 
         createOrUpdateSession: async function (
             this: RecipeInterface,
-            { req, res, user, recipeUserId, tenantId, factorId, session, userContext }
+            { req, res, user, recipeUserId, tenantId, factorId, isValidFirstFactorForTenant, session, userContext }
         ) {
             if (session !== undefined) {
                 const sessionUser = await getUser(session.getUserId(), userContext);
@@ -296,9 +301,12 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
                     this.markFactorAsCompleteInSession({ session, factorId, userContext });
                 }
             } else {
-                const firstFactors: string[] = [];
-
-                if (!firstFactors.includes(factorId)) {
+                if (
+                    (isValidFirstFactorForTenant === undefined &&
+                        config.firstFactors !== undefined &&
+                        !config.firstFactors.includes(factorId)) ||
+                    isValidFirstFactorForTenant === false
+                ) {
                     throw new Error("Not a valid first factor: " + factorId);
                 }
 

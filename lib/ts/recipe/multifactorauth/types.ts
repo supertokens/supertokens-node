@@ -105,6 +105,7 @@ export type RecipeInterface = {
         res: BaseResponse;
         user: User;
         recipeUserId: RecipeUserId;
+        isValidFirstFactorForTenant?: boolean;
         session?: SessionContainerInterface;
         tenantId: string;
         factorId: string;

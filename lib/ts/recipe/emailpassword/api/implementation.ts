@@ -658,6 +658,7 @@ export default function getAPIImplementation(): APIInterface {
                 res: options.res,
                 user: response.user,
                 factorId: "emailpassword",
+                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
                 session,
                 recipeUserId: emailPasswordRecipeUser.recipeUserId,
                 tenantId,
@@ -765,15 +766,43 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Race condition error - please call this API again");
             }
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            let session: SessionContainerInterface | undefined;
+
+            if (mfaInstance === undefined) {
+                // No MFA stuff here, so we just create and return the session
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+
+                return {
+                    status: "OK",
+                    session,
+                    user: response.user,
+                };
+            }
+
+            session = await Session.getSession(options.req, options.res, { sessionRequired: false });
+
+            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
+                req: options.req,
+                res: options.res,
+                user: response.user,
+                factorId: "emailpassword",
+                session,
+                recipeUserId: emailPasswordRecipeUser.recipeUserId,
                 tenantId,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
+                userContext,
+            });
+
             return {
                 status: "OK",
                 session,
