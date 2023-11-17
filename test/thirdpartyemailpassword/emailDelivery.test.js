@@ -793,7 +793,6 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
     it("Test the reset password link", async function () {
         const connectionURI = await startST();
-        let emailPasswordLink = "";
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -829,7 +828,6 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
     it("Test the reset password link for invalid input", async function () {
         const connectionURI = await startST();
-        let emailPasswordLink = "";
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -908,7 +906,6 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
     it("test sendResetPasswordEmail: invalid input", async function () {
         const connectionURI = await startST();
-        let emailPasswordLink = "";
         STExpress.init({
             supertokens: {
                 connectionURI,
