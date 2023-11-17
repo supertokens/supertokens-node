@@ -13,6 +13,10 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
             return await recipeInstance.getFactorsSetupForUser(tenantId, user, userContext);
         },
 
+        getAllAvailableFactorIds: async function () {
+            return recipeInstance.getAllAvailableFactorIds();
+        },
+
         getMFARequirementsForAuth: async function ({
             defaultRequiredFactorIdsForUser,
             defaultRequiredFactorIdsForTenant,

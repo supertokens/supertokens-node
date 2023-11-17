@@ -43,6 +43,8 @@ export default class Recipe extends RecipeModule {
 
     private getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
 
+    private allAvailableFactorIds: string[] = [];
+
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
@@ -155,6 +157,14 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
+    };
+
+    addAvailableFactorIdsFromOtherRecipes = (factorIds: string[]) => {
+        this.allAvailableFactorIds = this.allAvailableFactorIds.concat(factorIds);
+    };
+
+    getAllAvailableFactorIds = () => {
+        return this.allAvailableFactorIds;
     };
 
     addGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {

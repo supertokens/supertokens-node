@@ -16,6 +16,7 @@ export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     private getFactorsSetupForUserFromOtherRecipesFuncs;
+    private allAvailableFactorIds;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -38,6 +39,8 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
+    addAvailableFactorIdsFromOtherRecipes: (factorIds: string[]) => void;
+    getAllAvailableFactorIds: () => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
     getFactorsSetupForUser: (tenantId: string, user: User, userContext: any) => Promise<string[]>;
 }

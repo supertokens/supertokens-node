@@ -144,6 +144,7 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
                     if (mfaInstance !== undefined) {
+                        mfaInstance.addAvailableFactorIdsFromOtherRecipes(allFactors);
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (tenantId: string, user: User) => {
                             let factors: string[] = [];
                             for (const loginMethod of user.loginMethods) {
