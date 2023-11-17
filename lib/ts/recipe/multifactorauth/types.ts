@@ -65,7 +65,7 @@ export type RecipeInterface = {
         session: SessionContainer;
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
-        factorsSetUpByTheUser: string[];
+        factorsSetUpForUser: string[];
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
@@ -74,7 +74,7 @@ export type RecipeInterface = {
 
     getMFARequirementsForAuth: (input: {
         session: SessionContainer;
-        factorsSetUpByTheUser: string[];
+        factorsSetUpForUser: string[];
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
@@ -99,6 +99,17 @@ export type RecipeInterface = {
     }) => Promise<void>;
 
     getDefaultRequiredFactorsForUser(input: { user: User; tenantId: string; userContext: any }): Promise<string[]>;
+
+    createOrUpdateSession: (input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        user: User;
+        recipeUserId: RecipeUserId;
+        session?: SessionContainerInterface;
+        tenantId: string;
+        factorId: string;
+        userContext: any;
+    }) => Promise<SessionContainerInterface>;
 
     createPrimaryUser: (input: {
         recipeUserId: RecipeUserId;

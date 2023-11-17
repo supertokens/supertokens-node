@@ -9,6 +9,7 @@ import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -627,15 +628,42 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            let session: SessionContainerInterface | undefined;
+
+            if (mfaInstance === undefined) {
+                // No MFA stuff here, so we just create and return the session
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+
+                return {
+                    status: "OK",
+                    session,
+                    user: response.user,
+                };
+            }
+
+            session = await Session.getSession(options.req, options.res, { sessionRequired: false });
+
+            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
+                req: options.req,
+                res: options.res,
+                user: response.user,
+                factorId: "emailpassword",
+                session,
+                recipeUserId: emailPasswordRecipeUser.recipeUserId,
                 tenantId,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+                userContext,
+            });
+
             return {
                 status: "OK",
                 session,

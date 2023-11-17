@@ -6,6 +6,8 @@ import RecipeUserId from "../../recipeUserId";
 import { User } from "../../user";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type MultiFactorAuthRecipe from "./recipe";
+import { getUser } from "../..";
+import Session from "../session";
 
 export default function getRecipeInterface(querier: Querier, recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
     return {
@@ -40,7 +42,7 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
                 completedFactors,
                 defaultRequiredFactorIdsForTenant,
                 defaultRequiredFactorIdsForUser,
-                factorsSetUpByTheUser,
+                factorsSetUpForUser,
                 userContext,
             }
         ) {
@@ -49,7 +51,7 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
                 completedFactors,
                 defaultRequiredFactorIdsForTenant,
                 defaultRequiredFactorIdsForUser,
-                factorsSetUpByTheUser,
+                factorsSetUpForUser,
                 userContext,
             });
 
@@ -233,6 +235,77 @@ export default function getRecipeInterface(querier: Querier, recipeInstance: Mul
             // }
 
             return accountsLinkingResult;
+        },
+
+        createOrUpdateSession: async function (
+            this: RecipeInterface,
+            { req, res, user, recipeUserId, tenantId, factorId, session, userContext }
+        ) {
+            if (session !== undefined) {
+                const sessionUser = await getUser(session.getUserId(), userContext);
+                if (sessionUser === undefined) {
+                    throw new Error("User does not exist. Should never come here");
+                }
+
+                const factorsSetUpForUser = await this.getFactorsSetupForUser({
+                    user: sessionUser,
+                    tenantId: session.getTenantId(),
+                    userContext,
+                });
+                if (!factorsSetUpForUser.includes(factorId)) {
+                    // this factor was not setup for user, so need to check if it is allowed
+                    const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
+                    const completedFactors = mfaClaimValue?.c ?? {};
+                    const defaultRequiredFactorIdsForUser: string[] = []; // TODO
+                    const defaultRequiredFactorIdsForTenant: string[] = []; // TODO
+                    const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
+                        session,
+                        factorsSetUpForUser,
+                        defaultRequiredFactorIdsForUser,
+                        defaultRequiredFactorIdsForTenant: defaultRequiredFactorIdsForTenant,
+                        completedFactors,
+                        userContext,
+                    });
+                    const canSetup = await this.isAllowedToSetupFactor({
+                        defaultRequiredFactorIdsForTenant,
+                        defaultRequiredFactorIdsForUser,
+                        factorsSetUpForUser: factorsSetUpForUser,
+                        mfaRequirementsForAuth,
+                        session,
+                        factorId,
+                        completedFactors,
+                        userContext,
+                    });
+                    if (!canSetup) {
+                        throw new Error("Cannot setup emailpassword factor for user");
+                    }
+
+                    // Account linking for MFA
+                    if (!sessionUser.isPrimaryUser) {
+                        await this.createPrimaryUser({ recipeUserId: new RecipeUserId(sessionUser.id), userContext });
+                        // TODO check for response from above
+                    }
+
+                    await this.linkAccounts({
+                        recipeUserId: new RecipeUserId(user.id),
+                        primaryUserId: sessionUser.id,
+                        userContext,
+                    });
+                    // TODO check for response from above
+
+                    this.markFactorAsCompleteInSession({ session, factorId, userContext });
+                }
+            } else {
+                const firstFactors: string[] = [];
+
+                if (!firstFactors.includes(factorId)) {
+                    throw new Error("Not a valid first factor: " + factorId);
+                }
+
+                session = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
+                this.markFactorAsCompleteInSession({ session, factorId, userContext });
+            }
+            return session;
         },
     };
 }
