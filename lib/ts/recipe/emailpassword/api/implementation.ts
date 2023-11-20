@@ -10,6 +10,7 @@ import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { MFAContext } from "../../multifactorauth/types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -630,11 +631,9 @@ export default function getAPIImplementation(): APIInterface {
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
-            let session: SessionContainerInterface | undefined;
-
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                session = await Session.createNewSession(
+                const session = await Session.createNewSession(
                     options.req,
                     options.res,
                     tenantId,
@@ -651,17 +650,38 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
+            /* CREATE MFA CONTEXT */
+            let session: SessionContainerInterface | undefined;
+            let sessionUser: User | undefined;
             session = await Session.getSession(options.req, options.res, { sessionRequired: false });
 
-            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
+            if (session !== undefined) {
+                sessionUser = await getUser(session.getUserId(), userContext);
+                if (sessionUser === undefined) {
+                    throw new Error("User not found!");
+                }
+            }
+
+            const mfaContext = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
                 req: options.req,
                 res: options.res,
-                user: response.user,
-                factorId: "emailpassword",
-                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
-                session,
-                recipeUserId: emailPasswordRecipeUser.recipeUserId,
                 tenantId,
+                factorIdInProgress: "emailpassword",
+                session,
+                sessionUser,
+                userAboutToSignIn: response.user, // TODO
+                userContext,
+            });
+            if (mfaContext.status !== "OK") {
+                throw new Error("Throw proper errors here!"); // TODO
+            }
+            /* END OF CREATE MFA CONTEXT */
+
+            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
+                justSignedInUser: response.user,
+                justSignedInUserCreated: false,
+                justSignedInRecipeUserId: emailPasswordRecipeUser.recipeUserId,
+                mfaContext,
                 userContext,
             });
 
@@ -747,6 +767,38 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
+            let mfaContext: MFAContext | undefined = undefined;
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance !== undefined) {
+                let session: SessionContainerInterface | undefined;
+                let sessionUser: User | undefined;
+                session = await Session.getSession(options.req, options.res, { sessionRequired: false });
+
+                if (session !== undefined) {
+                    sessionUser = await getUser(session.getUserId(), userContext);
+                    if (sessionUser === undefined) {
+                        throw new Error("User not found!");
+                    }
+                }
+
+                const mfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "emailpassword",
+                    session,
+                    sessionUser,
+                    userAboutToSignIn: undefined, // since this is a sign up
+                    userContext,
+                });
+                if (mfaContextRes.status !== "OK") {
+                    throw new Error("Throw proper errors here!"); // TODO
+                }
+                mfaContext = {
+                    ...mfaContextRes,
+                };
+            }
+
             // this function also does account linking
             let response = await options.recipeImplementation.signUp({
                 tenantId,
@@ -766,13 +818,9 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Race condition error - please call this API again");
             }
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
-
-            let session: SessionContainerInterface | undefined;
-
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                session = await Session.createNewSession(
+                const session = await Session.createNewSession(
                     options.req,
                     options.res,
                     tenantId,
@@ -789,17 +837,11 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            session = await Session.getSession(options.req, options.res, { sessionRequired: false });
-
-            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
-                req: options.req,
-                res: options.res,
-                user: response.user,
-                factorId: "emailpassword",
-                session,
-                recipeUserId: emailPasswordRecipeUser.recipeUserId,
-                tenantId,
-                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
+            const session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
+                justSignedInUser: response.user,
+                justSignedInUserCreated: true,
+                justSignedInRecipeUserId: emailPasswordRecipeUser.recipeUserId,
+                mfaContext: mfaContext!,
                 userContext,
             });
 

@@ -19,6 +19,15 @@ export declare type MFAClaimValue = {
     c: Record<string, number>;
     n: string[];
 };
+export declare type MFAContext = {
+    req: BaseRequest;
+    res: BaseResponse;
+    tenantId: string;
+    factorIdInProgress: string;
+    userAboutToSignIn?: User;
+    session?: SessionContainerInterface;
+    sessionUser?: User;
+};
 export declare type TypeInput = {
     firstFactors?: string[];
     override?: {
@@ -72,17 +81,6 @@ export declare type RecipeInterface = {
         userContext: any;
     }) => Promise<void>;
     getDefaultRequiredFactorsForUser(input: { user: User; tenantId: string; userContext: any }): Promise<string[]>;
-    createOrUpdateSession: (input: {
-        req: BaseRequest;
-        res: BaseResponse;
-        user: User;
-        recipeUserId: RecipeUserId;
-        isValidFirstFactorForTenant?: boolean;
-        session?: SessionContainerInterface;
-        tenantId: string;
-        factorId: string;
-        userContext: any;
-    }) => Promise<SessionContainerInterface>;
     createPrimaryUser: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
@@ -126,6 +124,30 @@ export declare type RecipeInterface = {
               status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
+    checkAndCreateMFAContext: (input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        tenantId: string;
+        factorIdInProgress: string;
+        session?: SessionContainerInterface;
+        sessionUser?: User;
+        userAboutToSignIn?: User;
+        userContext: any;
+    }) => Promise<
+        | ({
+              status: "OK";
+          } & MFAContext)
+        | {
+              status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
+          }
+    >;
+    createOrUpdateSession: (input: {
+        justSignedInUser: User;
+        justSignedInUserCreated: boolean;
+        justSignedInRecipeUserId: RecipeUserId;
+        mfaContext: MFAContext;
+        userContext: any;
+    }) => Promise<SessionContainerInterface>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

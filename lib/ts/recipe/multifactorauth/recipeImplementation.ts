@@ -6,7 +6,6 @@ import RecipeUserId from "../../recipeUserId";
 import { User } from "../../user";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type MultiFactorAuthRecipe from "./recipe";
-import { getUser } from "../..";
 import Session from "../session";
 import { TypeNormalisedInput } from "./types";
 import Multitenancy from "../multitenancy";
@@ -243,88 +242,156 @@ export default function getRecipeInterface(
             return accountsLinkingResult;
         },
 
-        createOrUpdateSession: async function (
+        checkAndCreateMFAContext: async function (
             this: RecipeInterface,
-            { req, res, user, recipeUserId, tenantId, factorId, isValidFirstFactorForTenant, session, userContext }
+            { req, res, tenantId, factorIdInProgress, session, sessionUser, userAboutToSignIn, userContext }
         ) {
-            if (session !== undefined) {
-                const sessionUser = await getUser(session.getUserId(), userContext);
-                if (sessionUser === undefined) {
-                    throw new Error("User does not exist. Should never come here");
+            const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
+            const validFirstFactors =
+                tenantInfo?.firstFactors ||
+                config.firstFactors ||
+                (await this.getAllAvailableFactorIds({ userContext }));
+
+            if (session === undefined) {
+                // No session exists, so we need to check if it's a valid first factor before proceeding
+                if (!validFirstFactors.includes(factorIdInProgress)) {
+                    return {
+                        status: "DISALLOWED_FIRST_FACTOR_ERROR",
+                    };
+                }
+                return {
+                    status: "OK",
+                    req,
+                    res,
+                    tenantId,
+                    factorIdInProgress,
+                    session,
+                    sessionUser,
+                    userAboutToSignIn,
+                };
+            }
+
+            if (userAboutToSignIn !== undefined) {
+                // session exists and also an existing user is about to sign in
+                // if the user about to sign in is not linked to the session user, we must check if it is a valid first factor
+                // and this is because the active session will be replaced with a new session for the user that will sign in now
+                if (!validFirstFactors.includes(factorIdInProgress)) {
+                    return {
+                        status: "DISALLOWED_FIRST_FACTOR_ERROR",
+                    };
                 }
 
-                const factorsSetUpForUser = await this.getFactorsSetupForUser({
-                    user: sessionUser,
-                    tenantId: session.getTenantId(),
-                    userContext,
-                });
-                if (!factorsSetUpForUser.includes(factorId)) {
-                    // this factor was not setup for user, so need to check if it is allowed
-                    const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
-                    const completedFactors = mfaClaimValue?.c ?? {};
+                return {
+                    status: "OK",
+                    req,
+                    res,
+                    tenantId,
+                    factorIdInProgress,
+                    session,
+                    sessionUser,
+                    userAboutToSignIn,
+                };
+            }
 
-                    const defaultRequiredFactorIdsForUser: string[] = await this.getDefaultRequiredFactorsForUser({
-                        tenantId,
-                        user: sessionUser,
-                        userContext,
-                    });
+            // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
+            const defaultRequiredFactorIdsForUser = await this.getDefaultRequiredFactorsForUser({
+                user: sessionUser!,
+                tenantId,
+                userContext,
+            });
+            const factorsSetUpForUser = await this.getFactorsSetupForUser({
+                user: sessionUser!,
+                tenantId,
+                userContext,
+            });
+            const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
+            const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
+                session,
+                factorsSetUpForUser,
+                defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+                defaultRequiredFactorIdsForUser,
+                completedFactors: completedFactorsClaimValue?.c ?? {},
+                userContext,
+            });
 
-                    const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-                    if (tenantInfo === undefined) {
-                        throw new Error("Tenant does not exist");
-                    }
-                    const defaultRequiredFactorIdsForTenant: string[] = tenantInfo.defaultRequiredFactorIds ?? [];
-                    const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
-                        session,
-                        factorsSetUpForUser,
-                        defaultRequiredFactorIdsForUser,
-                        defaultRequiredFactorIdsForTenant,
-                        completedFactors,
-                        userContext,
-                    });
-                    const canSetup = await this.isAllowedToSetupFactor({
-                        defaultRequiredFactorIdsForTenant,
-                        defaultRequiredFactorIdsForUser,
-                        factorsSetUpForUser: factorsSetUpForUser,
-                        mfaRequirementsForAuth,
-                        session,
-                        factorId,
-                        completedFactors,
-                        userContext,
-                    });
-                    if (!canSetup) {
-                        throw new Error("Cannot setup emailpassword factor for user");
-                    }
+            const canSetup = this.isAllowedToSetupFactor({
+                session,
+                factorId: factorIdInProgress,
+                completedFactors: completedFactorsClaimValue?.c ?? {},
+                defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+                defaultRequiredFactorIdsForUser,
+                factorsSetUpForUser,
+                mfaRequirementsForAuth,
+                userContext,
+            });
+            if (!canSetup) {
+                return {
+                    status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                };
+            }
 
-                    // Account linking for MFA
-                    if (!sessionUser.isPrimaryUser) {
-                        await this.createPrimaryUser({ recipeUserId: new RecipeUserId(sessionUser.id), userContext });
-                        // TODO check for response from above
-                    }
+            return {
+                status: "OK",
+                req,
+                res,
+                tenantId,
+                factorIdInProgress,
+                session,
+                sessionUser,
+                userAboutToSignIn,
+            };
+        },
 
-                    await this.linkAccounts({
-                        recipeUserId: new RecipeUserId(user.id),
-                        primaryUserId: sessionUser.id,
+        createOrUpdateSession: async function (
+            this: RecipeInterface,
+            { justSignedInUser, justSignedInUserCreated, justSignedInRecipeUserId, mfaContext, userContext }
+        ) {
+            if (
+                mfaContext.session === undefined || // no session exists, so we can create a new one
+                (!justSignedInUserCreated && justSignedInUser.id !== mfaContext.sessionUser!.id) // the user that just logged in is not linked to the user in the session
+            ) {
+                const session = await Session.createNewSession(
+                    mfaContext.req,
+                    mfaContext.res,
+                    mfaContext.tenantId,
+                    justSignedInRecipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+                this.markFactorAsCompleteInSession({ session, factorId: mfaContext.factorIdInProgress, userContext });
+                return session;
+            }
+
+            if (mfaContext.sessionUser === undefined) {
+                throw new Error("should never come here!");
+            }
+
+            if (justSignedInUserCreated) {
+                // This is a newly created user, so it must be account linked with the session user
+                if (!mfaContext.sessionUser.isPrimaryUser) {
+                    await this.createPrimaryUser({
+                        recipeUserId: new RecipeUserId(mfaContext.sessionUser.id),
                         userContext,
                     });
                     // TODO check for response from above
-
-                    this.markFactorAsCompleteInSession({ session, factorId, userContext });
-                }
-            } else {
-                if (
-                    (isValidFirstFactorForTenant === undefined &&
-                        config.firstFactors !== undefined &&
-                        !config.firstFactors.includes(factorId)) ||
-                    isValidFirstFactorForTenant === false
-                ) {
-                    throw new Error("Not a valid first factor: " + factorId);
                 }
 
-                session = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
-                this.markFactorAsCompleteInSession({ session, factorId, userContext });
+                await this.linkAccounts({
+                    recipeUserId: new RecipeUserId(justSignedInUser.id),
+                    primaryUserId: mfaContext.sessionUser.id,
+                    userContext,
+                });
+                // TODO check for response from above
             }
-            return session;
+
+            this.markFactorAsCompleteInSession({
+                session: mfaContext.session,
+                factorId: mfaContext.factorIdInProgress,
+                userContext,
+            });
+
+            return mfaContext.session;
         },
     };
 }
