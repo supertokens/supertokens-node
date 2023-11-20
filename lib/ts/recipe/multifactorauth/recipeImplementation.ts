@@ -9,6 +9,7 @@ import type MultiFactorAuthRecipe from "./recipe";
 import { getUser } from "../..";
 import Session from "../session";
 import { TypeNormalisedInput } from "./types";
+import Multitenancy from "../multitenancy";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -261,13 +262,23 @@ export default function getRecipeInterface(
                     // this factor was not setup for user, so need to check if it is allowed
                     const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
                     const completedFactors = mfaClaimValue?.c ?? {};
-                    const defaultRequiredFactorIdsForUser: string[] = []; // TODO
-                    const defaultRequiredFactorIdsForTenant: string[] = []; // TODO
+
+                    const defaultRequiredFactorIdsForUser: string[] = await this.getDefaultRequiredFactorsForUser({
+                        tenantId,
+                        user: sessionUser,
+                        userContext,
+                    });
+
+                    const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
+                    if (tenantInfo === undefined) {
+                        throw new Error("Tenant does not exist");
+                    }
+                    const defaultRequiredFactorIdsForTenant: string[] = tenantInfo.defaultRequiredFactorIds ?? [];
                     const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
                         session,
                         factorsSetUpForUser,
                         defaultRequiredFactorIdsForUser,
-                        defaultRequiredFactorIdsForTenant: defaultRequiredFactorIdsForTenant,
+                        defaultRequiredFactorIdsForTenant,
                         completedFactors,
                         userContext,
                     });

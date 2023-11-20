@@ -64,6 +64,8 @@ export declare type RecipeInterface = {
                   enabled: boolean;
                   providers: ProviderConfig[];
               };
+              firstFactors?: string[];
+              defaultRequiredFactorIds?: string[];
               coreConfig: {
                   [key: string]: any;
               };
@@ -86,6 +88,8 @@ export declare type RecipeInterface = {
                 enabled: boolean;
                 providers: ProviderConfig[];
             };
+            firstFactors?: string[];
+            defaultRequiredFactorIds?: string[];
             coreConfig: {
                 [key: string]: any;
             };

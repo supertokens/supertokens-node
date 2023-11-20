@@ -44,6 +44,8 @@ export default class Wrapper {
                   enabled: boolean;
                   providers: ProviderConfig[];
               };
+              firstFactors?: string[];
+              defaultRequiredFactorIds?: string[];
               coreConfig: {
                   [key: string]: any;
               };
