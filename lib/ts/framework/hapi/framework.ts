@@ -26,15 +26,23 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 
 export class HapiRequest extends BaseRequest {
     private request: Request;
+    private parsedJSONBody: any;
+    private parsedUrlEncodedFormData: any;
 
     constructor(request: Request) {
         super();
         this.original = request;
         this.request = request;
+        this.parsedJSONBody = undefined;
+        this.parsedUrlEncodedFormData = undefined;
     }
 
     getFormData = async (): Promise<any> => {
-        return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
+        if (this.parsedUrlEncodedFormData === undefined) {
+            this.parsedUrlEncodedFormData =
+                this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
+        }
+        return this.parsedUrlEncodedFormData;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -49,7 +57,11 @@ export class HapiRequest extends BaseRequest {
     };
 
     getJSONBody = async (): Promise<any> => {
-        return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
+        if (this.parsedJSONBody === undefined) {
+            this.parsedJSONBody =
+                this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
+        }
+        return this.parsedJSONBody;
     };
 
     getMethod = (): HTTPMethod => {

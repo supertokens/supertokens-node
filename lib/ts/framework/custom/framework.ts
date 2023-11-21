@@ -33,6 +33,8 @@ type RequestInfo = {
 
 export class PreParsedRequest extends BaseRequest {
     private request: RequestInfo;
+    private parsedJSONBody: any;
+    private parsedUrlEncodedFormData: any;
 
     private _session?: SessionContainerInterface | undefined;
     public get session(): SessionContainerInterface | undefined {
@@ -49,10 +51,15 @@ export class PreParsedRequest extends BaseRequest {
         super();
         this.original = request;
         this.request = request;
+        this.parsedJSONBody = undefined;
+        this.parsedUrlEncodedFormData = undefined;
     }
 
     getFormData = async (): Promise<any> => {
-        return this.request.getFormBody();
+        if (this.parsedUrlEncodedFormData === undefined) {
+            this.parsedUrlEncodedFormData = await this.request.getFormBody();
+        }
+        return this.parsedUrlEncodedFormData;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -67,7 +74,10 @@ export class PreParsedRequest extends BaseRequest {
     };
 
     getJSONBody = async (): Promise<any> => {
-        return this.request.getJSONBody();
+        if (this.parsedJSONBody === undefined) {
+            this.parsedJSONBody = await this.request.getJSONBody();
+        }
+        return this.parsedJSONBody;
     };
 
     getMethod = (): HTTPMethod => {

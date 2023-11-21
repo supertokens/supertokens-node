@@ -31,15 +31,22 @@ import { COOKIE_HEADER } from "../constants";
 
 export class FastifyRequest extends BaseRequest {
     private request: OriginalFastifyRequest;
+    private parsedJSONBody: any;
+    private parsedUrlEncodedFormData: any;
 
     constructor(request: OriginalFastifyRequest) {
         super();
         this.original = request;
         this.request = request;
+        this.parsedJSONBody = undefined;
+        this.parsedUrlEncodedFormData = undefined;
     }
 
     getFormData = async (): Promise<any> => {
-        return this.request.body; // NOTE: ask user to add require('fastify-formbody')
+        if (this.parsedUrlEncodedFormData === undefined) {
+            this.parsedUrlEncodedFormData = await this.request.body; // NOTE: ask user to add require('fastify-formbody')
+        }
+        return this.parsedUrlEncodedFormData;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -54,7 +61,10 @@ export class FastifyRequest extends BaseRequest {
     };
 
     getJSONBody = async (): Promise<any> => {
-        return this.request.body;
+        if (this.parsedJSONBody === undefined) {
+            this.parsedJSONBody = await this.request.body;
+        }
+        return this.parsedJSONBody;
     };
 
     getMethod = (): HTTPMethod => {
