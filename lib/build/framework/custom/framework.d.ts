@@ -15,6 +15,8 @@ declare type RequestInfo = {
 };
 export declare class PreParsedRequest extends BaseRequest {
     private request;
+    private parsedJSONBody;
+    private parsedUrlEncodedFormData;
     private _session?;
     get session(): SessionContainerInterface | undefined;
     set session(value: SessionContainerInterface | undefined);

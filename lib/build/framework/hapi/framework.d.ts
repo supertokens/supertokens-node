@@ -7,6 +7,8 @@ import type { Framework } from "../types";
 import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class HapiRequest extends BaseRequest {
     private request;
+    private parsedJSONBody;
+    private parsedUrlEncodedFormData;
     constructor(request: Request);
     getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
