@@ -204,7 +204,8 @@ describe(`PreParsedRequest`, function () {
         });
 
         // Call getJSONBody multiple times
-        const jsonData = await req.getJSONBody();
+        const getJsonBody = req.getJSONBody;
+        const jsonData = await getJsonBody();
         const jsonData2 = await req.getJSONBody();
 
         sinon.assert.calledOnce(getJSONBodyUserImplementationStub);
@@ -222,7 +223,8 @@ describe(`PreParsedRequest`, function () {
         });
 
         // Call getFormData multiple times
-        const formData = await req.getFormData();
+        const getFormData = req.getFormData;
+        const formData = await getFormData();
         const formData2 = await req.getFormData();
 
         sinon.assert.calledOnce(getFormDataUserImplementationStub);

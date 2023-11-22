@@ -33,13 +33,13 @@ export class HapiRequest extends BaseRequest {
         this.request = request;
     }
 
-    protected async getFormDataFromRequestBody(): Promise<any> {
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
         return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
-    }
+    };
 
-    protected async getJSONFromRequestBody(): Promise<any> {
+    protected getJSONFromRequestBody = async (): Promise<any> => {
         return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
-    }
+    };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {

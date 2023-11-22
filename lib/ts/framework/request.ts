@@ -38,19 +38,19 @@ export abstract class BaseRequest {
 
     // Note: While it's not recommended to override this method in child classes,
     // if necessary, implement a similar caching strategy to ensure that `getFormDataFromRequestBody` is called only once.
-    async getFormData(): Promise<any> {
+    getFormData = async (): Promise<any> => {
         if (this.parsedUrlEncodedFormData === undefined) {
             this.parsedUrlEncodedFormData = await this.getFormDataFromRequestBody();
         }
         return this.parsedUrlEncodedFormData;
-    }
+    };
 
     // Note: While it's not recommended to override this method in child classes,
     // if necessary, implement a similar caching strategy to ensure that `getJSONFromRequestBody` is called only once.
-    async getJSONBody(): Promise<any> {
+    getJSONBody = async (): Promise<any> => {
         if (this.parsedJSONBody === undefined) {
             this.parsedJSONBody = await this.getJSONFromRequestBody();
         }
         return this.parsedJSONBody;
-    }
+    };
 }

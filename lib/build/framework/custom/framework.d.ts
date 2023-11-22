@@ -19,8 +19,8 @@ export declare class PreParsedRequest extends BaseRequest {
     get session(): SessionContainerInterface | undefined;
     set session(value: SessionContainerInterface | undefined);
     constructor(request: RequestInfo);
-    protected getJSONFromRequestBody(): Promise<any>;
-    protected getFormDataFromRequestBody(): Promise<any>;
+    protected getJSONFromRequestBody: () => Promise<any>;
+    protected getFormDataFromRequestBody: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;

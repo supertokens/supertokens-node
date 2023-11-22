@@ -879,14 +879,13 @@ async function request(init) {
 describe(`LoopbackRequest`, function () {
     it("LoopbackRequest.getJSONFromRequestBody should be called only once", async function () {
         const mockJSONData = { key: "value" };
-        const getJSONFromRequestBodyStub = sinon
-            .stub(LoopbackRequest.prototype, "getJSONFromRequestBody")
-            .resolves(mockJSONData);
-
         const req = new LoopbackRequest({});
 
+        const getJSONFromRequestBodyStub = sinon.stub(req, "getJSONFromRequestBody").callsFake(() => mockJSONData);
+
         // Call getJSONBody multiple times
-        const jsonData = await req.getJSONBody();
+        const getJsonBody = req.getJSONBody;
+        const jsonData = await getJsonBody();
         const jsonData2 = await req.getJSONBody();
 
         sinon.assert.calledOnce(getJSONFromRequestBodyStub);
@@ -897,14 +896,15 @@ describe(`LoopbackRequest`, function () {
 
     it("LoopbackRequest.getFormDataFromRequestBody should be called only once", async function () {
         const mockFormData = { key: "value" };
-        const getFormDataFromRequestBodyStub = sinon
-            .stub(LoopbackRequest.prototype, "getFormDataFromRequestBody")
-            .resolves(mockFormData);
-
         const req = new LoopbackRequest({});
 
+        let getFormDataFromRequestBodyStub = sinon
+            .stub(req, "getFormDataFromRequestBody")
+            .callsFake(() => mockFormData);
+
         // Call getFormData multiple times
-        const formData = await req.getFormData();
+        const getFormData = req.getFormData;
+        const formData = await getFormData();
         const formData2 = await req.getFormData();
 
         sinon.assert.calledOnce(getFormDataFromRequestBodyStub);

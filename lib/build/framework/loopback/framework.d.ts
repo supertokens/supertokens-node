@@ -8,8 +8,8 @@ import type { Framework } from "../types";
 export declare class LoopbackRequest extends BaseRequest {
     private request;
     constructor(ctx: MiddlewareContext);
-    protected getFormDataFromRequestBody(): Promise<any>;
-    protected getJSONFromRequestBody(): Promise<any>;
+    protected getFormDataFromRequestBody: () => Promise<any>;
+    protected getJSONFromRequestBody: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;

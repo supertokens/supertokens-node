@@ -14,8 +14,8 @@ import { Framework } from "../types";
 export declare class AWSRequest extends BaseRequest {
     private event;
     constructor(event: APIGatewayProxyEventV2 | APIGatewayProxyEvent);
-    protected getFormDataFromRequestBody(): Promise<any>;
-    protected getJSONFromRequestBody(): Promise<any>;
+    protected getFormDataFromRequestBody: () => Promise<any>;
+    protected getJSONFromRequestBody: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;

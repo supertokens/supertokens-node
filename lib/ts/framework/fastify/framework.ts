@@ -38,13 +38,13 @@ export class FastifyRequest extends BaseRequest {
         this.request = request;
     }
 
-    protected async getFormDataFromRequestBody(): Promise<any> {
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
         return this.request.body; // NOTE: ask user to add require('fastify-formbody')
-    }
+    };
 
-    protected async getJSONFromRequestBody(): Promise<any> {
+    protected getJSONFromRequestBody = async (): Promise<any> => {
         return this.request.body;
-    }
+    };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {

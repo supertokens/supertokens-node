@@ -39,15 +39,15 @@ export class ExpressRequest extends BaseRequest {
         this.request = request;
     }
 
-    protected async getFormDataFromRequestBody(): Promise<any> {
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
         await assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
         return this.request.body;
-    }
+    };
 
-    protected async getJSONFromRequestBody(): Promise<any> {
+    protected getJSONFromRequestBody = async (): Promise<any> => {
         await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
         return this.request.body;
-    }
+    };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {

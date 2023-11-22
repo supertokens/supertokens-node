@@ -32,14 +32,14 @@ export class KoaRequest extends BaseRequest {
         this.ctx = ctx;
     }
 
-    protected async getFormDataFromRequestBody(): Promise<any> {
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
         return parseURLEncodedFormData(this.ctx.req);
-    }
+    };
 
-    protected async getJSONFromRequestBody(): Promise<any> {
+    protected getJSONFromRequestBody = async (): Promise<any> => {
         const parsedJSONBody = await parseJSONBodyFromRequest(this.ctx.req);
         return parsedJSONBody === undefined ? {} : parsedJSONBody;
-    }
+    };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.ctx.query === undefined) {

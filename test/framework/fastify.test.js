@@ -1963,14 +1963,13 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 describe(`FastifyRequest`, function () {
     it("FastifyRequest.getJSONFromRequestBody should be called only once", async function () {
         const mockJSONData = { key: "value" };
-        const getJSONFromRequestBodyStub = sinon
-            .stub(FastifyRequest.prototype, "getJSONFromRequestBody")
-            .resolves(mockJSONData);
-
         const req = new FastifyRequest({});
 
+        const getJSONFromRequestBodyStub = sinon.stub(req, "getJSONFromRequestBody").callsFake(() => mockJSONData);
+
         // Call getJSONBody multiple times
-        const jsonData = await req.getJSONBody();
+        const getJsonBody = req.getJSONBody;
+        const jsonData = await getJsonBody();
         const jsonData2 = await req.getJSONBody();
 
         sinon.assert.calledOnce(getJSONFromRequestBodyStub);
@@ -1981,14 +1980,15 @@ describe(`FastifyRequest`, function () {
 
     it("FastifyRequest.getFormDataFromRequestBody should be called only once", async function () {
         const mockFormData = { key: "value" };
-        const getFormDataFromRequestBodyStub = sinon
-            .stub(FastifyRequest.prototype, "getFormDataFromRequestBody")
-            .resolves(mockFormData);
-
         const req = new FastifyRequest({});
 
+        let getFormDataFromRequestBodyStub = sinon
+            .stub(req, "getFormDataFromRequestBody")
+            .callsFake(() => mockFormData);
+
         // Call getFormData multiple times
-        const formData = await req.getFormData();
+        const getFormData = req.getFormData;
+        const formData = await getFormData();
         const formData2 = await req.getFormData();
 
         sinon.assert.calledOnce(getFormDataFromRequestBodyStub);

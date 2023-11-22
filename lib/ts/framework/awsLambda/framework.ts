@@ -41,23 +41,23 @@ export class AWSRequest extends BaseRequest {
         this.event = event;
     }
 
-    protected async getFormDataFromRequestBody(): Promise<any> {
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
         if (this.event.body === null || this.event.body === undefined) {
             return {};
         } else {
             const parsedUrlEncodedFormData = parse(this.event.body);
             return parsedUrlEncodedFormData === undefined ? {} : parsedUrlEncodedFormData;
         }
-    }
+    };
 
-    protected async getJSONFromRequestBody(): Promise<any> {
+    protected getJSONFromRequestBody = async (): Promise<any> => {
         if (this.event.body === null || this.event.body === undefined) {
             return {};
         } else {
             const parsedJSONBody = JSON.parse(this.event.body);
             return parsedJSONBody === undefined ? {} : parsedJSONBody;
         }
-    }
+    };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.event.queryStringParameters === undefined || this.event.queryStringParameters === null) {

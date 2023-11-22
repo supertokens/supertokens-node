@@ -8,8 +8,8 @@ import { Framework } from "../types";
 export declare class KoaRequest extends BaseRequest {
     private ctx;
     constructor(ctx: Context);
-    protected getFormDataFromRequestBody(): Promise<any>;
-    protected getJSONFromRequestBody(): Promise<any>;
+    protected getFormDataFromRequestBody: () => Promise<any>;
+    protected getJSONFromRequestBody: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;

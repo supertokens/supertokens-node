@@ -50,13 +50,13 @@ export class PreParsedRequest extends BaseRequest {
         this.request = request;
     }
 
-    protected getJSONFromRequestBody(): Promise<any> {
+    protected getJSONFromRequestBody = (): Promise<any> => {
         return this.request.getJSONBody();
-    }
+    };
 
-    protected getFormDataFromRequestBody(): Promise<any> {
+    protected getFormDataFromRequestBody = (): Promise<any> => {
         return this.request.getFormBody();
-    }
+    };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
