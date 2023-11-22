@@ -33,7 +33,6 @@ type RequestInfo = {
 
 export class PreParsedRequest extends BaseRequest {
     private request: RequestInfo;
-
     private _session?: SessionContainerInterface | undefined;
     public get session(): SessionContainerInterface | undefined {
         return this._session;
@@ -51,7 +50,11 @@ export class PreParsedRequest extends BaseRequest {
         this.request = request;
     }
 
-    getFormData = async (): Promise<any> => {
+    protected getJSONFromRequestBody = (): Promise<any> => {
+        return this.request.getJSONBody();
+    };
+
+    protected getFormDataFromRequestBody = (): Promise<any> => {
         return this.request.getFormBody();
     };
 
@@ -64,10 +67,6 @@ export class PreParsedRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        return this.request.getJSONBody();
     };
 
     getMethod = (): HTTPMethod => {
