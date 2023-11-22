@@ -7,12 +7,10 @@ import { BaseResponse } from "../response";
 import type { Framework } from "../types";
 export declare class LoopbackRequest extends BaseRequest {
     private request;
-    private parserChecked;
-    private formDataParserChecked;
     constructor(ctx: MiddlewareContext);
-    getFormData: () => Promise<any>;
+    protected getFormDataFromRequestBody(): Promise<any>;
+    protected getJSONFromRequestBody(): Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
-    getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;
     getHeaderValue: (key: string) => string | undefined;

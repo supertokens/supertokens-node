@@ -34,30 +34,30 @@ import { parse } from "querystring";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;
-    private parsedJSONBody: Object | undefined;
-    private parsedUrlEncodedFormData: Object | undefined;
 
     constructor(event: APIGatewayProxyEventV2 | APIGatewayProxyEvent) {
         super();
         this.original = event;
         this.event = event;
-        this.parsedJSONBody = undefined;
-        this.parsedUrlEncodedFormData = undefined;
     }
 
-    getFormData = async (): Promise<any> => {
-        if (this.parsedUrlEncodedFormData === undefined) {
-            if (this.event.body === null || this.event.body === undefined) {
-                this.parsedUrlEncodedFormData = {};
-            } else {
-                this.parsedUrlEncodedFormData = parse(this.event.body);
-                if (this.parsedUrlEncodedFormData === undefined) {
-                    this.parsedUrlEncodedFormData = {};
-                }
-            }
+    protected async getFormDataFromRequestBody(): Promise<any> {
+        if (this.event.body === null || this.event.body === undefined) {
+            return {};
+        } else {
+            const parsedUrlEncodedFormData = parse(this.event.body);
+            return parsedUrlEncodedFormData === undefined ? {} : parsedUrlEncodedFormData;
         }
-        return this.parsedUrlEncodedFormData;
-    };
+    }
+
+    protected async getJSONFromRequestBody(): Promise<any> {
+        if (this.event.body === null || this.event.body === undefined) {
+            return {};
+        } else {
+            const parsedJSONBody = JSON.parse(this.event.body);
+            return parsedJSONBody === undefined ? {} : parsedJSONBody;
+        }
+    }
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.event.queryStringParameters === undefined || this.event.queryStringParameters === null) {
@@ -68,20 +68,6 @@ export class AWSRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        if (this.parsedJSONBody === undefined) {
-            if (this.event.body === null || this.event.body === undefined) {
-                this.parsedJSONBody = {};
-            } else {
-                this.parsedJSONBody = JSON.parse(this.event.body);
-                if (this.parsedJSONBody === undefined) {
-                    this.parsedJSONBody = {};
-                }
-            }
-        }
-        return this.parsedJSONBody;
     };
 
     getMethod = (): HTTPMethod => {

@@ -26,24 +26,20 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 
 export class HapiRequest extends BaseRequest {
     private request: Request;
-    private parsedJSONBody: any;
-    private parsedUrlEncodedFormData: any;
 
     constructor(request: Request) {
         super();
         this.original = request;
         this.request = request;
-        this.parsedJSONBody = undefined;
-        this.parsedUrlEncodedFormData = undefined;
     }
 
-    getFormData = async (): Promise<any> => {
-        if (this.parsedUrlEncodedFormData === undefined) {
-            this.parsedUrlEncodedFormData =
-                this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
-        }
-        return this.parsedUrlEncodedFormData;
-    };
+    protected async getFormDataFromRequestBody(): Promise<any> {
+        return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
+    }
+
+    protected async getJSONFromRequestBody(): Promise<any> {
+        return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
+    }
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
@@ -54,14 +50,6 @@ export class HapiRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        if (this.parsedJSONBody === undefined) {
-            this.parsedJSONBody =
-                this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
-        }
-        return this.parsedJSONBody;
     };
 
     getMethod = (): HTTPMethod => {

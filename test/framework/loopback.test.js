@@ -27,6 +27,8 @@ const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
 const { default: fetch } = require("cross-fetch");
+const { LoopbackRequest } = require("../../lib/build/framework/loopback/framework");
+const sinon = require("sinon");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {
@@ -873,3 +875,41 @@ async function request(init) {
         headers,
     };
 }
+
+describe(`LoopbackRequest`, function () {
+    it("LoopbackRequest.getJSONFromRequestBody should be called only once", async function () {
+        const mockJSONData = { key: "value" };
+        const getJSONFromRequestBodyStub = sinon
+            .stub(LoopbackRequest.prototype, "getJSONFromRequestBody")
+            .resolves(mockJSONData);
+
+        const req = new LoopbackRequest({});
+
+        // Call getJSONBody multiple times
+        const jsonData = await req.getJSONBody();
+        const jsonData2 = await req.getJSONBody();
+
+        sinon.assert.calledOnce(getJSONFromRequestBodyStub);
+
+        assert(JSON.stringify(jsonData) === JSON.stringify(mockJSONData));
+        assert(JSON.stringify(jsonData2) === JSON.stringify(mockJSONData));
+    });
+
+    it("LoopbackRequest.getFormDataFromRequestBody should be called only once", async function () {
+        const mockFormData = { key: "value" };
+        const getFormDataFromRequestBodyStub = sinon
+            .stub(LoopbackRequest.prototype, "getFormDataFromRequestBody")
+            .resolves(mockFormData);
+
+        const req = new LoopbackRequest({});
+
+        // Call getFormData multiple times
+        const formData = await req.getFormData();
+        const formData2 = await req.getFormData();
+
+        sinon.assert.calledOnce(getFormDataFromRequestBodyStub);
+
+        assert(JSON.stringify(formData) === JSON.stringify(mockFormData));
+        assert(JSON.stringify(formData2) === JSON.stringify(mockFormData));
+    });
+});

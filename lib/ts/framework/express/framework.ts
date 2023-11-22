@@ -32,24 +32,22 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 
 export class ExpressRequest extends BaseRequest {
     private request: Request;
-    private parserChecked: boolean;
-    private formDataParserChecked: boolean;
 
     constructor(request: Request) {
         super();
         this.original = request;
         this.request = request;
-        this.parserChecked = false;
-        this.formDataParserChecked = false;
     }
 
-    getFormData = async (): Promise<any> => {
-        if (!this.formDataParserChecked) {
-            await assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
-            this.formDataParserChecked = true;
-        }
+    protected async getFormDataFromRequestBody(): Promise<any> {
+        await assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
         return this.request.body;
-    };
+    }
+
+    protected async getJSONFromRequestBody(): Promise<any> {
+        await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
+        return this.request.body;
+    }
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
@@ -60,14 +58,6 @@ export class ExpressRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        if (!this.parserChecked) {
-            await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
-            this.parserChecked = true;
-        }
-        return this.request.body;
     };
 
     getMethod = (): HTTPMethod => {

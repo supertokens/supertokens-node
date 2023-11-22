@@ -7,12 +7,10 @@ import type { Framework } from "../types";
 import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class FastifyRequest extends BaseRequest {
     private request;
-    private parsedJSONBody;
-    private parsedUrlEncodedFormData;
     constructor(request: OriginalFastifyRequest);
-    getFormData: () => Promise<any>;
+    protected getFormDataFromRequestBody(): Promise<any>;
+    protected getJSONFromRequestBody(): Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
-    getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;
     getHeaderValue: (key: string) => string | undefined;

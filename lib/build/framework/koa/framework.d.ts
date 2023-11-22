@@ -7,12 +7,10 @@ import { SessionContainerInterface } from "../../recipe/session/types";
 import { Framework } from "../types";
 export declare class KoaRequest extends BaseRequest {
     private ctx;
-    private parsedJSONBody;
-    private parsedUrlEncodedFormData;
     constructor(ctx: Context);
-    getFormData: () => Promise<any>;
+    protected getFormDataFromRequestBody(): Promise<any>;
+    protected getJSONFromRequestBody(): Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
-    getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;
     getHeaderValue: (key: string) => string | undefined;

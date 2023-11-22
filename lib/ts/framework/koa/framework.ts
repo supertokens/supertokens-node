@@ -25,23 +25,21 @@ import { Framework } from "../types";
 
 export class KoaRequest extends BaseRequest {
     private ctx: Context;
-    private parsedJSONBody: Object | undefined;
-    private parsedUrlEncodedFormData: Object | undefined;
 
     constructor(ctx: Context) {
         super();
         this.original = ctx;
         this.ctx = ctx;
-        this.parsedJSONBody = undefined;
-        this.parsedUrlEncodedFormData = undefined;
     }
 
-    getFormData = async (): Promise<any> => {
-        if (this.parsedUrlEncodedFormData === undefined) {
-            this.parsedUrlEncodedFormData = (await parseURLEncodedFormData(this.ctx.req)) as any;
-        }
-        return this.parsedUrlEncodedFormData;
-    };
+    protected async getFormDataFromRequestBody(): Promise<any> {
+        return parseURLEncodedFormData(this.ctx.req);
+    }
+
+    protected async getJSONFromRequestBody(): Promise<any> {
+        const parsedJSONBody = await parseJSONBodyFromRequest(this.ctx.req);
+        return parsedJSONBody === undefined ? {} : parsedJSONBody;
+    }
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.ctx.query === undefined) {
@@ -52,13 +50,6 @@ export class KoaRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        if (this.parsedJSONBody === undefined) {
-            this.parsedJSONBody = await parseJSONBodyFromRequest(this.ctx.req);
-        }
-        return this.parsedJSONBody === undefined ? {} : this.parsedJSONBody;
     };
 
     getMethod = (): HTTPMethod => {
