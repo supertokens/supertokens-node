@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.6.0] - 2023-11-23
+
 ### Added
 
 -   Added User roles and permissions feature to dashboard recipe.
+
+## [16.5.2] - 2023-11-21
+
+-   Fixes issue with `passwordReset` in emailpassword recipe for custom frameworks ([#746](https://github.com/supertokens/supertokens-node/issues/746))
 
 ## [16.5.1] - 2023-11-15
 

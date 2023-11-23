@@ -20,6 +20,7 @@ let CustomFramework = require("../../framework/custom");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/custom");
 let { Headers } = require("cross-fetch");
+const sinon = require("sinon");
 
 describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, function () {
     beforeEach(async function () {
@@ -190,5 +191,45 @@ describe(`Custom framework: ${printPath("[test/framework/custom.test.js]")}`, fu
         assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(sessionRevokedResponseExtracted.accessToken, "");
         assert.strictEqual(sessionRevokedResponseExtracted.refreshToken, "");
+    });
+});
+
+describe(`PreParsedRequest`, function () {
+    it("User's getJSONBody implementation should be called only once", async function () {
+        const mockJSONData = { key: "value" };
+        const getJSONBodyUserImplementationStub = sinon.stub().resolves(mockJSONData);
+
+        const req = new CustomFramework.PreParsedRequest({
+            getJSONBody: getJSONBodyUserImplementationStub,
+        });
+
+        // Call getJSONBody multiple times
+        const getJsonBody = req.getJSONBody;
+        const jsonData = await getJsonBody();
+        const jsonData2 = await req.getJSONBody();
+
+        sinon.assert.calledOnce(getJSONBodyUserImplementationStub);
+
+        assert(JSON.stringify(jsonData) === JSON.stringify(mockJSONData));
+        assert(JSON.stringify(jsonData2) === JSON.stringify(mockJSONData));
+    });
+
+    it("User's getFormData implementation should be called only once", async function () {
+        const mockFormData = { key: "value" };
+        const getFormDataUserImplementationStub = sinon.stub().resolves(mockFormData);
+
+        const req = new CustomFramework.PreParsedRequest({
+            getFormBody: getFormDataUserImplementationStub,
+        });
+
+        // Call getFormData multiple times
+        const getFormData = req.getFormData;
+        const formData = await getFormData();
+        const formData2 = await req.getFormData();
+
+        sinon.assert.calledOnce(getFormDataUserImplementationStub);
+
+        assert(JSON.stringify(formData) === JSON.stringify(mockFormData));
+        assert(JSON.stringify(formData2) === JSON.stringify(mockFormData));
     });
 });
