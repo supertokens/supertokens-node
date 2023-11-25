@@ -1,9 +1,13 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import Session from "../../session";
-import { listUsersByAccountInfo } from "../../..";
+import { User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
+import { SessionContainerInterface } from "../../session/types";
+import { MFAContext } from "../../multifactorauth/types";
+import { isFactorSetupForUser } from "../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -63,6 +67,51 @@ export default function getAPIImplementation(): APIInterface {
                     "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
                 );
             }
+            const userLoggingIn = existingUsers[0];
+
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            /* CREATE MFA CONTEXT */
+            let session: SessionContainerInterface | undefined = await Session.getSession(
+                input.options.req,
+                input.options.res,
+                { sessionRequired: false }
+            );
+            let sessionUser: User | undefined;
+            if (session !== undefined) {
+                if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
+                    sessionUser = userLoggingIn;
+                } else {
+                    // TODO: can we avoid this?
+                    const user = await getUser(session.getUserId(), input.userContext);
+                    if (user === undefined) {
+                        throw new Error("User not found!");
+                    }
+                    sessionUser = user;
+                }
+            }
+
+            let mfaContext: MFAContext | undefined; // TODO
+            if (mfaInstance) {
+                const factorId = `${"userInputCode" in input ? "otp" : "link"}-${deviceInfo.email ? "email" : "phone"}`;
+                const createMfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+                    req: input.options.req,
+                    res: input.options.res,
+                    tenantId: input.tenantId,
+                    factorIdInProgress: factorId,
+                    session,
+                    userLoggingIn,
+                    isAlreadySetup: !sessionUser ? false : isFactorSetupForUser(sessionUser, input.tenantId, factorId),
+                    userContext: input.userContext,
+                });
+
+                if (createMfaContextRes.status !== "OK") {
+                    throw new Error("Throw proper errors here!" + createMfaContextRes.status); // TODO
+                }
+                mfaContext = createMfaContextRes;
+            }
+
+            /* END OF CREATE MFA CONTEXT */
 
             let response = await input.options.recipeImplementation.consumeCode(
                 "deviceId" in input
@@ -126,15 +175,33 @@ export default function getAPIImplementation(): APIInterface {
                 });
             }
 
-            const session = await Session.createNewSession(
-                input.options.req,
-                input.options.res,
-                input.tenantId,
-                loginMethod.recipeUserId,
-                {},
-                {},
-                input.userContext
-            );
+            if (mfaInstance === undefined) {
+                // No MFA stuff here, so we just create and return the session
+                const session = await Session.createNewSession(
+                    input.options.req,
+                    input.options.res,
+                    input.tenantId,
+                    response.recipeUserId,
+                    {},
+                    {},
+                    input.userContext
+                );
+
+                return {
+                    status: "OK",
+                    createdNewRecipeUser: response.createdNewRecipeUser,
+                    user: response.user,
+                    session,
+                };
+            }
+
+            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
+                justSignedInUser: response.user,
+                justSignedInUserCreated: response.createdNewRecipeUser,
+                justSignedInRecipeUserId: response.recipeUserId,
+                mfaContext: mfaContext!,
+                userContext: input.userContext,
+            });
 
             return {
                 status: "OK",

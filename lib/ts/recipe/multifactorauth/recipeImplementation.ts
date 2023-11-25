@@ -9,6 +9,8 @@ import type MultiFactorAuthRecipe from "./recipe";
 import Session from "../session";
 import { TypeNormalisedInput } from "./types";
 import Multitenancy from "../multitenancy";
+import { getUser } from "../..";
+import { logDebugMessage } from "../../logger";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -27,7 +29,10 @@ export default function getRecipeInterface(
         getMFARequirementsForAuth: async function ({
             defaultRequiredFactorIdsForUser,
             defaultRequiredFactorIdsForTenant,
+            completedFactors,
         }) {
+            const loginTime = Math.min(...Object.values(completedFactors));
+            const oldestFactor = Object.keys(completedFactors).find((k) => completedFactors[k] === loginTime);
             const allFactors: Set<string> = new Set();
             for (const factor of defaultRequiredFactorIdsForUser) {
                 allFactors.add(factor);
@@ -35,53 +40,94 @@ export default function getRecipeInterface(
             for (const factor of defaultRequiredFactorIdsForTenant) {
                 allFactors.add(factor);
             }
+            // TODO: validate this
+            allFactors.delete(oldestFactor!);
 
             return [{ oneOf: [...allFactors] }];
         },
 
         isAllowedToSetupFactor: async function (
             this: RecipeInterface,
-            {
-                factorId,
-                session,
-                completedFactors,
-                defaultRequiredFactorIdsForTenant,
-                defaultRequiredFactorIdsForUser,
-                factorsSetUpForUser,
-                userContext,
-            }
+            { factorId, session, factorsSetUpForUser, userContext }
         ) {
-            const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
-                session,
-                completedFactors,
-                defaultRequiredFactorIdsForTenant,
-                defaultRequiredFactorIdsForUser,
-                factorsSetUpForUser,
-                userContext,
-            });
+            const claimVal = await session.getClaimValue(MultiFactorAuthClaim, userContext);
+            if (!claimVal) {
+                logDebugMessage(`isAllowedToSetupFactor ${factorId}: false because claim value is undefined`);
+                // This should not happen in normal use.
+                return false;
+            }
 
-            const nextFactors = MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth);
-            return nextFactors.length === 0 || nextFactors.includes(factorId);
+            // // This solution: checks for 2FA (we'd allow factor setup if the user has set up only 1 factor group or completed at least 2)
+            // const factorGroups = [
+            //     ["otp-phone", "link-phone"],
+            //     ["otp-email", "link-email"],
+            //     ["emailpassword"],
+            //     ["thirdparty"],
+            // ];
+            // const setUpGroups = Array.from(
+            //     new Set(factorsSetUpForUser.map((id) => factorGroups.find((f) => f.includes(id)) || [id]))
+            // );
+
+            // const completedGroups = setUpGroups.filter((group) => group.some((id) => claimVal.c[id] !== undefined));
+
+            // // If the user completed every factor they could
+            // if (setUpGroups.length === completedGroups.length) {
+            //     logDebugMessage(
+            //         `isAllowedToSetupFactor ${factorId}: true because the user completed all factors they have set up and this is required`
+            //     );
+            //     return true;
+            // }
+
+            // return completedGroups.length >= 2;
+
+            if (claimVal.n.some((id) => factorsSetUpForUser.includes(id))) {
+                logDebugMessage(
+                    `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next array: ${claimVal.n.join(
+                        ", "
+                    )}`
+                );
+                return false;
+            }
+            logDebugMessage(
+                `isAllowedToSetupFactor ${factorId}: true because the next array is ${
+                    claimVal.n.length === 0 ? "empty" : "cannot be completed otherwise"
+                }`
+            );
+            return true;
         },
 
-        markFactorAsCompleteInSession: async function ({ session, factorId, userContext }) {
+        markFactorAsCompleteInSession: async function (this: RecipeInterface, { session, factorId, userContext }) {
             const currentValue = await session.getClaimValue(MultiFactorAuthClaim);
             const completed = {
                 ...currentValue?.c,
                 [factorId]: Math.floor(Date.now() / 1000),
             };
-            const setupUserFactors = await this.recipeInterfaceImpl.getFactorsSetupForUser({
-                userId: session.getUserId(),
-                tenantId: session.getTenantId(),
+            const tenantId = session.getTenantId();
+            const user = await getUser(session.getUserId(), userContext);
+            if (user === undefined) {
+                throw new Error("User not found!");
+            }
+
+            const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
+            const defaultRequiredFactorIdsForUser = await this.getDefaultRequiredFactorsForUser({
+                user: user!,
+                tenantId,
                 userContext,
             });
-            const requirements = await this.config.getMFARequirementsForAuth(
+            const factorsSetUpForUser = await this.getFactorsSetupForUser({
+                user: user!,
+                tenantId,
+                userContext,
+            });
+            const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
                 session,
-                setupUserFactors,
-                completed,
-                userContext
-            );
-            const next = MultiFactorAuthClaim.buildNextArray(completed, requirements);
+                factorsSetUpForUser,
+                defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+                defaultRequiredFactorIdsForUser,
+                completedFactors: completed,
+                userContext,
+            });
+            const next = MultiFactorAuthClaim.buildNextArray(completed, mfaRequirementsForAuth);
             await session.setClaimValue(MultiFactorAuthClaim, {
                 c: completed,
                 n: next,
@@ -244,7 +290,7 @@ export default function getRecipeInterface(
 
         checkAndCreateMFAContext: async function (
             this: RecipeInterface,
-            { req, res, tenantId, factorIdInProgress, session, sessionUser, userAboutToSignIn, userContext }
+            { req, res, tenantId, factorIdInProgress, session, userLoggingIn, isAlreadySetup, userContext }
         ) {
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
             const validFirstFactors =
@@ -266,21 +312,28 @@ export default function getRecipeInterface(
                     tenantId,
                     factorIdInProgress,
                     session,
-                    sessionUser,
-                    userAboutToSignIn,
+                    sessionUser: userLoggingIn,
+                    isAlreadySetup: isAlreadySetup,
                 };
             }
 
-            if (userAboutToSignIn !== undefined) {
-                // session exists and also an existing user is about to sign in
-                // if the user about to sign in is not linked to the session user, we must check if it is a valid first factor
-                // and this is because the active session will be replaced with a new session for the user that will sign in now
-                if (!validFirstFactors.includes(factorIdInProgress)) {
+            let sessionUser;
+            if (userLoggingIn) {
+                if (userLoggingIn.id !== session.getUserId()) {
                     return {
-                        status: "DISALLOWED_FIRST_FACTOR_ERROR",
+                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR", // TODO
                     };
                 }
+                sessionUser = userLoggingIn;
+            } else {
+                sessionUser = await getUser(session.getUserId(), userContext);
+            }
 
+            if (!sessionUser) {
+                throw new Error("Session user deleted"); // TODO
+            }
+
+            if (isAlreadySetup) {
                 return {
                     status: "OK",
                     req,
@@ -289,18 +342,18 @@ export default function getRecipeInterface(
                     factorIdInProgress,
                     session,
                     sessionUser,
-                    userAboutToSignIn,
+                    isAlreadySetup,
                 };
             }
 
             // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
             const defaultRequiredFactorIdsForUser = await this.getDefaultRequiredFactorsForUser({
-                user: sessionUser!,
+                user: sessionUser,
                 tenantId,
                 userContext,
             });
             const factorsSetUpForUser = await this.getFactorsSetupForUser({
-                user: sessionUser!,
+                user: sessionUser,
                 tenantId,
                 userContext,
             });
@@ -314,7 +367,7 @@ export default function getRecipeInterface(
                 userContext,
             });
 
-            const canSetup = this.isAllowedToSetupFactor({
+            const canSetup = await this.isAllowedToSetupFactor({
                 session,
                 factorId: factorIdInProgress,
                 completedFactors: completedFactorsClaimValue?.c ?? {},
@@ -338,7 +391,7 @@ export default function getRecipeInterface(
                 factorIdInProgress,
                 session,
                 sessionUser,
-                userAboutToSignIn,
+                isAlreadySetup,
             };
         },
 
@@ -347,8 +400,7 @@ export default function getRecipeInterface(
             { justSignedInUser, justSignedInUserCreated, justSignedInRecipeUserId, mfaContext, userContext }
         ) {
             if (
-                mfaContext.session === undefined || // no session exists, so we can create a new one
-                (!justSignedInUserCreated && justSignedInUser.id !== mfaContext.sessionUser!.id) // the user that just logged in is not linked to the user in the session
+                mfaContext.session === undefined // no session exists, so we can create a new one
             ) {
                 const session = await Session.createNewSession(
                     mfaContext.req,
@@ -359,8 +411,14 @@ export default function getRecipeInterface(
                     {},
                     userContext
                 );
-                this.markFactorAsCompleteInSession({ session, factorId: mfaContext.factorIdInProgress, userContext });
+                await this.markFactorAsCompleteInSession({
+                    session,
+                    factorId: mfaContext.factorIdInProgress,
+                    userContext,
+                });
                 return session;
+            } else if (!justSignedInUserCreated && justSignedInUser.id !== mfaContext.sessionUser?.id) {
+                throw new Error("should never come here!");
             }
 
             if (mfaContext.sessionUser === undefined) {
@@ -377,16 +435,31 @@ export default function getRecipeInterface(
                     // TODO check for response from above
                 }
 
-                await this.linkAccounts({
-                    recipeUserId: new RecipeUserId(justSignedInUser.id),
+                const linkRes = await this.linkAccounts({
+                    recipeUserId: justSignedInRecipeUserId,
                     primaryUserId: mfaContext.sessionUser.id,
                     userContext,
                 });
-                // TODO check for response from above
+                if (linkRes.status !== "OK") {
+                    throw new Error("Throw proper errors!" + linkRes.status); // TODO
+                }
+            } else {
+                const loggedInUserLinkedToSessionUser = mfaContext.sessionUser.loginMethods.some(
+                    (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId.getAsString()
+                );
+                if (!loggedInUserLinkedToSessionUser) {
+                    throw new Error("Throw proper errors! Not linked"); // TODO
+                }
             }
 
-            this.markFactorAsCompleteInSession({
+            await this.markFactorAsCompleteInSession({
                 session: mfaContext.session,
+                factorId: mfaContext.factorIdInProgress,
+                userContext,
+            });
+            await this.addToDefaultRequiredFactorsForUser({
+                user: mfaContext.sessionUser,
+                tenantId: mfaContext.tenantId,
                 factorId: mfaContext.factorIdInProgress,
                 userContext,
             });

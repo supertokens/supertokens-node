@@ -1,6 +1,8 @@
 import { APIInterface } from "../";
 import TotpRecipe from "../recipe";
 import SessionError from "../../session/error";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -54,25 +56,76 @@ export default function getAPIInterface(): APIInterface {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
 
-            return await options.recipeImplementation.verifyDevice({
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            let mfaContext;
+            if (mfaInstance !== undefined) {
+                mfaContext = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "totp",
+                    session,
+                    userLoggingIn: undefined,
+                    isAlreadySetup: false, // since this is a sign up
+                    userContext,
+                });
+                if (mfaContext.status !== "OK") {
+                    throw new Error("Throw proper errors here!" + mfaContext.status); // TODO
+                }
+            }
+
+            const res = await options.recipeImplementation.verifyDevice({
                 tenantId,
                 userId,
                 deviceName,
                 totp,
                 userContext,
             });
+
+            if (res.status === "OK" && mfaInstance && mfaContext) {
+                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                    session: session,
+                    factorId: "totp",
+                    userContext,
+                });
+                await mfaInstance.recipeInterfaceImpl.addToDefaultRequiredFactorsForUser({
+                    user: mfaContext.sessionUser!,
+                    tenantId: mfaContext.tenantId,
+                    factorId: mfaContext.factorIdInProgress,
+                    userContext,
+                });
+            }
+
+            return res;
         },
 
         verifyTOTPPOST: async function ({ totp, options, session, userContext }) {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
 
-            return await options.recipeImplementation.verifyTOTP({
+            const res = await options.recipeImplementation.verifyTOTP({
                 tenantId,
                 userId,
                 totp,
                 userContext,
             });
+
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (res.status === "OK" && mfaInstance) {
+                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                    session: session,
+                    factorId: "totp",
+                    userContext,
+                });
+                await mfaInstance.recipeInterfaceImpl.addToDefaultRequiredFactorsForUser({
+                    user: (await getUser(userId))!,
+                    tenantId: tenantId,
+                    factorId: "totp",
+                    userContext,
+                });
+            }
+
+            return res;
         },
     };
 }

@@ -24,7 +24,7 @@ export declare type MFAContext = {
     res: BaseResponse;
     tenantId: string;
     factorIdInProgress: string;
-    userAboutToSignIn?: User;
+    isAlreadySetup?: boolean;
     session?: SessionContainerInterface;
     sessionUser?: User;
 };
@@ -130,8 +130,8 @@ export declare type RecipeInterface = {
         tenantId: string;
         factorIdInProgress: string;
         session?: SessionContainerInterface;
-        sessionUser?: User;
-        userAboutToSignIn?: User;
+        userLoggingIn?: User;
+        isAlreadySetup?: boolean;
         userContext: any;
     }) => Promise<
         | ({
@@ -169,6 +169,8 @@ export declare type APIInterface = {
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };
+              email?: string;
+              phoneNumber?: string;
           }
         | GeneralErrorResponse
     >;

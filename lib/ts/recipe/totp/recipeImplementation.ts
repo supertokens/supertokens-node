@@ -18,7 +18,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 deviceName: input.deviceName,
                 skew: input.skew ?? config.defaultSkew,
                 period: input.period ?? config.defaultPeriod,
-                userContext: input.userContext,
             });
 
             return {
@@ -43,14 +42,12 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 userId: input.userId,
                 existingDeviceName: input.existingDeviceName,
                 newDeviceName: input.newDeviceName,
-                userContext: input.userContext,
             });
         },
 
         listDevices: (input: { userId: string; userContext: any }) => {
             return querier.sendGetRequest(new NormalisedURLPath("/recipe/totp/device/list"), {
                 userId: input.userId,
-                userContext: input.userContext,
             });
         },
 
@@ -58,7 +55,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return querier.sendPostRequest(new NormalisedURLPath("/recipe/totp/device/remove"), {
                 userId: input.userId,
                 deviceName: input.deviceName,
-                userContext: input.userContext,
             });
         },
 
@@ -73,7 +69,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 userId: input.userId,
                 deviceName: input.deviceName,
                 totp: input.totp,
-                userContext: input.userContext,
             });
         },
 
@@ -81,7 +76,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return querier.sendPostRequest(new NormalisedURLPath(`${input.tenantId}/recipe/totp/verify`), {
                 userId: input.userId,
                 totp: input.totp,
-                userContext: input.userContext,
             });
         },
     };

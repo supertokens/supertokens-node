@@ -94,35 +94,33 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
     public buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[] {
         for (const req of requirements) {
-            const nextArray: Set<string> = new Set();
+            const nextFactors: Set<string> = new Set();
 
             if (typeof req === "string") {
                 if (completedClaims[req] === undefined) {
-                    nextArray.add(req);
+                    nextFactors.add(req);
                 }
             } else if ("oneOf" in req) {
                 let satisfied = false;
                 for (const factorId of req.oneOf) {
                     if (completedClaims[factorId] !== undefined) {
                         satisfied = true;
-                        break;
                     }
                 }
                 if (!satisfied) {
                     for (const factorId of req.oneOf) {
-                        nextArray.add(factorId);
+                        nextFactors.add(factorId);
                     }
                 }
             } else if ("allOf" in req) {
-                for (const factorId in req.allOf) {
+                for (const factorId of req.allOf) {
                     if (completedClaims[factorId] === undefined) {
-                        nextArray.add(factorId);
+                        nextFactors.add(factorId);
                     }
                 }
             }
-
-            if (nextArray.size > 0) {
-                [...nextArray];
+            if (nextFactors.size > 0) {
+                return Array.from(nextFactors);
             }
         }
         return [];

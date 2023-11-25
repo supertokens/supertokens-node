@@ -652,15 +652,7 @@ export default function getAPIImplementation(): APIInterface {
 
             /* CREATE MFA CONTEXT */
             let session: SessionContainerInterface | undefined;
-            let sessionUser: User | undefined;
             session = await Session.getSession(options.req, options.res, { sessionRequired: false });
-
-            if (session !== undefined) {
-                sessionUser = await getUser(session.getUserId(), userContext);
-                if (sessionUser === undefined) {
-                    throw new Error("User not found!");
-                }
-            }
 
             const mfaContext = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
                 req: options.req,
@@ -668,12 +660,12 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 factorIdInProgress: "emailpassword",
                 session,
-                sessionUser,
-                userAboutToSignIn: response.user, // TODO
+                userLoggingIn: response.user,
+                isAlreadySetup: true,
                 userContext,
             });
             if (mfaContext.status !== "OK") {
-                throw new Error("Throw proper errors here!"); // TODO
+                throw new Error("Throw proper errors here!" + mfaContext.status); // TODO
             }
             /* END OF CREATE MFA CONTEXT */
 
@@ -770,16 +762,7 @@ export default function getAPIImplementation(): APIInterface {
             let mfaContext: MFAContext | undefined = undefined;
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
-                let session: SessionContainerInterface | undefined;
-                let sessionUser: User | undefined;
-                session = await Session.getSession(options.req, options.res, { sessionRequired: false });
-
-                if (session !== undefined) {
-                    sessionUser = await getUser(session.getUserId(), userContext);
-                    if (sessionUser === undefined) {
-                        throw new Error("User not found!");
-                    }
-                }
+                let session = await Session.getSession(options.req, options.res, { sessionRequired: false });
 
                 const mfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
                     req: options.req,
@@ -787,16 +770,14 @@ export default function getAPIImplementation(): APIInterface {
                     tenantId,
                     factorIdInProgress: "emailpassword",
                     session,
-                    sessionUser,
-                    userAboutToSignIn: undefined, // since this is a sign up
+                    userLoggingIn: undefined,
+                    isAlreadySetup: false, // since this is a sign up
                     userContext,
                 });
                 if (mfaContextRes.status !== "OK") {
-                    throw new Error("Throw proper errors here!"); // TODO
+                    throw new Error("Throw proper errors here!" + mfaContextRes.status); // TODO
                 }
-                mfaContext = {
-                    ...mfaContextRes,
-                };
+                mfaContext = mfaContextRes;
             }
 
             // this function also does account linking

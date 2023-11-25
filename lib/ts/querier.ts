@@ -18,6 +18,7 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { RATE_LIMIT_STATUS_CODE } from "./constants";
+import { logDebugMessage } from "./logger";
 
 export class Querier {
     private static initCalled = false;
@@ -330,6 +331,7 @@ export class Querier {
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
+            logDebugMessage(`core-call: ${method} ${url}`);
             let response = await requestFunc(url);
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
