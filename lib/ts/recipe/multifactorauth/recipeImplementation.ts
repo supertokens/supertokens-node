@@ -40,7 +40,7 @@ export default function getRecipeInterface(
             for (const factor of defaultRequiredFactorIdsForTenant) {
                 allFactors.add(factor);
             }
-            // TODO: validate this
+            // TODO MFA: validate this
             allFactors.delete(oldestFactor!);
 
             return [{ oneOf: [...allFactors] }];
@@ -255,7 +255,7 @@ export default function getRecipeInterface(
                 accountsLinkingResult.user = new User(accountsLinkingResult.user);
             }
 
-            // TODO check if the code below is required
+            // TODO MFA check if the code below is required
             // if (accountsLinkingResult.status === "OK") {
             //     let user: UserType = accountsLinkingResult.user;
             //     if (!accountsLinkingResult.accountsAlreadyLinked) {
@@ -321,7 +321,7 @@ export default function getRecipeInterface(
             if (userLoggingIn) {
                 if (userLoggingIn.id !== session.getUserId()) {
                     return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR", // TODO
+                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR", // TODO MFA
                     };
                 }
                 sessionUser = userLoggingIn;
@@ -330,7 +330,7 @@ export default function getRecipeInterface(
             }
 
             if (!sessionUser) {
-                throw new Error("Session user deleted"); // TODO
+                throw new Error("Session user deleted"); // TODO MFA
             }
 
             if (isAlreadySetup) {
@@ -432,7 +432,7 @@ export default function getRecipeInterface(
                         recipeUserId: new RecipeUserId(mfaContext.sessionUser.id),
                         userContext,
                     });
-                    // TODO check for response from above
+                    // TODO MFA check for response from above
                 }
 
                 const linkRes = await this.linkAccounts({
@@ -441,14 +441,14 @@ export default function getRecipeInterface(
                     userContext,
                 });
                 if (linkRes.status !== "OK") {
-                    throw new Error("Throw proper errors!" + linkRes.status); // TODO
+                    throw new Error("Throw proper errors!" + linkRes.status); // TODO MFA
                 }
             } else {
                 const loggedInUserLinkedToSessionUser = mfaContext.sessionUser.loginMethods.some(
                     (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId.getAsString()
                 );
                 if (!loggedInUserLinkedToSessionUser) {
-                    throw new Error("Throw proper errors! Not linked"); // TODO
+                    throw new Error("Throw proper errors! Not linked"); // TODO MFA
                 }
             }
 

@@ -82,7 +82,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
                     sessionUser = userLoggingIn;
                 } else {
-                    // TODO: can we avoid this?
+                    // TODO MFA: can we avoid this?
                     const user = await getUser(session.getUserId(), input.userContext);
                     if (user === undefined) {
                         throw new Error("User not found!");
@@ -91,7 +91,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            let mfaContext: MFAContext | undefined; // TODO
+            let mfaContext: MFAContext | undefined; // TODO MFA
             if (mfaInstance) {
                 const factorId = `${"userInputCode" in input ? "otp" : "link"}-${deviceInfo.email ? "email" : "phone"}`;
                 const createMfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({

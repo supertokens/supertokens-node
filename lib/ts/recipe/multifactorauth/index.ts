@@ -51,8 +51,8 @@ export default class Wrapper {
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
         const completedFactors = mfaClaimValue?.c ?? {};
-        const defaultMFARequirementsForUser: string[] = []; // TODO
-        const defaultMFARequirementsForTenant: string[] = []; // TODO
+        const defaultMFARequirementsForUser: string[] = []; // TODO MFA
+        const defaultMFARequirementsForTenant: string[] = []; // TODO MFA
         const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
             session,
             factorsSetUpForUser: factorsSetup,
