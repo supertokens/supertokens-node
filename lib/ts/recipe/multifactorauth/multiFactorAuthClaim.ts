@@ -28,7 +28,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         return {
                             isValid: false,
                             reason: {
-                                message: "does not satisfy MFA requirements",
+                                message: "no factors are complete in the session",
                                 mfaRequirements: requirements,
                             },
                         };
@@ -41,7 +41,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                                 return {
                                     isValid: false,
                                     reason: {
-                                        message: `does not satisfy the factorId: ${req}`,
+                                        message: `the factorId ${req} is not complete in the session`,
                                         mfaRequirements: requirements,
                                     },
                                 };
@@ -58,7 +58,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                                 return {
                                     isValid: false,
                                     reason: {
-                                        message: `does not satisfy the factorId: ${req.oneOf.join(" or ")}`,
+                                        message: `none of these factorIds [${req.oneOf.join(
+                                            ", "
+                                        )}] are complete session`,
                                         mfaRequirements: requirements,
                                     },
                                 };
@@ -69,7 +71,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                                     return {
                                         isValid: false,
                                         reason: {
-                                            message: `does not satisfy the factorId: ${factorId}`,
+                                            message: `the factor ${factorId} is not complete in session, all of these factorIds [${req.allOf.join(
+                                                ", "
+                                            )}] must be complete in session`,
                                             mfaRequirements: requirements,
                                         },
                                     };
