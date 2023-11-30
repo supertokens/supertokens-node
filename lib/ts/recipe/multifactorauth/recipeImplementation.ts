@@ -313,7 +313,7 @@ export default function getRecipeInterface(
                     factorIdInProgress,
                     session,
                     sessionUser: userLoggingIn,
-                    isAlreadySetup: isAlreadySetup,
+                    isAlreadySetup,
                 };
             }
 
