@@ -58,6 +58,13 @@ export default class SessionWrapper {
             userId = user.id;
         }
 
+        if (!recipeInstance.config.overwriteSessionDuringSignIn) {
+            const currentSession = await getSession(req, res, { sessionRequired: false }, userContext);
+            if (currentSession !== undefined) {
+                return currentSession;
+            }
+        }
+
         return await createNewSessionInRequest({
             req,
             res,
