@@ -259,6 +259,9 @@ export declare type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | {
+                    status: "DISALLOWED_FIRST_FACTOR_ERROR";
+                }
               | GeneralErrorResponse
           >);
     signUpPOST:
@@ -283,6 +286,9 @@ export declare type APIInterface = {
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | {
+                    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
                 }
               | GeneralErrorResponse
           >);

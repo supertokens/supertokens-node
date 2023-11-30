@@ -240,7 +240,7 @@ export default function getAPIInterface(): APIInterface {
                 });
 
                 if (createMfaContextRes.status !== "OK") {
-                    throw new Error("Throw proper errors here!" + createMfaContextRes.status); // TODO
+                    return createMfaContextRes;
                 }
                 mfaContext = createMfaContextRes;
             }

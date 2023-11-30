@@ -583,6 +583,9 @@ export default function getAPIImplementation(): APIInterface {
                   status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
               }
+            | {
+                  status: "DISALLOWED_FIRST_FACTOR_ERROR";
+              }
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -654,7 +657,7 @@ export default function getAPIImplementation(): APIInterface {
             let session: SessionContainerInterface | undefined;
             session = await Session.getSession(options.req, options.res, { sessionRequired: false });
 
-            const mfaContext = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+            const mfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
                 req: options.req,
                 res: options.res,
                 tenantId,
@@ -664,16 +667,25 @@ export default function getAPIImplementation(): APIInterface {
                 isAlreadySetup: true,
                 userContext,
             });
-            if (mfaContext.status !== "OK") {
-                throw new Error("Throw proper errors here!" + mfaContext.status); // TODO
+
+            if (mfaContextRes.status === "FACTOR_SETUP_NOT_ALLOWED_ERROR") {
+                throw new Error("Should never come here");
+            } else if (mfaContextRes.status === "DISALLOWED_FIRST_FACTOR_ERROR") {
+                return {
+                    status: "DISALLOWED_FIRST_FACTOR_ERROR",
+                };
             }
             /* END OF CREATE MFA CONTEXT */
+
+            if (mfaContextRes.status !== "OK") {
+                throw new Error("should never come here");
+            }
 
             session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
                 justSignedInUser: response.user,
                 justSignedInUserCreated: false,
                 justSignedInRecipeUserId: emailPasswordRecipeUser.recipeUserId,
-                mfaContext,
+                mfaContext: mfaContextRes,
                 userContext,
             });
 
@@ -709,6 +721,9 @@ export default function getAPIImplementation(): APIInterface {
               }
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+            | {
+                  status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
               }
             | GeneralErrorResponse
         > {
@@ -775,7 +790,7 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
                 if (mfaContextRes.status !== "OK") {
-                    throw new Error("Throw proper errors here!" + mfaContextRes.status); // TODO
+                    return mfaContextRes;
                 }
                 mfaContext = mfaContextRes;
             }
