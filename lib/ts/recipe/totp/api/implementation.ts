@@ -69,8 +69,12 @@ export default function getAPIInterface(): APIInterface {
                     isAlreadySetup: false, // since this is a sign up
                     userContext,
                 });
-                if (mfaContext.status !== "OK") {
-                    throw new Error("Throw proper errors here!" + mfaContext.status); // TODO
+                if (mfaContext.status === "DISALLOWED_FIRST_FACTOR_ERROR") {
+                    throw new Error("Should never come here");
+                } else if (mfaContext.status === "FACTOR_SETUP_NOT_ALLOWED_ERROR") {
+                    return {
+                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                    };
                 }
             }
 
@@ -83,6 +87,9 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK" && mfaInstance && mfaContext) {
+                if (mfaContext.status !== "OK") {
+                    throw new Error("Should never come here");
+                }
                 await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
                     session: session,
                     factorId: "totp",
