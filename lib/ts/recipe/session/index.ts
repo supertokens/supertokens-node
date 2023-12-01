@@ -46,6 +46,7 @@ export default class SessionWrapper {
         recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
+        alwaysOverwriteSessionInRequest: boolean = true,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -58,7 +59,7 @@ export default class SessionWrapper {
             userId = user.id;
         }
 
-        if (!recipeInstance.config.overwriteSessionDuringSignIn) {
+        if (!alwaysOverwriteSessionInRequest && !recipeInstance.config.overwriteSessionDuringSignIn) {
             const currentSession = await getSession(req, res, { sessionRequired: false }, userContext);
             if (currentSession !== undefined) {
                 return currentSession;

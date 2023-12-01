@@ -643,6 +643,7 @@ export default function getAPIImplementation(): APIInterface {
                     emailPasswordRecipeUser.recipeUserId,
                     {},
                     {},
+                    false,
                     userContext
                 );
 
@@ -823,6 +824,7 @@ export default function getAPIImplementation(): APIInterface {
                     emailPasswordRecipeUser.recipeUserId,
                     {},
                     {},
+                    false,
                     userContext
                 );
 

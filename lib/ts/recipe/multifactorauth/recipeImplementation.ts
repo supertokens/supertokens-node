@@ -409,6 +409,7 @@ export default function getRecipeInterface(
                     justSignedInRecipeUserId,
                     {},
                     {},
+                    false,
                     userContext
                 );
                 await this.markFactorAsCompleteInSession({
