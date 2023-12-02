@@ -204,8 +204,8 @@ export function getBackwardsCompatibleUserInfo(
         }
 
         const userObj: JSONObject = {
-            id: loginMethod.recipeUserId.getAsString(),
-            timeJoined: result.user.timeJoined,
+            id: result.user.id, // we purposely use this instead of the loginmethod's recipeUserId because if the oldest login method is deleted, then this userID should remain the same.
+            timeJoined: loginMethod.timeJoined,
         };
         if (loginMethod.thirdParty) {
             userObj.thirdParty = loginMethod.thirdParty;
