@@ -269,6 +269,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 recipeList: [
                     EmailPassword.init(),
                     Session.init({
+                        overwriteSessionDuringSignIn: true,
                         override: {
                             functions: (oI) => ({
                                 createNewSession: (input) => {

@@ -349,7 +349,7 @@ export default class Recipe extends RecipeModule {
                         input.session.getRecipeUserId(),
                         {},
                         {},
-                        false,
+                        true,
                         input.userContext
                     );
                 }
