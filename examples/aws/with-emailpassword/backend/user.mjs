@@ -1,13 +1,12 @@
-let supertokens = require("supertokens-node");
-let { middleware } = require("supertokens-node/framework/awsLambda/");
-let { getBackendConfig } = require("./config");
-let middy = require("@middy/core");
-let cors = require("@middy/http-cors");
-let { verifySession } = require("supertokens-node/recipe/session/framework/awsLambda");
+import supertokens from "supertokens-node";
+import { getBackendConfig } from "./config.mjs";
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import { verifySession } from "supertokens-node/recipe/session/framework/awsLambda";
 
 supertokens.init(getBackendConfig());
 
-const handler = async (event) => {
+const lambdaHandler = async (event) => {
     let count = 0;
     let currPayload = event.session.getAccessTokenPayload();
     if (currPayload.count !== undefined) {
@@ -26,7 +25,7 @@ const handler = async (event) => {
     };
 };
 
-module.exports.handler = middy(verifySession(handler))
+export const handler = middy(verifySession(lambdaHandler))
     .use(
         cors({
             origin: getBackendConfig().appInfo.websiteDomain,

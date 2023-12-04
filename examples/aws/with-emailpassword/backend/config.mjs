@@ -1,8 +1,8 @@
-let Session = require("supertokens-node/recipe/session");
-let EmailPassword = require("supertokens-node/recipe/emailpassword");
-let Dashboard = require("supertokens-node/recipe/dashboard");
+import Session from "supertokens-node/recipe/session";
+import EmailPassword from "supertokens-node/recipe/emailpassword";
+import Dashboard from "supertokens-node/recipe/dashboard";
 
-module.exports.getBackendConfig = () => {
+export const getBackendConfig = () => {
     return {
         framework: "awsLambda",
         supertokens: {
