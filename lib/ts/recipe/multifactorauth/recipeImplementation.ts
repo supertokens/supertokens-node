@@ -480,7 +480,8 @@ export default function getRecipeInterface(
                             "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
                     };
                 }
-            } else {
+            } else if (justSignedInRecipeUserId) {
+                // TODO MFA: I'm not sure if this is the right solution, but otherwise we can't use this with TOTP
                 const loggedInUserLinkedToSessionUser = sessionUser.loginMethods.some(
                     (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId!.getAsString()
                 );
@@ -497,18 +498,6 @@ export default function getRecipeInterface(
             await this.addToDefaultRequiredFactorsForUser({
                 user: sessionUser,
                 tenantId: tenantId,
-                factorId: factorIdInProgress,
-                userContext,
-            });
-
-            this.markFactorAsCompleteInSession({
-                session,
-                factorId: factorIdInProgress,
-                userContext,
-            });
-            await this.addToDefaultRequiredFactorsForUser({
-                user: sessionUser,
-                tenantId,
                 factorId: factorIdInProgress,
                 userContext,
             });

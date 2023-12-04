@@ -182,7 +182,8 @@ export function isFactorSetupForUser(user: User, tenantId: string, factorId: str
             continue;
         }
 
-        if (loginMethod.email !== undefined && loginMethod.verified) {
+        // TODO MFA: discuss if we need to check verification status here
+        if (loginMethod.email !== undefined) {
             if (factorId == "otp-email") {
                 return true;
             }
