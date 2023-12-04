@@ -57,25 +57,28 @@ export default function getAPIInterface(): APIInterface {
             const tenantId = session.getTenantId();
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
-            let mfaContext;
-            if (mfaInstance !== undefined) {
-                mfaContext = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
-                    req: options.req,
-                    res: options.res,
-                    tenantId,
-                    factorIdInProgress: "totp",
-                    session,
-                    userLoggingIn: undefined,
-                    isAlreadySetup: false, // since this is a sign up
-                    userContext,
-                });
-                if (mfaContext.status === "DISALLOWED_FIRST_FACTOR_ERROR") {
-                    throw new Error("Should never come here");
-                } else if (mfaContext.status === "FACTOR_SETUP_NOT_ALLOWED_ERROR") {
-                    return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                    };
-                }
+
+            if (mfaInstance === undefined) {
+                throw new Error("should never come here"); // TOTP can't work without MFA
+            }
+
+            const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeSignIn({
+                req: options.req,
+                res: options.res,
+                tenantId,
+                factorIdInProgress: "totp",
+                session,
+                userLoggingIn: undefined,
+                isAlreadySetup: false, // since this is a sign up
+                userContext,
+            });
+
+            if (validateMfaRes.status === "DISALLOWED_FIRST_FACTOR_ERROR") {
+                throw new Error("Should never come here"); // TOTP is never a first factor
+            }
+
+            if (validateMfaRes.status !== "OK") {
+                return validateMfaRes;
             }
 
             const res = await options.recipeImplementation.verifyDevice({
@@ -86,21 +89,26 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            if (res.status === "OK" && mfaInstance && mfaContext) {
-                if (mfaContext.status !== "OK") {
-                    throw new Error("Should never come here");
+            if (res.status === "OK") {
+                const sessionUser = await getUser(userId);
+                if (sessionUser === undefined) {
+                    throw new Error("session user deleted"); // TODO MFA
                 }
-                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
-                    session: session,
-                    factorId: "totp",
-                    userContext,
-                });
-                await mfaInstance.recipeInterfaceImpl.addToDefaultRequiredFactorsForUser({
-                    user: mfaContext.sessionUser!,
-                    tenantId: mfaContext.tenantId,
-                    factorId: mfaContext.factorIdInProgress,
-                    userContext,
-                });
+                const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterSignIn(
+                    {
+                        req: options.req,
+                        res: options.res,
+                        tenantId,
+                        factorIdInProgress: "totp",
+                        justSignedInUser: sessionUser,
+                        justSignedInUserCreated: false,
+                        isAlreadySetup: false,
+                        userContext,
+                    }
+                );
+                if (sessionRes.status != "OK") {
+                    return sessionRes;
+                }
             }
 
             return res;
@@ -110,6 +118,11 @@ export default function getAPIInterface(): APIInterface {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
 
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance === undefined) {
+                throw new Error("should never come here"); // TOTP can't work without MFA
+            }
+
             const res = await options.recipeImplementation.verifyTOTP({
                 tenantId,
                 userId,
@@ -117,19 +130,27 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
-            if (res.status === "OK" && mfaInstance) {
-                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
-                    session: session,
-                    factorId: "totp",
-                    userContext,
-                });
-                await mfaInstance.recipeInterfaceImpl.addToDefaultRequiredFactorsForUser({
-                    user: (await getUser(userId))!,
-                    tenantId: tenantId,
-                    factorId: "totp",
-                    userContext,
-                });
+            if (res.status === "OK") {
+                const sessionUser = await getUser(userId, userContext);
+                if (sessionUser === undefined) {
+                    throw new Error("session user deleted"); // TODO MFA
+                }
+                const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterSignIn(
+                    {
+                        req: options.req,
+                        res: options.res,
+                        tenantId,
+                        factorIdInProgress: "totp",
+                        justSignedInUser: sessionUser,
+                        justSignedInUserCreated: false,
+                        isAlreadySetup: true,
+                        userContext,
+                    }
+                );
+
+                if (sessionRes.status != "OK") {
+                    return sessionRes;
+                }
             }
 
             return res;

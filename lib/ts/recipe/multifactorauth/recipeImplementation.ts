@@ -40,8 +40,7 @@ export default function getRecipeInterface(
             for (const factor of defaultRequiredFactorIdsForTenant) {
                 allFactors.add(factor);
             }
-            // TODO MFA: validate this
-            allFactors.delete(oldestFactor!);
+            allFactors.delete(oldestFactor!); // Removing the first factor if it exists
 
             return [{ oneOf: [...allFactors] }];
         },
@@ -214,6 +213,7 @@ export default function getRecipeInterface(
             {
                 recipeUserId,
                 primaryUserId,
+                userContext,
             }: {
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
@@ -255,40 +255,36 @@ export default function getRecipeInterface(
                 accountsLinkingResult.user = new User(accountsLinkingResult.user);
             }
 
-            // TODO MFA check if the code below is required
-            // if (accountsLinkingResult.status === "OK") {
-            //     let user: UserType = accountsLinkingResult.user;
-            //     if (!accountsLinkingResult.accountsAlreadyLinked) {
-            //         await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-            //             user: user,
-            //             recipeUserId,
-            //             userContext,
-            //         });
+            if (accountsLinkingResult.status === "OK") {
+                let user: User = accountsLinkingResult.user;
+                if (!accountsLinkingResult.accountsAlreadyLinked) {
+                    await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                        user: user,
+                        recipeUserId,
+                        userContext,
+                    });
 
-            //         const updatedUser = await this.getUser({
-            //             userId: primaryUserId,
-            //             userContext,
-            //         });
-            //         if (updatedUser === undefined) {
-            //             throw Error("this error should never be thrown");
-            //         }
-            //         user = updatedUser;
-            //         let loginMethodInfo = user.loginMethods.find(
-            //             (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
-            //         );
-            //         if (loginMethodInfo === undefined) {
-            //             throw Error("this error should never be thrown");
-            //         }
+                    const updatedUser = await getUser(primaryUserId, userContext);
+                    if (updatedUser === undefined) {
+                        throw Error("this error should never be thrown");
+                    }
+                    user = updatedUser;
+                    let loginMethodInfo = user.loginMethods.find(
+                        (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
+                    );
+                    if (loginMethodInfo === undefined) {
+                        throw Error("this error should never be thrown");
+                    }
 
-            //         // await config.onAccountLinked(user, loginMethodInfo, userContext);
-            //     }
-            //     accountsLinkingResult.user = user;
-            // }
+                    // await config.onAccountLinked(user, loginMethodInfo, userContext);
+                }
+                accountsLinkingResult.user = user;
+            }
 
             return accountsLinkingResult;
         },
 
-        checkAndCreateMFAContext: async function (
+        validateForMultifactorAuthBeforeSignIn: async function (
             this: RecipeInterface,
             { req, res, tenantId, factorIdInProgress, session, userLoggingIn, isAlreadySetup, userContext }
         ) {
@@ -320,8 +316,12 @@ export default function getRecipeInterface(
             let sessionUser;
             if (userLoggingIn) {
                 if (userLoggingIn.id !== session.getUserId()) {
+                    // the user trying to login is not linked to the session user, based on session behaviour
+                    // we just return OK and do nothing or replace replace the existing session with a new one
+                    // we are doing this because we allow factor setup only when creating a new user
                     return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR", // TODO MFA
+                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                        reason: "Factor setup is not allowed for this user. Please contact support. (ERR_CODE_009)",
                     };
                 }
                 sessionUser = userLoggingIn;
@@ -330,7 +330,11 @@ export default function getRecipeInterface(
             }
 
             if (!sessionUser) {
-                throw new Error("Session user deleted"); // TODO MFA
+                // Session user doesn't exist, maybe the user was deleted
+                return {
+                    status: "MFA_ERROR",
+                    message: "Session user does not exist, please contact support. (ERR_CODE_010)",
+                };
             }
 
             if (isAlreadySetup) {
@@ -395,18 +399,28 @@ export default function getRecipeInterface(
             };
         },
 
-        createOrUpdateSession: async function (
+        createOrUpdateSessionForMultifactorAuthAfterSignIn: async function (
             this: RecipeInterface,
-            { justSignedInUser, justSignedInUserCreated, justSignedInRecipeUserId, mfaContext, userContext }
+            {
+                req,
+                res,
+                tenantId,
+                factorIdInProgress,
+                justSignedInUser,
+                justSignedInUserCreated,
+                justSignedInRecipeUserId,
+                userContext,
+            }
         ) {
+            const session = await Session.getSession(req, res, { sessionRequired: false });
             if (
-                mfaContext.session === undefined // no session exists, so we can create a new one
+                session === undefined // no session exists, so we can create a new one
             ) {
                 const session = await Session.createNewSession(
-                    mfaContext.req,
-                    mfaContext.res,
-                    mfaContext.tenantId,
-                    justSignedInRecipeUserId,
+                    req,
+                    res,
+                    tenantId,
+                    justSignedInRecipeUserId!,
                     {},
                     {},
                     false,
@@ -414,39 +428,64 @@ export default function getRecipeInterface(
                 );
                 await this.markFactorAsCompleteInSession({
                     session,
-                    factorId: mfaContext.factorIdInProgress,
+                    factorId: factorIdInProgress,
                     userContext,
                 });
-                return session;
-            } else if (!justSignedInUserCreated && justSignedInUser.id !== mfaContext.sessionUser?.id) {
-                throw new Error("should never come here!");
+                return {
+                    status: "OK",
+                    session,
+                };
             }
 
-            if (mfaContext.sessionUser === undefined) {
+            const sessionUser = await getUser(session.getUserId(), userContext);
+
+            if (sessionUser === undefined) {
+                throw new Error("session user deleted"); // TODO MFA
+            }
+
+            if (!justSignedInUserCreated && justSignedInUser.id !== sessionUser.id) {
                 throw new Error("should never come here!");
             }
 
             if (justSignedInUserCreated) {
                 // This is a newly created user, so it must be account linked with the session user
-                if (!mfaContext.sessionUser.isPrimaryUser) {
-                    await this.createPrimaryUser({
-                        recipeUserId: new RecipeUserId(mfaContext.sessionUser.id),
+                if (!sessionUser.isPrimaryUser) {
+                    const createPrimaryRes = await this.createPrimaryUser({
+                        recipeUserId: new RecipeUserId(sessionUser.id),
                         userContext,
                     });
-                    // TODO MFA check for response from above
+                    if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                        throw new Error("should never happen"); // new user, that's why
+                    } else if (
+                        createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    ) {
+                        return {
+                            status: "MFA_ERROR",
+                            message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_011)",
+                        };
+                    }
                 }
 
                 const linkRes = await this.linkAccounts({
-                    recipeUserId: justSignedInRecipeUserId,
-                    primaryUserId: mfaContext.sessionUser.id,
+                    recipeUserId: justSignedInRecipeUserId!,
+                    primaryUserId: sessionUser.id,
                     userContext,
                 });
-                if (linkRes.status !== "OK") {
-                    throw new Error("Throw proper errors!" + linkRes.status); // TODO MFA
+
+                if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                    throw new Error("should never happen"); // new user shouldn't have this issue
+                } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+                    throw new Error("should never happen");
+                } else if (linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                    return {
+                        status: "MFA_ERROR",
+                        message:
+                            "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+                    };
                 }
             } else {
-                const loggedInUserLinkedToSessionUser = mfaContext.sessionUser.loginMethods.some(
-                    (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId.getAsString()
+                const loggedInUserLinkedToSessionUser = sessionUser.loginMethods.some(
+                    (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId!.getAsString()
                 );
                 if (!loggedInUserLinkedToSessionUser) {
                     throw new Error("Throw proper errors! Not linked"); // TODO MFA
@@ -454,18 +493,33 @@ export default function getRecipeInterface(
             }
 
             await this.markFactorAsCompleteInSession({
-                session: mfaContext.session,
-                factorId: mfaContext.factorIdInProgress,
+                session: session,
+                factorId: factorIdInProgress,
                 userContext,
             });
             await this.addToDefaultRequiredFactorsForUser({
-                user: mfaContext.sessionUser,
-                tenantId: mfaContext.tenantId,
-                factorId: mfaContext.factorIdInProgress,
+                user: sessionUser,
+                tenantId: tenantId,
+                factorId: factorIdInProgress,
                 userContext,
             });
 
-            return mfaContext.session;
+            this.markFactorAsCompleteInSession({
+                session,
+                factorId: factorIdInProgress,
+                userContext,
+            });
+            await this.addToDefaultRequiredFactorsForUser({
+                user: sessionUser,
+                tenantId,
+                factorId: factorIdInProgress,
+                userContext,
+            });
+
+            return {
+                status: "OK",
+                session: session,
+            };
         },
     };
 }

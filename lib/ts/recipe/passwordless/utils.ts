@@ -178,12 +178,11 @@ export function defaultValidateEmail(value: string): Promise<string | undefined>
 
 export function isFactorSetupForUser(user: User, tenantId: string, factorId: string) {
     for (const loginMethod of user.loginMethods) {
-        if (!loginMethod.tenantIds.includes(tenantId || "public")) {
+        if (!loginMethod.tenantIds.includes(tenantId)) {
             continue;
         }
 
-        // TODO MFA: should this check if this is verified?
-        if (loginMethod.email !== undefined) {
+        if (loginMethod.email !== undefined && loginMethod.verified) {
             if (factorId == "otp-email") {
                 return true;
             }

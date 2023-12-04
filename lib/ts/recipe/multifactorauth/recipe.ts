@@ -36,6 +36,7 @@ import mfaInfoAPI from "./api/mfaInfo";
 import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { User } from "../../user";
+import { verifyEmailForRecipeUserIfLinkedAccountsAreVerified } from "../accountlinking/utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -182,4 +183,6 @@ export default class Recipe extends RecipeModule {
         }
         return factorIds;
     };
+
+    verifyEmailForRecipeUserIfLinkedAccountsAreVerified = verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
 }

@@ -10,7 +10,7 @@ import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
-import { MFAContext } from "../../multifactorauth/types";
+import { MFAFlowErrors } from "../../multifactorauth/types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -583,9 +583,7 @@ export default function getAPIImplementation(): APIInterface {
                   status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
               }
-            | {
-                  status: "DISALLOWED_FIRST_FACTOR_ERROR";
-              }
+            | MFAFlowErrors
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -654,11 +652,10 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            /* CREATE MFA CONTEXT */
             let session: SessionContainerInterface | undefined;
             session = await Session.getSession(options.req, options.res, { sessionRequired: false });
 
-            const mfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+            const mfaValidationRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeSignIn({
                 req: options.req,
                 res: options.res,
                 tenantId,
@@ -669,30 +666,34 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            if (mfaContextRes.status === "FACTOR_SETUP_NOT_ALLOWED_ERROR") {
+            if (mfaValidationRes.status === "FACTOR_SETUP_NOT_ALLOWED_ERROR") {
                 throw new Error("Should never come here");
-            } else if (mfaContextRes.status === "DISALLOWED_FIRST_FACTOR_ERROR") {
-                return {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR",
-                };
-            }
-            /* END OF CREATE MFA CONTEXT */
-
-            if (mfaContextRes.status !== "OK") {
-                throw new Error("should never come here");
             }
 
-            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
-                justSignedInUser: response.user,
-                justSignedInUserCreated: false,
-                justSignedInRecipeUserId: emailPasswordRecipeUser.recipeUserId,
-                mfaContext: mfaContextRes,
-                userContext,
-            });
+            if (mfaValidationRes.status !== "OK") {
+                return mfaValidationRes;
+            }
+
+            const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterSignIn(
+                {
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "emailpassword",
+                    justSignedInUser: response.user,
+                    justSignedInUserCreated: false,
+                    justSignedInRecipeUserId: emailPasswordRecipeUser.recipeUserId,
+                    userContext,
+                }
+            );
+
+            if (sessionRes.status !== "OK") {
+                return sessionRes;
+            }
 
             return {
                 status: "OK",
-                session,
+                session: sessionRes.session,
                 user: response.user,
             };
         },
@@ -723,9 +724,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
-            | {
-                  status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-              }
+            | MFAFlowErrors
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -775,12 +774,11 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            let mfaContext: MFAContext | undefined = undefined;
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
                 let session = await Session.getSession(options.req, options.res, { sessionRequired: false });
 
-                const mfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+                const mfaValidationRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeSignIn({
                     req: options.req,
                     res: options.res,
                     tenantId,
@@ -790,10 +788,9 @@ export default function getAPIImplementation(): APIInterface {
                     isAlreadySetup: false, // since this is a sign up
                     userContext,
                 });
-                if (mfaContextRes.status !== "OK") {
-                    return mfaContextRes;
+                if (mfaValidationRes.status !== "OK") {
+                    return mfaValidationRes;
                 }
-                mfaContext = mfaContextRes;
             }
 
             // this function also does account linking
@@ -835,17 +832,27 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            const session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
-                justSignedInUser: response.user,
-                justSignedInUserCreated: true,
-                justSignedInRecipeUserId: emailPasswordRecipeUser.recipeUserId,
-                mfaContext: mfaContext!,
-                userContext,
-            });
+            const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterSignIn(
+                {
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "emailpassword",
+                    isAlreadySetup: false,
+                    justSignedInUser: response.user,
+                    justSignedInUserCreated: true,
+                    justSignedInRecipeUserId: emailPasswordRecipeUser.recipeUserId,
+                    userContext,
+                }
+            );
+
+            if (sessionRes.status !== "OK") {
+                return sessionRes;
+            }
 
             return {
                 status: "OK",
-                session,
+                session: sessionRes.session,
                 user: response.user,
             };
         },

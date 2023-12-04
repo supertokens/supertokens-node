@@ -36,14 +36,9 @@ export type MFAClaimValue = {
     n: string[];
 };
 
-export type MFAContext = {
-    req: BaseRequest;
-    res: BaseResponse;
-    tenantId: string;
-    factorIdInProgress: string;
-    isAlreadySetup?: boolean;
-    session?: SessionContainerInterface;
-    sessionUser?: User;
+export type MFAFlowErrors = {
+    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR" | "MFA_ERROR";
+    message?: string;
 };
 
 export type TypeInput = {
@@ -155,7 +150,7 @@ export type RecipeInterface = {
           }
     >;
 
-    checkAndCreateMFAContext: (input: {
+    validateForMultifactorAuthBeforeSignIn: (input: {
         req: BaseRequest;
         res: BaseResponse;
         tenantId: string;
@@ -164,20 +159,25 @@ export type RecipeInterface = {
         userLoggingIn?: User;
         isAlreadySetup?: boolean;
         userContext: any;
-    }) => Promise<
-        | ({ status: "OK" } & MFAContext)
-        | {
-              status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-          }
-    >;
+    }) => Promise<{ status: "OK" } | MFAFlowErrors>;
 
-    createOrUpdateSession: (input: {
+    createOrUpdateSessionForMultifactorAuthAfterSignIn: (input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        tenantId: string;
+        factorIdInProgress: string;
+        isAlreadySetup?: boolean;
         justSignedInUser: User;
         justSignedInUserCreated: boolean;
-        justSignedInRecipeUserId: RecipeUserId;
-        mfaContext: MFAContext;
+        justSignedInRecipeUserId?: RecipeUserId;
         userContext: any;
-    }) => Promise<SessionContainerInterface>;
+    }) => Promise<
+        | {
+              status: "OK";
+              session: SessionContainerInterface;
+          }
+        | MFAFlowErrors
+    >;
 };
 
 export type APIOptions = {

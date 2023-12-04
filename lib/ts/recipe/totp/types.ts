@@ -17,6 +17,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type GetUserIdentifierInfoForUserIdFunc = (
     userId: string,
@@ -237,6 +238,7 @@ export type APIInterface = {
         | {
               status: "FACTOR_SETUP_NOT_ALLOWED_ERROR";
           }
+        | MFAFlowErrors
         | GeneralErrorResponse
     >;
 
@@ -258,6 +260,7 @@ export type APIInterface = {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
           }
+        | MFAFlowErrors
         | GeneralErrorResponse
     >;
 };

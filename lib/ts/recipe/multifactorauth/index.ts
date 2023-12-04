@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
+import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
 
 export default class Wrapper {
@@ -51,8 +52,16 @@ export default class Wrapper {
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
         const completedFactors = mfaClaimValue?.c ?? {};
-        const defaultMFARequirementsForUser: string[] = []; // TODO MFA
-        const defaultMFARequirementsForTenant: string[] = []; // TODO MFA
+        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getDefaultRequiredFactorsForUser(
+            {
+                user,
+                tenantId: session.getTenantId(),
+                userContext: ctx,
+            }
+        );
+
+        const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
+        const defaultMFARequirementsForTenant: string[] = tenantInfo?.defaultRequiredFactorIds ?? [];
         const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
             session,
             factorsSetUpForUser: factorsSetup,

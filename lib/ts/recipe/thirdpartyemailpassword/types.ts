@@ -34,6 +34,7 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import { GeneralErrorResponse, User as GlobalUser, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
@@ -336,9 +337,7 @@ export type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
-              | {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-                }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -365,9 +364,7 @@ export type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
-              | {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR";
-                }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -394,9 +391,7 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
-              | {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-                }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 

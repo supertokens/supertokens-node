@@ -6,7 +6,6 @@ import Session from "../../session";
 import { User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { SessionContainerInterface } from "../../session/types";
-import { MFAContext } from "../../multifactorauth/types";
 import { isFactorSetupForUser } from "../utils";
 
 export default function getAPIImplementation(): APIInterface {
@@ -71,7 +70,6 @@ export default function getAPIImplementation(): APIInterface {
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
-            /* CREATE MFA CONTEXT */
             let session: SessionContainerInterface | undefined = await Session.getSession(
                 input.options.req,
                 input.options.res,
@@ -80,38 +78,36 @@ export default function getAPIImplementation(): APIInterface {
             let sessionUser: User | undefined;
             if (session !== undefined) {
                 if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
-                    sessionUser = userLoggingIn;
+                    sessionUser = userLoggingIn; // optimization
                 } else {
-                    // TODO MFA: can we avoid this?
                     const user = await getUser(session.getUserId(), input.userContext);
                     if (user === undefined) {
-                        throw new Error("User not found!");
+                        throw new Error("session user deleted"); // TODO MFA
                     }
                     sessionUser = user;
                 }
             }
 
-            let mfaContext: MFAContext | undefined; // TODO MFA
+            const factorId = `${"userInputCode" in input ? "otp" : "link"}-${deviceInfo.email ? "email" : "phone"}`;
+            let isAlreadySetup = undefined;
+
             if (mfaInstance) {
-                const factorId = `${"userInputCode" in input ? "otp" : "link"}-${deviceInfo.email ? "email" : "phone"}`;
-                const createMfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+                isAlreadySetup = !sessionUser ? false : isFactorSetupForUser(sessionUser, input.tenantId, factorId);
+                const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeSignIn({
                     req: input.options.req,
                     res: input.options.res,
                     tenantId: input.tenantId,
                     factorIdInProgress: factorId,
                     session,
                     userLoggingIn,
-                    isAlreadySetup: !sessionUser ? false : isFactorSetupForUser(sessionUser, input.tenantId, factorId),
+                    isAlreadySetup,
                     userContext: input.userContext,
                 });
 
-                if (createMfaContextRes.status !== "OK") {
-                    return createMfaContextRes;
+                if (validateMfaRes.status !== "OK") {
+                    return validateMfaRes;
                 }
-                mfaContext = createMfaContextRes;
             }
-
-            /* END OF CREATE MFA CONTEXT */
 
             let response = await input.options.recipeImplementation.consumeCode(
                 "deviceId" in input
@@ -196,13 +192,23 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
-                justSignedInUser: response.user,
-                justSignedInUserCreated: response.createdNewRecipeUser,
-                justSignedInRecipeUserId: response.recipeUserId,
-                mfaContext: mfaContext!,
-                userContext: input.userContext,
-            });
+            const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterSignIn(
+                {
+                    req: input.options.req,
+                    res: input.options.res,
+                    tenantId: input.tenantId,
+                    factorIdInProgress: factorId,
+                    justSignedInUser: response.user,
+                    justSignedInUserCreated: response.createdNewRecipeUser,
+                    justSignedInRecipeUserId: response.recipeUserId,
+                    isAlreadySetup,
+                    userContext: input.userContext,
+                }
+            );
+            if (sessionRes.status !== "OK") {
+                return sessionRes;
+            }
+            session = sessionRes.session;
 
             return {
                 status: "OK",

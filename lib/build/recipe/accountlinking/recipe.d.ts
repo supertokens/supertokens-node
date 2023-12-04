@@ -5,7 +5,7 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
-import RecipeUserId from "../../recipeUserId";
+import { verifyEmailForRecipeUserIfLinkedAccountsAreVerified } from "./utils";
 import { LoginMethod } from "../../user";
 export default class Recipe extends RecipeModule {
     private static instance;
@@ -91,9 +91,5 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         userContext: any;
     }) => Promise<boolean>;
-    verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
-        user: User;
-        recipeUserId: RecipeUserId;
-        userContext: any;
-    }) => Promise<void>;
+    verifyEmailForRecipeUserIfLinkedAccountsAreVerified: typeof verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
 }

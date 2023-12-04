@@ -8,7 +8,6 @@ import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
-import { MFAContext } from "../../multifactorauth/types";
 import { SessionContainerInterface } from "../../session/types";
 import { User } from "../../../types";
 
@@ -206,7 +205,6 @@ export default function getAPIInterface(): APIInterface {
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
-            /* CREATE MFA CONTEXT */
             let session: SessionContainerInterface | undefined = await Session.getSession(
                 input.options.req,
                 input.options.res,
@@ -217,35 +215,32 @@ export default function getAPIInterface(): APIInterface {
                 if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
                     sessionUser = userLoggingIn;
                 } else {
-                    // TODO MFA: can we avoid this?
                     const user = await getUser(session.getUserId(), input.userContext);
                     if (user === undefined) {
-                        throw new Error("User not found!");
+                        throw new Error("Session user deleted!"); // TODO MFA
                     }
                     sessionUser = user;
                 }
             }
 
-            let mfaContext: MFAContext | undefined; // TODO MFA
+            let isAlreadySetup = undefined;
             if (mfaInstance) {
-                const createMfaContextRes = await mfaInstance.recipeInterfaceImpl.checkAndCreateMFAContext({
+                isAlreadySetup = !sessionUser ? false : sessionUser.thirdParty.length > 0;
+                const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeSignIn({
                     req: input.options.req,
                     res: input.options.res,
                     tenantId: input.tenantId,
                     factorIdInProgress: "thirdparty",
                     session,
                     userLoggingIn,
-                    isAlreadySetup: !sessionUser ? false : sessionUser.thirdParty.length > 0,
+                    isAlreadySetup,
                     userContext: input.userContext,
                 });
 
-                if (createMfaContextRes.status !== "OK") {
-                    return createMfaContextRes;
+                if (validateMfaRes.status !== "OK") {
+                    return validateMfaRes;
                 }
-                mfaContext = createMfaContextRes;
             }
-
-            /* END OF CREATE MFA CONTEXT */
 
             let response = await options.recipeImplementation.signInUp({
                 thirdPartyId: provider.id,
@@ -313,7 +308,8 @@ export default function getAPIInterface(): APIInterface {
                 });
             }
 
-            if (!mfaInstance) {
+            if (mfaInstance === undefined) {
+                // No MFA, create session as usual
                 let session = await Session.createNewSession(
                     options.req,
                     options.res,
@@ -334,19 +330,28 @@ export default function getAPIInterface(): APIInterface {
                 };
             }
 
-            session = await mfaInstance.recipeInterfaceImpl.createOrUpdateSession({
-                justSignedInUser: response.user,
-                justSignedInUserCreated: response.createdNewRecipeUser,
-                justSignedInRecipeUserId: response.recipeUserId,
-                mfaContext: mfaContext!,
-                userContext: input.userContext,
-            });
+            const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterSignIn(
+                {
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "thirdparty",
+                    isAlreadySetup,
+                    justSignedInUser: response.user,
+                    justSignedInUserCreated: response.createdNewRecipeUser,
+                    justSignedInRecipeUserId: response.recipeUserId,
+                    userContext: input.userContext,
+                }
+            );
+            if (sessionRes.status !== "OK") {
+                return sessionRes;
+            }
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
                 user: response.user,
-                session,
+                session: sessionRes.session,
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
             };

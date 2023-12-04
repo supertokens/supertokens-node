@@ -28,6 +28,7 @@ import {
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 export type TypeInput = (
@@ -324,15 +325,13 @@ export type APIInterface = {
               failedCodeInputAttemptCount: number;
               maximumCodeInputAttempts: number;
           }
-        | GeneralErrorResponse
         | { status: "RESTART_FLOW_ERROR" }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
-        | {
-              status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-          }
+        | GeneralErrorResponse
+        | MFAFlowErrors
     >;
 
     emailExistsGET?: (input: {

@@ -19,14 +19,9 @@ export declare type MFAClaimValue = {
     c: Record<string, number>;
     n: string[];
 };
-export declare type MFAContext = {
-    req: BaseRequest;
-    res: BaseResponse;
-    tenantId: string;
-    factorIdInProgress: string;
-    isAlreadySetup?: boolean;
-    session?: SessionContainerInterface;
-    sessionUser?: User;
+export declare type MFAFlowErrors = {
+    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR" | "MFA_ERROR";
+    message?: string;
 };
 export declare type TypeInput = {
     firstFactors?: string[];
@@ -124,7 +119,7 @@ export declare type RecipeInterface = {
               status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
-    checkAndCreateMFAContext: (input: {
+    validateForMultifactorAuthBeforeSignIn: (input: {
         req: BaseRequest;
         res: BaseResponse;
         tenantId: string;
@@ -134,20 +129,28 @@ export declare type RecipeInterface = {
         isAlreadySetup?: boolean;
         userContext: any;
     }) => Promise<
-        | ({
-              status: "OK";
-          } & MFAContext)
         | {
-              status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
+              status: "OK";
           }
+        | MFAFlowErrors
     >;
-    createOrUpdateSession: (input: {
+    createOrUpdateSessionForMultifactorAuthAfterSignIn: (input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        tenantId: string;
+        factorIdInProgress: string;
+        isAlreadySetup?: boolean;
         justSignedInUser: User;
         justSignedInUserCreated: boolean;
-        justSignedInRecipeUserId: RecipeUserId;
-        mfaContext: MFAContext;
+        justSignedInRecipeUserId?: RecipeUserId;
         userContext: any;
-    }) => Promise<SessionContainerInterface>;
+    }) => Promise<
+        | {
+              status: "OK";
+              session: SessionContainerInterface;
+          }
+        | MFAFlowErrors
+    >;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

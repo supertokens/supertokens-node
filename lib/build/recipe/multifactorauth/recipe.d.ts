@@ -12,6 +12,7 @@ import {
     TypeNormalisedInput,
 } from "./types";
 import { User } from "../../user";
+import { verifyEmailForRecipeUserIfLinkedAccountsAreVerified } from "../accountlinking/utils";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -43,4 +44,5 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: () => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
     getFactorsSetupForUser: (tenantId: string, user: User, userContext: any) => Promise<string[]>;
+    verifyEmailForRecipeUserIfLinkedAccountsAreVerified: typeof verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
 }

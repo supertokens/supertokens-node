@@ -25,6 +25,7 @@ import {
 } from "../../ingredients/smsdelivery/types";
 import { GeneralErrorResponse, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type DeviceType = DeviceTypeOriginal;
 export declare type TypeInput = (
     | {
@@ -368,9 +369,7 @@ export declare type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
-              | {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-                }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
@@ -455,7 +454,6 @@ export declare type APIInterface = {
                     failedCodeInputAttemptCount: number;
                     maximumCodeInputAttempts: number;
                 }
-              | GeneralErrorResponse
               | {
                     status: "RESTART_FLOW_ERROR";
                 }
@@ -463,9 +461,8 @@ export declare type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
-              | {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-                }
+              | GeneralErrorResponse
+              | MFAFlowErrors
           >);
     passwordlessUserEmailExistsGET:
         | undefined
