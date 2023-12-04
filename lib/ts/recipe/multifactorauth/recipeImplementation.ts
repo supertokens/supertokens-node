@@ -331,10 +331,7 @@ export default function getRecipeInterface(
 
             if (!sessionUser) {
                 // Session user doesn't exist, maybe the user was deleted
-                return {
-                    status: "MFA_ERROR",
-                    message: "Session user does not exist, please contact support. (ERR_CODE_010)",
-                };
+                throw new Error("session user deleted"); // TODO MFA
             }
 
             if (isAlreadySetup) {
@@ -460,7 +457,7 @@ export default function getRecipeInterface(
                         createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
                         return {
-                            status: "MFA_ERROR",
+                            status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
                             message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_011)",
                         };
                     }
@@ -478,7 +475,7 @@ export default function getRecipeInterface(
                     throw new Error("should never happen");
                 } else if (linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
                     return {
-                        status: "MFA_ERROR",
+                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
                         message:
                             "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
                     };

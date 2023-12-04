@@ -20,7 +20,10 @@ export declare type MFAClaimValue = {
     n: string[];
 };
 export declare type MFAFlowErrors = {
-    status: "DISALLOWED_FIRST_FACTOR_ERROR" | "FACTOR_SETUP_NOT_ALLOWED_ERROR" | "MFA_ERROR";
+    status:
+        | "DISALLOWED_FIRST_FACTOR_ERROR"
+        | "FACTOR_SETUP_NOT_ALLOWED_ERROR"
+        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
     message?: string;
 };
 export declare type TypeInput = {
