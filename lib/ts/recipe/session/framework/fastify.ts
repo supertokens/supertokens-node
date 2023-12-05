@@ -15,12 +15,14 @@
 import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { FastifyRequest, FastifyResponse, SessionRequest } from "../../../framework/fastify/framework";
-import { FastifyReply } from "fastify";
+import { FastifyReply, FastifyRequest as OriginalFastifyRequest } from "fastify";
 import SuperTokens from "../../../supertokens";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export function verifySession(options?: VerifySessionOptions) {
-    return async (req: SessionRequest, res: FastifyReply) => {
+export function verifySession<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest>(
+    options?: VerifySessionOptions
+) {
+    return async (req: SessionRequest<TRequest>, res: FastifyReply) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(res);

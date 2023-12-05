@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { VerifySessionOptions } from "..";
 import { SessionRequest } from "../../../framework/fastify/framework";
-import { FastifyReply } from "fastify";
-export declare function verifySession(
+import { FastifyReply, FastifyRequest as OriginalFastifyRequest } from "fastify";
+export declare function verifySession<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest>(
     options?: VerifySessionOptions
-): (req: SessionRequest, res: FastifyReply) => Promise<void>;
+): (req: SessionRequest<TRequest>, res: FastifyReply) => Promise<void>;
