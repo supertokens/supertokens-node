@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.6.3] - 2023-12-05
+
+-   Fixes issue with LinkedIn OAuth ([#751](https://github.com/supertokens/supertokens-node/issues/751))
+
 ## [16.6.2] - 2023-12-02
 
 -   Fixes implementation of `getBackwardsCompatibleUserInfo` to not throw an error in case of session and user id mismatch.
