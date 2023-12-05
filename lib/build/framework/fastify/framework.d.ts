@@ -42,9 +42,9 @@ export declare class FastifyResponse extends BaseResponse {
      */
     sendJSONResponse: (content: any) => void;
 }
-export interface SessionRequest extends OriginalFastifyRequest {
+export declare type SessionRequest<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest> = TRequest & {
     session?: SessionContainerInterface;
-}
+};
 export interface FasitfyFramework extends Framework {
     plugin: FastifyPluginCallback;
     errorHandler: () => (err: any, req: OriginalFastifyRequest, res: FastifyReply) => Promise<void>;

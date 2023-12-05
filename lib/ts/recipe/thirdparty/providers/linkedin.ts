@@ -38,7 +38,8 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
             const config = await oGetConfig(input);
 
             if (config.scope === undefined) {
-                config.scope = ["r_emailaddress", "r_liteprofile"];
+                // https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#authenticating-members
+                config.scope = ["openid", "profile", "email"];
             }
 
             return config;
@@ -63,7 +64,12 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
                 fromIdTokenPayload: {},
             };
 
-            const userInfoFromAccessToken = await doGetRequest("https://api.linkedin.com/v2/me", undefined, headers);
+            // https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin%2Fconsumer%2Fcontext#sample-api-response
+            const userInfoFromAccessToken = await doGetRequest(
+                "https://api.linkedin.com/v2/userinfo",
+                undefined,
+                headers
+            );
             rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.jsonResponse;
 
             if (userInfoFromAccessToken.status >= 400) {
@@ -75,37 +81,11 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
                 );
             }
 
-            const emailAPIURL = "https://api.linkedin.com/v2/emailAddress";
-            const userInfoFromEmail = await doGetRequest(
-                emailAPIURL,
-                { q: "members", projection: "(elements*(handle~))" },
-                headers
-            );
-
-            if (userInfoFromEmail.status >= 400) {
-                logDebugMessage(
-                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
-                );
-                throw new Error(
-                    `Received response with status ${userInfoFromEmail.status} and body ${userInfoFromEmail.stringResponse}`
-                );
-            }
-
-            if (userInfoFromEmail.jsonResponse!.elements && userInfoFromEmail.jsonResponse!.elements.length > 0) {
-                rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.jsonResponse!.elements[0][
-                    "handle~"
-                ].emailAddress;
-            }
-            rawUserInfoFromProvider.fromUserInfoAPI = {
-                ...rawUserInfoFromProvider.fromUserInfoAPI,
-                ...userInfoFromEmail.jsonResponse!,
-            };
-
             return {
-                thirdPartyUserId: rawUserInfoFromProvider.fromUserInfoAPI.id,
+                thirdPartyUserId: rawUserInfoFromProvider.fromUserInfoAPI.sub,
                 email: {
                     id: rawUserInfoFromProvider.fromUserInfoAPI.email,
-                    isVerified: false,
+                    isVerified: rawUserInfoFromProvider.fromUserInfoAPI.email_verified,
                 },
                 rawUserInfoFromProvider,
             };
