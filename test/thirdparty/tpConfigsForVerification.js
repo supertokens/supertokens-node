@@ -114,7 +114,7 @@ const configsForVerification = {
     linkedin: {
         authorizationEndpoint: "https://www.linkedin.com/oauth/v2/authorization",
         tokenEndpoint: "https://www.linkedin.com/oauth/v2/accessToken",
-        scope: ["r_emailaddress", "r_liteprofile"],
+        scope: ["openid", "profile", "email"],
         userInfoMap: {
             fromIdTokenPayload: { userId: "sub", email: "email", emailVerified: "email_verified" },
             fromUserInfoAPI: { userId: "sub", email: "email", emailVerified: "email_verified" },
