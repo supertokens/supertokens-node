@@ -181,7 +181,7 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
 }
 (plugin as any)[Symbol.for("skip-override")] = true;
 
-export interface SessionRequest extends OriginalFastifyRequest {
+export type SessionRequest<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest> = TRequest & {
     session?: SessionContainerInterface;
 }
 
