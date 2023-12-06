@@ -183,7 +183,7 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
 
 export type SessionRequest<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest> = TRequest & {
     session?: SessionContainerInterface;
-}
+};
 
 export interface FasitfyFramework extends Framework {
     plugin: FastifyPluginCallback;
