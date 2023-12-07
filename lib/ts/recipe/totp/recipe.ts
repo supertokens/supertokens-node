@@ -218,7 +218,7 @@ export default class Recipe extends RecipeModule {
             }
         }
 
-        let user = await getUser(userId, userContext);
+        let user = await getUser(userId, userContext, true);
 
         if (user === undefined) {
             return {

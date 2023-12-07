@@ -102,7 +102,7 @@ export default function getRecipeInterface(
                 [factorId]: Math.floor(Date.now() / 1000),
             };
             const tenantId = session.getTenantId();
-            const user = await getUser(session.getUserId(), userContext);
+            const user = await getUser(session.getUserId(), userContext, true);
             if (user === undefined) {
                 throw new Error("User not found!");
             }
@@ -264,7 +264,7 @@ export default function getRecipeInterface(
                         userContext,
                     });
 
-                    const updatedUser = await getUser(primaryUserId, userContext);
+                    const updatedUser = await getUser(primaryUserId, userContext, false);
                     if (updatedUser === undefined) {
                         throw Error("this error should never be thrown");
                     }
@@ -326,7 +326,7 @@ export default function getRecipeInterface(
                 }
                 sessionUser = userLoggingIn;
             } else {
-                sessionUser = await getUser(session.getUserId(), userContext);
+                sessionUser = await getUser(session.getUserId(), userContext, true);
             }
 
             if (!sessionUser) {
@@ -432,7 +432,7 @@ export default function getRecipeInterface(
                 };
             }
 
-            const sessionUser = await getUser(session.getUserId(), userContext);
+            const sessionUser = await getUser(session.getUserId(), userContext, true);
 
             if (sessionUser === undefined) {
                 return {

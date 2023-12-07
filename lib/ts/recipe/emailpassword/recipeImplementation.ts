@@ -151,7 +151,7 @@ export default function getRecipeInterface(
 
                     // We do this so that we get the updated user (in case the above
                     // function updated the verification status) and can return that
-                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
+                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext, true))!;
                 }
             }
 
@@ -252,7 +252,7 @@ export default function getRecipeInterface(
             );
 
             if (response.status === "OK") {
-                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+                const user = await getUser(input.recipeUserId.getAsString(), input.userContext, true);
                 if (user === undefined) {
                     // This means that the user was deleted between the put and get requests
                     return {

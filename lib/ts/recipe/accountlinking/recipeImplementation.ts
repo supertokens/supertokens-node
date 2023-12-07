@@ -217,6 +217,7 @@ export default function getRecipeImplementation(
                     const updatedUser = await this.getUser({
                         userId: primaryUserId,
                         userContext,
+                        useCoreCallCache: false,
                     });
                     if (updatedUser === undefined) {
                         throw Error("this error should never be thrown");
@@ -258,12 +259,34 @@ export default function getRecipeImplementation(
             return accountsUnlinkingResult;
         },
 
-        getUser: async function (this: RecipeInterface, { userId }: { userId: string }): Promise<User | undefined> {
+        getUser: async function (
+            this: RecipeInterface,
+            { userId, userContext, useCoreCallCache }
+        ): Promise<User | undefined> {
+            if (useCoreCallCache) {
+                if ((userContext._default?.coreCache?.userById || {})[userId]) {
+                    return userContext._default.coreCache.userById[userId];
+                }
+            }
             let result = await querier.sendGetRequest(new NormalisedURLPath("/user/id"), {
                 userId,
             });
             if (result.status === "OK") {
-                return new User(result.user);
+                const userResult = new User(result.user);
+                if (useCoreCallCache) {
+                    userContext._default = {
+                        ...userContext._default,
+                        coreCache: {
+                            ...userContext._default?.coreCache,
+                            userById: {
+                                ...userContext._default?.coreCache?.userById,
+                                [userId]: userResult,
+                            },
+                        },
+                    };
+                }
+
+                return userResult;
             }
             return undefined;
         },

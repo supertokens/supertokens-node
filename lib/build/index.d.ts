@@ -80,7 +80,7 @@ export default class SuperTokensWrapper {
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    static getUser(userId: string, userContext?: any): Promise<UserType | undefined>;
+    static getUser(userId: string, userContext?: any, useCoreCallCache?: boolean): Promise<UserType | undefined>;
     static listUsersByAccountInfo(
         tenantId: string,
         accountInfo: AccountInfo,

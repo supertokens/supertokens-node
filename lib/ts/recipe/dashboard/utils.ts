@@ -119,6 +119,7 @@ async function _getUserForRecipeId(
     const user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
         userId: recipeUserId.getAsString(),
         userContext: {},
+        useCoreCallCache: false,
     });
 
     if (user === undefined) {

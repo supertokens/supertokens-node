@@ -8,7 +8,7 @@ export default function getAPIInterface(): APIInterface {
         mfaInfoGET: async ({ options, session, userContext }) => {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
-            const user = await getUser(userId, userContext);
+            const user = await getUser(userId, userContext, true);
 
             if (user === undefined) {
                 throw new Error("Unknown User ID provided");

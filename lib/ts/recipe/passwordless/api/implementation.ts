@@ -80,7 +80,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
                     sessionUser = userLoggingIn; // optimization
                 } else {
-                    const user = await getUser(session.getUserId(), input.userContext);
+                    const user = await getUser(session.getUserId(), input.userContext, true);
                     if (user === undefined) {
                         return {
                             status: "SESSION_USER_NOT_FOUND_ERROR",

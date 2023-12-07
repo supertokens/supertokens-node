@@ -445,7 +445,7 @@ export default function getAPIImplementation(): APIInterface {
             let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
             let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
 
-            let existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
+            let existingUser = await getUser(tokenConsumptionResponse.userId, userContext, true);
 
             if (existingUser === undefined) {
                 // This should happen only cause of a race condition where the user
@@ -522,7 +522,7 @@ export default function getAPIImplementation(): APIInterface {
                             createUserResponse.user.loginMethods[0].recipeUserId,
                             tokenConsumptionResponse.email
                         );
-                        const updatedUser = await getUser(createUserResponse.user.id, userContext);
+                        const updatedUser = await getUser(createUserResponse.user.id, userContext, true);
                         if (updatedUser === undefined) {
                             throw new Error("Should never happen - user deleted after during password reset");
                         }
