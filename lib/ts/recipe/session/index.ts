@@ -53,7 +53,7 @@ export default class SessionWrapper {
         const config = recipeInstance.config;
         const appInfo = recipeInstance.getAppInfo();
 
-        let user = await getUser(recipeUserId.getAsString(), userContext, true);
+        let user = await getUser(recipeUserId.getAsString(), userContext);
         let userId = recipeUserId.getAsString();
         if (user !== undefined) {
             userId = user.id;

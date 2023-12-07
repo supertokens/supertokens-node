@@ -26,6 +26,6 @@ export const getSearchTags = async (
     __: any
 ): Promise<TagsResponse> => {
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
-    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {});
+    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {}, {});
     return tagsResponse;
 };

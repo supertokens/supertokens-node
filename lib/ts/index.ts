@@ -100,11 +100,10 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
 
-    static async getUser(userId: string, userContext?: any, useCoreCallCache?: boolean) {
+    static async getUser(userId: string, userContext?: any) {
         return await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
             userId,
             userContext: userContext === undefined ? {} : userContext,
-            useCoreCallCache: useCoreCallCache ?? false,
         });
     }
 

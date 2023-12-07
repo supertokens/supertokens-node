@@ -215,7 +215,7 @@ export default function getAPIInterface(): APIInterface {
                 if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
                     sessionUser = userLoggingIn;
                 } else {
-                    const user = await getUser(session.getUserId(), input.userContext, true);
+                    const user = await getUser(session.getUserId(), input.userContext);
                     if (user === undefined) {
                         return {
                             status: "SESSION_USER_NOT_FOUND_ERROR",

@@ -47,7 +47,8 @@ export default async function signIn(_: APIInterface, options: APIOptions, __: a
         {
             email,
             password,
-        }
+        },
+        {}
     );
 
     send200Response(options.res, signInResponse);

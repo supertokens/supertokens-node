@@ -363,10 +363,14 @@ export default function getRecipeInterface(
                     ? {}
                     : input.newAccessTokenPayload;
 
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
-                accessToken: input.accessToken,
-                userDataInJWT: newAccessTokenPayload,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/session/regenerate"),
+                {
+                    accessToken: input.accessToken,
+                    userDataInJWT: newAccessTokenPayload,
+                },
+                input.userContext
+            );
             if (response.status === "UNAUTHORISED") {
                 return undefined;
             }

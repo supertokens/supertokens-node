@@ -151,7 +151,7 @@ export default class Wrapper {
             user,
             newEmail,
             isVerified,
-            userContext,
+            userContext: userContext ?? {},
         });
     }
 }

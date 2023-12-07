@@ -15,10 +15,12 @@ export default function getRecipeInterface(
             recipeUserId,
             email,
             tenantId,
+            userContext,
         }: {
             recipeUserId: RecipeUserId;
             email: string;
             tenantId: string;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -31,7 +33,8 @@ export default function getRecipeInterface(
                 {
                     userId: recipeUserId.getAsString(),
                     email,
-                }
+                },
+                userContext
             );
             if (response.status === "OK") {
                 return {
@@ -61,7 +64,8 @@ export default function getRecipeInterface(
                 {
                     method: "token",
                     token,
-                }
+                },
+                userContext
             );
             if (response.status === "OK") {
                 const recipeUserId = new RecipeUserId(response.userId);
@@ -105,14 +109,20 @@ export default function getRecipeInterface(
         isEmailVerified: async function ({
             recipeUserId,
             email,
+            userContext,
         }: {
             recipeUserId: RecipeUserId;
             email: string;
+            userContext: any;
         }): Promise<boolean> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
-                userId: recipeUserId.getAsString(),
-                email,
-            });
+            let response = await querier.sendGetRequest(
+                new NormalisedURLPath("/recipe/user/email/verify"),
+                {
+                    userId: recipeUserId.getAsString(),
+                    email,
+                },
+                userContext
+            );
             return response.isVerified;
         },
 
@@ -120,13 +130,15 @@ export default function getRecipeInterface(
             recipeUserId: RecipeUserId;
             email: string;
             tenantId: string;
+            userContext: any;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/user/email/verify/token/remove`),
                 {
                     userId: input.recipeUserId.getAsString(),
                     email: input.email,
-                }
+                },
+                input.userContext
             );
             return { status: "OK" };
         },
@@ -134,11 +146,16 @@ export default function getRecipeInterface(
         unverifyEmail: async function (input: {
             recipeUserId: RecipeUserId;
             email: string;
+            userContext: any;
         }): Promise<{ status: "OK" }> {
-            await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/remove"), {
-                userId: input.recipeUserId.getAsString(),
-                email: input.email,
-            });
+            await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/user/email/verify/remove"),
+                {
+                    userId: input.recipeUserId.getAsString(),
+                    email: input.email,
+                },
+                input.userContext
+            );
             return { status: "OK" };
         },
     };

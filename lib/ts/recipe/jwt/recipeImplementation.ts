@@ -30,10 +30,12 @@ export default function getRecipeInterface(
             payload,
             validitySeconds,
             useStaticSigningKey,
+            userContext,
         }: {
             payload?: any;
             useStaticSigningKey?: boolean;
             validitySeconds?: number;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -48,13 +50,17 @@ export default function getRecipeInterface(
                 validitySeconds = config.jwtValiditySeconds;
             }
 
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
-                payload: payload ?? {},
-                validity: validitySeconds,
-                useStaticSigningKey: useStaticSigningKey !== false,
-                algorithm: "RS256",
-                jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/jwt"),
+                {
+                    payload: payload ?? {},
+                    validity: validitySeconds,
+                    useStaticSigningKey: useStaticSigningKey !== false,
+                    algorithm: "RS256",
+                    jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
+                },
+                userContext
+            );
 
             if (response.status === "OK") {
                 return {

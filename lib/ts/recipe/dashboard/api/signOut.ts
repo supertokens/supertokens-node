@@ -27,7 +27,8 @@ export default async function signOut(_: APIInterface, ___: string, options: API
         const sessionDeleteResponse = await querier.sendDeleteRequest(
             new NormalisedURLPath("/recipe/dashboard/session"),
             {},
-            { sessionId: sessionIdFormAuthHeader }
+            { sessionId: sessionIdFormAuthHeader },
+            {}
         );
         send200Response(options.res, sessionDeleteResponse);
     }

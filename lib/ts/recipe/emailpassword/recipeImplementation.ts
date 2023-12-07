@@ -81,7 +81,8 @@ export default function getRecipeInterface(
                 {
                     email: input.email,
                     password: input.password,
-                }
+                },
+                input.userContext
             );
             if (resp.status === "OK") {
                 return {
@@ -121,7 +122,8 @@ export default function getRecipeInterface(
                 {
                     email,
                     password,
-                }
+                },
+                userContext
             );
 
             if (response.status === "OK") {
@@ -151,7 +153,7 @@ export default function getRecipeInterface(
 
                     // We do this so that we get the updated user (in case the above
                     // function updated the verification status) and can return that
-                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext, true))!;
+                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
                 }
             }
 
@@ -162,10 +164,12 @@ export default function getRecipeInterface(
             userId,
             email,
             tenantId,
+            userContext,
         }: {
             userId: string;
             email: string;
             tenantId: string;
+            userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
@@ -175,16 +179,19 @@ export default function getRecipeInterface(
                 {
                     userId,
                     email,
-                }
+                },
+                userContext
             );
         },
 
         consumePasswordResetToken: async function ({
             token,
             tenantId,
+            userContext,
         }: {
             token: string;
             tenantId: string;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -200,7 +207,8 @@ export default function getRecipeInterface(
                 {
                     method: "token",
                     token,
-                }
+                },
+                userContext
             );
         },
 
@@ -248,11 +256,12 @@ export default function getRecipeInterface(
                     recipeUserId: input.recipeUserId.getAsString(),
                     email: input.email,
                     password: input.password,
-                }
+                },
+                input.userContext
             );
 
             if (response.status === "OK") {
-                const user = await getUser(input.recipeUserId.getAsString(), input.userContext, true);
+                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
                 if (user === undefined) {
                     // This means that the user was deleted between the put and get requests
                     return {

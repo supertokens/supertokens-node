@@ -109,7 +109,11 @@ export class Querier {
     }
 
     // path should start with "/"
-    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any): Promise<T> => {
+    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: any): Promise<T> => {
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {},
+        };
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "POST",
@@ -143,7 +147,16 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendDeleteRequest = async (path: NormalisedURLPath, body: any, params?: any): Promise<any> => {
+    sendDeleteRequest = async (
+        path: NormalisedURLPath,
+        body: any,
+        params: any | undefined,
+        userContext: any
+    ): Promise<any> => {
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {},
+        };
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
@@ -180,8 +193,21 @@ export class Querier {
     // path should start with "/"
     sendGetRequest = async (
         path: NormalisedURLPath,
-        params: Record<string, boolean | number | string | undefined>
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: any
     ): Promise<any> => {
+        const sortedKeys = Object.keys(params).sort();
+        let uniqueKey = path.getAsStringDangerous();
+
+        for (const key of sortedKeys) {
+            const value = params[key];
+            uniqueKey += `;${key}=${value}`;
+        }
+
+        if (uniqueKey in (userContext._default?.coreCallCache ?? {})) {
+            return userContext._default.coreCallCache[uniqueKey];
+        }
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "GET",
@@ -212,6 +238,14 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {
+                ...userContext._default?.coreCallCache,
+                [uniqueKey]: respBody,
+            },
+        };
         return respBody;
     };
 
@@ -252,7 +286,11 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
+    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: any): Promise<any> => {
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {},
+        };
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "PUT",
