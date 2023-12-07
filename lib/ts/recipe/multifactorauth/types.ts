@@ -153,7 +153,7 @@ export type RecipeInterface = {
           }
     >;
 
-    validateForMultifactorAuthBeforeSignIn: (input: {
+    validateForMultifactorAuthBeforeFactorCompletion: (input: {
         req: BaseRequest;
         res: BaseResponse;
         tenantId: string;
@@ -164,15 +164,17 @@ export type RecipeInterface = {
         userContext: any;
     }) => Promise<{ status: "OK" } | MFAFlowErrors>;
 
-    createOrUpdateSessionForMultifactorAuthAfterSignIn: (input: {
+    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion: (input: {
         req: BaseRequest;
         res: BaseResponse;
         tenantId: string;
         factorIdInProgress: string;
         isAlreadySetup?: boolean;
-        justSignedInUser: User;
-        justSignedInUserCreated: boolean;
-        justSignedInRecipeUserId?: RecipeUserId;
+        justCompletedFactorUserInfo?: {
+            user: User;
+            createdNewUser: boolean;
+            recipeUserId: RecipeUserId;
+        };
         userContext: any;
     }) => Promise<
         | {

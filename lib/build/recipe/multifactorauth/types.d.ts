@@ -122,7 +122,7 @@ export declare type RecipeInterface = {
               status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
-    validateForMultifactorAuthBeforeSignIn: (input: {
+    validateForMultifactorAuthBeforeFactorCompletion: (input: {
         req: BaseRequest;
         res: BaseResponse;
         tenantId: string;
@@ -137,15 +137,17 @@ export declare type RecipeInterface = {
           }
         | MFAFlowErrors
     >;
-    createOrUpdateSessionForMultifactorAuthAfterSignIn: (input: {
+    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion: (input: {
         req: BaseRequest;
         res: BaseResponse;
         tenantId: string;
         factorIdInProgress: string;
         isAlreadySetup?: boolean;
-        justSignedInUser: User;
-        justSignedInUserCreated: boolean;
-        justSignedInRecipeUserId?: RecipeUserId;
+        justCompletedFactorUserInfo?: {
+            user: User;
+            createdNewUser: boolean;
+            recipeUserId: RecipeUserId;
+        };
         userContext: any;
     }) => Promise<
         | {

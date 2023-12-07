@@ -226,16 +226,18 @@ export default function getAPIInterface(): APIInterface {
             let isAlreadySetup = undefined;
             if (mfaInstance) {
                 isAlreadySetup = !sessionUser ? false : sessionUser.thirdParty.length > 0;
-                const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeSignIn({
-                    req: input.options.req,
-                    res: input.options.res,
-                    tenantId: input.tenantId,
-                    factorIdInProgress: "thirdparty",
-                    session,
-                    userLoggingIn,
-                    isAlreadySetup,
-                    userContext: input.userContext,
-                });
+                const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeFactorCompletion(
+                    {
+                        req: input.options.req,
+                        res: input.options.res,
+                        tenantId: input.tenantId,
+                        factorIdInProgress: "thirdparty",
+                        session,
+                        userLoggingIn,
+                        isAlreadySetup,
+                        userContext: input.userContext,
+                    }
+                );
 
                 if (validateMfaRes.status !== "OK") {
                     return validateMfaRes;
@@ -330,16 +332,18 @@ export default function getAPIInterface(): APIInterface {
                 };
             }
 
-            const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterSignIn(
+            const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion(
                 {
                     req: options.req,
                     res: options.res,
                     tenantId,
                     factorIdInProgress: "thirdparty",
                     isAlreadySetup,
-                    justSignedInUser: response.user,
-                    justSignedInUserCreated: response.createdNewRecipeUser,
-                    justSignedInRecipeUserId: response.recipeUserId,
+                    justCompletedFactorUserInfo: {
+                        user: response.user,
+                        createdNewUser: response.createdNewRecipeUser,
+                        recipeUserId: loginMethod.recipeUserId,
+                    },
                     userContext: input.userContext,
                 }
             );

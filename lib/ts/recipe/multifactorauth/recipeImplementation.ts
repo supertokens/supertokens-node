@@ -284,7 +284,7 @@ export default function getRecipeInterface(
             return accountsLinkingResult;
         },
 
-        validateForMultifactorAuthBeforeSignIn: async function (
+        validateForMultifactorAuthBeforeFactorCompletion: async function (
             this: RecipeInterface,
             { req, res, tenantId, factorIdInProgress, session, userLoggingIn, isAlreadySetup, userContext }
         ) {
@@ -396,28 +396,23 @@ export default function getRecipeInterface(
             };
         },
 
-        createOrUpdateSessionForMultifactorAuthAfterSignIn: async function (
+        createOrUpdateSessionForMultifactorAuthAfterFactorCompletion: async function (
             this: RecipeInterface,
-            {
-                req,
-                res,
-                tenantId,
-                factorIdInProgress,
-                justSignedInUser,
-                justSignedInUserCreated,
-                justSignedInRecipeUserId,
-                userContext,
-            }
+            { req, res, tenantId, factorIdInProgress, justCompletedFactorUserInfo, userContext }
         ) {
             const session = await Session.getSession(req, res, { sessionRequired: false });
             if (
                 session === undefined // no session exists, so we can create a new one
             ) {
+                if (justCompletedFactorUserInfo === undefined) {
+                    throw new Error("should never come here"); // We wouldn't create new session from a recipe like TOTP
+                }
+
                 const session = await Session.createNewSession(
                     req,
                     res,
                     tenantId,
-                    justSignedInRecipeUserId!,
+                    justCompletedFactorUserInfo.recipeUserId,
                     {},
                     {},
                     false,
@@ -440,55 +435,65 @@ export default function getRecipeInterface(
                 throw new Error("session user deleted"); // TODO MFA
             }
 
-            if (!justSignedInUserCreated && justSignedInUser.id !== sessionUser.id) {
-                throw new Error("should never come here!");
-            }
+            if (justCompletedFactorUserInfo !== undefined) {
+                if (
+                    !justCompletedFactorUserInfo.createdNewUser &&
+                    justCompletedFactorUserInfo.user.id !== sessionUser.id
+                ) {
+                    throw new Error("should never come here!");
+                }
 
-            if (justSignedInUserCreated) {
-                // This is a newly created user, so it must be account linked with the session user
-                if (!sessionUser.isPrimaryUser) {
-                    const createPrimaryRes = await this.createPrimaryUser({
-                        recipeUserId: new RecipeUserId(sessionUser.id),
+                if (justCompletedFactorUserInfo.createdNewUser) {
+                    // This is a newly created user, so it must be account linked with the session user
+                    if (!sessionUser.isPrimaryUser) {
+                        const createPrimaryRes = await this.createPrimaryUser({
+                            recipeUserId: new RecipeUserId(sessionUser.id),
+                            userContext,
+                        });
+                        if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                            throw new Error("should never happen"); // new user, that's why
+                        } else if (
+                            createPrimaryRes.status ===
+                            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        ) {
+                            return {
+                                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                                message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_011)",
+                            };
+                        }
+                    }
+
+                    const linkRes = await this.linkAccounts({
+                        recipeUserId: justCompletedFactorUserInfo.recipeUserId,
+                        primaryUserId: sessionUser.id,
                         userContext,
                     });
-                    if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-                        throw new Error("should never happen"); // new user, that's why
+
+                    if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                        throw new Error("should never happen"); // new user shouldn't have this issue
+                    } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+                        throw new Error("should never happen");
                     } else if (
-                        createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
                         return {
                             status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                            message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_011)",
+                            message:
+                                "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
                         };
                     }
                 }
-
-                const linkRes = await this.linkAccounts({
-                    recipeUserId: justSignedInRecipeUserId!,
-                    primaryUserId: sessionUser.id,
-                    userContext,
-                });
-
-                if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-                    throw new Error("should never happen"); // new user shouldn't have this issue
-                } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
-                    throw new Error("should never happen");
-                } else if (linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-                    return {
-                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                        message:
-                            "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
-                    };
-                }
-            } else if (justSignedInRecipeUserId) {
-                // TODO MFA: I'm not sure if this is the right solution, but otherwise we can't use this with TOTP
-                const loggedInUserLinkedToSessionUser = sessionUser.loginMethods.some(
-                    (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId!.getAsString()
-                );
-                if (!loggedInUserLinkedToSessionUser) {
-                    throw new Error("Throw proper errors! Not linked"); // TODO MFA
-                }
             }
+
+            // if (justSignedInRecipeUserId) {
+            //     // TODO MFA: I'm not sure if this is the right solution, but otherwise we can't use this with TOTP
+            //     const loggedInUserLinkedToSessionUser = sessionUser.loginMethods.some(
+            //         (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId!.getAsString()
+            //     );
+            //     if (!loggedInUserLinkedToSessionUser) {
+            //         throw new Error("Throw proper errors! Not linked"); // TODO MFA
+            //     }
+            // }
 
             await this.markFactorAsCompleteInSession({
                 session: session,
