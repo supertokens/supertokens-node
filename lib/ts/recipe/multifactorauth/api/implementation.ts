@@ -65,13 +65,24 @@ export default function getAPIInterface(): APIInterface {
                 n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
             });
 
+            let selectedEmail = user.emails[0];
+
+            for (const loginMethod of user.loginMethods) {
+                if (loginMethod.recipeUserId.getAsString() === session.getRecipeUserId().getAsString()) {
+                    if (loginMethod.email !== undefined) {
+                        selectedEmail = loginMethod.email;
+                    }
+                    break;
+                }
+            }
+
             return {
                 status: "OK",
                 factors: {
                     isAllowedToSetup,
                     isAlreadySetup,
                 },
-                email: user.emails[0],
+                email: selectedEmail,
                 phoneNumber: user.phoneNumbers[0],
             };
         },
