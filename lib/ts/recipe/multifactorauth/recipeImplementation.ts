@@ -331,7 +331,10 @@ export default function getRecipeInterface(
 
             if (!sessionUser) {
                 // Session user doesn't exist, maybe the user was deleted
-                throw new Error("session user deleted"); // TODO MFA
+                return {
+                    status: "SESSION_USER_NOT_FOUND_ERROR",
+                    message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
+                };
             }
 
             if (isAlreadySetup) {
@@ -432,7 +435,10 @@ export default function getRecipeInterface(
             const sessionUser = await getUser(session.getUserId(), userContext);
 
             if (sessionUser === undefined) {
-                throw new Error("session user deleted"); // TODO MFA
+                return {
+                    status: "SESSION_USER_NOT_FOUND_ERROR",
+                    message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
+                };
             }
 
             if (justCompletedFactorUserInfo !== undefined) {

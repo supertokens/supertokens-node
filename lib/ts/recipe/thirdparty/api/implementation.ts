@@ -217,7 +217,10 @@ export default function getAPIInterface(): APIInterface {
                 } else {
                     const user = await getUser(session.getUserId(), input.userContext);
                     if (user === undefined) {
-                        throw new Error("Session user deleted!"); // TODO MFA
+                        return {
+                            status: "SESSION_USER_NOT_FOUND_ERROR",
+                            message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
+                        };
                     }
                     sessionUser = user;
                 }

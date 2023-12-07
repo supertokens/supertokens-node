@@ -2,7 +2,6 @@ import { APIInterface } from "../";
 import TotpRecipe from "../recipe";
 import SessionError from "../../session/error";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
-import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -92,10 +91,6 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionUser = await getUser(userId);
-                if (sessionUser === undefined) {
-                    throw new Error("session user deleted"); // TODO MFA
-                }
                 const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion(
                     {
                         req: options.req,
@@ -131,10 +126,6 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionUser = await getUser(userId, userContext);
-                if (sessionUser === undefined) {
-                    throw new Error("session user deleted"); // TODO MFA
-                }
                 const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion(
                     {
                         req: options.req,
