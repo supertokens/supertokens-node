@@ -409,7 +409,7 @@ export default function getRecipeInterface(
             this: RecipeInterface,
             { req, res, tenantId, factorIdInProgress, justCompletedFactorUserInfo, userContext }
         ) {
-            const session = await Session.getSession(req, res, { sessionRequired: false });
+            let session = await Session.getSession(req, res, { sessionRequired: false });
             if (
                 session === undefined // no session exists, so we can create a new one
             ) {
@@ -494,18 +494,26 @@ export default function getRecipeInterface(
                                 "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
                         };
                     }
+                } else {
+                    // Not a new user we should check if the user is linked to the session user
+                    const loggedInUserLinkedToSessionUser = sessionUser.loginMethods.some(
+                        (v) => v.recipeUserId.getAsString() === justCompletedFactorUserInfo.recipeUserId.getAsString()
+                    );
+                    if (!loggedInUserLinkedToSessionUser) {
+                        // we may keep or replace the session as per the flag overwriteSessionDuringSignIn in session recipe
+                        session = await Session.createNewSession(
+                            req,
+                            res,
+                            tenantId,
+                            justCompletedFactorUserInfo.recipeUserId,
+                            {},
+                            {},
+                            false,
+                            userContext
+                        );
+                    }
                 }
             }
-
-            // if (justSignedInRecipeUserId) {
-            //     // TODO MFA: I'm not sure if this is the right solution, but otherwise we can't use this with TOTP
-            //     const loggedInUserLinkedToSessionUser = sessionUser.loginMethods.some(
-            //         (v) => v.recipeUserId.getAsString() === justSignedInRecipeUserId!.getAsString()
-            //     );
-            //     if (!loggedInUserLinkedToSessionUser) {
-            //         throw new Error("Throw proper errors! Not linked"); // TODO MFA
-            //     }
-            // }
 
             await this.markFactorAsCompleteInSession({
                 session: session,
