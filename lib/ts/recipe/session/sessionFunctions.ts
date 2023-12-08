@@ -34,7 +34,8 @@ export async function createNewSession(
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
     accessTokenPayload: any = {},
-    sessionDataInDatabase: any = {}
+    sessionDataInDatabase: any = {},
+    userContext: any
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionDataInDatabase =
@@ -51,7 +52,7 @@ export async function createNewSession(
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath(`/${tenantId}/recipe/session`),
         requestBody,
-        {}
+        userContext
     );
 
     return {
@@ -84,7 +85,8 @@ export async function getSession(
     parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
-    alwaysCheckCore: boolean
+    alwaysCheckCore: boolean,
+    userContext: any
 ): Promise<{
     session: {
         handle: string;
@@ -240,7 +242,7 @@ export async function getSession(
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath("/recipe/session/verify"),
         requestBody,
-        {}
+        userContext
     );
 
     if (response.status === "OK") {
@@ -280,7 +282,8 @@ export async function getSession(
  */
 export async function getSessionInformation(
     helpers: Helpers,
-    sessionHandle: string
+    sessionHandle: string,
+    userContext: any
 ): Promise<SessionInformation | undefined> {
     let apiVersion = await helpers.querier.getAPIVersion();
 
@@ -292,7 +295,7 @@ export async function getSessionInformation(
         {
             sessionHandle,
         },
-        {}
+        userContext
     );
 
     if (response.status === "OK") {
@@ -320,7 +323,8 @@ export async function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    disableAntiCsrf: boolean
+    disableAntiCsrf: boolean,
+    userContext: any
 ): Promise<CreateOrRefreshAPIResponse> {
     let requestBody: {
         refreshToken: string;
@@ -345,7 +349,7 @@ export async function refreshSession(
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath("/recipe/session/refresh"),
         requestBody,
-        {}
+        userContext
     );
 
     if (response.status === "OK") {
@@ -397,8 +401,9 @@ export async function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
     revokeSessionsForLinkedAccounts: boolean,
-    tenantId?: string,
-    revokeAcrossAllTenants?: boolean
+    tenantId: string | undefined,
+    revokeAcrossAllTenants: boolean | undefined,
+    userContext: any
 ): Promise<string[]> {
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
@@ -410,7 +415,7 @@ export async function revokeAllSessionsForUser(
             revokeSessionsForLinkedAccounts,
             revokeAcrossAllTenants,
         },
-        {}
+        userContext
     );
     return response.sessionHandlesRevoked;
 }
@@ -422,8 +427,9 @@ export async function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
-    tenantId?: string,
-    fetchAcrossAllTenants?: boolean
+    tenantId: string | undefined,
+    fetchAcrossAllTenants: boolean | undefined,
+    userContext: any
 ): Promise<string[]> {
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
@@ -435,7 +441,7 @@ export async function getAllSessionHandlesForUser(
             fetchSessionsForAllLinkedAccounts,
             fetchAcrossAllTenants,
         },
-        {}
+        userContext
     );
     return response.sessionHandles;
 }
@@ -444,13 +450,13 @@ export async function getAllSessionHandlesForUser(
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export async function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean> {
+export async function revokeSession(helpers: Helpers, sessionHandle: string, userContext: any): Promise<boolean> {
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath("/recipe/session/remove"),
         {
             sessionHandles: [sessionHandle],
         },
-        {}
+        userContext
     );
     return response.sessionHandlesRevoked.length === 1;
 }
@@ -459,13 +465,17 @@ export async function revokeSession(helpers: Helpers, sessionHandle: string): Pr
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
  */
-export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: string[]): Promise<string[]> {
+export async function revokeMultipleSessions(
+    helpers: Helpers,
+    sessionHandles: string[],
+    userContext: any
+): Promise<string[]> {
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath(`/recipe/session/remove`),
         {
             sessionHandles,
         },
-        {}
+        userContext
     );
     return response.sessionHandlesRevoked;
 }
@@ -476,7 +486,8 @@ export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: s
 export async function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
-    newSessionData: any
+    newSessionData: any,
+    userContext: any
 ): Promise<boolean> {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
     let response = await helpers.querier.sendPutRequest(
@@ -485,7 +496,7 @@ export async function updateSessionDataInDatabase(
             sessionHandle,
             userDataInDatabase: newSessionData,
         },
-        {}
+        userContext
     );
     if (response.status === "UNAUTHORISED") {
         return false;
@@ -496,7 +507,8 @@ export async function updateSessionDataInDatabase(
 export async function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
-    newAccessTokenPayload: any
+    newAccessTokenPayload: any,
+    userContext: any
 ): Promise<boolean> {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
@@ -506,7 +518,7 @@ export async function updateAccessTokenPayload(
             sessionHandle,
             userDataInJWT: newAccessTokenPayload,
         },
-        {}
+        userContext
     );
     if (response.status === "UNAUTHORISED") {
         return false;
