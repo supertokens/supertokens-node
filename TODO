@@ -1,0 +1,20 @@
+- [x] do not return totp in getAllFactorIds
+- [x] validateForMultifactorAuthBeforeFactorCompletion update impl to get all initialized recipe factors directly without calling the function getAllAvailableFactorIds
+- [x] remove recipe function - getAllAvailableFactorIds
+- [x] add an example in getMFARequirementsForAuth as a comment - while completing second factor and the user has first factor + 2 other factors setup, we want the completed second factor to be part of oneOf, otherwise it would result in 3FA. we would like this to be a opt in 2FA by default
+- [x] should throw will never happen error in isAllowedToSetupFactor where mfa claim value is missing
+- [x] remove tenant id checks in determining factors setup for user
+- [x] we should not check tenantId when return in getFactorsSetupForUser (because factors are app wide)
+- [x] getDefaultRequiredFactorsForUser make it appwide
+- [x] remove functions duplicated for accountlinking in the SDK call accountlinking recipe functions directly
+- [x] use the overwriteSession flag in session to determine whether to call createNewSession or not instead of handling it inside
+- [ ] in createOrUpdateSessionForMultifactorAuthAfterFactorCompletion implementation, recurse fetching sessionUser if we get RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR while calling createPrimaryUser. also do this for INPUT_USER_IS_NOT_A_PRIMARY_USER while linking accounts
+
+- [ ] remove validateForMultifactorAuthBeforeFactorCompletion & createOrUpdateSessionForMultifactorAuthAfterFactorCompletion from recipe interface and make them helper functions
+- [ ] think about migration of older sessions with all cases
+- [ ] should refetch for MFA claim should return true for older sessions and then fetchValue should rebuild the next array (move the impl from mfa info endpoint)
+- [ ] we are not considering recipeEnabled for tenant in get mfa info endpoint
+- [ ] create a list of contact support cases
+- [ ] check what can be removed from checking the dynamic login methods on the frontend
+- [ ] remove functions duplicated for accountlinking in MFA (in core)
+- [ ] add contact support error when RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR happens while linkingAccounts. @porcellus also needs to look at this
