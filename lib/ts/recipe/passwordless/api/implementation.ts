@@ -97,18 +97,16 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance) {
                 isAlreadySetup = !sessionUser ? false : isFactorSetupForUser(sessionUser, factorId);
-                const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeFactorCompletion(
-                    {
-                        req: input.options.req,
-                        res: input.options.res,
-                        tenantId: input.tenantId,
-                        factorIdInProgress: factorId,
-                        session,
-                        userLoggingIn,
-                        isAlreadySetup,
-                        userContext: input.userContext,
-                    }
-                );
+                const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                    req: input.options.req,
+                    res: input.options.res,
+                    tenantId: input.tenantId,
+                    factorIdInProgress: factorId,
+                    session,
+                    userLoggingIn,
+                    isAlreadySetup,
+                    userContext: input.userContext,
+                });
 
                 if (validateMfaRes.status !== "OK") {
                     return validateMfaRes;
@@ -209,21 +207,19 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion(
-                {
-                    req: input.options.req,
-                    res: input.options.res,
-                    tenantId: input.tenantId,
-                    factorIdInProgress: factorId,
-                    justCompletedFactorUserInfo: {
-                        user: response.user,
-                        createdNewUser: response.createdNewRecipeUser,
-                        recipeUserId: response.recipeUserId,
-                    },
-                    isAlreadySetup,
-                    userContext: input.userContext,
-                }
-            );
+            const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
+                req: input.options.req,
+                res: input.options.res,
+                tenantId: input.tenantId,
+                factorIdInProgress: factorId,
+                justCompletedFactorUserInfo: {
+                    user: response.user,
+                    createdNewUser: response.createdNewRecipeUser,
+                    recipeUserId: response.recipeUserId,
+                },
+                isAlreadySetup,
+                userContext: input.userContext,
+            });
             if (sessionRes.status !== "OK") {
                 return sessionRes;
             }

@@ -61,18 +61,16 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("should never come here"); // TOTP can't work without MFA
             }
 
-            const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeFactorCompletion(
-                {
-                    req: options.req,
-                    res: options.res,
-                    tenantId,
-                    factorIdInProgress: "totp",
-                    session,
-                    userLoggingIn: undefined,
-                    isAlreadySetup: false, // since this is a sign up
-                    userContext,
-                }
-            );
+            const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                req: options.req,
+                res: options.res,
+                tenantId,
+                factorIdInProgress: "totp",
+                session,
+                userLoggingIn: undefined,
+                isAlreadySetup: false, // since this is a sign up
+                userContext,
+            });
 
             if (validateMfaRes.status === "DISALLOWED_FIRST_FACTOR_ERROR") {
                 throw new Error("Should never come here"); // TOTP is never a first factor
@@ -91,16 +89,14 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion(
-                    {
-                        req: options.req,
-                        res: options.res,
-                        tenantId,
-                        factorIdInProgress: "totp",
-                        isAlreadySetup: false,
-                        userContext,
-                    }
-                );
+                const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "totp",
+                    isAlreadySetup: false,
+                    userContext,
+                });
                 if (sessionRes.status != "OK") {
                     return sessionRes;
                 }
@@ -126,16 +122,14 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.recipeInterfaceImpl.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion(
-                    {
-                        req: options.req,
-                        res: options.res,
-                        tenantId,
-                        factorIdInProgress: "totp",
-                        isAlreadySetup: true,
-                        userContext,
-                    }
-                );
+                const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "totp",
+                    isAlreadySetup: true,
+                    userContext,
+                });
 
                 if (sessionRes.status != "OK") {
                     return sessionRes;

@@ -19,7 +19,6 @@ import { GeneralErrorResponse } from "../../types";
 import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
-import RecipeUserId from "../../recipeUserId";
 import Recipe from "./recipe";
 
 export type MFARequirementList = (
@@ -107,37 +106,6 @@ export type RecipeInterface = {
     }) => Promise<void>;
 
     getDefaultRequiredFactorsForUser(input: { user: User; tenantId: string; userContext: any }): Promise<string[]>;
-
-    validateForMultifactorAuthBeforeFactorCompletion: (input: {
-        req: BaseRequest;
-        res: BaseResponse;
-        tenantId: string;
-        factorIdInProgress: string;
-        session?: SessionContainerInterface;
-        userLoggingIn?: User;
-        isAlreadySetup?: boolean;
-        userContext: any;
-    }) => Promise<{ status: "OK" } | MFAFlowErrors>;
-
-    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion: (input: {
-        req: BaseRequest;
-        res: BaseResponse;
-        tenantId: string;
-        factorIdInProgress: string;
-        isAlreadySetup?: boolean;
-        justCompletedFactorUserInfo?: {
-            user: User;
-            createdNewUser: boolean;
-            recipeUserId: RecipeUserId;
-        };
-        userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              session: SessionContainerInterface;
-          }
-        | MFAFlowErrors
-    >;
 };
 
 export type APIOptions = {

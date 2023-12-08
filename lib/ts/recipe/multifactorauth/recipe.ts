@@ -26,6 +26,7 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
     GetFactorsSetupForUserFromOtherRecipesFunc,
+    MFAFlowErrors,
     RecipeInterface,
     TypeInput,
     TypeNormalisedInput,
@@ -35,7 +36,12 @@ import mfaInfoAPI from "./api/mfaInfo";
 import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { User } from "../../user";
-import { verifyEmailForRecipeUserIfLinkedAccountsAreVerified } from "../accountlinking/utils";
+import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
+import Multitenancy from "../multitenancy";
+import Session from "../session";
+import AccountLinkingRecipe from "../accountlinking/recipe";
+import { getUser } from "../..";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -60,7 +66,7 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(this.config, this));
+            let builder = new OverrideableBuilder(RecipeImplementation(this));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
 
@@ -188,5 +194,264 @@ export default class Recipe extends RecipeModule {
         return factorIds;
     };
 
-    verifyEmailForRecipeUserIfLinkedAccountsAreVerified = verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
+    validateForMultifactorAuthBeforeFactorCompletion = async ({
+        tenantId,
+        factorIdInProgress,
+        session,
+        userLoggingIn,
+        isAlreadySetup,
+        userContext,
+    }: {
+        req: BaseRequest;
+        res: BaseResponse;
+        tenantId: string;
+        factorIdInProgress: string;
+        session?: SessionContainerInterface;
+        userLoggingIn?: User;
+        isAlreadySetup?: boolean;
+        userContext: any;
+    }): Promise<{ status: "OK" } | MFAFlowErrors> => {
+        const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
+        const validFirstFactors =
+            tenantInfo?.firstFactors || this.config.firstFactors || this.getAllAvailableFirstFactorIds();
+
+        if (session === undefined) {
+            // No session exists, so we need to check if it's a valid first factor before proceeding
+            if (!validFirstFactors.includes(factorIdInProgress)) {
+                return {
+                    status: "DISALLOWED_FIRST_FACTOR_ERROR",
+                };
+            }
+            return {
+                status: "OK",
+            };
+        }
+
+        let sessionUser;
+        if (userLoggingIn) {
+            if (userLoggingIn.id !== session.getUserId()) {
+                // the user trying to login is not linked to the session user, based on session behaviour
+                // we just return OK and do nothing or replace replace the existing session with a new one
+                // we are doing this because we allow factor setup only when creating a new user
+
+                // this can happen when you got into login screen with an existing session and tried to log in with a different credentials
+                // or a case while doing secondary factor for phone otp but the user created a different account with the same phone number
+                return {
+                    status: "OK",
+                };
+            }
+            sessionUser = userLoggingIn;
+        } else {
+            sessionUser = await getUser(session.getUserId(), userContext);
+        }
+
+        if (!sessionUser) {
+            // Session user doesn't exist, maybe the user was deleted
+            // Race condition, user got deleted in parallel, throw unauthorized
+            return {
+                status: "SESSION_USER_NOT_FOUND_ERROR",
+                message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
+            };
+        }
+
+        if (isAlreadySetup) {
+            return {
+                status: "OK",
+            };
+        }
+
+        // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
+        const defaultRequiredFactorIdsForUser = await this.recipeInterfaceImpl.getDefaultRequiredFactorsForUser({
+            user: sessionUser,
+            tenantId,
+            userContext,
+        });
+        const factorsSetUpForUser = await this.recipeInterfaceImpl.getFactorsSetupForUser({
+            user: sessionUser,
+            userContext,
+        });
+        const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
+        const mfaRequirementsForAuth = await this.recipeInterfaceImpl.getMFARequirementsForAuth({
+            session,
+            factorsSetUpForUser,
+            defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+            defaultRequiredFactorIdsForUser,
+            completedFactors: completedFactorsClaimValue?.c ?? {},
+            userContext,
+        });
+
+        const canSetup = await this.recipeInterfaceImpl.isAllowedToSetupFactor({
+            session,
+            factorId: factorIdInProgress,
+            completedFactors: completedFactorsClaimValue?.c ?? {},
+            defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+            defaultRequiredFactorIdsForUser,
+            factorsSetUpForUser,
+            mfaRequirementsForAuth,
+            userContext,
+        });
+        if (!canSetup) {
+            return {
+                status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+            };
+        }
+
+        return {
+            status: "OK",
+        };
+    };
+
+    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion = async ({
+        req,
+        res,
+        tenantId,
+        factorIdInProgress,
+        justCompletedFactorUserInfo,
+        userContext,
+    }: {
+        req: BaseRequest;
+        res: BaseResponse;
+        tenantId: string;
+        factorIdInProgress: string;
+        isAlreadySetup?: boolean;
+        justCompletedFactorUserInfo?: {
+            user: User;
+            createdNewUser: boolean;
+            recipeUserId: RecipeUserId;
+        };
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              session: SessionContainerInterface;
+          }
+        | MFAFlowErrors
+    > => {
+        let session = await Session.getSession(req, res, { sessionRequired: false });
+        if (
+            session === undefined // no session exists, so we can create a new one
+        ) {
+            if (justCompletedFactorUserInfo === undefined) {
+                throw new Error("should never come here"); // We wouldn't create new session from a recipe like TOTP
+            }
+
+            const newSession = await Session.createNewSession(
+                req,
+                res,
+                tenantId,
+                justCompletedFactorUserInfo.recipeUserId,
+                {},
+                {},
+                userContext
+            );
+            await this.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                session: newSession,
+                factorId: factorIdInProgress,
+                userContext,
+            });
+            return {
+                status: "OK",
+                session: newSession,
+            };
+        }
+
+        while (true) {
+            // loop to handle race conditions
+            const sessionUser = await getUser(session.getUserId(), userContext);
+
+            // race condition, user deleted throw unauthorized
+            if (sessionUser === undefined) {
+                // TODO MFA throw unauthorized
+                return {
+                    status: "SESSION_USER_NOT_FOUND_ERROR",
+                    message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
+                };
+            }
+
+            if (justCompletedFactorUserInfo !== undefined) {
+                if (justCompletedFactorUserInfo.createdNewUser) {
+                    // This is a newly created user, so it must be account linked with the session user
+                    if (!sessionUser.isPrimaryUser) {
+                        const createPrimaryRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.createPrimaryUser(
+                            {
+                                recipeUserId: new RecipeUserId(sessionUser.id),
+                                userContext,
+                            }
+                        );
+                        if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                            // Race condition
+                            // TODO MFA invalidate querier cache
+                            continue;
+                        } else if (
+                            createPrimaryRes.status ===
+                            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        ) {
+                            return {
+                                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                                message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_011)",
+                            };
+                        }
+                    }
+
+                    const linkRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.linkAccounts({
+                        recipeUserId: justCompletedFactorUserInfo.recipeUserId,
+                        primaryUserId: sessionUser.id,
+                        userContext,
+                    });
+
+                    if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                        // TODO MFA contact support
+                        throw new Error("should never happen"); // new user shouldn't have this issue
+                    } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+                        // Race condition
+                        // TODO MFA clear querier cache
+                        continue;
+                    } else if (
+                        linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    ) {
+                        return {
+                            status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                            message:
+                                "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+                        };
+                    }
+                } else {
+                    // Not a new user we should check if the user is linked to the session user
+                    const loggedInUserLinkedToSessionUser = sessionUser.id === justCompletedFactorUserInfo.user.id;
+                    if (!loggedInUserLinkedToSessionUser) {
+                        // we may keep or replace the session as per the flag overwriteSessionDuringSignIn in session recipe
+                        if (SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn) {
+                            session = await Session.createNewSession(
+                                req,
+                                res,
+                                tenantId,
+                                justCompletedFactorUserInfo.recipeUserId,
+                                {},
+                                {},
+                                userContext
+                            );
+                        }
+
+                        return {
+                            status: "OK",
+                            session: session,
+                        };
+                    }
+                }
+            }
+
+            break;
+        }
+
+        await this.recipeInterfaceImpl.markFactorAsCompleteInSession({
+            session: session,
+            factorId: factorIdInProgress,
+            userContext,
+        });
+
+        return {
+            status: "OK",
+            session: session,
+        };
+    };
 }

@@ -7,12 +7,14 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import {
     APIInterface,
     GetFactorsSetupForUserFromOtherRecipesFunc,
+    MFAFlowErrors,
     RecipeInterface,
     TypeInput,
     TypeNormalisedInput,
 } from "./types";
 import { User } from "../../user";
-import { verifyEmailForRecipeUserIfLinkedAccountsAreVerified } from "../accountlinking/utils";
+import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -46,5 +48,54 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFirstFactorIds: () => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
     getFactorsSetupForUser: (user: User, userContext: any) => Promise<string[]>;
-    verifyEmailForRecipeUserIfLinkedAccountsAreVerified: typeof verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
+    validateForMultifactorAuthBeforeFactorCompletion: ({
+        tenantId,
+        factorIdInProgress,
+        session,
+        userLoggingIn,
+        isAlreadySetup,
+        userContext,
+    }: {
+        req: BaseRequest;
+        res: BaseResponse;
+        tenantId: string;
+        factorIdInProgress: string;
+        session?: SessionContainerInterface | undefined;
+        userLoggingIn?: User | undefined;
+        isAlreadySetup?: boolean | undefined;
+        userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+          }
+        | MFAFlowErrors
+    >;
+    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion: ({
+        req,
+        res,
+        tenantId,
+        factorIdInProgress,
+        justCompletedFactorUserInfo,
+        userContext,
+    }: {
+        req: BaseRequest;
+        res: BaseResponse;
+        tenantId: string;
+        factorIdInProgress: string;
+        isAlreadySetup?: boolean | undefined;
+        justCompletedFactorUserInfo?:
+            | {
+                  user: User;
+                  createdNewUser: boolean;
+                  recipeUserId: RecipeUserId;
+              }
+            | undefined;
+        userContext: any;
+    }) => Promise<
+        | MFAFlowErrors
+        | {
+              status: "OK";
+              session: SessionContainerInterface;
+          }
+    >;
 }
