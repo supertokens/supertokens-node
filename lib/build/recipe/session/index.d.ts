@@ -24,7 +24,6 @@ export default class SessionWrapper {
         recipeUserId: RecipeUserId,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
-        alwaysOverwriteSessionInRequest?: boolean,
         userContext?: any
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(

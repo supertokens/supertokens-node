@@ -4,6 +4,7 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import RecipeUserId from "../../recipeUserId";
 import type MultiFactorAuthRecipe from "./recipe";
 import Session from "../session";
+import SessionRecipe from "../session/recipe";
 import { TypeNormalisedInput } from "./types";
 import Multitenancy from "../multitenancy";
 import AccountLinkingRecipe from "../accountlinking/recipe";
@@ -288,7 +289,6 @@ export default function getRecipeInterface(
                     justCompletedFactorUserInfo.recipeUserId,
                     {},
                     {},
-                    false,
                     userContext
                 );
                 await this.markFactorAsCompleteInSession({
@@ -363,16 +363,17 @@ export default function getRecipeInterface(
                     const loggedInUserLinkedToSessionUser = sessionUser.id === justCompletedFactorUserInfo.user.id;
                     if (!loggedInUserLinkedToSessionUser) {
                         // we may keep or replace the session as per the flag overwriteSessionDuringSignIn in session recipe
-                        session = await Session.createNewSession(
-                            req,
-                            res,
-                            tenantId,
-                            justCompletedFactorUserInfo.recipeUserId,
-                            {},
-                            {},
-                            false,
-                            userContext
-                        );
+                        if (SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn) {
+                            session = await Session.createNewSession(
+                                req,
+                                res,
+                                tenantId,
+                                justCompletedFactorUserInfo.recipeUserId,
+                                {},
+                                {},
+                                userContext
+                            );
+                        }
 
                         return {
                             status: "OK",

@@ -1,6 +1,7 @@
 import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
+import SessionRecipe from "../../session/recipe";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse, User } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
@@ -634,16 +635,27 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                const session = await Session.createNewSession(
+                let session = await Session.getSession(
                     options.req,
                     options.res,
-                    tenantId,
-                    emailPasswordRecipeUser.recipeUserId,
-                    {},
-                    {},
-                    false,
+                    { sessionRequired: false },
                     userContext
                 );
+
+                if (
+                    session === undefined ||
+                    SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn
+                ) {
+                    session = await Session.createNewSession(
+                        options.req,
+                        options.res,
+                        tenantId,
+                        emailPasswordRecipeUser.recipeUserId,
+                        {},
+                        {},
+                        userContext
+                    );
+                }
 
                 return {
                     status: "OK",
@@ -820,16 +832,27 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                const session = await Session.createNewSession(
+                let session = await Session.getSession(
                     options.req,
                     options.res,
-                    tenantId,
-                    emailPasswordRecipeUser.recipeUserId,
-                    {},
-                    {},
-                    false,
+                    { sessionRequired: false },
                     userContext
                 );
+
+                if (
+                    session === undefined ||
+                    SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn
+                ) {
+                    session = await Session.createNewSession(
+                        options.req,
+                        options.res,
+                        tenantId,
+                        emailPasswordRecipeUser.recipeUserId,
+                        {},
+                        {},
+                        userContext
+                    );
+                }
 
                 return {
                     status: "OK",

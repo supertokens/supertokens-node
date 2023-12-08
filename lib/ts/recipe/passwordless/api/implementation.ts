@@ -3,6 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import Session from "../../session";
+import SessionRecipe from "../../session/recipe";
 import { User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { SessionContainerInterface } from "../../session/types";
@@ -178,16 +179,27 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                const session = await Session.createNewSession(
+                let session = await Session.getSession(
                     input.options.req,
                     input.options.res,
-                    input.tenantId,
-                    response.recipeUserId,
-                    {},
-                    {},
-                    false,
+                    { sessionRequired: false },
                     input.userContext
                 );
+
+                if (
+                    session === undefined ||
+                    SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn
+                ) {
+                    session = await Session.createNewSession(
+                        input.options.req,
+                        input.options.res,
+                        input.tenantId,
+                        response.recipeUserId,
+                        {},
+                        {},
+                        input.userContext
+                    );
+                }
 
                 return {
                     status: "OK",
