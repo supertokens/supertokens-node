@@ -1,19 +1,16 @@
 import { RecipeInterface } from "./";
-import { Querier } from "../../querier";
 import UserMetadataRecipe from "../usermetadata/recipe";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import RecipeUserId from "../../recipeUserId";
-import { User } from "../../user";
-import NormalisedURLPath from "../../normalisedURLPath";
 import type MultiFactorAuthRecipe from "./recipe";
 import Session from "../session";
 import { TypeNormalisedInput } from "./types";
 import Multitenancy from "../multitenancy";
+import AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { logDebugMessage } from "../../logger";
 
 export default function getRecipeInterface(
-    querier: Querier,
     config: TypeNormalisedInput,
     recipeInstance: MultiFactorAuthRecipe
 ): RecipeInterface {
@@ -178,121 +175,6 @@ export default function getRecipeInterface(
             return metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
         },
 
-        createPrimaryUser: async function (
-            this: RecipeInterface,
-            {
-                recipeUserId,
-                userContext,
-            }: {
-                recipeUserId: RecipeUserId;
-                userContext: any;
-            }
-        ): Promise<
-            | {
-                  status: "OK";
-                  user: User;
-                  wasAlreadyAPrimaryUser: boolean;
-              }
-            | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-              }
-            | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
-        > {
-            let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/mfa/user/primary"),
-                {
-                    recipeUserId: recipeUserId.getAsString(),
-                },
-                userContext
-            );
-            if (response.status === "OK") {
-                response.user = new User(response.user);
-            }
-            return response;
-        },
-
-        linkAccounts: async function (
-            this: RecipeInterface,
-            {
-                recipeUserId,
-                primaryUserId,
-                userContext,
-            }: {
-                recipeUserId: RecipeUserId;
-                primaryUserId: string;
-                userContext: any;
-            }
-        ): Promise<
-            | {
-                  status: "OK";
-                  accountsAlreadyLinked: boolean;
-                  user: User;
-              }
-            | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  user: User;
-                  primaryUserId: string;
-              }
-            | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
-            | {
-                  status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-              }
-        > {
-            const accountsLinkingResult = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/link"),
-                {
-                    recipeUserId: recipeUserId.getAsString(),
-                    primaryUserId,
-                },
-                userContext
-            );
-
-            if (
-                ["OK", "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"].includes(
-                    accountsLinkingResult.status
-                )
-            ) {
-                accountsLinkingResult.user = new User(accountsLinkingResult.user);
-            }
-
-            if (accountsLinkingResult.status === "OK") {
-                let user: User = accountsLinkingResult.user;
-                if (!accountsLinkingResult.accountsAlreadyLinked) {
-                    await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                        user: user,
-                        recipeUserId,
-                        userContext,
-                    });
-
-                    const updatedUser = await getUser(primaryUserId, userContext);
-                    if (updatedUser === undefined) {
-                        throw Error("this error should never be thrown");
-                    }
-                    user = updatedUser;
-                    let loginMethodInfo = user.loginMethods.find(
-                        (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
-                    );
-                    if (loginMethodInfo === undefined) {
-                        throw Error("this error should never be thrown");
-                    }
-
-                    // await config.onAccountLinked(user, loginMethodInfo, userContext);
-                }
-                accountsLinkingResult.user = user;
-            }
-
-            return accountsLinkingResult;
-        },
-
         validateForMultifactorAuthBeforeFactorCompletion: async function (
             this: RecipeInterface,
             { tenantId, factorIdInProgress, session, userLoggingIn, isAlreadySetup, userContext }
@@ -434,10 +316,12 @@ export default function getRecipeInterface(
                 if (justCompletedFactorUserInfo.createdNewUser) {
                     // This is a newly created user, so it must be account linked with the session user
                     if (!sessionUser.isPrimaryUser) {
-                        const createPrimaryRes = await this.createPrimaryUser({
-                            recipeUserId: new RecipeUserId(sessionUser.id),
-                            userContext,
-                        });
+                        const createPrimaryRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.createPrimaryUser(
+                            {
+                                recipeUserId: new RecipeUserId(sessionUser.id),
+                                userContext,
+                            }
+                        );
                         if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
                             // Race condition
                             // TODO MFA Recursion from the line where we fetch the sessionUser
@@ -453,7 +337,7 @@ export default function getRecipeInterface(
                         }
                     }
 
-                    const linkRes = await this.linkAccounts({
+                    const linkRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.linkAccounts({
                         recipeUserId: justCompletedFactorUserInfo.recipeUserId,
                         primaryUserId: sessionUser.id,
                         userContext,

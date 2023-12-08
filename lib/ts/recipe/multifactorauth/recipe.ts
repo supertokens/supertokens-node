@@ -16,7 +16,6 @@
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
@@ -61,9 +60,7 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, this)
-            );
+            let builder = new OverrideableBuilder(RecipeImplementation(this.config, this));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
 
