@@ -6,6 +6,7 @@ import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
+import Recipe from "./recipe";
 export declare type MFARequirementList = (
     | {
           oneOf: string[];
@@ -71,8 +72,7 @@ export declare type RecipeInterface = {
         factorId: string;
         userContext?: any;
     }) => Promise<void>;
-    getFactorsSetupForUser: (input: { user: User; tenantId: string; userContext: any }) => Promise<string[]>;
-    getAllAvailableFactorIds: (input: { userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { user: User; userContext: any }) => Promise<string[]>;
     addToDefaultRequiredFactorsForUser: (input: {
         user: User;
         tenantId: string;
@@ -160,6 +160,7 @@ export declare type RecipeInterface = {
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
+    recipeInstance: Recipe;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
@@ -184,8 +185,4 @@ export declare type APIInterface = {
         | GeneralErrorResponse
     >;
 };
-export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
-    tenantId: string,
-    user: User,
-    userContext: any
-) => Promise<string[]>;
+export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: any) => Promise<string[]>;

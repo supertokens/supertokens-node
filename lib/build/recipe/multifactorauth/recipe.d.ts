@@ -18,6 +18,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     private getFactorsSetupForUserFromOtherRecipesFuncs;
     private allAvailableFactorIds;
+    private allAvailableFirstFactorIds;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -40,9 +41,10 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    addAvailableFactorIdsFromOtherRecipes: (factorIds: string[]) => void;
+    addAvailableFactorIdsFromOtherRecipes: (factorIds: string[], firstFactorIds: string[]) => void;
     getAllAvailableFactorIds: () => string[];
+    getAllAvailableFirstFactorIds: () => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    getFactorsSetupForUser: (tenantId: string, user: User, userContext: any) => Promise<string[]>;
+    getFactorsSetupForUser: (user: User, userContext: any) => Promise<string[]>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: typeof verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
 }

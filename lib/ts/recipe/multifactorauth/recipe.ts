@@ -45,6 +45,7 @@ export default class Recipe extends RecipeModule {
     private getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
 
     private allAvailableFactorIds: string[] = [];
+    private allAvailableFirstFactorIds: string[] = [];
 
     config: TypeNormalisedInput;
 
@@ -135,6 +136,7 @@ export default class Recipe extends RecipeModule {
         userContext: any
     ): Promise<boolean> => {
         let options = {
+            recipeInstance: this,
             recipeImplementation: this.recipeInterfaceImpl,
             config: this.config,
             recipeId: this.getRecipeId(),
@@ -160,23 +162,28 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    addAvailableFactorIdsFromOtherRecipes = (factorIds: string[]) => {
+    addAvailableFactorIdsFromOtherRecipes = (factorIds: string[], firstFactorIds: string[]) => {
         this.allAvailableFactorIds = this.allAvailableFactorIds.concat(factorIds);
+        this.allAvailableFirstFactorIds = this.allAvailableFirstFactorIds.concat(firstFactorIds);
     };
 
     getAllAvailableFactorIds = () => {
         return this.allAvailableFactorIds;
     };
 
+    getAllAvailableFirstFactorIds = () => {
+        return this.allAvailableFirstFactorIds;
+    };
+
     addGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    getFactorsSetupForUser = async (tenantId: string, user: User, userContext: any) => {
+    getFactorsSetupForUser = async (user: User, userContext: any) => {
         let factorIds: string[] = [];
 
         for (const func of this.getFactorsSetupForUserFromOtherRecipesFuncs) {
-            let result = await func(tenantId, user, userContext);
+            let result = await func(user, userContext);
             if (result !== undefined) {
                 factorIds = factorIds.concat(result);
             }

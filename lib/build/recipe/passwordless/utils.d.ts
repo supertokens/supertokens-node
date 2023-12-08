@@ -10,4 +10,4 @@ export declare function validateAndNormaliseUserInput(
 ): TypeNormalisedInput;
 export declare function defaultValidatePhoneNumber(value: string): Promise<string | undefined> | string | undefined;
 export declare function defaultValidateEmail(value: string): Promise<string | undefined> | string | undefined;
-export declare function isFactorSetupForUser(user: User, tenantId: string, factorId: string): boolean;
+export declare function isFactorSetupForUser(user: User, factorId: string): boolean;

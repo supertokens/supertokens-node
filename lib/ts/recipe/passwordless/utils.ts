@@ -176,12 +176,8 @@ export function defaultValidateEmail(value: string): Promise<string | undefined>
     return undefined;
 }
 
-export function isFactorSetupForUser(user: User, tenantId: string, factorId: string) {
+export function isFactorSetupForUser(user: User, factorId: string) {
     for (const loginMethod of user.loginMethods) {
-        if (!loginMethod.tenantIds.includes(tenantId)) {
-            continue;
-        }
-
         if (loginMethod.email !== undefined) {
             if (factorId == "otp-email") {
                 return true;

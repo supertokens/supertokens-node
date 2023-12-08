@@ -16,12 +16,11 @@ export default function getAPIInterface(): APIInterface {
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
 
             const isAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
-                tenantId,
                 user,
                 userContext,
             });
 
-            const availableFactors = await options.recipeImplementation.getAllAvailableFactorIds({ userContext });
+            const availableFactors = await options.recipeInstance.getAllAvailableFactorIds();
 
             // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
             const defaultRequiredFactorIdsForUser = await options.recipeImplementation.getDefaultRequiredFactorsForUser(
@@ -42,6 +41,11 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
+            await session.setClaimValue(MultiFactorAuthClaim, {
+                c: completedFactors,
+                n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
+            });
+
             const isAllowedToSetup = [];
             for (const id of availableFactors) {
                 if (
@@ -59,11 +63,6 @@ export default function getAPIInterface(): APIInterface {
                     isAllowedToSetup.push(id);
                 }
             }
-
-            await session.setClaimValue(MultiFactorAuthClaim, {
-                c: completedFactors,
-                n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
-            });
 
             let selectedEmail = user.emails[0];
 

@@ -95,7 +95,7 @@ export default function getAPIImplementation(): APIInterface {
             let isAlreadySetup = undefined;
 
             if (mfaInstance) {
-                isAlreadySetup = !sessionUser ? false : isFactorSetupForUser(sessionUser, input.tenantId, factorId);
+                isAlreadySetup = !sessionUser ? false : isFactorSetupForUser(sessionUser, factorId);
                 const validateMfaRes = await mfaInstance.recipeInterfaceImpl.validateForMultifactorAuthBeforeFactorCompletion(
                     {
                         req: input.options.req,

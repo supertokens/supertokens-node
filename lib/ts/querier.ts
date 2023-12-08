@@ -110,10 +110,8 @@ export class Querier {
 
     // path should start with "/"
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: any): Promise<T> => {
-        userContext._default = {
-            ...userContext._default,
-            coreCallCache: {},
-        };
+        this.invalidateCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "POST",
@@ -153,10 +151,8 @@ export class Querier {
         params: any | undefined,
         userContext: any
     ): Promise<any> => {
-        userContext._default = {
-            ...userContext._default,
-            coreCallCache: {},
-        };
+        this.invalidateCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
@@ -287,10 +283,8 @@ export class Querier {
 
     // path should start with "/"
     sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: any): Promise<any> => {
-        userContext._default = {
-            ...userContext._default,
-            coreCallCache: {},
-        };
+        this.invalidateCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "PUT",
@@ -319,6 +313,13 @@ export class Querier {
             this.__hosts?.length || 0
         );
         return respBody;
+    };
+
+    invalidateCache = (userContext: any) => {
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {},
+        };
     };
 
     public getAllCoreUrlsForPath(path: string) {

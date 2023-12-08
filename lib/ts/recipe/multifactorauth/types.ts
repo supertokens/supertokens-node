@@ -20,6 +20,7 @@ import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
+import Recipe from "./recipe";
 
 export type MFARequirementList = (
     | {
@@ -96,9 +97,7 @@ export type RecipeInterface = {
         userContext?: any;
     }) => Promise<void>;
 
-    getFactorsSetupForUser: (input: { user: User; tenantId: string; userContext: any }) => Promise<string[]>;
-
-    getAllAvailableFactorIds: (input: { userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { user: User; userContext: any }) => Promise<string[]>;
 
     addToDefaultRequiredFactorsForUser: (input: {
         user: User;
@@ -188,6 +187,7 @@ export type RecipeInterface = {
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
+    recipeInstance: Recipe;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
@@ -214,8 +214,4 @@ export type APIInterface = {
     >;
 };
 
-export type GetFactorsSetupForUserFromOtherRecipesFunc = (
-    tenantId: string,
-    user: User,
-    userContext: any
-) => Promise<string[]>;
+export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: any) => Promise<string[]>;
