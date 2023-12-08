@@ -37,7 +37,7 @@ export declare class Querier {
         headers: Headers;
     }>;
     sendPutRequest: (path: NormalisedURLPath, body: any, userContext: any) => Promise<any>;
-    invalidateCache: (userContext: any) => void;
+    invalidateCoreCallCache: (userContext: any) => void;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;
 }

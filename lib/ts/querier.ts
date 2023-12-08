@@ -110,7 +110,7 @@ export class Querier {
 
     // path should start with "/"
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: any): Promise<T> => {
-        this.invalidateCache(userContext);
+        this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -151,7 +151,7 @@ export class Querier {
         params: any | undefined,
         userContext: any
     ): Promise<any> => {
-        this.invalidateCache(userContext);
+        this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -283,7 +283,7 @@ export class Querier {
 
     // path should start with "/"
     sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: any): Promise<any> => {
-        this.invalidateCache(userContext);
+        this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -315,7 +315,7 @@ export class Querier {
         return respBody;
     };
 
-    invalidateCache = (userContext: any) => {
+    invalidateCoreCallCache = (userContext: any) => {
         userContext._default = {
             ...userContext._default,
             coreCallCache: {},

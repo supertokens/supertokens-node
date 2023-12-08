@@ -42,6 +42,7 @@ import Multitenancy from "../multitenancy";
 import Session from "../session";
 import AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser } from "../..";
+import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -60,6 +61,8 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
+    querier: Querier;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(config);
@@ -74,6 +77,8 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
+
+        this.querier = Querier.getNewInstanceOrThrowError(recipeId);
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -380,7 +385,7 @@ export default class Recipe extends RecipeModule {
                         );
                         if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
                             // Race condition
-                            // TODO MFA invalidate querier cache
+                            this.querier.invalidateCoreCallCache(userContext);
                             continue;
                         } else if (
                             createPrimaryRes.status ===
@@ -400,11 +405,14 @@ export default class Recipe extends RecipeModule {
                     });
 
                     if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-                        // TODO MFA contact support
-                        throw new Error("should never happen"); // new user shouldn't have this issue
+                        return {
+                            status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                            message:
+                                "Error setting up MFA for the user because of the automatic account linking. Please contact support. (ERR_CODE_013)",
+                        };
                     } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
                         // Race condition
-                        // TODO MFA clear querier cache
+                        this.querier.invalidateCoreCallCache(userContext);
                         continue;
                     } else if (
                         linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
