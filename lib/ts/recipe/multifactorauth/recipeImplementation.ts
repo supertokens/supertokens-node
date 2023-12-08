@@ -417,7 +417,7 @@ export default function getRecipeInterface(
                     throw new Error("should never come here"); // We wouldn't create new session from a recipe like TOTP
                 }
 
-                const session = await Session.createNewSession(
+                const newSession = await Session.createNewSession(
                     req,
                     res,
                     tenantId,
@@ -428,13 +428,13 @@ export default function getRecipeInterface(
                     userContext
                 );
                 await this.markFactorAsCompleteInSession({
-                    session,
+                    session: newSession,
                     factorId: factorIdInProgress,
                     userContext,
                 });
                 return {
                     status: "OK",
-                    session,
+                    session: newSession,
                 };
             }
 
