@@ -139,14 +139,14 @@ export default function getRecipeInterface(
             });
         },
 
-        addToDefaultRequiredFactorsForUser: async function ({ tenantId, user, factorId, userContext }) {
+        addToDefaultRequiredFactorsForUser: async function ({ user, factorId, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
             const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
                 userId: user.id,
                 userContext,
             });
 
-            const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser?.[tenantId] ?? [];
+            const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
             if (factorIds.includes(factorId)) {
                 return;
             }
@@ -157,10 +157,7 @@ export default function getRecipeInterface(
                 ...metadata.metadata,
                 _supertokens: {
                     ...metadata.metadata._supertokens,
-                    defaultRequiredFactorIdsForUser: {
-                        ...metadata.metadata._supertokens?.factors,
-                        [tenantId]: factorIds,
-                    },
+                    defaultRequiredFactorIdsForUser: factorIds,
                 },
             };
 
@@ -171,14 +168,14 @@ export default function getRecipeInterface(
             });
         },
 
-        getDefaultRequiredFactorsForUser: async function ({ tenantId, user, userContext }) {
+        getDefaultRequiredFactorsForUser: async function ({ user, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
             const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
                 userId: user.id,
                 userContext,
             });
 
-            return metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser?.[tenantId] ?? [];
+            return metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
         },
 
         createPrimaryUser: async function (
