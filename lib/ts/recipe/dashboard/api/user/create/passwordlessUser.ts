@@ -17,7 +17,7 @@ type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       };
 
-export const createThridPartyUser = async (
+export const createPasswordlessUser = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
@@ -58,6 +58,7 @@ export const createThridPartyUser = async (
                 message: validateError,
             });
         }
+        // add email already exists check
     }
 
     if (
@@ -81,9 +82,9 @@ export const createThridPartyUser = async (
         } else {
             phoneNumber = parsedPhoneNumber.format("E.164");
         }
+        // add phone already exists check
     }
 
-    // TODO: add if the email or phone number already exists checks here.
     const response = await Passwordless.signInUp(
         email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
     );
