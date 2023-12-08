@@ -50,7 +50,7 @@ export default class SuperTokensWrapper {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
-            userContext: undefined,
+            userContext: {},
         });
     }
 
