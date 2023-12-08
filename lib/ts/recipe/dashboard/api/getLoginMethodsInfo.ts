@@ -1,7 +1,7 @@
-import { APIInterface, APIOptions } from "../../types";
-import PasswordlessRecipe from "../../../passwordless/recipe";
-import EmailPasswordRecipe from "../../../emailpassword/recipe";
-import Multitenancy from "../../../multitenancy";
+import { APIInterface, APIOptions } from "../types";
+import PasswordlessRecipe from "../../passwordless/recipe";
+import EmailPasswordRecipe from "../../emailpassword/recipe";
+import Multitenancy from "../../multitenancy";
 
 type LoginMethod =
     | {
