@@ -1854,8 +1854,9 @@ Supertokens.init({
 });
 
 // const noMFARequired
-MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([]);
-MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedDefaultFactors();
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([]);
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([
     { oneOf: ["emailpassword", "thirdparty"] }, // We can include the first factors here... that feels a bit weird but it works.
     { oneOf: ["totp", "otp-phone"] }, // We require either totp or otp-phone
 ]);

@@ -12,12 +12,13 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         super(key ?? "st-mfa");
 
         this.validators = {
-            passesMFARequirements: (requirements?: MFARequirementList, id?: string) => ({
+            hasCompletedDefaultFactors: (id?: string) => ({
                 claim: this,
                 id: id ?? this.key,
                 shouldRefetch: () => false,
                 validate: async (payload) => {
-                    if (requirements === undefined || requirements.length === 0) {
+                    const requirements: MFARequirementList = []; // TODO MFA get default requirements for tenant/user
+                    if (requirements.length === 0) {
                         return {
                             isValid: true, // No requirements to satisfy
                         };
@@ -28,7 +29,85 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         return {
                             isValid: false,
                             reason: {
-                                message: "no factors are complete in the session",
+                                message: "MFA info not available in payload",
+                                mfaRequirements: requirements,
+                            },
+                        };
+                    }
+
+                    const { c } = claimVal;
+                    for (const req of requirements) {
+                        if (typeof req === "string") {
+                            if (c[req] === undefined) {
+                                return {
+                                    isValid: false,
+                                    reason: {
+                                        message: `the factorId ${req} is not complete in the session`,
+                                        mfaRequirements: requirements,
+                                    },
+                                };
+                            }
+                        } else if ("oneOf" in req) {
+                            let satisfied = false;
+                            for (const factorId of req.oneOf) {
+                                if (c[factorId] !== undefined) {
+                                    satisfied = true;
+                                    break;
+                                }
+                            }
+                            if (!satisfied) {
+                                return {
+                                    isValid: false,
+                                    reason: {
+                                        message: `none of these factorIds [${req.oneOf.join(
+                                            ", "
+                                        )}] are complete session`,
+                                        mfaRequirements: requirements,
+                                    },
+                                };
+                            }
+                        } else if ("allOf" in req) {
+                            for (const factorId of req.allOf) {
+                                if (c[factorId] === undefined) {
+                                    return {
+                                        isValid: false,
+                                        reason: {
+                                            message: `the factor ${factorId} is not complete in session, all of these factorIds [${req.allOf.join(
+                                                ", "
+                                            )}] must be complete in session`,
+                                            mfaRequirements: requirements,
+                                        },
+                                    };
+                                }
+                            }
+                        } else {
+                            throw new Error("should never come here");
+                        }
+                    }
+
+                    return {
+                        isValid: true, // all requirements satisfied
+                    };
+                },
+            }),
+
+            hasCompletedFactors: (requirements: MFARequirementList, id?: string) => ({
+                claim: this,
+                id: id ?? this.key,
+                shouldRefetch: () => false,
+                validate: async (payload) => {
+                    if (requirements.length === 0) {
+                        return {
+                            isValid: true, // No requirements to satisfy
+                        };
+                    }
+
+                    const claimVal = this.getValueFromPayload(payload);
+                    if (claimVal === undefined) {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message: "MFA info not available in payload",
                                 mfaRequirements: requirements,
                             },
                         };
@@ -93,7 +172,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     }
 
     public validators: {
-        passesMFARequirements: (requirements?: MFARequirementList, id?: string) => SessionClaimValidator;
+        hasCompletedDefaultFactors: (id?: string) => SessionClaimValidator;
+        hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
 
     public buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[] {

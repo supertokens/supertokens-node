@@ -10,7 +10,8 @@ import { MFAClaimValue, MFARequirementList } from "./types";
 export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     constructor(key?: string);
     validators: {
-        passesMFARequirements: (requirements?: MFARequirementList, id?: string) => SessionClaimValidator;
+        hasCompletedDefaultFactors: (id?: string) => SessionClaimValidator;
+        hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
     buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
     fetchValue: (
