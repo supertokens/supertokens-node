@@ -326,8 +326,7 @@ export default function getRecipeInterface(
                     // we just return OK and do nothing or replace replace the existing session with a new one
                     // we are doing this because we allow factor setup only when creating a new user
                     return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                        reason: "Factor setup is not allowed for this user. Please contact support. (ERR_CODE_009)",
+                        status: "OK",
                     };
                 }
                 sessionUser = userLoggingIn;
@@ -346,13 +345,6 @@ export default function getRecipeInterface(
             if (isAlreadySetup) {
                 return {
                     status: "OK",
-                    req,
-                    res,
-                    tenantId,
-                    factorIdInProgress,
-                    session,
-                    sessionUser,
-                    isAlreadySetup,
                 };
             }
 
