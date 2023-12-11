@@ -97,11 +97,27 @@ export default class Wrapper {
             userContext: userContext ?? {},
         });
     }
+
+    static async addToDefaultRequiredFactorsForUser(userId: string, factorId: string, userContext?: any) {
+        const ctx = userContext ?? {};
+        const user = await getUser(userId, ctx);
+
+        if (!user) {
+            throw new Error("UKNKNOWN_USER_ID");
+        }
+
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addToDefaultRequiredFactorsForUser({
+            factorId,
+            user,
+            userContext: ctx,
+        });
+    }
 }
 
 export let init = Wrapper.init;
 
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
+export const addToDefaultRequiredFactorsForUser = Wrapper.addToDefaultRequiredFactorsForUser;
 
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

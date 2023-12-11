@@ -103,7 +103,6 @@ export type RecipeInterface = {
 
     addToDefaultRequiredFactorsForUser: (input: {
         user: User;
-        tenantId: string;
         factorId: string;
         userContext: Record<string, any>;
     }) => Promise<void>;

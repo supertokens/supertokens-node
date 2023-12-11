@@ -17,8 +17,10 @@ export default class Wrapper {
         factorId: string,
         userContext?: Record<string, any>
     ): Promise<void>;
+    static addToDefaultRequiredFactorsForUser(userId: string, factorId: string, userContext?: any): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let markFactorAsCompleteInSession: typeof Wrapper.markFactorAsCompleteInSession;
+export declare const addToDefaultRequiredFactorsForUser: typeof Wrapper.addToDefaultRequiredFactorsForUser;
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

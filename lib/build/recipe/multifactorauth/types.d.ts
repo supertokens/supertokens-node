@@ -77,7 +77,6 @@ export declare type RecipeInterface = {
     getFactorsSetupForUser: (input: { user: User; userContext: Record<string, any> }) => Promise<string[]>;
     addToDefaultRequiredFactorsForUser: (input: {
         user: User;
-        tenantId: string;
         factorId: string;
         userContext: Record<string, any>;
     }) => Promise<void>;
