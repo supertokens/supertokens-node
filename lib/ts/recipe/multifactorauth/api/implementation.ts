@@ -33,17 +33,14 @@ export default function getAPIInterface(): APIInterface {
             const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
             const completedFactors = completedFactorsClaimValue?.c ?? {};
             const mfaRequirementsForAuth = await options.recipeImplementation.getMFARequirementsForAuth({
-                session,
+                user: user,
+                accessTokenPayload: session.getAccessTokenPayload(),
+                tenantId,
                 factorsSetUpForUser: isAlreadySetup,
                 defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
                 defaultRequiredFactorIdsForUser,
                 completedFactors: completedFactors,
                 userContext,
-            });
-
-            await session.setClaimValue(MultiFactorAuthClaim, {
-                c: completedFactors,
-                n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
             });
 
             const isAllowedToSetup = [];
@@ -74,6 +71,8 @@ export default function getAPIInterface(): APIInterface {
                     break;
                 }
             }
+
+            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
 
             return {
                 status: "OK",

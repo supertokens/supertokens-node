@@ -466,6 +466,7 @@ export abstract class SessionClaim<T> {
         userId: string,
         recipeUserId: RecipeUserId,
         tenantId: string,
+        currentPayload: JSONObject | undefined,
         userContext: any
     ): Promise<T | undefined> | T | undefined;
 
@@ -498,7 +499,7 @@ export abstract class SessionClaim<T> {
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
     async build(userId: string, recipeUserId: RecipeUserId, tenantId: string, userContext?: any): Promise<JSONObject> {
-        const value = await this.fetchValue(userId, recipeUserId, tenantId, userContext);
+        const value = await this.fetchValue(userId, recipeUserId, tenantId, undefined, userContext);
 
         if (value === undefined) {
             return {};

@@ -1,5 +1,5 @@
 import RecipeUserId from "../../../recipeUserId";
-import { JSONPrimitive } from "../../../types";
+import { JSONObject, JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
@@ -7,6 +7,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
         userId: string,
         recipeUserId: RecipeUserId,
         tenantId: string,
+        currentPayload: JSONObject | undefined,
         userContext: any
     ) => Promise<T | undefined> | T | undefined;
     public readonly defaultMaxAgeInSeconds: number | undefined;

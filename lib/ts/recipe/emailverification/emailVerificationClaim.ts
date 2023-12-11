@@ -9,7 +9,7 @@ export class EmailVerificationClaimClass extends BooleanClaim {
     constructor() {
         super({
             key: "st-ev",
-            async fetchValue(_userId, recipeUserId, __tenantId, userContext) {
+            async fetchValue(_userId, recipeUserId, __tenantId, _currentPayload, userContext) {
                 const recipe = EmailVerificationRecipe.getInstanceOrThrowError();
                 let emailInfo = await recipe.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
 

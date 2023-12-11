@@ -1,8 +1,11 @@
+import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
+import Multitenancy from "../multitenancy";
+import MultiFactorAuthRecipe from "./recipe";
 
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
@@ -15,7 +18,11 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
             hasCompletedDefaultFactors: (id?: string) => ({
                 claim: this,
                 id: id ?? this.key,
-                shouldRefetch: () => false,
+
+                shouldRefetch: (payload) => {
+                    const value = this.getValueFromPayload(payload);
+                    return value === undefined;
+                },
                 validate: async (payload) => {
                     const requirements: MFARequirementList = []; // TODO MFA get default requirements for tenant/user
                     if (requirements.length === 0) {
@@ -26,13 +33,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
                     const claimVal = this.getValueFromPayload(payload);
                     if (claimVal === undefined) {
-                        return {
-                            isValid: false,
-                            reason: {
-                                message: "MFA info not available in payload",
-                                mfaRequirements: requirements,
-                            },
-                        };
+                        throw new Error("This should never happen, claim value not present in payload");
                     }
 
                     const { c } = claimVal;
@@ -94,7 +95,11 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
             hasCompletedFactors: (requirements: MFARequirementList, id?: string) => ({
                 claim: this,
                 id: id ?? this.key,
-                shouldRefetch: () => false,
+
+                shouldRefetch: (payload) => {
+                    const value = this.getValueFromPayload(payload);
+                    return value === undefined;
+                },
                 validate: async (payload) => {
                     if (requirements.length === 0) {
                         return {
@@ -104,13 +109,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
                     const claimVal = this.getValueFromPayload(payload);
                     if (claimVal === undefined) {
-                        return {
-                            isValid: false,
-                            reason: {
-                                message: "MFA info not available in payload",
-                                mfaRequirements: requirements,
-                            },
-                        };
+                        throw new Error("This should never happen, claim value not present in payload");
                     }
 
                     const { c } = claimVal;
@@ -210,17 +209,49 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         return [];
     }
 
-    public fetchValue = (
-        _userId: string,
+    public fetchValue = async (
+        userId: string,
         _recipeUserId: RecipeUserId,
-        _tenantId: string | undefined,
-        _userContext: any
+        tenantId: string | undefined,
+        currentPayload: JSONObject | undefined,
+        userContext: any
     ) => {
-        // Nothing to fetch, the values are populated on
-        // completion of authentication steps
+        const user = await getUser(userId, userContext);
+
+        if (user === undefined) {
+            throw new Error("Unknown User ID provided");
+        }
+        const tenantInfo = await Multitenancy.getTenant(tenantId ?? "public", userContext);
+
+        const recipeInstance = MultiFactorAuthRecipe.getInstanceOrThrowError();
+
+        const isAlreadySetup = await recipeInstance.getFactorsSetupForUser(user, userContext);
+
+        // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
+        const defaultRequiredFactorIdsForUser = await recipeInstance.recipeInterfaceImpl.getDefaultRequiredFactorsForUser(
+            {
+                user: user!,
+                tenantId: tenantId ?? "public",
+                userContext,
+            }
+        );
+        const completedFactorsClaimValue = currentPayload && (currentPayload[this.key] as JSONObject);
+        const completedFactors: Record<string, number> =
+            (completedFactorsClaimValue?.c as Record<string, number>) ?? {};
+        const mfaRequirementsForAuth = await recipeInstance.recipeInterfaceImpl.getMFARequirementsForAuth({
+            user,
+            accessTokenPayload: currentPayload !== undefined ? currentPayload : {},
+            tenantId: tenantId ?? "public",
+            factorsSetUpForUser: isAlreadySetup,
+            defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+            defaultRequiredFactorIdsForUser,
+            completedFactors: completedFactors,
+            userContext,
+        });
+
         return {
-            c: {},
-            n: [],
+            c: completedFactors,
+            n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
         };
     };
 
