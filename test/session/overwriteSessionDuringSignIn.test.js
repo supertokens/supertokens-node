@@ -20,6 +20,7 @@ const request = require("supertest");
 const { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 const SuperTokens = require("../../");
 const Session = require("../../recipe/session");
+const EmailPassword = require("../../recipe/emailpassword");
 const { middleware, errorHandler } = require("../../framework/express");
 const { json } = require("body-parser");
 
@@ -49,14 +50,28 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init({})],
+                recipeList: [EmailPassword.init(), Session.init({})],
             });
 
             const app = getTestExpressApp();
 
+            await EmailPassword.signUp("public", "test@example.com", "password");
+
             let res = await new Promise((resolve) =>
                 request(app)
-                    .post("/create")
+                    .post("/auth/signin")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "password",
+                            },
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -77,8 +92,20 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
 
             res = await new Promise((resolve) =>
                 request(app)
-                    .post("/create")
+                    .post("/auth/signin")
                     .set("Authorization", "Bearer " + accessToken)
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "password",
+                            },
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -104,14 +131,28 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init({ overwriteSessionDuringSignIn: false })],
+                recipeList: [EmailPassword.init(), Session.init({ overwriteSessionDuringSignIn: false })],
             });
 
             const app = getTestExpressApp();
 
+            await EmailPassword.signUp("public", "test@example.com", "password");
+
             let res = await new Promise((resolve) =>
                 request(app)
-                    .post("/create")
+                    .post("/auth/signin")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "password",
+                            },
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -132,8 +173,20 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
 
             res = await new Promise((resolve) =>
                 request(app)
-                    .post("/create")
+                    .post("/auth/signin")
                     .set("Authorization", "Bearer " + accessToken)
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "password",
+                            },
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -159,14 +212,28 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init({ overwriteSessionDuringSignIn: true })],
+                recipeList: [EmailPassword.init(), Session.init({ overwriteSessionDuringSignIn: true })],
             });
 
             const app = getTestExpressApp();
 
+            await EmailPassword.signUp("public", "test@example.com", "password");
+
             let res = await new Promise((resolve) =>
                 request(app)
-                    .post("/create")
+                    .post("/auth/signin")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "password",
+                            },
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -187,8 +254,20 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
 
             res = await new Promise((resolve) =>
                 request(app)
-                    .post("/create")
+                    .post("/auth/signin")
                     .set("Authorization", "Bearer " + accessToken)
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "password",
+                            },
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
