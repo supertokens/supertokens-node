@@ -7,7 +7,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailVeri
     constructor(config: TypeInput<TypeEmailVerificationEmailDeliveryInput>);
     sendEmail: (
         input: TypeEmailVerificationEmailDeliveryInput & {
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 }

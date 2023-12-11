@@ -57,7 +57,7 @@ export declare type RecipeInterface = {
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<boolean>;
     getMFARequirementsForAuth: (input: {
         user: User;
@@ -67,21 +67,25 @@ export declare type RecipeInterface = {
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<MFARequirementList> | MFARequirementList;
     markFactorAsCompleteInSession: (input: {
         session: SessionContainerInterface;
         factorId: string;
-        userContext?: any;
+        userContext: Record<string, any>;
     }) => Promise<void>;
-    getFactorsSetupForUser: (input: { user: User; userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { user: User; userContext: Record<string, any> }) => Promise<string[]>;
     addToDefaultRequiredFactorsForUser: (input: {
         user: User;
         tenantId: string;
         factorId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<void>;
-    getDefaultRequiredFactorsForUser(input: { user: User; tenantId: string; userContext: any }): Promise<string[]>;
+    getDefaultRequiredFactorsForUser(input: {
+        user: User;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }): Promise<string[]>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -96,7 +100,7 @@ export declare type APIInterface = {
     mfaInfoGET: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -110,4 +114,7 @@ export declare type APIInterface = {
         | GeneralErrorResponse
     >;
 };
-export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: any) => Promise<string[]>;
+export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
+    user: User,
+    userContext: Record<string, any>
+) => Promise<string[]>;

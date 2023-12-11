@@ -29,7 +29,7 @@ export default function getServiceInterface(
             return thirdpartyPasswordlessServiceImplementation.sendRawEmail(input);
         },
         getContent: async function (
-            input: TypePasswordlessEmailDeliveryInput & { userContext: any }
+            input: TypePasswordlessEmailDeliveryInput & { userContext: Record<string, any> }
         ): Promise<GetContentResult> {
             return await thirdpartyPasswordlessServiceImplementation.getContent(input);
         },

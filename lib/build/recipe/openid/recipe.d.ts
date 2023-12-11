@@ -25,7 +25,7 @@ export default class OpenIdRecipe extends RecipeModule {
         response: BaseResponse,
         path: normalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
     handleError: (error: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];

@@ -53,17 +53,17 @@ export declare function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: Record<string, any>
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<SessionClaimValidator[]>;
 export declare function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<
     {
         id: string;

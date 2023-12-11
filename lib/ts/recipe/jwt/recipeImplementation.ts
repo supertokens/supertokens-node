@@ -35,7 +35,7 @@ export default function getRecipeInterface(
             payload?: any;
             useStaticSigningKey?: boolean;
             validitySeconds?: number;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";

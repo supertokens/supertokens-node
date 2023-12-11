@@ -214,7 +214,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         _recipeUserId: RecipeUserId,
         tenantId: string | undefined,
         currentPayload: JSONObject | undefined,
-        userContext: any
+        userContext: Record<string, any>
     ) => {
         const user = await getUser(userId, userContext);
 

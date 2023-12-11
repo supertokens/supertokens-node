@@ -102,7 +102,7 @@ async function createAndSendSmsUsingSupertokensService(input: {
 export default class BackwardCompatibilityService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     constructor() {}
 
-    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: Record<string, any> }) => {
         await createAndSendSmsUsingSupertokensService({
             phoneNumber: input.phoneNumber,
             userInputCode: input.userInputCode,

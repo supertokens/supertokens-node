@@ -16,7 +16,7 @@ export declare function getSessionFromRequest({
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     options?: VerifySessionOptions;
-    userContext?: any;
+    userContext?: Record<string, any>;
 }): Promise<SessionContainerInterface | undefined>;
 export declare function refreshSessionInRequest({
     res,
@@ -27,7 +27,7 @@ export declare function refreshSessionInRequest({
 }: {
     res: any;
     req: any;
-    userContext: any;
+    userContext: Record<string, any>;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
 }): Promise<SessionContainerInterface>;
@@ -46,7 +46,7 @@ export declare function createNewSessionInRequest({
 }: {
     req: any;
     res: any;
-    userContext: any;
+    userContext: Record<string, any>;
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;

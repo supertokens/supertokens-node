@@ -42,7 +42,7 @@ export interface GetContentResult {
     toPhoneNumber: string;
 }
 
-export type TypeInputSendRawSms = GetContentResult & { userContext: any } & (
+export type TypeInputSendRawSms = GetContentResult & { userContext: Record<string, any> } & (
         | {
               from: string;
           }
@@ -53,7 +53,7 @@ export type TypeInputSendRawSms = GetContentResult & { userContext: any } & (
 
 export type ServiceInterface<T> = {
     sendRawSms: (input: TypeInputSendRawSms) => Promise<void>;
-    getContent: (input: T & { userContext: any }) => Promise<GetContentResult>;
+    getContent: (input: T & { userContext: Record<string, any> }) => Promise<GetContentResult>;
 };
 
 export type TypeInput<T> = {

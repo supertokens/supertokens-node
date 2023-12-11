@@ -41,7 +41,7 @@ export function getServiceImplementation(
             });
         },
         getContent: async function (
-            input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }
+            input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: Record<string, any> }
         ): Promise<GetContentResult> {
             return await passwordlessServiceImpl.getContent.bind(DerivedPwdless(this))(input);
         },

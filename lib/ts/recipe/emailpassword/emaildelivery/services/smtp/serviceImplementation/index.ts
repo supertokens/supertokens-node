@@ -48,7 +48,7 @@ export function getServiceImplementation(
             }
         },
         getContent: async function (
-            input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }
+            input: TypeEmailPasswordEmailDeliveryInput & { userContext: Record<string, any> }
         ): Promise<GetContentResult> {
             return getPasswordResetEmailContent(input);
         },

@@ -47,7 +47,7 @@ const updateEmailForRecipeId = async (
     recipeUserId: RecipeUserId,
     email: string,
     tenantId: string,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<
     | {
           status: "OK";
@@ -261,7 +261,7 @@ const updatePhoneForRecipeId = async (
     recipeUserId: RecipeUserId,
     phone: string,
     tenantId: string,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<
     | {
           status: "OK";
@@ -394,7 +394,7 @@ export const userPut = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;

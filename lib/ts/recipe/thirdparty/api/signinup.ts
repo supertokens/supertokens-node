@@ -21,7 +21,7 @@ export default async function signInUpAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {
         return false;

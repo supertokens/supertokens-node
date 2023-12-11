@@ -87,7 +87,7 @@ export default function getRecipeInterface(
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<SessionContainerInterface> {
             logDebugMessage("createNewSession: Started");
 
@@ -134,7 +134,7 @@ export default function getRecipeInterface(
             accessToken: string;
             antiCsrfToken?: string;
             options?: VerifySessionOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<SessionContainerInterface | undefined> {
             if (
                 options?.antiCsrfCheck !== false &&
@@ -235,7 +235,7 @@ export default function getRecipeInterface(
                 recipeUserId: RecipeUserId;
                 accessTokenPayload: any;
                 claimValidators: SessionClaimValidator[];
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<{
             invalidClaims: ClaimValidationError[];
@@ -290,7 +290,7 @@ export default function getRecipeInterface(
             userContext,
         }: {
             sessionHandle: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<SessionInformation | undefined> {
             return SessionFunctions.getSessionInformation(helpers, sessionHandle, userContext);
         },
@@ -302,7 +302,12 @@ export default function getRecipeInterface(
                 antiCsrfToken,
                 disableAntiCsrf,
                 userContext,
-            }: { refreshToken: string; antiCsrfToken?: string; disableAntiCsrf: boolean; userContext: any }
+            }: {
+                refreshToken: string;
+                antiCsrfToken?: string;
+                disableAntiCsrf: boolean;
+                userContext: Record<string, any>;
+            }
         ): Promise<SessionContainerInterface> {
             if (
                 disableAntiCsrf !== true &&
@@ -347,7 +352,7 @@ export default function getRecipeInterface(
             input: {
                 accessToken: string;
                 newAccessTokenPayload?: any;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<
             | {
@@ -407,7 +412,7 @@ export default function getRecipeInterface(
             revokeSessionsForLinkedAccounts: boolean;
             tenantId?: string;
             revokeAcrossAllTenants?: boolean;
-            userContext: any;
+            userContext: Record<string, any>;
         }) {
             return SessionFunctions.revokeAllSessionsForUser(
                 helpers,
@@ -430,7 +435,7 @@ export default function getRecipeInterface(
             fetchSessionsForAllLinkedAccounts: boolean;
             tenantId?: string;
             fetchAcrossAllTenants?: boolean;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<string[]> {
             return SessionFunctions.getAllSessionHandlesForUser(
                 helpers,
@@ -447,7 +452,7 @@ export default function getRecipeInterface(
             userContext,
         }: {
             sessionHandle: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<boolean> {
             return SessionFunctions.revokeSession(helpers, sessionHandle, userContext);
         },
@@ -457,7 +462,7 @@ export default function getRecipeInterface(
             userContext,
         }: {
             sessionHandles: string[];
-            userContext: any;
+            userContext: Record<string, any>;
         }) {
             return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles, userContext);
         },
@@ -469,7 +474,7 @@ export default function getRecipeInterface(
         }: {
             sessionHandle: string;
             newSessionData: any;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<boolean> {
             return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData, userContext);
         },
@@ -483,7 +488,7 @@ export default function getRecipeInterface(
             }: {
                 sessionHandle: string;
                 accessTokenPayloadUpdate: JSONObject;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ) {
             const sessionInfo = await this.getSessionInformation({ sessionHandle, userContext });
@@ -515,7 +520,7 @@ export default function getRecipeInterface(
             input: {
                 sessionHandle: string;
                 claim: SessionClaim<T>;
-                userContext?: any;
+                userContext: Record<string, any>;
             }
         ) {
             const sessionInfo = await this.getSessionInformation({
@@ -545,7 +550,7 @@ export default function getRecipeInterface(
                 sessionHandle: string;
                 claim: SessionClaim<T>;
                 value: T;
-                userContext?: any;
+                userContext: Record<string, any>;
             }
         ) {
             const accessTokenPayloadUpdate = input.claim.addToPayload_internal({}, input.value, input.userContext);
@@ -558,7 +563,7 @@ export default function getRecipeInterface(
 
         getClaimValue: async function <T>(
             this: RecipeInterface,
-            input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }
+            input: { sessionHandle: string; claim: SessionClaim<T>; userContext: Record<string, any> }
         ) {
             const sessionInfo = await this.getSessionInformation({
                 sessionHandle: input.sessionHandle,
@@ -579,14 +584,14 @@ export default function getRecipeInterface(
 
         removeClaim: function (
             this: RecipeInterface,
-            input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }
+            input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: Record<string, any> }
         ) {
             const accessTokenPayloadUpdate = input.claim.removeFromPayloadByMerge_internal({}, input.userContext);
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
-                userContext: input.userContext,
+                userContext: input.userContext ?? {},
             });
         },
     };

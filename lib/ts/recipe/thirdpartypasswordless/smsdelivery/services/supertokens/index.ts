@@ -23,7 +23,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypeThir
         this.passwordlessSupertokensService = new PasswordlessSupertokensService(apiKey);
     }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: Record<string, any> }) => {
         await this.passwordlessSupertokensService.sendSms(input);
     };
 }

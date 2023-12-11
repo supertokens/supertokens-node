@@ -18,7 +18,7 @@ import { APIInterface, APIOptions } from "../";
 export default async function appleRedirectHandler(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.appleRedirectHandlerPOST === undefined) {
         return false;

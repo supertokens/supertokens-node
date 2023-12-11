@@ -21,7 +21,7 @@ export default async function signInAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
     if (apiImplementation.signInPOST === undefined) {

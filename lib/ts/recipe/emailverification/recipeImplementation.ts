@@ -20,7 +20,7 @@ export default function getRecipeInterface(
             recipeUserId: RecipeUserId;
             email: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -57,7 +57,7 @@ export default function getRecipeInterface(
             token: string;
             attemptAccountLinking: boolean;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
@@ -113,7 +113,7 @@ export default function getRecipeInterface(
         }: {
             recipeUserId: RecipeUserId;
             email: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<boolean> {
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath("/recipe/user/email/verify"),
@@ -130,7 +130,7 @@ export default function getRecipeInterface(
             recipeUserId: RecipeUserId;
             email: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/user/email/verify/token/remove`),
@@ -146,7 +146,7 @@ export default function getRecipeInterface(
         unverifyEmail: async function (input: {
             recipeUserId: RecipeUserId;
             email: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/user/email/verify/remove"),

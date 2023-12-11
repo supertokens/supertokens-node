@@ -24,7 +24,7 @@ export default class BackwardCompatibilityService
         this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService();
     }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: Record<string, any> }) => {
         await this.passwordlessBackwardCompatibilityService.sendSms(input);
     };
 }

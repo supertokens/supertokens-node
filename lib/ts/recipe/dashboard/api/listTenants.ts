@@ -39,7 +39,7 @@ export default async function listTenants(
     _: APIInterface,
     __: string,
     ___: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response> {
     let tenantsRes = await Multitenancy.listAllTenants(userContext);
     let finalTenants: TenantListTenantType[] = [];

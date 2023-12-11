@@ -12,7 +12,7 @@ export default abstract class RecipeModule {
     returnAPIIdIfCanHandleRequest: (
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<
         | {
               id: string;
@@ -28,9 +28,14 @@ export default abstract class RecipeModule {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ): Promise<boolean>;
-    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse, userContext: any): Promise<void>;
+    abstract handleError(
+        error: STError,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: Record<string, any>
+    ): Promise<void>;
     abstract getAllCORSHeaders(): string[];
     abstract isErrorFromThisRecipe(err: any): err is STError;
 }

@@ -32,7 +32,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _path: NormalisedURLPath,
         _method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
     handleError: (err: STError, _request: BaseRequest, _response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];

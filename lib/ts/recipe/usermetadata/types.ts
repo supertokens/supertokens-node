@@ -41,7 +41,7 @@ export type APIInterface = {};
 export type RecipeInterface = {
     getUserMetadata: (input: {
         userId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         metadata: any;
@@ -58,7 +58,7 @@ export type RecipeInterface = {
     updateUserMetadata: (input: {
         userId: string;
         metadataUpdate: JSONObject;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         metadata: JSONObject;
@@ -68,7 +68,7 @@ export type RecipeInterface = {
     updateUserMetadataInternal: (input: {
         userId: string;
         metadataUpdate: JSONObject;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         metadata: JSONObject;
@@ -76,7 +76,7 @@ export type RecipeInterface = {
 
     clearUserMetadata: (input: {
         userId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
     }>;

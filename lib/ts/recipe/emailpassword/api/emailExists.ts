@@ -21,7 +21,7 @@ export default async function emailExists(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
 

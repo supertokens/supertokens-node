@@ -161,7 +161,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _path: NormalisedURLPath,
         _method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ): Promise<boolean> => {
         let options = {
             config: this.config,

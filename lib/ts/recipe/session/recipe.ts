@@ -179,7 +179,7 @@ export default class SessionRecipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,
@@ -198,7 +198,12 @@ export default class SessionRecipe extends RecipeModule {
         }
     };
 
-    handleError = async (err: STError, request: BaseRequest, response: BaseResponse, userContext: any) => {
+    handleError = async (
+        err: STError,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: Record<string, any>
+    ) => {
         if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
             if (err.type === STError.UNAUTHORISED) {
                 logDebugMessage("errorHandler: returning UNAUTHORISED");
@@ -254,7 +259,7 @@ export default class SessionRecipe extends RecipeModule {
         options: VerifySessionOptions | undefined,
         request: BaseRequest,
         response: BaseResponse,
-        userContext: any
+        userContext: Record<string, any>
     ) => {
         return await this.apiImpl.verifySession({
             verifySessionOptions: options,

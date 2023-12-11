@@ -43,7 +43,7 @@ export declare type RecipeInterface = {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -54,7 +54,7 @@ export declare type RecipeInterface = {
           }
     >;
     getJWKS(input: {
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number;
@@ -65,7 +65,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     keys: JsonWebKey[];

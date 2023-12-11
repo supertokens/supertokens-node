@@ -26,8 +26,12 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getDashboardBundleLocation(input: { userContext: any }): Promise<string>;
-    shouldAllowAccess(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }): Promise<boolean>;
+    getDashboardBundleLocation(input: { userContext: Record<string, any> }): Promise<string>;
+    shouldAllowAccess(input: {
+        req: BaseRequest;
+        config: TypeNormalisedInput;
+        userContext: Record<string, any>;
+    }): Promise<boolean>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -39,13 +43,13 @@ export declare type APIOptions = {
     appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
-    dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
+    dashboardGET: undefined | ((input: { options: APIOptions; userContext: Record<string, any> }) => Promise<string>);
 };
 export declare type APIFunction = (
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 export declare type AuthMode = "api-key" | "email-password";

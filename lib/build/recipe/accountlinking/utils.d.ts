@@ -7,5 +7,5 @@ export declare function validateAndNormaliseUserInput(_: NormalisedAppinfo, conf
 export declare function verifyEmailForRecipeUserIfLinkedAccountsAreVerified(input: {
     user: User;
     recipeUserId: RecipeUserId;
-    userContext: any;
+    userContext: Record<string, any>;
 }): Promise<void>;

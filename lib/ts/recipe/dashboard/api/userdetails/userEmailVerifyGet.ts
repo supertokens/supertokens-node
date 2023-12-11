@@ -17,7 +17,7 @@ export const userEmailVerifyGet: APIFunction = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response> => {
     const req = options.req;
     const recipeUserId = req.getKeyValueFromQuery("recipeUserId");

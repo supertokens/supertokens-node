@@ -49,7 +49,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeThirdPart
         });
     }
 
-    sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: Record<string, any> }) => {
         return await this.passwordlessSMTPService.sendEmail(input);
     };
 }

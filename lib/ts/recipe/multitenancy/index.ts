@@ -30,7 +30,7 @@ export default class Wrapper {
             thirdPartyEnabled?: boolean;
             coreConfig?: { [key: string]: any };
         },
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         createdNew: boolean;
@@ -45,7 +45,7 @@ export default class Wrapper {
 
     static async deleteTenant(
         tenantId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didExist: boolean;
@@ -59,7 +59,7 @@ export default class Wrapper {
 
     static async getTenant(
         tenantId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -87,7 +87,7 @@ export default class Wrapper {
     }
 
     static async listAllTenants(
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         tenants: {
@@ -115,7 +115,7 @@ export default class Wrapper {
         tenantId: string,
         config: ProviderConfig,
         skipValidation?: boolean,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         createdNew: boolean;
@@ -132,7 +132,7 @@ export default class Wrapper {
     static async deleteThirdPartyConfig(
         tenantId: string,
         thirdPartyId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -148,7 +148,7 @@ export default class Wrapper {
     static async associateUserToTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -177,7 +177,7 @@ export default class Wrapper {
     static async disassociateUserFromTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         wasAssociated: boolean;

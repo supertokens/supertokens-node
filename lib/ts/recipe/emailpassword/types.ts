@@ -89,7 +89,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -108,7 +108,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -123,7 +123,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId; isValidFirstFactorForTenant: boolean | undefined }
         | { status: "WRONG_CREDENTIALS_ERROR" }
@@ -138,13 +138,13 @@ export type RecipeInterface = {
         userId: string; // the id can be either recipeUserId or primaryUserId
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -160,7 +160,7 @@ export type RecipeInterface = {
         // for which one to update the password for.
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -193,7 +193,7 @@ export type APIInterface = {
               email: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -211,7 +211,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -233,7 +233,7 @@ export type APIInterface = {
               token: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -256,7 +256,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -283,7 +283,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";

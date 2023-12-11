@@ -39,11 +39,11 @@ export default class Session implements SessionContainerInterface {
         protected tenantId: string
     ) {}
 
-    getRecipeUserId(_userContext?: any): RecipeUserId {
+    getRecipeUserId(_userContext?: Record<string, any>): RecipeUserId {
         return this.recipeUserId;
     }
 
-    async revokeSession(userContext?: any) {
+    async revokeSession(userContext?: Record<string, any>) {
         await this.helpers.getRecipeImpl().revokeSession({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -66,7 +66,7 @@ export default class Session implements SessionContainerInterface {
         }
     }
 
-    async getSessionDataFromDatabase(userContext?: any): Promise<any> {
+    async getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -81,7 +81,7 @@ export default class Session implements SessionContainerInterface {
         return sessionInfo.sessionDataInDatabase;
     }
 
-    async updateSessionDataInDatabase(newSessionData: any, userContext?: any) {
+    async updateSessionDataInDatabase(newSessionData: any, userContext?: Record<string, any>) {
         if (
             !(await this.helpers.getRecipeImpl().updateSessionDataInDatabase({
                 sessionHandle: this.sessionHandle,
@@ -99,15 +99,15 @@ export default class Session implements SessionContainerInterface {
         }
     }
 
-    getUserId(_userContext?: any) {
+    getUserId(_userContext?: Record<string, any>) {
         return this.userId;
     }
 
-    getTenantId(_userContext?: any) {
+    getTenantId(_userContext?: Record<string, any>) {
         return this.tenantId;
     }
 
-    getAccessTokenPayload(_userContext?: any) {
+    getAccessTokenPayload(_userContext?: Record<string, any>) {
         return this.userDataInAccessToken;
     }
 
@@ -130,7 +130,7 @@ export default class Session implements SessionContainerInterface {
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
+    async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: Record<string, any>): Promise<void> {
         let newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext) };
         for (const key of protectedProps) {
             delete newAccessTokenPayload[key];
@@ -190,7 +190,7 @@ export default class Session implements SessionContainerInterface {
         }
     }
 
-    async getTimeCreated(userContext?: any): Promise<number> {
+    async getTimeCreated(userContext?: Record<string, any>): Promise<number> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -205,7 +205,7 @@ export default class Session implements SessionContainerInterface {
         return sessionInfo.timeCreated;
     }
 
-    async getExpiry(userContext?: any): Promise<number> {
+    async getExpiry(userContext?: Record<string, any>): Promise<number> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -221,13 +221,13 @@ export default class Session implements SessionContainerInterface {
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: Record<string, any>): Promise<void> {
         let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
             accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
             recipeUserId: this.getRecipeUserId(userContext),
             claimValidators,
-            userContext,
+            userContext: userContext ?? {},
         });
 
         if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
@@ -248,34 +248,34 @@ export default class Session implements SessionContainerInterface {
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
+    async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<void> {
         const update = await claim.build(
             this.getUserId(userContext),
             this.getRecipeUserId(userContext),
             this.getTenantId(),
-            userContext
+            userContext ?? {}
         );
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
-        const update = claim.addToPayload_internal({}, value, userContext);
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: Record<string, any>): Promise<void> {
+        const update = claim.addToPayload_internal({}, value, userContext ?? {});
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async getClaimValue<T>(claim: SessionClaim<T>, userContext?: any) {
-        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
+    async getClaimValue<T>(claim: SessionClaim<T>, userContext?: Record<string, any>) {
+        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext ?? {});
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
+    removeClaim(claim: SessionClaim<any>, userContext?: Record<string, any>): Promise<void> {
         const update = claim.removeFromPayloadByMerge_internal({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 
-    attachToRequestResponse(info: ReqResInfo, userContext?: any) {
+    attachToRequestResponse(info: ReqResInfo, userContext?: Record<string, any>) {
         this.reqResInfo = info;
 
         if (this.accessTokenUpdated) {

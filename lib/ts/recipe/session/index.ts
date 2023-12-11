@@ -46,7 +46,7 @@ export default class SessionWrapper {
         recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
@@ -79,7 +79,7 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
@@ -124,9 +124,9 @@ export default class SessionWrapper {
         overrideGlobalClaimValidators?: (
             globalClaimValidators: SessionClaimValidator[],
             sessionInfo: SessionInformation,
-            userContext: any
+            userContext: Record<string, any>
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -194,21 +194,21 @@ export default class SessionWrapper {
         req: any,
         res: any,
         options?: VerifySessionOptions & { sessionRequired?: true },
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<SessionContainer>;
     static getSession(
         req: any,
         res: any,
         options?: VerifySessionOptions & { sessionRequired: false },
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
     static getSession(
         req: any,
         res: any,
         options?: VerifySessionOptions,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
-    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext?: any) {
+    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext?: Record<string, any>) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
@@ -251,25 +251,25 @@ export default class SessionWrapper {
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired?: true },
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<SessionContainer>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired: false },
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ): Promise<SessionContainer | undefined> {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
         const session = await recipeInterfaceImpl.getSession({
@@ -291,14 +291,14 @@ export default class SessionWrapper {
         return session;
     }
 
-    static getSessionInformation(sessionHandle: string, userContext: any = {}) {
+    static getSessionInformation(sessionHandle: string, userContext: Record<string, any> = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
             sessionHandle,
             userContext,
         });
     }
 
-    static refreshSession(req: any, res: any, userContext: any = {}) {
+    static refreshSession(req: any, res: any, userContext: Record<string, any> = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
@@ -310,7 +310,7 @@ export default class SessionWrapper {
         refreshToken: string,
         disableAntiCsrf: boolean = false,
         antiCsrfToken?: string,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
             refreshToken,
@@ -323,7 +323,7 @@ export default class SessionWrapper {
         userId: string,
         revokeSessionsForLinkedAccounts: boolean = true,
         tenantId?: string,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
             userId,
@@ -337,7 +337,7 @@ export default class SessionWrapper {
         userId: string,
         fetchSessionsForAllLinkedAccounts: boolean = true,
         tenantId?: string,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
@@ -348,21 +348,25 @@ export default class SessionWrapper {
         });
     }
 
-    static revokeSession(sessionHandle: string, userContext: any = {}) {
+    static revokeSession(sessionHandle: string, userContext: Record<string, any> = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({
             sessionHandle,
             userContext,
         });
     }
 
-    static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {
+    static revokeMultipleSessions(sessionHandles: string[], userContext: Record<string, any> = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({
             sessionHandles,
             userContext,
         });
     }
 
-    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext: any = {}) {
+    static updateSessionDataInDatabase(
+        sessionHandle: string,
+        newSessionData: any,
+        userContext: Record<string, any> = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionDataInDatabase({
             sessionHandle,
             newSessionData,
@@ -373,7 +377,7 @@ export default class SessionWrapper {
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
             sessionHandle,
@@ -382,7 +386,12 @@ export default class SessionWrapper {
         });
     }
 
-    static createJWT(payload?: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext: any = {}) {
+    static createJWT(
+        payload?: any,
+        validitySeconds?: number,
+        useStaticSigningKey?: boolean,
+        userContext: Record<string, any> = {}
+    ) {
         return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.createJWT({
             payload,
             validitySeconds,
@@ -391,17 +400,21 @@ export default class SessionWrapper {
         });
     }
 
-    static getJWKS(userContext: any = {}) {
+    static getJWKS(userContext: Record<string, any> = {}) {
         return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getJWKS({ userContext });
     }
 
-    static getOpenIdDiscoveryConfiguration(userContext: any = {}) {
+    static getOpenIdDiscoveryConfiguration(userContext: Record<string, any> = {}) {
         return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({
             userContext,
         });
     }
 
-    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
+    static fetchAndSetClaim(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        userContext: Record<string, any> = {}
+    ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
             sessionHandle,
             claim,
@@ -413,7 +426,7 @@ export default class SessionWrapper {
         sessionHandle: string,
         claim: SessionClaim<T>,
         value: T,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
             sessionHandle,
@@ -426,7 +439,7 @@ export default class SessionWrapper {
     static getClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -443,7 +456,11 @@ export default class SessionWrapper {
         });
     }
 
-    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
+    static removeClaim(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        userContext: Record<string, any> = {}
+    ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
             sessionHandle,
             claim,

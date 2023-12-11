@@ -19,7 +19,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         _recipeUserId: RecipeUserId,
         tenantId: string | undefined,
         currentPayload: JSONObject | undefined,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<{
         c: Record<string, number>;
         n: string[];

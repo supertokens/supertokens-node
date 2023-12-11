@@ -40,7 +40,7 @@ export function getServiceImplementation(twilioClient: Twilio): ServiceInterface
             }
         },
         getContent: async function (
-            input: TypePasswordlessSmsDeliveryInput & { userContext: any }
+            input: TypePasswordlessSmsDeliveryInput & { userContext: Record<string, any> }
         ): Promise<GetContentResult> {
             return getPasswordlessLoginSmsContent(input);
         },

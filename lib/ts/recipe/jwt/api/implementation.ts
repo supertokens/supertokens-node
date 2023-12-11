@@ -23,7 +23,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }: {
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<{ keys: JsonWebKey[] } | GeneralErrorResponse> {
             const resp = await options.recipeImplementation.getJWKS({ userContext });
 

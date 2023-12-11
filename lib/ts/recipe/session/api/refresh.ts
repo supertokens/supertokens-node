@@ -19,7 +19,7 @@ import { APIInterface, APIOptions } from "../";
 export default async function handleRefreshAPI(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.refreshPOST === undefined) {
         return false;

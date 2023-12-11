@@ -4,7 +4,7 @@ export declare type SmsDeliveryInterface<T> = {
     sendSms: (
         input: T & {
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 };

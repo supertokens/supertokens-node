@@ -8,15 +8,15 @@ export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends Sessio
         recipeUserId: RecipeUserId,
         tenantId: string,
         currentPayload: JSONObject | undefined,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<T[] | undefined> | T[] | undefined;
     readonly defaultMaxAgeInSeconds: number | undefined;
     constructor(config: { key: string; fetchValue: SessionClaim<T[]>["fetchValue"]; defaultMaxAgeInSeconds?: number });
-    addToPayload_internal(payload: any, value: T[], _userContext: any): any;
-    removeFromPayloadByMerge_internal(payload: any, _userContext?: any): any;
-    removeFromPayload(payload: any, _userContext?: any): any;
-    getValueFromPayload(payload: any, _userContext?: any): T[] | undefined;
-    getLastRefetchTime(payload: any, _userContext?: any): number | undefined;
+    addToPayload_internal(payload: any, value: T[], _userContext: Record<string, any>): any;
+    removeFromPayloadByMerge_internal(payload: any, _userContext?: Record<string, any>): any;
+    removeFromPayload(payload: any, _userContext?: Record<string, any>): any;
+    getValueFromPayload(payload: any, _userContext?: Record<string, any>): T[] | undefined;
+    getLastRefetchTime(payload: any, _userContext?: Record<string, any>): number | undefined;
     validators: {
         includes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
         excludes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;

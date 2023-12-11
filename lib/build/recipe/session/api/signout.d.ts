@@ -3,5 +3,5 @@ import { APIInterface, APIOptions } from "../";
 export default function signOutAPI(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean>;

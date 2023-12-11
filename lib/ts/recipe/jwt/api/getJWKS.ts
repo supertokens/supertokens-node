@@ -19,7 +19,7 @@ import { APIInterface, APIOptions } from "../types";
 export default async function getJWKS(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.getJWKSGET === undefined) {
         return false;

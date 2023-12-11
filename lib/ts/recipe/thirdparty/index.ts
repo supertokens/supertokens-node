@@ -27,7 +27,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getProvider({
             thirdPartyId,
@@ -43,7 +43,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
             thirdPartyId,

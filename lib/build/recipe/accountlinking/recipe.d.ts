@@ -41,7 +41,7 @@ export default class Recipe extends RecipeModule {
     }: {
         tenantId: string;
         user: User;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<User>;
     getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
         tenantId,
@@ -50,7 +50,7 @@ export default class Recipe extends RecipeModule {
     }: {
         tenantId: string;
         user: User;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<User | undefined>;
     isSignInAllowed: ({
         user,
@@ -59,7 +59,7 @@ export default class Recipe extends RecipeModule {
     }: {
         user: User;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<boolean>;
     isSignUpAllowed: ({
         newUser,
@@ -70,7 +70,7 @@ export default class Recipe extends RecipeModule {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<boolean>;
     isSignInUpAllowedHelper: ({
         accountInfo,
@@ -83,13 +83,13 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         tenantId: string;
         isSignIn: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {
         user?: User;
         newEmail: string;
         isVerified: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: typeof verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
 }

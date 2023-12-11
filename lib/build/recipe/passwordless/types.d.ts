@@ -39,7 +39,7 @@ export declare type TypeInput = (
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
     emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: Record<string, any>) => Promise<string> | string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -70,7 +70,7 @@ export declare type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: Record<string, any>) => Promise<string> | string;
     getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
     override: {
@@ -93,7 +93,7 @@ export declare type RecipeInterface = {
         ) & {
             userInputCode?: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<{
         status: "OK";
@@ -109,7 +109,7 @@ export declare type RecipeInterface = {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -132,13 +132,13 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
     ) => Promise<
         | {
@@ -161,7 +161,7 @@ export declare type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status:
@@ -180,12 +180,12 @@ export declare type RecipeInterface = {
             | {
                   email: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
     ) => Promise<{
         status: "OK";
@@ -193,25 +193,29 @@ export declare type RecipeInterface = {
     revokeCode: (input: {
         codeId: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
     }>;
-    listCodesByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByEmail: (input: {
+        email: string;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }) => Promise<DeviceType[]>;
     listCodesByPhoneNumber: (input: {
         phoneNumber: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<DeviceType[]>;
     listCodesByDeviceId: (input: {
         deviceId: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<DeviceType | undefined>;
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<DeviceType | undefined>;
 };
 export declare type DeviceType = {
@@ -248,7 +252,7 @@ export declare type APIInterface = {
         ) & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<
         | {
@@ -270,7 +274,7 @@ export declare type APIInterface = {
         } & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<
         | GeneralErrorResponse
@@ -292,7 +296,7 @@ export declare type APIInterface = {
         ) & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<
         | {
@@ -320,7 +324,7 @@ export declare type APIInterface = {
         email: string;
         tenantId: string;
         options: APIOptions;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -332,7 +336,7 @@ export declare type APIInterface = {
         phoneNumber: string;
         tenantId: string;
         options: APIOptions;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";

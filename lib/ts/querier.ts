@@ -109,7 +109,11 @@ export class Querier {
     }
 
     // path should start with "/"
-    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: any): Promise<T> => {
+    sendPostRequest = async <T = any>(
+        path: NormalisedURLPath,
+        body: any,
+        userContext: Record<string, any> = {}
+    ): Promise<T> => {
         this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
@@ -148,8 +152,8 @@ export class Querier {
     sendDeleteRequest = async (
         path: NormalisedURLPath,
         body: any,
-        params: any | undefined,
-        userContext: any
+        params?: any,
+        userContext: Record<string, any> = {}
     ): Promise<any> => {
         this.invalidateCoreCallCache(userContext);
 
@@ -190,7 +194,7 @@ export class Querier {
     sendGetRequest = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: any
+        userContext: Record<string, any> = {}
     ): Promise<any> => {
         const sortedKeys = Object.keys(params).sort();
         let uniqueKey = path.getAsStringDangerous();
@@ -282,7 +286,11 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: any): Promise<any> => {
+    sendPutRequest = async (
+        path: NormalisedURLPath,
+        body: any,
+        userContext: Record<string, any> = {}
+    ): Promise<any> => {
         this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
@@ -315,7 +323,7 @@ export class Querier {
         return respBody;
     };
 
-    invalidateCoreCallCache = (userContext: any) => {
+    invalidateCoreCallCache = (userContext: Record<string, any>) => {
         userContext._default = {
             ...userContext._default,
             coreCallCache: {},

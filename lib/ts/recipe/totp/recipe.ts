@@ -97,18 +97,22 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
                         mfaInstance.addAvailableFactorIdsFromOtherRecipes(["totp"], []);
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User, userContext: any) => {
-                            const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
-                                userId: user.id,
-                                userContext,
-                            });
-                            for (const device of deviceRes.devices) {
-                                if (device.verified) {
-                                    return ["totp"];
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
+                            async (user: User, userContext: Record<string, any>) => {
+                                const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices(
+                                    {
+                                        userId: user.id,
+                                        userContext,
+                                    }
+                                );
+                                for (const device of deviceRes.devices) {
+                                    if (device.verified) {
+                                        return ["totp"];
+                                    }
                                 }
+                                return [];
                             }
-                            return [];
-                        });
+                        );
                     }
                 });
 
@@ -170,7 +174,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ): Promise<boolean> => {
         let options = {
             recipeImplementation: this.recipeInterfaceImpl,

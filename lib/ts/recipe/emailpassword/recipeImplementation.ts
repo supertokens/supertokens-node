@@ -25,7 +25,7 @@ export default function getRecipeInterface(
                 email: string;
                 password: string;
                 tenantId: string;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<
             | {
@@ -64,7 +64,7 @@ export default function getRecipeInterface(
             tenantId: string;
             email: string;
             password: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -107,7 +107,7 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -169,7 +169,7 @@ export default function getRecipeInterface(
             userId: string;
             email: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
@@ -191,7 +191,7 @@ export default function getRecipeInterface(
         }: {
             token: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -218,7 +218,7 @@ export default function getRecipeInterface(
             password?: string;
             applyPasswordPolicy?: boolean;
             tenantIdForPasswordPolicy: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";

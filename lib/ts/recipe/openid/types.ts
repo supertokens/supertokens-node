@@ -77,7 +77,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -90,7 +90,7 @@ export type APIInterface = {
 
 export type RecipeInterface = {
     getOpenIdDiscoveryConfiguration(input: {
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<{
         status: "OK";
         issuer: string;
@@ -100,7 +100,7 @@ export type RecipeInterface = {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -112,7 +112,7 @@ export type RecipeInterface = {
     >;
 
     getJWKS(input: {
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<{
         keys: JsonWebKey[];
     }>;

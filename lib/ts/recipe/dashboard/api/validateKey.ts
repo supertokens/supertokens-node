@@ -16,7 +16,11 @@
 import { APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess, validateApiKey } from "../utils";
 
-export default async function validateKey(_: APIInterface, options: APIOptions, userContext: any): Promise<boolean> {
+export default async function validateKey(
+    _: APIInterface,
+    options: APIOptions,
+    userContext: Record<string, any>
+): Promise<boolean> {
     const input = { req: options.req, config: options.config, userContext };
 
     if (await validateApiKey(input)) {

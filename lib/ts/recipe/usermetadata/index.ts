@@ -20,14 +20,14 @@ import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getUserMetadata(userId: string, userContext?: any) {
+    static async getUserMetadata(userId: string, userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserMetadata({
             userId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: any) {
+    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserMetadata({
             userId,
             metadataUpdate,
@@ -35,7 +35,7 @@ export default class Wrapper {
         });
     }
 
-    static async clearUserMetadata(userId: string, userContext?: any) {
+    static async clearUserMetadata(userId: string, userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.clearUserMetadata({
             userId,
             userContext: userContext === undefined ? {} : userContext,

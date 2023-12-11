@@ -24,7 +24,7 @@ export default class TwilioService implements SmsDeliveryInterface<TypeThirdPart
         this.passwordlessTwilioService = new PasswordlessTwilioService(config);
     }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: Record<string, any> }) => {
         await this.passwordlessTwilioService.sendSms(input);
     };
 }

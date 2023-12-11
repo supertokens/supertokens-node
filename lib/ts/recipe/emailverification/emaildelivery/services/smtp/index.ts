@@ -39,7 +39,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailVeri
         this.serviceImpl = builder.build();
     }
 
-    sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: Record<string, any> }) => {
         let content = await this.serviceImpl.getContent(input);
         await this.serviceImpl.sendRawEmail({
             ...content,

@@ -48,7 +48,7 @@ export function getServiceImplementation(
             }
         },
         getContent: async function (
-            input: TypePasswordlessEmailDeliveryInput & { userContext: any }
+            input: TypePasswordlessEmailDeliveryInput & { userContext: Record<string, any> }
         ): Promise<GetContentResult> {
             return getPasswordlessLoginEmailContent(input);
         },

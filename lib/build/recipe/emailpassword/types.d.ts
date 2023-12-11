@@ -68,7 +68,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -84,7 +84,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -100,7 +100,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -121,7 +121,7 @@ export declare type RecipeInterface = {
         userId: string;
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -134,7 +134,7 @@ export declare type RecipeInterface = {
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -149,7 +149,7 @@ export declare type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -183,7 +183,7 @@ export declare type APIInterface = {
               email: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -200,7 +200,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -221,7 +221,7 @@ export declare type APIInterface = {
               token: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -246,7 +246,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -272,7 +272,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";

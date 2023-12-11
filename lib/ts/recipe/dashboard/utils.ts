@@ -257,7 +257,11 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
     return isRecipeInitialised;
 }
 
-export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
+export async function validateApiKey(input: {
+    req: BaseRequest;
+    config: TypeNormalisedInput;
+    userContext: Record<string, any>;
+}) {
     let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
 
     // We receieve the api key as `Bearer API_KEY`, this retrieves just the key

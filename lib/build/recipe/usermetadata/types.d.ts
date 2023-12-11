@@ -23,7 +23,7 @@ export declare type APIInterface = {};
 export declare type RecipeInterface = {
     getUserMetadata: (input: {
         userId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         metadata: any;
@@ -39,7 +39,7 @@ export declare type RecipeInterface = {
     updateUserMetadata: (input: {
         userId: string;
         metadataUpdate: JSONObject;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         metadata: JSONObject;
@@ -47,14 +47,14 @@ export declare type RecipeInterface = {
     updateUserMetadataInternal: (input: {
         userId: string;
         metadataUpdate: JSONObject;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
     clearUserMetadata: (input: {
         userId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
     }>;

@@ -20,7 +20,7 @@ export default async function loginMethodsAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.loginMethodsGET === undefined) {
         return false;

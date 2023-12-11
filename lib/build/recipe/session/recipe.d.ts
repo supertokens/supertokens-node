@@ -40,15 +40,20 @@ export default class SessionRecipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
-    handleError: (err: STError, request: BaseRequest, response: BaseResponse, userContext: any) => Promise<void>;
+    handleError: (
+        err: STError,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: Record<string, any>
+    ) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     verifySession: (
         options: VerifySessionOptions | undefined,
         request: BaseRequest,
         response: BaseResponse,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
 }

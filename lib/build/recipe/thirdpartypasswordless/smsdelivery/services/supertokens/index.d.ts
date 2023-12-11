@@ -6,7 +6,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypeThir
     constructor(apiKey: string);
     sendSms: (
         input: TypeThirdPartyPasswordlessSmsDeliveryInput & {
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 }

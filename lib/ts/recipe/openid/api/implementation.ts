@@ -22,7 +22,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }: {
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<{ status: "OK"; issuer: string; jwks_uri: string } | GeneralErrorResponse> {
             return await options.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext });
         },

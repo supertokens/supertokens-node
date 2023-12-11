@@ -12,7 +12,7 @@ export default function getAPIInterface(): APIInterface {
             userContext,
         }: {
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<SessionContainerInterface> {
             return refreshSessionInRequest({
                 req: options.req,
@@ -30,7 +30,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             verifySessionOptions: VerifySessionOptions | undefined;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<SessionContainerInterface | undefined> {
             let method = normaliseHttpMethod(options.req.getMethod());
             if (method === "options" || method === "trace") {
@@ -67,7 +67,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             session: SessionContainerInterface | undefined;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";

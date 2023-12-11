@@ -20,7 +20,7 @@ import Session from "../../session";
 export default async function generateEmailVerifyToken(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 

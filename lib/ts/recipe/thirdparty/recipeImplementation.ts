@@ -26,7 +26,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email: string;
                 isVerified: boolean;
                 tenantId: string;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<
             | {
@@ -123,7 +123,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email: string;
                 isVerified: boolean;
                 tenantId: string;
-                userContext: any;
+                userContext: Record<string, any>;
                 oAuthTokens: { [key: string]: any };
                 rawUserInfoFromProvider: {
                     fromIdTokenPayload?: { [key: string]: any };

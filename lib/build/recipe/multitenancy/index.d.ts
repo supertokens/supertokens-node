@@ -16,21 +16,21 @@ export default class Wrapper {
                 [key: string]: any;
             };
         },
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         createdNew: boolean;
     }>;
     static deleteTenant(
         tenantId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didExist: boolean;
     }>;
     static getTenant(
         tenantId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -53,7 +53,7 @@ export default class Wrapper {
         | undefined
     >;
     static listAllTenants(
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         tenants: {
@@ -77,7 +77,7 @@ export default class Wrapper {
         tenantId: string,
         config: ProviderConfig,
         skipValidation?: boolean,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         createdNew: boolean;
@@ -85,7 +85,7 @@ export default class Wrapper {
     static deleteThirdPartyConfig(
         tenantId: string,
         thirdPartyId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -93,7 +93,7 @@ export default class Wrapper {
     static associateUserToTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -114,7 +114,7 @@ export default class Wrapper {
     static disassociateUserFromTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         wasAssociated: boolean;

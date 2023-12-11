@@ -20,7 +20,7 @@ import Session from "../../session";
 export default async function mfaInfo(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.mfaInfoGET === undefined) {
         return false;

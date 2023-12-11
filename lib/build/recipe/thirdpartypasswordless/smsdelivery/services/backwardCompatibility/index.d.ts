@@ -7,7 +7,7 @@ export default class BackwardCompatibilityService
     constructor();
     sendSms: (
         input: TypeThirdPartyPasswordlessSmsDeliveryInput & {
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 }

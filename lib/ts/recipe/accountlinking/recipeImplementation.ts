@@ -44,7 +44,7 @@ export default function getRecipeImplementation(
                 paginationToken?: string;
                 includeRecipeIds?: string[];
                 query?: { [key: string]: string };
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<{
             users: UserType[];
@@ -77,7 +77,7 @@ export default function getRecipeImplementation(
                 userContext,
             }: {
                 recipeUserId: RecipeUserId;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<
             | {
@@ -108,7 +108,7 @@ export default function getRecipeImplementation(
                 userContext,
             }: {
                 recipeUserId: RecipeUserId;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<
             | {
@@ -148,7 +148,7 @@ export default function getRecipeImplementation(
             }: {
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<
             | {
@@ -190,7 +190,7 @@ export default function getRecipeImplementation(
             }: {
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<
             | {
@@ -268,7 +268,7 @@ export default function getRecipeImplementation(
                 userContext,
             }: {
                 recipeUserId: RecipeUserId;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<{
             status: "OK";
@@ -307,7 +307,12 @@ export default function getRecipeImplementation(
                 accountInfo,
                 doUnionOfAccountInfo,
                 userContext,
-            }: { tenantId: string; accountInfo: AccountInfo; doUnionOfAccountInfo: boolean; userContext: any }
+            }: {
+                tenantId: string;
+                accountInfo: AccountInfo;
+                doUnionOfAccountInfo: boolean;
+                userContext: Record<string, any>;
+            }
         ): Promise<UserType[]> {
             let result = await querier.sendGetRequest(
                 new NormalisedURLPath(`${tenantId ?? "public"}/users/by-accountinfo`),
@@ -332,7 +337,7 @@ export default function getRecipeImplementation(
             }: {
                 userId: string;
                 removeAllLinkedAccounts: boolean;
-                userContext: any;
+                userContext: Record<string, any>;
             }
         ): Promise<{
             status: "OK";

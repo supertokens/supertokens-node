@@ -85,7 +85,7 @@ export default function getRecipeInterface(
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -113,7 +113,7 @@ export default function getRecipeInterface(
             email: string;
             isVerified: boolean;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -138,7 +138,7 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             clientType?: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<TypeProvider | undefined> {
             return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },

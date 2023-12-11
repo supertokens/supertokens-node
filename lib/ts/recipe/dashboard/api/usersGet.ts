@@ -28,7 +28,7 @@ export default async function usersGet(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");

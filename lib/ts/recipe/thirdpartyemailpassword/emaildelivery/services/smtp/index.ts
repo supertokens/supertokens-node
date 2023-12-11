@@ -24,7 +24,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeThirdPart
         this.emailPasswordSMTPService = new EmailPasswordSMTPService(config);
     }
 
-    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: Record<string, any> }) => {
         await this.emailPasswordSMTPService.sendEmail(input);
     };
 }

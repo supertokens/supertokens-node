@@ -7,7 +7,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypePasswordl
     constructor(config: TypeInput<TypePasswordlessEmailDeliveryInput>);
     sendEmail: (
         input: TypePasswordlessEmailDeliveryInput & {
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 }

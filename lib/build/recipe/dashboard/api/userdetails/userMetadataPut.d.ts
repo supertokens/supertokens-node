@@ -7,6 +7,6 @@ export declare const userMetadataPut: (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ) => Promise<Response>;
 export {};

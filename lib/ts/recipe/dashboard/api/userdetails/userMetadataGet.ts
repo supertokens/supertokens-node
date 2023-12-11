@@ -16,7 +16,7 @@ export const userMetaDataGet: APIFunction = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 

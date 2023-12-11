@@ -14,7 +14,7 @@ export declare function findAndCreateProviderInstance(
     providers: ProviderInput[],
     thirdPartyId: string,
     clientType: string | undefined,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<TypeProvider | undefined>;
 export declare function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderConfig): ProviderConfig;
 export declare function mergeProvidersFromCoreAndStatic(

@@ -4,7 +4,7 @@ export declare type EmailDeliveryInterface<T> = {
     sendEmail: (
         input: T & {
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 };

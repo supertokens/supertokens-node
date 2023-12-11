@@ -28,5 +28,5 @@ export declare function getPasswordResetLink(input: {
     recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
-    userContext: any;
+    userContext: Record<string, any>;
 }): string;

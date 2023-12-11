@@ -30,7 +30,7 @@ export default class BackwardCompatibilityService
         }
     }
 
-    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: Record<string, any> }) => {
         await this.emailPasswordBackwardCompatibilityService.sendEmail(input);
     };
 }

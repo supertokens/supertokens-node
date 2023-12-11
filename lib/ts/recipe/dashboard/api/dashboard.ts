@@ -18,7 +18,7 @@ import { APIInterface, APIOptions } from "../types";
 export default async function dashboard(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.dashboardGET === undefined) {
         return false;

@@ -49,7 +49,7 @@ export function validateAndNormaliseUserInput(_: NormalisedAppinfo, config?: Typ
 export async function verifyEmailForRecipeUserIfLinkedAccountsAreVerified(input: {
     user: User;
     recipeUserId: RecipeUserId;
-    userContext: any;
+    userContext: Record<string, any>;
 }) {
     try {
         EmailVerificationRecipe.getInstanceOrThrowError();

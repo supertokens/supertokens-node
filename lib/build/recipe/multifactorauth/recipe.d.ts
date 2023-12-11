@@ -40,7 +40,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
@@ -49,7 +49,7 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: () => string[];
     getAllAvailableFirstFactorIds: () => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    getFactorsSetupForUser: (user: User, userContext: any) => Promise<string[]>;
+    getFactorsSetupForUser: (user: User, userContext: Record<string, any>) => Promise<string[]>;
     validateForMultifactorAuthBeforeFactorCompletion: ({
         tenantId,
         factorIdInProgress,
@@ -65,7 +65,7 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface | undefined;
         userLoggingIn?: User | undefined;
         isAlreadySetup?: boolean | undefined;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -92,7 +92,7 @@ export default class Recipe extends RecipeModule {
                   recipeUserId: RecipeUserId;
               }
             | undefined;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | MFAFlowErrors
         | {

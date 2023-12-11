@@ -16,7 +16,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -44,7 +44,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -83,7 +83,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyId: string;
             clientType?: string;
             tenantId: string;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<TypeProvider | undefined> {
             return await recipeInterface.thirdPartyGetProvider(input);
         },

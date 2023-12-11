@@ -8,7 +8,7 @@ import { BaseRequest } from "./framework";
 export declare type AppInfo = {
     appName: string;
     websiteDomain?: string;
-    origin?: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
+    origin?: string | ((input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -16,10 +16,10 @@ export declare type AppInfo = {
 };
 export declare type NormalisedAppinfo = {
     appName: string;
-    getOrigin: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
+    getOrigin: (input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;
+    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;

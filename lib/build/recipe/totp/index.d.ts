@@ -8,7 +8,7 @@ export default class Wrapper {
         deviceName?: string,
         skew?: number,
         period?: number,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -22,7 +22,7 @@ export default class Wrapper {
     >;
     static listDevices(
         userId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         devices: {
@@ -36,14 +36,14 @@ export default class Wrapper {
         userId: string,
         existingDeviceName: string,
         newDeviceName: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR";
     }>;
     static removeDevice(
         userId: string,
         deviceName: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didDeviceExist: boolean;
@@ -53,7 +53,7 @@ export default class Wrapper {
         userId: string,
         deviceName: string,
         totp: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -76,7 +76,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         totp: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";

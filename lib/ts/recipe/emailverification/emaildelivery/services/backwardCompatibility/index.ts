@@ -27,7 +27,7 @@ export default class BackwardCompatibilityService
         this.isInServerlessEnv = isInServerlessEnv;
     }
 
-    sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: Record<string, any> }) => {
         try {
             if (!this.isInServerlessEnv) {
                 createAndSendEmailUsingSupertokensService(

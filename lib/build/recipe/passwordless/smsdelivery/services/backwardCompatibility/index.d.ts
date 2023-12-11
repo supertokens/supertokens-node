@@ -5,7 +5,7 @@ export default class BackwardCompatibilityService implements SmsDeliveryInterfac
     constructor();
     sendSms: (
         input: TypePasswordlessSmsDeliveryInput & {
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 }

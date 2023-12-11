@@ -25,7 +25,7 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async getFactorsSetUpByUser(userId: string, userContext?: any) {
+    static async getFactorsSetUpByUser(userId: string, userContext?: Record<string, any>) {
         const ctx = userContext ?? {};
         const user = await getUser(userId, ctx);
         if (!user) {
@@ -38,7 +38,11 @@ export default class Wrapper {
         });
     }
 
-    static async isAllowedToSetupFactor(session: SessionContainerInterface, factorId: string, userContext?: any) {
+    static async isAllowedToSetupFactor(
+        session: SessionContainerInterface,
+        factorId: string,
+        userContext?: Record<string, any>
+    ) {
         let ctx = userContext ?? {};
         const user = await getUser(session.getUserId(), ctx);
         if (!user) {
@@ -78,14 +82,14 @@ export default class Wrapper {
             factorsSetUpForUser: factorsSetup,
             defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
-            userContext,
+            userContext: userContext ?? {},
         });
     }
 
     static async markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
             session,

@@ -14,5 +14,5 @@ export declare function getEmailVerifyLink(input: {
     recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
-    userContext: any;
+    userContext: Record<string, any>;
 }): string;

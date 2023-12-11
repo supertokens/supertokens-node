@@ -38,18 +38,18 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc;
-    getPrimaryUserIdForRecipeUser: (recipeUserId: RecipeUserId, userContext: any) => Promise<string>;
+    getPrimaryUserIdForRecipeUser: (recipeUserId: RecipeUserId, userContext: Record<string, any>) => Promise<string>;
     updateSessionIfRequiredPostEmailVerification: (input: {
         req: BaseRequest;
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
         recipeUserIdWhoseEmailGotVerified: RecipeUserId;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<SessionContainerInterface | undefined>;
 }

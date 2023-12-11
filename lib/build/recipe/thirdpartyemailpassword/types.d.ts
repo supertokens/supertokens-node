@@ -59,7 +59,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         clientType?: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<TypeProvider | undefined>;
     thirdPartySignInUp(input: {
         thirdPartyId: string;
@@ -78,7 +78,7 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -109,7 +109,7 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -131,7 +131,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -146,7 +146,7 @@ export declare type RecipeInterface = {
     createNewEmailPasswordRecipeUser(input: {
         email: string;
         password: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -162,7 +162,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -178,7 +178,7 @@ export declare type RecipeInterface = {
         userId: string;
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -191,7 +191,7 @@ export declare type RecipeInterface = {
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -206,7 +206,7 @@ export declare type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -233,7 +233,7 @@ export declare type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -248,7 +248,7 @@ export declare type APIInterface = {
               email: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -265,7 +265,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -286,7 +286,7 @@ export declare type APIInterface = {
               token: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -309,7 +309,7 @@ export declare type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   options: ThirdPartyAPIOptions;
-                  userContext: any;
+                  userContext: Record<string, any>;
               } & (
                   | {
                         redirectURIInfo: {
@@ -361,7 +361,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -387,7 +387,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -409,7 +409,7 @@ export declare type APIInterface = {
         | ((input: {
               formPostInfoFromProvider: any;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<void>);
 };
 export declare type TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput;

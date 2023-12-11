@@ -10,7 +10,7 @@ export const userSessionsPost = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const sessionHandles = requestBody.sessionHandles;

@@ -70,7 +70,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         );
     }
 
-    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => {
         let origin = appInfo.origin;
 
         if (origin === undefined) {
@@ -90,7 +90,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
 
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => {
         return getTopLevelDomainForSameSiteResolution(websiteDomainFunction(input).getAsStringDangerous());
     };
 
@@ -257,7 +257,10 @@ export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
     return setRequestInUserContextIfNotDefined({}, request);
 }
 
-export function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest) {
+export function setRequestInUserContextIfNotDefined(
+    userContext: Record<string, any> | undefined,
+    request: BaseRequest
+) {
     if (userContext === undefined) {
         userContext = {};
     }

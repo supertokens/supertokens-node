@@ -141,7 +141,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ): Promise<boolean> => {
         let options = {
             recipeInstance: this,
@@ -187,7 +187,7 @@ export default class Recipe extends RecipeModule {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    getFactorsSetupForUser = async (user: User, userContext: any) => {
+    getFactorsSetupForUser = async (user: User, userContext: Record<string, any>) => {
         let factorIds: string[] = [];
 
         for (const func of this.getFactorsSetupForUserFromOtherRecipesFuncs) {
@@ -214,7 +214,7 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface;
         userLoggingIn?: User;
         isAlreadySetup?: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<{ status: "OK" } | MFAFlowErrors> => {
         const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
         const validFirstFactors =
@@ -326,7 +326,7 @@ export default class Recipe extends RecipeModule {
             createdNewUser: boolean;
             recipeUserId: RecipeUserId;
         };
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";

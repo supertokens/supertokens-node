@@ -48,7 +48,7 @@ export function getServiceImplementation(
             }
         },
         getContent: async function (
-            input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }
+            input: TypeEmailVerificationEmailDeliveryInput & { userContext: Record<string, any> }
         ): Promise<GetContentResult> {
             return getEmailVerifyEmailContent(input);
         },

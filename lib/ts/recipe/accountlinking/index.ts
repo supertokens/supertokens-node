@@ -33,7 +33,7 @@ export default class Wrapper {
     static async createPrimaryUserIdOrLinkAccounts(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
@@ -60,7 +60,7 @@ export default class Wrapper {
     static async getPrimaryUserThatCanBeLinkedToRecipeUserId(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
@@ -74,21 +74,25 @@ export default class Wrapper {
         });
     }
 
-    static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext: Record<string, any> = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUser({
             recipeUserId,
             userContext,
         });
     }
 
-    static async createPrimaryUser(recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async createPrimaryUser(recipeUserId: RecipeUserId, userContext: Record<string, any> = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
             userContext,
         });
     }
 
-    static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext: any = {}) {
+    static async canLinkAccounts(
+        recipeUserId: RecipeUserId,
+        primaryUserId: string,
+        userContext: Record<string, any> = {}
+    ) {
         return await Recipe.getInstance().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
             primaryUserId,
@@ -96,7 +100,11 @@ export default class Wrapper {
         });
     }
 
-    static async linkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext: any = {}) {
+    static async linkAccounts(
+        recipeUserId: RecipeUserId,
+        primaryUserId: string,
+        userContext: Record<string, any> = {}
+    ) {
         return await Recipe.getInstance().recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId,
@@ -104,7 +112,7 @@ export default class Wrapper {
         });
     }
 
-    static async unlinkAccount(recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async unlinkAccount(recipeUserId: RecipeUserId, userContext: Record<string, any> = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.unlinkAccount({
             recipeUserId,
             userContext,
@@ -115,7 +123,7 @@ export default class Wrapper {
         tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
-        userContext?: any
+        userContext: Record<string, any> = {}
     ) {
         return await Recipe.getInstance().isSignUpAllowed({
             newUser,
@@ -125,7 +133,7 @@ export default class Wrapper {
         });
     }
 
-    static async isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext: Record<string, any> = {}) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
@@ -143,7 +151,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
-        userContext?: any
+        userContext: Record<string, any> = {}
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
 
@@ -151,7 +159,7 @@ export default class Wrapper {
             user,
             newEmail,
             isVerified,
-            userContext: userContext ?? {},
+            userContext,
         });
     }
 }

@@ -22,7 +22,7 @@ export default function getAPIImplementation(): APIInterface {
             email: string;
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -65,7 +65,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -349,7 +349,7 @@ export default function getAPIImplementation(): APIInterface {
             token: string;
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -570,7 +570,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";
@@ -722,7 +722,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }): Promise<
             | {
                   status: "OK";

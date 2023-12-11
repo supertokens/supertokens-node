@@ -59,7 +59,7 @@ export type TypeInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: Record<string, any>) => Promise<string> | string;
 
     override?: {
         functions?: (
@@ -95,7 +95,7 @@ export type TypeNormalisedInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: Record<string, any>) => Promise<string> | string;
 
     getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
@@ -117,7 +117,7 @@ export type RecipeInterface = {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; tenantId: string; userContext: any }
+        ) & { userInputCode?: string; tenantId: string; userContext: Record<string, any> }
     ) => Promise<{
         status: "OK";
         preAuthSessionId: string;
@@ -132,7 +132,7 @@ export type RecipeInterface = {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -153,13 +153,13 @@ export type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
     ) => Promise<
         | {
@@ -181,7 +181,7 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status:
@@ -201,12 +201,12 @@ export type RecipeInterface = {
             | {
                   email: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: Record<string, any>;
               }
     ) => Promise<{
         status: "OK";
@@ -215,29 +215,33 @@ export type RecipeInterface = {
     revokeCode: (input: {
         codeId: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
     }>;
 
-    listCodesByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByEmail: (input: {
+        email: string;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }) => Promise<DeviceType[]>;
 
     listCodesByPhoneNumber: (input: {
         phoneNumber: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<DeviceType[]>;
 
     listCodesByDeviceId: (input: {
         deviceId: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<DeviceType | undefined>;
 
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<DeviceType | undefined>;
 };
 
@@ -273,7 +277,7 @@ export type APIInterface = {
         input: ({ email: string } | { phoneNumber: string }) & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<
         | {
@@ -293,7 +297,7 @@ export type APIInterface = {
         input: { deviceId: string; preAuthSessionId: string } & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 
@@ -311,7 +315,7 @@ export type APIInterface = {
         ) & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<
         | {
@@ -338,7 +342,7 @@ export type APIInterface = {
         email: string;
         tenantId: string;
         options: APIOptions;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -351,7 +355,7 @@ export type APIInterface = {
         phoneNumber: string;
         tenantId: string;
         options: APIOptions;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";

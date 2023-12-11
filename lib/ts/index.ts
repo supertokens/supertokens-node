@@ -43,6 +43,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
+        userContext?: Record<string, any>;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -50,7 +51,7 @@ export default class SuperTokensWrapper {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
-            userContext: {},
+            userContext: input.userContext ?? {},
         });
     }
 
@@ -60,6 +61,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
+        userContext?: Record<string, any>;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -67,7 +69,7 @@ export default class SuperTokensWrapper {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "DESC",
             ...input,
-            userContext: undefined,
+            userContext: input.userContext ?? {},
         });
     }
 
@@ -76,34 +78,53 @@ export default class SuperTokensWrapper {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
+        userContext?: Record<string, any>;
     }) {
-        return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
+        return SuperTokens.getInstanceOrThrowError().createUserIdMapping({
+            ...input,
+            userContext: input.userContext ?? {},
+        });
     }
 
-    static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
-        return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
+    static getUserIdMapping(input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        userContext?: Record<string, any>;
+    }) {
+        return SuperTokens.getInstanceOrThrowError().getUserIdMapping({
+            ...input,
+            userContext: input.userContext ?? {},
+        });
     }
 
     static deleteUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
+        userContext?: Record<string, any>;
     }) {
-        return SuperTokens.getInstanceOrThrowError().deleteUserIdMapping(input);
+        return SuperTokens.getInstanceOrThrowError().deleteUserIdMapping({
+            ...input,
+            userContext: input.userContext ?? {},
+        });
     }
 
     static updateOrDeleteUserIdMappingInfo(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
+        userContext?: Record<string, any>;
     }) {
-        return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
+        return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo({
+            ...input,
+            userContext: input.userContext ?? {},
+        });
     }
 
-    static async getUser(userId: string, userContext?: any) {
+    static async getUser(userId: string, userContext?: Record<string, any>) {
         return await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
             userId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext ?? {},
         });
     }
 
@@ -111,27 +132,31 @@ export default class SuperTokensWrapper {
         tenantId: string,
         accountInfo: AccountInfo,
         doUnionOfAccountInfo: boolean = false,
-        userContext?: any
+        userContext?: Record<string, any>
     ) {
         return await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
             accountInfo,
             doUnionOfAccountInfo,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext ?? {},
         });
     }
-    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = true, userContext?: any) {
+    static async deleteUser(
+        userId: string,
+        removeAllLinkedAccounts: boolean = true,
+        userContext?: Record<string, any>
+    ) {
         return await AccountLinking.getInstance().recipeInterfaceImpl.deleteUser({
             userId,
             removeAllLinkedAccounts,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext ?? {},
         });
     }
     static convertToRecipeUserId(recipeUserId: string): RecipeUserId {
         return new RecipeUserId(recipeUserId);
     }
 
-    static getRequestFromUserContext(userContext: any | undefined) {
+    static getRequestFromUserContext(userContext: Record<string, any> | undefined) {
         return SuperTokens.getInstanceOrThrowError().getRequestFromUserContext(userContext);
     }
 }

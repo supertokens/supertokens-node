@@ -50,7 +50,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
     handleError: (
         err: STErrorEmailPassword | STErrorThirdParty,

@@ -9,7 +9,7 @@ export default function usersGet(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response>;
 export declare function getSearchParamsFromURL(
     path: string

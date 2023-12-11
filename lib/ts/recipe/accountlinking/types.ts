@@ -18,12 +18,12 @@ import type { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {
-    onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
+    onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: Record<string, any>) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoWithRecipeId & { recipeUserId?: RecipeUserId },
         user: User | undefined,
         tenantId: string,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<
         | {
               shouldAutomaticallyLink: false;
@@ -42,12 +42,12 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
+    onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: Record<string, any>) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoWithRecipeId & { recipeUserId?: RecipeUserId },
         user: User | undefined,
         tenantId: string,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<
         | {
               shouldAutomaticallyLink: false;
@@ -73,14 +73,14 @@ export type RecipeInterface = {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
     canCreatePrimaryUser: (input: {
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -96,7 +96,7 @@ export type RecipeInterface = {
     >;
     createPrimaryUser: (input: {
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -116,7 +116,7 @@ export type RecipeInterface = {
     canLinkAccounts: (input: {
         recipeUserId: RecipeUserId;
         primaryUserId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -139,7 +139,7 @@ export type RecipeInterface = {
     linkAccounts: (input: {
         recipeUserId: RecipeUserId;
         primaryUserId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -162,23 +162,23 @@ export type RecipeInterface = {
     >;
     unlinkAccount: (input: {
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         wasRecipeUserDeleted: boolean;
         wasLinked: boolean;
     }>;
-    getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
+    getUser: (input: { userId: string; userContext: Record<string, any> }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {
         tenantId: string;
         accountInfo: AccountInfo;
         doUnionOfAccountInfo: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<User[]>;
     deleteUser: (input: {
         userId: string;
         removeAllLinkedAccounts: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{ status: "OK" }>;
 };
 

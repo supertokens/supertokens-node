@@ -136,7 +136,7 @@ export default class Recipe extends RecipeModule {
     }: {
         tenantId: string;
         user: User;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<User> => {
         logDebugMessage("createPrimaryUserIdOrLinkAccounts called");
         // TODO: fix this
@@ -301,7 +301,7 @@ export default class Recipe extends RecipeModule {
     }: {
         tenantId: string;
         user: User;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<User | undefined> => {
         // first we check if this user itself is a
         // primary user or not. If it is, we return that.
@@ -356,7 +356,7 @@ export default class Recipe extends RecipeModule {
     }: {
         user: User;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED);
 
@@ -382,7 +382,7 @@ export default class Recipe extends RecipeModule {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED);
         if (newUser.email !== undefined && newUser.phoneNumber !== undefined) {
@@ -411,7 +411,7 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         tenantId: string;
         isSignIn: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED);
         // since this is a recipe level user, we have to do the following checks
@@ -622,7 +622,7 @@ export default class Recipe extends RecipeModule {
         user?: User;
         newEmail: string;
         isVerified: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<boolean> => {
         /**
          * The purpose of this function is to check that if a recipe user ID's email

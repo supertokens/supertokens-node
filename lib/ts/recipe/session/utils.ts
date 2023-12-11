@@ -140,8 +140,11 @@ export function validateAndNormaliseUserInput(
 
     let cookieSameSite: (input: {
         request: BaseRequest | undefined;
-        userContext: any;
-    }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        userContext: Record<string, any>;
+    }) => "strict" | "lax" | "none" = (input: {
+        request: BaseRequest | undefined;
+        userContext: Record<string, any>;
+    }) => {
         let protocolOfWebsiteDomain = getURLProtocol(
             appInfo
                 .getOrigin({
@@ -186,10 +189,10 @@ export function validateAndNormaliseUserInput(
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
-        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE") = ({
-        request,
-        userContext,
-    }) => {
+        | ((input: {
+              request: BaseRequest | undefined;
+              userContext: Record<string, any>;
+          }) => "VIA_CUSTOM_HEADER" | "NONE") = ({ request, userContext }) => {
         const sameSite = cookieSameSite({
             request,
             userContext,
@@ -288,7 +291,7 @@ export function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: Record<string, any>
 ) {
     setFrontTokenInHeaders(res, frontToken);
     setToken(
@@ -327,7 +330,7 @@ export function setAccessTokenInResponse(
 export async function getRequiredClaimValidators(
     session: SessionContainerInterface,
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
-    userContext: any
+    userContext: Record<string, any>
 ) {
     const claimValidatorsAddedByOtherRecipes = SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
     const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
@@ -348,7 +351,7 @@ export async function getRequiredClaimValidators(
 export async function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,
-    userContext: any
+    userContext: Record<string, any>
 ) {
     const validationErrors = [];
     for (const validator of claimValidators) {

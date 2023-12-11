@@ -1173,6 +1173,7 @@ Supertokens.init({
                                         {
                                             email: input.email,
                                         },
+                                        undefined,
                                         input.userContext
                                     )
                                 ).length === 0

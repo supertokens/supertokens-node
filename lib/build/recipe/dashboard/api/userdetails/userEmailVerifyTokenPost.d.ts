@@ -7,6 +7,6 @@ export declare const userEmailVerifyTokenPost: (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ) => Promise<Response>;
 export {};

@@ -5,7 +5,10 @@ import { ProviderConfig, ProviderInput } from "../thirdparty/types";
 import { GeneralErrorResponse } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare type TypeInput = {
-    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (
+        tenantId: string,
+        userContext: Record<string, any>
+    ) => Promise<string[] | undefined>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -15,7 +18,10 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (
+        tenantId: string,
+        userContext: Record<string, any>
+    ) => Promise<string[] | undefined>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -25,7 +31,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getTenantId: (input: { tenantIdFromFrontend: string; userContext: any }) => Promise<string>;
+    getTenantId: (input: { tenantIdFromFrontend: string; userContext: Record<string, any> }) => Promise<string>;
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
@@ -36,21 +42,21 @@ export declare type RecipeInterface = {
                 [key: string]: any;
             };
         };
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
     }>;
     deleteTenant: (input: {
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         didExist: boolean;
     }>;
     getTenant: (input: {
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -73,7 +79,7 @@ export declare type RecipeInterface = {
         | undefined
     >;
     listAllTenants: (input: {
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         tenants: {
@@ -99,7 +105,7 @@ export declare type RecipeInterface = {
         tenantId: string;
         config: ProviderConfig;
         skipValidation?: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
@@ -107,7 +113,7 @@ export declare type RecipeInterface = {
     deleteThirdPartyConfig: (input: {
         tenantId: string;
         thirdPartyId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -115,7 +121,7 @@ export declare type RecipeInterface = {
     associateUserToTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -136,7 +142,7 @@ export declare type RecipeInterface = {
     disassociateUserFromTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         wasAssociated: boolean;
@@ -156,7 +162,7 @@ export declare type APIInterface = {
         tenantId: string;
         clientType?: string;
         options: APIOptions;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";

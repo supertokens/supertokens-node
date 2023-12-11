@@ -22,7 +22,7 @@ export default async function emailVerify(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     let result;
 

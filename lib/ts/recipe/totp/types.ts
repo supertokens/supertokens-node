@@ -21,7 +21,7 @@ import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type GetUserIdentifierInfoForUserIdFunc = (
     userId: string,
-    userContext: any
+    userContext: Record<string, any>
 ) => Promise<
     | {
           status: "OK";
@@ -69,7 +69,7 @@ export type RecipeInterface = {
         deviceName?: string;
         skew?: number;
         period?: number;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -85,13 +85,13 @@ export type RecipeInterface = {
         userId: string;
         existingDeviceName: string;
         newDeviceName: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK" | "UNKNOWN_DEVICE_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR";
     }>;
     listDevices: (input: {
         userId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         devices: {
@@ -104,7 +104,7 @@ export type RecipeInterface = {
     removeDevice: (input: {
         userId: string;
         deviceName: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         didDeviceExist: boolean;
@@ -114,7 +114,7 @@ export type RecipeInterface = {
         userId: string;
         deviceName: string;
         totp: string;
-        userContext: string;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -137,7 +137,7 @@ export type RecipeInterface = {
         tenantId: string;
         userId: string;
         totp: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
@@ -168,7 +168,7 @@ export type APIInterface = {
         deviceName?: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR";
@@ -185,7 +185,7 @@ export type APIInterface = {
     listDevicesGET: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -203,7 +203,7 @@ export type APIInterface = {
         deviceName: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -217,7 +217,7 @@ export type APIInterface = {
         totp: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -246,7 +246,7 @@ export type APIInterface = {
         totp: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";

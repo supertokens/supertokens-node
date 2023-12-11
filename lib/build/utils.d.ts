@@ -25,7 +25,10 @@ export declare function getRidFromHeader(req: BaseRequest): string | undefined;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
 export declare function humaniseMilliseconds(ms: number): string;
 export declare function makeDefaultUserContextFromAPI(request: BaseRequest): any;
-export declare function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest): any;
+export declare function setRequestInUserContextIfNotDefined(
+    userContext: Record<string, any> | undefined,
+    request: BaseRequest
+): Record<string, any>;
 export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function getFromObjectCaseInsensitive<T>(key: string, object: Record<string, T>): T | undefined;
 export declare function postWithFetch(

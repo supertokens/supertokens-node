@@ -46,7 +46,7 @@ export type RecipeInterface = {
         userId: string;
         role: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -61,7 +61,7 @@ export type RecipeInterface = {
         userId: string;
         role: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -75,7 +75,7 @@ export type RecipeInterface = {
     getRolesForUser: (input: {
         userId: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         roles: string[];
@@ -84,7 +84,7 @@ export type RecipeInterface = {
     getUsersThatHaveRole: (input: {
         role: string;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -98,7 +98,7 @@ export type RecipeInterface = {
     createNewRoleOrAddPermissions: (input: {
         role: string;
         permissions: string[];
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         createdNewRole: boolean;
@@ -106,7 +106,7 @@ export type RecipeInterface = {
 
     getPermissionsForRole: (input: {
         role: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -120,14 +120,14 @@ export type RecipeInterface = {
     removePermissionsFromRole: (input: {
         role: string;
         permissions: string[];
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK" | "UNKNOWN_ROLE_ERROR";
     }>;
 
     getRolesThatHavePermission: (input: {
         permission: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         roles: string[];
@@ -135,14 +135,14 @@ export type RecipeInterface = {
 
     deleteRole: (input: {
         role: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         didRoleExist: boolean;
     }>;
 
     getAllRoles: (input: {
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         roles: string[];

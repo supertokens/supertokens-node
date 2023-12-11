@@ -21,7 +21,7 @@ export default async function apiKeyProtector(
     tenantId: string,
     options: APIOptions,
     apiFunction: APIFunction,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     let shouldAllowAccess = false;
 

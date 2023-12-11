@@ -11,7 +11,7 @@ export const userEmailVerifyPut = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;
@@ -48,6 +48,7 @@ export const userEmailVerifyPut = async (
         const verifyResponse = await EmailVerification.verifyEmailUsingToken(
             tenantId,
             tokenResponse.token,
+            undefined,
             userContext
         );
 

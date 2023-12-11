@@ -72,7 +72,7 @@ export type TypeInput = {
     getTokenTransferMethod?: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => TokenTransferMethod | "any";
 
     errorHandlers?: ErrorHandlers;
@@ -112,7 +112,10 @@ export type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
-    getCookieSameSite: (input: { request: BaseRequest | undefined; userContext: any }) => "strict" | "lax" | "none";
+    getCookieSameSite: (input: {
+        request: BaseRequest | undefined;
+        userContext: Record<string, any>;
+    }) => "strict" | "lax" | "none";
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
@@ -122,12 +125,15 @@ export type TypeNormalisedInput = {
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
-        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE");
+        | ((input: {
+              request: BaseRequest | undefined;
+              userContext: Record<string, any>;
+          }) => "VIA_CUSTOM_HEADER" | "NONE");
 
     getTokenTransferMethod: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => TokenTransferMethod | "any";
 
     invalidClaimStatusCode: number;
@@ -197,7 +203,7 @@ export interface VerifySessionOptions {
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
 
@@ -209,7 +215,7 @@ export type RecipeInterface = {
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<SessionContainerInterface>;
 
     getGlobalClaimValidators(input: {
@@ -217,21 +223,21 @@ export type RecipeInterface = {
         userId: string;
         recipeUserId: RecipeUserId;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 
     getSession(input: {
         accessToken: string | undefined;
         antiCsrfToken?: string;
         options?: VerifySessionOptions;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<SessionContainerInterface | undefined>;
 
     refreshSession(input: {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<SessionContainerInterface>;
 
     /**
@@ -241,14 +247,17 @@ export type RecipeInterface = {
      *
      * Returns undefined if the sessionHandle does not exist
      */
-    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
+    getSessionInformation(input: {
+        sessionHandle: string;
+        userContext: Record<string, any>;
+    }): Promise<SessionInformation | undefined>;
 
     revokeAllSessionsForUser(input: {
         userId: string;
         revokeSessionsForLinkedAccounts: boolean;
         tenantId: string;
         revokeAcrossAllTenants?: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<string[]>;
 
     getAllSessionHandlesForUser(input: {
@@ -256,24 +265,24 @@ export type RecipeInterface = {
         fetchSessionsForAllLinkedAccounts: boolean;
         tenantId: string;
         fetchAcrossAllTenants?: boolean;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<string[]>;
 
-    revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
+    revokeSession(input: { sessionHandle: string; userContext: Record<string, any> }): Promise<boolean>;
 
-    revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
+    revokeMultipleSessions(input: { sessionHandles: string[]; userContext: Record<string, any> }): Promise<string[]>;
 
     // Returns false if the sessionHandle does not exist
     updateSessionDataInDatabase(input: {
         sessionHandle: string;
         newSessionData: any;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<boolean>;
 
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<boolean>;
 
     /**
@@ -282,7 +291,7 @@ export type RecipeInterface = {
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -307,23 +316,27 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         accessTokenPayload: any;
         claimValidators: SessionClaimValidator[];
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<{
         invalidClaims: ClaimValidationError[];
         accessTokenPayloadUpdate?: any;
     }>;
-    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
+    fetchAndSetClaim(input: {
+        sessionHandle: string;
+        claim: SessionClaim<any>;
+        userContext: Record<string, any>;
+    }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         value: T;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<boolean>;
 
     getClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -334,24 +347,28 @@ export type RecipeInterface = {
           }
     >;
 
-    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
+    removeClaim(input: {
+        sessionHandle: string;
+        claim: SessionClaim<any>;
+        userContext: Record<string, any>;
+    }): Promise<boolean>;
 };
 
 export interface SessionContainerInterface {
-    revokeSession(userContext?: any): Promise<void>;
+    revokeSession(userContext?: Record<string, any>): Promise<void>;
 
-    getSessionDataFromDatabase(userContext?: any): Promise<any>;
+    getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any>;
 
-    updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
+    updateSessionDataInDatabase(newSessionData: any, userContext?: Record<string, any>): Promise<any>;
 
-    getUserId(userContext?: any): string;
+    getUserId(userContext?: Record<string, any>): string;
 
-    getRecipeUserId(userContext?: any): RecipeUserId;
-    getTenantId(userContext?: any): string;
+    getRecipeUserId(userContext?: Record<string, any>): RecipeUserId;
+    getTenantId(userContext?: Record<string, any>): string;
 
-    getAccessTokenPayload(userContext?: any): any;
+    getAccessTokenPayload(userContext?: Record<string, any>): any;
 
-    getHandle(userContext?: any): string;
+    getHandle(userContext?: Record<string, any>): string;
 
     getAllSessionTokensDangerously(): {
         accessToken: string;
@@ -361,20 +378,20 @@ export interface SessionContainerInterface {
         accessAndFrontTokenUpdated: boolean;
     };
 
-    getAccessToken(userContext?: any): string;
+    getAccessToken(userContext?: Record<string, any>): string;
 
-    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
+    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: Record<string, any>): Promise<void>;
 
-    getTimeCreated(userContext?: any): Promise<number>;
+    getTimeCreated(userContext?: Record<string, any>): Promise<number>;
 
-    getExpiry(userContext?: any): Promise<number>;
+    getExpiry(userContext?: Record<string, any>): Promise<number>;
 
-    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
-    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
-    getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
-    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
-    attachToRequestResponse(reqResInfo: ReqResInfo, userContext?: any): Promise<void> | void;
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: Record<string, any>): Promise<void>;
+    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<void>;
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: Record<string, any>): Promise<void>;
+    getClaimValue<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<T | undefined>;
+    removeClaim(claim: SessionClaim<any>, userContext?: Record<string, any>): Promise<void>;
+    attachToRequestResponse(reqResInfo: ReqResInfo, userContext?: Record<string, any>): Promise<void> | void;
 }
 
 export type APIOptions = {
@@ -392,7 +409,9 @@ export type APIInterface = {
      * since it's not something that is directly called by the user on the
      * frontend anyway
      */
-    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<SessionContainerInterface>);
+    refreshPOST:
+        | undefined
+        | ((input: { options: APIOptions; userContext: Record<string, any> }) => Promise<SessionContainerInterface>);
 
     signOutPOST:
         | undefined
@@ -403,7 +422,7 @@ export type APIInterface = {
               // rare that something needs to be done in this case, but making it like this
               // has little disadvantages.
               session: SessionContainerInterface | undefined;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -414,7 +433,7 @@ export type APIInterface = {
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<SessionContainerInterface | undefined>;
 };
 
@@ -443,7 +462,7 @@ export type SessionClaimValidator = (
            * Decides if we need to refetch the claim value before checking the payload with `isValid`.
            * E.g.: if the information in the payload is expired, or is not sufficient for this check.
            */
-          shouldRefetch: (payload: any, userContext: any) => Promise<boolean> | boolean;
+          shouldRefetch: (payload: any, userContext: Record<string, any>) => Promise<boolean> | boolean;
       }
     | {}
 ) & {
@@ -451,7 +470,7 @@ export type SessionClaimValidator = (
     /**
      * Decides if the claim is valid based on the payload (and not checking DB or anything else)
      */
-    validate: (payload: any, userContext: any) => Promise<ClaimValidationResult>;
+    validate: (payload: any, userContext: Record<string, any>) => Promise<ClaimValidationResult>;
 };
 
 export abstract class SessionClaim<T> {
@@ -467,7 +486,7 @@ export abstract class SessionClaim<T> {
         recipeUserId: RecipeUserId,
         tenantId: string,
         currentPayload: JSONObject | undefined,
-        userContext: any
+        userContext: Record<string, any>
     ): Promise<T | undefined> | T | undefined;
 
     /**
@@ -475,30 +494,35 @@ export abstract class SessionClaim<T> {
      *
      * @returns The modified payload object
      */
-    abstract addToPayload_internal(payload: JSONObject, value: T, userContext: any): JSONObject;
+    abstract addToPayload_internal(payload: JSONObject, value: T, userContext: Record<string, any>): JSONObject;
 
     /**
      * Removes the claim from the payload by setting it to null, so mergeIntoAccessTokenPayload clears it
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayloadByMerge_internal(payload: JSONObject, userContext?: any): JSONObject;
+    abstract removeFromPayloadByMerge_internal(payload: JSONObject, userContext?: Record<string, any>): JSONObject;
 
     /**
      * Removes the claim from the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayload(payload: JSONObject, userContext?: any): JSONObject;
+    abstract removeFromPayload(payload: JSONObject, userContext?: Record<string, any>): JSONObject;
 
     /**
      * Gets the value of the claim stored in the payload
      *
      * @returns Claim value
      */
-    abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
+    abstract getValueFromPayload(payload: JSONObject, userContext: Record<string, any>): T | undefined;
 
-    async build(userId: string, recipeUserId: RecipeUserId, tenantId: string, userContext?: any): Promise<JSONObject> {
+    async build(
+        userId: string,
+        recipeUserId: RecipeUserId,
+        tenantId: string,
+        userContext: Record<string, any>
+    ): Promise<JSONObject> {
         const value = await this.fetchValue(userId, recipeUserId, tenantId, undefined, userContext);
 
         if (value === undefined) {

@@ -38,7 +38,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
@@ -49,13 +49,13 @@ export default class Recipe extends RecipeModule {
                   email: string;
                   tenantId: string;
                   request: BaseRequest | undefined;
-                  userContext?: any;
+                  userContext: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
                   request: BaseRequest | undefined;
-                  userContext?: any;
+                  userContext: Record<string, any>;
               }
     ) => Promise<string>;
     signInUp: (
@@ -63,12 +63,12 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: any;
+                  userContext: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: any;
+                  userContext: Record<string, any>;
               }
     ) => Promise<{
         status: string;

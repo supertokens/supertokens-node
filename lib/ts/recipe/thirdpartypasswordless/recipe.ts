@@ -210,7 +210,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ): Promise<boolean> => {
         if ((await this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
             return await this.passwordlessRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);

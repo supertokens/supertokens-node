@@ -18,13 +18,13 @@ export interface GetContentResult {
     toEmail: string;
 }
 export declare type TypeInputSendRawEmail = GetContentResult & {
-    userContext: any;
+    userContext: Record<string, any>;
 };
 export declare type ServiceInterface<T> = {
     sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
     getContent: (
         input: T & {
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<GetContentResult>;
 };

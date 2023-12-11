@@ -79,7 +79,7 @@ export type RecipeInterface = {
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<boolean>;
 
     getMFARequirementsForAuth: (input: {
@@ -90,25 +90,29 @@ export type RecipeInterface = {
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<MFARequirementList> | MFARequirementList;
 
     markFactorAsCompleteInSession: (input: {
         session: SessionContainerInterface;
         factorId: string;
-        userContext?: any;
+        userContext: Record<string, any>;
     }) => Promise<void>;
 
-    getFactorsSetupForUser: (input: { user: User; userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { user: User; userContext: Record<string, any> }) => Promise<string[]>;
 
     addToDefaultRequiredFactorsForUser: (input: {
         user: User;
         tenantId: string;
         factorId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<void>;
 
-    getDefaultRequiredFactorsForUser(input: { user: User; tenantId: string; userContext: any }): Promise<string[]>;
+    getDefaultRequiredFactorsForUser(input: {
+        user: User;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }): Promise<string[]>;
 };
 
 export type APIOptions = {
@@ -125,7 +129,7 @@ export type APIInterface = {
     mfaInfoGET: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -140,4 +144,7 @@ export type APIInterface = {
     >;
 };
 
-export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: any) => Promise<string[]>;
+export type GetFactorsSetupForUserFromOtherRecipesFunc = (
+    user: User,
+    userContext: Record<string, any>
+) => Promise<string[]>;

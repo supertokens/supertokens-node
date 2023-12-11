@@ -22,6 +22,6 @@ export declare function isRecipeInitialised(recipeId: RecipeIdForUser): boolean;
 export declare function validateApiKey(input: {
     req: BaseRequest;
     config: TypeNormalisedInput;
-    userContext: any;
+    userContext: Record<string, any>;
 }): Promise<boolean>;
 export declare function getApiPathWithDashboardBase(path: string): string;

@@ -16,7 +16,7 @@ export default class Wrapper {
     static createPrimaryUserIdOrLinkAccounts(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<import("../../types").User>;
     /**
      * This function returns the primary user that the input recipe ID can be
@@ -30,11 +30,11 @@ export default class Wrapper {
     static getPrimaryUserThatCanBeLinkedToRecipeUserId(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<import("../../types").User | undefined>;
     static canCreatePrimaryUser(
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -50,7 +50,7 @@ export default class Wrapper {
     >;
     static createPrimaryUser(
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -70,7 +70,7 @@ export default class Wrapper {
     static canLinkAccounts(
         recipeUserId: RecipeUserId,
         primaryUserId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -93,7 +93,7 @@ export default class Wrapper {
     static linkAccounts(
         recipeUserId: RecipeUserId,
         primaryUserId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -116,7 +116,7 @@ export default class Wrapper {
     >;
     static unlinkAccount(
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         wasRecipeUserDeleted: boolean;
@@ -126,14 +126,18 @@ export default class Wrapper {
         tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<boolean>;
-    static isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
+    static isSignInAllowed(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        userContext?: Record<string, any>
+    ): Promise<boolean>;
     static isEmailChangeAllowed(
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<boolean>;
 }
 export declare const init: typeof Recipe.init;

@@ -27,7 +27,7 @@ export default class BackwardCompatibilityService
         this.appInfo = appInfo;
     }
 
-    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: Record<string, any> }) => {
         // we add this here cause the user may have overridden the sendEmail function
         // to change the input email and if we don't do this, the input email
         // will get reset by the getUserById call above.

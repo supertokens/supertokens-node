@@ -41,7 +41,7 @@ export default class TwilioService implements SmsDeliveryInterface<TypePasswordl
         this.serviceImpl = builder.build();
     }
 
-    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: Record<string, any> }) => {
         let content = await this.serviceImpl.getContent(input);
         if ("from" in this.config.twilioSettings) {
             await this.serviceImpl.sendRawSms({

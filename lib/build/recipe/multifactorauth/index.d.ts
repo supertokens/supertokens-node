@@ -6,16 +6,16 @@ import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static MultiFactorAuthClaim: import("./multiFactorAuthClaim").MultiFactorAuthClaimClass;
-    static getFactorsSetUpByUser(userId: string, userContext?: any): Promise<string[]>;
+    static getFactorsSetUpByUser(userId: string, userContext?: Record<string, any>): Promise<string[]>;
     static isAllowedToSetupFactor(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<boolean>;
     static markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;

@@ -24,7 +24,7 @@ export default class SuperTokens {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: Record<string, any>
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (includeRecipeIds?: string[] | undefined, tenantId?: string | undefined) => Promise<number>;
@@ -33,6 +33,7 @@ export default class SuperTokens {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -46,6 +47,7 @@ export default class SuperTokens {
     getUserIdMapping: (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        userContext: Record<string, any>;
     }) => Promise<
         | {
               status: "OK";
@@ -61,6 +63,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -69,10 +72,16 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
+        userContext: Record<string, any>;
     }) => Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    middleware: (request: BaseRequest, response: BaseResponse, userContext: any) => Promise<boolean>;
-    errorHandler: (err: any, request: BaseRequest, response: BaseResponse, userContext: any) => Promise<void>;
-    getRequestFromUserContext: (userContext: any | undefined) => BaseRequest | undefined;
+    middleware: (request: BaseRequest, response: BaseResponse, userContext: Record<string, any>) => Promise<boolean>;
+    errorHandler: (
+        err: any,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: Record<string, any>
+    ) => Promise<void>;
+    getRequestFromUserContext: (userContext: Record<string, any> | undefined) => BaseRequest | undefined;
 }

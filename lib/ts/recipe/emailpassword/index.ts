@@ -26,7 +26,7 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(tenantId: string, email: string, password: string, userContext?: any) {
+    static signUp(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
@@ -35,7 +35,7 @@ export default class Wrapper {
         });
     }
 
-    static signIn(tenantId: string, email: string, password: string, userContext?: any) {
+    static signIn(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
@@ -55,7 +55,12 @@ export default class Wrapper {
      *
      * And we want to allow primaryUserId being passed in.
      */
-    static createResetPasswordToken(tenantId: string, userId: string, email: string, userContext?: any) {
+    static createResetPasswordToken(
+        tenantId: string,
+        userId: string,
+        email: string,
+        userContext?: Record<string, any>
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
             email,
@@ -64,7 +69,12 @@ export default class Wrapper {
         });
     }
 
-    static async resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext?: any) {
+    static async resetPasswordUsingToken(
+        tenantId: string,
+        token: string,
+        newPassword: string,
+        userContext?: Record<string, any>
+    ) {
         const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
 
         if (consumeResp.status !== "OK") {
@@ -80,7 +90,7 @@ export default class Wrapper {
         });
     }
 
-    static consumePasswordResetToken(tenantId: string, token: string, userContext?: any) {
+    static consumePasswordResetToken(tenantId: string, token: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
@@ -92,7 +102,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext?: any;
+        userContext?: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
     }) {
@@ -108,7 +118,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
         let token = await createResetPasswordToken(tenantId, userId, email, userContext);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
@@ -133,7 +143,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext: any = {}
+        userContext: Record<string, any> = {}
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
         const user = await getUser(userId, userContext);
         if (!user) {
@@ -167,7 +177,7 @@ export default class Wrapper {
         };
     }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
+    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: Record<string, any> }) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},

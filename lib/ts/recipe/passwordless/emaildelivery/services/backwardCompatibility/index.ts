@@ -72,7 +72,7 @@ export default class BackwardCompatibilityService
         this.appInfo = appInfo;
     }
 
-    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: Record<string, any> }) => {
         await createAndSendEmailUsingSupertokensService({
             appInfo: this.appInfo,
             email: input.email,

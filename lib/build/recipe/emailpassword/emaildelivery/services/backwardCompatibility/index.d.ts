@@ -9,7 +9,7 @@ export default class BackwardCompatibilityService
     constructor(appInfo: NormalisedAppinfo, isInServerlessEnv: boolean);
     sendEmail: (
         input: TypeEmailPasswordEmailDeliveryInput & {
-            userContext: any;
+            userContext: Record<string, any>;
         }
     ) => Promise<void>;
 }

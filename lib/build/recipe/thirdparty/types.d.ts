@@ -69,7 +69,7 @@ declare type CommonProviderConfig = {
             [key: string]: any;
         };
         clientConfig: ProviderConfigForClientType;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<void>;
     /**
      * This function is responsible for validating the access token received from the third party provider.
@@ -84,19 +84,26 @@ declare type CommonProviderConfig = {
     validateAccessToken?: (input: {
         accessToken: string;
         clientConfig: ProviderConfigForClientType;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<void>;
     requireEmail?: boolean;
-    generateFakeEmail?: (input: { thirdPartyUserId: string; tenantId: string; userContext: any }) => Promise<string>;
+    generateFakeEmail?: (input: {
+        thirdPartyUserId: string;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }) => Promise<string>;
 };
 export declare type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
 export declare type TypeProvider = {
     id: string;
     config: ProviderConfigForClientType;
-    getConfigForClientType: (input: { clientType?: string; userContext: any }) => Promise<ProviderConfigForClientType>;
+    getConfigForClientType: (input: {
+        clientType?: string;
+        userContext: Record<string, any>;
+    }) => Promise<ProviderConfigForClientType>;
     getAuthorisationRedirectURL: (input: {
         redirectURIOnProviderDashboard: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<{
         urlWithQueryParams: string;
         pkceCodeVerifier?: string;
@@ -107,9 +114,9 @@ export declare type TypeProvider = {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string;
         };
-        userContext: any;
+        userContext: Record<string, any>;
     }) => Promise<any>;
-    getUserInfo: (input: { oAuthTokens: any; userContext: any }) => Promise<UserInfo>;
+    getUserInfo: (input: { oAuthTokens: any; userContext: Record<string, any> }) => Promise<UserInfo>;
 };
 export declare type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];
@@ -149,7 +156,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         tenantId: string;
         clientType?: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<TypeProvider | undefined>;
     signInUp(input: {
         thirdPartyId: string;
@@ -168,7 +175,7 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -199,7 +206,7 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -236,7 +243,7 @@ export declare type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<
               | {
                     status: "OK";
@@ -252,7 +259,7 @@ export declare type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   options: APIOptions;
-                  userContext: any;
+                  userContext: Record<string, any>;
               } & (
                   | {
                         redirectURIInfo: {
@@ -302,7 +309,7 @@ export declare type APIInterface = {
                   [key: string]: any;
               };
               options: APIOptions;
-              userContext: any;
+              userContext: Record<string, any>;
           }) => Promise<void>);
 };
 export {};

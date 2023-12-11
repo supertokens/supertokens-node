@@ -35,7 +35,7 @@ export async function getSessionFromRequest({
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     options?: VerifySessionOptions;
-    userContext?: any;
+    userContext?: Record<string, any>;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
     const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
@@ -201,7 +201,7 @@ export async function refreshSessionInRequest({
 }: {
     res: any;
     req: any;
-    userContext: any;
+    userContext: Record<string, any>;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
 }) {
@@ -362,7 +362,7 @@ export async function createNewSessionInRequest({
 }: {
     req: any;
     res: any;
-    userContext: any;
+    userContext: Record<string, any>;
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;

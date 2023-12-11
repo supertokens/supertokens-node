@@ -21,7 +21,7 @@ export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: Record<string, any>
 ): Promise<boolean> {
     if (apiImplementation.authorisationUrlGET === undefined) {
         return false;
