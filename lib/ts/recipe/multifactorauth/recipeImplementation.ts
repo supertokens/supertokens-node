@@ -115,7 +115,9 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 userContext,
             });
             const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
-                session,
+                user,
+                accessTokenPayload: session.getAccessTokenPayload(),
+                tenantId,
                 factorsSetUpForUser,
                 defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
                 defaultRequiredFactorIdsForUser,

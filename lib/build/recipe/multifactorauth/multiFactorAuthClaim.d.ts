@@ -15,14 +15,15 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
     };
     buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
     fetchValue: (
-        _userId: string,
+        userId: string,
         _recipeUserId: RecipeUserId,
-        _tenantId: string | undefined,
-        _userContext: any
-    ) => {
-        c: {};
-        n: never[];
-    };
+        tenantId: string | undefined,
+        currentPayload: JSONObject | undefined,
+        userContext: any
+    ) => Promise<{
+        c: Record<string, number>;
+        n: string[];
+    }>;
     addToPayload_internal: (
         payload: JSONObject,
         value: MFAClaimValue

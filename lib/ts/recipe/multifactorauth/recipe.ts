@@ -277,7 +277,9 @@ export default class Recipe extends RecipeModule {
         });
         const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
         const mfaRequirementsForAuth = await this.recipeInterfaceImpl.getMFARequirementsForAuth({
-            session,
+            user: sessionUser,
+            accessTokenPayload: session.getAccessTokenPayload(),
+            tenantId,
             factorsSetUpForUser,
             defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
             defaultRequiredFactorIdsForUser,

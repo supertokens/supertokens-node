@@ -253,6 +253,7 @@ export default function getRecipeInterface(
                         input.userId,
                         input.recipeUserId,
                         accessTokenPayload.tId === undefined ? DEFAULT_TENANT_ID : accessTokenPayload.tId,
+                        accessTokenPayload,
                         input.userContext
                     );
                     logDebugMessage(

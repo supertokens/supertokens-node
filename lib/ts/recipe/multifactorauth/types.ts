@@ -15,7 +15,7 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, JSONObject } from "../../types";
 import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
@@ -83,7 +83,9 @@ export type RecipeInterface = {
     }) => Promise<boolean>;
 
     getMFARequirementsForAuth: (input: {
-        session: SessionContainer;
+        user: User;
+        accessTokenPayload: JSONObject;
+        tenantId: string;
         factorsSetUpForUser: string[];
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
