@@ -9,8 +9,8 @@ coreDriverVersion=$1
 coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
 
 coreFree=`curl -s -X GET \
-"https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion" \
--H 'api-version: 0'`
+"https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion&driverName=node" \
+-H 'api-version: 1'`
 if [[ `echo $coreFree | jq .core` == "null" ]]
 then
     echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."

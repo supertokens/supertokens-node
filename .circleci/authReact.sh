@@ -26,8 +26,8 @@ i=0
 coreDriverVersion=`echo $coreDriverArray | jq ". | last"`
 coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
 coreFree=`curl -s -X GET \
-"https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion" \
--H 'api-version: 0'`
+"https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion&driverName=node" \
+-H 'api-version: 1'`
 if [[ `echo $coreFree | jq .core` == "null" ]]
 then
     echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."
@@ -44,8 +44,8 @@ while [ $i -lt $frontendDriverLength ]; do
     fi
 
     frontendVersionXY=`curl -s -X GET \
-    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=website&mode=DEV&version=$frontendDriverVersion" \
-    -H 'api-version: 0'`
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=website&mode=DEV&version=$frontendDriverVersion&driverName=node" \
+    -H 'api-version: 1'`
     if [[ `echo $frontendVersionXY | jq .frontend` == "null" ]]
     then
         echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: website gave response: $frontend. Please make sure all relevant versions have been pushed."
@@ -65,8 +65,8 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendVersion=$(echo $frontendInfo | jq .version | tr -d '"')
 
     nodeVersionXY=`curl -s -X GET \
-    "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node" \
-    -H 'api-version: 0'`
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node&frontendName=auth-react" \
+    -H 'api-version: 1'`
     if [[ `echo $nodeVersionXY | jq .driver` == "null" ]]
     then
         echo "fetching latest X.Y version for driver given frontend-driver-interface X.Y version: $frontendDriverVersion gave response: $nodeVersionXY. Please make sure all relevant drivers have been pushed."
@@ -87,8 +87,8 @@ while [ $i -lt $frontendDriverLength ]; do
     someFrontendTestsRan=true
 
     frontendAuthReactVersionXY=`curl -s -X GET \
-    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
-    -H 'api-version: 0'`
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion&driver=website" \
+    -H 'api-version: 1'`
     if [[ `echo $frontendAuthReactVersionXY | jq .frontend` == "null" ]]
     then
         echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: auth-react gave response: $frontend. Please make sure all relevant frontend libs have been pushed."
