@@ -269,9 +269,9 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 recipeList: [
                     EmailPassword.init(),
                     Session.init({
-                        overwriteSessionDuringSignIn: true,
                         override: {
                             functions: (oI) => ({
+                                ...oI,
                                 createNewSession: (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,

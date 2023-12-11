@@ -114,7 +114,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
         assert(deviceRes.secret !== undefined);
         assert(deviceRes.qrCodeString !== undefined);
 
-        const updateRes = await Totp.removeDevice("testUserId", deviceRes.deviceName, "newDeviceName");
+        const updateRes = await Totp.removeDevice("testUserId", deviceRes.deviceName);
         assert.equal(updateRes.status, "OK");
 
         const listRes = await Totp.listDevices("testUserId");
