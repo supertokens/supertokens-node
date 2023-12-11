@@ -534,6 +534,7 @@ export default function getRecipeInterface(
                 sessionInfo.userId,
                 sessionInfo.recipeUserId,
                 sessionInfo.tenantId,
+                sessionInfo.customClaimsInAccessTokenPayload,
                 input.userContext
             );
 

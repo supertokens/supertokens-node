@@ -1337,7 +1337,13 @@ Session.init({
                     input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
-                        ...(await boolClaim.build(input.userId, input.recipeUserId, input.tenantId, input.userContext)),
+                        ...(await boolClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
                         lastTokenRefresh: Date.now(),
                     };
                     return originalImplementation.createNewSession(input);
@@ -1918,7 +1924,21 @@ Supertokens.init({
                 }),
             },
         }),
-        Session.init(),
+        Session.init({
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+                    createNewSession: async (input) => {
+                        const resp = await oI.createNewSession(input);
+                        if (input.userContext.shouldCompleteTOTP) {
+                            // this is a stand-in for the "remember me" check
+                            await MultiFactorAuth.markFactorAsCompleteInSession(resp, "totp", input.userContext);
+                        }
+                        return resp;
+                    },
+                }),
+            },
+        }),
     ],
 });
 

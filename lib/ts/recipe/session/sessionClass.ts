@@ -253,6 +253,7 @@ export default class Session implements SessionContainerInterface {
             this.getUserId(userContext),
             this.getRecipeUserId(userContext),
             this.getTenantId(),
+            this.getAccessTokenPayload(),
             userContext ?? {}
         );
         return this.mergeIntoAccessTokenPayload(update, userContext);

@@ -448,6 +448,7 @@ export declare abstract class SessionClaim<T> {
         userId: string,
         recipeUserId: RecipeUserId,
         tenantId: string,
+        currentPayload: JSONObject | undefined,
         userContext: Record<string, any>
     ): Promise<JSONObject>;
 }
