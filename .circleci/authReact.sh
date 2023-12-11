@@ -87,7 +87,7 @@ while [ $i -lt $frontendDriverLength ]; do
     someFrontendTestsRan=true
 
     frontendAuthReactVersionXY=`curl -s -X GET \
-    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion&driver=website" \
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion&driverName=node" \
     -H 'api-version: 1'`
     if [[ `echo $frontendAuthReactVersionXY | jq .frontend` == "null" ]]
     then
