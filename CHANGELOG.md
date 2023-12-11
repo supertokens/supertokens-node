@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.6.5] - 2023-12-11
+
+-   CI/CD changes
+
 ## [16.6.4] - 2023-12-05
 
 -   Fixes typing of `verifySession` adding generic to extend the fastify base request.
