@@ -38,7 +38,9 @@ export default function getAPIImplementation(): APIInterface {
             const authMode: AuthMode = input.options.config.authMode;
 
             if (superTokensInstance.supertokens !== undefined) {
-                connectionURI = superTokensInstance.supertokens.connectionURI;
+                connectionURI = new NormalisedURLDomain(
+                    superTokensInstance.supertokens.connectionURI.split(";")[0]
+                ).getAsStringDangerous();
             }
 
             let isSearchEnabled = false;
