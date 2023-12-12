@@ -54,7 +54,7 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendVersionXY=$(echo $frontendVersionXY | jq .frontend | tr -d '"')
 
     frontendInfo=`curl -s -X GET \
-    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendVersionXY&name=website" \
+    "https://api.supertokens.io/0/frontend/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendVersionXY&name=website" \
     -H 'api-version: 0'`
     if [[ `echo $frontendInfo | jq .tag` == "null" ]]
     then

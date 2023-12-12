@@ -43,27 +43,6 @@ while [ $i -lt $frontendDriverLength ]; do
         continue
     fi
 
-    frontendVersionXY=`curl -s -X GET \
-    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=website&mode=DEV&version=$frontendDriverVersion&driverName=node" \
-    -H 'api-version: 1'`
-    if [[ `echo $frontendVersionXY | jq .frontend` == "null" ]]
-    then
-        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: website gave response: $frontend. Please make sure all relevant versions have been pushed."
-        exit 1
-    fi
-    frontendVersionXY=$(echo $frontendVersionXY | jq .frontend | tr -d '"')
-
-    frontendInfo=`curl -s -X GET \
-    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendVersionXY&name=website" \
-    -H 'api-version: 0'`
-    if [[ `echo $frontendInfo | jq .tag` == "null" ]]
-    then
-        echo "fetching latest X.Y.Z version for frontend, X.Y version: $frontendVersionXY gave response: $frontendInfo"
-        exit 1
-    fi
-    frontendTag=$(echo $frontendInfo | jq .tag | tr -d '"')
-    frontendVersion=$(echo $frontendInfo | jq .version | tr -d '"')
-
     nodeVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node&frontendName=auth-react" \
     -H 'api-version: 1'`
@@ -97,7 +76,7 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendAuthReactVersionXY=$(echo $frontendAuthReactVersionXY | jq .frontend | tr -d '"')
 
     frontendAuthReactInfo=`curl -s -X GET \
-    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendAuthReactVersionXY&name=auth-react" \
+    "https://api.supertokens.io/0/frontend/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendAuthReactVersionXY&name=auth-react" \
     -H 'api-version: 0'`
     if [[ `echo $frontendAuthReactInfo | jq .tag` == "null" ]]
     then
