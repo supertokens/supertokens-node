@@ -32,6 +32,7 @@ let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 let MultitenancyRecipe = require("../lib/build/recipe/multitenancy/recipe").default;
+let MultiFactorAuthRecipe = require("../lib/build/recipe/multifactorauth/recipe").default;
 const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
@@ -269,6 +270,7 @@ module.exports.resetAll = function () {
     ProcessState.getInstance().reset();
     MultitenancyRecipe.reset();
     TotpRecipe.reset();
+    MultiFactorAuthRecipe.reset();
 };
 
 module.exports.killAllST = async function () {

@@ -94,6 +94,7 @@ export default class SuperTokens {
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
         let multitenancyFound = false;
+        let totpFound = false;
         let userMetadataFound = false;
         let multiFactorAuthFound = false;
 
@@ -103,6 +104,8 @@ export default class SuperTokens {
         let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
         let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
+        let TotpRecipe = require("./recipe/totp/recipe").default;
+
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
@@ -111,12 +114,19 @@ export default class SuperTokens {
                 userMetadataFound = true;
             } else if (recipeModule.getRecipeId() === MultiFactorAuthRecipe.RECIPE_ID) {
                 multiFactorAuthFound = true;
+            } else if (recipeModule.getRecipeId() === TotpRecipe.RECIPE_ID) {
+                totpFound = true;
             }
             return recipeModule;
         });
 
         if (!multitenancyFound) {
             this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
+        if (totpFound && !multiFactorAuthFound) {
+            // we want MFA to be enabled if totp is enabled
+            this.recipeModules.push(MultiFactorAuthRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            multiFactorAuthFound = true;
         }
         if (multiFactorAuthFound && !userMetadataFound) {
             // we want user metadata to be initialized if MFA is enabled
