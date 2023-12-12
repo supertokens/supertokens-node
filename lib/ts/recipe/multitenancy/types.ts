@@ -49,6 +49,25 @@ export type TypeNormalisedInput = {
     };
 };
 
+export type TenantConfig = {
+    emailPassword: {
+        enabled: boolean;
+    };
+    passwordless: {
+        enabled: boolean;
+    };
+    thirdParty: {
+        enabled: boolean;
+        providers: ProviderConfig[];
+    };
+    totp: {
+        enabled: boolean;
+    };
+    firstFactors?: string[];
+    defaultRequiredFactorIds?: string[];
+    coreConfig: { [key: string]: any };
+};
+
 export type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: Record<string, any> }) => Promise<string>;
 
@@ -77,44 +96,16 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: Record<string, any>;
     }) => Promise<
-        | {
+        | ({
               status: "OK";
-              emailPassword: {
-                  enabled: boolean;
-              };
-              passwordless: {
-                  enabled: boolean;
-              };
-              thirdParty: {
-                  enabled: boolean;
-                  providers: ProviderConfig[];
-              };
-              firstFactors?: string[];
-              defaultRequiredFactorIds?: string[];
-              coreConfig: { [key: string]: any };
-          }
+          } & TenantConfig)
         | undefined
     >;
     listAllTenants: (input: {
         userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
-        tenants: {
-            tenantId: string;
-            emailPassword: {
-                enabled: boolean;
-            };
-            passwordless: {
-                enabled: boolean;
-            };
-            thirdParty: {
-                enabled: boolean;
-                providers: ProviderConfig[];
-            };
-            firstFactors?: string[];
-            defaultRequiredFactorIds?: string[];
-            coreConfig: { [key: string]: any };
-        }[];
+        tenants: (TenantConfig & { tenantId: string })[];
     }>;
 
     // Third party provider management

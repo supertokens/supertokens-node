@@ -43,6 +43,7 @@ import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 import { User } from "../../user";
 import { isFactorSetupForUser } from "./utils";
+import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -146,9 +147,14 @@ export default class Recipe extends RecipeModule {
 
                     if (mfaInstance !== undefined) {
                         mfaInstance.addAvailableFactorIdsFromOtherRecipes(allFactors, allFactors);
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
-                            return allFactors.filter((id) => isFactorSetupForUser(user, id));
-                        });
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
+                            async (user: User, tenantConfig: TenantConfig) => {
+                                if (tenantConfig.passwordless.enabled === false) {
+                                    return [];
+                                }
+                                return allFactors.filter((id) => isFactorSetupForUser(user, id));
+                            }
+                        );
                     }
                 });
 

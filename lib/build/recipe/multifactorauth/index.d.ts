@@ -6,7 +6,11 @@ import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static MultiFactorAuthClaim: import("./multiFactorAuthClaim").MultiFactorAuthClaimClass;
-    static getFactorsSetUpByUser(userId: string, userContext?: Record<string, any>): Promise<string[]>;
+    static getFactorsSetUpByUser(
+        tenantId: string,
+        userId: string,
+        userContext?: Record<string, any>
+    ): Promise<string[]>;
     static isAllowedToSetupFactor(
         session: SessionContainerInterface,
         factorId: string,

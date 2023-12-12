@@ -16,6 +16,7 @@ export default function getAPIInterface(): APIInterface {
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
 
             const isAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
+                tenantId,
                 user,
                 userContext,
             });

@@ -30,6 +30,26 @@ export declare type TypeNormalisedInput = {
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
+export declare type TenantConfig = {
+    emailPassword: {
+        enabled: boolean;
+    };
+    passwordless: {
+        enabled: boolean;
+    };
+    thirdParty: {
+        enabled: boolean;
+        providers: ProviderConfig[];
+    };
+    totp: {
+        enabled: boolean;
+    };
+    firstFactors?: string[];
+    defaultRequiredFactorIds?: string[];
+    coreConfig: {
+        [key: string]: any;
+    };
+};
 export declare type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: Record<string, any> }) => Promise<string>;
     createOrUpdateTenant: (input: {
@@ -58,48 +78,18 @@ export declare type RecipeInterface = {
         tenantId: string;
         userContext: Record<string, any>;
     }) => Promise<
-        | {
+        | ({
               status: "OK";
-              emailPassword: {
-                  enabled: boolean;
-              };
-              passwordless: {
-                  enabled: boolean;
-              };
-              thirdParty: {
-                  enabled: boolean;
-                  providers: ProviderConfig[];
-              };
-              firstFactors?: string[];
-              defaultRequiredFactorIds?: string[];
-              coreConfig: {
-                  [key: string]: any;
-              };
-          }
+          } & TenantConfig)
         | undefined
     >;
     listAllTenants: (input: {
         userContext: Record<string, any>;
     }) => Promise<{
         status: "OK";
-        tenants: {
+        tenants: (TenantConfig & {
             tenantId: string;
-            emailPassword: {
-                enabled: boolean;
-            };
-            passwordless: {
-                enabled: boolean;
-            };
-            thirdParty: {
-                enabled: boolean;
-                providers: ProviderConfig[];
-            };
-            firstFactors?: string[];
-            defaultRequiredFactorIds?: string[];
-            coreConfig: {
-                [key: string]: any;
-            };
-        }[];
+        })[];
     }>;
     createOrUpdateThirdPartyConfig: (input: {
         tenantId: string;

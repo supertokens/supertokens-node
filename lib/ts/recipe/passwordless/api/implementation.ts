@@ -8,6 +8,7 @@ import { User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { SessionContainerInterface } from "../../session/types";
 import { isFactorSetupForUser } from "../utils";
+import SessionError from "../../session/error";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -83,10 +84,10 @@ export default function getAPIImplementation(): APIInterface {
                 } else {
                     const user = await getUser(session.getUserId(), input.userContext);
                     if (user === undefined) {
-                        return {
-                            status: "SESSION_USER_NOT_FOUND_ERROR",
-                            message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
-                        };
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Session user not found",
+                        });
                     }
                     sessionUser = user;
                 }

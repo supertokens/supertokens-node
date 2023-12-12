@@ -6,6 +6,7 @@ import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 import Recipe from "./recipe";
+import { TenantConfig } from "../multitenancy/types";
 export declare type MFARequirementList = (
     | {
           oneOf: string[];
@@ -24,8 +25,7 @@ export declare type MFAFlowErrors = {
         | "DISALLOWED_FIRST_FACTOR_ERROR"
         | "FACTOR_SETUP_NOT_ALLOWED_ERROR"
         | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-        | "SESSION_USER_NOT_FOUND_ERROR";
+        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
     message?: string;
 };
 export declare type TypeInput = {
@@ -74,7 +74,11 @@ export declare type RecipeInterface = {
         factorId: string;
         userContext: Record<string, any>;
     }) => Promise<void>;
-    getFactorsSetupForUser: (input: { user: User; userContext: Record<string, any> }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: {
+        tenantId: string;
+        user: User;
+        userContext: Record<string, any>;
+    }) => Promise<string[]>;
     addToDefaultRequiredFactorsForUser: (input: {
         user: User;
         factorId: string;
@@ -115,5 +119,6 @@ export declare type APIInterface = {
 };
 export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
     user: User,
+    tenantConfig: TenantConfig,
     userContext: Record<string, any>
 ) => Promise<string[]>;

@@ -43,6 +43,8 @@ import Session from "../session";
 import AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { Querier } from "../../querier";
+import { TenantConfig } from "../multitenancy/types";
+import SessionError from "../session/error";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -187,11 +189,11 @@ export default class Recipe extends RecipeModule {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    getFactorsSetupForUser = async (user: User, userContext: Record<string, any>) => {
+    getFactorsSetupForUser = async (user: User, tenantConfig: TenantConfig, userContext: Record<string, any>) => {
         let factorIds: string[] = [];
 
         for (const func of this.getFactorsSetupForUserFromOtherRecipesFuncs) {
-            let result = await func(user, userContext);
+            let result = await func(user, tenantConfig, userContext);
             if (result !== undefined) {
                 factorIds = factorIds.concat(result);
             }
@@ -253,10 +255,10 @@ export default class Recipe extends RecipeModule {
         if (!sessionUser) {
             // Session user doesn't exist, maybe the user was deleted
             // Race condition, user got deleted in parallel, throw unauthorized
-            return {
-                status: "SESSION_USER_NOT_FOUND_ERROR",
-                message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
-            };
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Session user not found",
+            });
         }
 
         if (isAlreadySetup) {
@@ -273,6 +275,7 @@ export default class Recipe extends RecipeModule {
         });
         const factorsSetUpForUser = await this.recipeInterfaceImpl.getFactorsSetupForUser({
             user: sessionUser,
+            tenantId,
             userContext,
         });
         const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
@@ -368,11 +371,10 @@ export default class Recipe extends RecipeModule {
 
             // race condition, user deleted throw unauthorized
             if (sessionUser === undefined) {
-                // TODO MFA throw unauthorized
-                return {
-                    status: "SESSION_USER_NOT_FOUND_ERROR",
-                    message: "User for this session was not found. Please contact support. (ERR_CODE_010)",
-                };
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
             }
 
             if (justCompletedFactorUserInfo !== undefined) {

@@ -25,7 +25,7 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async getFactorsSetUpByUser(userId: string, userContext?: Record<string, any>) {
+    static async getFactorsSetUpByUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
         const ctx = userContext ?? {};
         const user = await getUser(userId, ctx);
         if (!user) {
@@ -33,6 +33,7 @@ export default class Wrapper {
         }
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            tenantId,
             user,
             userContext: ctx,
         });
@@ -50,6 +51,7 @@ export default class Wrapper {
         }
         const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
             user,
+            tenantId: session.getTenantId(),
             userContext: ctx,
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);

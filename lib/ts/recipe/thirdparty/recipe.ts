@@ -33,6 +33,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 import { User } from "../../user";
+import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -99,14 +100,19 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
                         mfaInstance.addAvailableFactorIdsFromOtherRecipes(["thirdparty"], ["thirdparty"]);
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
-                            for (const loginMethod of user.loginMethods) {
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                    return ["thirdparty"];
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
+                            async (user: User, tenantConfig: TenantConfig) => {
+                                if (tenantConfig.thirdParty.enabled === false) {
+                                    return [];
                                 }
+                                for (const loginMethod of user.loginMethods) {
+                                    if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                        return ["thirdparty"];
+                                    }
+                                }
+                                return [];
                             }
-                            return [];
-                        });
+                        );
                     }
                 });
 

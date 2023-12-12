@@ -16,6 +16,7 @@ import { User } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
+import { TenantConfig } from "../multitenancy/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -49,7 +50,11 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: () => string[];
     getAllAvailableFirstFactorIds: () => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    getFactorsSetupForUser: (user: User, userContext: Record<string, any>) => Promise<string[]>;
+    getFactorsSetupForUser: (
+        user: User,
+        tenantConfig: TenantConfig,
+        userContext: Record<string, any>
+    ) => Promise<string[]>;
     validateForMultifactorAuthBeforeFactorCompletion: ({
         tenantId,
         factorIdInProgress,

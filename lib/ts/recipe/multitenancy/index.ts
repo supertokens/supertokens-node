@@ -14,7 +14,7 @@
  */
 
 import Recipe from "./recipe";
-import { RecipeInterface, APIOptions, APIInterface } from "./types";
+import { RecipeInterface, APIOptions, APIInterface, TenantConfig } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
@@ -61,22 +61,9 @@ export default class Wrapper {
         tenantId: string,
         userContext?: Record<string, any>
     ): Promise<
-        | {
+        | ({
               status: "OK";
-              emailPassword: {
-                  enabled: boolean;
-              };
-              passwordless: {
-                  enabled: boolean;
-              };
-              thirdParty: {
-                  enabled: boolean;
-                  providers: ProviderConfig[];
-              };
-              firstFactors?: string[];
-              defaultRequiredFactorIds?: string[];
-              coreConfig: { [key: string]: any };
-          }
+          } & TenantConfig)
         | undefined
     > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -90,20 +77,9 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
-        tenants: {
+        tenants: ({
             tenantId: string;
-            emailPassword: {
-                enabled: boolean;
-            };
-            passwordless: {
-                enabled: boolean;
-            };
-            thirdParty: {
-                enabled: boolean;
-                providers: ProviderConfig[];
-            };
-            coreConfig: { [key: string]: any };
-        }[];
+        } & TenantConfig)[];
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.listAllTenants({

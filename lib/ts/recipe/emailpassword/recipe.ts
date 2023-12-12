@@ -42,6 +42,7 @@ import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 import { User } from "../../user";
+import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -109,14 +110,20 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
                         mfaInstance.addAvailableFactorIdsFromOtherRecipes(["emailpassword"], ["emailpassword"]);
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
-                            for (const loginMethod of user.loginMethods) {
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                    return ["emailpassword"];
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
+                            async (user: User, tenantConfig: TenantConfig) => {
+                                if (tenantConfig.emailPassword.enabled === false) {
+                                    return [];
                                 }
+
+                                for (const loginMethod of user.loginMethods) {
+                                    if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                        return ["emailpassword"];
+                                    }
+                                }
+                                return [];
                             }
-                            return [];
-                        });
+                        );
                     }
                 });
 

@@ -6,6 +6,8 @@ import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
 import Multitenancy from "../multitenancy";
 import MultiFactorAuthRecipe from "./recipe";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { checkFactorRequirement } from "./utils";
 
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
@@ -24,70 +26,25 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     return value === undefined;
                 },
                 validate: async (payload) => {
-                    const requirements: MFARequirementList = []; // TODO MFA get default requirements for tenant/user
-                    if (requirements.length === 0) {
-                        return {
-                            isValid: true, // No requirements to satisfy
-                        };
-                    }
-
                     const claimVal = this.getValueFromPayload(payload);
                     if (claimVal === undefined) {
                         throw new Error("This should never happen, claim value not present in payload");
                     }
 
-                    const { c } = claimVal;
-                    for (const req of requirements) {
-                        if (typeof req === "string") {
-                            if (c[req] === undefined) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: `the factorId ${req} is not complete in the session`,
-                                        mfaRequirements: requirements,
-                                    },
-                                };
-                            }
-                        } else if ("oneOf" in req) {
-                            let satisfied = false;
-                            for (const factorId of req.oneOf) {
-                                if (c[factorId] !== undefined) {
-                                    satisfied = true;
-                                    break;
-                                }
-                            }
-                            if (!satisfied) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: `none of these factorIds [${req.oneOf.join(
-                                            ", "
-                                        )}] are complete session`,
-                                        mfaRequirements: requirements,
-                                    },
-                                };
-                            }
-                        } else if ("allOf" in req) {
-                            for (const factorId of req.allOf) {
-                                if (c[factorId] === undefined) {
-                                    return {
-                                        isValid: false,
-                                        reason: {
-                                            message: `the factor ${factorId} is not complete in session, all of these factorIds [${req.allOf.join(
-                                                ", "
-                                            )}] must be complete in session`,
-                                            mfaRequirements: requirements,
-                                        },
-                                    };
-                                }
-                            }
-                        } else {
-                            throw new Error("should never come here");
-                        }
+                    const { n } = claimVal;
+
+                    if (n.length === 0) {
+                        return {
+                            isValid: true,
+                        };
                     }
 
                     return {
-                        isValid: true, // all requirements satisfied
+                        isValid: false,
+                        reason: {
+                            message: "not all required factors have been completed",
+                            nextFactorOptions: n,
+                        },
                     };
                 },
             }),
@@ -113,57 +70,52 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     }
 
                     const { c } = claimVal;
+
                     for (const req of requirements) {
-                        if (typeof req === "string") {
-                            if (c[req] === undefined) {
+                        if (typeof req === "object" && "oneOf" in req) {
+                            const res = req.oneOf
+                                .map((r) => checkFactorRequirement(r, c))
+                                .filter((v) => v.isValid === false);
+                            if (res.length === req.oneOf.length) {
                                 return {
                                     isValid: false,
                                     reason: {
-                                        message: `the factorId ${req} is not complete in the session`,
-                                        mfaRequirements: requirements,
+                                        message: "All factor checkers failed in the list",
+                                        oneOf: req.oneOf,
+                                        failures: res,
                                     },
                                 };
                             }
-                        } else if ("oneOf" in req) {
-                            let satisfied = false;
-                            for (const factorId of req.oneOf) {
-                                if (c[factorId] !== undefined) {
-                                    satisfied = true;
-                                    break;
-                                }
-                            }
-                            if (!satisfied) {
+                        } else if (typeof req === "object" && "allOf" in req) {
+                            const res = req.allOf
+                                .map((r) => checkFactorRequirement(r, c))
+                                .filter((v) => v.isValid === false);
+                            if (res.length !== 0) {
                                 return {
                                     isValid: false,
                                     reason: {
-                                        message: `none of these factorIds [${req.oneOf.join(
-                                            ", "
-                                        )}] are complete session`,
-                                        mfaRequirements: requirements,
+                                        message: "Some factor checkers failed in the list",
+                                        allOf: req.allOf,
+                                        failures: res,
                                     },
                                 };
-                            }
-                        } else if ("allOf" in req) {
-                            for (const factorId of req.allOf) {
-                                if (c[factorId] === undefined) {
-                                    return {
-                                        isValid: false,
-                                        reason: {
-                                            message: `the factor ${factorId} is not complete in session, all of these factorIds [${req.allOf.join(
-                                                ", "
-                                            )}] must be complete in session`,
-                                            mfaRequirements: requirements,
-                                        },
-                                    };
-                                }
                             }
                         } else {
-                            throw new Error("should never come here");
+                            const res = checkFactorRequirement(req, c);
+                            if (res.isValid !== true) {
+                                return {
+                                    isValid: false,
+                                    reason: {
+                                        message: "Factor validation failed: " + res.message,
+                                        factorId: res.id,
+                                    },
+                                };
+                            }
                         }
                     }
 
                     return {
-                        isValid: true, // all requirements satisfied
+                        isValid: true,
                     };
                 },
             }),
@@ -221,17 +173,24 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         if (user === undefined) {
             throw new Error("Unknown User ID provided");
         }
-        const tenantInfo = await Multitenancy.getTenant(tenantId ?? "public", userContext);
+        const tenantInfo = await Multitenancy.getTenant(tenantId ?? DEFAULT_TENANT_ID, userContext);
+
+        if (tenantInfo === undefined) {
+            throw new Error("should never happen");
+        }
 
         const recipeInstance = MultiFactorAuthRecipe.getInstanceOrThrowError();
-
-        const isAlreadySetup = await recipeInstance.getFactorsSetupForUser(user, userContext);
+        const isAlreadySetup = await recipeInstance.recipeInterfaceImpl.getFactorsSetupForUser({
+            user,
+            tenantId: tenantId ?? DEFAULT_TENANT_ID,
+            userContext,
+        });
 
         // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
         const defaultRequiredFactorIdsForUser = await recipeInstance.recipeInterfaceImpl.getDefaultRequiredFactorsForUser(
             {
                 user: user!,
-                tenantId: tenantId ?? "public",
+                tenantId: tenantId ?? DEFAULT_TENANT_ID,
                 userContext,
             }
         );
@@ -241,7 +200,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         const mfaRequirementsForAuth = await recipeInstance.recipeInterfaceImpl.getMFARequirementsForAuth({
             user,
             accessTokenPayload: currentPayload !== undefined ? currentPayload : {},
-            tenantId: tenantId ?? "public",
+            tenantId: tenantId ?? DEFAULT_TENANT_ID,
             factorsSetUpForUser: isAlreadySetup,
             defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
             defaultRequiredFactorIdsForUser,
