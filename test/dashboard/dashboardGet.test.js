@@ -111,5 +111,52 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
             // checking if the original connectionURL with protocol is returned in the html response.
             assert(response.includes(`window.connectionURI = "${connectionURI}"`));
         });
+
+        it("Test multiple connection URIs", async () => {
+            const firstConnectionURI = await startST();
+            const secondConnectionURI = "https://try.supertokens.com";
+
+            const multipleConnectionURIS = `${firstConnectionURI};${secondConnectionURI}`;
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: multipleConnectionURIS,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        apiKey: "testapikey",
+                    }),
+                    EmailPassword.init(),
+                ],
+            });
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((res) => {
+                request(app)
+                    .get(dashboardURL)
+                    .set("Authorization", "Bearer testapikey")
+                    .end((err, response) => {
+                        if (err) {
+                            res(undefined);
+                        } else {
+                            res(response.text);
+                        }
+                    });
+            });
+
+            // should consider the first connection URI and ignore the second one..
+            assert(response.includes(`window.connectionURI = "${firstConnectionURI}"`));
+            assert(!response.includes(`window.connectionURI = "${secondConnectionURI}"`));
+        });
     });
 });
