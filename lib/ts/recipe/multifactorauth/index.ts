@@ -25,7 +25,7 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async getFactorsSetUpByUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
+    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
         const ctx = userContext ?? {};
         const user = await getUser(userId, ctx);
         if (!user) {
@@ -118,6 +118,8 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
+export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
+export let isAllowedToSetupFactor = Wrapper.isAllowedToSetupFactor;
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
 export const addToDefaultRequiredFactorsForUser = Wrapper.addToDefaultRequiredFactorsForUser;
 

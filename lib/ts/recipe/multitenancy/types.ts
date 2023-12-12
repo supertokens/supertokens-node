@@ -78,6 +78,9 @@ export type RecipeInterface = {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled?: boolean;
+            totpEnabled?: boolean;
+            firstFactors?: string[];
+            defaultRequiredFactorIds?: string[];
             coreConfig?: { [key: string]: any };
         };
         userContext: Record<string, any>;
