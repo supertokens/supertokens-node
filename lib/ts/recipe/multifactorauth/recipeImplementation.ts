@@ -138,35 +138,6 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             });
         },
 
-        addToDefaultRequiredFactorsForUser: async function ({ user, factorId, userContext }) {
-            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
-                userId: user.id,
-                userContext,
-            });
-
-            const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
-            if (factorIds.includes(factorId)) {
-                return;
-            }
-
-            factorIds.push(factorId);
-
-            const metadataUpdate = {
-                ...metadata.metadata,
-                _supertokens: {
-                    ...metadata.metadata._supertokens,
-                    defaultRequiredFactorIdsForUser: factorIds,
-                },
-            };
-
-            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
-                userId: user.id,
-                metadataUpdate,
-                userContext,
-            });
-        },
-
         getDefaultRequiredFactorsForUser: async function ({ user, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
             const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({

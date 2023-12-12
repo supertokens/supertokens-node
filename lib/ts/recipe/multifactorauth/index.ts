@@ -19,6 +19,7 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
 import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
+import UserMetadataRecipe from "../usermetadata/recipe";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -101,17 +102,31 @@ export default class Wrapper {
     }
 
     static async addToDefaultRequiredFactorsForUser(userId: string, factorId: string, userContext?: any) {
-        const ctx = userContext ?? {};
-        const user = await getUser(userId, ctx);
+        const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+        const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+            userId,
+            userContext,
+        });
 
-        if (!user) {
-            throw new Error("UKNKNOWN_USER_ID");
+        const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
+        if (factorIds.includes(factorId)) {
+            return;
         }
 
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addToDefaultRequiredFactorsForUser({
-            factorId,
-            user,
-            userContext: ctx,
+        factorIds.push(factorId);
+
+        const metadataUpdate = {
+            ...metadata.metadata,
+            _supertokens: {
+                ...metadata.metadata._supertokens,
+                defaultRequiredFactorIdsForUser: factorIds,
+            },
+        };
+
+        await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+            userId: userId,
+            metadataUpdate,
+            userContext,
         });
     }
 }
