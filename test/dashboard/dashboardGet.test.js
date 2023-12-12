@@ -116,11 +116,11 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
             const firstConnectionURI = await startST();
             const secondConnectionURI = "https://try.supertokens.com";
 
-            const multipleConnectionURIS = `${firstConnectionURI};${secondConnectionURI}`;
+            const multipleConnectionURIs = `${firstConnectionURI};${secondConnectionURI}`;
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: multipleConnectionURIS,
+                    connectionURI: multipleConnectionURIs,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
