@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [16.6.5] - 2023-12-11
+## [16.6.5] - 2023-12-12
 
 -   CI/CD changes
+-   Fixes connectionURI domain normalisation.
 
 ## [16.6.4] - 2023-12-05
 
