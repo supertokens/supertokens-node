@@ -26,6 +26,15 @@ export default class SessionWrapper {
         sessionDataInDatabase?: any,
         userContext?: Record<string, any>
     ): Promise<SessionContainer>;
+    static createNewOrKeepExistingSession(
+        req: any,
+        res: any,
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        accessTokenPayload?: any,
+        sessionDataInDatabase?: any,
+        userContext?: Record<string, any>
+    ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
         tenantId: string,
         recipeUserId: RecipeUserId,

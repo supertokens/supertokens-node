@@ -432,17 +432,15 @@ export default class Recipe extends RecipeModule {
                     const loggedInUserLinkedToSessionUser = sessionUser.id === justCompletedFactorUserInfo.user.id;
                     if (!loggedInUserLinkedToSessionUser) {
                         // we may keep or replace the session as per the flag overwriteSessionDuringSignIn in session recipe
-                        if (SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn) {
-                            session = await Session.createNewSession(
-                                req,
-                                res,
-                                tenantId,
-                                justCompletedFactorUserInfo.recipeUserId,
-                                {},
-                                {},
-                                userContext
-                            );
-                        }
+                        session = await Session.createNewOrKeepExistingSession(
+                            req,
+                            res,
+                            tenantId,
+                            justCompletedFactorUserInfo.recipeUserId,
+                            {},
+                            {},
+                            userContext
+                        );
 
                         return {
                             status: "OK",

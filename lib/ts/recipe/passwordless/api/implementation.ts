@@ -3,7 +3,6 @@ import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import Session from "../../session";
-import SessionRecipe from "../../session/recipe";
 import { User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { SessionContainerInterface } from "../../session/types";
@@ -185,20 +184,15 @@ export default function getAPIImplementation(): APIInterface {
                     input.userContext
                 );
 
-                if (
-                    session === undefined ||
-                    SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn
-                ) {
-                    session = await Session.createNewSession(
-                        input.options.req,
-                        input.options.res,
-                        input.tenantId,
-                        response.recipeUserId,
-                        {},
-                        {},
-                        input.userContext
-                    );
-                }
+                session = await Session.createNewOrKeepExistingSession(
+                    input.options.req,
+                    input.options.res,
+                    input.tenantId,
+                    response.recipeUserId,
+                    {},
+                    {},
+                    input.userContext
+                );
 
                 return {
                     status: "OK",

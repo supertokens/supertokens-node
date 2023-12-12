@@ -1,7 +1,6 @@
 import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
-import SessionRecipe from "../../session/recipe";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse, User } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
@@ -642,20 +641,15 @@ export default function getAPIImplementation(): APIInterface {
                     userContext
                 );
 
-                if (
-                    session === undefined ||
-                    SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn
-                ) {
-                    session = await Session.createNewSession(
-                        options.req,
-                        options.res,
-                        tenantId,
-                        emailPasswordRecipeUser.recipeUserId,
-                        {},
-                        {},
-                        userContext
-                    );
-                }
+                session = await Session.createNewOrKeepExistingSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
 
                 return {
                     status: "OK",
@@ -833,20 +827,15 @@ export default function getAPIImplementation(): APIInterface {
                     userContext
                 );
 
-                if (
-                    session === undefined ||
-                    SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn
-                ) {
-                    session = await Session.createNewSession(
-                        options.req,
-                        options.res,
-                        tenantId,
-                        emailPasswordRecipeUser.recipeUserId,
-                        {},
-                        {},
-                        userContext
-                    );
-                }
+                session = await Session.createNewOrKeepExistingSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
 
                 return {
                     status: "OK",

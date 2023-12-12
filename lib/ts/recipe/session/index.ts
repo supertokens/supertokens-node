@@ -73,6 +73,35 @@ export default class SessionWrapper {
         });
     }
 
+    static async createNewOrKeepExistingSession(
+        req: any,
+        res: any,
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        accessTokenPayload: any = {},
+        sessionDataInDatabase: any = {},
+        userContext: Record<string, any> = {}
+    ) {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const config = recipeInstance.config;
+
+        let session = await getSession(req, req, { sessionRequired: false }, userContext);
+
+        if (session === undefined || config.overwriteSessionDuringSignIn) {
+            session = await createNewSession(
+                req,
+                res,
+                tenantId,
+                recipeUserId,
+                accessTokenPayload,
+                sessionDataInDatabase,
+                userContext
+            );
+        }
+
+        return session;
+    }
+
     static async createNewSessionWithoutRequestResponse(
         tenantId: string,
         recipeUserId: RecipeUserId,

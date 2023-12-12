@@ -1,6 +1,5 @@
 import { APIInterface } from "../";
 import Session from "../../session";
-import SessionRecipe from "../../session/recipe";
 import AccountLinking from "../../accountlinking/recipe";
 
 import { RecipeLevelUser } from "../../accountlinking/types";
@@ -322,20 +321,15 @@ export default function getAPIInterface(): APIInterface {
                     userContext
                 );
 
-                if (
-                    session === undefined ||
-                    SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn
-                ) {
-                    session = await Session.createNewSession(
-                        options.req,
-                        options.res,
-                        tenantId,
-                        loginMethod.recipeUserId,
-                        {},
-                        {},
-                        userContext
-                    );
-                }
+                session = await Session.createNewOrKeepExistingSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    loginMethod.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
                 return {
                     status: "OK",
                     createdNewRecipeUser: response.createdNewRecipeUser,
