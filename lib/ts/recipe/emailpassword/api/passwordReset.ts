@@ -31,6 +31,8 @@ export default async function passwordReset(
         return false;
     }
 
+    const requestBody = await options.req.getJSONBody();
+
     // step 1: We need to do this here even though the update emailpassword recipe function would do this cause:
     // - we want to throw this error before consuming the token, so that the user can try again
     // - there is a case in the api impl where we create a new user, and we want to assign
@@ -40,11 +42,11 @@ export default async function passwordReset(
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
-        (await options.req.getJSONBody()).formFields,
+        requestBody.formFields,
         tenantId
     );
 
-    let token = (await options.req.getJSONBody()).token;
+    let token = requestBody.token;
     if (token === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,

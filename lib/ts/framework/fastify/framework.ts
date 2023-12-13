@@ -38,8 +38,12 @@ export class FastifyRequest extends BaseRequest {
         this.request = request;
     }
 
-    getFormData = async (): Promise<any> => {
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
         return this.request.body; // NOTE: ask user to add require('fastify-formbody')
+    };
+
+    protected getJSONFromRequestBody = async (): Promise<any> => {
+        return this.request.body;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -51,10 +55,6 @@ export class FastifyRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        return this.request.body;
     };
 
     getMethod = (): HTTPMethod => {
@@ -181,9 +181,9 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
 }
 (plugin as any)[Symbol.for("skip-override")] = true;
 
-export interface SessionRequest extends OriginalFastifyRequest {
+export type SessionRequest<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest> = TRequest & {
     session?: SessionContainerInterface;
-}
+};
 
 export interface FasitfyFramework extends Framework {
     plugin: FastifyPluginCallback;

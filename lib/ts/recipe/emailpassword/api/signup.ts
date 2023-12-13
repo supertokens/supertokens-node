@@ -31,13 +31,15 @@ export default async function signUpAPI(
         return false;
     }
 
+    const requestBody = await options.req.getJSONBody();
+
     // step 1
     let formFields: {
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.signUpFeature.formFields,
-        (await options.req.getJSONBody()).formFields,
+        requestBody.formFields,
         tenantId
     );
 

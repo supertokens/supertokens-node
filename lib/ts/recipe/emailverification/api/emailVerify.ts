@@ -34,7 +34,9 @@ export default async function emailVerify(
             return false;
         }
 
-        let token = (await options.req.getJSONBody()).token;
+        const requestBody = await options.req.getJSONBody();
+
+        let token = requestBody.token;
         if (token === undefined || token === null) {
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,

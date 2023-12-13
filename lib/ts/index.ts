@@ -34,8 +34,8 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
     }
 
-    static getUserCount(includeRecipeIds?: string[], tenantId?: string) {
-        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds, tenantId);
+    static getUserCount(includeRecipeIds?: string[], tenantId?: string, userContext?: any) {
+        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds, tenantId, userContext);
     }
 
     static getUsersOldestFirst(input: {

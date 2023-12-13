@@ -16,10 +16,10 @@
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider, { getActualClientIdFromDevelopmentClientId } from "./custom";
 import * as jose from "jose";
-import crypto from "crypto";
 
 async function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): Promise<string> {
     const alg = "ES256";
+    const key = await jose.importPKCS8(privateKey.replace(/\\n/g, "\n"), alg);
 
     return new jose.SignJWT({})
         .setProtectedHeader({ alg, kid: keyId, typ: "JWT" })
@@ -28,7 +28,7 @@ async function getClientSecret(clientId: string, keyId: string, teamId: string, 
         .setExpirationTime("180days")
         .setAudience("https://appleid.apple.com")
         .setSubject(getActualClientIdFromDevelopmentClientId(clientId))
-        .sign(crypto.createPrivateKey(privateKey.replace(/\\n/g, "\n")));
+        .sign(key);
 }
 
 export default function Apple(input: ProviderInput): TypeProvider {

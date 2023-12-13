@@ -180,7 +180,7 @@ export default class Wrapper {
             return { status: "UNKNOWN_USER_ID_ERROR" };
         }
 
-        let link = await createResetPasswordLink(userId, tenantId, email, userContext);
+        let link = await createResetPasswordLink(tenantId, userId, email, userContext);
         if (link.status === "UNKNOWN_USER_ID_ERROR") {
             return link;
         }

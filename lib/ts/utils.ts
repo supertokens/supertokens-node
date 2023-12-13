@@ -7,7 +7,7 @@ import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_FDI, HEADER_RID } from "./constants";
 import crossFetch from "cross-fetch";
-import { User } from "./user";
+import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
 
 export const doFetch: typeof fetch = (...args) => {
@@ -182,17 +182,30 @@ export function getBackwardsCompatibleUserInfo(
         }
         return resp;
     } else {
-        const loginMethod = result.user.loginMethods.find(
+        let loginMethod: undefined | LoginMethod = result.user.loginMethods.find(
             (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId().getAsString()
         );
 
         if (loginMethod === undefined) {
-            throw new Error("This should never happen: session and user mismatch");
+            // we pick the oldest login method here for the user.
+            // this can happen in case the user is implementing something like
+            // MFA where the session remains the same during the second factor as well.
+            for (let i = 0; i < result.user.loginMethods.length; i++) {
+                if (loginMethod === undefined) {
+                    loginMethod = result.user.loginMethods[i];
+                } else if (loginMethod.timeJoined > result.user.loginMethods[i].timeJoined) {
+                    loginMethod = result.user.loginMethods[i];
+                }
+            }
+        }
+
+        if (loginMethod === undefined) {
+            throw new Error("This should never happen - user has no login methods");
         }
 
         const userObj: JSONObject = {
-            id: result.session.getUserId(),
-            timeJoined: result.user.timeJoined,
+            id: result.user.id, // we purposely use this instead of the loginmethod's recipeUserId because if the oldest login method is deleted, then this userID should remain the same.
+            timeJoined: loginMethod.timeJoined,
         };
         if (loginMethod.thirdParty) {
             userObj.thirdParty = loginMethod.thirdParty;

@@ -50,6 +50,7 @@ export type NormalisedAppinfo = {
 export type SuperTokensInfo = {
     connectionURI: string;
     apiKey?: string;
+    networkInterceptor?: NetworkInterceptor;
 };
 
 export type TypeInput = {
@@ -59,7 +60,18 @@ export type TypeInput = {
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
+    debug?: boolean;
 };
+
+export type NetworkInterceptor = (request: HttpRequest, userContext: any) => HttpRequest;
+
+export interface HttpRequest {
+    url: string;
+    method: HTTPMethod;
+    headers: { [key: string]: string | number | string[] };
+    params?: Record<string, boolean | number | string | undefined>;
+    body?: any;
+}
 
 export type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;
 

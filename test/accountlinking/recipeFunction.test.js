@@ -68,7 +68,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(response.wasAlreadyAPrimaryUser === false);
 
         assert(response.user.id === user.id);
-        assert((response.user.emails = user.emails));
+        assert(response.user.emails[0] == user.emails[0]);
         assert((response.user.loginMethods.length = 1));
 
         let refetchedUser = await supertokens.getUser(user.id);

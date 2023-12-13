@@ -16,8 +16,8 @@
     "license": "ISC",
     "dependencies": {
         "@aws-sdk/client-lambda": "^3.363.0",
-        "@middy/core": "^4.5.5",
-        "@middy/http-cors": "^4.5.5",
+        "@middy/core": "^5.1.0",
+        "@middy/http-cors": "^5.1.0",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^13.5.0",

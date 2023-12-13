@@ -2,6 +2,7 @@
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { UserContext } from "./types";
+import { NetworkInterceptor } from "./types";
 export declare class Querier {
     private static initCalled;
     private static hosts;
@@ -9,6 +10,7 @@ export declare class Querier {
     private static apiVersion;
     private static lastTriedIndex;
     private static hostsAliveForTesting;
+    private static networkInterceptor;
     private __hosts;
     private rIdToCore;
     private constructor();
@@ -21,7 +23,8 @@ export declare class Querier {
             domain: NormalisedURLDomain;
             basePath: NormalisedURLPath;
         }[],
-        apiKey?: string
+        apiKey?: string,
+        networkInterceptor?: NetworkInterceptor
     ): void;
     sendPostRequest: <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<T>;
     sendDeleteRequest: (
@@ -37,7 +40,8 @@ export declare class Querier {
     ) => Promise<any>;
     sendGetRequestWithResponseHeaders: (
         path: NormalisedURLPath,
-        params: Record<string, boolean | number | string | undefined>
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: any
     ) => Promise<{
         body: any;
         headers: Headers;

@@ -20,6 +20,7 @@ import {
     normaliseHttpMethod,
     sendNon200ResponseWithMessage,
     getRidFromHeader,
+    getUserContext,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -29,7 +30,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import type { TypeFramework } from "./framework/types";
 import STError from "./error";
-import { logDebugMessage } from "./logger";
+import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
@@ -49,6 +50,10 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
+        if (config.debug === true) {
+            enableDebugLogs();
+        }
+
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         const originToPrint =
             config.appInfo.origin === undefined
@@ -79,7 +84,8 @@ export default class SuperTokens {
                         basePath: new NormalisedURLPath(h.trim()),
                     };
                 }),
-            config.supertokens?.apiKey
+            config.supertokens?.apiKey,
+            config.supertokens?.networkInterceptor
         );
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");
@@ -207,7 +213,7 @@ export default class SuperTokens {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
             },
-            userContext ?? ({} as UserContext)
+            getUserContext(userContext)
         );
         return Number(response.count);
     };

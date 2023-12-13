@@ -74,10 +74,11 @@ export default function getRecipeInterface(
             }
         },
 
-        getJWKS: async function (): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
+        getJWKS: async function (userContext: any): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
             const { body, headers } = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath("/.well-known/jwks.json"),
-                {}
+                {},
+                userContext
             );
             let validityInSeconds = defaultJWKSMaxAge;
             const cacheControl = headers.get("Cache-Control");

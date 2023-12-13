@@ -64,7 +64,7 @@ export default async function analyticsPost(
             telemetryId = response.telemetryId;
         }
 
-        numberOfUsers = await SuperTokens.getInstanceOrThrowError().getUserCount();
+        numberOfUsers = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, undefined, userContext);
     } catch (_) {
         // If either telemetry id API or user count fetch fails, no event should be sent
         return {

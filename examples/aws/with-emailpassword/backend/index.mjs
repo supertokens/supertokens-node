@@ -1,16 +1,16 @@
-let supertokens = require("supertokens-node");
-let { middleware } = require("supertokens-node/framework/awsLambda/");
-let { getBackendConfig } = require("./config");
-let middy = require("@middy/core");
-let cors = require("@middy/http-cors");
-let { handler } = require("./user");
+import supertokens from "supertokens-node";
+import { middleware } from "supertokens-node/framework/awsLambda";
+import { getBackendConfig } from "./config.mjs";
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import { handler as userHandler } from "./user.mjs";
 
 supertokens.init(getBackendConfig());
 
-module.exports.handler = middy(
+export const handler = middy(
     middleware((event) => {
         if (event.path === "/user") {
-            return handler(event);
+            return userHandler(event);
         } else {
             return {
                 body: JSON.stringify({
