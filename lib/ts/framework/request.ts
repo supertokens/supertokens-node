@@ -16,16 +16,41 @@
 import { HTTPMethod } from "../types";
 
 export abstract class BaseRequest {
+    private parsedJSONBody: any;
+    private parsedUrlEncodedFormData: any;
     wrapperUsed: boolean;
     original: any;
+
     constructor() {
         this.wrapperUsed = true;
+        this.parsedJSONBody = undefined;
+        this.parsedUrlEncodedFormData = undefined;
     }
+
+    protected abstract getJSONFromRequestBody(): Promise<any>;
+    protected abstract getFormDataFromRequestBody(): Promise<any>;
+
     abstract getKeyValueFromQuery: (key: string) => string | undefined;
-    abstract getJSONBody: () => Promise<any>;
     abstract getMethod: () => HTTPMethod;
     abstract getCookieValue: (key_: string) => string | undefined;
     abstract getHeaderValue: (key: string) => string | undefined;
     abstract getOriginalURL: () => string;
-    abstract getFormData: () => Promise<any>;
+
+    // Note: While it's not recommended to override this method in child classes,
+    // if necessary, implement a similar caching strategy to ensure that `getFormDataFromRequestBody` is called only once.
+    getFormData = async (): Promise<any> => {
+        if (this.parsedUrlEncodedFormData === undefined) {
+            this.parsedUrlEncodedFormData = await this.getFormDataFromRequestBody();
+        }
+        return this.parsedUrlEncodedFormData;
+    };
+
+    // Note: While it's not recommended to override this method in child classes,
+    // if necessary, implement a similar caching strategy to ensure that `getJSONFromRequestBody` is called only once.
+    getJSONBody = async (): Promise<any> => {
+        if (this.parsedJSONBody === undefined) {
+            this.parsedJSONBody = await this.getJSONFromRequestBody();
+        }
+        return this.parsedJSONBody;
+    };
 }

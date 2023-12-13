@@ -29,4 +29,11 @@ export const SEARCH_TAGS_API = "/api/search/tags";
 export const DASHBOARD_ANALYTICS_API = "/api/analytics";
 export const TENANTS_LIST_API = "/api/tenants/list";
 
+export const USERROLES_LIST_API = "/api/userroles/roles";
+export const USERROLES_ROLE_API = "/api/userroles/role";
+export const USERROLES_PERMISSIONS_API = "/api/userroles/role/permissions";
+export const USERROLES_REMOVE_PERMISSIONS_API = "/api/userroles/role/permissions/remove";
+
+export const USERROLES_USER_API = "/api/userroles/user/roles";
+
 export const UNLINK_USER = "/api/user/unlink";

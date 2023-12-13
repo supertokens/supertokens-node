@@ -1225,6 +1225,23 @@ ThirdPartyEmailPassword.init({
                     if (oI.thirdPartySignInUpPOST === undefined) {
                         throw Error("original implementation of thirdPartySignInUpPOST API is undefined");
                     }
+                    let body: any = await input.options.req.getJSONBody();
+                    let cookie: string | undefined = input.options.req.getCookieValue("");
+                    let formData: any = input.options.req.getFormData();
+                    let header: string | undefined = input.options.req.getHeaderValue("");
+                    let queryParam: string | undefined = input.options.req.getKeyValueFromQuery("");
+                    let o = input.options.req.original;
+                    let w: boolean = input.options.req.wrapperUsed;
+                    let url: string = input.options.req.getOriginalURL();
+                    let method: HTTPMethod = input.options.req.getMethod();
+                    let res = input.options.res.original;
+                    input.options.res.removeHeader("");
+                    input.options.res.sendHTMLResponse("");
+                    input.options.res.sendJSONResponse({});
+                    input.options.res.setCookie("key", "value", "domain", true, true, 1, "path", "lax");
+                    input.options.res.setHeader("key", "value", false);
+                    input.options.res.setStatusCode(200);
+                    let wr: boolean = input.options.res.wrapperUsed;
                     return oI.thirdPartySignInUpPOST(input);
                 },
                 emailPasswordSignInPOST: async (input) => {

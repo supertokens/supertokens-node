@@ -19,28 +19,36 @@ import { Querier } from "../../querier";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        getUserMetadata: function ({ userId }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/metadata"), { userId });
+        getUserMetadata: function ({ userId, userContext }) {
+            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/metadata"), { userId }, userContext);
         },
 
-        updateUserMetadata: function ({ userId, metadataUpdate }) {
+        updateUserMetadata: function ({ userId, metadataUpdate, userContext }) {
+            return querier.sendPutRequest(
+                new NormalisedURLPath("/recipe/user/metadata"),
+                {
+                    userId,
+                    metadataUpdate,
+                },
+                userContext
+            );
+        },
+
+        updateUserMetadataInternal: function ({ userId, metadataUpdate, userContext }) {
             return querier.sendPutRequest(new NormalisedURLPath("/recipe/user/metadata"), {
                 userId,
                 metadataUpdate,
-            });
+            }, userContext);
         },
 
-        updateUserMetadataInternal: function ({ userId, metadataUpdate }) {
-            return querier.sendPutRequest(new NormalisedURLPath("/recipe/user/metadata"), {
-                userId,
-                metadataUpdate,
-            });
-        },
-
-        clearUserMetadata: function ({ userId }) {
-            return querier.sendPostRequest(new NormalisedURLPath("/recipe/user/metadata/remove"), {
-                userId,
-            });
+        clearUserMetadata: function ({ userId, userContext }) {
+            return querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/user/metadata/remove"),
+                {
+                    userId,
+                },
+                userContext
+            );
         },
     };
 }

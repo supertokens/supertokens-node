@@ -126,7 +126,7 @@ addCrossFrameworkTests(
                         {
                             path: "/create-throw",
                             method: "post",
-                            handler: async (req, res, next) => {
+                            handler: async (req, res, _session, next) => {
                                 await Session.createNewSession(
                                     req,
                                     res,

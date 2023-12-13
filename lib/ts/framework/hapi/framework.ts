@@ -33,7 +33,11 @@ export class HapiRequest extends BaseRequest {
         this.request = request;
     }
 
-    getFormData = async (): Promise<any> => {
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
+        return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
+    };
+
+    protected getJSONFromRequestBody = async (): Promise<any> => {
         return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
     };
 
@@ -46,10 +50,6 @@ export class HapiRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
     };
 
     getMethod = (): HTTPMethod => {

@@ -34,6 +34,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             this: RecipeInterface,
             {
                 recipeUserId,
+                userContext,
             }: {
                 recipeUserId: RecipeUserId;
                 userContext: any;
@@ -54,9 +55,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                   description: string;
               }
         > {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/mfa/user/primary"), {
-                recipeUserId: recipeUserId.getAsString(),
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/mfa/user/primary"),
+                {
+                    recipeUserId: recipeUserId.getAsString(),
+                },
+                userContext
+            );
             if (response.status === "OK") {
                 response.user = new User(response.user);
             }
@@ -68,6 +73,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             {
                 recipeUserId,
                 primaryUserId,
+                userContext,
             }: {
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
@@ -98,7 +104,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 {
                     recipeUserId: recipeUserId.getAsString(),
                     primaryUserId,
-                }
+                },
+                userContext
             );
 
             if (

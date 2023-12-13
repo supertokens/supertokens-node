@@ -22,6 +22,7 @@ const {
     resetAll,
     assertJSONEquals,
     startSTWithMultitenancyAndAccountLinking,
+    extractInfoFromResponse,
 } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
@@ -30,6 +31,10 @@ let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
 let ThirdParty = require("../../recipe/thirdparty");
 let Passwordless = require("../../recipe/passwordless");
+let AccountLinking = require("../../recipe/accountlinking");
+const express = require("express");
+let { middleware, errorHandler } = require("../../framework/express");
+const request = require("supertest");
 
 describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
     beforeEach(async function () {
@@ -208,5 +213,209 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
         assert(!user.loginMethods[0].hasSamePhoneNumberAs("0036701234123"));
         assert(!user.loginMethods[0].hasSamePhoneNumberAs("06701234123"));
         assert(!user.loginMethods[0].hasSamePhoneNumberAs("p36701234123"));
+    });
+
+    it("user structure FDI 1.17 is correctly returned even if session does not match logged in user", async function () {
+        let sessionReused = false;
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+        supertokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: async (input) => {
+                                    let session = await Session.getSession(input.options.req, input.options.res, {
+                                        sessionRequired: false,
+                                    });
+                                    if (session !== undefined) {
+                                        input.userContext.session = session;
+                                    }
+                                    let response = await oI.signInPOST(input);
+                                    return response;
+                                },
+                                signUpPOST: async (input) => {
+                                    let session = await Session.getSession(input.options.req, input.options.res, {
+                                        sessionRequired: false,
+                                    });
+                                    if (session !== undefined) {
+                                        input.userContext.session = session;
+                                    }
+                                    let response = await oI.signUpPOST(input);
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                createNewSession: async (input) => {
+                                    if (input.userContext.session !== undefined) {
+                                        sessionReused = true;
+                                        return input.userContext.session;
+                                    }
+                                    return oI.createNewSession(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let { user, status } = await EmailPassword.signUp("public", "test@example.com", "password123");
+        assert(status === "OK");
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.17")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(!sessionReused);
+        let tokens = extractInfoFromResponse(res);
+        assert(tokens.accessTokenFromAny !== undefined);
+
+        // now we sign up a new user with another email, but with the older session.
+        let signUp2 = await EmailPassword.signUp("public", "test2@example.com", "password123");
+        assert(signUp2.status === "OK");
+        let linkingResult = await AccountLinking.createPrimaryUser(signUp2.user.loginMethods[0].recipeUserId);
+        assert(linkingResult.status === "OK");
+
+        let signUp3 = await EmailPassword.signUp("public", "test3@example.com", "password123");
+        assert(signUp3.status === "OK");
+        linkingResult = await AccountLinking.linkAccounts(signUp3.user.loginMethods[0].recipeUserId, signUp2.user.id);
+        assert(linkingResult.status === "OK");
+
+        res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.17")
+                .set("Authorization", `Bearer ${tokens.accessTokenFromAny}`)
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test3@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(sessionReused);
+        assert(res.body.status === "OK");
+        assert(res.body.user.email === "test2@example.com");
+        assert(res.body.user.id === signUp2.user.id);
+        assert(res.body.user.timeJoined === signUp2.user.timeJoined);
+        assert(Object.keys(res.body.user).length === 3);
+    });
+
+    it("user structure FDI 1.17 is correctly returned based on session user ID", async function () {
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+        supertokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let signUp2 = await EmailPassword.signUp("public", "test2@example.com", "password123");
+        assert(signUp2.status === "OK");
+        let linkingResult = await AccountLinking.createPrimaryUser(signUp2.user.loginMethods[0].recipeUserId);
+        assert(linkingResult.status === "OK");
+
+        let signUp3 = await EmailPassword.signUp("public", "test3@example.com", "password123");
+        assert(signUp3.status === "OK");
+        linkingResult = await AccountLinking.linkAccounts(signUp3.user.loginMethods[0].recipeUserId, signUp2.user.id);
+        assert(linkingResult.status === "OK");
+
+        res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.17")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test3@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.body.status === "OK");
+        assert(res.body.user.email === "test3@example.com");
+        assert(res.body.user.id === signUp2.user.id);
+        assert(res.body.user.timeJoined === signUp3.user.timeJoined);
+        assert(Object.keys(res.body.user).length === 3);
     });
 });

@@ -119,6 +119,11 @@ const setup_aws = async () => {
             // CompatibleArchitectures
             "arm64",
         ],
+        Environment: {
+            Variables: {
+                NODE_OPTIONS: "--experimental-specifier-resolution=node", // For more info - https://nodejs.org/docs/latest-v16.x/api/esm.html#customizing-esm-specifier-resolution-algorithm
+            },
+        },
     });
 
     const updateConfigResp = await client.send(updateConfig);

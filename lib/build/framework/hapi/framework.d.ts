@@ -8,9 +8,9 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class HapiRequest extends BaseRequest {
     private request;
     constructor(request: Request);
-    getFormData: () => Promise<any>;
+    protected getFormDataFromRequestBody: () => Promise<any>;
+    protected getJSONFromRequestBody: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
-    getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;
     getHeaderValue: (key: string) => string | undefined;
