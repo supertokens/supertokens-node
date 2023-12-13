@@ -145,7 +145,7 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
         const ctx = getUserContext(userContext);
-        let token = await createResetPasswordToken(userId, tenantId, email, userContext);
+        let token = await createResetPasswordToken(tenantId, userId, email, userContext);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
             return token;
         }

@@ -258,6 +258,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
                     },
                 }),
                 Session.init({
+                    overwriteSessionDuringSignIn: true,
                     override: {
                         functions: (oI) => {
                             return {
