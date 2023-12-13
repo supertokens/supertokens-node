@@ -74,7 +74,7 @@ export default function getAPIImplementation(): APIInterface {
             let session: SessionContainerInterface | undefined = await Session.getSession(
                 input.options.req,
                 input.options.res,
-                { sessionRequired: false }
+                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
             );
             let sessionUser: User | undefined;
             if (session !== undefined) {
@@ -177,14 +177,7 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                let session = await Session.getSession(
-                    input.options.req,
-                    input.options.res,
-                    { sessionRequired: false },
-                    input.userContext
-                );
-
-                session = await Session.createNewOrKeepExistingSession(
+                let session = await Session.createNewOrKeepExistingSession(
                     input.options.req,
                     input.options.res,
                     input.tenantId,

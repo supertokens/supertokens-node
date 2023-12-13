@@ -85,7 +85,12 @@ export default class SessionWrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
 
-        let session = await getSession(req, req, { sessionRequired: false }, userContext);
+        let session = await getSession(
+            req,
+            req,
+            { sessionRequired: false, overrideGlobalClaimValidators: () => [] },
+            userContext
+        );
 
         if (session === undefined || config.overwriteSessionDuringSignIn) {
             session = await createNewSession(

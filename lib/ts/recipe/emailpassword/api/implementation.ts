@@ -634,14 +634,7 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                let session = await Session.getSession(
-                    options.req,
-                    options.res,
-                    { sessionRequired: false },
-                    userContext
-                );
-
-                session = await Session.createNewOrKeepExistingSession(
+                let session = await Session.createNewOrKeepExistingSession(
                     options.req,
                     options.res,
                     tenantId,
@@ -659,7 +652,10 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let session: SessionContainerInterface | undefined;
-            session = await Session.getSession(options.req, options.res, { sessionRequired: false });
+            session = await Session.getSession(options.req, options.res, {
+                sessionRequired: false,
+                overrideGlobalClaimValidators: () => [],
+            });
 
             const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
                 req: options.req,
@@ -782,7 +778,10 @@ export default function getAPIImplementation(): APIInterface {
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
-                let session = await Session.getSession(options.req, options.res, { sessionRequired: false });
+                let session = await Session.getSession(options.req, options.res, {
+                    sessionRequired: false,
+                    overrideGlobalClaimValidators: () => [],
+                });
 
                 const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
                     req: options.req,
@@ -820,14 +819,7 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
-                let session = await Session.getSession(
-                    options.req,
-                    options.res,
-                    { sessionRequired: false },
-                    userContext
-                );
-
-                session = await Session.createNewOrKeepExistingSession(
+                let session = await Session.createNewOrKeepExistingSession(
                     options.req,
                     options.res,
                     tenantId,

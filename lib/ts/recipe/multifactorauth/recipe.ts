@@ -324,7 +324,10 @@ export default class Recipe extends RecipeModule {
           }
         | MFAFlowErrors
     > => {
-        let session = await Session.getSession(req, res, { sessionRequired: false });
+        let session = await Session.getSession(req, res, {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        });
         if (
             session === undefined // no session exists, so we can create a new one
         ) {
