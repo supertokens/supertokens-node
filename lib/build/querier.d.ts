@@ -41,7 +41,7 @@ export declare class Querier {
     sendGetRequestWithResponseHeaders: (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: any
+        userContext: UserContext
     ) => Promise<{
         body: any;
         headers: Headers;

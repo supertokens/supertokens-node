@@ -311,7 +311,7 @@ export class Querier {
     sendGetRequestWithResponseHeaders = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: any
+        userContext: UserContext
     ): Promise<{ body: any; headers: Headers }> => {
         return await this.sendRequestHelper(
             path,

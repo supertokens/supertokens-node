@@ -26,7 +26,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext: Record<string, any>
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";

@@ -11,7 +11,11 @@ export default class SuperTokensWrapper {
     static RecipeUserId: typeof RecipeUserId;
     static User: typeof User;
     static getAllCORSHeaders(): string[];
-    static getUserCount(includeRecipeIds?: string[], tenantId?: string, userContext?: any): Promise<number>;
+    static getUserCount(
+        includeRecipeIds?: string[],
+        tenantId?: string,
+        userContext?: Record<string, any>
+    ): Promise<number>;
     static getUsersOldestFirst(input: {
         tenantId: string;
         limit?: number;

@@ -44,7 +44,7 @@ export declare type TypeInput = {
     isInServerlessEnv?: boolean;
     debug?: boolean;
 };
-export declare type NetworkInterceptor = (request: HttpRequest, userContext: any) => HttpRequest;
+export declare type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;
 export interface HttpRequest {
     url: string;
     method: HTTPMethod;

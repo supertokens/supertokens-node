@@ -74,7 +74,7 @@ export default function getRecipeInterface(
             }
         },
 
-        getJWKS: async function (userContext: any): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
+        getJWKS: async function ({ userContext }): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
             const { body, headers } = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath("/.well-known/jwks.json"),
                 {},

@@ -63,7 +63,7 @@ export type TypeInput = {
     debug?: boolean;
 };
 
-export type NetworkInterceptor = (request: HttpRequest, userContext: any) => HttpRequest;
+export type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;
 
 export interface HttpRequest {
     url: string;
