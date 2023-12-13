@@ -257,6 +257,10 @@ export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
     return setRequestInUserContextIfNotDefined({} as UserContext, request);
 }
 
+export function getUserContext(inputUserContext?: Record<string, any>): UserContext {
+    return (inputUserContext ?? {}) as UserContext;
+}
+
 export function setRequestInUserContextIfNotDefined(userContext: UserContext | undefined, request: BaseRequest) {
     if (userContext === undefined) {
         userContext = {} as UserContext;

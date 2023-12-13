@@ -2,7 +2,6 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
-import { UserContext } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -10,7 +9,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<TypeProvider | undefined>;
     static manuallyCreateOrUpdateUser(
         tenantId: string,
@@ -18,7 +17,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";

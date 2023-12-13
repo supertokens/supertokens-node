@@ -20,7 +20,7 @@ export default class SuperTokensWrapper {
         query?: {
             [key: string]: string;
         };
-        userContext?: UserContext;
+        userContext?: Record<string, any>;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -33,7 +33,7 @@ export default class SuperTokensWrapper {
         query?: {
             [key: string]: string;
         };
-        userContext?: UserContext;
+        userContext?: Record<string, any>;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -43,7 +43,7 @@ export default class SuperTokensWrapper {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
-        userContext?: UserContext;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -57,7 +57,7 @@ export default class SuperTokensWrapper {
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-        userContext?: UserContext;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "OK";
@@ -73,7 +73,7 @@ export default class SuperTokensWrapper {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
-        userContext?: UserContext;
+        userContext?: Record<string, any>;
     }): Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -82,21 +82,21 @@ export default class SuperTokensWrapper {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
-        userContext?: UserContext;
+        userContext?: Record<string, any>;
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    static getUser(userId: string, userContext?: UserContext): Promise<UserType | undefined>;
+    static getUser(userId: string, userContext?: Record<string, any>): Promise<UserType | undefined>;
     static listUsersByAccountInfo(
         tenantId: string,
         accountInfo: AccountInfo,
         doUnionOfAccountInfo?: boolean,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<UserType[]>;
     static deleteUser(
         userId: string,
         removeAllLinkedAccounts?: boolean,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
     }>;

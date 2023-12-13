@@ -9,7 +9,6 @@ import {
     TypeEmailVerificationEmailDeliveryInput,
 } from "./types";
 import RecipeUserId from "../../recipeUserId";
-import { UserContext } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -18,7 +17,7 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -32,7 +31,7 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -47,7 +46,7 @@ export default class Wrapper {
         userId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -60,7 +59,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         attemptAccountLinking?: boolean,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -70,25 +69,29 @@ export default class Wrapper {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    static isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext?: UserContext): Promise<boolean>;
+    static isEmailVerified(
+        recipeUserId: RecipeUserId,
+        email?: string,
+        userContext?: Record<string, any>
+    ): Promise<boolean>;
     static revokeEmailVerificationTokens(
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<{
         status: string;
     }>;
     static unverifyEmail(
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<{
         status: string;
     }>;
     static sendEmail(
         input: TypeEmailVerificationEmailDeliveryInput & {
-            userContext?: UserContext;
+            userContext?: Record<string, any>;
         }
     ): Promise<void>;
 }

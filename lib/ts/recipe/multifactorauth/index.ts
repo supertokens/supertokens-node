@@ -20,15 +20,15 @@ import { SessionContainerInterface } from "../session/types";
 import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
 import UserMetadataRecipe from "../usermetadata/recipe";
-import { UserContext } from "../../types";
+import { getUserContext } from "../../utils";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: UserContext) {
-        const ctx = userContext ?? ({} as UserContext);
+    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
+        const ctx = getUserContext(userContext);
         const user = await getUser(userId, ctx);
         if (!user) {
             throw new Error("UKNKNOWN_USER_ID");
@@ -44,9 +44,9 @@ export default class Wrapper {
     static async isAllowedToSetupFactor(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ) {
-        let ctx = userContext ?? ({} as UserContext);
+        let ctx = getUserContext(userContext);
         const user = await getUser(session.getUserId(), ctx);
         if (!user) {
             throw new Error("UKNKNOWN_USER_ID");
@@ -86,24 +86,28 @@ export default class Wrapper {
             factorsSetUpForUser: factorsSetup,
             defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
-            userContext: userContext ?? ({} as UserContext),
+            userContext: getUserContext(userContext),
         });
     }
 
     static async markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
             session,
             factorId,
-            userContext: userContext ?? ({} as UserContext),
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async addToDefaultRequiredFactorsForUser(userId: string, factorId: string, userContext?: UserContext) {
-        const ctx = userContext ?? ({} as UserContext);
+    static async addToDefaultRequiredFactorsForUser(
+        userId: string,
+        factorId: string,
+        userContext?: Record<string, any>
+    ) {
+        const ctx = getUserContext(userContext);
         const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
         const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
             userId,

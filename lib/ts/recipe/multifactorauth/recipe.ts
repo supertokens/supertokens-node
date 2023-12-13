@@ -387,7 +387,7 @@ export default class Recipe extends RecipeModule {
                         ) {
                             return {
                                 status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                                message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_011)",
+                                message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_009)",
                             };
                         }
                     }
@@ -402,7 +402,7 @@ export default class Recipe extends RecipeModule {
                         return {
                             status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
                             message:
-                                "Error setting up MFA for the user because of the automatic account linking. Please contact support. (ERR_CODE_013)",
+                                "Error setting up MFA for the user because of the automatic account linking. Please contact support. (ERR_CODE_011)",
                         };
                     } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
                         // Race condition
@@ -414,7 +414,7 @@ export default class Recipe extends RecipeModule {
                         return {
                             status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
                             message:
-                                "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+                                "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_010)",
                         };
                     }
                 } else {

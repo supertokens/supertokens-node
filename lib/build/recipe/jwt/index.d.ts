@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { UserContext } from "../../types";
 import Recipe from "./recipe";
 import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 export default class Wrapper {
@@ -8,7 +7,7 @@ export default class Wrapper {
         payload: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -19,7 +18,7 @@ export default class Wrapper {
           }
     >;
     static getJWKS(
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number | undefined;

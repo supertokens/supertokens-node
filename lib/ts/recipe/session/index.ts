@@ -26,13 +26,14 @@ import {
     RecipeInterface,
 } from "./types";
 import Recipe from "./recipe";
-import { JSONObject, UserContext } from "../../types";
+import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { protectedProps } from "./constants";
+import { getUserContext } from "../../utils";
 
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -46,7 +47,7 @@ export default class SessionWrapper {
         recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
@@ -61,7 +62,7 @@ export default class SessionWrapper {
         return await createNewSessionInRequest({
             req,
             res,
-            userContext,
+            userContext: getUserContext(userContext),
             recipeInstance,
             accessTokenPayload,
             userId,
@@ -80,8 +81,9 @@ export default class SessionWrapper {
         recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
+        const ctx = getUserContext(userContext);
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
 
@@ -89,7 +91,7 @@ export default class SessionWrapper {
             req,
             req,
             { sessionRequired: false, overrideGlobalClaimValidators: () => [] },
-            userContext
+            ctx
         );
 
         if (session === undefined || config.overwriteSessionDuringSignIn) {
@@ -100,7 +102,7 @@ export default class SessionWrapper {
                 recipeUserId,
                 accessTokenPayload,
                 sessionDataInDatabase,
-                userContext
+                ctx
             );
         }
 
@@ -113,8 +115,9 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
+        const ctx = getUserContext(userContext);
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
         const appInfo = recipeInstance.getAppInfo();
@@ -129,14 +132,14 @@ export default class SessionWrapper {
             delete finalAccessTokenPayload[prop];
         }
 
-        let user = await getUser(recipeUserId.getAsString(), userContext);
+        let user = await getUser(recipeUserId.getAsString(), ctx);
         let userId = recipeUserId.getAsString();
         if (user !== undefined) {
             userId = user.id;
         }
 
         for (const claim of claimsAddedByOtherRecipes) {
-            const update = await claim.build(userId, recipeUserId, tenantId, finalAccessTokenPayload, userContext);
+            const update = await claim.build(userId, recipeUserId, tenantId, finalAccessTokenPayload, ctx);
             finalAccessTokenPayload = {
                 ...finalAccessTokenPayload,
                 ...update,
@@ -149,7 +152,7 @@ export default class SessionWrapper {
             sessionDataInDatabase,
             disableAntiCsrf,
             tenantId,
-            userContext,
+            userContext: ctx,
         });
     }
 
@@ -158,9 +161,9 @@ export default class SessionWrapper {
         overrideGlobalClaimValidators?: (
             globalClaimValidators: SessionClaimValidator[],
             sessionInfo: SessionInformation,
-            userContext: UserContext
+            userContext: Record<string, any>
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -170,11 +173,12 @@ export default class SessionWrapper {
               invalidClaims: ClaimValidationError[];
           }
     > {
+        const ctx = getUserContext(userContext);
         const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
 
         const sessionInfo = await recipeImpl.getSessionInformation({
             sessionHandle,
-            userContext,
+            userContext: ctx,
         });
         if (sessionInfo === undefined) {
             return {
@@ -188,12 +192,12 @@ export default class SessionWrapper {
             recipeUserId: sessionInfo.recipeUserId,
             tenantId: sessionInfo.tenantId,
             claimValidatorsAddedByOtherRecipes,
-            userContext,
+            userContext: ctx,
         });
 
         const claimValidators =
             overrideGlobalClaimValidators !== undefined
-                ? await overrideGlobalClaimValidators(globalClaimValidators, sessionInfo, userContext)
+                ? await overrideGlobalClaimValidators(globalClaimValidators, sessionInfo, ctx)
                 : globalClaimValidators;
 
         let claimValidationResponse = await recipeImpl.validateClaims({
@@ -201,7 +205,7 @@ export default class SessionWrapper {
             recipeUserId: sessionInfo.recipeUserId,
             accessTokenPayload: sessionInfo.customClaimsInAccessTokenPayload,
             claimValidators,
-            userContext,
+            userContext: ctx,
         });
 
         if (claimValidationResponse.accessTokenPayloadUpdate !== undefined) {
@@ -209,7 +213,7 @@ export default class SessionWrapper {
                 !(await recipeImpl.mergeIntoAccessTokenPayload({
                     sessionHandle,
                     accessTokenPayloadUpdate: claimValidationResponse.accessTokenPayloadUpdate,
-                    userContext,
+                    userContext: ctx,
                 }))
             ) {
                 return {
@@ -228,21 +232,21 @@ export default class SessionWrapper {
         req: any,
         res: any,
         options?: VerifySessionOptions & { sessionRequired?: true },
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<SessionContainer>;
     static getSession(
         req: any,
         res: any,
         options?: VerifySessionOptions & { sessionRequired: false },
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
     static getSession(
         req: any,
         res: any,
         options?: VerifySessionOptions,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
-    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext?: UserContext) {
+    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext?: Record<string, any>) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
@@ -253,7 +257,7 @@ export default class SessionWrapper {
             recipeInterfaceImpl,
             config,
             options,
-            userContext, // userContext is normalized inside the function
+            userContext: getUserContext(userContext), // userContext is normalized inside the function
         });
     }
 
@@ -285,85 +289,92 @@ export default class SessionWrapper {
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired?: true },
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<SessionContainer>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired: false },
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        userContext?: UserContext
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ): Promise<SessionContainer | undefined> {
+        const ctx = getUserContext(userContext);
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
         const session = await recipeInterfaceImpl.getSession({
             accessToken,
             antiCsrfToken,
             options,
-            userContext,
+            userContext: ctx,
         });
 
         if (session !== undefined) {
             const claimValidators = await getRequiredClaimValidators(
                 session,
                 options?.overrideGlobalClaimValidators,
-                userContext
+                ctx
             );
 
-            await session.assertClaims(claimValidators, userContext);
+            await session.assertClaims(claimValidators, ctx);
         }
         return session;
     }
 
-    static getSessionInformation(sessionHandle: string, userContext: UserContext = {} as UserContext) {
+    static getSessionInformation(sessionHandle: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
             sessionHandle,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static refreshSession(req: any, res: any, userContext: UserContext = {} as UserContext) {
+    static refreshSession(req: any, res: any, userContext?: Record<string, any>) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
 
-        return refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
+        return refreshSessionInRequest({
+            res,
+            req,
+            userContext: getUserContext(userContext),
+            config,
+            recipeInterfaceImpl,
+        });
     }
 
     static refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf: boolean = false,
         antiCsrfToken?: string,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
             refreshToken,
             disableAntiCsrf,
             antiCsrfToken,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
     static revokeAllSessionsForUser(
         userId: string,
         revokeSessionsForLinkedAccounts: boolean = true,
         tenantId?: string,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
             userId,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             revokeSessionsForLinkedAccounts,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -371,52 +382,48 @@ export default class SessionWrapper {
         userId: string,
         fetchSessionsForAllLinkedAccounts: boolean = true,
         tenantId?: string,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             fetchAcrossAllTenants: tenantId === undefined,
             fetchSessionsForAllLinkedAccounts,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static revokeSession(sessionHandle: string, userContext: UserContext = {} as UserContext) {
+    static revokeSession(sessionHandle: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({
             sessionHandle,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static revokeMultipleSessions(sessionHandles: string[], userContext: UserContext = {} as UserContext) {
+    static revokeMultipleSessions(sessionHandles: string[], userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({
             sessionHandles,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static updateSessionDataInDatabase(
-        sessionHandle: string,
-        newSessionData: any,
-        userContext: UserContext = {} as UserContext
-    ) {
+    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionDataInDatabase({
             sessionHandle,
             newSessionData,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
             sessionHandle,
             accessTokenPayloadUpdate,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -424,35 +431,37 @@ export default class SessionWrapper {
         payload?: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.createJWT({
             payload,
             validitySeconds,
             useStaticSigningKey,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static getJWKS(userContext: UserContext = {} as UserContext) {
-        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getJWKS({ userContext });
+    static getJWKS(userContext?: Record<string, any>) {
+        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getJWKS({
+            userContext: getUserContext(userContext),
+        });
     }
 
-    static getOpenIdDiscoveryConfiguration(userContext: UserContext = {} as UserContext) {
+    static getOpenIdDiscoveryConfiguration(userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
     static fetchAndSetClaim(
         sessionHandle: string,
         claim: SessionClaim<any>,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
             sessionHandle,
             claim,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -460,20 +469,20 @@ export default class SessionWrapper {
         sessionHandle: string,
         claim: SessionClaim<T>,
         value: T,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
             sessionHandle,
             claim,
             value,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
     static getClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -486,19 +495,19 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimValue({
             sessionHandle,
             claim,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
     static removeClaim(
         sessionHandle: string,
         claim: SessionClaim<any>,
-        userContext: UserContext = {} as UserContext
+        userContext?: Record<string, any>
     ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
             sessionHandle,
             claim,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 }
