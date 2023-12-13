@@ -100,8 +100,8 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                                 route.handler(
                                     ExpressFramework.wrapRequest(req),
                                     ExpressFramework.wrapResponse(res),
-                                    req.session,
-                                    next
+                                    next,
+                                    req.session
                                 ),
                         ];
                         if (route.verifySession) {
