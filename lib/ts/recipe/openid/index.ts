@@ -1,11 +1,12 @@
+import { UserContext } from "../../types";
 import OpenIdRecipe from "./recipe";
 
 export default class OpenIdRecipeWrapper {
     static init = OpenIdRecipe.init;
 
-    static getOpenIdDiscoveryConfiguration(userContext?: Record<string, any>) {
+    static getOpenIdDiscoveryConfiguration(userContext?: UserContext) {
         return OpenIdRecipe.getInstanceOrThrowError().recipeImplementation.getOpenIdDiscoveryConfiguration({
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
@@ -13,19 +14,19 @@ export default class OpenIdRecipeWrapper {
         payload?: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ) {
         return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.createJWT({
             payload,
             validitySeconds,
             useStaticSigningKey,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static getJWKS(userContext?: Record<string, any>) {
+    static getJWKS(userContext?: UserContext) {
         return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.getJWKS({
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 }

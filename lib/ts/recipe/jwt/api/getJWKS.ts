@@ -13,13 +13,14 @@
  * under the License.
  */
 
+import { UserContext } from "../../../types";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
 
 export default async function getJWKS(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.getJWKSGET === undefined) {
         return false;

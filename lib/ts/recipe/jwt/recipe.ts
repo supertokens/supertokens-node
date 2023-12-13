@@ -20,7 +20,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import getJWKS from "./api/getJWKS";
 import APIImplementation from "./api/implementation";
 import { GET_JWKS_API } from "./constants";
@@ -102,7 +102,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _path: normalisedURLPath,
         _method: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             config: this.config,

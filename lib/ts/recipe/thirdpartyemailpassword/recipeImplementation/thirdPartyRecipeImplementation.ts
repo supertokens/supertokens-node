@@ -1,6 +1,6 @@
 import { RecipeInterface, TypeProvider } from "../../thirdparty/types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
-import { User } from "../../../types";
+import { User, UserContext } from "../../../types";
 import RecipeUserId from "../../../recipeUserId";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPasswordRecipeInterface): RecipeInterface {
@@ -16,7 +16,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -44,7 +44,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -83,7 +83,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyId: string;
             clientType?: string;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<TypeProvider | undefined> {
             return await recipeInterface.thirdPartyGetProvider(input);
         },

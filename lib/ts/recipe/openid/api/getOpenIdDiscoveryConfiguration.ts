@@ -12,13 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { UserContext } from "../../../types";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
 
 export default async function getOpenIdDiscoveryConfiguration(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.getOpenIdDiscoveryConfigurationGET === undefined) {
         return false;

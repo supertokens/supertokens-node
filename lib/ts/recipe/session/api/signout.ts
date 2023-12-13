@@ -16,11 +16,12 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import { getSessionFromRequest } from "../sessionRequestFunctions";
+import { UserContext } from "../../../types";
 
 export default async function signOutAPI(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 

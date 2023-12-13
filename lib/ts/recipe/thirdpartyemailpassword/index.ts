@@ -22,6 +22,7 @@ import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "../emailpassword/utils";
 import { getRequestFromUserContext, getUser } from "../..";
+import { UserContext } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -32,7 +33,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
             thirdPartyId,
@@ -48,7 +49,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
             thirdPartyId,
@@ -64,7 +65,7 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
             email,
@@ -78,7 +79,7 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
             email,
@@ -92,7 +93,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
@@ -106,7 +107,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ) {
         const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
 
@@ -123,7 +124,7 @@ export default class Wrapper {
         });
     }
 
-    static consumePasswordResetToken(tenantId: string, token: string, userContext: Record<string, any> = {}) {
+    static consumePasswordResetToken(tenantId: string, token: string, userContext: UserContext = {} as UserContext) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
             tenantId,
@@ -135,13 +136,13 @@ export default class Wrapper {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
             tenantIdForPasswordPolicy:
                 input.tenantIdForPasswordPolicy === undefined ? DEFAULT_TENANT_ID : input.tenantIdForPasswordPolicy,
         });
@@ -151,7 +152,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
         let token = await createResetPasswordToken(userId, tenantId, email, userContext);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
@@ -176,7 +177,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
         const user = await getUser(userId, userContext);
         if (!user) {
@@ -210,10 +211,10 @@ export default class Wrapper {
         };
     }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: Record<string, any> }) {
+    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: UserContext }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
             tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }

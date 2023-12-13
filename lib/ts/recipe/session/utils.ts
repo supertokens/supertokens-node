@@ -27,7 +27,7 @@ import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cooki
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -73,7 +73,7 @@ export async function sendTokenTheftDetectedResponse(
     ___: BaseRequest,
     response: BaseResponse
 ) {
-    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} });
+    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} as UserContext }); // TODO should userContext be passed to error handlers?
     sendNon200ResponseWithMessage(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }
 
@@ -140,11 +140,8 @@ export function validateAndNormaliseUserInput(
 
     let cookieSameSite: (input: {
         request: BaseRequest | undefined;
-        userContext: Record<string, any>;
-    }) => "strict" | "lax" | "none" = (input: {
-        request: BaseRequest | undefined;
-        userContext: Record<string, any>;
-    }) => {
+        userContext: UserContext;
+    }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         let protocolOfWebsiteDomain = getURLProtocol(
             appInfo
                 .getOrigin({
@@ -189,10 +186,10 @@ export function validateAndNormaliseUserInput(
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
-        | ((input: {
-              request: BaseRequest | undefined;
-              userContext: Record<string, any>;
-          }) => "VIA_CUSTOM_HEADER" | "NONE") = ({ request, userContext }) => {
+        | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => "VIA_CUSTOM_HEADER" | "NONE") = ({
+        request,
+        userContext,
+    }) => {
         const sameSite = cookieSameSite({
             request,
             userContext,
@@ -291,7 +288,7 @@ export function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) {
     setFrontTokenInHeaders(res, frontToken);
     setToken(
@@ -330,7 +327,7 @@ export function setAccessTokenInResponse(
 export async function getRequiredClaimValidators(
     session: SessionContainerInterface,
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
-    userContext: Record<string, any>
+    userContext: UserContext
 ) {
     const claimValidatorsAddedByOtherRecipes = SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
     const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
@@ -351,7 +348,7 @@ export async function getRequiredClaimValidators(
 export async function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) {
     const validationErrors = [];
     for (const validator of claimValidators) {

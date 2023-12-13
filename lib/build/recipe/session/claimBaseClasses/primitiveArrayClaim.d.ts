@@ -1,6 +1,6 @@
 // @ts-nocheck
 import RecipeUserId from "../../../recipeUserId";
-import { JSONObject, JSONPrimitive } from "../../../types";
+import { JSONObject, JSONPrimitive, UserContext } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
     readonly fetchValue: (
@@ -8,15 +8,15 @@ export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends Sessio
         recipeUserId: RecipeUserId,
         tenantId: string,
         currentPayload: JSONObject | undefined,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<T[] | undefined> | T[] | undefined;
     readonly defaultMaxAgeInSeconds: number | undefined;
     constructor(config: { key: string; fetchValue: SessionClaim<T[]>["fetchValue"]; defaultMaxAgeInSeconds?: number });
-    addToPayload_internal(payload: any, value: T[], _userContext: Record<string, any>): any;
-    removeFromPayloadByMerge_internal(payload: any, _userContext?: Record<string, any>): any;
-    removeFromPayload(payload: any, _userContext?: Record<string, any>): any;
-    getValueFromPayload(payload: any, _userContext?: Record<string, any>): T[] | undefined;
-    getLastRefetchTime(payload: any, _userContext?: Record<string, any>): number | undefined;
+    addToPayload_internal(payload: any, value: T[], _userContext: UserContext): any;
+    removeFromPayloadByMerge_internal(payload: any, _userContext?: UserContext): any;
+    removeFromPayload(payload: any, _userContext?: UserContext): any;
+    getValueFromPayload(payload: any, _userContext?: UserContext): T[] | undefined;
+    getLastRefetchTime(payload: any, _userContext?: UserContext): number | undefined;
     validators: {
         includes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
         excludes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;

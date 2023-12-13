@@ -1,5 +1,5 @@
 import { RecipeInterface } from "../../emailpassword/types";
-import { User } from "../../../types";
+import { User, UserContext } from "../../../types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 import RecipeUserId from "../../../recipeUserId";
 
@@ -9,7 +9,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             password: string;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | { status: "OK"; user: User; recipeUserId: RecipeUserId; isValidFirstFactorForTenant: boolean | undefined }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
@@ -21,7 +21,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             password: string;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | { status: "OK"; user: User; recipeUserId: RecipeUserId; isValidFirstFactorForTenant: boolean | undefined }
             | { status: "WRONG_CREDENTIALS_ERROR" }
@@ -33,7 +33,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             userId: string;
             email: string;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return recipeInterface.createResetPasswordToken(input);
         },
@@ -41,7 +41,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         consumePasswordResetToken: async function (input: {
             token: string;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }) {
             return recipeInterface.consumePasswordResetToken(input);
         },
@@ -49,7 +49,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         createNewRecipeUser: async function (input: {
             email: string;
             password: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -66,7 +66,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             recipeUserId: RecipeUserId;
             email?: string;
             password?: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
             applyPasswordPolicy: boolean;
             tenantIdForPasswordPolicy: string;
         }): Promise<

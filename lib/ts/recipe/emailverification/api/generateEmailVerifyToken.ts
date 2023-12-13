@@ -16,11 +16,12 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import Session from "../../session";
+import { UserContext } from "../../../types";
 
 export default async function generateEmailVerifyToken(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 

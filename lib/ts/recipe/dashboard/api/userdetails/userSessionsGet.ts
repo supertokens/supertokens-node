@@ -1,6 +1,7 @@
 import { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import Session from "../../../session";
+import { UserContext } from "../../../../types";
 
 type SessionType = {
     sessionDataInDatabase: any;
@@ -20,7 +21,7 @@ export const userSessionsGet: APIFunction = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 

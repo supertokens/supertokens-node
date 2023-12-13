@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
+import { UserContext } from "../../../../types";
 declare type TagsResponse = {
     status: "OK";
     tags: string[];
@@ -8,6 +9,6 @@ export declare const getSearchTags: (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    __: any
+    userContext: UserContext
 ) => Promise<TagsResponse>;
 export {};

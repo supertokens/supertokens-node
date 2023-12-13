@@ -1,8 +1,9 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
 export default function signInUpAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean>;

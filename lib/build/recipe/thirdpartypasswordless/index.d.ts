@@ -11,6 +11,7 @@ import {
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
 import RecipeUserId from "../../recipeUserId";
+import { UserContext } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -18,7 +19,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<TypeProvider | undefined>;
     static thirdPartyManuallyCreateOrUpdateUser(
         tenantId: string,
@@ -26,7 +27,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -55,7 +56,7 @@ export default class Wrapper {
         ) & {
             userInputCode?: string;
             tenantId: string;
-            userContext?: Record<string, any>;
+            userContext?: UserContext;
         }
     ): Promise<{
         status: "OK";
@@ -71,7 +72,7 @@ export default class Wrapper {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -94,13 +95,13 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ): Promise<
         | {
@@ -123,7 +124,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }): Promise<
         | {
               status:
@@ -142,12 +143,12 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ): Promise<{
         status: "OK";
@@ -155,41 +156,41 @@ export default class Wrapper {
     static revokeCode(input: {
         codeId: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }): Promise<{
         status: "OK";
     }>;
     static listCodesByEmail(input: {
         email: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }): Promise<import("../passwordless/types").DeviceType[]>;
     static listCodesByPhoneNumber(input: {
         phoneNumber: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }): Promise<import("../passwordless/types").DeviceType[]>;
     static listCodesByDeviceId(input: {
         deviceId: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }): Promise<import("../passwordless/types").DeviceType | undefined>;
     static listCodesByPreAuthSessionId(input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }): Promise<import("../passwordless/types").DeviceType | undefined>;
     static createMagicLink(
         input:
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ): Promise<string>;
     static passwordlessSignInUp(
@@ -197,12 +198,12 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ): Promise<{
         status: string;
@@ -213,12 +214,12 @@ export default class Wrapper {
     }>;
     static sendEmail(
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
-            userContext?: Record<string, any>;
+            userContext?: UserContext;
         }
     ): Promise<void>;
     static sendSms(
         input: TypePasswordlessSmsDeliveryInput & {
-            userContext?: Record<string, any>;
+            userContext?: UserContext;
         }
     ): Promise<void>;
 }

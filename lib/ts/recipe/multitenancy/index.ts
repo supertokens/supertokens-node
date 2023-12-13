@@ -18,6 +18,7 @@ import { RecipeInterface, APIOptions, APIInterface, TenantConfig } from "./types
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
+import { UserContext } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -33,7 +34,7 @@ export default class Wrapper {
             defaultRequiredFactorIds?: string[];
             coreConfig?: { [key: string]: any };
         },
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         createdNew: boolean;
@@ -42,13 +43,13 @@ export default class Wrapper {
         return recipeInstance.recipeInterfaceImpl.createOrUpdateTenant({
             tenantId,
             config,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
     static async deleteTenant(
         tenantId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         didExist: boolean;
@@ -56,13 +57,13 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.deleteTenant({
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
     static async getTenant(
         tenantId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | ({
               status: "OK";
@@ -72,12 +73,12 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.getTenant({
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
     static async listAllTenants(
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         tenants: ({
@@ -86,7 +87,7 @@ export default class Wrapper {
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.listAllTenants({
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
@@ -94,7 +95,7 @@ export default class Wrapper {
         tenantId: string,
         config: ProviderConfig,
         skipValidation?: boolean,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         createdNew: boolean;
@@ -104,14 +105,14 @@ export default class Wrapper {
             tenantId,
             config,
             skipValidation,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
     static async deleteThirdPartyConfig(
         tenantId: string,
         thirdPartyId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -120,14 +121,14 @@ export default class Wrapper {
         return recipeInstance.recipeInterfaceImpl.deleteThirdPartyConfig({
             tenantId,
             thirdPartyId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
     static async associateUserToTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -149,14 +150,14 @@ export default class Wrapper {
         return recipeInstance.recipeInterfaceImpl.associateUserToTenant({
             tenantId,
             recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
     static async disassociateUserFromTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         wasAssociated: boolean;
@@ -165,7 +166,7 @@ export default class Wrapper {
         return recipeInstance.recipeInterfaceImpl.disassociateUserFromTenant({
             tenantId,
             recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 }

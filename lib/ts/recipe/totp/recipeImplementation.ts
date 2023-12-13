@@ -2,6 +2,7 @@ import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { TypeNormalisedInput } from "./types";
+import { UserContext } from "../../types";
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -11,7 +12,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             skew?: number;
             period?: number;
             userIdentifierInfo?: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }) => {
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/totp/device"),
@@ -40,7 +41,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId: string;
             existingDeviceName: string;
             newDeviceName: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }) => {
             return querier.sendPutRequest(
                 new NormalisedURLPath("/recipe/totp/device"),
@@ -53,7 +54,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             );
         },
 
-        listDevices: (input: { userId: string; userContext: Record<string, any> }) => {
+        listDevices: (input: { userId: string; userContext: UserContext }) => {
             return querier.sendGetRequest(
                 new NormalisedURLPath("/recipe/totp/device/list"),
                 {
@@ -63,7 +64,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             );
         },
 
-        removeDevice: (input: { userId: string; deviceName: string; userContext: Record<string, any> }) => {
+        removeDevice: (input: { userId: string; deviceName: string; userContext: UserContext }) => {
             return querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/totp/device/remove"),
                 {
@@ -79,7 +80,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId: string;
             deviceName: string;
             totp: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }) => {
             return querier.sendPostRequest(
                 new NormalisedURLPath(`${input.tenantId}/recipe/totp/device/verify`),
@@ -92,7 +93,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             );
         },
 
-        verifyTOTP: (input: { tenantId: string; userId: string; totp: string; userContext: Record<string, any> }) => {
+        verifyTOTP: (input: { tenantId: string; userId: string; totp: string; userContext: UserContext }) => {
             return querier.sendPostRequest(
                 new NormalisedURLPath(`${input.tenantId}/recipe/totp/verify`),
                 {

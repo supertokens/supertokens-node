@@ -1,5 +1,5 @@
 import RecipeUserId from "../../../recipeUserId";
-import { JSONObject, JSONPrimitive } from "../../../types";
+import { JSONObject, JSONPrimitive, UserContext } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
@@ -8,7 +8,7 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
         recipeUserId: RecipeUserId,
         tenantId: string,
         currentPayload: JSONObject | undefined,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<T[] | undefined> | T[] | undefined;
     public readonly defaultMaxAgeInSeconds: number | undefined;
 
@@ -18,7 +18,7 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
         this.defaultMaxAgeInSeconds = config.defaultMaxAgeInSeconds;
     }
 
-    addToPayload_internal(payload: any, value: T[], _userContext: Record<string, any>): any {
+    addToPayload_internal(payload: any, value: T[], _userContext: UserContext): any {
         return {
             ...payload,
             [this.key]: {
@@ -27,7 +27,7 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
             },
         };
     }
-    removeFromPayloadByMerge_internal(payload: any, _userContext?: Record<string, any>): any {
+    removeFromPayloadByMerge_internal(payload: any, _userContext?: UserContext): any {
         const res = {
             ...payload,
             [this.key]: null,
@@ -36,7 +36,7 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
         return res;
     }
 
-    removeFromPayload(payload: any, _userContext?: Record<string, any>): any {
+    removeFromPayload(payload: any, _userContext?: UserContext): any {
         const res = {
             ...payload,
         };
@@ -45,11 +45,11 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
         return res;
     }
 
-    getValueFromPayload(payload: any, _userContext?: Record<string, any>): T[] | undefined {
+    getValueFromPayload(payload: any, _userContext?: UserContext): T[] | undefined {
         return payload[this.key]?.v;
     }
 
-    getLastRefetchTime(payload: any, _userContext?: Record<string, any>): number | undefined {
+    getLastRefetchTime(payload: any, _userContext?: UserContext): number | undefined {
         return payload[this.key]?.t;
     }
 

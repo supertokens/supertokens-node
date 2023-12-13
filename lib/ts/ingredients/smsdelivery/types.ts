@@ -13,9 +13,10 @@
  * under the License.
  */
 import OverrideableBuilder from "supertokens-js-override";
+import { UserContext } from "../../types";
 
 export type SmsDeliveryInterface<T> = {
-    sendSms: (input: T & { tenantId: string; userContext: Record<string, any> }) => Promise<void>;
+    sendSms: (input: T & { tenantId: string; userContext: UserContext }) => Promise<void>;
 };
 
 /**

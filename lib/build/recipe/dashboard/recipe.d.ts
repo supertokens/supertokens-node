@@ -1,6 +1,6 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -24,7 +24,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         __: NormalisedURLPath,
         ___: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError: (err: error, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];

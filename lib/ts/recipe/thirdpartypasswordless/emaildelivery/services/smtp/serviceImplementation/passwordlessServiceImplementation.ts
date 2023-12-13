@@ -20,6 +20,7 @@ import {
     GetContentResult,
 } from "../../../../../../ingredients/emaildelivery/services/smtp";
 import { TypePasswordlessEmailDeliveryInput } from "../../../../../passwordless/types";
+import { UserContext } from "../../../../../../types";
 
 export default function getServiceInterface(
     thirdpartyPasswordlessServiceImplementation: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>
@@ -29,7 +30,7 @@ export default function getServiceInterface(
             return thirdpartyPasswordlessServiceImplementation.sendRawEmail(input);
         },
         getContent: async function (
-            input: TypePasswordlessEmailDeliveryInput & { userContext: Record<string, any> }
+            input: TypePasswordlessEmailDeliveryInput & { userContext: UserContext }
         ): Promise<GetContentResult> {
             return await thirdpartyPasswordlessServiceImplementation.getContent(input);
         },

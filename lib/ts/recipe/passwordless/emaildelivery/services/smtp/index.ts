@@ -18,6 +18,7 @@ import { createTransport } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { getServiceImplementation } from "./serviceImplementation";
+import { UserContext } from "../../../../../types";
 
 export default class SMTPService implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypePasswordlessEmailDeliveryInput>;
@@ -39,7 +40,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypePasswordl
         this.serviceImpl = builder.build();
     }
 
-    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: Record<string, any> }) => {
+    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: UserContext }) => {
         let content = await this.serviceImpl.getContent(input);
         await this.serviceImpl.sendRawEmail({
             ...content,

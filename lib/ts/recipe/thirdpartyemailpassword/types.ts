@@ -32,7 +32,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse, User as GlobalUser, User } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { MFAFlowErrors } from "../multifactorauth/types";
 
@@ -77,7 +77,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         clientType?: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
 
     thirdPartySignInUp(input: {
@@ -91,7 +91,7 @@ export type RecipeInterface = {
             fromUserInfoAPI?: { [key: string]: any };
         };
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -117,7 +117,7 @@ export type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -140,7 +140,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -154,7 +154,7 @@ export type RecipeInterface = {
     createNewEmailPasswordRecipeUser(input: {
         email: string;
         password: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -169,7 +169,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -184,13 +184,13 @@ export type RecipeInterface = {
         userId: string;
         email: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -204,7 +204,7 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -230,7 +230,7 @@ export type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: ThirdPartyAPIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -246,7 +246,7 @@ export type APIInterface = {
               email: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -264,7 +264,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -286,7 +286,7 @@ export type APIInterface = {
               token: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -307,7 +307,7 @@ export type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   options: ThirdPartyAPIOptions;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -350,7 +350,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -377,7 +377,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -400,7 +400,7 @@ export type APIInterface = {
         | ((input: {
               formPostInfoFromProvider: any;
               options: ThirdPartyAPIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<void>);
 };
 

@@ -9,7 +9,7 @@ import {
     TokenTransferMethod,
 } from "./types";
 import SessionRecipe from "./recipe";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import RecipeUserId from "../../recipeUserId";
 export declare function sendTryRefreshTokenResponse(
@@ -53,17 +53,17 @@ export declare function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<SessionClaimValidator[]>;
 export declare function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<
     {
         id: string;

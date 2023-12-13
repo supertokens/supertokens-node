@@ -1,5 +1,6 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
+import { UserContext } from "../../../types";
 export interface SMTPServiceConfig {
     host: string;
     from: {
@@ -18,13 +19,13 @@ export interface GetContentResult {
     toEmail: string;
 }
 export declare type TypeInputSendRawEmail = GetContentResult & {
-    userContext: Record<string, any>;
+    userContext: UserContext;
 };
 export declare type ServiceInterface<T> = {
     sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
     getContent: (
         input: T & {
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }
     ) => Promise<GetContentResult>;
 };

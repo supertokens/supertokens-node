@@ -2,7 +2,7 @@ import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
-import { GeneralErrorResponse, User } from "../../../types";
+import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
@@ -21,7 +21,7 @@ export default function getAPIImplementation(): APIInterface {
             email: string;
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -64,7 +64,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -348,7 +348,7 @@ export default function getAPIImplementation(): APIInterface {
             token: string;
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -569,7 +569,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -716,7 +716,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";

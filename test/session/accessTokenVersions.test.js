@@ -346,7 +346,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                         sub: "asdf",
                     },
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 
@@ -446,7 +447,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                         sub: "asdf",
                     },
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 
@@ -512,7 +514,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                     enableAntiCsrf: false,
                     userDataInJWT: {},
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 
@@ -570,7 +573,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                     enableAntiCsrf: false,
                     userDataInJWT: {},
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 
@@ -658,7 +662,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                     enableAntiCsrf: false,
                     userDataInJWT: {},
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 
@@ -725,7 +730,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                     enableAntiCsrf: false,
                     userDataInJWT: {},
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 
@@ -979,7 +985,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                     enableAntiCsrf: false,
                     userDataInJWT: {},
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 
@@ -1035,7 +1042,8 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                         sub: "asdf",
                     },
                     userDataInDatabase: {},
-                }
+                },
+                {}
             );
             Querier.apiVersion = undefined;
 

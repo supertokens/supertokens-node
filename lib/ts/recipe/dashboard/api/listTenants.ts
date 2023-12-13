@@ -15,6 +15,7 @@
 import { APIInterface, APIOptions } from "../types";
 import Multitenancy from "../../multitenancy";
 import { ProviderConfig } from "../../thirdparty/types";
+import { UserContext } from "../../../types";
 
 type TenantListTenantType = {
     tenantId: string;
@@ -39,7 +40,7 @@ export default async function listTenants(
     _: APIInterface,
     __: string,
     ___: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<Response> {
     let tenantsRes = await Multitenancy.listAllTenants(userContext);
     let finalTenants: TenantListTenantType[] = [];

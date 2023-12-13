@@ -1,9 +1,10 @@
 // @ts-nocheck
+import { UserContext } from "../../types";
 import OpenIdRecipe from "./recipe";
 export default class OpenIdRecipeWrapper {
     static init: typeof OpenIdRecipe.init;
     static getOpenIdDiscoveryConfiguration(
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         issuer: string;
@@ -13,7 +14,7 @@ export default class OpenIdRecipeWrapper {
         payload?: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -24,7 +25,7 @@ export default class OpenIdRecipeWrapper {
           }
     >;
     static getJWKS(
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         keys: import("../jwt").JsonWebKey[];
         validityInSeconds?: number | undefined;

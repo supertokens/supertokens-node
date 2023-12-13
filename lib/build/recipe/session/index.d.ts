@@ -12,7 +12,7 @@ import {
     RecipeInterface,
 } from "./types";
 import Recipe from "./recipe";
-import { JSONObject } from "../../types";
+import { JSONObject, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
@@ -24,7 +24,7 @@ export default class SessionWrapper {
         recipeUserId: RecipeUserId,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer>;
     static createNewOrKeepExistingSession(
         req: any,
@@ -33,7 +33,7 @@ export default class SessionWrapper {
         recipeUserId: RecipeUserId,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
         tenantId: string,
@@ -41,16 +41,16 @@ export default class SessionWrapper {
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(
         sessionHandle: string,
         overrideGlobalClaimValidators?: (
             globalClaimValidators: SessionClaimValidator[],
             sessionInfo: SessionInformation,
-            userContext: Record<string, any>
+            userContext: UserContext
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -67,7 +67,7 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired?: true;
         },
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer>;
     static getSession(
         req: any,
@@ -75,13 +75,13 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired: false;
         },
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer | undefined>;
     static getSession(
         req: any,
         res: any,
         options?: VerifySessionOptions,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer | undefined>;
     /**
      * Tries to validate an access token and build a Session object from it.
@@ -110,7 +110,7 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired?: true;
         },
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer>;
     static getSessionWithoutRequestResponse(
         accessToken: string,
@@ -118,54 +118,54 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired: false;
         },
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer | undefined>;
     static getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer | undefined>;
     static getSessionInformation(
         sessionHandle: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionInformation | undefined>;
-    static refreshSession(req: any, res: any, userContext?: Record<string, any>): Promise<SessionContainer>;
+    static refreshSession(req: any, res: any, userContext?: UserContext): Promise<SessionContainer>;
     static refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf?: boolean,
         antiCsrfToken?: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<SessionContainer>;
     static revokeAllSessionsForUser(
         userId: string,
         revokeSessionsForLinkedAccounts?: boolean,
         tenantId?: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<string[]>;
     static getAllSessionHandlesForUser(
         userId: string,
         fetchSessionsForAllLinkedAccounts?: boolean,
         tenantId?: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<string[]>;
-    static revokeSession(sessionHandle: string, userContext?: Record<string, any>): Promise<boolean>;
-    static revokeMultipleSessions(sessionHandles: string[], userContext?: Record<string, any>): Promise<string[]>;
+    static revokeSession(sessionHandle: string, userContext?: UserContext): Promise<boolean>;
+    static revokeMultipleSessions(sessionHandles: string[], userContext?: UserContext): Promise<string[]>;
     static updateSessionDataInDatabase(
         sessionHandle: string,
         newSessionData: any,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<boolean>;
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<boolean>;
     static createJWT(
         payload?: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -176,12 +176,12 @@ export default class SessionWrapper {
           }
     >;
     static getJWKS(
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         keys: import("../jwt").JsonWebKey[];
     }>;
     static getOpenIdDiscoveryConfiguration(
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         issuer: string;
@@ -190,18 +190,18 @@ export default class SessionWrapper {
     static fetchAndSetClaim(
         sessionHandle: string,
         claim: SessionClaim<any>,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<boolean>;
     static setClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
         value: T,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<boolean>;
     static getClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -211,11 +211,7 @@ export default class SessionWrapper {
               value: T | undefined;
           }
     >;
-    static removeClaim(
-        sessionHandle: string,
-        claim: SessionClaim<any>,
-        userContext?: Record<string, any>
-    ): Promise<boolean>;
+    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: UserContext): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;

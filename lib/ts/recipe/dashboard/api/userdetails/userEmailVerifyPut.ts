@@ -2,6 +2,7 @@ import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
 import RecipeUserId from "../../../../recipeUserId";
+import { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";
@@ -11,7 +12,7 @@ export const userEmailVerifyPut = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;

@@ -24,7 +24,7 @@ import {
     NormalisedFormField,
     TypeInputFormField,
 } from "./types";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
@@ -255,7 +255,7 @@ export function getPasswordResetLink(input: {
     recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
-    userContext: Record<string, any>;
+    userContext: UserContext;
 }): string {
     return (
         input.appInfo

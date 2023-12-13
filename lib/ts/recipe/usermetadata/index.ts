@@ -13,32 +13,32 @@
  * under the License.
  */
 
-import { JSONObject } from "../../types";
+import { JSONObject, UserContext } from "../../types";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getUserMetadata(userId: string, userContext?: Record<string, any>) {
+    static async getUserMetadata(userId: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserMetadata({
             userId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: Record<string, any>) {
+    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserMetadata({
             userId,
             metadataUpdate,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async clearUserMetadata(userId: string, userContext?: Record<string, any>) {
+    static async clearUserMetadata(userId: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.clearUserMetadata({
             userId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 }

@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { UserContext } from "../../../types";
 import RecipeError from "../error";
 import { APIFunction, APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess } from "../utils";
@@ -21,7 +22,7 @@ export default async function apiKeyProtector(
     tenantId: string,
     options: APIOptions,
     apiFunction: APIFunction,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     let shouldAllowAccess = false;
 

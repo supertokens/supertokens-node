@@ -17,12 +17,13 @@ import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils"
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
+import { UserContext } from "../../../types";
 
 export default async function signUpAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
 

@@ -17,12 +17,13 @@ import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 import Session from "../../session";
+import { UserContext } from "../../../types";
 
 export default async function emailVerify(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     let result;
 

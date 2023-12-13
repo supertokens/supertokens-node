@@ -14,7 +14,15 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 throw new Error("should never happen");
             }
             let { status: _, ...tenantConfig } = tenantInfo;
-            return await recipeInstance.getFactorsSetupForUser(user, tenantConfig, userContext);
+            let factorIds: string[] = [];
+
+            for (const func of recipeInstance.getFactorsSetupForUserFromOtherRecipesFuncs) {
+                let result = await func(user, tenantConfig, userContext);
+                if (result !== undefined) {
+                    factorIds = factorIds.concat(result);
+                }
+            }
+            return factorIds;
         },
 
         getMFARequirementsForAuth: async function ({

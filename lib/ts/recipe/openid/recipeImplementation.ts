@@ -16,6 +16,7 @@ import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
+import { UserContext } from "../../types";
 
 export default function getRecipeInterface(
     config: TypeNormalisedInput,
@@ -46,7 +47,7 @@ export default function getRecipeInterface(
             payload?: any;
             validitySeconds?: number;
             useStaticSigningKey?: boolean;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";

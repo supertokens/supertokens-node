@@ -6,7 +6,7 @@ import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
-import { User as UserType } from "../../types";
+import { UserContext, User as UserType } from "../../types";
 import { User } from "../../user";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
@@ -26,7 +26,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email: string;
                 isVerified: boolean;
                 tenantId: string;
-                userContext: Record<string, any>;
+                userContext: UserContext;
             }
         ): Promise<
             | {
@@ -123,7 +123,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email: string;
                 isVerified: boolean;
                 tenantId: string;
-                userContext: Record<string, any>;
+                userContext: UserContext;
                 oAuthTokens: { [key: string]: any };
                 rawUserInfoFromProvider: {
                     fromIdTokenPayload?: { [key: string]: any };

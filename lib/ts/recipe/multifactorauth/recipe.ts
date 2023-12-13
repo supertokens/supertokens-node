@@ -18,7 +18,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { GET_MFA_INFO } from "./constants";
@@ -43,14 +43,13 @@ import Session from "../session";
 import AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { Querier } from "../../querier";
-import { TenantConfig } from "../multitenancy/types";
 import SessionError from "../session/error";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "multifactorauth";
 
-    private getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
+    getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
 
     private allAvailableFactorIds: string[] = [];
     private allAvailableFirstFactorIds: string[] = [];
@@ -143,7 +142,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             recipeInstance: this,
@@ -189,18 +188,6 @@ export default class Recipe extends RecipeModule {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    getFactorsSetupForUser = async (user: User, tenantConfig: TenantConfig, userContext: Record<string, any>) => {
-        let factorIds: string[] = [];
-
-        for (const func of this.getFactorsSetupForUserFromOtherRecipesFuncs) {
-            let result = await func(user, tenantConfig, userContext);
-            if (result !== undefined) {
-                factorIds = factorIds.concat(result);
-            }
-        }
-        return factorIds;
-    };
-
     validateForMultifactorAuthBeforeFactorCompletion = async ({
         tenantId,
         factorIdInProgress,
@@ -216,7 +203,7 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface;
         userLoggingIn?: User;
         isAlreadySetup?: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<{ status: "OK" } | MFAFlowErrors> => {
         const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
         const validFirstFactors =
@@ -329,7 +316,7 @@ export default class Recipe extends RecipeModule {
             createdNewUser: boolean;
             recipeUserId: RecipeUserId;
         };
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";

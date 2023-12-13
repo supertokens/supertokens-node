@@ -15,6 +15,7 @@
 import { HEADER_RID } from "../../constants";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
+import { UserContext } from "../../types";
 import { availableTokenTransferMethods } from "./constants";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 
@@ -34,7 +35,7 @@ export function clearSessionFromAllTokenTransferMethods(
     config: TypeNormalisedInput,
     res: BaseResponse,
     request: BaseRequest | undefined,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) {
     // We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     // This is done to handle the following use-case:
@@ -52,7 +53,7 @@ export function clearSession(
     res: BaseResponse,
     transferMethod: TokenTransferMethod,
     request: BaseRequest | undefined,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) {
     // If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     const tokenTypes: TokenType[] = ["access", "refresh"];
@@ -138,7 +139,7 @@ export function setToken(
     expires: number,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) {
     logDebugMessage(`setToken: Setting ${tokenType} token as ${transferMethod}`);
     if (transferMethod === "cookie") {
@@ -181,7 +182,7 @@ export function setCookie(
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath",
     req: BaseRequest | undefined,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) {
     let domain = config.cookieDomain;
     let secure = config.cookieSecure;

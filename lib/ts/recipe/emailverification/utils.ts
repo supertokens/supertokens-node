@@ -15,7 +15,7 @@
 
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 import { BaseRequest } from "../../framework";
 
@@ -70,7 +70,7 @@ export function getEmailVerifyLink(input: {
     recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
-    userContext: Record<string, any>;
+    userContext: UserContext;
 }): string {
     return (
         input.appInfo

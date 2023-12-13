@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { UserContext } from "../../types";
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 export default class Wrapper {
@@ -8,7 +9,7 @@ export default class Wrapper {
         deviceName?: string,
         skew?: number,
         period?: number,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -22,7 +23,7 @@ export default class Wrapper {
     >;
     static listDevices(
         userId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         devices: {
@@ -36,14 +37,14 @@ export default class Wrapper {
         userId: string,
         existingDeviceName: string,
         newDeviceName: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR";
     }>;
     static removeDevice(
         userId: string,
         deviceName: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         didDeviceExist: boolean;
@@ -53,7 +54,7 @@ export default class Wrapper {
         userId: string,
         deviceName: string,
         totp: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -76,7 +77,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         totp: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";

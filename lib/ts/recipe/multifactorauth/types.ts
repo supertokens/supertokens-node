@@ -15,7 +15,7 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, JSONObject } from "../../types";
+import { GeneralErrorResponse, JSONObject, UserContext } from "../../types";
 import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
@@ -79,7 +79,7 @@ export type RecipeInterface = {
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<boolean>;
 
     getMFARequirementsForAuth: (input: {
@@ -90,25 +90,21 @@ export type RecipeInterface = {
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
 
     markFactorAsCompleteInSession: (input: {
         session: SessionContainerInterface;
         factorId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<void>;
 
-    getFactorsSetupForUser: (input: {
-        tenantId: string;
-        user: User;
-        userContext: Record<string, any>;
-    }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
 
     getDefaultRequiredFactorsForUser(input: {
         user: User;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<string[]>;
 };
 
@@ -126,7 +122,7 @@ export type APIInterface = {
     mfaInfoGET: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -144,5 +140,5 @@ export type APIInterface = {
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (
     user: User,
     tenantConfig: TenantConfig,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) => Promise<string[]>;

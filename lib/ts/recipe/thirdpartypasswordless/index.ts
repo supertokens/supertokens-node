@@ -26,6 +26,7 @@ import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
 import RecipeUserId from "../../recipeUserId";
 import { getRequestFromUserContext } from "../..";
+import { UserContext } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -36,7 +37,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
             thirdPartyId,
@@ -52,7 +53,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = ({} as UserContext) as UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
             thirdPartyId,
@@ -72,11 +73,11 @@ export default class Wrapper {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; tenantId: string; userContext?: Record<string, any> }
+        ) & { userInputCode?: string; tenantId: string; userContext?: UserContext }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
@@ -84,11 +85,11 @@ export default class Wrapper {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewCodeForDevice({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
@@ -99,18 +100,18 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
@@ -118,11 +119,11 @@ export default class Wrapper {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updatePasswordlessUser({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
@@ -131,56 +132,56 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
-    static revokeCode(input: { codeId: string; tenantId: string; userContext?: Record<string, any> }) {
+    static revokeCode(input: { codeId: string; tenantId: string; userContext?: UserContext }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
-    static listCodesByEmail(input: { email: string; tenantId: string; userContext?: Record<string, any> }) {
+    static listCodesByEmail(input: { email: string; tenantId: string; userContext?: UserContext }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
-    static listCodesByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: Record<string, any> }) {
+    static listCodesByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: UserContext }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPhoneNumber({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
-    static listCodesByDeviceId(input: { deviceId: string; tenantId: string; userContext?: Record<string, any> }) {
+    static listCodesByDeviceId(input: { deviceId: string; tenantId: string; userContext?: UserContext }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
     static listCodesByPreAuthSessionId(input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext?: Record<string, any>;
+        userContext?: UserContext;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPreAuthSessionId({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
@@ -189,18 +190,18 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ) {
         return Recipe.getInstanceOrThrowError().passwordlessRecipe.createMagicLink({
             ...input,
             request: getRequestFromUserContext(input.userContext),
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
@@ -209,33 +210,31 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: Record<string, any>;
+                  userContext?: UserContext;
               }
     ) {
         return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
-    static async sendEmail(
-        input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: Record<string, any> }
-    ) {
+    static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: UserContext }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 
-    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: Record<string, any> }) {
+    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: UserContext }) {
         return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: input.userContext ?? ({} as UserContext),
         });
     }
 }

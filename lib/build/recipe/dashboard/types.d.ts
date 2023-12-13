@@ -1,7 +1,7 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo, User } from "../../types";
+import { NormalisedAppinfo, User, UserContext } from "../../types";
 export declare type TypeInput = {
     apiKey?: string;
     admins?: string[];
@@ -26,11 +26,11 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getDashboardBundleLocation(input: { userContext: Record<string, any> }): Promise<string>;
+    getDashboardBundleLocation(input: { userContext: UserContext }): Promise<string>;
     shouldAllowAccess(input: {
         req: BaseRequest;
         config: TypeNormalisedInput;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<boolean>;
 };
 export declare type APIOptions = {
@@ -43,13 +43,13 @@ export declare type APIOptions = {
     appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
-    dashboardGET: undefined | ((input: { options: APIOptions; userContext: Record<string, any> }) => Promise<string>);
+    dashboardGET: undefined | ((input: { options: APIOptions; userContext: UserContext }) => Promise<string>);
 };
 export declare type APIFunction = (
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 export declare type AuthMode = "api-key" | "email-password";

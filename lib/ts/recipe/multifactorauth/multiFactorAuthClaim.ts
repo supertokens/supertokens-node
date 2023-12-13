@@ -8,6 +8,7 @@ import Multitenancy from "../multitenancy";
 import MultiFactorAuthRecipe from "./recipe";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { checkFactorRequirement } from "./utils";
+import { UserContext } from "../../types";
 
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
@@ -166,7 +167,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         _recipeUserId: RecipeUserId,
         tenantId: string | undefined,
         currentPayload: JSONObject | undefined,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => {
         const user = await getUser(userId, userContext);
 

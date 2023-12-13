@@ -17,6 +17,7 @@ import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/typ
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import Supertokens from "../../../../../supertokens";
 import { postWithFetch } from "../../../../../utils";
+import { UserContext } from "../../../../../types";
 
 async function createAndSendSmsUsingSupertokensService(input: {
     // Where the message should be delivered.
@@ -102,7 +103,7 @@ async function createAndSendSmsUsingSupertokensService(input: {
 export default class BackwardCompatibilityService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     constructor() {}
 
-    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: Record<string, any> }) => {
+    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: UserContext }) => {
         await createAndSendSmsUsingSupertokensService({
             phoneNumber: input.phoneNumber,
             userInputCode: input.userInputCode,

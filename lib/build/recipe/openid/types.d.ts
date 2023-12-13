@@ -4,7 +4,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLDomain from "../../normalisedURLDomain";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface, JsonWebKey } from "../jwt/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, UserContext } from "../../types";
 export declare type TypeInput = {
     issuer?: string;
     jwtValiditySeconds?: number;
@@ -60,7 +60,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -72,7 +72,7 @@ export declare type APIInterface = {
 };
 export declare type RecipeInterface = {
     getOpenIdDiscoveryConfiguration(input: {
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<{
         status: "OK";
         issuer: string;
@@ -82,7 +82,7 @@ export declare type RecipeInterface = {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -93,7 +93,7 @@ export declare type RecipeInterface = {
           }
     >;
     getJWKS(input: {
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<{
         keys: JsonWebKey[];
     }>;

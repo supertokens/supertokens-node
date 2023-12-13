@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
+import { UserContext } from "../../../types";
 export declare type Response = {
     status: "OK";
     nextPaginationToken?: string;
@@ -9,7 +10,7 @@ export default function usersGet(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<Response>;
 export declare function getSearchParamsFromURL(
     path: string

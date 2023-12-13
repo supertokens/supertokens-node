@@ -1,5 +1,6 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
+import { UserContext } from "../../types";
 export declare type TypeInput = {
     skipAddingRolesToAccessToken?: boolean;
     skipAddingPermissionsToAccessToken?: boolean;
@@ -28,7 +29,7 @@ export declare type RecipeInterface = {
         userId: string;
         role: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -42,7 +43,7 @@ export declare type RecipeInterface = {
         userId: string;
         role: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -55,7 +56,7 @@ export declare type RecipeInterface = {
     getRolesForUser: (input: {
         userId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         roles: string[];
@@ -63,7 +64,7 @@ export declare type RecipeInterface = {
     getUsersThatHaveRole: (input: {
         role: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -76,14 +77,14 @@ export declare type RecipeInterface = {
     createNewRoleOrAddPermissions: (input: {
         role: string;
         permissions: string[];
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNewRole: boolean;
     }>;
     getPermissionsForRole: (input: {
         role: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -96,26 +97,26 @@ export declare type RecipeInterface = {
     removePermissionsFromRole: (input: {
         role: string;
         permissions: string[];
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK" | "UNKNOWN_ROLE_ERROR";
     }>;
     getRolesThatHavePermission: (input: {
         permission: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         roles: string[];
     }>;
     deleteRole: (input: {
         role: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didRoleExist: boolean;
     }>;
     getAllRoles: (input: {
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         roles: string[];

@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import { UserContext } from "../../types";
 import { PermissionClaim } from "./permissionClaim";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
@@ -23,80 +24,80 @@ export default class Wrapper {
     static PermissionClaim = PermissionClaim;
     static UserRoleClaim = UserRoleClaim;
 
-    static async addRoleToUser(tenantId: string, userId: string, role: string, userContext?: Record<string, any>) {
+    static async addRoleToUser(tenantId: string, userId: string, role: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addRoleToUser({
             userId,
             role,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async removeUserRole(tenantId: string, userId: string, role: string, userContext?: Record<string, any>) {
+    static async removeUserRole(tenantId: string, userId: string, role: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeUserRole({
             userId,
             role,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async getRolesForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
+    static async getRolesForUser(tenantId: string, userId: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesForUser({
             userId,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async getUsersThatHaveRole(tenantId: string, role: string, userContext?: Record<string, any>) {
+    static async getUsersThatHaveRole(tenantId: string, role: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersThatHaveRole({
             role,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async createNewRoleOrAddPermissions(role: string, permissions: string[], userContext?: Record<string, any>) {
+    static async createNewRoleOrAddPermissions(role: string, permissions: string[], userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewRoleOrAddPermissions({
             role,
             permissions,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async getPermissionsForRole(role: string, userContext?: Record<string, any>) {
+    static async getPermissionsForRole(role: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPermissionsForRole({
             role,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async removePermissionsFromRole(role: string, permissions: string[], userContext?: Record<string, any>) {
+    static async removePermissionsFromRole(role: string, permissions: string[], userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removePermissionsFromRole({
             role,
             permissions,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async getRolesThatHavePermission(permission: string, userContext?: Record<string, any>) {
+    static async getRolesThatHavePermission(permission: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesThatHavePermission({
             permission,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async deleteRole(role: string, userContext?: Record<string, any>) {
+    static async deleteRole(role: string, userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteRole({
             role,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 
-    static async getAllRoles(userContext?: Record<string, any>) {
+    static async getAllRoles(userContext?: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllRoles({
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: userContext === undefined ? ({} as UserContext) : userContext,
         });
     }
 }

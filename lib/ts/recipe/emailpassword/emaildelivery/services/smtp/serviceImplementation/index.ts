@@ -21,6 +21,7 @@ import {
     GetContentResult,
 } from "../../../../../../ingredients/emaildelivery/services/smtp";
 import getPasswordResetEmailContent from "../passwordReset";
+import { UserContext } from "../../../../../../types";
 
 export function getServiceImplementation(
     transporter: Transporter,
@@ -48,7 +49,7 @@ export function getServiceImplementation(
             }
         },
         getContent: async function (
-            input: TypeEmailPasswordEmailDeliveryInput & { userContext: Record<string, any> }
+            input: TypeEmailPasswordEmailDeliveryInput & { userContext: UserContext }
         ): Promise<GetContentResult> {
             return getPasswordResetEmailContent(input);
         },

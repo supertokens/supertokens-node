@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import { UserContext } from "../../types";
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 
@@ -24,21 +25,21 @@ export default class Wrapper {
         deviceName?: string,
         skew?: number,
         period?: number,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
             userId,
             deviceName,
             skew,
             period,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 
-    static async listDevices(userId: string, userContext?: Record<string, any>) {
+    static async listDevices(userId: string, userContext?: UserContext) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
             userId,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 
@@ -46,21 +47,21 @@ export default class Wrapper {
         userId: string,
         existingDeviceName: string,
         newDeviceName: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
             userId,
             existingDeviceName,
             newDeviceName,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 
-    static async removeDevice(userId: string, deviceName: string, userContext?: Record<string, any>) {
+    static async removeDevice(userId: string, deviceName: string, userContext?: UserContext) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeDevice({
             userId,
             deviceName,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 
@@ -69,23 +70,23 @@ export default class Wrapper {
         userId: string,
         deviceName: string,
         totp: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyDevice({
             tenantId,
             userId,
             deviceName,
             totp,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 
-    static async verifyTOTP(tenantId: string, userId: string, totp: string, userContext?: Record<string, any>) {
+    static async verifyTOTP(tenantId: string, userId: string, totp: string, userContext?: UserContext) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyTOTP({
             tenantId,
             userId,
             totp,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 }

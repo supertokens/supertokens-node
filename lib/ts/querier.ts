@@ -19,6 +19,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { RATE_LIMIT_STATUS_CODE } from "./constants";
 import { logDebugMessage } from "./logger";
+import { UserContext } from "./types";
 
 export class Querier {
     private static initCalled = false;
@@ -109,11 +110,7 @@ export class Querier {
     }
 
     // path should start with "/"
-    sendPostRequest = async <T = any>(
-        path: NormalisedURLPath,
-        body: any,
-        userContext: Record<string, any> = {}
-    ): Promise<T> => {
+    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext): Promise<T> => {
         this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
@@ -152,8 +149,8 @@ export class Querier {
     sendDeleteRequest = async (
         path: NormalisedURLPath,
         body: any,
-        params?: any,
-        userContext: Record<string, any> = {}
+        params: any | undefined,
+        userContext: UserContext
     ): Promise<any> => {
         this.invalidateCoreCallCache(userContext);
 
@@ -194,7 +191,7 @@ export class Querier {
     sendGetRequest = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: Record<string, any> = {}
+        userContext: UserContext
     ): Promise<any> => {
         const sortedKeys = Object.keys(params).sort();
         let uniqueKey = path.getAsStringDangerous();
@@ -286,11 +283,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (
-        path: NormalisedURLPath,
-        body: any,
-        userContext: Record<string, any> = {}
-    ): Promise<any> => {
+    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
         this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
@@ -323,7 +316,7 @@ export class Querier {
         return respBody;
     };
 
-    invalidateCoreCallCache = (userContext: Record<string, any>) => {
+    invalidateCoreCallCache = (userContext: UserContext) => {
         userContext._default = {
             ...userContext._default,
             coreCallCache: {},

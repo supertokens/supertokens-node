@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../types";
-import { NormalisedAppinfo } from "../../../../../types";
+import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
@@ -8,7 +8,7 @@ export default class BackwardCompatibilityService
     constructor(appInfo: NormalisedAppinfo);
     sendEmail: (
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }
     ) => Promise<void>;
 }

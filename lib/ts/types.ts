@@ -19,11 +19,17 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
+declare const __brand: unique symbol;
+type Brand<B> = { [__brand]: B };
+
+type Branded<T, B> = T & Brand<B>;
+
+export type UserContext = Branded<Record<string, any>, "UserContext">;
 
 export type AppInfo = {
     appName: string;
     websiteDomain?: string;
-    origin?: string | ((input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => string);
+    origin?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -32,10 +38,10 @@ export type AppInfo = {
 
 export type NormalisedAppinfo = {
     appName: string;
-    getOrigin: (input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => NormalisedURLDomain;
+    getOrigin: (input: { request: BaseRequest | undefined; userContext: UserContext }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: Record<string, any> }) => string;
+    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;

@@ -13,7 +13,7 @@
  * under the License.
  */
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -210,7 +210,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<boolean> => {
         if ((await this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
             return await this.passwordlessRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);

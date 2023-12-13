@@ -16,12 +16,13 @@
 import STError from "../error";
 import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
 
 export default async function signInUpAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {
         return false;

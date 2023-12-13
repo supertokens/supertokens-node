@@ -1,6 +1,7 @@
 // @ts-nocheck
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
+import { UserContext } from "./types";
 export declare class Querier {
     private static initCalled;
     private static hosts;
@@ -22,17 +23,17 @@ export declare class Querier {
         }[],
         apiKey?: string
     ): void;
-    sendPostRequest: <T = any>(path: NormalisedURLPath, body: any, userContext?: Record<string, any>) => Promise<T>;
+    sendPostRequest: <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<T>;
     sendDeleteRequest: (
         path: NormalisedURLPath,
         body: any,
-        params?: any,
-        userContext?: Record<string, any>
+        params: any | undefined,
+        userContext: UserContext
     ) => Promise<any>;
     sendGetRequest: (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext?: Record<string, any>
+        userContext: UserContext
     ) => Promise<any>;
     sendGetRequestWithResponseHeaders: (
         path: NormalisedURLPath,
@@ -41,8 +42,8 @@ export declare class Querier {
         body: any;
         headers: Headers;
     }>;
-    sendPutRequest: (path: NormalisedURLPath, body: any, userContext?: Record<string, any>) => Promise<any>;
-    invalidateCoreCallCache: (userContext: Record<string, any>) => void;
+    sendPutRequest: (path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<any>;
+    invalidateCoreCallCache: (userContext: UserContext) => void;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;
 }

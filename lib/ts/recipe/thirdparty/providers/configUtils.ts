@@ -13,6 +13,7 @@ import {
     Okta,
     Twitter,
 } from ".";
+import { UserContext } from "../../../types";
 import {
     ProviderClientConfig,
     ProviderConfig,
@@ -33,11 +34,7 @@ export function getProviderConfigForClient(
     };
 }
 
-async function fetchAndSetConfig(
-    provider: TypeProvider,
-    clientType: string | undefined,
-    userContext: Record<string, any>
-) {
+async function fetchAndSetConfig(provider: TypeProvider, clientType: string | undefined, userContext: UserContext) {
     let config = await provider.getConfigForClientType({ clientType, userContext });
 
     config = await discoverOIDCEndpoints(config);
@@ -81,7 +78,7 @@ export async function findAndCreateProviderInstance(
     providers: ProviderInput[],
     thirdPartyId: string,
     clientType: string | undefined,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<TypeProvider | undefined> {
     for (const providerInput of providers) {
         if (providerInput.config.thirdPartyId === thirdPartyId) {

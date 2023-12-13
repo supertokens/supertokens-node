@@ -2,13 +2,10 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { ProviderConfig, ProviderInput } from "../thirdparty/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare type TypeInput = {
-    getAllowedDomainsForTenantId?: (
-        tenantId: string,
-        userContext: Record<string, any>
-    ) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -18,10 +15,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    getAllowedDomainsForTenantId?: (
-        tenantId: string,
-        userContext: Record<string, any>
-    ) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -51,7 +45,7 @@ export declare type TenantConfig = {
     };
 };
 export declare type RecipeInterface = {
-    getTenantId: (input: { tenantIdFromFrontend: string; userContext: Record<string, any> }) => Promise<string>;
+    getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
@@ -65,21 +59,21 @@ export declare type RecipeInterface = {
                 [key: string]: any;
             };
         };
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
     }>;
     deleteTenant: (input: {
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didExist: boolean;
     }>;
     getTenant: (input: {
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | ({
               status: "OK";
@@ -87,7 +81,7 @@ export declare type RecipeInterface = {
         | undefined
     >;
     listAllTenants: (input: {
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         tenants: (TenantConfig & {
@@ -98,7 +92,7 @@ export declare type RecipeInterface = {
         tenantId: string;
         config: ProviderConfig;
         skipValidation?: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
@@ -106,7 +100,7 @@ export declare type RecipeInterface = {
     deleteThirdPartyConfig: (input: {
         tenantId: string;
         thirdPartyId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -114,7 +108,7 @@ export declare type RecipeInterface = {
     associateUserToTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -135,7 +129,7 @@ export declare type RecipeInterface = {
     disassociateUserFromTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         wasAssociated: boolean;
@@ -155,7 +149,7 @@ export declare type APIInterface = {
         tenantId: string;
         clientType?: string;
         options: APIOptions;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";

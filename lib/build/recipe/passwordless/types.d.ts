@@ -12,7 +12,7 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type TypeInput = (
@@ -39,7 +39,7 @@ export declare type TypeInput = (
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
     emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
-    getCustomUserInputCode?: (tenantId: string, userContext: Record<string, any>) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -70,7 +70,7 @@ export declare type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getCustomUserInputCode?: (tenantId: string, userContext: Record<string, any>) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
     getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
     override: {
@@ -93,7 +93,7 @@ export declare type RecipeInterface = {
         ) & {
             userInputCode?: string;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }
     ) => Promise<{
         status: "OK";
@@ -109,7 +109,7 @@ export declare type RecipeInterface = {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -132,13 +132,13 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
     ) => Promise<
         | {
@@ -161,7 +161,7 @@ export declare type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status:
@@ -180,12 +180,12 @@ export declare type RecipeInterface = {
             | {
                   email: string;
                   tenantId: string;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
     ) => Promise<{
         status: "OK";
@@ -193,29 +193,25 @@ export declare type RecipeInterface = {
     revokeCode: (input: {
         codeId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
     }>;
-    listCodesByEmail: (input: {
-        email: string;
-        tenantId: string;
-        userContext: Record<string, any>;
-    }) => Promise<DeviceType[]>;
+    listCodesByEmail: (input: { email: string; tenantId: string; userContext: UserContext }) => Promise<DeviceType[]>;
     listCodesByPhoneNumber: (input: {
         phoneNumber: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<DeviceType[]>;
     listCodesByDeviceId: (input: {
         deviceId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
 };
 export declare type DeviceType = {
@@ -252,7 +248,7 @@ export declare type APIInterface = {
         ) & {
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }
     ) => Promise<
         | {
@@ -274,7 +270,7 @@ export declare type APIInterface = {
         } & {
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }
     ) => Promise<
         | GeneralErrorResponse
@@ -296,7 +292,7 @@ export declare type APIInterface = {
         ) & {
             tenantId: string;
             options: APIOptions;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }
     ) => Promise<
         | {
@@ -324,7 +320,7 @@ export declare type APIInterface = {
         email: string;
         tenantId: string;
         options: APIOptions;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -336,7 +332,7 @@ export declare type APIInterface = {
         phoneNumber: string;
         tenantId: string;
         options: APIOptions;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";

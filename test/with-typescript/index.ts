@@ -919,7 +919,7 @@ Multitenancy.init({
     },
 });
 
-import { HTTPMethod, TypeInput } from "../../types";
+import { HTTPMethod, TypeInput, UserContext } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
@@ -1361,7 +1361,7 @@ Session.validateClaimsForSessionHandle("asdf", (globalClaimValidators) => [
 Session.validateClaimsForSessionHandle(
     "asdf",
     (globalClaimValidators, info) => [...globalClaimValidators, boolClaim.validators.isTrue(info.expiry)],
-    { test: 1 }
+    { test: 1, ...({} as UserContext) }
 );
 
 EmailVerification.sendEmail({
@@ -1394,7 +1394,7 @@ ThirdPartyEmailPassword.sendEmail({
         id: "",
         recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 ThirdPartyPasswordless.sendEmail({
@@ -1412,7 +1412,7 @@ ThirdPartyPasswordless.sendEmail({
     email: "",
     type: "PASSWORDLESS_LOGIN",
     preAuthSessionId: "",
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 ThirdPartyPasswordless.sendSms({
@@ -1430,7 +1430,7 @@ ThirdPartyPasswordless.sendSms({
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
     preAuthSessionId: "",
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 Supertokens.init({
@@ -1553,7 +1553,7 @@ Passwordless.init({
                             let user = await Passwordless.signInUp({
                                 tenantId: "test",
                                 phoneNumber: "TEST_PHONE_NUMBER",
-                                userContext: { calledManually: true },
+                                userContext: { calledManually: true, ...({} as UserContext) },
                             });
                             return {
                                 status: "OK",

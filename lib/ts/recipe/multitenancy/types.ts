@@ -16,14 +16,11 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { ProviderConfig, ProviderInput } from "../thirdparty/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {
-    getAllowedDomainsForTenantId?: (
-        tenantId: string,
-        userContext: Record<string, any>
-    ) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
 
     override?: {
         functions?: (
@@ -35,10 +32,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    getAllowedDomainsForTenantId?: (
-        tenantId: string,
-        userContext: Record<string, any>
-    ) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
 
     override: {
         functions: (
@@ -69,7 +63,7 @@ export type TenantConfig = {
 };
 
 export type RecipeInterface = {
-    getTenantId: (input: { tenantIdFromFrontend: string; userContext: Record<string, any> }) => Promise<string>;
+    getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
 
     // Tenant management
     createOrUpdateTenant: (input: {
@@ -83,21 +77,21 @@ export type RecipeInterface = {
             defaultRequiredFactorIds?: string[];
             coreConfig?: { [key: string]: any };
         };
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
     }>;
     deleteTenant: (input: {
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didExist: boolean;
     }>;
     getTenant: (input: {
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | ({
               status: "OK";
@@ -105,7 +99,7 @@ export type RecipeInterface = {
         | undefined
     >;
     listAllTenants: (input: {
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         tenants: (TenantConfig & { tenantId: string })[];
@@ -116,7 +110,7 @@ export type RecipeInterface = {
         tenantId: string;
         config: ProviderConfig;
         skipValidation?: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
@@ -124,7 +118,7 @@ export type RecipeInterface = {
     deleteThirdPartyConfig: (input: {
         tenantId: string;
         thirdPartyId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -134,7 +128,7 @@ export type RecipeInterface = {
     associateUserToTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -155,7 +149,7 @@ export type RecipeInterface = {
     disassociateUserFromTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         wasAssociated: boolean;
@@ -177,7 +171,7 @@ export type APIInterface = {
         tenantId: string;
         clientType?: string;
         options: APIOptions;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";

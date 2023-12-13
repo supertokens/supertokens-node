@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { UserContext } from "../../types";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 export default class Wrapper {
@@ -9,7 +10,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         role: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -23,7 +24,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         role: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -36,7 +37,7 @@ export default class Wrapper {
     static getRolesForUser(
         tenantId: string,
         userId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         roles: string[];
@@ -44,7 +45,7 @@ export default class Wrapper {
     static getUsersThatHaveRole(
         tenantId: string,
         role: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -57,14 +58,14 @@ export default class Wrapper {
     static createNewRoleOrAddPermissions(
         role: string,
         permissions: string[],
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         createdNewRole: boolean;
     }>;
     static getPermissionsForRole(
         role: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<
         | {
               status: "OK";
@@ -77,26 +78,26 @@ export default class Wrapper {
     static removePermissionsFromRole(
         role: string,
         permissions: string[],
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK" | "UNKNOWN_ROLE_ERROR";
     }>;
     static getRolesThatHavePermission(
         permission: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         roles: string[];
     }>;
     static deleteRole(
         role: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         didRoleExist: boolean;
     }>;
     static getAllRoles(
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         roles: string[];

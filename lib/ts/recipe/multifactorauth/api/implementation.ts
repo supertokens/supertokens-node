@@ -2,6 +2,7 @@ import Multitenancy from "../../multitenancy";
 import { APIInterface } from "../";
 import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
 import { getUser } from "../../..";
+import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -11,7 +12,10 @@ export default function getAPIInterface(): APIInterface {
             const user = await getUser(userId, userContext);
 
             if (user === undefined) {
-                throw new Error("Unknown User ID provided");
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
             }
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
 

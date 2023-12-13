@@ -1,10 +1,11 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
+import { UserContext } from "../../types";
 export declare type SmsDeliveryInterface<T> = {
     sendSms: (
         input: T & {
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext: UserContext;
         }
     ) => Promise<void>;
 };

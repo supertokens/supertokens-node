@@ -14,11 +14,12 @@
  */
 
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
 
 export default async function appleRedirectHandler(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.appleRedirectHandlerPOST === undefined) {
         return false;

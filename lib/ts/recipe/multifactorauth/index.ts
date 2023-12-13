@@ -20,14 +20,15 @@ import { SessionContainerInterface } from "../session/types";
 import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
 import UserMetadataRecipe from "../usermetadata/recipe";
+import { UserContext } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
-        const ctx = userContext ?? {};
+    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: UserContext) {
+        const ctx = userContext ?? ({} as UserContext);
         const user = await getUser(userId, ctx);
         if (!user) {
             throw new Error("UKNKNOWN_USER_ID");
@@ -43,9 +44,9 @@ export default class Wrapper {
     static async isAllowedToSetupFactor(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ) {
-        let ctx = userContext ?? {};
+        let ctx = userContext ?? ({} as UserContext);
         const user = await getUser(session.getUserId(), ctx);
         if (!user) {
             throw new Error("UKNKNOWN_USER_ID");
@@ -85,27 +86,28 @@ export default class Wrapper {
             factorsSetUpForUser: factorsSetup,
             defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 
     static async markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
             session,
             factorId,
-            userContext: userContext ?? {},
+            userContext: userContext ?? ({} as UserContext),
         });
     }
 
-    static async addToDefaultRequiredFactorsForUser(userId: string, factorId: string, userContext?: any) {
+    static async addToDefaultRequiredFactorsForUser(userId: string, factorId: string, userContext?: UserContext) {
+        const ctx = userContext ?? ({} as UserContext);
         const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
         const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
             userId,
-            userContext,
+            userContext: ctx,
         });
 
         const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
@@ -126,7 +128,7 @@ export default class Wrapper {
         await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
             userId: userId,
             metadataUpdate,
-            userContext,
+            userContext: ctx,
         });
     }
 }

@@ -20,6 +20,7 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
 import { doFetch } from "../../../utils";
+import { UserContext } from "../../../types";
 
 export type Response = {
     status: "OK";
@@ -29,7 +30,7 @@ export default async function analyticsPost(
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    __: any
+    userContext: UserContext
 ): Promise<Response> {
     // If telemetry is disabled, dont send any event
     if (!SuperTokens.getInstanceOrThrowError().telemetryEnabled) {
@@ -58,7 +59,7 @@ export default async function analyticsPost(
     let numberOfUsers: number;
     try {
         let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {}, {});
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {}, userContext);
         if (response.exists) {
             telemetryId = response.telemetryId;
         }
@@ -75,7 +76,7 @@ export default async function analyticsPost(
     const data = {
         websiteDomain: websiteDomain({
             request: undefined,
-            userContext: {},
+            userContext,
         }).getAsStringDangerous(),
         apiDomain: apiDomain.getAsStringDangerous(),
         appName,

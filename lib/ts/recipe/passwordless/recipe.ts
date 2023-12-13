@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -216,7 +216,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<boolean> => {
         const options = {
             config: this.config,
@@ -262,13 +262,13 @@ export default class Recipe extends RecipeModule {
                   email: string;
                   tenantId: string;
                   request: BaseRequest | undefined;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
                   request: BaseRequest | undefined;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
     ): Promise<string> => {
         let userInputCode =
@@ -320,12 +320,12 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               }
     ) => {
         let codeInfo = await this.recipeInterfaceImpl.createCode(

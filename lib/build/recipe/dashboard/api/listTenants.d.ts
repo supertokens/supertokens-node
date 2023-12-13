@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../types";
 import { ProviderConfig } from "../../thirdparty/types";
+import { UserContext } from "../../../types";
 declare type TenantListTenantType = {
     tenantId: string;
     emailPassword: {
@@ -22,6 +23,6 @@ export default function listTenants(
     _: APIInterface,
     __: string,
     ___: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<Response>;
 export {};

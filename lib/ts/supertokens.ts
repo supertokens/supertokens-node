@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -166,7 +166,7 @@ export default class SuperTokens {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => {
         return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method, userContext);
     };
@@ -184,7 +184,11 @@ export default class SuperTokens {
         return Array.from(headerSet);
     };
 
-    getUserCount = async (includeRecipeIds?: string[], tenantId?: string): Promise<number> => {
+    getUserCount = async (
+        includeRecipeIds?: string[],
+        tenantId?: string,
+        userContext?: UserContext
+    ): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
@@ -203,7 +207,7 @@ export default class SuperTokens {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
             },
-            {}
+            userContext ?? ({} as UserContext)
         );
         return Number(response.count);
     };
@@ -213,7 +217,7 @@ export default class SuperTokens {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -246,7 +250,7 @@ export default class SuperTokens {
     getUserIdMapping = async function (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -280,7 +284,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -306,7 +310,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }> {
@@ -327,11 +331,7 @@ export default class SuperTokens {
         }
     };
 
-    middleware = async (
-        request: BaseRequest,
-        response: BaseResponse,
-        userContext: Record<string, any>
-    ): Promise<boolean> => {
+    middleware = async (request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<boolean> => {
         logDebugMessage("middleware: Started");
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
@@ -429,7 +429,7 @@ export default class SuperTokens {
         }
     };
 
-    errorHandler = async (err: any, request: BaseRequest, response: BaseResponse, userContext: Record<string, any>) => {
+    errorHandler = async (err: any, request: BaseRequest, response: BaseResponse, userContext: UserContext) => {
         logDebugMessage("errorHandler: Started");
         if (STError.isErrorFromSuperTokens(err)) {
             logDebugMessage("errorHandler: Error is from SuperTokens recipe. Message: " + err.message);
@@ -449,7 +449,7 @@ export default class SuperTokens {
         throw err;
     };
 
-    getRequestFromUserContext = (userContext: Record<string, any> | undefined): BaseRequest | undefined => {
+    getRequestFromUserContext = (userContext: UserContext | undefined): BaseRequest | undefined => {
         if (userContext === undefined) {
             return undefined;
         }

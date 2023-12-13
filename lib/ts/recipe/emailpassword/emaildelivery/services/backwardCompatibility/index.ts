@@ -14,7 +14,7 @@
  */
 import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
 import { createAndSendEmailUsingSupertokensService } from "../../../passwordResetFunctions";
-import { NormalisedAppinfo } from "../../../../../types";
+import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
@@ -27,7 +27,7 @@ export default class BackwardCompatibilityService
         this.appInfo = appInfo;
     }
 
-    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: Record<string, any> }) => {
+    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: UserContext }) => {
         // we add this here cause the user may have overridden the sendEmail function
         // to change the input email and if we don't do this, the input email
         // will get reset by the getUserById call above.

@@ -5,6 +5,7 @@ import EmailPassword from "../../../emailpassword";
 import ThirdPartyEmailPasswordRecipe from "../../../thirdpartyemailpassword/recipe";
 import ThirdPartyEmailPassword from "../../../thirdpartyemailpassword";
 import RecipeUserId from "../../../../recipeUserId";
+import { UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -19,7 +20,7 @@ export const userPasswordPut = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;

@@ -19,7 +19,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import {
@@ -99,7 +99,7 @@ export default class Recipe extends RecipeModule {
                     if (mfaInstance !== undefined) {
                         mfaInstance.addAvailableFactorIdsFromOtherRecipes(["totp"], []);
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
-                            async (user: User, tenantConfig: TenantConfig, userContext: Record<string, any>) => {
+                            async (user: User, tenantConfig: TenantConfig, userContext: UserContext) => {
                                 if (tenantConfig.totp.enabled === false) {
                                     return [];
                                 }
@@ -178,7 +178,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             recipeImplementation: this.recipeInterfaceImpl,

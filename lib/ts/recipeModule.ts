@@ -14,7 +14,7 @@
  */
 
 import STError from "./error";
-import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
+import { NormalisedAppinfo, APIHandled, HTTPMethod, UserContext } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
@@ -40,7 +40,7 @@ export default abstract class RecipeModule {
     returnAPIIdIfCanHandleRequest = async (
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<{ id: string; tenantId: string } | undefined> => {
         let apisHandled = this.getAPIsHandled();
 
@@ -98,14 +98,14 @@ export default abstract class RecipeModule {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<boolean>;
 
     abstract handleError(
         error: STError,
         request: BaseRequest,
         response: BaseResponse,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<void>;
 
     abstract getAllCORSHeaders(): string[];

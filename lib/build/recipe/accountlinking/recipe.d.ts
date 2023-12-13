@@ -3,7 +3,7 @@ import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User, UserContext } from "../../types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import { verifyEmailForRecipeUserIfLinkedAccountsAreVerified } from "./utils";
 import { LoginMethod } from "../../user";
@@ -41,7 +41,7 @@ export default class Recipe extends RecipeModule {
     }: {
         tenantId: string;
         user: User;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<User>;
     getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
         tenantId,
@@ -50,7 +50,7 @@ export default class Recipe extends RecipeModule {
     }: {
         tenantId: string;
         user: User;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<User | undefined>;
     isSignInAllowed: ({
         user,
@@ -59,7 +59,7 @@ export default class Recipe extends RecipeModule {
     }: {
         user: User;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<boolean>;
     isSignUpAllowed: ({
         newUser,
@@ -70,7 +70,7 @@ export default class Recipe extends RecipeModule {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<boolean>;
     isSignInUpAllowedHelper: ({
         accountInfo,
@@ -83,13 +83,13 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         tenantId: string;
         isSignIn: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {
         user?: User;
         newEmail: string;
         isVerified: boolean;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: typeof verifyEmailForRecipeUserIfLinkedAccountsAreVerified;
 }

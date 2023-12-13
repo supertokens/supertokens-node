@@ -1,7 +1,8 @@
 // @ts-nocheck
+import { UserContext } from "../../../types";
 import { APIInterface, APIOptions } from "../types";
 export default function getJWKS(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: Record<string, any>
+    userContext: UserContext
 ): Promise<boolean>;

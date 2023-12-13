@@ -14,7 +14,7 @@
  */
 
 import RecipeUserId from "../../recipeUserId";
-import type { NormalisedAppinfo } from "../../types";
+import type { NormalisedAppinfo, UserContext } from "../../types";
 import { User } from "../../user";
 import type { TypeInput, RecipeInterface, TypeNormalisedInput } from "./types";
 import EmailVerificationRecipe from "../emailverification/recipe";
@@ -49,7 +49,7 @@ export function validateAndNormaliseUserInput(_: NormalisedAppinfo, config?: Typ
 export async function verifyEmailForRecipeUserIfLinkedAccountsAreVerified(input: {
     user: User;
     recipeUserId: RecipeUserId;
-    userContext: Record<string, any>;
+    userContext: UserContext;
 }) {
     try {
         EmailVerificationRecipe.getInstanceOrThrowError();

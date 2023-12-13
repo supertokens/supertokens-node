@@ -16,6 +16,7 @@ import { TypeInput } from "../../../../../ingredients/emaildelivery/services/smt
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";
 import EmailPasswordSMTPService from "../../../../emailpassword/emaildelivery/services/smtp";
+import { UserContext } from "../../../../../types";
 
 export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
     private emailPasswordSMTPService: EmailPasswordSMTPService;
@@ -24,7 +25,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeThirdPart
         this.emailPasswordSMTPService = new EmailPasswordSMTPService(config);
     }
 
-    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: Record<string, any> }) => {
+    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: UserContext }) => {
         await this.emailPasswordSMTPService.sendEmail(input);
     };
 }

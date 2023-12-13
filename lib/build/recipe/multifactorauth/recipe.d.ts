@@ -3,7 +3,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import {
     APIInterface,
     GetFactorsSetupForUserFromOtherRecipesFunc,
@@ -16,11 +16,10 @@ import { User } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
-import { TenantConfig } from "../multitenancy/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
-    private getFactorsSetupForUserFromOtherRecipesFuncs;
+    getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[];
     private allAvailableFactorIds;
     private allAvailableFirstFactorIds;
     config: TypeNormalisedInput;
@@ -41,7 +40,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
@@ -50,11 +49,6 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: () => string[];
     getAllAvailableFirstFactorIds: () => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    getFactorsSetupForUser: (
-        user: User,
-        tenantConfig: TenantConfig,
-        userContext: Record<string, any>
-    ) => Promise<string[]>;
     validateForMultifactorAuthBeforeFactorCompletion: ({
         tenantId,
         factorIdInProgress,
@@ -70,7 +64,7 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface | undefined;
         userLoggingIn?: User | undefined;
         isAlreadySetup?: boolean | undefined;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -97,7 +91,7 @@ export default class Recipe extends RecipeModule {
                   recipeUserId: RecipeUserId;
               }
             | undefined;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<
         | MFAFlowErrors
         | {

@@ -1,12 +1,12 @@
 // @ts-nocheck
-import { JSONObject } from "../../types";
+import { JSONObject, UserContext } from "../../types";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static getUserMetadata(
         userId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         metadata: any;
@@ -14,14 +14,14 @@ export default class Wrapper {
     static updateUserMetadata(
         userId: string,
         metadataUpdate: JSONObject,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
     static clearUserMetadata(
         userId: string,
-        userContext?: Record<string, any>
+        userContext?: UserContext
     ): Promise<{
         status: "OK";
     }>;

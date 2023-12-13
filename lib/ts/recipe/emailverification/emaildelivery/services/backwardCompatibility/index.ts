@@ -14,7 +14,7 @@
  */
 import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
 import { createAndSendEmailUsingSupertokensService } from "../../../emailVerificationFunctions";
-import { NormalisedAppinfo } from "../../../../../types";
+import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
@@ -27,7 +27,7 @@ export default class BackwardCompatibilityService
         this.isInServerlessEnv = isInServerlessEnv;
     }
 
-    sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: Record<string, any> }) => {
+    sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: UserContext }) => {
         try {
             if (!this.isInServerlessEnv) {
                 createAndSendEmailUsingSupertokensService(

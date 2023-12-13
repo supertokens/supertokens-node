@@ -15,7 +15,7 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -263,7 +263,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         __: NormalisedURLPath,
         ___: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,

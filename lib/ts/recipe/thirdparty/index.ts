@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { UserContext } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -27,7 +28,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getProvider({
             thirdPartyId,
@@ -43,7 +44,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext: Record<string, any> = {}
+        userContext: UserContext = {} as UserContext
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
             thirdPartyId,

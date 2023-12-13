@@ -10,7 +10,7 @@ import {
     SessionClaim,
 } from "./types";
 import STError from "./error";
-import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod, UserContext } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OpenIdRecipe from "../openid/recipe";
@@ -40,13 +40,13 @@ export default class SessionRecipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError: (
         err: STError,
         request: BaseRequest,
         response: BaseResponse,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
@@ -54,6 +54,6 @@ export default class SessionRecipe extends RecipeModule {
         options: VerifySessionOptions | undefined,
         request: BaseRequest,
         response: BaseResponse,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
 }

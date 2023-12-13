@@ -4,6 +4,7 @@ import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
+import { UserContext } from "../../types";
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
  * */
@@ -19,7 +20,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         _recipeUserId: RecipeUserId,
         tenantId: string | undefined,
         currentPayload: JSONObject | undefined,
-        userContext: Record<string, any>
+        userContext: UserContext
     ) => Promise<{
         c: Record<string, number>;
         n: string[];

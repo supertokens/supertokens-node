@@ -14,7 +14,7 @@
  */
 
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
@@ -66,7 +66,7 @@ type CommonProviderConfig = {
     validateIdTokenPayload?: (input: {
         idTokenPayload: { [key: string]: any };
         clientConfig: ProviderConfigForClientType;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<void>;
     /**
      * This function is responsible for validating the access token received from the third party provider.
@@ -81,13 +81,13 @@ type CommonProviderConfig = {
     validateAccessToken?: (input: {
         accessToken: string;
         clientConfig: ProviderConfigForClientType;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<void>;
     requireEmail?: boolean;
     generateFakeEmail?: (input: {
         thirdPartyUserId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<string>;
 };
 
@@ -99,11 +99,11 @@ export type TypeProvider = {
 
     getConfigForClientType: (input: {
         clientType?: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<ProviderConfigForClientType>;
     getAuthorisationRedirectURL: (input: {
         redirectURIOnProviderDashboard: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<{ urlWithQueryParams: string; pkceCodeVerifier?: string }>;
     exchangeAuthCodeForOAuthTokens: (input: {
         redirectURIInfo: {
@@ -111,9 +111,9 @@ export type TypeProvider = {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string;
         };
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }) => Promise<any>;
-    getUserInfo: (input: { oAuthTokens: any; userContext: Record<string, any> }) => Promise<UserInfo>;
+    getUserInfo: (input: { oAuthTokens: any; userContext: UserContext }) => Promise<UserInfo>;
 };
 
 export type ProviderConfig = CommonProviderConfig & {
@@ -160,7 +160,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         tenantId: string;
         clientType?: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
 
     signInUp(input: {
@@ -174,7 +174,7 @@ export type RecipeInterface = {
             fromUserInfoAPI?: { [key: string]: any };
         };
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -200,7 +200,7 @@ export type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -239,7 +239,7 @@ export type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: APIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -256,7 +256,7 @@ export type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   options: APIOptions;
-                  userContext: Record<string, any>;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -295,6 +295,6 @@ export type APIInterface = {
         | ((input: {
               formPostInfoFromProvider: { [key: string]: any };
               options: APIOptions;
-              userContext: Record<string, any>;
+              userContext: UserContext;
           }) => Promise<void>);
 };
