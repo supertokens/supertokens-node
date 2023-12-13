@@ -39,6 +39,7 @@ let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
 const { join } = require("path");
+let debug = require("debug");
 
 const users = require("./users.json");
 let assert = require("assert");
@@ -250,7 +251,7 @@ module.exports.stopST = async function (pid) {
     throw new Error("error while stopping ST with PID: " + pid);
 };
 
-module.exports.resetAll = function () {
+module.exports.resetAll = function (disableLogging = true) {
     SuperTokens.reset();
     AccountLinkingRecipe.reset();
     SessionRecipe.reset();
@@ -269,6 +270,9 @@ module.exports.resetAll = function () {
     ProcessState.getInstance().reset();
     MultitenancyRecipe.reset();
     TotpRecipe.reset();
+    if (disableLogging) {
+        debug.disable();
+    }
 };
 
 module.exports.killAllST = async function () {

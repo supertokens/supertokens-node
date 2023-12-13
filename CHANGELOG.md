@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [unreleased]
+
+## [16.6.5] - 2023-12-12
+
+-   CI/CD changes
+-   Fixes connectionURI domain normalisation.
+
+## [16.6.4] - 2023-12-05
+
+-   Fixes typing of `verifySession` adding generic to extend the fastify base request.
+
+## [16.6.3] - 2023-12-05
+
+-   Fixes issue with LinkedIn OAuth ([#751](https://github.com/supertokens/supertokens-node/issues/751))
+
+## [16.6.2] - 2023-12-02
+
+-   Fixes implementation of `getBackwardsCompatibleUserInfo` to not throw an error in case of session and user id mismatch.
+
+## [16.6.1] - 2023-11-29
+
+-   Removed dependency on the `crypto` library to enable Apple OAuth usage in Cloudflare Workers.
+
+## [16.6.0] - 2023-11-23
+
+### Added
+
+-   Added User roles and permissions feature to dashboard recipe.
+
+## [16.5.2] - 2023-11-21
+
+-   Fixes issue with `passwordReset` in emailpassword recipe for custom frameworks ([#746](https://github.com/supertokens/supertokens-node/issues/746))
+
+## [16.5.1] - 2023-11-15
+
+-   Fixes issue with `createResetPasswordLink` and `sendResetPasswordEmail` in thirdpartyemailpassword recipe.
+
+## [16.5.0] - 2023-11-10
+
+-   Added `networkInterceptor` to the `TypeInput` config.
+    -   This can be used to capture/modify all the HTTP requests sent to the core.
+    -   Closes the issue - https://github.com/supertokens/supertokens-core/issues/865
+
+## [16.4.0] - 2023-10-26
+
+-   Added `debug` property to `TypeInput`. When set to `true`, it will enable debug logs.
+
 ## [16.3.4] - 2023-10-22
 
 ### Fixes

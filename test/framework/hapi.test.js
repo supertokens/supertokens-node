@@ -28,6 +28,8 @@ const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
+const { HapiRequest } = require("../../lib/build/framework/hapi/framework");
+const sinon = require("sinon");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1974,5 +1976,43 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         });
         assert(resp.statusCode === 200);
         assert(resp.result.users.length === 3);
+    });
+});
+
+describe(`HapiRequest`, function () {
+    it("HapiRequest.getJSONFromRequestBody should be called only once", async function () {
+        const mockJSONData = { key: "value" };
+        const req = new HapiRequest({});
+
+        const getJSONFromRequestBodyStub = sinon.stub(req, "getJSONFromRequestBody").callsFake(() => mockJSONData);
+
+        // Call getJSONBody multiple times
+        const getJsonBody = req.getJSONBody;
+        const jsonData = await getJsonBody();
+        const jsonData2 = await req.getJSONBody();
+
+        sinon.assert.calledOnce(getJSONFromRequestBodyStub);
+
+        assert(JSON.stringify(jsonData) === JSON.stringify(mockJSONData));
+        assert(JSON.stringify(jsonData2) === JSON.stringify(mockJSONData));
+    });
+
+    it("HapiRequest.getFormDataFromRequestBody should be called only once", async function () {
+        const mockFormData = { key: "value" };
+        const req = new HapiRequest({});
+
+        let getFormDataFromRequestBodyStub = sinon
+            .stub(req, "getFormDataFromRequestBody")
+            .callsFake(() => mockFormData);
+
+        // Call getFormData multiple times
+        const getFormData = req.getFormData;
+        const formData = await getFormData();
+        const formData2 = await req.getFormData();
+
+        sinon.assert.calledOnce(getFormDataFromRequestBodyStub);
+
+        assert(JSON.stringify(formData) === JSON.stringify(mockFormData));
+        assert(JSON.stringify(formData2) === JSON.stringify(mockFormData));
     });
 });

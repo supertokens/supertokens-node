@@ -11,7 +11,7 @@ export default class SuperTokensWrapper {
     static RecipeUserId: typeof RecipeUserId;
     static User: typeof User;
     static getAllCORSHeaders(): string[];
-    static getUserCount(includeRecipeIds?: string[], tenantId?: string): Promise<number>;
+    static getUserCount(includeRecipeIds?: string[], tenantId?: string, userContext?: any): Promise<number>;
     static getUsersOldestFirst(input: {
         tenantId: string;
         limit?: number;
@@ -20,6 +20,7 @@ export default class SuperTokensWrapper {
         query?: {
             [key: string]: string;
         };
+        userContext?: any;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -32,6 +33,7 @@ export default class SuperTokensWrapper {
         query?: {
             [key: string]: string;
         };
+        userContext?: any;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -41,6 +43,7 @@ export default class SuperTokensWrapper {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
+        userContext?: any;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -54,6 +57,7 @@ export default class SuperTokensWrapper {
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        userContext?: any;
     }): Promise<
         | {
               status: "OK";
@@ -69,6 +73,7 @@ export default class SuperTokensWrapper {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
+        userContext?: any;
     }): Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -77,6 +82,7 @@ export default class SuperTokensWrapper {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
+        userContext?: any;
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;

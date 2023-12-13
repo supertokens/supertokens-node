@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "16.3.4",
+    "version": "16.6.5",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -45,7 +45,7 @@
         "pkce-challenge": "^3.0.0",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
-        "twilio": "^4.7.2"
+        "twilio": "^4.19.3"
     },
     "devDependencies": {
         "@hapi/hapi": "^20.2.0",

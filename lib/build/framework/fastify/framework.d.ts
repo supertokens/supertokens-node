@@ -8,9 +8,9 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class FastifyRequest extends BaseRequest {
     private request;
     constructor(request: OriginalFastifyRequest);
-    getFormData: () => Promise<any>;
+    protected getFormDataFromRequestBody: () => Promise<any>;
+    protected getJSONFromRequestBody: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
-    getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;
     getHeaderValue: (key: string) => string | undefined;
@@ -42,9 +42,9 @@ export declare class FastifyResponse extends BaseResponse {
      */
     sendJSONResponse: (content: any) => void;
 }
-export interface SessionRequest extends OriginalFastifyRequest {
+export declare type SessionRequest<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest> = TRequest & {
     session?: SessionContainerInterface;
-}
+};
 export interface FasitfyFramework extends Framework {
     plugin: FastifyPluginCallback;
     errorHandler: () => (err: any, req: OriginalFastifyRequest, res: FastifyReply) => Promise<void>;

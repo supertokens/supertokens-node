@@ -33,22 +33,20 @@ import type { Framework } from "../types";
 
 export class LoopbackRequest extends BaseRequest {
     private request: Request;
-    private parserChecked: boolean;
-    private formDataParserChecked: boolean;
 
     constructor(ctx: MiddlewareContext) {
         super();
         this.original = ctx.request;
         this.request = ctx.request;
-        this.parserChecked = false;
-        this.formDataParserChecked = false;
     }
 
-    getFormData = async (): Promise<any> => {
-        if (!this.formDataParserChecked) {
-            await assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
-            this.formDataParserChecked = true;
-        }
+    protected getFormDataFromRequestBody = async (): Promise<any> => {
+        await assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
+        return this.request.body;
+    };
+
+    protected getJSONFromRequestBody = async (): Promise<any> => {
+        await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
         return this.request.body;
     };
 
@@ -61,14 +59,6 @@ export class LoopbackRequest extends BaseRequest {
             return undefined;
         }
         return value;
-    };
-
-    getJSONBody = async (): Promise<any> => {
-        if (!this.parserChecked) {
-            await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
-            this.parserChecked = true;
-        }
-        return this.request.body;
     };
 
     getMethod = (): HTTPMethod => {

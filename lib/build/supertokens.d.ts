@@ -27,12 +27,17 @@ export default class SuperTokens {
         userContext: any
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
-    getUserCount: (includeRecipeIds?: string[] | undefined, tenantId?: string | undefined) => Promise<number>;
+    getUserCount: (
+        includeRecipeIds?: string[] | undefined,
+        tenantId?: string | undefined,
+        userContext?: any
+    ) => Promise<number>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
+        userContext?: any;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -46,6 +51,7 @@ export default class SuperTokens {
     getUserIdMapping: (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        userContext?: any;
     }) => Promise<
         | {
               status: "OK";
@@ -61,6 +67,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
+        userContext?: any;
     }) => Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -69,6 +76,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
+        userContext?: any;
     }) => Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;

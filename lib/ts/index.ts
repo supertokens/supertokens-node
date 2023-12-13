@@ -33,8 +33,8 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
     }
 
-    static getUserCount(includeRecipeIds?: string[], tenantId?: string) {
-        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds, tenantId);
+    static getUserCount(includeRecipeIds?: string[], tenantId?: string, userContext?: any) {
+        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds, tenantId, userContext);
     }
 
     static getUsersOldestFirst(input: {
@@ -43,6 +43,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
+        userContext?: any;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -50,7 +51,7 @@ export default class SuperTokensWrapper {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
-            userContext: undefined,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 
@@ -60,6 +61,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
+        userContext?: any;
     }): Promise<{
         users: UserType[];
         nextPaginationToken?: string;
@@ -67,7 +69,7 @@ export default class SuperTokensWrapper {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "DESC",
             ...input,
-            userContext: undefined,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 
@@ -76,11 +78,16 @@ export default class SuperTokensWrapper {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
+        userContext?: any;
     }) {
         return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
     }
 
-    static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
+    static getUserIdMapping(input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        userContext?: any;
+    }) {
         return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
     }
 
@@ -88,6 +95,7 @@ export default class SuperTokensWrapper {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
+        userContext?: any;
     }) {
         return SuperTokens.getInstanceOrThrowError().deleteUserIdMapping(input);
     }
@@ -96,6 +104,7 @@ export default class SuperTokensWrapper {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
+        userContext?: any;
     }) {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }

@@ -133,7 +133,7 @@ export default class Wrapper {
         email: string,
         userContext: any = {}
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-        let token = await createResetPasswordToken(userId, tenantId, email, userContext);
+        let token = await createResetPasswordToken(tenantId, userId, email, userContext);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
             return token;
         }
@@ -168,7 +168,7 @@ export default class Wrapper {
             return { status: "UNKNOWN_USER_ID_ERROR" };
         }
 
-        let link = await createResetPasswordLink(userId, tenantId, email, userContext);
+        let link = await createResetPasswordLink(tenantId, userId, email, userContext);
         if (link.status === "UNKNOWN_USER_ID_ERROR") {
             return link;
         }

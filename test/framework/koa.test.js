@@ -29,6 +29,8 @@ const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
+const { KoaRequest } = require("../../lib/build/framework/koa/framework");
+const sinon = require("sinon");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
@@ -2172,5 +2174,43 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
         assert(res.statusCode === 200);
         assert(res.body.users.length === 0);
+    });
+});
+
+describe(`KoaRequest`, function () {
+    it("KoaRequest.getJSONFromRequestBody should be called only once", async function () {
+        const mockJSONData = { key: "value" };
+        const req = new KoaRequest({});
+
+        const getJSONFromRequestBodyStub = sinon.stub(req, "getJSONFromRequestBody").callsFake(() => mockJSONData);
+
+        // Call getJSONBody multiple times
+        const getJsonBody = req.getJSONBody;
+        const jsonData = await getJsonBody();
+        const jsonData2 = await req.getJSONBody();
+
+        sinon.assert.calledOnce(getJSONFromRequestBodyStub);
+
+        assert(JSON.stringify(jsonData) === JSON.stringify(mockJSONData));
+        assert(JSON.stringify(jsonData2) === JSON.stringify(mockJSONData));
+    });
+
+    it("KoaRequest.getFormDataFromRequestBody should be called only once", async function () {
+        const mockFormData = { key: "value" };
+        const req = new KoaRequest({});
+
+        let getFormDataFromRequestBodyStub = sinon
+            .stub(req, "getFormDataFromRequestBody")
+            .callsFake(() => mockFormData);
+
+        // Call getFormData multiple times
+        const getFormData = req.getFormData;
+        const formData = await getFormData();
+        const formData2 = await req.getFormData();
+
+        sinon.assert.calledOnce(getFormDataFromRequestBodyStub);
+
+        assert(JSON.stringify(formData) === JSON.stringify(mockFormData));
+        assert(JSON.stringify(formData2) === JSON.stringify(mockFormData));
     });
 });
