@@ -25,7 +25,9 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            const availableFactors = await options.recipeInstance.getAllAvailableFactorIds();
+            const { status: _, ...tenantConfig } = tenantInfo!;
+
+            const availableFactors = await options.recipeInstance.getAllAvailableFactorIds(tenantConfig);
 
             // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
             const defaultRequiredFactorIdsForUser = await options.recipeImplementation.getDefaultRequiredFactorsForUser(

@@ -25,6 +25,7 @@ import { GET_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
+    GetAllFactorsFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
     MFAFlowErrors,
     RecipeInterface,
@@ -44,15 +45,14 @@ import AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { Querier } from "../../querier";
 import SessionError from "../session/error";
+import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "multifactorauth";
 
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
-
-    private allAvailableFactorIds: string[] = [];
-    private allAvailableFirstFactorIds: string[] = [];
+    getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[] = [];
 
     config: TypeNormalisedInput;
 
@@ -171,17 +171,26 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    addAvailableFactorIdsFromOtherRecipes = (factorIds: string[], firstFactorIds: string[]) => {
-        this.allAvailableFactorIds = this.allAvailableFactorIds.concat(factorIds);
-        this.allAvailableFirstFactorIds = this.allAvailableFirstFactorIds.concat(firstFactorIds);
+    addGetAllFactorsFromOtherRecipesFunc = (f: GetAllFactorsFromOtherRecipesFunc) => {
+        this.getAllFactorsFromOtherRecipesFunc.push(f);
     };
 
-    getAllAvailableFactorIds = () => {
-        return this.allAvailableFactorIds;
+    getAllAvailableFactorIds = (tenantConfig: TenantConfig) => {
+        let factorIds: string[] = [];
+        for (const func of this.getAllFactorsFromOtherRecipesFunc) {
+            const factorIdsRes = func(tenantConfig);
+            factorIds = factorIds.concat(factorIdsRes.factorIds);
+        }
+        return factorIds;
     };
 
-    getAllAvailableFirstFactorIds = () => {
-        return this.allAvailableFirstFactorIds;
+    getAllAvailableFirstFactorIds = (tenantConfig: TenantConfig) => {
+        let factorIds: string[] = [];
+        for (const func of this.getAllFactorsFromOtherRecipesFunc) {
+            const factorIdsRes = func(tenantConfig);
+            factorIds = factorIds.concat(factorIdsRes.firstFactorIds);
+        }
+        return factorIds;
     };
 
     addGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {
@@ -206,8 +215,9 @@ export default class Recipe extends RecipeModule {
         userContext: UserContext;
     }): Promise<{ status: "OK" } | MFAFlowErrors> => {
         const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
+        const { status: _, ...tenantConfig } = tenantInfo!;
         const validFirstFactors =
-            tenantInfo?.firstFactors || this.config.firstFactors || this.getAllAvailableFirstFactorIds();
+            tenantInfo?.firstFactors || this.config.firstFactors || this.getAllAvailableFirstFactorIds(tenantConfig);
 
         if (session === undefined) {
             // No session exists, so we need to check if it's a valid first factor before proceeding

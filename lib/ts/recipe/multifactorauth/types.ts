@@ -142,3 +142,7 @@ export type GetFactorsSetupForUserFromOtherRecipesFunc = (
     tenantConfig: TenantConfig,
     userContext: UserContext
 ) => Promise<string[]>;
+
+export type GetAllFactorsFromOtherRecipesFunc = (
+    tenantConfig: TenantConfig
+) => { factorIds: string[]; firstFactorIds: string[] };

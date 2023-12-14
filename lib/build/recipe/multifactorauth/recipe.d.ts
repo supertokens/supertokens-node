@@ -6,6 +6,7 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import {
     APIInterface,
+    GetAllFactorsFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
     MFAFlowErrors,
     RecipeInterface,
@@ -16,12 +17,12 @@ import { User } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
+import { TenantConfig } from "../multitenancy/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[];
-    private allAvailableFactorIds;
-    private allAvailableFirstFactorIds;
+    getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[];
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -45,9 +46,9 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    addAvailableFactorIdsFromOtherRecipes: (factorIds: string[], firstFactorIds: string[]) => void;
-    getAllAvailableFactorIds: () => string[];
-    getAllAvailableFirstFactorIds: () => string[];
+    addGetAllFactorsFromOtherRecipesFunc: (f: GetAllFactorsFromOtherRecipesFunc) => void;
+    getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
+    getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
     validateForMultifactorAuthBeforeFactorCompletion: ({
         tenantId,
