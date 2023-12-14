@@ -266,7 +266,7 @@ export function humaniseMilliseconds(ms: number): string {
     }
 }
 
-export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
+export function makeDefaultUserContextFromAPI(request: BaseRequest): UserContext {
     return setRequestInUserContextIfNotDefined({} as UserContext, request);
 }
 

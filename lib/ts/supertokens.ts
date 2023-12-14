@@ -20,7 +20,6 @@ import {
     normaliseHttpMethod,
     sendNon200ResponseWithMessage,
     getRidFromHeader,
-    getUserContext,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -191,9 +190,9 @@ export default class SuperTokens {
     };
 
     getUserCount = async (
-        includeRecipeIds?: string[],
-        tenantId?: string,
-        userContext?: UserContext
+        includeRecipeIds: string[] | undefined,
+        tenantId: string | undefined,
+        userContext: UserContext
     ): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
@@ -213,7 +212,7 @@ export default class SuperTokens {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
             },
-            getUserContext(userContext)
+            userContext
         );
         return Number(response.count);
     };

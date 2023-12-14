@@ -86,7 +86,7 @@ export default class Wrapper {
             factorsSetUpForUser: factorsSetup,
             defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
-            userContext: getUserContext(userContext),
+            userContext: ctx,
         });
     }
 

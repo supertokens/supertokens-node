@@ -24,7 +24,7 @@ export declare function doesRequestSupportFDI(req: BaseRequest, version: string)
 export declare function getRidFromHeader(req: BaseRequest): string | undefined;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
 export declare function humaniseMilliseconds(ms: number): string;
-export declare function makeDefaultUserContextFromAPI(request: BaseRequest): any;
+export declare function makeDefaultUserContextFromAPI(request: BaseRequest): UserContext;
 export declare function getUserContext(inputUserContext?: Record<string, any>): UserContext;
 export declare function setRequestInUserContextIfNotDefined(
     userContext: UserContext | undefined,

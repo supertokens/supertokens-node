@@ -28,9 +28,9 @@ export default class SuperTokens {
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (
-        includeRecipeIds?: string[] | undefined,
-        tenantId?: string | undefined,
-        userContext?: UserContext | undefined
+        includeRecipeIds: string[] | undefined,
+        tenantId: string | undefined,
+        userContext: UserContext
     ) => Promise<number>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
