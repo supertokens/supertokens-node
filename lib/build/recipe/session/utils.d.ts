@@ -16,19 +16,22 @@ export declare function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
     _: string,
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ): Promise<void>;
 export declare function sendUnauthorisedResponse(
     recipeInstance: SessionRecipe,
     _: string,
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ): Promise<void>;
 export declare function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
     claimValidationErrors: ClaimValidationError[],
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ): Promise<void>;
 export declare function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
@@ -36,7 +39,8 @@ export declare function sendTokenTheftDetectedResponse(
     _: string,
     __: RecipeUserId,
     ___: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    userContext: UserContext
 ): Promise<void>;
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;
 export declare function getURLProtocol(url: string): string;

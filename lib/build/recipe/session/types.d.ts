@@ -139,7 +139,7 @@ export interface SessionRequest extends BaseRequest {
     session?: SessionContainerInterface;
 }
 export interface ErrorHandlerMiddleware {
-    (message: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+    (message: string, request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<void>;
 }
 export interface TokenTheftErrorHandlerMiddleware {
     (
@@ -147,11 +147,17 @@ export interface TokenTheftErrorHandlerMiddleware {
         userId: string,
         recipeUserId: RecipeUserId,
         request: BaseRequest,
-        response: BaseResponse
+        response: BaseResponse,
+        userContext: UserContext
     ): Promise<void>;
 }
 export interface InvalidClaimErrorHandlerMiddleware {
-    (validatorErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse): Promise<void>;
+    (
+        validatorErrors: ClaimValidationError[],
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: UserContext
+    ): Promise<void>;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;

@@ -210,10 +210,10 @@ export default class SessionRecipe extends RecipeModule {
                     logDebugMessage("errorHandler: Clearing tokens because of UNAUTHORISED response");
                     clearSessionFromAllTokenTransferMethods(this.config, response, request, userContext);
                 }
-                return await this.config.errorHandlers.onUnauthorised(err.message, request, response);
+                return await this.config.errorHandlers.onUnauthorised(err.message, request, response, userContext);
             } else if (err.type === STError.TRY_REFRESH_TOKEN) {
                 logDebugMessage("errorHandler: returning TRY_REFRESH_TOKEN");
-                return await this.config.errorHandlers.onTryRefreshToken(err.message, request, response);
+                return await this.config.errorHandlers.onTryRefreshToken(err.message, request, response, userContext);
             } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
                 logDebugMessage("errorHandler: returning TOKEN_THEFT_DETECTED");
                 logDebugMessage("errorHandler: Clearing tokens because of TOKEN_THEFT_DETECTED response");
@@ -223,15 +223,16 @@ export default class SessionRecipe extends RecipeModule {
                     err.payload.userId,
                     err.payload.recipeUserId,
                     request,
-                    response
+                    response,
+                    userContext
                 );
             } else if (err.type === STError.INVALID_CLAIMS) {
-                return await this.config.errorHandlers.onInvalidClaim(err.payload, request, response);
+                return await this.config.errorHandlers.onInvalidClaim(err.payload, request, response, userContext);
             } else {
                 throw err;
             }
         } else {
-            return await this.openIdRecipe.handleError(err, request, response);
+            return await this.openIdRecipe.handleError(err, request, response, userContext);
         }
     };
 

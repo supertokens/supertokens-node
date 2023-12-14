@@ -39,7 +39,8 @@ export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
     _: string,
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ) {
     sendNon200ResponseWithMessage(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
 }
@@ -48,7 +49,8 @@ export async function sendUnauthorisedResponse(
     recipeInstance: SessionRecipe,
     _: string,
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ) {
     sendNon200ResponseWithMessage(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
 }
@@ -57,7 +59,8 @@ export async function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
     claimValidationErrors: ClaimValidationError[],
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ) {
     sendNon200Response(response, recipeInstance.config.invalidClaimStatusCode, {
         message: "invalid claim",
@@ -71,9 +74,10 @@ export async function sendTokenTheftDetectedResponse(
     _: string,
     __: RecipeUserId,
     ___: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    userContext: UserContext
 ) {
-    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} as UserContext }); // TODO should userContext be passed to error handlers?
+    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext });
     sendNon200ResponseWithMessage(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }
 
@@ -212,7 +216,8 @@ export function validateAndNormaliseUserInput(
             userId: string,
             recipeUserId: RecipeUserId,
             request: BaseRequest,
-            response: BaseResponse
+            response: BaseResponse,
+            userContext: UserContext
         ) => {
             return await sendTokenTheftDetectedResponse(
                 recipeInstance,
@@ -220,17 +225,33 @@ export function validateAndNormaliseUserInput(
                 userId,
                 recipeUserId,
                 request,
-                response
+                response,
+                userContext
             );
         },
-        onTryRefreshToken: async (message: string, request: BaseRequest, response: BaseResponse) => {
-            return await sendTryRefreshTokenResponse(recipeInstance, message, request, response);
+        onTryRefreshToken: async (
+            message: string,
+            request: BaseRequest,
+            response: BaseResponse,
+            userContext: UserContext
+        ) => {
+            return await sendTryRefreshTokenResponse(recipeInstance, message, request, response, userContext);
         },
-        onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
-            return await sendUnauthorisedResponse(recipeInstance, message, request, response);
+        onUnauthorised: async (
+            message: string,
+            request: BaseRequest,
+            response: BaseResponse,
+            userContext: UserContext
+        ) => {
+            return await sendUnauthorisedResponse(recipeInstance, message, request, response, userContext);
         },
-        onInvalidClaim: (validationErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse) => {
-            return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response);
+        onInvalidClaim: (
+            validationErrors: ClaimValidationError[],
+            request: BaseRequest,
+            response: BaseResponse,
+            userContext: UserContext
+        ) => {
+            return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response, userContext);
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {

@@ -116,7 +116,7 @@ export default class Recipe extends RecipeModule {
         return await getJWKS(this.apiImpl, options, userContext);
     };
 
-    handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void> {
+    handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void> {
         throw error;
     }
 

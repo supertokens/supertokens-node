@@ -112,11 +112,16 @@ export default class OpenIdRecipe extends RecipeModule {
             return this.jwtRecipe.handleAPIRequest(id, tenantId, req, response, path, method, userContext);
         }
     };
-    handleError = async (error: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {
+    handleError = async (
+        error: STError,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: UserContext
+    ): Promise<void> => {
         if (error.fromRecipe === OpenIdRecipe.RECIPE_ID) {
             throw error;
         } else {
-            return await this.jwtRecipe.handleError(error, request, response);
+            return await this.jwtRecipe.handleError(error, request, response, userContext);
         }
     };
     getAllCORSHeaders = (): string[] => {

@@ -26,7 +26,7 @@ export default class Recipe extends RecipeModule {
         _method: HTTPMethod,
         userContext: UserContext
     ) => Promise<boolean>;
-    handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void>;
+    handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
 }
