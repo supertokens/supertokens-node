@@ -7,14 +7,6 @@ import { verifySession } from "supertokens-node/recipe/session/framework/awsLamb
 supertokens.init(getBackendConfig());
 
 const lambdaHandler = async (event) => {
-    let count = 0;
-    let currPayload = event.session.getAccessTokenPayload();
-    if (currPayload.count !== undefined) {
-        count = currPayload.count;
-    }
-    await event.session.mergeIntoAccessTokenPayload({
-        count: count + 1,
-    });
     return {
         body: JSON.stringify({
             sessionHandle: event.session.getHandle(),
