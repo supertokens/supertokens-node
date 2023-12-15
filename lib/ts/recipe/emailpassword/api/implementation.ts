@@ -696,7 +696,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 session: sessionRes.session,
-                user: response.user,
+                user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
             };
         },
 
@@ -832,7 +832,7 @@ export default function getAPIImplementation(): APIInterface {
                 return {
                     status: "OK",
                     session,
-                    user: response.user,
+                    user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
                 };
             }
 

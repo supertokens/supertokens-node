@@ -216,7 +216,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
-                user: response.user,
+                user: (await getUser(response.user.id, input.userContext))!, // fetching user again cause the user might have been updated while setting up mfa
                 session,
             };
         },
