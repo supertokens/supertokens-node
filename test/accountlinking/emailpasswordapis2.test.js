@@ -1230,6 +1230,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test2@example.com",
                 false,
+                undefined,
                 {
                     doNotLink: true,
                 }
@@ -1444,7 +1445,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(tpUser.isPrimaryUser);
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -2660,7 +2661,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.status === "OK");
             assert(sendEmailToUserId === tpUser.id);
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
 

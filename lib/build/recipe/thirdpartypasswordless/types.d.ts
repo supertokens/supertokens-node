@@ -116,6 +116,7 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -146,6 +147,7 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
         userContext: UserContext;
     }): Promise<
         | {

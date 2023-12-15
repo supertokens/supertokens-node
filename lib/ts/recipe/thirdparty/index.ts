@@ -44,6 +44,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        shouldAttemptAccountLinkingIfAllowed?: boolean,
         userContext?: Record<string, any>
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
@@ -52,6 +53,7 @@ export default class Wrapper {
             email,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             isVerified,
+            shouldAttemptAccountLinkingIfAllowed,
             userContext: getUserContext(userContext),
         });
     }
