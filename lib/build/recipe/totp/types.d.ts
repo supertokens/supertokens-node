@@ -1,11 +1,12 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type GetUserIdentifierInfoForUserIdFunc = (
     userId: string,
-    userContext: any
+    userContext: UserContext
 ) => Promise<
     | {
           status: "OK";
@@ -48,7 +49,7 @@ export declare type RecipeInterface = {
         deviceName?: string;
         skew?: number;
         period?: number;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -64,13 +65,13 @@ export declare type RecipeInterface = {
         userId: string;
         existingDeviceName: string;
         newDeviceName: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK" | "UNKNOWN_DEVICE_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR";
     }>;
     listDevices: (input: {
         userId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         devices: {
@@ -83,7 +84,7 @@ export declare type RecipeInterface = {
     removeDevice: (input: {
         userId: string;
         deviceName: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didDeviceExist: boolean;
@@ -93,7 +94,7 @@ export declare type RecipeInterface = {
         userId: string;
         deviceName: string;
         totp: string;
-        userContext: string;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -116,7 +117,7 @@ export declare type RecipeInterface = {
         tenantId: string;
         userId: string;
         totp: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
@@ -145,7 +146,7 @@ export declare type APIInterface = {
         deviceName?: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR";
@@ -161,7 +162,7 @@ export declare type APIInterface = {
     listDevicesGET: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -178,7 +179,7 @@ export declare type APIInterface = {
         deviceName: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -191,7 +192,7 @@ export declare type APIInterface = {
         totp: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -209,13 +210,17 @@ export declare type APIInterface = {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
           }
+        | {
+              status: "FACTOR_SETUP_NOT_ALLOWED_ERROR";
+          }
+        | MFAFlowErrors
         | GeneralErrorResponse
     >;
     verifyTOTPPOST: (input: {
         totp: string;
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
@@ -229,6 +234,7 @@ export declare type APIInterface = {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
           }
+        | MFAFlowErrors
         | GeneralErrorResponse
     >;
 };

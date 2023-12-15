@@ -7,8 +7,9 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -67,13 +68,13 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -83,13 +84,12 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -99,13 +99,12 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
@@ -120,7 +119,7 @@ export declare type RecipeInterface = {
         userId: string;
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -133,7 +132,7 @@ export declare type RecipeInterface = {
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -148,7 +147,7 @@ export declare type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -182,7 +181,7 @@ export declare type APIInterface = {
               email: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -199,7 +198,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -220,7 +219,7 @@ export declare type APIInterface = {
               token: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -245,7 +244,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -259,6 +258,7 @@ export declare type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
     signUpPOST:
@@ -270,7 +270,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -284,6 +284,7 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 };

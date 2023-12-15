@@ -15,10 +15,12 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, User } from "../../types";
+import { GeneralErrorResponse, JSONObject, UserContext } from "../../types";
+import { User } from "../../user";
 import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
-import RecipeUserId from "../../recipeUserId";
+import Recipe from "./recipe";
+import { TenantConfig } from "../multitenancy/types";
 
 export type MFARequirementList = (
     | {
@@ -33,6 +35,15 @@ export type MFARequirementList = (
 export type MFAClaimValue = {
     c: Record<string, number>;
     n: string[];
+};
+
+export type MFAFlowErrors = {
+    status:
+        | "DISALLOWED_FIRST_FACTOR_ERROR"
+        | "FACTOR_SETUP_NOT_ALLOWED_ERROR"
+        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+    message?: string;
 };
 
 export type TypeInput = {
@@ -64,78 +75,42 @@ export type RecipeInterface = {
         session: SessionContainer;
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
-        factorsSetUpByTheUser: string[];
+        factorsSetUpForUser: string[];
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<boolean>;
 
     getMFARequirementsForAuth: (input: {
-        session: SessionContainer;
-        factorsSetUpByTheUser: string[];
+        user: User;
+        accessTokenPayload: JSONObject;
+        tenantId: string;
+        factorsSetUpForUser: string[];
         defaultRequiredFactorIdsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
 
     markFactorAsCompleteInSession: (input: {
         session: SessionContainerInterface;
         factorId: string;
-        userContext?: any;
+        userContext: UserContext;
     }) => Promise<void>;
 
-    getFactorsSetupForUser: (input: { user: User; tenantId: string; userContext: any }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
 
-    createPrimaryUser: (input: {
-        recipeUserId: RecipeUserId;
-        userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              user: User;
-              wasAlreadyAPrimaryUser: boolean;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
-          }
-    >;
-
-    linkAccounts: (input: {
-        recipeUserId: RecipeUserId;
-        primaryUserId: string;
-        userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              accountsAlreadyLinked: boolean;
-              user: User;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              user: User;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
-          }
-        | {
-              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-          }
-    >;
+    getDefaultRequiredFactorsForUser(input: {
+        user: User;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<string[]>;
 };
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
+    recipeInstance: Recipe;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
@@ -147,7 +122,7 @@ export type APIInterface = {
     mfaInfoGET: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -155,7 +130,19 @@ export type APIInterface = {
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };
+              email?: string;
+              phoneNumber?: string;
           }
         | GeneralErrorResponse
     >;
 };
+
+export type GetFactorsSetupForUserFromOtherRecipesFunc = (
+    user: User,
+    tenantConfig: TenantConfig,
+    userContext: UserContext
+) => Promise<string[]>;
+
+export type GetAllFactorsFromOtherRecipesFunc = (
+    tenantConfig: TenantConfig
+) => { factorIds: string[]; firstFactorIds: string[] };

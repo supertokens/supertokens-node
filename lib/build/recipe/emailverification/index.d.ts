@@ -17,7 +17,7 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -31,7 +31,7 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -46,7 +46,7 @@ export default class Wrapper {
         userId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -59,7 +59,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         attemptAccountLinking?: boolean,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -69,25 +69,29 @@ export default class Wrapper {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    static isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext?: any): Promise<boolean>;
+    static isEmailVerified(
+        recipeUserId: RecipeUserId,
+        email?: string,
+        userContext?: Record<string, any>
+    ): Promise<boolean>;
     static revokeEmailVerificationTokens(
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: string;
     }>;
     static unverifyEmail(
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: string;
     }>;
     static sendEmail(
         input: TypeEmailVerificationEmailDeliveryInput & {
-            userContext?: any;
+            userContext?: Record<string, any>;
         }
     ): Promise<void>;
 }

@@ -2,6 +2,7 @@ import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { TypeNormalisedInput } from "./types";
+import { UserContext } from "../../types";
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -11,7 +12,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             skew?: number;
             period?: number;
             userIdentifierInfo?: string;
-            userContext: any;
+            userContext: UserContext;
         }) => {
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/totp/device"),
@@ -20,7 +21,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     deviceName: input.deviceName,
                     skew: input.skew ?? config.defaultSkew,
                     period: input.period ?? config.defaultPeriod,
-                    userContext: input.userContext,
                 },
                 input.userContext
             );
@@ -41,7 +41,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId: string;
             existingDeviceName: string;
             newDeviceName: string;
-            userContext: any;
+            userContext: UserContext;
         }) => {
             return querier.sendPutRequest(
                 new NormalisedURLPath("/recipe/totp/device"),
@@ -49,30 +49,27 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     userId: input.userId,
                     existingDeviceName: input.existingDeviceName,
                     newDeviceName: input.newDeviceName,
-                    userContext: input.userContext,
                 },
                 input.userContext
             );
         },
 
-        listDevices: (input: { userId: string; userContext: any }) => {
+        listDevices: (input: { userId: string; userContext: UserContext }) => {
             return querier.sendGetRequest(
                 new NormalisedURLPath("/recipe/totp/device/list"),
                 {
                     userId: input.userId,
-                    userContext: input.userContext,
                 },
                 input.userContext
             );
         },
 
-        removeDevice: (input: { userId: string; deviceName: string; userContext: any }) => {
+        removeDevice: (input: { userId: string; deviceName: string; userContext: UserContext }) => {
             return querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/totp/device/remove"),
                 {
                     userId: input.userId,
                     deviceName: input.deviceName,
-                    userContext: input.userContext,
                 },
                 input.userContext
             );
@@ -83,7 +80,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId: string;
             deviceName: string;
             totp: string;
-            userContext: string;
+            userContext: UserContext;
         }) => {
             return querier.sendPostRequest(
                 new NormalisedURLPath(`${input.tenantId}/recipe/totp/device/verify`),
@@ -91,19 +88,17 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     userId: input.userId,
                     deviceName: input.deviceName,
                     totp: input.totp,
-                    userContext: input.userContext,
                 },
                 input.userContext
             );
         },
 
-        verifyTOTP: (input: { tenantId: string; userId: string; totp: string; userContext: any }) => {
+        verifyTOTP: (input: { tenantId: string; userId: string; totp: string; userContext: UserContext }) => {
             return querier.sendPostRequest(
                 new NormalisedURLPath(`${input.tenantId}/recipe/totp/verify`),
                 {
                     userId: input.userId,
                     totp: input.totp,
-                    userContext: input.userContext,
                 },
                 input.userContext
             );

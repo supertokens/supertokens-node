@@ -58,15 +58,18 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     createdNewRecipeUser: response.createdNewUser,
                     user: response.user,
                     recipeUserId: response.recipeUserId,
-                    isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
                 };
             }
 
-            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                tenantId: input.tenantId,
-                user: response.user,
-                userContext: input.userContext,
-            });
+            let updatedUser = response.user;
+
+            if (input.shouldAttemptAccountLinkingIfAllowed ?? true) {
+                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    tenantId: input.tenantId,
+                    user: response.user,
+                    userContext: input.userContext,
+                });
+            }
 
             if (updatedUser === undefined) {
                 throw new Error("Should never come here.");
@@ -76,7 +79,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 createdNewRecipeUser: response.createdNewUser,
                 user: updatedUser,
                 recipeUserId: response.recipeUserId,
-                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
             };
         },
         createCode: async function (input) {

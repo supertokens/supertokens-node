@@ -85,7 +85,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return querier.sendPostRequest(new NormalisedURLPath("/recipe/role/remove"), { role }, userContext);
         },
 
-        getAllRoles: function (userContext) {
+        getAllRoles: function ({ userContext }) {
             return querier.sendGetRequest(new NormalisedURLPath("/recipe/roles"), {}, userContext);
         },
     };

@@ -85,7 +85,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
         let q = Querier.getNewInstanceOrThrowError(undefined);
 
         try {
-            await q.sendGetRequest(new NormalisedURLPath("/testing"), {});
+            await q.sendGetRequest(new NormalisedURLPath("/testing"), {}, {});
         } catch (e) {
             if (!e.message.includes("with status code: 429")) {
                 throw e;
@@ -95,10 +95,10 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
         // 1 initial request + 5 retries
         assert.equal(numbersOfTimesRetried, 6);
 
-        await q.sendGetRequest(new NormalisedURLPath("/testing2"), {});
+        await q.sendGetRequest(new NormalisedURLPath("/testing2"), {}, {});
         assert.equal(numberOfTimesSecondCalled, 3);
 
-        await q.sendGetRequest(new NormalisedURLPath("/testing3"), {});
+        await q.sendGetRequest(new NormalisedURLPath("/testing3"), {}, {});
         assert.equal(numberOfTimesThirdCalled, 1);
 
         server.close();
@@ -146,7 +146,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
         let q = Querier.getNewInstanceOrThrowError(undefined);
 
         try {
-            await q.sendGetRequest(new NormalisedURLPath("/testing"), {});
+            await q.sendGetRequest(new NormalisedURLPath("/testing"), {}, {});
         } catch (e) {
             if (!e.message.includes("with status code: 429")) {
                 throw e;
@@ -207,7 +207,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         const callApi1 = async () => {
             try {
-                await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "1" });
+                await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "1" }, {});
             } catch (e) {
                 if (!e.message.includes("with status code: 429")) {
                     throw e;
@@ -217,7 +217,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         const callApi2 = async () => {
             try {
-                await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "2" });
+                await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "2" }, {});
             } catch (e) {
                 if (!e.message.includes("with status code: 429")) {
                     throw e;

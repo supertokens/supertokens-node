@@ -17,29 +17,36 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
+import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
+import UserMetadataRecipe from "../usermetadata/recipe";
+import { getUserContext } from "../../utils";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async getFactorsSetUpByUser(tenantId: string, userId: string, userContext?: any) {
-        const ctx = userContext ?? {};
+    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
+        const ctx = getUserContext(userContext);
         const user = await getUser(userId, ctx);
         if (!user) {
             throw new Error("UKNKNOWN_USER_ID");
         }
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-            user,
             tenantId,
+            user,
             userContext: ctx,
         });
     }
 
-    static async isAllowedToSetupFactor(session: SessionContainerInterface, factorId: string, userContext?: any) {
-        let ctx = userContext ?? {};
+    static async isAllowedToSetupFactor(
+        session: SessionContainerInterface,
+        factorId: string,
+        userContext?: Record<string, any>
+    ) {
+        let ctx = getUserContext(userContext);
         const user = await getUser(session.getUserId(), ctx);
         if (!user) {
             throw new Error("UKNKNOWN_USER_ID");
@@ -51,11 +58,21 @@ export default class Wrapper {
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
         const completedFactors = mfaClaimValue?.c ?? {};
-        const defaultMFARequirementsForUser: string[] = []; // TODO
-        const defaultMFARequirementsForTenant: string[] = []; // TODO
+        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getDefaultRequiredFactorsForUser(
+            {
+                user,
+                tenantId: session.getTenantId(),
+                userContext: ctx,
+            }
+        );
+
+        const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
+        const defaultMFARequirementsForTenant: string[] = tenantInfo?.defaultRequiredFactorIds ?? [];
         const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
-            session,
-            factorsSetUpByTheUser: factorsSetup,
+            user,
+            accessTokenPayload: session.getAccessTokenPayload(),
+            tenantId: session.getTenantId(),
+            factorsSetUpForUser: factorsSetup,
             defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
             completedFactors,
@@ -66,29 +83,66 @@ export default class Wrapper {
             factorId,
             completedFactors,
             mfaRequirementsForAuth: requirements,
-            factorsSetUpByTheUser: factorsSetup,
+            factorsSetUpForUser: factorsSetup,
             defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
-            userContext,
+            userContext: ctx,
         });
     }
 
     static async markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
             session,
             factorId,
-            userContext: userContext ?? {},
+            userContext: getUserContext(userContext),
+        });
+    }
+
+    static async addToDefaultRequiredFactorsForUser(
+        userId: string,
+        factorId: string,
+        userContext?: Record<string, any>
+    ) {
+        const ctx = getUserContext(userContext);
+        const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+        const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+            userId,
+            userContext: ctx,
+        });
+
+        const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
+        if (factorIds.includes(factorId)) {
+            return;
+        }
+
+        factorIds.push(factorId);
+
+        const metadataUpdate = {
+            ...metadata.metadata,
+            _supertokens: {
+                ...metadata.metadata._supertokens,
+                defaultRequiredFactorIdsForUser: factorIds,
+            },
+        };
+
+        await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+            userId: userId,
+            metadataUpdate,
+            userContext: ctx,
         });
     }
 }
 
 export let init = Wrapper.init;
 
+export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
+export let isAllowedToSetupFactor = Wrapper.isAllowedToSetupFactor;
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
+export const addToDefaultRequiredFactorsForUser = Wrapper.addToDefaultRequiredFactorsForUser;
 
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

@@ -3,10 +3,14 @@ import Session from "../../session";
 import AccountLinking from "../../accountlinking/recipe";
 
 import { RecipeLevelUser } from "../../accountlinking/types";
-import { listUsersByAccountInfo } from "../../..";
+import { getUser, listUsersByAccountInfo } from "../../..";
 import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { SessionContainerInterface } from "../../session/types";
+import { User } from "../../../types";
+import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -198,6 +202,54 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
+            const userLoggingIn = existingUsers[0];
+
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            let session: SessionContainerInterface | undefined = await Session.getSession(
+                input.options.req,
+                input.options.res,
+                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
+            );
+            let sessionUser: User | undefined;
+            if (session !== undefined) {
+                if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
+                    sessionUser = userLoggingIn;
+                } else {
+                    const user = await getUser(session.getUserId(), input.userContext);
+                    if (user === undefined) {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Session user not found",
+                        });
+                    }
+                    sessionUser = user;
+                }
+            }
+
+            let isAlreadySetup = undefined;
+            if (mfaInstance) {
+                isAlreadySetup = !sessionUser ? false : sessionUser.thirdParty.length > 0;
+                const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                    req: input.options.req,
+                    res: input.options.res,
+                    tenantId: input.tenantId,
+                    factorIdInProgress: "thirdparty",
+                    session,
+                    userLoggingIn,
+                    isAlreadySetup,
+                    signUpInfo: {
+                        email: emailInfo.id,
+                        isVerifiedFactor: emailInfo.isVerified,
+                    },
+                    userContext: input.userContext,
+                });
+
+                if (validateMfaRes.status !== "OK") {
+                    return validateMfaRes;
+                }
+            }
+
             let response = await options.recipeImplementation.signInUp({
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.thirdPartyUserId,
@@ -207,6 +259,9 @@ export default function getAPIInterface(): APIInterface {
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                 tenantId,
+
+                // we do not want to attempt accountlinking when there is an active session and MFA is turned on
+                shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                 userContext,
             });
 
@@ -257,28 +312,59 @@ export default function getAPIInterface(): APIInterface {
 
                 // we do account linking only during sign in here cause during sign up,
                 // the recipe function above does account linking for us.
-                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    tenantId,
-                    user: response.user,
-                    userContext,
-                });
+                // we do not want to attempt accountlinking when there is an active session and MFA is turned on
+                if (session === undefined || mfaInstance === undefined) {
+                    response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                        tenantId,
+                        user: response.user,
+                        userContext,
+                    });
+                }
             }
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
+            if (mfaInstance === undefined) {
+                // No MFA, create session as usual
+                let session = await Session.createNewOrKeepExistingSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    loginMethod.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+                return {
+                    status: "OK",
+                    createdNewRecipeUser: response.createdNewRecipeUser,
+                    user: response.user,
+                    session,
+                    oAuthTokens: oAuthTokensToUse,
+                    rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                };
+            }
+
+            const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
+                req: options.req,
+                res: options.res,
                 tenantId,
-                loginMethod.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+                factorIdInProgress: "thirdparty",
+                isAlreadySetup,
+                justCompletedFactorUserInfo: {
+                    user: response.user,
+                    createdNewUser: response.createdNewRecipeUser,
+                    recipeUserId: loginMethod.recipeUserId,
+                },
+                userContext: input.userContext,
+            });
+            if (sessionRes.status !== "OK") {
+                return sessionRes;
+            }
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
-                user: response.user,
-                session,
+                user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
+                session: sessionRes.session,
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
             };

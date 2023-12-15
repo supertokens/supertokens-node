@@ -7,7 +7,7 @@ import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
 import { getUser } from "../../../";
-import { User } from "../../../types";
+import { User, UserContext } from "../../../types";
 import RecipeUserId from "../../../recipeUserId";
 
 import { TypeNormalisedInput } from "../../emailpassword/types";
@@ -30,10 +30,9 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
-            | { status: "OK"; user: User; recipeUserId: RecipeUserId; isValidFirstFactorForTenant: boolean | undefined }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             return await originalEmailPasswordImplementation.createNewRecipeUser.bind(DerivedEP(this))(input);
         },
@@ -41,10 +40,10 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             tenantId: string;
-            userContext: any;
+            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            userContext: UserContext;
         }): Promise<
-            | { status: "OK"; user: User; recipeUserId: RecipeUserId; isValidFirstFactorForTenant: boolean | undefined }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
@@ -53,11 +52,8 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             tenantId: string;
-            userContext: any;
-        }): Promise<
-            | { status: "OK"; user: User; recipeUserId: RecipeUserId; isValidFirstFactorForTenant: boolean | undefined }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
-        > {
+            userContext: UserContext;
+        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
 
@@ -72,7 +68,8 @@ export default function getRecipeInterface(
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            userContext: any;
+            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -84,7 +81,6 @@ export default function getRecipeInterface(
                       fromIdTokenPayload?: { [key: string]: any };
                       fromUserInfoAPI?: { [key: string]: any };
                   };
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -100,14 +96,13 @@ export default function getRecipeInterface(
             email: string;
             isVerified: boolean;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
                   createdNewRecipeUser: boolean;
                   user: User;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -125,7 +120,7 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             clientType?: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<TypeProvider | undefined> {
             return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },
@@ -134,12 +129,16 @@ export default function getRecipeInterface(
             userId: string;
             email: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return originalEmailPasswordImplementation.createResetPasswordToken.bind(DerivedEP(this))(input);
         },
 
-        consumePasswordResetToken: async function (input: { token: string; tenantId: string; userContext: any }) {
+        consumePasswordResetToken: async function (input: {
+            token: string;
+            tenantId: string;
+            userContext: UserContext;
+        }) {
             return originalEmailPasswordImplementation.consumePasswordResetToken.bind(DerivedEP(this))(input);
         },
 
@@ -149,7 +148,7 @@ export default function getRecipeInterface(
                 recipeUserId: RecipeUserId;
                 email?: string;
                 password?: string;
-                userContext: any;
+                userContext: UserContext;
                 applyPasswordPolicy?: boolean;
                 tenantIdForPasswordPolicy: string;
             }

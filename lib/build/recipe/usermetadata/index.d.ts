@@ -6,7 +6,7 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static getUserMetadata(
         userId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         metadata: any;
@@ -14,14 +14,14 @@ export default class Wrapper {
     static updateUserMetadata(
         userId: string,
         metadataUpdate: JSONObject,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
     static clearUserMetadata(
         userId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
     }>;

@@ -534,9 +534,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let tpUser2 = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email@test.com", true, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "custom-ev",
+                    "user",
+                    "email@test.com",
+                    true,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
             assert(tpUser2.isPrimaryUser === false);
 
@@ -943,9 +951,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
             let tpUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email2@test.com", true, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "custom-no-ev",
+                    "user",
+                    "email2@test.com",
+                    true,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
@@ -1144,9 +1160,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
             let tpUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email@test.com", true, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "custom-no-ev",
+                    "user",
+                    "email@test.com",
+                    true,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
             assert(tpUser.isPrimaryUser === false);
 

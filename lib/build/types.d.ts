@@ -5,10 +5,16 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
+declare const __brand: unique symbol;
+declare type Brand<B> = {
+    [__brand]: B;
+};
+declare type Branded<T, B> = T & Brand<B>;
+export declare type UserContext = Branded<Record<string, any>, "UserContext">;
 export declare type AppInfo = {
     appName: string;
     websiteDomain?: string;
-    origin?: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
+    origin?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -16,10 +22,10 @@ export declare type AppInfo = {
 };
 export declare type NormalisedAppinfo = {
     appName: string;
-    getOrigin: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
+    getOrigin: (input: { request: BaseRequest | undefined; userContext: UserContext }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;
+    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;
@@ -38,7 +44,7 @@ export declare type TypeInput = {
     isInServerlessEnv?: boolean;
     debug?: boolean;
 };
-export declare type NetworkInterceptor = (request: HttpRequest, userContext: any) => HttpRequest;
+export declare type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;
 export interface HttpRequest {
     url: string;
     method: HTTPMethod;
@@ -86,3 +92,4 @@ export declare type User = {
     })[];
     toJson: () => any;
 };
+export {};

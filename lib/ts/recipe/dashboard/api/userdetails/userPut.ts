@@ -14,6 +14,7 @@ import UserMetadata from "../../../usermetadata";
 import { FORM_FIELD_EMAIL_ID } from "../../../emailpassword/constants";
 import { defaultValidateEmail, defaultValidatePhoneNumber } from "../../../passwordless/utils";
 import RecipeUserId from "../../../../recipeUserId";
+import { UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -47,7 +48,7 @@ const updateEmailForRecipeId = async (
     recipeUserId: RecipeUserId,
     email: string,
     tenantId: string,
-    userContext: any
+    userContext: UserContext
 ): Promise<
     | {
           status: "OK";
@@ -261,7 +262,7 @@ const updatePhoneForRecipeId = async (
     recipeUserId: RecipeUserId,
     phone: string,
     tenantId: string,
-    userContext: any
+    userContext: UserContext
 ): Promise<
     | {
           status: "OK";
@@ -394,7 +395,7 @@ export const userPut = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;
@@ -453,7 +454,7 @@ export const userPut = async (
         });
     }
 
-    let userResponse = await getUserForRecipeId(new RecipeUserId(recipeUserId), recipeId);
+    let userResponse = await getUserForRecipeId(new RecipeUserId(recipeUserId), recipeId, userContext);
 
     if (userResponse.user === undefined || userResponse.recipe === undefined) {
         throw new Error("Should never come here");

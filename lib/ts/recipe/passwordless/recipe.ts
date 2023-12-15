@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -39,6 +39,11 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import { User } from "../../user";
+import { isFactorSetupForUser } from "./utils";
+import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -108,6 +113,62 @@ export default class Recipe extends RecipeModule {
                     emailDelivery: undefined,
                     smsDelivery: undefined,
                 });
+
+                let otpOrLink: string[] = [];
+                let emailOrPhone: string[] = [];
+
+                if (Recipe.instance.config.flowType === "MAGIC_LINK") {
+                    otpOrLink.push("link");
+                } else if (Recipe.instance.config.flowType === "USER_INPUT_CODE") {
+                    otpOrLink.push("otp");
+                } else {
+                    otpOrLink.push("otp");
+                    otpOrLink.push("link");
+                }
+
+                if (Recipe.instance.config.contactMethod === "EMAIL") {
+                    emailOrPhone.push("email");
+                } else if (Recipe.instance.config.contactMethod === "PHONE") {
+                    emailOrPhone.push("phone");
+                } else {
+                    emailOrPhone.push("email");
+                    emailOrPhone.push("phone");
+                }
+
+                const allFactors: string[] = [];
+                for (const ol of otpOrLink) {
+                    for (const ep of emailOrPhone) {
+                        allFactors.push(`${ol}-${ep}`);
+                    }
+                }
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+                    if (mfaInstance !== undefined) {
+                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
+                            if (tenantConfig.passwordless.enabled === false) {
+                                return {
+                                    factorIds: [],
+                                    firstFactorIds: [],
+                                };
+                            }
+                            return {
+                                factorIds: allFactors,
+                                firstFactorIds: allFactors,
+                            };
+                        });
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
+                            async (user: User, tenantConfig: TenantConfig) => {
+                                if (tenantConfig.passwordless.enabled === false) {
+                                    return [];
+                                }
+                                return allFactors.filter((id) => isFactorSetupForUser(user, id));
+                            }
+                        );
+                    }
+                });
+
                 return Recipe.instance;
             } else {
                 throw new Error("Passwordless recipe has already been initialised. Please check your code for bugs.");
@@ -166,7 +227,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         const options = {
             config: this.config,
@@ -212,13 +273,13 @@ export default class Recipe extends RecipeModule {
                   email: string;
                   tenantId: string;
                   request: BaseRequest | undefined;
-                  userContext?: any;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
                   request: BaseRequest | undefined;
-                  userContext?: any;
+                  userContext: UserContext;
               }
     ): Promise<string> => {
         let userInputCode =
@@ -270,12 +331,14 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: any;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: any;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  userContext: UserContext;
               }
     ) => {
         let codeInfo = await this.recipeInterfaceImpl.createCode(
@@ -298,6 +361,7 @@ export default class Recipe extends RecipeModule {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
                       tenantId: input.tenantId,
+                      shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
                       userContext: input.userContext,
                   }
                 : {
@@ -305,6 +369,7 @@ export default class Recipe extends RecipeModule {
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
                       tenantId: input.tenantId,
+                      shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
                       userContext: input.userContext,
                   }
         );
@@ -315,7 +380,6 @@ export default class Recipe extends RecipeModule {
                 createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser,
                 recipeUserId: consumeCodeResponse.recipeUserId,
                 user: consumeCodeResponse.user,
-                isValidFirstFactorForTenant: consumeCodeResponse.isValidFirstFactorForTenant,
             };
         } else {
             throw new Error("Failed to create user. Please retry");

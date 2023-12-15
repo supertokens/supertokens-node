@@ -16,6 +16,7 @@ import { TypeInput } from "../../../../../ingredients/smsdelivery/services/twili
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
 import PasswordlessTwilioService from "../../../../passwordless/smsdelivery/services/twilio/index";
+import { UserContext } from "../../../../../types";
 
 export default class TwilioService implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
     private passwordlessTwilioService: PasswordlessTwilioService;
@@ -24,7 +25,7 @@ export default class TwilioService implements SmsDeliveryInterface<TypeThirdPart
         this.passwordlessTwilioService = new PasswordlessTwilioService(config);
     }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: UserContext }) => {
         await this.passwordlessTwilioService.sendSms(input);
     };
 }

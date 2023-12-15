@@ -16,14 +16,13 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import Session from "../../session";
+import { UserContext } from "../../../types";
 
 export default async function mfaInfo(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
-    let result;
-
     if (apiImplementation.mfaInfoGET === undefined) {
         return false;
     }
@@ -40,14 +39,7 @@ export default async function mfaInfo(
         session,
         userContext,
     });
-    if (response.status === "OK") {
-        // if there is a new session, it will be
-        // automatically added to the response by the createNewSession function call
-        // inside the verifyEmailPOST function.
-        result = { status: "OK" };
-    } else {
-        result = response;
-    }
-    send200Response(options.res, result);
+
+    send200Response(options.res, response);
     return true;
 }

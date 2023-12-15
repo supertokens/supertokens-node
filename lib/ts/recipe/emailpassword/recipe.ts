@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, APIHandled, HTTPMethod, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, APIHandled, HTTPMethod, RecipeListFunction, UserContext } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -39,6 +39,10 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import { User } from "../../user";
+import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -101,6 +105,39 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
                     emailDelivery: undefined,
                 });
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+                    if (mfaInstance !== undefined) {
+                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
+                            if (tenantConfig.passwordless.enabled === false) {
+                                return {
+                                    factorIds: [],
+                                    firstFactorIds: [],
+                                };
+                            }
+                            return {
+                                factorIds: ["emailpassword"],
+                                firstFactorIds: ["emailpassword"],
+                            };
+                        });
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
+                            async (user: User, tenantConfig: TenantConfig) => {
+                                if (tenantConfig.emailPassword.enabled === false) {
+                                    return [];
+                                }
+
+                                for (const loginMethod of user.loginMethods) {
+                                    if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                        return ["emailpassword"];
+                                    }
+                                }
+                                return [];
+                            }
+                        );
+                    }
+                });
+
                 return Recipe.instance;
             } else {
                 throw new Error("Emailpassword recipe has already been initialised. Please check your code for bugs.");
@@ -159,7 +196,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _path: NormalisedURLPath,
         _method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             config: this.config,

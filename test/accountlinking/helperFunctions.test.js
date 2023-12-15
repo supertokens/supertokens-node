@@ -123,7 +123,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let user = (
-                await EmailPassword.signUp("public", "test@example.com", "password123", {
+                await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
                     doNotLink: true,
                 })
             ).user;
@@ -300,9 +300,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc",
+                    "test@example.com",
+                    false,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
 
             assert(primaryUser.isPrimaryUser === false);
@@ -310,7 +318,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
 
             let user = (
-                await EmailPassword.signUp("public", "test@example.com", "password123", {
+                await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
                     doNotLink: true,
                 })
             ).user;
@@ -1492,7 +1500,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
             assert(user.isPrimaryUser);
 
-            let response = await EmailPassword.signUp("public", "test2@example.com", "password123", {
+            let response = await EmailPassword.signUp("public", "test2@example.com", "password123", undefined, {
                 doNotLink: true,
             });
             assert(response.user.isPrimaryUser === false);
@@ -2689,9 +2697,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await EmailVerification.verifyEmailUsingToken("public", token.token);
 
             let tpUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "abcd", "abcd", "test@example.com", true, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "abcd",
+                    "abcd",
+                    "test@example.com",
+                    true,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
             assert(tpUser.isPrimaryUser === false);
             assert(tpUser.loginMethods[0].verified);

@@ -24,6 +24,7 @@ import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { JWKCacheMaxAgeInMs } from "./constants";
+import { UserContext } from "../../types";
 
 /**
  * @description call this to "login" a user.
@@ -33,9 +34,9 @@ export async function createNewSession(
     tenantId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
-    accessTokenPayload: any,
-    sessionDataInDatabase: any,
-    userContext: any
+    accessTokenPayload: any = {},
+    sessionDataInDatabase: any = {},
+    userContext: UserContext
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionDataInDatabase =
@@ -86,7 +87,7 @@ export async function getSession(
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     alwaysCheckCore: boolean,
-    userContext: any
+    userContext: UserContext
 ): Promise<{
     session: {
         handle: string;
@@ -283,7 +284,7 @@ export async function getSession(
 export async function getSessionInformation(
     helpers: Helpers,
     sessionHandle: string,
-    userContext: any
+    userContext: UserContext
 ): Promise<SessionInformation | undefined> {
     let apiVersion = await helpers.querier.getAPIVersion();
 
@@ -324,7 +325,7 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     disableAntiCsrf: boolean,
-    userContext: any
+    userContext: UserContext
 ): Promise<CreateOrRefreshAPIResponse> {
     let requestBody: {
         refreshToken: string;
@@ -403,7 +404,7 @@ export async function revokeAllSessionsForUser(
     revokeSessionsForLinkedAccounts: boolean,
     tenantId: string | undefined,
     revokeAcrossAllTenants: boolean | undefined,
-    userContext: any
+    userContext: UserContext
 ): Promise<string[]> {
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
@@ -429,7 +430,7 @@ export async function getAllSessionHandlesForUser(
     fetchSessionsForAllLinkedAccounts: boolean,
     tenantId: string | undefined,
     fetchAcrossAllTenants: boolean | undefined,
-    userContext: any
+    userContext: UserContext
 ): Promise<string[]> {
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
@@ -450,7 +451,11 @@ export async function getAllSessionHandlesForUser(
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export async function revokeSession(helpers: Helpers, sessionHandle: string, userContext: any): Promise<boolean> {
+export async function revokeSession(
+    helpers: Helpers,
+    sessionHandle: string,
+    userContext: UserContext
+): Promise<boolean> {
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath("/recipe/session/remove"),
         {
@@ -468,7 +473,7 @@ export async function revokeSession(helpers: Helpers, sessionHandle: string, use
 export async function revokeMultipleSessions(
     helpers: Helpers,
     sessionHandles: string[],
-    userContext: any
+    userContext: UserContext
 ): Promise<string[]> {
     let response = await helpers.querier.sendPostRequest(
         new NormalisedURLPath(`/recipe/session/remove`),
@@ -487,7 +492,7 @@ export async function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
     let response = await helpers.querier.sendPutRequest(
@@ -508,7 +513,7 @@ export async function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
     newAccessTokenPayload: any,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;

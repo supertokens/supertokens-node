@@ -13,4 +13,4 @@
  * under the License.
  */
 
-export const GET_MFA_INFO = "/mfa-info";
+export const GET_MFA_INFO = "/mfa/info";

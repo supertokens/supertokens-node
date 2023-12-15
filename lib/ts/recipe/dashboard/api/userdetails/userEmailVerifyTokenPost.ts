@@ -2,6 +2,7 @@ import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
 import { convertToRecipeUserId, getUser } from "../../../..";
+import { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
@@ -11,7 +12,7 @@ export const userEmailVerifyTokenPost = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;

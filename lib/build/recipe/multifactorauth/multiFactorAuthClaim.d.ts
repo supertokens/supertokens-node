@@ -4,24 +4,27 @@ import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
+import { UserContext } from "../../types";
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
  * */
 export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
-    validators: {
-        passesMFARequirements: (requirements?: MFARequirementList) => SessionClaimValidator;
-    };
     constructor(key?: string);
-    buildNextArray(_completedClaims: MFAClaimValue["c"], _requirements: MFARequirementList): never[];
-    fetchValue: (
-        _userId: string,
-        _recipeUserId: RecipeUserId,
-        _tenantId: string | undefined,
-        _userContext: any
-    ) => {
-        c: {};
-        n: never[];
+    validators: {
+        hasCompletedDefaultFactors: (id?: string) => SessionClaimValidator;
+        hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
+    buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
+    fetchValue: (
+        userId: string,
+        _recipeUserId: RecipeUserId,
+        tenantId: string | undefined,
+        currentPayload: JSONObject | undefined,
+        userContext: UserContext
+    ) => Promise<{
+        c: Record<string, number>;
+        n: string[];
+    }>;
     addToPayload_internal: (
         payload: JSONObject,
         value: MFAClaimValue

@@ -1,6 +1,6 @@
 import * as psl from "psl";
 
-import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
+import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
@@ -70,7 +70,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         );
     }
 
-    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         let origin = appInfo.origin;
 
         if (origin === undefined) {
@@ -90,7 +90,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
 
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         return getTopLevelDomainForSameSiteResolution(websiteDomainFunction(input).getAsStringDangerous());
     };
 
@@ -266,13 +266,17 @@ export function humaniseMilliseconds(ms: number): string {
     }
 }
 
-export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
-    return setRequestInUserContextIfNotDefined({}, request);
+export function makeDefaultUserContextFromAPI(request: BaseRequest): UserContext {
+    return setRequestInUserContextIfNotDefined({} as UserContext, request);
 }
 
-export function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest) {
+export function getUserContext(inputUserContext?: Record<string, any>): UserContext {
+    return (inputUserContext ?? {}) as UserContext;
+}
+
+export function setRequestInUserContextIfNotDefined(userContext: UserContext | undefined, request: BaseRequest) {
     if (userContext === undefined) {
-        userContext = {};
+        userContext = {} as UserContext;
     }
 
     if (userContext._default === undefined) {

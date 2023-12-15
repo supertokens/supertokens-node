@@ -919,7 +919,7 @@ Multitenancy.init({
     },
 });
 
-import { HTTPMethod, TypeInput } from "../../types";
+import { HTTPMethod, TypeInput, UserContext } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
@@ -1173,6 +1173,7 @@ Supertokens.init({
                                         {
                                             email: input.email,
                                         },
+                                        undefined,
                                         input.userContext
                                     )
                                 ).length === 0
@@ -1353,7 +1354,13 @@ Session.init({
                     input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
-                        ...(await boolClaim.build(input.userId, input.recipeUserId, input.tenantId, input.userContext)),
+                        ...(await boolClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
                         lastTokenRefresh: Date.now(),
                     };
                     return originalImplementation.createNewSession(input);
@@ -1371,7 +1378,7 @@ Session.validateClaimsForSessionHandle("asdf", (globalClaimValidators) => [
 Session.validateClaimsForSessionHandle(
     "asdf",
     (globalClaimValidators, info) => [...globalClaimValidators, boolClaim.validators.isTrue(info.expiry)],
-    { test: 1 }
+    { test: 1, ...({} as UserContext) }
 );
 
 EmailVerification.sendEmail({
@@ -1404,7 +1411,7 @@ ThirdPartyEmailPassword.sendEmail({
         id: "",
         recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 ThirdPartyPasswordless.sendEmail({
@@ -1422,7 +1429,7 @@ ThirdPartyPasswordless.sendEmail({
     email: "",
     type: "PASSWORDLESS_LOGIN",
     preAuthSessionId: "",
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 ThirdPartyPasswordless.sendSms({
@@ -1440,7 +1447,7 @@ ThirdPartyPasswordless.sendSms({
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
     preAuthSessionId: "",
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 Supertokens.init({
@@ -1563,14 +1570,13 @@ Passwordless.init({
                             let user = await Passwordless.signInUp({
                                 tenantId: "test",
                                 phoneNumber: "TEST_PHONE_NUMBER",
-                                userContext: { calledManually: true },
+                                userContext: { calledManually: true, ...({} as UserContext) },
                             });
                             return {
                                 status: "OK",
                                 createdNewRecipeUser: user.createdNewRecipeUser,
                                 recipeUserId: user.recipeUserId,
                                 user: user.user,
-                                isValidFirstFactorForTenant: user.isValidFirstFactorForTenant,
                             };
                         }
                     }
@@ -1871,8 +1877,9 @@ Supertokens.init({
 });
 
 // const noMFARequired
-MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([]);
-MultiFactorAuth.MultiFactorAuthClaim.validators.passesMFARequirements([
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedDefaultFactors();
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([]);
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([
     { oneOf: ["emailpassword", "thirdparty"] }, // We can include the first factors here... that feels a bit weird but it works.
     { oneOf: ["totp", "otp-phone"] }, // We require either totp or otp-phone
 ]);
@@ -1933,7 +1940,21 @@ Supertokens.init({
                 }),
             },
         }),
-        Session.init(),
+        Session.init({
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+                    createNewSession: async (input) => {
+                        const resp = await oI.createNewSession(input);
+                        if (input.userContext.shouldCompleteTOTP) {
+                            // this is a stand-in for the "remember me" check
+                            await MultiFactorAuth.markFactorAsCompleteInSession(resp, "totp", input.userContext);
+                        }
+                        return resp;
+                    },
+                }),
+            },
+        }),
     ],
 });
 

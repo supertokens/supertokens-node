@@ -19,6 +19,7 @@ import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
 import BackwardCompatibilityEmailService from "./emaildelivery/services/backwardCompatibility";
 import BackwardCompatibilitySmsService from "./smsdelivery/services/backwardCompatibility";
+import { User } from "../../user";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -173,4 +174,27 @@ export function defaultValidateEmail(value: string): Promise<string | undefined>
     }
 
     return undefined;
+}
+
+export function isFactorSetupForUser(user: User, factorId: string) {
+    for (const loginMethod of user.loginMethods) {
+        if (loginMethod.email !== undefined) {
+            if (factorId == "otp-email") {
+                return true;
+            }
+            if (factorId == "link-email") {
+                return true;
+            }
+        }
+
+        if (loginMethod.phoneNumber !== undefined) {
+            if (factorId == "otp-phone") {
+                return true;
+            }
+            if (factorId == "link-phone") {
+                return true;
+            }
+        }
+    }
+    return false;
 }

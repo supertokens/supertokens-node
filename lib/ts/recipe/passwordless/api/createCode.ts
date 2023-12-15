@@ -17,12 +17,13 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
+import { UserContext } from "../../../types";
 
 export default async function createCode(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.createCodePOST === undefined) {
         return false;

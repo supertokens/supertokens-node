@@ -1,6 +1,6 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -50,7 +50,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError: (
         err: STErrorEmailPassword | STErrorThirdParty,

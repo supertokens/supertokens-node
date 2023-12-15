@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForRecipeUserIdFunc } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -163,7 +163,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             config: this.config,
@@ -233,7 +233,7 @@ export default class Recipe extends RecipeModule {
         };
     };
 
-    getPrimaryUserIdForRecipeUser = async (recipeUserId: RecipeUserId, userContext: any): Promise<string> => {
+    getPrimaryUserIdForRecipeUser = async (recipeUserId: RecipeUserId, userContext: UserContext): Promise<string> => {
         // We extract this into its own function like this cause we want to make sure that
         // this recipe does not get the email of the user ID from the getUser function.
         // In fact, there is a test "email verification recipe uses getUser function only in getEmailForRecipeUserId"
@@ -260,7 +260,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
         recipeUserIdWhoseEmailGotVerified: RecipeUserId;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<SessionContainerInterface | undefined> => {
         let primaryUserId = await this.getPrimaryUserIdForRecipeUser(
             input.recipeUserIdWhoseEmailGotVerified,

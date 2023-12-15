@@ -274,6 +274,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test@example.com",
                 true,
+                undefined,
                 {
                     doNotLink: true,
                 }
@@ -666,6 +667,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test@example.com",
                 false,
+                undefined,
                 {
                     doNotLink: true,
                 }
@@ -1187,7 +1189,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password123", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
                 doNotLink: true,
             });
             assert(!epUser.user.isPrimaryUser);

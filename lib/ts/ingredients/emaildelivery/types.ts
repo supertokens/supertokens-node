@@ -13,9 +13,10 @@
  * under the License.
  */
 import OverrideableBuilder from "supertokens-js-override";
+import { UserContext } from "../../types";
 
 export type EmailDeliveryInterface<T> = {
-    sendEmail: (input: T & { tenantId: string; userContext: any }) => Promise<void>;
+    sendEmail: (input: T & { tenantId: string; userContext: UserContext }) => Promise<void>;
 };
 
 /**

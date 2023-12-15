@@ -31,7 +31,7 @@ import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { User } from "../../types";
+import { User, UserContext } from "../../types";
 import { logDebugMessage } from "../../logger";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
@@ -69,7 +69,8 @@ export function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser {
 
 export async function getUserForRecipeId(
     recipeUserId: RecipeUserId,
-    recipeId: string
+    recipeId: string,
+    userContext: UserContext
 ): Promise<{
     user: UserWithFirstAndLastName | undefined;
     recipe:
@@ -80,7 +81,7 @@ export async function getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 }> {
-    let userResponse = await _getUserForRecipeId(recipeUserId, recipeId);
+    let userResponse = await _getUserForRecipeId(recipeUserId, recipeId, userContext);
     let user: UserWithFirstAndLastName | undefined = undefined;
     if (userResponse.user !== undefined) {
         user = {
@@ -97,7 +98,8 @@ export async function getUserForRecipeId(
 
 async function _getUserForRecipeId(
     recipeUserId: RecipeUserId,
-    recipeId: string
+    recipeId: string,
+    userContext: UserContext
 ): Promise<{
     user: User | undefined;
     recipe:
@@ -118,7 +120,7 @@ async function _getUserForRecipeId(
 
     const user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
         userId: recipeUserId.getAsString(),
-        userContext: {},
+        userContext,
     });
 
     if (user === undefined) {
@@ -257,7 +259,11 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
     return isRecipeInitialised;
 }
 
-export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
+export async function validateApiKey(input: {
+    req: BaseRequest;
+    config: TypeNormalisedInput;
+    userContext: UserContext;
+}) {
     let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
 
     // We receieve the api key as `Bearer API_KEY`, this retrieves just the key

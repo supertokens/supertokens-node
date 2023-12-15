@@ -9,7 +9,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<TypeProvider | undefined>;
     static manuallyCreateOrUpdateUser(
         tenantId: string,
@@ -17,14 +17,14 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext?: any
+        shouldAttemptAccountLinkingIfAllowed?: boolean,
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: import("../../types").User;
               recipeUserId: import("../..").RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

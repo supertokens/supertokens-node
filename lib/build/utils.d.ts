@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
+import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { User } from "./user";
 import { SessionContainer } from "./recipe/session";
@@ -24,8 +24,12 @@ export declare function doesRequestSupportFDI(req: BaseRequest, version: string)
 export declare function getRidFromHeader(req: BaseRequest): string | undefined;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
 export declare function humaniseMilliseconds(ms: number): string;
-export declare function makeDefaultUserContextFromAPI(request: BaseRequest): any;
-export declare function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest): any;
+export declare function makeDefaultUserContextFromAPI(request: BaseRequest): UserContext;
+export declare function getUserContext(inputUserContext?: Record<string, any>): UserContext;
+export declare function setRequestInUserContextIfNotDefined(
+    userContext: UserContext | undefined,
+    request: BaseRequest
+): UserContext;
 export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function getFromObjectCaseInsensitive<T>(key: string, object: Record<string, T>): T | undefined;
 export declare function postWithFetch(

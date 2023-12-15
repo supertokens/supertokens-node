@@ -23,8 +23,9 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
-import { GeneralErrorResponse, User } from "../../types";
+import { GeneralErrorResponse, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type DeviceType = DeviceTypeOriginal;
 export declare type TypeInput = (
     | {
@@ -51,7 +52,7 @@ export declare type TypeInput = (
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     providers?: ProviderInput[];
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -82,7 +83,7 @@ export declare type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
     providers: ProviderInput[];
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
@@ -115,7 +116,8 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
-        userContext: any;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -133,7 +135,6 @@ export declare type RecipeInterface = {
                       [key: string]: any;
                   };
               };
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -146,14 +147,14 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -168,7 +169,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         clientType?: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
     createCode: (
         input: (
@@ -181,7 +182,7 @@ export declare type RecipeInterface = {
         ) & {
             userInputCode?: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }
     ) => Promise<{
         status: "OK";
@@ -197,7 +198,7 @@ export declare type RecipeInterface = {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -220,13 +221,15 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  userContext: UserContext;
               }
     ) => Promise<
         | {
@@ -234,7 +237,6 @@ export declare type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -249,7 +251,7 @@ export declare type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status:
@@ -268,12 +270,12 @@ export declare type RecipeInterface = {
             | {
                   email: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: UserContext;
               }
     ) => Promise<{
         status: "OK";
@@ -281,25 +283,25 @@ export declare type RecipeInterface = {
     revokeCode: (input: {
         codeId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
     }>;
-    listCodesByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByEmail: (input: { email: string; tenantId: string; userContext: UserContext }) => Promise<DeviceType[]>;
     listCodesByPhoneNumber: (input: {
         phoneNumber: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType[]>;
     listCodesByDeviceId: (input: {
         deviceId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
 };
 export declare type PasswordlessAPIOptions = PasswordlessAPIOptionsOriginal;
@@ -312,7 +314,7 @@ export declare type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -328,7 +330,7 @@ export declare type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   options: ThirdPartyAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -368,6 +370,7 @@ export declare type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
@@ -375,7 +378,7 @@ export declare type APIInterface = {
         | ((input: {
               formPostInfoFromProvider: any;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<void>);
     createCodePOST:
         | undefined
@@ -390,7 +393,7 @@ export declare type APIInterface = {
               ) & {
                   tenantId: string;
                   options: PasswordlessAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               }
           ) => Promise<
               | {
@@ -414,7 +417,7 @@ export declare type APIInterface = {
               } & {
                   tenantId: string;
                   options: PasswordlessAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               }
           ) => Promise<
               | GeneralErrorResponse
@@ -438,7 +441,7 @@ export declare type APIInterface = {
               ) & {
                   tenantId: string;
                   options: PasswordlessAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               }
           ) => Promise<
               | {
@@ -452,7 +455,6 @@ export declare type APIInterface = {
                     failedCodeInputAttemptCount: number;
                     maximumCodeInputAttempts: number;
                 }
-              | GeneralErrorResponse
               | {
                     status: "RESTART_FLOW_ERROR";
                 }
@@ -460,6 +462,8 @@ export declare type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
+              | GeneralErrorResponse
+              | MFAFlowErrors
           >);
     passwordlessUserEmailExistsGET:
         | undefined
@@ -467,7 +471,7 @@ export declare type APIInterface = {
               email: string;
               tenantId: string;
               options: PasswordlessAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -481,7 +485,7 @@ export declare type APIInterface = {
               phoneNumber: string;
               tenantId: string;
               options: PasswordlessAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";

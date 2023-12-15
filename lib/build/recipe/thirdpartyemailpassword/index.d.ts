@@ -12,7 +12,7 @@ export default class Wrapper {
         tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<TypeProvider | undefined>;
     static thirdPartyManuallyCreateOrUpdateUser(
         tenantId: string,
@@ -20,14 +20,14 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        userContext?: any
+        shouldAttemptAccountLinkingIfAllowed?: boolean,
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: import("../../types").User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -42,13 +42,12 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
               user: import("../../types").User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -58,13 +57,12 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
               user: import("../../types").User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
@@ -74,7 +72,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -88,7 +86,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -108,7 +106,7 @@ export default class Wrapper {
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -123,7 +121,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext?: any;
+        userContext?: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
     }): Promise<
@@ -143,7 +141,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -157,13 +155,13 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR";
     }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
-            userContext?: any;
+            userContext?: Record<string, any>;
         }
     ): Promise<void>;
 }

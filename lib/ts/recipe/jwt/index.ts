@@ -13,24 +13,30 @@
  * under the License.
  */
 
+import { getUserContext } from "../../utils";
 import Recipe from "./recipe";
 import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async createJWT(payload: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext?: any) {
+    static async createJWT(
+        payload: any,
+        validitySeconds?: number,
+        useStaticSigningKey?: boolean,
+        userContext?: Record<string, any>
+    ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
             payload,
             validitySeconds,
             useStaticSigningKey,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async getJWKS(userContext?: any) {
+    static async getJWKS(userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWKS({
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 }

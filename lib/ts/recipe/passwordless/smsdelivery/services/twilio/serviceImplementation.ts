@@ -21,6 +21,7 @@ import {
     GetContentResult,
 } from "../../../../../ingredients/smsdelivery/services/twilio";
 import getPasswordlessLoginSmsContent from "./passwordlessLogin";
+import { UserContext } from "../../../../../types";
 
 export function getServiceImplementation(twilioClient: Twilio): ServiceInterface<TypePasswordlessSmsDeliveryInput> {
     return {
@@ -40,7 +41,7 @@ export function getServiceImplementation(twilioClient: Twilio): ServiceInterface
             }
         },
         getContent: async function (
-            input: TypePasswordlessSmsDeliveryInput & { userContext: any }
+            input: TypePasswordlessSmsDeliveryInput & { userContext: UserContext }
         ): Promise<GetContentResult> {
             return getPasswordlessLoginSmsContent(input);
         },

@@ -15,6 +15,7 @@
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
 import PasswordlessSupertokensService from "../../../../passwordless/smsdelivery/services/supertokens";
+import { UserContext } from "../../../../../types";
 
 export default class SupertokensService implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
     private passwordlessSupertokensService: PasswordlessSupertokensService;
@@ -23,7 +24,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypeThir
         this.passwordlessSupertokensService = new PasswordlessSupertokensService(apiKey);
     }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: UserContext }) => {
         await this.passwordlessSupertokensService.sendSms(input);
     };
 }

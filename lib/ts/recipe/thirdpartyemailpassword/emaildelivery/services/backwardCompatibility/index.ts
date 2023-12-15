@@ -13,7 +13,7 @@
  * under the License.
  */
 import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";
-import { NormalisedAppinfo } from "../../../../../types";
+import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import EmailPasswordBackwardCompatibilityService from "../../../../emailpassword/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
@@ -30,7 +30,7 @@ export default class BackwardCompatibilityService
         }
     }
 
-    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: UserContext }) => {
         await this.emailPasswordBackwardCompatibilityService.sendEmail(input);
     };
 }

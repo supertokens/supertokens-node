@@ -1,10 +1,11 @@
 // @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type UserInfo = {
     thirdPartyUserId: string;
     email?: {
@@ -68,7 +69,7 @@ declare type CommonProviderConfig = {
             [key: string]: any;
         };
         clientConfig: ProviderConfigForClientType;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<void>;
     /**
      * This function is responsible for validating the access token received from the third party provider.
@@ -83,19 +84,26 @@ declare type CommonProviderConfig = {
     validateAccessToken?: (input: {
         accessToken: string;
         clientConfig: ProviderConfigForClientType;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<void>;
     requireEmail?: boolean;
-    generateFakeEmail?: (input: { thirdPartyUserId: string; tenantId: string; userContext: any }) => Promise<string>;
+    generateFakeEmail?: (input: {
+        thirdPartyUserId: string;
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<string>;
 };
 export declare type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
 export declare type TypeProvider = {
     id: string;
     config: ProviderConfigForClientType;
-    getConfigForClientType: (input: { clientType?: string; userContext: any }) => Promise<ProviderConfigForClientType>;
+    getConfigForClientType: (input: {
+        clientType?: string;
+        userContext: UserContext;
+    }) => Promise<ProviderConfigForClientType>;
     getAuthorisationRedirectURL: (input: {
         redirectURIOnProviderDashboard: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         urlWithQueryParams: string;
         pkceCodeVerifier?: string;
@@ -106,9 +114,9 @@ export declare type TypeProvider = {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string;
         };
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<any>;
-    getUserInfo: (input: { oAuthTokens: any; userContext: any }) => Promise<UserInfo>;
+    getUserInfo: (input: { oAuthTokens: any; userContext: UserContext }) => Promise<UserInfo>;
 };
 export declare type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];
@@ -148,7 +156,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         tenantId: string;
         clientType?: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
     signInUp(input: {
         thirdPartyId: string;
@@ -167,7 +175,8 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
-        userContext: any;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -185,7 +194,6 @@ export declare type RecipeInterface = {
                       [key: string]: any;
                   };
               };
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -198,14 +206,14 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -235,7 +243,7 @@ export declare type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -251,7 +259,7 @@ export declare type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   options: APIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -291,6 +299,7 @@ export declare type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
@@ -300,7 +309,7 @@ export declare type APIInterface = {
                   [key: string]: any;
               };
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<void>);
 };
 export {};

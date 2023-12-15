@@ -14,7 +14,7 @@
  */
 import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import { NormalisedAppinfo } from "../../../../../types";
+import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { postWithFetch } from "../../../../../utils";
 
 async function createAndSendEmailUsingSupertokensService(input: {
@@ -72,7 +72,7 @@ export default class BackwardCompatibilityService
         this.appInfo = appInfo;
     }
 
-    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: UserContext }) => {
         await createAndSendEmailUsingSupertokensService({
             appInfo: this.appInfo,
             email: input.email,

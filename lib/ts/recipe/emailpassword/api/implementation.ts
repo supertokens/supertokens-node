@@ -2,13 +2,15 @@ import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
-import { GeneralErrorResponse, User } from "../../../types";
+import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { MFAFlowErrors } from "../../multifactorauth/types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -19,7 +21,7 @@ export default function getAPIImplementation(): APIInterface {
             email: string;
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -62,7 +64,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -346,7 +348,7 @@ export default function getAPIImplementation(): APIInterface {
             token: string;
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -567,7 +569,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -581,6 +583,7 @@ export default function getAPIImplementation(): APIInterface {
                   status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
               }
+            | MFAFlowErrors
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -620,26 +623,82 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            // the above sign in recipe function does not do account linking - so we do it here.
-            response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            let session = await Session.getSession(options.req, options.res, {
+                sessionRequired: false,
+                overrideGlobalClaimValidators: () => [],
+            });
+
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            // we do not want to attempt accountlinking when there is an active session and MFA is turned on
+            if (session === undefined || mfaInstance === undefined) {
+                // the above sign in recipe function does not do account linking - so we do it here.
+                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    tenantId,
+                    user: response.user,
+                    userContext,
+                });
+            }
+
+            if (mfaInstance === undefined) {
+                // No MFA stuff here, so we just create and return the session
+                let session = await Session.createNewOrKeepExistingSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+
+                return {
+                    status: "OK",
+                    session,
+                    user: response.user,
+                };
+            }
+
+            const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                req: options.req,
+                res: options.res,
                 tenantId,
-                user: response.user,
+                factorIdInProgress: "emailpassword",
+                session,
+                userLoggingIn: response.user,
+                isAlreadySetup: true,
                 userContext,
             });
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
+            if (mfaValidationRes.status === "FACTOR_SETUP_NOT_ALLOWED_ERROR") {
+                throw new Error("Should never come here");
+            }
+
+            if (mfaValidationRes.status !== "OK") {
+                return mfaValidationRes;
+            }
+
+            const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
+                req: options.req,
+                res: options.res,
                 tenantId,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+                factorIdInProgress: "emailpassword",
+                justCompletedFactorUserInfo: {
+                    user: response.user,
+                    createdNewUser: false,
+                    recipeUserId: emailPasswordRecipeUser.recipeUserId,
+                },
+                userContext,
+            });
+
+            if (sessionRes.status !== "OK") {
+                return sessionRes;
+            }
+
             return {
                 status: "OK",
-                session,
-                user: response.user,
+                session: sessionRes.session,
+                user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
             };
         },
 
@@ -655,7 +714,7 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -669,6 +728,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
+            | MFAFlowErrors
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -718,11 +778,44 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance !== undefined) {
+                let session = await Session.getSession(options.req, options.res, {
+                    sessionRequired: false,
+                    overrideGlobalClaimValidators: () => [],
+                });
+
+                const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                    req: options.req,
+                    res: options.res,
+                    tenantId,
+                    factorIdInProgress: "emailpassword",
+                    session,
+                    userLoggingIn: undefined,
+                    isAlreadySetup: false, // since this is a sign up
+                    signUpInfo: {
+                        email,
+                        isVerifiedFactor: false,
+                    },
+                    userContext,
+                });
+                if (mfaValidationRes.status !== "OK") {
+                    return mfaValidationRes;
+                }
+            }
+
+            let session = Session.getSession(options.req, options.res, {
+                sessionRequired: false,
+                overrideGlobalClaimValidators: () => [],
+            });
+
             // this function also does account linking
             let response = await options.recipeImplementation.signUp({
                 tenantId,
                 email,
                 password,
+                // we do not want to attempt accountlinking when there is an active session and MFA is turned on
+                shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
@@ -737,18 +830,46 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Race condition error - please call this API again");
             }
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
+            if (mfaInstance === undefined) {
+                // No MFA stuff here, so we just create and return the session
+                let session = await Session.createNewOrKeepExistingSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+
+                return {
+                    status: "OK",
+                    session,
+                    user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
+                };
+            }
+
+            const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
+                req: options.req,
+                res: options.res,
                 tenantId,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+                factorIdInProgress: "emailpassword",
+                isAlreadySetup: false,
+                justCompletedFactorUserInfo: {
+                    user: response.user,
+                    createdNewUser: true,
+                    recipeUserId: emailPasswordRecipeUser.recipeUserId,
+                },
+                userContext,
+            });
+
+            if (sessionRes.status !== "OK") {
+                return sessionRes;
+            }
+
             return {
                 status: "OK",
-                session,
+                session: sessionRes.session,
                 user: response.user,
             };
         },

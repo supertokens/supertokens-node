@@ -16,7 +16,7 @@ import STError from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import JWTRecipe from "../jwt/recipe";
@@ -96,7 +96,7 @@ export default class OpenIdRecipe extends RecipeModule {
         response: BaseResponse,
         path: normalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let apiOptions: APIOptions = {
             recipeImplementation: this.recipeImplementation,
@@ -112,11 +112,16 @@ export default class OpenIdRecipe extends RecipeModule {
             return this.jwtRecipe.handleAPIRequest(id, tenantId, req, response, path, method, userContext);
         }
     };
-    handleError = async (error: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {
+    handleError = async (
+        error: STError,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: UserContext
+    ): Promise<void> => {
         if (error.fromRecipe === OpenIdRecipe.RECIPE_ID) {
             throw error;
         } else {
-            return await this.jwtRecipe.handleError(error, request, response);
+            return await this.jwtRecipe.handleError(error, request, response, userContext);
         }
     };
     getAllCORSHeaders = (): string[] => {

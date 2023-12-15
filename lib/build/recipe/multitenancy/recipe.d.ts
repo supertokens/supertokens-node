@@ -3,7 +3,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { ProviderInput } from "../thirdparty/types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 export default class Recipe extends RecipeModule {
@@ -14,7 +14,7 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     staticThirdPartyProviders: ProviderInput[];
-    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static getInstance(): Recipe | undefined;
@@ -28,7 +28,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];

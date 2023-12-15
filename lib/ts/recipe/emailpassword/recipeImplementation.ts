@@ -6,7 +6,7 @@ import { getUser } from "../..";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { User as UserType } from "../../types";
+import { UserContext, User as UserType } from "../../types";
 import { LoginMethod, User } from "../../user";
 
 export default function getRecipeInterface(
@@ -20,19 +20,20 @@ export default function getRecipeInterface(
                 email,
                 password,
                 tenantId,
+                shouldAttemptAccountLinkingIfAllowed,
                 userContext,
             }: {
                 email: string;
                 password: string;
                 tenantId: string;
-                userContext: any;
+                shouldAttemptAccountLinkingIfAllowed?: boolean;
+                userContext: UserContext;
             }
         ): Promise<
             | {
                   status: "OK";
                   user: UserType;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -46,17 +47,20 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                tenantId,
-                user: response.user,
-                userContext,
-            });
+            let updatedUser = response.user;
+
+            if (shouldAttemptAccountLinkingIfAllowed ?? true) {
+                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    tenantId,
+                    user: response.user,
+                    userContext,
+                });
+            }
 
             return {
                 status: "OK",
                 user: updatedUser,
                 recipeUserId: response.recipeUserId,
-                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
             };
         },
 
@@ -64,13 +68,12 @@ export default function getRecipeInterface(
             tenantId: string;
             email: string;
             password: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
                   user: User;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -89,7 +92,6 @@ export default function getRecipeInterface(
                     status: "OK",
                     user: new User(resp.user),
                     recipeUserId: new RecipeUserId(resp.recipeUserId),
-                    isValidFirstFactorForTenant: resp.isValidFirstFactorForTenant,
                 };
             }
             return resp;
@@ -107,13 +109,12 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
                   user: UserType;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | { status: "WRONG_CREDENTIALS_ERROR" }
         > {
@@ -169,7 +170,7 @@ export default function getRecipeInterface(
             userId: string;
             email: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
@@ -191,7 +192,7 @@ export default function getRecipeInterface(
         }: {
             token: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -218,7 +219,7 @@ export default function getRecipeInterface(
             password?: string;
             applyPasswordPolicy?: boolean;
             tenantIdForPasswordPolicy: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";

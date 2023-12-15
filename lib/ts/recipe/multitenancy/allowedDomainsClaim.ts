@@ -8,7 +8,7 @@ export class AllowedDomainsClaimClass extends PrimitiveArrayClaim<string> {
     constructor() {
         super({
             key: "st-t-dmns",
-            async fetchValue(_userId, _recipeUserId, tenantId, userContext) {
+            async fetchValue(_userId, _recipeUserId, tenantId, _currentPayload, userContext) {
                 const recipe = Recipe.getInstanceOrThrowError();
 
                 if (recipe.getAllowedDomainsForTenantId === undefined) {

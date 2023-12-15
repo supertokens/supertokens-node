@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, MFAClaimValue } from "./types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
@@ -25,5 +25,13 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     return {
         firstFactors: config?.firstFactors,
         override,
+    };
+}
+
+export function checkFactorRequirement(req: string, completedFactors: MFAClaimValue["c"]) {
+    return {
+        id: req,
+        isValid: completedFactors[req] !== undefined,
+        message: "Not completed",
     };
 }

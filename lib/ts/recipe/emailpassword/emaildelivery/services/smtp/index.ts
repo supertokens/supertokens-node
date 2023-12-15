@@ -18,6 +18,7 @@ import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery
 import { createTransport } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 import { getServiceImplementation } from "./serviceImplementation";
+import { UserContext } from "../../../../../types";
 
 export default class SMTPService implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;
@@ -39,7 +40,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailPass
         this.serviceImpl = builder.build();
     }
 
-    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: UserContext }) => {
         let content = await this.serviceImpl.getContent(input);
         await this.serviceImpl.sendRawEmail({
             ...content,

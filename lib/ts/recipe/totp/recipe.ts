@@ -19,7 +19,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import {
@@ -43,7 +43,10 @@ import verifyDeviceAPI from "./api/verifyDevice";
 import verifyTOTPAPI from "./api/verifyTOTP";
 import listDevicesAPI from "./api/listDevices";
 import removeDeviceAPI from "./api/removeDevice";
-import { getUser } from "../..";
+import { User, getUser } from "../..";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -90,6 +93,43 @@ export default class Recipe extends RecipeModule {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
+                    if (mfaInstance !== undefined) {
+                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
+                            if (tenantConfig.totp.enabled === false) {
+                                return {
+                                    factorIds: [],
+                                    firstFactorIds: [],
+                                };
+                            }
+                            return {
+                                factorIds: ["totp"],
+                                firstFactorIds: [],
+                            };
+                        });
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
+                            async (user: User, tenantConfig: TenantConfig, userContext: UserContext) => {
+                                if (tenantConfig.totp.enabled === false) {
+                                    return [];
+                                }
+                                const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices(
+                                    {
+                                        userId: user.id,
+                                        userContext,
+                                    }
+                                );
+                                for (const device of deviceRes.devices) {
+                                    if (device.verified) {
+                                        return ["totp"];
+                                    }
+                                }
+                                return [];
+                            }
+                        );
+                    }
+                });
 
                 return Recipe.instance;
             } else {
@@ -149,7 +189,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             recipeImplementation: this.recipeInterfaceImpl,

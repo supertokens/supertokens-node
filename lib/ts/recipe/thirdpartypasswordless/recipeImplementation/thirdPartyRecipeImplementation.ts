@@ -1,6 +1,6 @@
 import { RecipeInterface, TypeProvider } from "../../thirdparty/types";
 import { RecipeInterface as ThirdPartyPasswordlessRecipeInterface } from "../types";
-import { User } from "../../../types";
+import { User, UserContext } from "../../../types";
 import RecipeUserId from "../../../recipeUserId";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordlessRecipeInterface): RecipeInterface {
@@ -16,7 +16,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            userContext: any;
+            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -28,7 +29,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                       fromIdTokenPayload?: { [key: string]: any };
                       fromUserInfoAPI?: { [key: string]: any };
                   };
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -44,14 +44,14 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             email: string;
             isVerified: boolean;
             tenantId: string;
-            userContext: any;
+            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
                   createdNewRecipeUser: boolean;
                   user: User;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -74,7 +74,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                 createdNewRecipeUser: result.createdNewRecipeUser,
                 recipeUserId: result.recipeUserId,
                 user: result.user,
-                isValidFirstFactorForTenant: result.isValidFirstFactorForTenant,
             };
         },
 
@@ -82,7 +81,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             thirdPartyId: string;
             clientType?: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<TypeProvider | undefined> {
             return await recipeInterface.thirdPartyGetProvider(input);
         },

@@ -22,6 +22,7 @@ import {
 } from "../../../../../../ingredients/emaildelivery/services/smtp";
 import { getServiceImplementation as getPasswordlessServiceImplementation } from "../../../../../passwordless/emaildelivery/services/smtp/serviceImplementation";
 import DerivedPwdless from "./passwordlessServiceImplementation";
+import { UserContext } from "../../../../../../types";
 
 export function getServiceImplementation(
     transporter: Transporter,
@@ -41,7 +42,7 @@ export function getServiceImplementation(
             });
         },
         getContent: async function (
-            input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }
+            input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: UserContext }
         ): Promise<GetContentResult> {
             return await passwordlessServiceImpl.getContent.bind(DerivedPwdless(this))(input);
         },

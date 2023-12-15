@@ -89,6 +89,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -100,7 +101,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -122,7 +124,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
         } catch (err) {
             if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
@@ -147,7 +150,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken,
-            false
+            false,
+            {}
         );
         // Calling refresh doesn't refresh the key cache
         assert.strictEqual(requestMock.callCount, 1);
@@ -163,7 +167,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
             true,
-            false
+            false,
+            {}
         );
 
         // This should have refreshed the keys because of the cache miss
@@ -224,6 +229,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -232,6 +238,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             "public",
             new RecipeUserId(""),
             false,
+            {},
             {},
             {}
         );
@@ -244,6 +251,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -253,7 +261,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(newSession.accessToken.token),
                 newSession.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -308,6 +317,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -319,6 +329,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -328,7 +339,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -347,7 +359,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     parseJWTWithoutSignatureVerification(response2.accessToken.token),
                     response2.antiCsrfToken,
                     true,
-                    false
+                    false,
+                    {}
                 );
                 // Old core versions should throw here because the signing key was updated
             } catch (err) {
@@ -391,7 +404,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             "public",
             new RecipeUserId(""),
             false,
-
+            {},
             {},
             {}
         );
@@ -404,6 +417,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -413,7 +427,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -480,6 +495,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -489,7 +505,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -517,7 +534,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -533,6 +551,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -544,7 +563,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session2.accessToken.token),
                 session2.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -567,7 +587,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session2.accessToken.token),
                 session2.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -587,7 +608,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     parseJWTWithoutSignatureVerification(session.accessToken.token),
                     session.antiCsrfToken,
                     true,
-                    false
+                    false,
+                    {}
                 );
                 fail();
             } catch (err) {
@@ -639,6 +661,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             new RecipeUserId(""),
             false,
             {},
+            {},
             {}
         );
 
@@ -648,7 +671,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -668,7 +692,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                false
+                false,
+                {}
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(

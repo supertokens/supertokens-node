@@ -26,8 +26,9 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 export type TypeInput = (
@@ -58,7 +59,7 @@ export type TypeInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
 
     override?: {
         functions?: (
@@ -94,7 +95,7 @@ export type TypeNormalisedInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
 
     getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
@@ -116,7 +117,7 @@ export type RecipeInterface = {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; tenantId: string; userContext: any }
+        ) & { userInputCode?: string; tenantId: string; userContext: UserContext }
     ) => Promise<{
         status: "OK";
         preAuthSessionId: string;
@@ -131,7 +132,7 @@ export type RecipeInterface = {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -152,13 +153,15 @@ export type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  userContext: UserContext;
               }
     ) => Promise<
         | {
@@ -166,7 +169,6 @@ export type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -180,7 +182,7 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status:
@@ -200,12 +202,12 @@ export type RecipeInterface = {
             | {
                   email: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: UserContext;
               }
     ) => Promise<{
         status: "OK";
@@ -214,29 +216,29 @@ export type RecipeInterface = {
     revokeCode: (input: {
         codeId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
     }>;
 
-    listCodesByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByEmail: (input: { email: string; tenantId: string; userContext: UserContext }) => Promise<DeviceType[]>;
 
     listCodesByPhoneNumber: (input: {
         phoneNumber: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType[]>;
 
     listCodesByDeviceId: (input: {
         deviceId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
 
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
 };
 
@@ -272,7 +274,7 @@ export type APIInterface = {
         input: ({ email: string } | { phoneNumber: string }) & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }
     ) => Promise<
         | {
@@ -292,7 +294,7 @@ export type APIInterface = {
         input: { deviceId: string; preAuthSessionId: string } & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }
     ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 
@@ -310,7 +312,7 @@ export type APIInterface = {
         ) & {
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }
     ) => Promise<
         | {
@@ -324,19 +326,20 @@ export type APIInterface = {
               failedCodeInputAttemptCount: number;
               maximumCodeInputAttempts: number;
           }
-        | GeneralErrorResponse
         | { status: "RESTART_FLOW_ERROR" }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | GeneralErrorResponse
+        | MFAFlowErrors
     >;
 
     emailExistsGET?: (input: {
         email: string;
         tenantId: string;
         options: APIOptions;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -349,7 +352,7 @@ export type APIInterface = {
         phoneNumber: string;
         tenantId: string;
         options: APIOptions;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";

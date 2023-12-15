@@ -32,8 +32,9 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse, User as GlobalUser, User } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
@@ -76,7 +77,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         clientType?: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
 
     thirdPartySignInUp(input: {
@@ -90,7 +91,8 @@ export type RecipeInterface = {
             fromUserInfoAPI?: { [key: string]: any };
         };
         tenantId: string;
-        userContext: any;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -102,7 +104,6 @@ export type RecipeInterface = {
                   fromIdTokenPayload?: { [key: string]: any };
                   fromUserInfoAPI?: { [key: string]: any };
               };
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -116,14 +117,14 @@ export type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -139,13 +140,12 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
     >;
@@ -153,13 +153,12 @@ export type RecipeInterface = {
     createNewEmailPasswordRecipeUser(input: {
         email: string;
         password: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
     >;
@@ -168,13 +167,12 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | { status: "WRONG_CREDENTIALS_ERROR" }
     >;
@@ -183,13 +181,13 @@ export type RecipeInterface = {
         userId: string;
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -203,7 +201,7 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -229,7 +227,7 @@ export type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -245,7 +243,7 @@ export type APIInterface = {
               email: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -263,7 +261,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -285,7 +283,7 @@ export type APIInterface = {
               token: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -306,7 +304,7 @@ export type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   options: ThirdPartyAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -336,6 +334,7 @@ export type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -348,7 +347,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -362,6 +361,7 @@ export type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -374,7 +374,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -388,6 +388,7 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -396,7 +397,7 @@ export type APIInterface = {
         | ((input: {
               formPostInfoFromProvider: any;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<void>);
 };
 

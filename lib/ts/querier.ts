@@ -18,8 +18,9 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { RATE_LIMIT_STATUS_CODE } from "./constants";
-import { NetworkInterceptor } from "./types";
 import { logDebugMessage } from "./logger";
+import { UserContext } from "./types";
+import { NetworkInterceptor } from "./types";
 
 export class Querier {
     private static initCalled = false;
@@ -118,7 +119,9 @@ export class Querier {
     }
 
     // path should start with "/"
-    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: any): Promise<T> => {
+    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext): Promise<T> => {
+        this.invalidateCoreCallCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "POST",
@@ -168,7 +171,14 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendDeleteRequest = async (path: NormalisedURLPath, body: any, params: any, userContext: any): Promise<any> => {
+    sendDeleteRequest = async (
+        path: NormalisedURLPath,
+        body: any,
+        params: any | undefined,
+        userContext: UserContext
+    ): Promise<any> => {
+        this.invalidateCoreCallCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
@@ -227,8 +237,20 @@ export class Querier {
     sendGetRequest = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: any
+        userContext: UserContext
     ): Promise<any> => {
+        const sortedKeys = Object.keys(params).sort();
+        let uniqueKey = path.getAsStringDangerous();
+
+        for (const key of sortedKeys) {
+            const value = params[key];
+            uniqueKey += `;${key}=${value}`;
+        }
+
+        if (uniqueKey in (userContext._default?.coreCallCache ?? {})) {
+            return userContext._default.coreCallCache[uniqueKey];
+        }
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "GET",
@@ -275,13 +297,21 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {
+                ...userContext._default?.coreCallCache,
+                [uniqueKey]: respBody,
+            },
+        };
         return respBody;
     };
 
     sendGetRequestWithResponseHeaders = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: any
+        userContext: UserContext
     ): Promise<{ body: any; headers: Headers }> => {
         return await this.sendRequestHelper(
             path,
@@ -332,7 +362,9 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: any): Promise<any> => {
+    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
+        this.invalidateCoreCallCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "PUT",
@@ -377,6 +409,13 @@ export class Querier {
             this.__hosts?.length || 0
         );
         return respBody;
+    };
+
+    invalidateCoreCallCache = (userContext: UserContext) => {
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {},
+        };
     };
 
     public getAllCoreUrlsForPath(path: string) {
@@ -427,6 +466,7 @@ export class Querier {
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
+            logDebugMessage(`core-call: ${method} ${url}`);
             let response = await requestFunc(url);
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
