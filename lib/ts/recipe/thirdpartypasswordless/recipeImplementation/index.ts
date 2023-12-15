@@ -85,6 +85,7 @@ export default function getRecipeInterface(
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
+            shouldAttemptAccountLinkingIfAllowed?: boolean;
             userContext: UserContext;
         }): Promise<
             | {
@@ -97,7 +98,6 @@ export default function getRecipeInterface(
                       fromIdTokenPayload?: { [key: string]: any };
                       fromUserInfoAPI?: { [key: string]: any };
                   };
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -120,7 +120,6 @@ export default function getRecipeInterface(
                   createdNewRecipeUser: boolean;
                   user: User;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

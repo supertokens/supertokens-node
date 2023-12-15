@@ -211,11 +211,13 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
     ) {

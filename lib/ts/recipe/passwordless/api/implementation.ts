@@ -120,12 +120,14 @@ export default function getAPIImplementation(): APIInterface {
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
                           tenantId: input.tenantId,
+                          shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                           userContext: input.userContext,
                       }
                     : {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
                           tenantId: input.tenantId,
+                          shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                           userContext: input.userContext,
                       }
             );
@@ -168,11 +170,14 @@ export default function getAPIImplementation(): APIInterface {
 
                 // we do account linking only during sign in here cause during sign up,
                 // the recipe function above does account linking for us.
-                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    tenantId: input.tenantId,
-                    user: response.user,
-                    userContext: input.userContext,
-                });
+                // we do not want to attempt accountlinking when there is an active session and MFA is turned on
+                if (session === undefined || mfaInstance === undefined) {
+                    response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                        tenantId: input.tenantId,
+                        user: response.user,
+                        userContext: input.userContext,
+                    });
+                }
             }
 
             if (mfaInstance === undefined) {

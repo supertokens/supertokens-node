@@ -145,7 +145,6 @@ export type RecipeInterface = {
                   fromIdTokenPayload?: { [key: string]: any };
                   fromUserInfoAPI?: { [key: string]: any };
               };
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -166,7 +165,6 @@ export type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -231,12 +229,14 @@ export type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext: UserContext;
               }
     ) => Promise<
@@ -245,7 +245,6 @@ export type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";

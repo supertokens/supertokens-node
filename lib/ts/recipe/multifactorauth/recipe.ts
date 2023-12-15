@@ -212,6 +212,8 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface;
         userLoggingIn?: User;
         isAlreadySetup?: boolean;
+        email?: string;
+        phoneNumber?: string;
         userContext: UserContext;
     }): Promise<{ status: "OK" } | MFAFlowErrors> => {
         const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);

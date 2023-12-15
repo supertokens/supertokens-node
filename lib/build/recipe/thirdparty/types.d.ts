@@ -175,6 +175,7 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -193,7 +194,6 @@ export declare type RecipeInterface = {
                       [key: string]: any;
                   };
               };
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -206,6 +206,7 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -213,7 +214,6 @@ export declare type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

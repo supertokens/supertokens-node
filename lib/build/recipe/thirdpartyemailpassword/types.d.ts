@@ -96,7 +96,6 @@ export declare type RecipeInterface = {
                       [key: string]: any;
                   };
               };
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -116,7 +115,6 @@ export declare type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -137,7 +135,6 @@ export declare type RecipeInterface = {
               status: "OK";
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -152,7 +149,6 @@ export declare type RecipeInterface = {
               status: "OK";
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -168,7 +164,6 @@ export declare type RecipeInterface = {
               status: "OK";
               user: GlobalUser;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";

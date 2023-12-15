@@ -65,6 +65,8 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface | undefined;
         userLoggingIn?: User | undefined;
         isAlreadySetup?: boolean | undefined;
+        email?: string | undefined;
+        phoneNumber?: string | undefined;
         userContext: UserContext;
     }) => Promise<
         | {

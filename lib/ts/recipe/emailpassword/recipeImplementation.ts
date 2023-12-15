@@ -20,11 +20,13 @@ export default function getRecipeInterface(
                 email,
                 password,
                 tenantId,
+                shouldAttemptAccountLinkingIfAllowed,
                 userContext,
             }: {
                 email: string;
                 password: string;
                 tenantId: string;
+                shouldAttemptAccountLinkingIfAllowed?: boolean;
                 userContext: UserContext;
             }
         ): Promise<
@@ -32,7 +34,6 @@ export default function getRecipeInterface(
                   status: "OK";
                   user: UserType;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -46,17 +47,20 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                tenantId,
-                user: response.user,
-                userContext,
-            });
+            let updatedUser = response.user;
+
+            if (shouldAttemptAccountLinkingIfAllowed ?? true) {
+                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    tenantId,
+                    user: response.user,
+                    userContext,
+                });
+            }
 
             return {
                 status: "OK",
                 user: updatedUser,
                 recipeUserId: response.recipeUserId,
-                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
             };
         },
 
@@ -70,7 +74,6 @@ export default function getRecipeInterface(
                   status: "OK";
                   user: User;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -89,7 +92,6 @@ export default function getRecipeInterface(
                     status: "OK",
                     user: new User(resp.user),
                     recipeUserId: new RecipeUserId(resp.recipeUserId),
-                    isValidFirstFactorForTenant: resp.isValidFirstFactorForTenant,
                 };
             }
             return resp;
@@ -113,7 +115,6 @@ export default function getRecipeInterface(
                   status: "OK";
                   user: UserType;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | { status: "WRONG_CREDENTIALS_ERROR" }
         > {

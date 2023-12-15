@@ -19,6 +19,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email,
                 isVerified,
                 tenantId,
+                shouldAttemptAccountLinkingIfAllowed,
                 userContext,
             }: {
                 thirdPartyId: string;
@@ -26,6 +27,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email: string;
                 isVerified: boolean;
                 tenantId: string;
+                shouldAttemptAccountLinkingIfAllowed?: boolean;
                 userContext: UserContext;
             }
         ): Promise<
@@ -34,7 +36,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                   createdNewRecipeUser: boolean;
                   user: UserType;
                   recipeUserId: RecipeUserId;
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -62,11 +63,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             response.user = new User(response.user);
             response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
-            await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                user: response.user,
-                recipeUserId: response.recipeUserId,
-                userContext,
-            });
+            if (shouldAttemptAccountLinkingIfAllowed ?? true) {
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    user: response.user,
+                    recipeUserId: response.recipeUserId,
+                    userContext,
+                });
+            }
 
             // we do this so that we get the updated user (in case the above
             // function updated the verification status) and can return that
@@ -87,7 +90,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     createdNewRecipeUser: response.createdNewUser,
                     user: response.user,
                     recipeUserId: response.recipeUserId,
-                    isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
                 };
             }
 
@@ -102,7 +104,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 createdNewRecipeUser: response.createdNewUser,
                 user: updatedUser,
                 recipeUserId: response.recipeUserId,
-                isValidFirstFactorForTenant: response.isValidFirstFactorForTenant,
             };
         },
 
@@ -117,6 +118,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext,
                 oAuthTokens,
                 rawUserInfoFromProvider,
+                shouldAttemptAccountLinkingIfAllowed,
             }: {
                 thirdPartyId: string;
                 thirdPartyUserId: string;
@@ -129,6 +131,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     fromIdTokenPayload?: { [key: string]: any };
                     fromUserInfoAPI?: { [key: string]: any };
                 };
+                shouldAttemptAccountLinkingIfAllowed?: boolean;
             }
         ): Promise<
             | {
@@ -141,7 +144,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                       fromIdTokenPayload?: { [key: string]: any };
                       fromUserInfoAPI?: { [key: string]: any };
                   };
-                  isValidFirstFactorForTenant: boolean | undefined;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -154,6 +156,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email,
                 tenantId,
                 isVerified,
+                shouldAttemptAccountLinkingIfAllowed,
                 userContext,
             });
 

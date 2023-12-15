@@ -623,14 +623,22 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            // the above sign in recipe function does not do account linking - so we do it here.
-            response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                tenantId,
-                user: response.user,
-                userContext,
+            let session = await Session.getSession(options.req, options.res, {
+                sessionRequired: false,
+                overrideGlobalClaimValidators: () => [],
             });
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            // we do not want to attempt accountlinking when there is an active session and MFA is turned on
+            if (session === undefined || mfaInstance === undefined) {
+                // the above sign in recipe function does not do account linking - so we do it here.
+                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    tenantId,
+                    user: response.user,
+                    userContext,
+                });
+            }
 
             if (mfaInstance === undefined) {
                 // No MFA stuff here, so we just create and return the session
@@ -650,12 +658,6 @@ export default function getAPIImplementation(): APIInterface {
                     user: response.user,
                 };
             }
-
-            let session: SessionContainerInterface | undefined;
-            session = await Session.getSession(options.req, options.res, {
-                sessionRequired: false,
-                overrideGlobalClaimValidators: () => [],
-            });
 
             const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
                 req: options.req,
@@ -798,11 +800,17 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
+            let session = Session.getSession(options.req, options.res, {
+                sessionRequired: false,
+                overrideGlobalClaimValidators: () => [],
+            });
+
             // this function also does account linking
             let response = await options.recipeImplementation.signUp({
                 tenantId,
                 email,
                 password,
+                shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {

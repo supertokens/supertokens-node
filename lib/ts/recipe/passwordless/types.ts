@@ -153,12 +153,14 @@ export type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext: UserContext;
               }
     ) => Promise<
@@ -167,7 +169,6 @@ export type RecipeInterface = {
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
-              isValidFirstFactorForTenant: boolean | undefined;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
