@@ -63,13 +63,11 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             response.user = new User(response.user);
             response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
-            if (shouldAttemptAccountLinkingIfAllowed ?? true) {
-                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    user: response.user,
-                    recipeUserId: response.recipeUserId,
-                    userContext,
-                });
-            }
+            await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                user: response.user,
+                recipeUserId: response.recipeUserId,
+                userContext,
+            });
 
             // we do this so that we get the updated user (in case the above
             // function updated the verification status) and can return that
@@ -93,11 +91,15 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 };
             }
 
-            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                tenantId,
-                user: response.user,
-                userContext,
-            });
+            let updatedUser = response.user;
+
+            if (shouldAttemptAccountLinkingIfAllowed ?? true) {
+                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    tenantId,
+                    user: response.user,
+                    userContext,
+                });
+            }
 
             return {
                 status: "OK",
