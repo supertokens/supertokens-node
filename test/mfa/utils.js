@@ -112,7 +112,6 @@ module.exports.epSignIn = async function (app, email, password, accessToken) {
                         },
                     ],
                 })
-                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);

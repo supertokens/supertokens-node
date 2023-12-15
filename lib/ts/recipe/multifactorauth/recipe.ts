@@ -246,7 +246,9 @@ export default class Recipe extends RecipeModule {
                 // this can happen when you got into login screen with an existing session and tried to log in with a different credentials
                 // or a case while doing secondary factor for phone otp but the user created a different account with the same phone number
                 return {
-                    status: "OK",
+                    status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                    message:
+                        "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
                 };
             }
             sessionUser = userLoggingIn;
@@ -484,20 +486,10 @@ export default class Recipe extends RecipeModule {
                     // Not a new user we should check if the user is linked to the session user
                     const loggedInUserLinkedToSessionUser = sessionUser.id === justCompletedFactorUserInfo.user.id;
                     if (!loggedInUserLinkedToSessionUser) {
-                        // we may keep or replace the session as per the flag overwriteSessionDuringSignIn in session recipe
-                        session = await Session.createNewOrKeepExistingSession(
-                            req,
-                            res,
-                            tenantId,
-                            justCompletedFactorUserInfo.recipeUserId,
-                            {},
-                            {},
-                            userContext
-                        );
-
                         return {
-                            status: "OK",
-                            session: session,
+                            status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                            message:
+                                "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
                         };
                     }
                 }

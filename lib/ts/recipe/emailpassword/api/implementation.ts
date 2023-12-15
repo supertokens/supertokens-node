@@ -670,10 +670,6 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            if (mfaValidationRes.status === "FACTOR_SETUP_NOT_ALLOWED_ERROR") {
-                throw new Error("Should never come here");
-            }
-
             if (mfaValidationRes.status !== "OK") {
                 return mfaValidationRes;
             }
