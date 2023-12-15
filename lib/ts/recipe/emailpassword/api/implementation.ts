@@ -631,7 +631,7 @@ export default function getAPIImplementation(): APIInterface {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
             // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-            if (session === undefined || mfaInstance === undefined) {
+            if (session === undefined) {
                 // the above sign in recipe function does not do account linking - so we do it here.
                 response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId,
@@ -738,15 +738,23 @@ export default function getAPIImplementation(): APIInterface {
             // and if the user goes through the forgot password flow, it will create
             // an account there and it will work fine cause there the email is also verified.
 
-            let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                newUser: {
-                    recipeId: "emailpassword",
-                    email,
-                },
-                isVerified: false,
-                tenantId,
-                userContext,
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            let session = await Session.getSession(options.req, options.res, {
+                sessionRequired: false,
+                overrideGlobalClaimValidators: () => [],
             });
+
+            let isSignUpAllowed =
+                (session === undefined || mfaInstance === undefined) &&
+                (await AccountLinking.getInstance().isSignUpAllowed({
+                    newUser: {
+                        recipeId: "emailpassword",
+                        email,
+                    },
+                    isVerified: false,
+                    tenantId,
+                    userContext,
+                }));
 
             if (!isSignUpAllowed) {
                 const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
@@ -774,13 +782,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
-                let session = await Session.getSession(options.req, options.res, {
-                    sessionRequired: false,
-                    overrideGlobalClaimValidators: () => [],
-                });
-
                 const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
                     req: options.req,
                     res: options.res,
@@ -800,18 +802,13 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            let session = Session.getSession(options.req, options.res, {
-                sessionRequired: false,
-                overrideGlobalClaimValidators: () => [],
-            });
-
             // this function also does account linking
             let response = await options.recipeImplementation.signUp({
                 tenantId,
                 email,
                 password,
                 // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
+                shouldAttemptAccountLinkingIfAllowed: session === undefined,
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {

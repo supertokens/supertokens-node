@@ -71,7 +71,14 @@ export default function getAPIInterface(): APIInterface {
                 userContext
             );
 
-            if (existingUsers.length === 0) {
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            let session: SessionContainerInterface | undefined = await Session.getSession(
+                input.options.req,
+                input.options.res,
+                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
+            );
+
+            if (existingUsers.length === 0 && (session === undefined || mfaInstance === undefined)) {
                 let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "thirdparty",
@@ -115,102 +122,97 @@ export default function getAPIInterface(): APIInterface {
                 }
 
                 let recipeUserId: RecipeUserId | undefined = undefined;
-                existingUsers[0].loginMethods.forEach((lM) => {
-                    if (
-                        lM.hasSameThirdPartyInfoAs({
-                            id: provider.id,
-                            userId: userInfo.thirdPartyUserId,
-                        })
-                    ) {
-                        recipeUserId = lM.recipeUserId;
+                if (existingUsers.length !== 0) {
+                    existingUsers[0].loginMethods.forEach((lM) => {
+                        if (
+                            lM.hasSameThirdPartyInfoAs({
+                                id: provider.id,
+                                userId: userInfo.thirdPartyUserId,
+                            })
+                        ) {
+                            recipeUserId = lM.recipeUserId;
+                        }
+                    });
+
+                    if (!emailInfo.isVerified && EmailVerificationRecipe.getInstance() !== undefined) {
+                        emailInfo.isVerified = await EmailVerification.isEmailVerified(
+                            recipeUserId!,
+                            emailInfo.id,
+                            userContext
+                        );
                     }
-                });
 
-                if (!emailInfo.isVerified && EmailVerificationRecipe.getInstance() !== undefined) {
-                    emailInfo.isVerified = await EmailVerification.isEmailVerified(
-                        recipeUserId!,
-                        emailInfo.id,
-                        userContext
-                    );
-                }
+                    /**
+                     * In this API, during only a sign in, we check for isEmailChangeAllowed first, then
+                     * change the email by calling the recipe function, then check if is sign in allowed.
+                     * This may result in a few states where email change is allowed, but still, sign in
+                     * is not allowed:
+                     *
+                     * Various outcomes of isSignInAllowed vs isEmailChangeAllowed
+                     * isSignInAllowed result:
+                     * - is primary user -> TRUE
+                     * - is recipe user
+                     *      - other recipe user exists
+                     *          - no -> TRUE
+                     *          - yes
+                     *              - email verified -> TRUE
+                     *              - email unverified -> FALSE
+                     *      - other primary user exists
+                     *          - no -> TRUE
+                     *          - yes
+                     *              - email verification status
+                     *                  - this && primary -> TRUE
+                     *                  - !this && !primary -> FALSE
+                     *                  - this && !primary -> FALSE
+                     *                  - !this && primary -> FALSE
+                     *
+                     * isEmailChangeAllowed result:
+                     * - is primary user -> TRUE
+                     * - is recipe user
+                     *      - other recipe user exists
+                     *          - no -> TRUE
+                     *          - yes
+                     *              - email verified -> TRUE
+                     *              - email unverified -> TRUE
+                     *      - other primary user exists
+                     *          - no -> TRUE
+                     *          - yes
+                     *              - email verification status
+                     *                  - this && primary -> TRUE
+                     *                  - !this && !primary -> FALSE
+                     *                  - this && !primary -> TRUE
+                     *                  - !this && primary -> FALSE
+                     *
+                     * Based on the above, isEmailChangeAllowed can return true, but isSignInAllowed will return false
+                     * in the following situations:
+                     * - If a recipe user is signing in with a new email, other recipe users with the same email exist,
+                     * and one of them is unverfied. In this case, the email change will happen in the social login
+                     * recipe, but the user will not be able to login anyway.
+                     *
+                     * - If the recipe user is signing in with a new email, there exists a primary user with the same
+                     * email, but this new email is verified for the recipe user already, but the primary user's email
+                     * is not verified.
+                     */
 
-                /**
-                 * In this API, during only a sign in, we check for isEmailChangeAllowed first, then
-                 * change the email by calling the recipe function, then check if is sign in allowed.
-                 * This may result in a few states where email change is allowed, but still, sign in
-                 * is not allowed:
-                 *
-                 * Various outcomes of isSignInAllowed vs isEmailChangeAllowed
-                 * isSignInAllowed result:
-                 * - is primary user -> TRUE
-                 * - is recipe user
-                 *      - other recipe user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verified -> TRUE
-                 *              - email unverified -> FALSE
-                 *      - other primary user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verification status
-                 *                  - this && primary -> TRUE
-                 *                  - !this && !primary -> FALSE
-                 *                  - this && !primary -> FALSE
-                 *                  - !this && primary -> FALSE
-                 *
-                 * isEmailChangeAllowed result:
-                 * - is primary user -> TRUE
-                 * - is recipe user
-                 *      - other recipe user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verified -> TRUE
-                 *              - email unverified -> TRUE
-                 *      - other primary user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verification status
-                 *                  - this && primary -> TRUE
-                 *                  - !this && !primary -> FALSE
-                 *                  - this && !primary -> TRUE
-                 *                  - !this && primary -> FALSE
-                 *
-                 * Based on the above, isEmailChangeAllowed can return true, but isSignInAllowed will return false
-                 * in the following situations:
-                 * - If a recipe user is signing in with a new email, other recipe users with the same email exist,
-                 * and one of them is unverfied. In this case, the email change will happen in the social login
-                 * recipe, but the user will not be able to login anyway.
-                 *
-                 * - If the recipe user is signing in with a new email, there exists a primary user with the same
-                 * email, but this new email is verified for the recipe user already, but the primary user's email
-                 * is not verified.
-                 */
+                    let isEmailChangeAllowed = await AccountLinking.getInstance().isEmailChangeAllowed({
+                        user: existingUsers[0],
+                        isVerified: emailInfo.isVerified,
+                        newEmail: emailInfo.id,
+                        userContext,
+                    });
 
-                let isEmailChangeAllowed = await AccountLinking.getInstance().isEmailChangeAllowed({
-                    user: existingUsers[0],
-                    isVerified: emailInfo.isVerified,
-                    newEmail: emailInfo.id,
-                    userContext,
-                });
-
-                if (!isEmailChangeAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
-                    };
+                    if (!isEmailChangeAllowed) {
+                        return {
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
+                        };
+                    }
                 }
             }
 
-            const userLoggingIn = existingUsers[0];
+            const userLoggingIn = existingUsers.length > 0 ? existingUsers[0] : undefined;
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
-
-            let session: SessionContainerInterface | undefined = await Session.getSession(
-                input.options.req,
-                input.options.res,
-                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
-            );
             let sessionUser: User | undefined;
             if (session !== undefined) {
                 if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
@@ -229,7 +231,12 @@ export default function getAPIInterface(): APIInterface {
 
             let isAlreadySetup = undefined;
             if (mfaInstance) {
-                isAlreadySetup = !sessionUser ? false : sessionUser.thirdParty.length > 0;
+                isAlreadySetup = !sessionUser
+                    ? false
+                    : sessionUser.thirdParty.length > 0 &&
+                      sessionUser.thirdParty.some(
+                          (tp) => tp.id === provider.id && tp.userId === userInfo.thirdPartyUserId
+                      );
                 const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
                     req: input.options.req,
                     res: input.options.res,
@@ -261,7 +268,7 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
 
                 // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
+                shouldAttemptAccountLinkingIfAllowed: session === undefined,
                 userContext,
             });
 
@@ -313,7 +320,7 @@ export default function getAPIInterface(): APIInterface {
                 // we do account linking only during sign in here cause during sign up,
                 // the recipe function above does account linking for us.
                 // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                if (session === undefined || mfaInstance === undefined) {
+                if (session === undefined) {
                     response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                         tenantId,
                         user: response.user,

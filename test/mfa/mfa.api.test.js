@@ -236,7 +236,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
     });
 
-    it("test that existing user sign in does not result in factor setup", async function () {
+    it("test that existing user sign in results in factor setup not allowed error", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
@@ -278,13 +278,13 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         let accessToken = cookies.accessTokenFromAny;
 
         res = await epSignIn(app, "test2@example.com", "password", accessToken);
-        assert.equal("OK", res.body.status); // older session should have been retained
+        assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
 
         cookies = extractInfoFromResponse(res);
         assert.equal(undefined, cookies.accessTokenFromAny);
     });
 
-    it("test that a different primary user login retains old session", async function () {
+    it("test that a different primary user login throws factor setup not allowed error", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
@@ -341,7 +341,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.deepEqual(["emailpassword", "otp-email", "thirdparty", "totp"], res.body.factors.isAllowedToSetup);
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
-        assert.equal("OK", res.body.status);
+        assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
         cookies = extractInfoFromResponse(res);
         assert.equal(undefined, cookies.accessTokenFromAny);
     });

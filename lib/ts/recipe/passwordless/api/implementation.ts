@@ -41,26 +41,35 @@ export default function getAPIImplementation(): APIInterface {
                 )
             );
 
-            if (existingUsers.length === 0) {
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: {
-                        recipeId: "passwordless",
-                        email: deviceInfo.email,
-                        phoneNumber: deviceInfo.phoneNumber,
-                    },
-                    isVerified: true,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            let session: SessionContainerInterface | undefined = await Session.getSession(
+                input.options.req,
+                input.options.res,
+                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
+            );
 
-                if (!isSignUpAllowed) {
-                    // On the frontend, this should show a UI of asking the user
-                    // to login using a different method.
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                    };
+            if (existingUsers.length === 0) {
+                if (session === undefined || mfaInstance === undefined) {
+                    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                        newUser: {
+                            recipeId: "passwordless",
+                            email: deviceInfo.email,
+                            phoneNumber: deviceInfo.phoneNumber,
+                        },
+                        isVerified: true,
+                        tenantId: input.tenantId,
+                        userContext: input.userContext,
+                    });
+
+                    if (!isSignUpAllowed) {
+                        // On the frontend, this should show a UI of asking the user
+                        // to login using a different method.
+                        return {
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                        };
+                    }
                 }
             } else if (existingUsers.length > 1) {
                 throw new Error(
@@ -69,13 +78,6 @@ export default function getAPIImplementation(): APIInterface {
             }
             const userLoggingIn = existingUsers[0];
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
-
-            let session: SessionContainerInterface | undefined = await Session.getSession(
-                input.options.req,
-                input.options.res,
-                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
-            );
             let sessionUser: User | undefined;
             if (session !== undefined) {
                 if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
@@ -129,7 +131,7 @@ export default function getAPIImplementation(): APIInterface {
                           userInputCode: input.userInputCode,
                           tenantId: input.tenantId,
                           // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                          shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
+                          shouldAttemptAccountLinkingIfAllowed: session === undefined,
                           userContext: input.userContext,
                       }
                     : {
@@ -137,7 +139,7 @@ export default function getAPIImplementation(): APIInterface {
                           linkCode: input.linkCode,
                           tenantId: input.tenantId,
                           // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                          shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
+                          shouldAttemptAccountLinkingIfAllowed: session === undefined,
                           userContext: input.userContext,
                       }
             );
@@ -181,7 +183,7 @@ export default function getAPIImplementation(): APIInterface {
                 // we do account linking only during sign in here cause during sign up,
                 // the recipe function above does account linking for us.
                 // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                if (session === undefined || mfaInstance === undefined) {
+                if (session === undefined) {
                     response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                         tenantId: input.tenantId,
                         user: response.user,
@@ -243,6 +245,14 @@ export default function getAPIImplementation(): APIInterface {
             if ("phoneNumber" in input) {
                 accountInfo.email = input.phoneNumber;
             }
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            let session: SessionContainerInterface | undefined = await Session.getSession(
+                input.options.req,
+                input.options.res,
+                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
+            );
+
             let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
             existingUsers = existingUsers.filter((u) =>
                 u.loginMethods.some(
@@ -253,15 +263,17 @@ export default function getAPIImplementation(): APIInterface {
             );
 
             if (existingUsers.length === 0) {
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: {
-                        recipeId: "passwordless",
-                        ...accountInfo,
-                    },
-                    isVerified: true,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
+                let isSignUpAllowed =
+                    (session === undefined || mfaInstance === undefined) &&
+                    (await AccountLinking.getInstance().isSignUpAllowed({
+                        newUser: {
+                            recipeId: "passwordless",
+                            ...accountInfo,
+                        },
+                        isVerified: true,
+                        tenantId: input.tenantId,
+                        userContext: input.userContext,
+                    }));
 
                 if (!isSignUpAllowed) {
                     // On the frontend, this should show a UI of asking the user
