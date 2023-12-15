@@ -362,6 +362,118 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         assert.equal(2, usersRes.users.length);
     });
 
+    it("test factor setup with thirdparty same email as another existing user when automatic account linking is turned on and verification is required", async function () {
+        const connectionURI = await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+                EmailPassword.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                config: {
+                                    thirdPartyId: "custom",
+                                    clients: [
+                                        {
+                                            clientId: "clientid1",
+                                        },
+                                    ],
+                                },
+                                override: (oI) => {
+                                    oI.exchangeAuthCodeForOAuthTokens = async (input) => {
+                                        return input.redirectURIInfo.redirectURIQueryParams;
+                                    };
+                                    oI.getUserInfo = async (input) => {
+                                        return {
+                                            thirdPartyUserId: input.oAuthTokens.email,
+                                            email: {
+                                                id: input.oAuthTokens.email,
+                                                isVerified: true,
+                                            },
+                                        };
+                                    };
+                                    return oI;
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "custom2",
+                                    clients: [
+                                        {
+                                            clientId: "clientid1",
+                                        },
+                                    ],
+                                },
+                                override: (oI) => {
+                                    oI.exchangeAuthCodeForOAuthTokens = async (input) => {
+                                        return input.redirectURIInfo.redirectURIQueryParams;
+                                    };
+                                    oI.getUserInfo = async (input) => {
+                                        return {
+                                            thirdPartyUserId: "custom2" + input.oAuthTokens.email,
+                                            email: {
+                                                id: input.oAuthTokens.email,
+                                                isVerified: true,
+                                            },
+                                        };
+                                    };
+                                    return oI;
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Totp.init(),
+                MultiFactorAuth.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = getTestExpressApp();
+
+        let res = await tpSignInUp(app, "custom", "test1@example.com", undefined);
+        assert.equal("OK", res.body.status);
+
+        res = await epSignUp(app, "test2@example.com", "password1", undefined);
+        assert.equal("OK", res.body.status);
+
+        let cookies = extractInfoFromResponse(res);
+        let accessToken = cookies.accessTokenFromAny;
+
+        res = await tpSignInUp(app, "custom", "test2@example.com", accessToken);
+        assert.equal("OK", res.body.status);
+
+        res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
+        assert.equal("ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR", res.body.status);
+
+        const usersRes = await SuperTokens.getUsersOldestFirst({
+            tenantId: "public",
+        });
+
+        // we expect only 2 users because we should not have the user created by the factor setup, since the factor setup is expected to fail
+        assert.equal(2, usersRes.users.length);
+    });
+
     it("test that unverified sign up is not allowed as a factor setup", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({

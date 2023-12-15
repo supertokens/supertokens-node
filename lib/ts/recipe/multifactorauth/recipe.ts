@@ -263,6 +263,12 @@ export default class Recipe extends RecipeModule {
             });
         }
 
+        if (isAlreadySetup) {
+            return {
+                status: "OK",
+            };
+        }
+
         // Check if the new user being created can be linked via MFA on the following conditions:
         // 1. the new factor is a verified factor
         // 2. the session user has a login method with same email and is verified
@@ -309,12 +315,6 @@ export default class Recipe extends RecipeModule {
                     };
                 }
             }
-        }
-
-        if (isAlreadySetup) {
-            return {
-                status: "OK",
-            };
         }
 
         // session is active and a new user is going to be created, so we need to check if the factor setup is allowed

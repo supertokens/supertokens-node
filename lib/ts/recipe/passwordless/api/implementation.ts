@@ -96,7 +96,14 @@ export default function getAPIImplementation(): APIInterface {
             let isAlreadySetup = undefined;
 
             if (mfaInstance) {
-                isAlreadySetup = !sessionUser ? false : isFactorSetupForUser(sessionUser, factorId);
+                isAlreadySetup = !sessionUser
+                    ? false
+                    : isFactorSetupForUser(sessionUser, factorId) &&
+                      (deviceInfo.email
+                          ? sessionUser.emails.includes(deviceInfo.email)
+                          : sessionUser.phoneNumbers.includes(deviceInfo.phoneNumber!));
+                // We want to consider a factor as already setup only if email/phoneNumber of the userLoggingIn matches with the sessionUser emails/phoneNumbers
+                // because if it's a different email/phone number, it means we might be setting up that factor
                 const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
                     req: input.options.req,
                     res: input.options.res,

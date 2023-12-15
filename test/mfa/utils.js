@@ -239,7 +239,7 @@ module.exports.tpSignInUp = async function (app, thirdPartyId, email, accessToke
                 })
         );
     } else {
-        await new Promise((resolve) =>
+        return await new Promise((resolve) =>
             request(app)
                 .post("/auth/signinup")
                 .set("Authorization", `Bearer ${accessToken}`)
