@@ -263,9 +263,8 @@ export default function getAPIImplementation(): APIInterface {
             );
 
             if (existingUsers.length === 0) {
-                let isSignUpAllowed =
-                    (session === undefined || mfaInstance === undefined) &&
-                    (await AccountLinking.getInstance().isSignUpAllowed({
+                if (session === undefined || mfaInstance === undefined) {
+                    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                         newUser: {
                             recipeId: "passwordless",
                             ...accountInfo,
@@ -273,16 +272,17 @@ export default function getAPIImplementation(): APIInterface {
                         isVerified: true,
                         tenantId: input.tenantId,
                         userContext: input.userContext,
-                    }));
+                    });
 
-                if (!isSignUpAllowed) {
-                    // On the frontend, this should show a UI of asking the user
-                    // to login using a different method.
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                    };
+                    if (!isSignUpAllowed) {
+                        // On the frontend, this should show a UI of asking the user
+                        // to login using a different method.
+                        return {
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                        };
+                    }
                 }
             } else if (existingUsers.length === 1) {
                 let loginMethod: RecipeLevelUser | undefined = existingUsers[0].loginMethods.find(

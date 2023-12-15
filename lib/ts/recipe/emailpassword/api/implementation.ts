@@ -744,9 +744,8 @@ export default function getAPIImplementation(): APIInterface {
                 overrideGlobalClaimValidators: () => [],
             });
 
-            let isSignUpAllowed =
-                (session === undefined || mfaInstance === undefined) &&
-                (await AccountLinking.getInstance().isSignUpAllowed({
+            if (session === undefined || mfaInstance === undefined) {
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "emailpassword",
                         email,
@@ -754,32 +753,35 @@ export default function getAPIImplementation(): APIInterface {
                     isVerified: false,
                     tenantId,
                     userContext,
-                }));
-
-            if (!isSignUpAllowed) {
-                const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                    tenantId,
-                    accountInfo: {
-                        email,
-                    },
-                    doUnionOfAccountInfo: false,
-                    userContext,
                 });
-                if (
-                    conflictingUsers.some((u) =>
-                        u.loginMethods.some((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email))
-                    )
-                ) {
+
+                if (!isSignUpAllowed) {
+                    const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo(
+                        {
+                            tenantId,
+                            accountInfo: {
+                                email,
+                            },
+                            doUnionOfAccountInfo: false,
+                            userContext,
+                        }
+                    );
+                    if (
+                        conflictingUsers.some((u) =>
+                            u.loginMethods.some((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email))
+                        )
+                    ) {
+                        return {
+                            status: "EMAIL_ALREADY_EXISTS_ERROR",
+                        };
+                    }
+
                     return {
-                        status: "EMAIL_ALREADY_EXISTS_ERROR",
+                        status: "SIGN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
                     };
                 }
-
-                return {
-                    status: "SIGN_UP_NOT_ALLOWED",
-                    reason:
-                        "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                };
             }
 
             if (mfaInstance !== undefined) {
