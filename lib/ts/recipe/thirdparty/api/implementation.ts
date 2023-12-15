@@ -238,6 +238,10 @@ export default function getAPIInterface(): APIInterface {
                     session,
                     userLoggingIn,
                     isAlreadySetup,
+                    signUpInfo: {
+                        email: emailInfo.id,
+                        isVerifiedFactor: emailInfo.isVerified,
+                    },
                     userContext: input.userContext,
                 });
 
@@ -256,6 +260,7 @@ export default function getAPIInterface(): APIInterface {
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                 tenantId,
 
+                // we do not want to attempt accountlinking when there is an active session and MFA is turned on
                 shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                 userContext,
             });

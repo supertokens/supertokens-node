@@ -105,6 +105,7 @@ export default function getAPIImplementation(): APIInterface {
                     session,
                     userLoggingIn,
                     isAlreadySetup,
+                    signUpInfo: deviceInfo.email ? { email: deviceInfo.email, isVerifiedFactor: true } : undefined,
                     userContext: input.userContext,
                 });
 
@@ -120,6 +121,7 @@ export default function getAPIImplementation(): APIInterface {
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
                           tenantId: input.tenantId,
+                          // we do not want to attempt accountlinking when there is an active session and MFA is turned on
                           shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                           userContext: input.userContext,
                       }
@@ -127,6 +129,7 @@ export default function getAPIImplementation(): APIInterface {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
                           tenantId: input.tenantId,
+                          // we do not want to attempt accountlinking when there is an active session and MFA is turned on
                           shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                           userContext: input.userContext,
                       }

@@ -56,6 +56,7 @@ export default class Recipe extends RecipeModule {
         session,
         userLoggingIn,
         isAlreadySetup,
+        signUpInfo,
         userContext,
     }: {
         req: BaseRequest;
@@ -65,8 +66,12 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface | undefined;
         userLoggingIn?: User | undefined;
         isAlreadySetup?: boolean | undefined;
-        email?: string | undefined;
-        phoneNumber?: string | undefined;
+        signUpInfo?:
+            | {
+                  email: string;
+                  isVerifiedFactor: boolean;
+              }
+            | undefined;
         userContext: UserContext;
     }) => Promise<
         | {

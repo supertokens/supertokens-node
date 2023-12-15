@@ -42,7 +42,7 @@ import RecipeUserId from "../../recipeUserId";
 import Multitenancy from "../multitenancy";
 import Session from "../session";
 import AccountLinkingRecipe from "../accountlinking/recipe";
-import { getUser } from "../..";
+import { getUser, listUsersByAccountInfo } from "../..";
 import { Querier } from "../../querier";
 import SessionError from "../session/error";
 import { TenantConfig } from "../multitenancy/types";
@@ -203,6 +203,7 @@ export default class Recipe extends RecipeModule {
         session,
         userLoggingIn,
         isAlreadySetup,
+        signUpInfo,
         userContext,
     }: {
         req: BaseRequest;
@@ -212,8 +213,10 @@ export default class Recipe extends RecipeModule {
         session?: SessionContainerInterface;
         userLoggingIn?: User;
         isAlreadySetup?: boolean;
-        email?: string;
-        phoneNumber?: string;
+        signUpInfo?: {
+            email: string;
+            isVerifiedFactor: boolean;
+        };
         userContext: UserContext;
     }): Promise<{ status: "OK" } | MFAFlowErrors> => {
         const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
@@ -258,6 +261,54 @@ export default class Recipe extends RecipeModule {
                 type: SessionError.UNAUTHORISED,
                 message: "Session user not found",
             });
+        }
+
+        // Check if the new user being created can be linked via MFA on the following conditions:
+        // 1. the new factor is a verified factor
+        // 2. the session user has a login method with same email and is verified
+        if (signUpInfo !== undefined) {
+            if (!signUpInfo.isVerifiedFactor) {
+                /*
+                    We discussed another method but did not go ahead with it, details below:
+
+                    We can allow the second factor to be linked to first factor even if the emails are different 
+                    and not verified as long as there is no other user that exists (recipe or primary) that has the 
+                    same email as that of the second factor. For example, if first factor is google login with e1 
+                    and second factor is email password with e2, we allow linking them as long as there is no other 
+                    user with email e2.
+
+                    We rejected this idea cause if auto account linking is switched off, then someone else can sign up 
+                    with google using e2. This is OK as it would not link (since account linking is switched off). 
+                    But, then if account linking is switched on, then the google sign in (and not sign up) with e2 
+                    would actually cause it to be linked with the e1 account.
+                */
+
+                let foundVerifiedEmail = false;
+                for (const lM of sessionUser?.loginMethods) {
+                    if (lM.email === signUpInfo.email && lM.verified) {
+                        foundVerifiedEmail = true;
+                        break;
+                    }
+                }
+                if (!foundVerifiedEmail) {
+                    return {
+                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                        message: "Cannot setup factor as the email is not verified",
+                    };
+                }
+            }
+
+            // Check if there if the linking with session user going to fail and avoid user creation here
+            const users = await listUsersByAccountInfo(tenantId, { email: signUpInfo.email }, undefined, userContext);
+            for (const user of users) {
+                if (user.isPrimaryUser && user.id !== sessionUser.id) {
+                    return {
+                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                        message:
+                            "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+                    };
+                }
+            }
         }
 
         if (isAlreadySetup) {

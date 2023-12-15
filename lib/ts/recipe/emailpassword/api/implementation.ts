@@ -793,6 +793,10 @@ export default function getAPIImplementation(): APIInterface {
                     session,
                     userLoggingIn: undefined,
                     isAlreadySetup: false, // since this is a sign up
+                    signUpInfo: {
+                        email,
+                        isVerifiedFactor: false,
+                    },
                     userContext,
                 });
                 if (mfaValidationRes.status !== "OK") {
@@ -810,6 +814,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 email,
                 password,
+                // we do not want to attempt accountlinking when there is an active session and MFA is turned on
                 shouldAttemptAccountLinkingIfAllowed: session === undefined || mfaInstance === undefined,
                 userContext,
             });
