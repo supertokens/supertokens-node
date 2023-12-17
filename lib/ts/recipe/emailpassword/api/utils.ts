@@ -15,11 +15,13 @@
 import { NormalisedFormField } from "../types";
 import STError from "../error";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
+import { UserContext } from "../../../types";
 
 export async function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],
     formFieldsRaw: any,
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ): Promise<
     {
         id: string;
@@ -68,7 +70,7 @@ export async function validateFormFieldsOrThrowError(
     });
 
     // then run validators through them-----------------------
-    await validateFormOrThrowError(formFields, configFormFields, tenantId);
+    await validateFormOrThrowError(formFields, configFormFields, tenantId, userContext);
 
     return formFields;
 }
@@ -88,7 +90,8 @@ async function validateFormOrThrowError(
         value: string;
     }[],
     configFormFields: NormalisedFormField[],
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ) {
     let validationErrors: { id: string; error: string }[] = [];
 
@@ -111,7 +114,7 @@ async function validateFormOrThrowError(
             });
         } else {
             // Otherwise, use validate function.
-            const error = await field.validate(input.value, tenantId);
+            const error = await field.validate(input.value, tenantId, userContext);
             // If error, add it.
             if (error !== undefined) {
                 validationErrors.push({

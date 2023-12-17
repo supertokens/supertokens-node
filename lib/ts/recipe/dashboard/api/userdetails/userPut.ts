@@ -70,7 +70,7 @@ const updateEmailForRecipeId = async (
             (field) => field.id === FORM_FIELD_EMAIL_ID
         );
 
-        let validationError = await emailFormFields[0].validate(email, tenantId);
+        let validationError = await emailFormFields[0].validate(email, tenantId, userContext);
 
         if (validationError !== undefined) {
             return {
@@ -108,7 +108,7 @@ const updateEmailForRecipeId = async (
             (field) => field.id === FORM_FIELD_EMAIL_ID
         );
 
-        let validationError = await emailFormFields[0].validate(email, tenantId);
+        let validationError = await emailFormFields[0].validate(email, tenantId, userContext);
 
         if (validationError !== undefined) {
             return {

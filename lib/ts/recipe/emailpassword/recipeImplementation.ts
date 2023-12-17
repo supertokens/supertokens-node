@@ -234,7 +234,11 @@ export default function getRecipeInterface(
                 let formFields = getEmailPasswordConfig().signUpFeature.formFields;
                 if (input.password !== undefined) {
                     const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
-                    const error = await passwordField.validate(input.password, input.tenantIdForPasswordPolicy);
+                    const error = await passwordField.validate(
+                        input.password,
+                        input.tenantIdForPasswordPolicy,
+                        input.userContext
+                    );
                     if (error !== undefined) {
                         return {
                             status: "PASSWORD_POLICY_VIOLATED_ERROR",
