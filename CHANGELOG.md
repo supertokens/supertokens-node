@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.6.6] - 2023-12-17
+
+-   Adds facebook user data by checking the scopes provided in the config
+
 ## [16.6.5] - 2023-12-12
 
 -   CI/CD changes
