@@ -1280,6 +1280,22 @@ async function f() {
 }
 
 EmailPassword.init({
+    signUpFeature: {
+        formFields: [
+            {
+                id: "abc",
+                validate: async (value, tenantId) => {
+                    return "";
+                },
+            },
+            {
+                id: "abc",
+                validate: async (value, tenantId, userContext) => {
+                    return undefined;
+                },
+            },
+        ],
+    },
     override: {
         apis: (originalImplementation) => {
             return {
@@ -1748,7 +1764,24 @@ async function refreshSessionWithoutRequestResponse(req: express.Request, resp: 
 }
 
 ThirdParty.init();
-ThirdPartyEmailPassword.init();
+ThirdPartyEmailPassword.init({
+    signUpFeature: {
+        formFields: [
+            {
+                id: "abc",
+                validate: async (value, tenantId) => {
+                    return "";
+                },
+            },
+            {
+                id: "abc",
+                validate: async (value, tenantId, userContext) => {
+                    return undefined;
+                },
+            },
+        ],
+    },
+});
 ThirdPartyPasswordless.init({
     contactMethod: "EMAIL",
     flowType: "MAGIC_LINK",

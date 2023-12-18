@@ -13,7 +13,7 @@ jobs:
             - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
     test-unit:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing
+            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
         resource_class: large
         parameters:
             cdi-version:

@@ -1461,4 +1461,80 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         assert(customFormFields[2].id === "testField");
         assert(customFormFields[2].value.key === "value");
     });
+
+    it("test signUpAPI validate function using userContext", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "abc",
+                                validate: async (value, tenantId, userContext) => {
+                                    let request = STExpress.getRequestFromUserContext(userContext);
+                                    if (request !== undefined) {
+                                        let body = await request.getJSONBody();
+                                        let passwordValue = body.formFields.find((f) => f.id === "password").value;
+                                        if (passwordValue === "password1234") {
+                                            return "error msg";
+                                        }
+                                    }
+                                    return undefined;
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise(function (resolve) {
+            request(app)
+                .post("/auth/signup")
+                .set("st-auth-mode", "cookie")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "password1234",
+                        },
+                        {
+                            id: "email",
+                            value: "test@example.com",
+                        },
+                        {
+                            id: "abc",
+                            value: "test",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                });
+        });
+        assert(JSON.parse(response.text).status === "FIELD_ERROR");
+        assert(JSON.parse(response.text).formFields[0].error === "error msg");
+        assert(response.status === 200);
+    });
 });
