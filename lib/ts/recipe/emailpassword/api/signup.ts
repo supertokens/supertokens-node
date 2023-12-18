@@ -39,7 +39,8 @@ export default async function signUpAPI(
     }[] = await validateFormFieldsOrThrowError(
         options.config.signUpFeature.formFields,
         requestBody.formFields,
-        tenantId
+        tenantId,
+        userContext
     );
 
     let result = await apiImplementation.signUpPOST({

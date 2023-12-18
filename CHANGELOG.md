@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [16.6.6] - 2023-12-17
+## [16.6.7] - 2023-12-18
 
 -   Adds facebook user data by checking the scopes provided in the config
+
+## [16.6.6] - 2023-12-17
+
+-   Adds `userContext` input to the `validate` function in form fields. You can use this to fetch the request object from the `userContext`, read the request body, and then read the other form fields from there. If doing so, keep in mind that for the email and password validators, the request object may not always be available in the `validate` function, and even if it's available, it may not have the request body of the sign up API since the `validate` functions are also called from other operations (like in password reset API). For custom form fields that you have added to the sign up API, the request object will always be there in the `userContext`.
 
 ## [16.6.5] - 2023-12-12
 

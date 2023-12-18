@@ -68,6 +68,16 @@ export default function Facebook(input: ProviderInput): TypeProvider {
                 ],
                 email: ["id", "email"],
                 user_birthday: ["birthday"],
+                user_videos: ["videos"],
+                user_posts: ["posts"],
+                user_photos: ["photos"],
+                user_location: ["location"],
+                user_link: ["link"],
+                user_likes: ["likes"],
+                user_hometown: ["hometown"],
+                user_gender: ["gender"],
+                user_friends: ["friends"],
+                user_age_range: ["age_range"],
             };
             const scopeValues = originalImplementation.config.scope;
 
