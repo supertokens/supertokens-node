@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.6.8] - 2023-12-18
+
+-   Fix App dir support by removing the import of the "http" module
+
 ## [16.6.7] - 2023-12-18
 
 -   Adds facebook user data by checking the scopes provided in the config
