@@ -19,6 +19,7 @@ import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import SuperTokens from "../../supertokens";
 import { SessionContainerInterface } from "../../recipe/session/types";
+import NodeHeaders from "./nodeHeaders";
 
 type RequestInfo = {
     url: string;
@@ -105,7 +106,13 @@ export class CollectingResponse extends BaseResponse {
 
     constructor() {
         super();
-        this.headers = new Headers();
+        // In node16 the Headers class is only supported behind an experimental flag, so we sometimes need to add an implementation for it
+        // Still, if available we are using the built-in (node 18+)
+        if (typeof Headers === "undefined") {
+            this.headers = new NodeHeaders(null) as any;
+        } else {
+            this.headers = new Headers();
+        }
         this.statusCode = 200;
         this.cookies = [];
     }
