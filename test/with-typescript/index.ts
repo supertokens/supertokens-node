@@ -923,6 +923,7 @@ import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
 import { serialize } from "cookie";
+import { Response } from "express";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {
@@ -1900,3 +1901,20 @@ class NextResponse {}
 NextJS.getAppDirRequestHandler(NextResponse);
 
 customVerifySession({ checkDatabase: true })(new PreParsedRequest({} as any), new CollectingResponse());
+
+NextJS.getSSRSession([], {});
+NextJS.withSession(
+    {
+        method: "GET",
+        url: "",
+        headers: {},
+        formData: () => {},
+        json: () => {},
+        cookies: {
+            getAll: () => [],
+        },
+    },
+    async function test(session): Promise<Response> {
+        return {} as Response;
+    }
+);
