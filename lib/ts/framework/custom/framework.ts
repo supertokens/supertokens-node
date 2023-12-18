@@ -19,7 +19,6 @@ import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import SuperTokens from "../../supertokens";
 import { SessionContainerInterface } from "../../recipe/session/types";
-import { Headers } from "cross-fetch";
 
 type RequestInfo = {
     url: string;
