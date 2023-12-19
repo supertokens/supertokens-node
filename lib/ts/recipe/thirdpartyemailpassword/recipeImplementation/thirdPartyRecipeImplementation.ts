@@ -16,7 +16,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {
@@ -44,7 +44,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
-            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {

@@ -53,7 +53,7 @@ export default class Wrapper {
             email,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             isVerified,
-            shouldAttemptAccountLinkingIfAllowed,
+            shouldAttemptAccountLinkingIfAllowed: shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(userContext),
         });
     }

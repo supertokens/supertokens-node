@@ -116,7 +116,7 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -147,7 +147,7 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -221,14 +221,14 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
     ) => Promise<

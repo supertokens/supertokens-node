@@ -68,7 +68,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {

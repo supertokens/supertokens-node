@@ -79,6 +79,7 @@ export default class Wrapper {
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
+            shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -191,6 +192,7 @@ export default class Wrapper {
     ) {
         return Recipe.getInstanceOrThrowError().signInUp({
             ...input,
+            shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(input.userContext),
         });
     }

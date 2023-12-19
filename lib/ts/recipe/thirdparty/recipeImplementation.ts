@@ -27,7 +27,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email: string;
                 isVerified: boolean;
                 tenantId: string;
-                shouldAttemptAccountLinkingIfAllowed?: boolean;
+                shouldAttemptAccountLinkingIfAllowed: boolean;
                 userContext: UserContext;
             }
         ): Promise<
@@ -93,7 +93,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
             let updatedUser = response.user;
 
-            if (shouldAttemptAccountLinkingIfAllowed ?? true) {
+            if (shouldAttemptAccountLinkingIfAllowed) {
                 updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId,
                     user: response.user,
@@ -133,7 +133,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     fromIdTokenPayload?: { [key: string]: any };
                     fromUserInfoAPI?: { [key: string]: any };
                 };
-                shouldAttemptAccountLinkingIfAllowed?: boolean;
+                shouldAttemptAccountLinkingIfAllowed: boolean;
             }
         ): Promise<
             | {

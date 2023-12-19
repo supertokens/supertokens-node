@@ -132,14 +132,14 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
     ) => Promise<
