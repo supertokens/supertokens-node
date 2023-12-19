@@ -50,28 +50,25 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
     getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    validateForMultifactorAuthBeforeFactorCompletion: ({
-        tenantId,
-        factorIdInProgress,
-        session,
-        userLoggingIn,
-        isAlreadySetup,
-        signUpInfo,
-        userContext,
-    }: {
-        tenantId: string;
-        factorIdInProgress: string;
-        session?: SessionContainerInterface | undefined;
-        userLoggingIn?: User | undefined;
-        isAlreadySetup?: boolean | undefined;
-        signUpInfo?:
+    validateForMultifactorAuthBeforeFactorCompletion: (
+        input: {
+            tenantId: string;
+            factorIdInProgress: string;
+            session?: SessionContainerInterface;
+            userContext: UserContext;
+        } & (
             | {
-                  email: string;
-                  isVerifiedFactor: boolean;
+                  userLoggingIn: User;
               }
-            | undefined;
-        userContext: UserContext;
-    }) => Promise<
+            | {
+                  isAlreadySetup: boolean;
+                  signUpInfo?: {
+                      email: string;
+                      isVerifiedFactor: boolean;
+                  };
+              }
+        )
+    ) => Promise<
         | {
               status: "OK";
           }
