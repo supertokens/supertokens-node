@@ -110,7 +110,7 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
                         mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
-                            if (tenantConfig.passwordless.enabled === false) {
+                            if (tenantConfig.emailPassword.enabled === false) {
                                 return {
                                     factorIds: [],
                                     firstFactorIds: [],
@@ -128,6 +128,9 @@ export default class Recipe extends RecipeModule {
                                 }
 
                                 for (const loginMethod of user.loginMethods) {
+                                    // We deliberately do not check for matching tenantId because we assume
+                                    // MFA is app-wide by default. User can always override MFA function
+                                    // to make it tenant specific.
                                     if (loginMethod.recipeId === Recipe.RECIPE_ID) {
                                         return ["emailpassword"];
                                     }

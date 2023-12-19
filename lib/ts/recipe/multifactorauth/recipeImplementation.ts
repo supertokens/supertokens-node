@@ -19,7 +19,11 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             for (const func of recipeInstance.getFactorsSetupForUserFromOtherRecipesFuncs) {
                 let result = await func(user, tenantConfig, userContext);
                 if (result !== undefined) {
-                    factorIds = factorIds.concat(result);
+                    for (const factorId of result) {
+                        if (!factorIds.includes(factorId)) {
+                            factorIds.push(factorId);
+                        }
+                    }
                 }
             }
             return factorIds;

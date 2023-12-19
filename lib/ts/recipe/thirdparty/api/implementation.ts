@@ -238,8 +238,6 @@ export default function getAPIInterface(): APIInterface {
                           (tp) => tp.id === provider.id && tp.userId === userInfo.thirdPartyUserId
                       );
                 const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                    req: input.options.req,
-                    res: input.options.res,
                     tenantId: input.tenantId,
                     factorIdInProgress: "thirdparty",
                     session,

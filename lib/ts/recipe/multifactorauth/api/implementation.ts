@@ -19,13 +19,20 @@ export default function getAPIInterface(): APIInterface {
             }
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
 
+            if (tenantInfo === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Tenant not found",
+                });
+            }
+
             const isAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
                 tenantId,
                 user,
                 userContext,
             });
 
-            const { status: _, ...tenantConfig } = tenantInfo!;
+            const { status: _, ...tenantConfig } = tenantInfo;
 
             const availableFactors = await options.recipeInstance.getAllAvailableFactorIds(tenantConfig);
 
