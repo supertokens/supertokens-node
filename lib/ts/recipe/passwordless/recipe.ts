@@ -163,6 +163,9 @@ export default class Recipe extends RecipeModule {
                                 if (tenantConfig.passwordless.enabled === false) {
                                     return [];
                                 }
+                                // We deliberately do not check for matching tenantId because we assume
+                                // MFA is app-wide by default. User can always override MFA function
+                                // to make it tenant specific.
                                 return allFactors.filter((id) => isFactorSetupForUser(user, id));
                             }
                         );
