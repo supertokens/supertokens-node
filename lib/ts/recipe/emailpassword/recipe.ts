@@ -110,7 +110,7 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
                         mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
-                            if (tenantConfig.passwordless.enabled === false) {
+                            if (tenantConfig.emailPassword.enabled === false) {
                                 return {
                                     factorIds: [],
                                     firstFactorIds: [],
