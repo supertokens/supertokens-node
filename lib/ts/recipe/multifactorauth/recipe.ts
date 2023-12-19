@@ -179,7 +179,11 @@ export default class Recipe extends RecipeModule {
         let factorIds: string[] = [];
         for (const func of this.getAllFactorsFromOtherRecipesFunc) {
             const factorIdsRes = func(tenantConfig);
-            factorIds = factorIds.concat(factorIdsRes.factorIds);
+            for (const factorId of factorIdsRes.factorIds) {
+                if (!factorIds.includes(factorId)) {
+                    factorIds.push(factorId);
+                }
+            }
         }
         return factorIds;
     };
@@ -188,7 +192,11 @@ export default class Recipe extends RecipeModule {
         let factorIds: string[] = [];
         for (const func of this.getAllFactorsFromOtherRecipesFunc) {
             const factorIdsRes = func(tenantConfig);
-            factorIds = factorIds.concat(factorIdsRes.firstFactorIds);
+            for (const factorId of factorIdsRes.firstFactorIds) {
+                if (!factorIds.includes(factorId)) {
+                    factorIds.push(factorId);
+                }
+            }
         }
         return factorIds;
     };
