@@ -214,8 +214,6 @@ export default class Recipe extends RecipeModule {
         signUpInfo,
         userContext,
     }: {
-        req: BaseRequest;
-        res: BaseResponse;
         tenantId: string;
         factorIdInProgress: string;
         session?: SessionContainerInterface;
