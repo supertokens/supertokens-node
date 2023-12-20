@@ -179,7 +179,11 @@ export default class Recipe extends RecipeModule {
         let factorIds: string[] = [];
         for (const func of this.getAllFactorsFromOtherRecipesFunc) {
             const factorIdsRes = func(tenantConfig);
-            factorIds = factorIds.concat(factorIdsRes.factorIds);
+            for (const factorId of factorIdsRes.factorIds) {
+                if (!factorIds.includes(factorId)) {
+                    factorIds.push(factorId);
+                }
+            }
         }
         return factorIds;
     };
@@ -188,7 +192,11 @@ export default class Recipe extends RecipeModule {
         let factorIds: string[] = [];
         for (const func of this.getAllFactorsFromOtherRecipesFunc) {
             const factorIdsRes = func(tenantConfig);
-            factorIds = factorIds.concat(factorIdsRes.firstFactorIds);
+            for (const factorId of factorIdsRes.firstFactorIds) {
+                if (!factorIds.includes(factorId)) {
+                    factorIds.push(factorId);
+                }
+            }
         }
         return factorIds;
     };
@@ -206,8 +214,6 @@ export default class Recipe extends RecipeModule {
         signUpInfo,
         userContext,
     }: {
-        req: BaseRequest;
-        res: BaseResponse;
         tenantId: string;
         factorIdInProgress: string;
         session?: SessionContainerInterface;
@@ -220,9 +226,23 @@ export default class Recipe extends RecipeModule {
         userContext: UserContext;
     }): Promise<{ status: "OK" } | MFAFlowErrors> => {
         const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-        const { status: _, ...tenantConfig } = tenantInfo!;
-        const validFirstFactors =
-            tenantInfo?.firstFactors || this.config.firstFactors || this.getAllAvailableFirstFactorIds(tenantConfig);
+        if (tenantInfo === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Tenant not found",
+            });
+        }
+        const { status: _, ...tenantConfig } = tenantInfo;
+
+        let validFirstFactors;
+
+        if (tenantConfig.firstFactors !== undefined) {
+            validFirstFactors = tenantConfig.firstFactors; // First Priority, first factors configured for tenant
+        } else if (this.config.firstFactors !== undefined) {
+            validFirstFactors = this.config.firstFactors; // Second Priority, first factors configured in the recipe
+        } else {
+            validFirstFactors = this.getAllAvailableFirstFactorIds(tenantConfig); // Last Priority, first factors based on initialised recipes
+        }
 
         if (session === undefined) {
             // No session exists, so we need to check if it's a valid first factor before proceeding
@@ -336,7 +356,7 @@ export default class Recipe extends RecipeModule {
             accessTokenPayload: session.getAccessTokenPayload(),
             tenantId,
             factorsSetUpForUser,
-            defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+            defaultRequiredFactorIdsForTenant: tenantInfo.defaultRequiredFactorIds ?? [],
             defaultRequiredFactorIdsForUser,
             completedFactors: completedFactorsClaimValue?.c ?? {},
             userContext,
@@ -346,7 +366,7 @@ export default class Recipe extends RecipeModule {
             session,
             factorId: factorIdInProgress,
             completedFactors: completedFactorsClaimValue?.c ?? {},
-            defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+            defaultRequiredFactorIdsForTenant: tenantInfo.defaultRequiredFactorIds ?? [],
             defaultRequiredFactorIdsForUser,
             factorsSetUpForUser,
             mfaRequirementsForAuth,

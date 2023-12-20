@@ -63,13 +63,13 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
     ) => Promise<{

@@ -13,11 +13,8 @@
  * under the License.
  */
 
-import RecipeUserId from "../../recipeUserId";
-import type { NormalisedAppinfo, UserContext } from "../../types";
-import { User } from "../../user";
+import type { NormalisedAppinfo } from "../../types";
 import type { TypeInput, RecipeInterface, TypeNormalisedInput } from "./types";
-import EmailVerificationRecipe from "../emailverification/recipe";
 
 async function defaultOnAccountLinked() {}
 
@@ -44,73 +41,4 @@ export function validateAndNormaliseUserInput(_: NormalisedAppinfo, config?: Typ
         onAccountLinked,
         shouldDoAutomaticAccountLinking,
     };
-}
-
-export async function verifyEmailForRecipeUserIfLinkedAccountsAreVerified(input: {
-    user: User;
-    recipeUserId: RecipeUserId;
-    userContext: UserContext;
-}) {
-    try {
-        EmailVerificationRecipe.getInstanceOrThrowError();
-    } catch (ignored) {
-        // if email verification recipe is not initialized, we do a no-op
-        return;
-    }
-    // This is just a helper function cause it's called in many places
-    // like during sign up, sign in and post linking accounts.
-    // This is not exposed to the developer as it's called in the relevant
-    // recipe functions.
-    // We do not do this in the core cause email verification is a different
-    // recipe.
-    // Finally, we only mark the email of this recipe user as verified and not
-    // the other recipe users in the primary user (if this user's email is verified),
-    // cause when those other users sign in, this function will be called for them anyway
-    if (input.user.isPrimaryUser) {
-        let recipeUserEmail: string | undefined = undefined;
-        let isAlreadyVerified = false;
-        input.user.loginMethods.forEach((lm) => {
-            if (lm.recipeUserId.getAsString() === input.recipeUserId.getAsString()) {
-                recipeUserEmail = lm.email;
-                isAlreadyVerified = lm.verified;
-            }
-        });
-
-        if (recipeUserEmail !== undefined) {
-            if (isAlreadyVerified) {
-                return;
-            }
-            let shouldVerifyEmail = false;
-            input.user.loginMethods.forEach((lm) => {
-                if (lm.hasSameEmailAs(recipeUserEmail) && lm.verified) {
-                    shouldVerifyEmail = true;
-                }
-            });
-
-            if (shouldVerifyEmail) {
-                let resp = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
-                    {
-                        // While the token we create here is tenant specific, the verification status is not
-                        // So we can use any tenantId the user is associated with here as long as we use the
-                        // same in the verifyEmailUsingToken call
-                        tenantId: input.user.tenantIds[0],
-                        recipeUserId: input.recipeUserId,
-                        email: recipeUserEmail,
-                        userContext: input.userContext,
-                    }
-                );
-                if (resp.status === "OK") {
-                    // we purposely pass in false below cause we don't want account
-                    // linking to happen
-                    await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
-                        // See comment about tenantId in the createEmailVerificationToken params
-                        tenantId: input.user.tenantIds[0],
-                        token: resp.token,
-                        attemptAccountLinking: false,
-                        userContext: input.userContext,
-                    });
-                }
-            }
-        }
-    }
 }

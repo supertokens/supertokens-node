@@ -85,7 +85,7 @@ export default function getRecipeInterface(
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {
@@ -113,6 +113,7 @@ export default function getRecipeInterface(
             email: string;
             isVerified: boolean;
             tenantId: string;
+            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {

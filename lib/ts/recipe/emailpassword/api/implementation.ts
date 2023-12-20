@@ -660,8 +660,6 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                req: options.req,
-                res: options.res,
                 tenantId,
                 factorIdInProgress: "emailpassword",
                 session,
@@ -786,8 +784,6 @@ export default function getAPIImplementation(): APIInterface {
 
             if (mfaInstance !== undefined) {
                 const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                    req: options.req,
-                    res: options.res,
                     tenantId,
                     factorIdInProgress: "emailpassword",
                     session,

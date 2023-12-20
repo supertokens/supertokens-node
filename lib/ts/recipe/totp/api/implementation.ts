@@ -62,8 +62,6 @@ export default function getAPIInterface(): APIInterface {
             }
 
             const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                req: options.req,
-                res: options.res,
                 tenantId,
                 factorIdInProgress: "totp",
                 session,

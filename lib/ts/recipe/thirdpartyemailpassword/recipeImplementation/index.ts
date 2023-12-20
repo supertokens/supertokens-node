@@ -40,7 +40,7 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             tenantId: string;
-            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
@@ -68,7 +68,7 @@ export default function getRecipeInterface(
                 fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
-            shouldAttemptAccountLinkingIfAllowed?: boolean;
+            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {
@@ -96,6 +96,7 @@ export default function getRecipeInterface(
             email: string;
             isVerified: boolean;
             tenantId: string;
+            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {

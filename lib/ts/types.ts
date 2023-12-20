@@ -24,6 +24,9 @@ type Brand<B> = { [__brand]: B };
 
 type Branded<T, B> = T & Brand<B>;
 
+// Record<string,any> is still quite generic and we would like to ensure type safety for the userContext
+// so we use the concept of branded type, which enables catching of issues at compile time.
+// Detailed explanation about branded types is available here - https://egghead.io/blog/using-branded-types-in-typescript
 export type UserContext = Branded<Record<string, any>, "UserContext">;
 
 export type AppInfo = {

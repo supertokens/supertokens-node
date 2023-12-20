@@ -107,8 +107,6 @@ export default function getAPIImplementation(): APIInterface {
                 // We want to consider a factor as already setup only if email/phoneNumber of the userLoggingIn matches with the sessionUser emails/phoneNumbers
                 // because if it's a different email/phone number, it means we might be setting up that factor
                 const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                    req: input.options.req,
-                    res: input.options.res,
                     tenantId: input.tenantId,
                     factorIdInProgress: factorId,
                     session,

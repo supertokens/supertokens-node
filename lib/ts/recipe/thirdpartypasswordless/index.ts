@@ -62,7 +62,7 @@ export default class Wrapper {
             email,
             isVerified,
             tenantId,
-            shouldAttemptAccountLinkingIfAllowed,
+            shouldAttemptAccountLinkingIfAllowed: shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(userContext),
         });
     }
@@ -102,17 +102,20 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
+            shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -225,6 +228,7 @@ export default class Wrapper {
     ) {
         return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({
             ...input,
+            shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(input.userContext),
         });
     }

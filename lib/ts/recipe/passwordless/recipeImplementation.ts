@@ -63,7 +63,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             let updatedUser = response.user;
 
-            if (input.shouldAttemptAccountLinkingIfAllowed ?? true) {
+            if (input.shouldAttemptAccountLinkingIfAllowed) {
                 updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId: input.tenantId,
                     user: response.user,

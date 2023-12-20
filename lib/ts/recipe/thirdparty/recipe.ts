@@ -117,6 +117,9 @@ export default class Recipe extends RecipeModule {
                                     return [];
                                 }
                                 for (const loginMethod of user.loginMethods) {
+                                    // We deliberately do not check for matching tenantId because we assume
+                                    // MFA is app-wide by default. User can always override MFA function
+                                    // to make it tenant specific.
                                     if (loginMethod.recipeId === Recipe.RECIPE_ID) {
                                         return ["thirdparty"];
                                     }
