@@ -32,6 +32,7 @@ import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
 import AccountLinking from "../../recipe/accountlinking";
 import { verifySession as customVerifySession } from "../../recipe/session/framework/custom";
+import { NextRequest, NextResponse } from "next/server";
 
 UserRoles.init({
     override: {
@@ -1883,22 +1884,28 @@ async function accountLinkingFuncsTest() {
     };
 }
 
-const nextAppDirMiddleware = customFramework.middleware<NextApiRequest>((req) => {
+const nextAppDirMiddleware = customFramework.middleware<NextRequest>((req) => {
     const query = Object.fromEntries(new URL(req.url!).searchParams.entries());
+
+    const cookies: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.cookies)) {
+        if (value !== undefined) {
+            cookies[key] = value;
+        }
+    }
 
     return new customFramework.PreParsedRequest({
         method: req.method as HTTPMethod,
         url: req.url!,
         query: query,
         headers: req.headers,
-        cookies: req.cookies,
-        getFormBody: () => req.body,
-        getJSONBody: () => req.body,
+        cookies: cookies,
+        getFormBody: async () => req.body,
+        getJSONBody: async () => req.body,
     });
 });
 
-// We do not have Next13 typings here, but this is almost the exact same code we will have in the app dir example
-async function handleCall(req: NextApiRequest): Promise<any> {
+async function handleCall(req: NextRequest): Promise<NextResponse> {
     const baseResponse = new customFramework.CollectingResponse();
 
     const { handled, error } = await nextAppDirMiddleware(req, baseResponse);
@@ -1907,10 +1914,7 @@ async function handleCall(req: NextApiRequest): Promise<any> {
         throw error;
     }
     if (!handled) {
-        return {
-            status: 404,
-            body: "Not Found",
-        };
+        return new NextResponse("Not found", { status: 404 });
     }
 
     for (const respCookie of baseResponse.cookies) {
@@ -1927,27 +1931,19 @@ async function handleCall(req: NextApiRequest): Promise<any> {
         );
     }
 
-    return { body: baseResponse.body, headers: baseResponse.headers, status: baseResponse.statusCode };
+    return new NextResponse(baseResponse.body, {
+        headers: baseResponse.headers,
+        status: baseResponse.statusCode,
+    });
 }
 
-class NextResponse {}
 NextJS.getAppDirRequestHandler(NextResponse);
 
 customVerifySession({ checkDatabase: true })(new PreParsedRequest({} as any), new CollectingResponse());
 
-NextJS.getSSRSession([], {});
-NextJS.withSession(
-    {
-        method: "GET",
-        url: "",
-        headers: {},
-        formData: () => {},
-        json: () => {},
-        cookies: {
-            getAll: () => [],
-        },
-    },
-    async function test(session): Promise<Response> {
-        return {} as Response;
-    }
-);
+const nextRequest = new NextRequest("http://localhost:3000/api/user");
+
+NextJS.getSSRSession(nextRequest.cookies.getAll(), nextRequest.headers);
+NextJS.withSession(nextRequest, async function test(session): Promise<NextResponse> {
+    return NextResponse.json({});
+});

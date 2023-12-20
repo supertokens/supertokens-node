@@ -136,7 +136,7 @@ export default class NextJS {
         session: SessionContainer | undefined;
         hasToken: boolean;
         hasInvalidClaims: boolean;
-        baseResponse?: CollectingResponse;
+        baseResponse: CollectingResponse;
         nextResponse?: Response;
     }> {
         let baseResponse = new CollectingResponse();
@@ -217,10 +217,6 @@ export default class NextJS {
 
         if (nextResponse) {
             return nextResponse as NextResponse;
-        }
-
-        if (!baseResponse) {
-            throw Error("Expected baseResponse to be present");
         }
 
         let userResponse = await handler(session);

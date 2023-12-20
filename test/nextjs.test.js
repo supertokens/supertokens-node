@@ -21,9 +21,10 @@ let { middleware } = require("../framework/express");
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const ThirdPartyEmailPassword = require("../lib/build/recipe/thirdpartyemailpassword");
-const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
+const { superTokensNextWrapper, withSession, getSSRSession, getAppDirRequestHandler } = require("../lib/build/nextjs");
 const { verifySession } = require("../recipe/session/framework/express");
 const { testApiHandler } = require("next-test-api-route-handler");
+const { NextRequest, NextResponse } = require("next/server");
 
 let wrapperErr;
 
@@ -65,7 +66,7 @@ async function nextApiHandlerWithVerifySession(req, res) {
     }
 }
 
-describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
+describe(`Next.js Pages Router: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
         before(async function () {
             process.env.user = undefined;
@@ -603,6 +604,217 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             });
             assert.deepStrictEqual(wrapperErr, { error: "sign up error" });
         });
+    });
+});
+
+describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function () {
+    before(async function () {
+        process.env.user = undefined;
+        await killAllST();
+        await setupST();
+        const connectionURI = await startST();
+        ProcessState.getInstance().reset();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                apiBasePath: "/api/auth",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                createNewSession: async (input) => {
+                                    let session = await oI.createNewSession(input);
+                                    process.env.user = session.getUserId();
+                                    return session;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
+    it("Sign Up", async function () {
+        const handleCall = getAppDirRequestHandler(NextResponse);
+
+        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
+        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", {
+            method: "POST",
+            headers: { rid: "emailpassword" },
+            body: JSON.stringify({
+                formFields: [
+                    { id: "email", value: userEmail },
+                    { id: "password", value: "P@sSW0rd" },
+                ],
+            }),
+        });
+
+        const signUpRes = await handleCall(signUpRequest);
+        const respJson = await signUpRes.json();
+
+        assert.deepStrictEqual(respJson.status, "OK");
+        assert.deepStrictEqual(respJson.user.emails[0], userEmail);
+        assert.strictEqual(respJson.user.id, process.env.user);
+        assert.notStrictEqual(signUpRes.headers.get("front-token"), undefined);
+        const tokens = getSessionTokensFromResponse(signUpRes);
+        assert.notEqual(tokens.access, undefined);
+        assert.notEqual(tokens.refresh, undefined);
+    });
+
+    it("Sign In", async function () {
+        const handleCall = getAppDirRequestHandler(NextResponse);
+
+        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
+        const requestInfo = {
+            method: "POST",
+            headers: { rid: "emailpassword" },
+            body: JSON.stringify({
+                formFields: [
+                    { id: "email", value: userEmail },
+                    { id: "password", value: "P@sSW0rd" },
+                ],
+            }),
+        };
+
+        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
+
+        const signUpRes = await handleCall(signUpRequest);
+        assert.deepStrictEqual(signUpRes.status, 200);
+
+        const signInRequest = new NextRequest("http://localhost:3000/api/auth/signin", requestInfo);
+
+        const signInRes = await handleCall(signInRequest);
+        const respJson = await signInRes.json();
+
+        assert.deepStrictEqual(respJson.status, "OK");
+        assert.deepStrictEqual(respJson.user.emails[0], userEmail);
+        assert.strictEqual(respJson.user.id, process.env.user);
+        assert.notStrictEqual(signInRes.headers.get("front-token"), undefined);
+        const tokens = getSessionTokensFromResponse(signInRes);
+        assert.notEqual(tokens.access, undefined);
+        assert.notEqual(tokens.refresh, undefined);
+    });
+
+    it("getSSRSession", async function () {
+        const handleCall = getAppDirRequestHandler(NextResponse);
+
+        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
+        const requestInfo = {
+            method: "POST",
+            headers: { rid: "emailpassword" },
+            body: JSON.stringify({
+                formFields: [
+                    { id: "email", value: userEmail },
+                    { id: "password", value: "P@sSW0rd" },
+                ],
+            }),
+        };
+
+        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
+
+        const signUpRes = await handleCall(signUpRequest);
+        assert.deepStrictEqual(signUpRes.status, 200);
+        const tokens = getSessionTokensFromResponse(signUpRes);
+        assert.notEqual(tokens.access, undefined);
+        assert.notEqual(tokens.refresh, undefined);
+
+        const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
+
+        let sessionContainer = await getSSRSession(
+            unAuthenticatedRequest.cookies.getAll(),
+            unAuthenticatedRequest.headers
+        );
+
+        assert.equal(sessionContainer.hasToken, false);
+        assert.equal(sessionContainer.session, undefined);
+
+        const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        sessionContainer = await getSSRSession(authenticatedRequest.cookies.getAll(), authenticatedRequest.headers);
+
+        assert.equal(sessionContainer.hasToken, true);
+        assert.equal(sessionContainer.session.getUserId(), process.env.user);
+    });
+
+    it("withSession", async function () {
+        const handleCall = getAppDirRequestHandler(NextResponse);
+
+        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
+        const requestInfo = {
+            method: "POST",
+            headers: { rid: "emailpassword" },
+            body: JSON.stringify({
+                formFields: [
+                    { id: "email", value: userEmail },
+                    { id: "password", value: "P@sSW0rd" },
+                ],
+            }),
+        };
+
+        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
+
+        const signUpRes = await handleCall(signUpRequest);
+        assert.deepStrictEqual(signUpRes.status, 200);
+        const tokens = getSessionTokensFromResponse(signUpRes);
+        assert.notEqual(tokens.access, undefined);
+        assert.notEqual(tokens.refresh, undefined);
+
+        const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
+
+        const unAuthenticatedResponse = await withSession(unAuthenticatedRequest, async (session) => {
+            if (!session) {
+                return new NextResponse("Authentication required", { status: 401 });
+            }
+
+            return NextResponse.json({
+                userId: session.getUserId(),
+                sessionHandle: session.getHandle(),
+                accessTokenPayload: session.getAccessTokenPayload(),
+            });
+        });
+
+        assert.equal(unAuthenticatedResponse.status, 401);
+
+        const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        const authenticatedResponse = await withSession(authenticatedRequest, async (session) => {
+            if (!session) {
+                return new NextResponse("Authentication required", { status: 401 });
+            }
+
+            return NextResponse.json({
+                userId: session.getUserId(),
+                sessionHandle: session.getHandle(),
+                accessTokenPayload: session.getAccessTokenPayload(),
+            });
+        });
+
+        assert.equal(authenticatedResponse.status, 200);
+        const json = await authenticatedResponse.json();
+        assert(json.userId === process.env.user);
     });
 });
 
