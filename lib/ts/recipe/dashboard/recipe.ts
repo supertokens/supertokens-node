@@ -42,6 +42,9 @@ import {
     USERROLES_REMOVE_PERMISSIONS_API,
     USERROLES_PERMISSIONS_API,
     USERROLES_USER_API,
+    CREATE_EMAIL_PASSWORD_USER,
+    CREATE_PASSWORDLESS_USER,
+    GET_LOGIN_METHODS,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -76,6 +79,9 @@ import addRoleToUser from "./api/userroles/addRoleToUser";
 import getRolesForUser from "./api/userroles/getRolesForUser";
 import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
+import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
+import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
+import { getLoginMethodsInfo } from "./api/getLoginMethodsInfo";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -328,6 +334,24 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "delete",
             },
+            {
+                id: CREATE_EMAIL_PASSWORD_USER,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(CREATE_EMAIL_PASSWORD_USER)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: CREATE_PASSWORDLESS_USER,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(CREATE_PASSWORDLESS_USER)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: GET_LOGIN_METHODS,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(GET_LOGIN_METHODS)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -444,6 +468,20 @@ export default class Recipe extends RecipeModule {
             }
             if (req.getMethod() === "delete") {
                 apiFunction = removeUserRole;
+            }
+        } else if (id === CREATE_EMAIL_PASSWORD_USER) {
+            if (req.getMethod() === "post") {
+                apiFunction = createEmailPasswordUser;
+            }
+        } else if (id === CREATE_PASSWORDLESS_USER) {
+            if (req.getMethod() === "post") {
+                apiFunction = createPasswordlessUser;
+            }
+        } else if (id === GET_LOGIN_METHODS) {
+            if (req.getMethod() === "get") {
+                {
+                    apiFunction = getLoginMethodsInfo;
+                }
             }
         }
 
