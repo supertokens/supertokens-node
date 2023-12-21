@@ -31,7 +31,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
         getMFARequirementsForAuth: async function ({
             requiredSecondaryFactorsForUser,
-            defaultRequiredFactorIdsForTenant,
+            requiredSecondaryFactorsForTenant,
             completedFactors,
         }) {
             const loginTime = Math.min(...Object.values(completedFactors));
@@ -40,7 +40,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             for (const factor of requiredSecondaryFactorsForUser) {
                 allFactors.add(factor);
             }
-            for (const factor of defaultRequiredFactorIdsForTenant) {
+            for (const factor of requiredSecondaryFactorsForTenant) {
                 allFactors.add(factor);
             }
             /*
@@ -138,7 +138,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 accessTokenPayload: session.getAccessTokenPayload(),
                 tenantId,
                 factorsSetUpForUser,
-                defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+                requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
                 requiredSecondaryFactorsForUser,
                 completedFactors: completed,
                 userContext,

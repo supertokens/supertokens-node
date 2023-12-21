@@ -203,7 +203,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
             accessTokenPayload: currentPayload !== undefined ? currentPayload : {},
             tenantId: tenantId ?? DEFAULT_TENANT_ID,
             factorsSetUpForUser: isAlreadySetup,
-            defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
+            requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
             requiredSecondaryFactorsForUser,
             completedFactors: completedFactors,
             userContext,

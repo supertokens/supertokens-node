@@ -67,14 +67,14 @@ export default class Wrapper {
         );
 
         const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
-        const defaultMFARequirementsForTenant: string[] = tenantInfo?.defaultRequiredFactorIds ?? [];
+        const defaultMFARequirementsForTenant: string[] = tenantInfo?.requiredSecondaryFactors ?? [];
         const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
             user,
             accessTokenPayload: session.getAccessTokenPayload(),
             tenantId: session.getTenantId(),
             factorsSetUpForUser: factorsSetup,
             requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
-            defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
+            requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
             completedFactors,
             userContext: ctx,
         });
@@ -85,7 +85,7 @@ export default class Wrapper {
             mfaRequirementsForAuth: requirements,
             factorsSetUpForUser: factorsSetup,
             requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
-            defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
+            requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
             userContext: ctx,
         });
     }
