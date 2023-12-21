@@ -40,5 +40,14 @@ export declare let getFactorsSetupForUser: typeof Wrapper.getFactorsSetupForUser
 export declare let getRequiredSecondaryFactorsForUser: typeof Wrapper.getRequiredSecondaryFactorsForUser;
 export declare const addToRequiredSecondaryFactorsForUser: typeof Wrapper.addToRequiredSecondaryFactorsForUser;
 export declare const removeFromRequiredSecondaryFactorsForUser: typeof Wrapper.removeFromRequiredSecondaryFactorsForUser;
+export declare const FACTORS: {
+    EMAILPASSWORD: string;
+    OTP_EMAIL: string;
+    OTP_PHONE: string;
+    LINK_EMAIL: string;
+    LINK_PHONE: string;
+    THIRDPARTY: string;
+    TOTP: string;
+};
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

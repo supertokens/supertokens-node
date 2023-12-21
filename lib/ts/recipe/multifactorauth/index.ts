@@ -197,5 +197,15 @@ export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFact
 export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
 export const removeFromRequiredSecondaryFactorsForUser = Wrapper.removeFromRequiredSecondaryFactorsForUser;
 
+export const FACTORS = {
+    EMAILPASSWORD: "emailpassword",
+    OTP_EMAIL: "otp-email",
+    OTP_PHONE: "otp-phone",
+    LINK_EMAIL: "link-email",
+    LINK_PHONE: "link-phone",
+    THIRDPARTY: "thirdparty",
+    TOTP: "totp",
+};
+
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };
