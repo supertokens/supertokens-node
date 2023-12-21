@@ -178,20 +178,18 @@ export function defaultValidateEmail(value: string): Promise<string | undefined>
 
 export function isFactorSetupForUser(user: User, factorId: string) {
     for (const loginMethod of user.loginMethods) {
+        if (loginMethod.recipeId !== Recipe.RECIPE_ID) {
+            continue;
+        }
+
         if (loginMethod.email !== undefined) {
-            if (factorId == "otp-email") {
-                return true;
-            }
-            if (factorId == "link-email") {
+            if (factorId == "otp-email" || factorId == "link-email") {
                 return true;
             }
         }
 
         if (loginMethod.phoneNumber !== undefined) {
-            if (factorId == "otp-phone") {
-                return true;
-            }
-            if (factorId == "link-phone") {
+            if (factorId == "otp-phone" || factorId == "link-phone") {
                 return true;
             }
         }
