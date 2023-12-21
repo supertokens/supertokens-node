@@ -20,6 +20,5 @@ export declare const USERROLES_PERMISSIONS_API = "/api/userroles/role/permission
 export declare const USERROLES_REMOVE_PERMISSIONS_API = "/api/userroles/role/permissions/remove";
 export declare const CREATE_EMAIL_PASSWORD_USER = "/api/user/create/emailpassword";
 export declare const CREATE_PASSWORDLESS_USER = "/api/user/create/passwordless";
-export declare const GET_LOGIN_METHODS = "/api/login-methods";
 export declare const USERROLES_USER_API = "/api/userroles/user/roles";
 export declare const UNLINK_USER = "/api/user/unlink";

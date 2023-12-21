@@ -58,7 +58,6 @@ export const createPasswordlessUser = async (
                 message: validateError,
             });
         }
-        // add email already exists check
     }
 
     if (
@@ -82,7 +81,6 @@ export const createPasswordlessUser = async (
         } else {
             phoneNumber = parsedPhoneNumber.format("E.164");
         }
-        // add phone already exists check
     }
 
     const response = await Passwordless.signInUp(

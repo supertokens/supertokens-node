@@ -15,6 +15,10 @@
 import { APIInterface, APIOptions } from "../types";
 import Multitenancy from "../../multitenancy";
 import { ProviderConfig } from "../../thirdparty/types";
+import PasswordlessRecipe from "../../passwordless/recipe";
+import { TypeNormalisedInput } from "../../passwordless/types";
+
+type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 
 type TenantListTenantType = {
     tenantId: string;
@@ -23,6 +27,7 @@ type TenantListTenantType = {
     };
     passwordless: {
         enabled: boolean;
+        contactMethod?: PasswordlessContactMethod;
     };
     thirdParty: {
         enabled: boolean;
@@ -43,6 +48,12 @@ export default async function listTenants(
 ): Promise<Response> {
     let tenantsRes = await Multitenancy.listAllTenants(userContext);
     let finalTenants: TenantListTenantType[] = [];
+    let passwordlessContactMethod: PasswordlessContactMethod | undefined = undefined;
+
+    try {
+        const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
+        passwordlessContactMethod = passwordlessRecipe.config.contactMethod;
+    } catch (error) {}
 
     if (tenantsRes.status !== "OK") {
         return tenantsRes;
@@ -56,6 +67,11 @@ export default async function listTenants(
             passwordless: currentTenant.passwordless,
             thirdParty: currentTenant.thirdParty,
         };
+
+        if (passwordlessContactMethod !== undefined) {
+            modifiedTenant.passwordless.contactMethod = passwordlessContactMethod;
+        }
+
         finalTenants.push(modifiedTenant);
     }
 

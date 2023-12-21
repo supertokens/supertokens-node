@@ -36,7 +36,6 @@ export const USERROLES_REMOVE_PERMISSIONS_API = "/api/userroles/role/permissions
 
 export const CREATE_EMAIL_PASSWORD_USER = "/api/user/create/emailpassword";
 export const CREATE_PASSWORDLESS_USER = "/api/user/create/passwordless";
-export const GET_LOGIN_METHODS = "/api/login-methods";
 
 export const USERROLES_USER_API = "/api/userroles/user/roles";
 

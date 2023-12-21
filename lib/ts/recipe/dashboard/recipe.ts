@@ -44,7 +44,6 @@ import {
     USERROLES_USER_API,
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
-    GET_LOGIN_METHODS,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -81,7 +80,6 @@ import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
 import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
-import { getLoginMethodsInfo } from "./api/getLoginMethodsInfo";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -346,12 +344,6 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "post",
             },
-            {
-                id: GET_LOGIN_METHODS,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(GET_LOGIN_METHODS)),
-                disabled: false,
-                method: "get",
-            },
         ];
     };
 
@@ -476,12 +468,6 @@ export default class Recipe extends RecipeModule {
         } else if (id === CREATE_PASSWORDLESS_USER) {
             if (req.getMethod() === "post") {
                 apiFunction = createPasswordlessUser;
-            }
-        } else if (id === GET_LOGIN_METHODS) {
-            if (req.getMethod() === "get") {
-                {
-                    apiFunction = getLoginMethodsInfo;
-                }
             }
         }
 
