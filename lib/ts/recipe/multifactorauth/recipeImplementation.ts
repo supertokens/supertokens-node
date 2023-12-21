@@ -124,8 +124,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
 
             const requiredSecondaryFactorsForUser = await this.getRequiredSecondaryFactorsForUser({
-                user: user!,
-                tenantId,
+                user,
                 userContext,
             });
             const factorsSetUpForUser = await this.getFactorsSetupForUser({

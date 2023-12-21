@@ -39,8 +39,7 @@ export default function getAPIInterface(): APIInterface {
             // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
             const requiredSecondaryFactorsForUser = await options.recipeImplementation.getRequiredSecondaryFactorsForUser(
                 {
-                    user: user!,
-                    tenantId,
+                    user,
                     userContext,
                 }
             );

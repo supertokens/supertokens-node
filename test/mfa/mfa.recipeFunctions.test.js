@@ -297,4 +297,44 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
             );
         }
     });
+
+    it("test add, remove get required factors for user", async function () {
+        const connectionURI = await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+                ThirdParty.init(),
+                Totp.init(),
+                MultiFactorAuth.init(),
+                Session.init(),
+            ],
+        });
+
+        const user = await EmailPassword.signUp("public", "test@example.com", "password");
+
+        await MultiFactorAuth.addToRequiredSecondaryFactorsForUser(user.user.id, "otp-email");
+        let factorIds = await MultiFactorAuth.getRequiredSecondaryFactorsForUser(user.user.id);
+
+        assert.deepEqual(factorIds, ["otp-email"]);
+        await MultiFactorAuth.addToRequiredSecondaryFactorsForUser(user.user.id, "emailpassword");
+
+        factorIds = await MultiFactorAuth.getRequiredSecondaryFactorsForUser(user.user.id);
+        assert.deepEqual(factorIds, ["otp-email", "emailpassword"]);
+
+        await MultiFactorAuth.removeFromRequiredSecondaryFactorsForUser(user.user.id, "otp-email");
+        factorIds = await MultiFactorAuth.getRequiredSecondaryFactorsForUser(user.user.id);
+        assert.deepEqual(factorIds, ["emailpassword"]);
+    });
 });

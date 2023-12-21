@@ -75,11 +75,7 @@ export declare type RecipeInterface = {
         userContext: UserContext;
     }) => Promise<void>;
     getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
-    getRequiredSecondaryFactorsForUser(input: {
-        user: User;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<string[]>;
+    getRequiredSecondaryFactorsForUser(input: { user: User; userContext: UserContext }): Promise<string[]>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

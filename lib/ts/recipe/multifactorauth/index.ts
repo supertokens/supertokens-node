@@ -27,20 +27,6 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
-        const ctx = getUserContext(userContext);
-        const user = await getUser(userId, ctx);
-        if (!user) {
-            throw new Error("UKNKNOWN_USER_ID");
-        }
-
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-            tenantId,
-            user,
-            userContext: ctx,
-        });
-    }
-
     static async isAllowedToSetupFactor(
         session: SessionContainerInterface,
         factorId: string,
@@ -61,7 +47,6 @@ export default class Wrapper {
         const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
             {
                 user,
-                tenantId: session.getTenantId(),
                 userContext: ctx,
             }
         );
@@ -102,6 +87,33 @@ export default class Wrapper {
         });
     }
 
+    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
+        const ctx = getUserContext(userContext);
+        const user = await getUser(userId, ctx);
+        if (!user) {
+            throw new Error("UKNKNOWN_USER_ID");
+        }
+
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            tenantId,
+            user,
+            userContext: ctx,
+        });
+    }
+
+    static async getRequiredSecondaryFactorsForUser(userId: string, userContext?: Record<string, any>) {
+        const ctx = getUserContext(userContext);
+        const user = await getUser(userId, ctx);
+        if (!user) {
+            throw new Error("UKNKNOWN_USER_ID");
+        }
+
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser({
+            user,
+            userContext: ctx,
+        });
+    }
+
     static async addToRequiredSecondaryFactorsForUser(
         userId: string,
         factorId: string,
@@ -125,6 +137,45 @@ export default class Wrapper {
             ...metadata.metadata,
             _supertokens: {
                 ...metadata.metadata._supertokens,
+                requiredSecondaryFactors: factorIds,
+            },
+        };
+
+        await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+            userId: userId,
+            metadataUpdate,
+            userContext: ctx,
+        });
+    }
+
+    static async removeFromRequiredSecondaryFactorsForUser(
+        userId: string,
+        factorId: string,
+        userContext?: Record<string, any>
+    ) {
+        const ctx = getUserContext(userContext);
+        const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+        const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+            userId,
+            userContext: ctx,
+        });
+
+        if (metadata.metadata._supertokens?.requiredSecondaryFactors === undefined) {
+            return;
+        }
+
+        const factorIds = metadata.metadata._supertokens.requiredSecondaryFactors ?? [];
+        if (!factorIds.includes(factorId)) {
+            return;
+        }
+
+        const index = factorIds.indexOf(factorId);
+        factorIds.splice(index, 1);
+
+        const metadataUpdate = {
+            ...metadata.metadata,
+            _supertokens: {
+                ...metadata.metadata._supertokens,
                 requiredSecondaryFactorsForUser: factorIds,
             },
         };
@@ -139,10 +190,12 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
-export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
 export let isAllowedToSetupFactor = Wrapper.isAllowedToSetupFactor;
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
+export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
+export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFactorsForUser;
 export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
+export const removeFromRequiredSecondaryFactorsForUser = Wrapper.removeFromRequiredSecondaryFactorsForUser;
 
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };
