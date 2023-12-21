@@ -348,7 +348,7 @@ export default class Recipe extends RecipeModule {
 
         // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
         const requiredSecondaryFactorsForUser = await this.recipeInterfaceImpl.getRequiredSecondaryFactorsForUser({
-            user: sessionUser,
+            userId: sessionUser.id,
             userContext: input.userContext,
         });
         const factorsSetUpForUser = await this.recipeInterfaceImpl.getFactorsSetupForUser({

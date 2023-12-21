@@ -190,7 +190,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
         const requiredSecondaryFactorsForUser = await recipeInstance.recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
             {
-                user,
+                userId,
                 userContext,
             }
         );

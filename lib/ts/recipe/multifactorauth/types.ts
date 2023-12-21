@@ -101,7 +101,19 @@ export type RecipeInterface = {
 
     getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
 
-    getRequiredSecondaryFactorsForUser(input: { user: User; userContext: UserContext }): Promise<string[]>;
+    getRequiredSecondaryFactorsForUser: (input: { userId: string; userContext: UserContext }) => Promise<string[]>;
+
+    addToRequiredSecondaryFactorsForUser: (input: {
+        userId: string;
+        factorId: string;
+        userContext: UserContext;
+    }) => Promise<void>;
+
+    removeFromRequiredSecondaryFactorsForUser: (input: {
+        userId: string;
+        factorId: string;
+        userContext: UserContext;
+    }) => Promise<void>;
 };
 
 export type APIOptions = {

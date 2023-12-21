@@ -124,11 +124,11 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
 
             const requiredSecondaryFactorsForUser = await this.getRequiredSecondaryFactorsForUser({
-                user,
+                userId: user.id,
                 userContext,
             });
             const factorsSetUpForUser = await this.getFactorsSetupForUser({
-                user: user!,
+                user: user,
                 tenantId,
                 userContext,
             });
@@ -149,14 +149,77 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             });
         },
 
-        getRequiredSecondaryFactorsForUser: async function ({ user, userContext }) {
+        getRequiredSecondaryFactorsForUser: async function ({ userId, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
             const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
-                userId: user.id,
+                userId,
                 userContext,
             });
 
             return metadata.metadata._supertokens?.requiredSecondaryFactors ?? [];
+        },
+
+        addToRequiredSecondaryFactorsForUser: async function ({ userId, factorId, userContext }) {
+            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+                userId,
+                userContext,
+            });
+
+            const factorIds = metadata.metadata._supertokens?.requiredSecondaryFactors ?? [];
+            if (factorIds.includes(factorId)) {
+                return;
+            }
+
+            factorIds.push(factorId);
+
+            const metadataUpdate = {
+                ...metadata.metadata,
+                _supertokens: {
+                    ...metadata.metadata._supertokens,
+                    requiredSecondaryFactors: factorIds,
+                },
+            };
+
+            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+                userId: userId,
+                metadataUpdate,
+                userContext,
+            });
+        },
+
+        removeFromRequiredSecondaryFactorsForUser: async function ({ userId, factorId, userContext }) {
+            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+                userId,
+                userContext,
+            });
+
+            if (metadata.metadata._supertokens?.requiredSecondaryFactors === undefined) {
+                return;
+            }
+
+            const factorIds = metadata.metadata._supertokens.requiredSecondaryFactors ?? [];
+            if (!factorIds.includes(factorId)) {
+                return;
+            }
+
+            const index = factorIds.indexOf(factorId);
+            factorIds.splice(index, 1);
+
+            const metadataUpdate = {
+                ...metadata.metadata,
+                _supertokens: {
+                    ...metadata.metadata._supertokens,
+                    requiredSecondaryFactorsForUser: factorIds,
+                },
+            };
+
+            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+                userId: userId,
+                metadataUpdate,
+                userContext,
+            });
         },
     };
 }

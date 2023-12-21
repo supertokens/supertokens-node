@@ -19,7 +19,6 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
 import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
-import UserMetadataRecipe from "../usermetadata/recipe";
 import { getUserContext } from "../../utils";
 
 export default class Wrapper {
@@ -46,7 +45,7 @@ export default class Wrapper {
         const completedFactors = mfaClaimValue?.c ?? {};
         const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
             {
-                user,
+                userId: session.getUserId(),
                 userContext: ctx,
             }
         );
@@ -102,15 +101,9 @@ export default class Wrapper {
     }
 
     static async getRequiredSecondaryFactorsForUser(userId: string, userContext?: Record<string, any>) {
-        const ctx = getUserContext(userContext);
-        const user = await getUser(userId, ctx);
-        if (!user) {
-            throw new Error("UKNKNOWN_USER_ID");
-        }
-
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser({
-            user,
-            userContext: ctx,
+            userId,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -119,32 +112,10 @@ export default class Wrapper {
         factorId: string,
         userContext?: Record<string, any>
     ) {
-        const ctx = getUserContext(userContext);
-        const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-        const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addToRequiredSecondaryFactorsForUser({
             userId,
-            userContext: ctx,
-        });
-
-        const factorIds = metadata.metadata._supertokens?.requiredSecondaryFactors ?? [];
-        if (factorIds.includes(factorId)) {
-            return;
-        }
-
-        factorIds.push(factorId);
-
-        const metadataUpdate = {
-            ...metadata.metadata,
-            _supertokens: {
-                ...metadata.metadata._supertokens,
-                requiredSecondaryFactors: factorIds,
-            },
-        };
-
-        await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
-            userId: userId,
-            metadataUpdate,
-            userContext: ctx,
+            factorId,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -153,37 +124,10 @@ export default class Wrapper {
         factorId: string,
         userContext?: Record<string, any>
     ) {
-        const ctx = getUserContext(userContext);
-        const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-        const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeFromRequiredSecondaryFactorsForUser({
             userId,
-            userContext: ctx,
-        });
-
-        if (metadata.metadata._supertokens?.requiredSecondaryFactors === undefined) {
-            return;
-        }
-
-        const factorIds = metadata.metadata._supertokens.requiredSecondaryFactors ?? [];
-        if (!factorIds.includes(factorId)) {
-            return;
-        }
-
-        const index = factorIds.indexOf(factorId);
-        factorIds.splice(index, 1);
-
-        const metadataUpdate = {
-            ...metadata.metadata,
-            _supertokens: {
-                ...metadata.metadata._supertokens,
-                requiredSecondaryFactorsForUser: factorIds,
-            },
-        };
-
-        await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
-            userId: userId,
-            metadataUpdate,
-            userContext: ctx,
+            factorId,
+            userContext: getUserContext(userContext),
         });
     }
 }
