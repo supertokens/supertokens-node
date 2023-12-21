@@ -37,7 +37,7 @@ export default function getAPIInterface(): APIInterface {
             const availableFactors = await options.recipeInstance.getAllAvailableFactorIds(tenantConfig);
 
             // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-            const defaultRequiredFactorIdsForUser = await options.recipeImplementation.getDefaultRequiredFactorsForUser(
+            const requiredSecondaryFactorsForUser = await options.recipeImplementation.getRequiredSecondaryFactorsForUser(
                 {
                     user: user!,
                     tenantId,
@@ -52,7 +52,7 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
                 factorsSetUpForUser: isAlreadySetup,
                 defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
-                defaultRequiredFactorIdsForUser,
+                requiredSecondaryFactorsForUser,
                 completedFactors: completedFactors,
                 userContext,
             });
@@ -65,7 +65,7 @@ export default function getAPIInterface(): APIInterface {
                         factorId: id,
                         completedFactors: completedFactors,
                         defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
-                        defaultRequiredFactorIdsForUser,
+                        requiredSecondaryFactorsForUser,
                         factorsSetUpForUser: isAlreadySetup,
                         mfaRequirementsForAuth,
                         userContext,

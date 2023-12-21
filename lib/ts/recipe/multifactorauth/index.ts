@@ -58,7 +58,7 @@ export default class Wrapper {
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
         const completedFactors = mfaClaimValue?.c ?? {};
-        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getDefaultRequiredFactorsForUser(
+        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
             {
                 user,
                 tenantId: session.getTenantId(),
@@ -73,7 +73,7 @@ export default class Wrapper {
             accessTokenPayload: session.getAccessTokenPayload(),
             tenantId: session.getTenantId(),
             factorsSetUpForUser: factorsSetup,
-            defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
+            requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
             completedFactors,
             userContext: ctx,
@@ -84,7 +84,7 @@ export default class Wrapper {
             completedFactors,
             mfaRequirementsForAuth: requirements,
             factorsSetUpForUser: factorsSetup,
-            defaultRequiredFactorIdsForUser: defaultMFARequirementsForUser,
+            requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
             defaultRequiredFactorIdsForTenant: defaultMFARequirementsForTenant,
             userContext: ctx,
         });
@@ -102,7 +102,7 @@ export default class Wrapper {
         });
     }
 
-    static async addToDefaultRequiredFactorsForUser(
+    static async addToRequiredSecondaryFactorsForUser(
         userId: string,
         factorId: string,
         userContext?: Record<string, any>
@@ -114,7 +114,7 @@ export default class Wrapper {
             userContext: ctx,
         });
 
-        const factorIds = metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
+        const factorIds = metadata.metadata._supertokens?.requiredSecondaryFactors ?? [];
         if (factorIds.includes(factorId)) {
             return;
         }
@@ -125,7 +125,7 @@ export default class Wrapper {
             ...metadata.metadata,
             _supertokens: {
                 ...metadata.metadata._supertokens,
-                defaultRequiredFactorIdsForUser: factorIds,
+                requiredSecondaryFactorsForUser: factorIds,
             },
         };
 
@@ -142,7 +142,7 @@ export let init = Wrapper.init;
 export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
 export let isAllowedToSetupFactor = Wrapper.isAllowedToSetupFactor;
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
-export const addToDefaultRequiredFactorsForUser = Wrapper.addToDefaultRequiredFactorsForUser;
+export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
 
 export { MultiFactorAuthClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

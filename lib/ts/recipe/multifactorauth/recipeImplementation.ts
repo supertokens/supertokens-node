@@ -30,14 +30,14 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
         },
 
         getMFARequirementsForAuth: async function ({
-            defaultRequiredFactorIdsForUser,
+            requiredSecondaryFactorsForUser,
             defaultRequiredFactorIdsForTenant,
             completedFactors,
         }) {
             const loginTime = Math.min(...Object.values(completedFactors));
             const oldestFactor = Object.keys(completedFactors).find((k) => completedFactors[k] === loginTime);
             const allFactors: Set<string> = new Set();
-            for (const factor of defaultRequiredFactorIdsForUser) {
+            for (const factor of requiredSecondaryFactorsForUser) {
                 allFactors.add(factor);
             }
             for (const factor of defaultRequiredFactorIdsForTenant) {
@@ -123,7 +123,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
 
-            const defaultRequiredFactorIdsForUser = await this.getDefaultRequiredFactorsForUser({
+            const requiredSecondaryFactorsForUser = await this.getRequiredSecondaryFactorsForUser({
                 user: user!,
                 tenantId,
                 userContext,
@@ -139,7 +139,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 tenantId,
                 factorsSetUpForUser,
                 defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
-                defaultRequiredFactorIdsForUser,
+                requiredSecondaryFactorsForUser,
                 completedFactors: completed,
                 userContext,
             });
@@ -150,14 +150,14 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             });
         },
 
-        getDefaultRequiredFactorsForUser: async function ({ user, userContext }) {
+        getRequiredSecondaryFactorsForUser: async function ({ user, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
             const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
                 userId: user.id,
                 userContext,
             });
 
-            return metadata.metadata._supertokens?.defaultRequiredFactorIdsForUser ?? [];
+            return metadata.metadata._supertokens?.requiredSecondaryFactors ?? [];
         },
     };
 }

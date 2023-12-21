@@ -54,7 +54,7 @@ export declare type RecipeInterface = {
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpForUser: string[];
-        defaultRequiredFactorIdsForUser: string[];
+        requiredSecondaryFactorsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
@@ -64,7 +64,7 @@ export declare type RecipeInterface = {
         accessTokenPayload: JSONObject;
         tenantId: string;
         factorsSetUpForUser: string[];
-        defaultRequiredFactorIdsForUser: string[];
+        requiredSecondaryFactorsForUser: string[];
         defaultRequiredFactorIdsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
@@ -75,7 +75,7 @@ export declare type RecipeInterface = {
         userContext: UserContext;
     }) => Promise<void>;
     getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
-    getDefaultRequiredFactorsForUser(input: {
+    getRequiredSecondaryFactorsForUser(input: {
         user: User;
         tenantId: string;
         userContext: UserContext;

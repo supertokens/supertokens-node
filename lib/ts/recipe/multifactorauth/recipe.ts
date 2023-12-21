@@ -347,7 +347,7 @@ export default class Recipe extends RecipeModule {
         }
 
         // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-        const defaultRequiredFactorIdsForUser = await this.recipeInterfaceImpl.getDefaultRequiredFactorsForUser({
+        const requiredSecondaryFactorsForUser = await this.recipeInterfaceImpl.getRequiredSecondaryFactorsForUser({
             user: sessionUser,
             tenantId: input.tenantId,
             userContext: input.userContext,
@@ -364,7 +364,7 @@ export default class Recipe extends RecipeModule {
             tenantId: input.tenantId,
             factorsSetUpForUser,
             defaultRequiredFactorIdsForTenant: tenantInfo.defaultRequiredFactorIds ?? [],
-            defaultRequiredFactorIdsForUser,
+            requiredSecondaryFactorsForUser,
             completedFactors: completedFactorsClaimValue?.c ?? {},
             userContext: input.userContext,
         });
@@ -374,7 +374,7 @@ export default class Recipe extends RecipeModule {
             factorId: input.factorIdInProgress,
             completedFactors: completedFactorsClaimValue?.c ?? {},
             defaultRequiredFactorIdsForTenant: tenantInfo.defaultRequiredFactorIds ?? [],
-            defaultRequiredFactorIdsForUser,
+            requiredSecondaryFactorsForUser,
             factorsSetUpForUser,
             mfaRequirementsForAuth,
             userContext: input.userContext,
