@@ -13,15 +13,22 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, killAllST, cleanST, delay } = require("./utils");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../lib/build/").default;
 let { middleware } = require("../framework/express");
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
+const EmailVerification = require("../lib/build/recipe/emailverification");
 const ThirdPartyEmailPassword = require("../lib/build/recipe/thirdpartyemailpassword");
-const { superTokensNextWrapper, withSession, getSSRSession, getAppDirRequestHandler } = require("../lib/build/nextjs");
+const {
+    superTokensNextWrapper,
+    withSession,
+    getSSRSession,
+    getAppDirRequestHandler,
+    withPreParsedRequestResponse,
+} = require("../lib/build/nextjs");
 const { verifySession } = require("../recipe/session/framework/express");
 const { testApiHandler } = require("next-test-api-route-handler");
 const { NextRequest, NextResponse } = require("next/server");
@@ -612,7 +619,7 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         process.env.user = undefined;
         await killAllST();
         await setupST();
-        const connectionURI = await startST();
+        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
         ProcessState.getInstance().reset();
         SuperTokens.init({
             supertokens: {
@@ -626,6 +633,7 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
             },
             recipeList: [
                 EmailPassword.init(),
+                EmailVerification.init({}),
                 Session.init({
                     override: {
                         functions: (oI) => {
@@ -733,26 +741,55 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         assert.notEqual(tokens.access, undefined);
         assert.notEqual(tokens.refresh, undefined);
 
-        const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
-
-        let sessionContainer = await getSSRSession(
-            unAuthenticatedRequest.cookies.getAll(),
-            unAuthenticatedRequest.headers
-        );
-
-        assert.equal(sessionContainer.hasToken, false);
-        assert.equal(sessionContainer.session, undefined);
-
         const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
             headers: {
                 Authorization: `Bearer ${tokens.access}`,
             },
         });
 
-        sessionContainer = await getSSRSession(authenticatedRequest.cookies.getAll(), authenticatedRequest.headers);
+        let sessionContainer = await getSSRSession(authenticatedRequest.cookies.getAll(), authenticatedRequest.headers);
 
         assert.equal(sessionContainer.hasToken, true);
         assert.equal(sessionContainer.session.getUserId(), process.env.user);
+
+        const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
+
+        sessionContainer = await getSSRSession(unAuthenticatedRequest.cookies.getAll(), unAuthenticatedRequest.headers);
+
+        assert.equal(sessionContainer.hasToken, false);
+        assert.equal(sessionContainer.session, undefined);
+
+        const requestWithFailedClaim = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        sessionContainer = await getSSRSession(
+            requestWithFailedClaim.cookies.getAll(),
+            requestWithFailedClaim.headers,
+            {
+                overrideGlobalClaimValidators: async (globalValidators) => [
+                    ...globalValidators,
+                    EmailVerification.EmailVerificationClaim.validators.isVerified(),
+                ],
+            }
+        );
+        assert.equal(sessionContainer.hasToken, true);
+        assert.equal(sessionContainer.hasInvalidClaims, true);
+
+        await delay(3);
+        const requestWithExpiredToken = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        sessionContainer = await getSSRSession(
+            requestWithExpiredToken.cookies.getAll(),
+            requestWithExpiredToken.headers
+        );
+        assert.equal(sessionContainer.session, undefined);
     });
 
     it("withSession", async function () {
@@ -778,22 +815,6 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         assert.notEqual(tokens.access, undefined);
         assert.notEqual(tokens.refresh, undefined);
 
-        const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
-
-        const unAuthenticatedResponse = await withSession(unAuthenticatedRequest, async (session) => {
-            if (!session) {
-                return new NextResponse("Authentication required", { status: 401 });
-            }
-
-            return NextResponse.json({
-                userId: session.getUserId(),
-                sessionHandle: session.getHandle(),
-                accessTokenPayload: session.getAccessTokenPayload(),
-            });
-        });
-
-        assert.equal(unAuthenticatedResponse.status, 401);
-
         const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
             headers: {
                 Authorization: `Bearer ${tokens.access}`,
@@ -801,10 +822,6 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         });
 
         const authenticatedResponse = await withSession(authenticatedRequest, async (session) => {
-            if (!session) {
-                return new NextResponse("Authentication required", { status: 401 });
-            }
-
             return NextResponse.json({
                 userId: session.getUserId(),
                 sessionHandle: session.getHandle(),
@@ -813,8 +830,104 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         });
 
         assert.equal(authenticatedResponse.status, 200);
-        const json = await authenticatedResponse.json();
-        assert(json.userId === process.env.user);
+        const authenticatedResponseJson = await authenticatedResponse.json();
+        assert(authenticatedResponseJson.userId === process.env.user);
+
+        const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
+
+        const unAuthenticatedResponse = await withSession(unAuthenticatedRequest, async (session) => {
+            return NextResponse.json({
+                userId: session.getUserId(),
+                sessionHandle: session.getHandle(),
+                accessTokenPayload: session.getAccessTokenPayload(),
+            });
+        });
+        assert.equal(unAuthenticatedResponse.status, 401);
+
+        const requestWithFailedClaim = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        const responseWithFailedClaim = await withSession(
+            requestWithFailedClaim,
+            async (session) => {
+                return NextResponse.json({
+                    userId: session.getUserId(),
+                    sessionHandle: session.getHandle(),
+                    accessTokenPayload: session.getAccessTokenPayload(),
+                });
+            },
+            {
+                overrideGlobalClaimValidators: async (globalValidators) => [
+                    ...globalValidators,
+                    EmailVerification.EmailVerificationClaim.validators.isVerified(),
+                ],
+            }
+        );
+
+        assert.equal(responseWithFailedClaim.status, 403);
+
+        await delay(3);
+        const requestWithExpiredToken = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        const responseWithExpiredToken = await withSession(requestWithExpiredToken, async (session) => {
+            return NextResponse.json({
+                userId: session.getUserId(),
+                sessionHandle: session.getHandle(),
+                accessTokenPayload: session.getAccessTokenPayload(),
+            });
+        });
+
+        assert.equal(responseWithExpiredToken.status, 401);
+    });
+
+    it("withPreParsedRequestResponse", async function () {
+        const handleCall = getAppDirRequestHandler(NextResponse);
+
+        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
+        const requestInfo = {
+            method: "POST",
+            headers: { rid: "emailpassword" },
+            body: JSON.stringify({
+                formFields: [
+                    { id: "email", value: userEmail },
+                    { id: "password", value: "P@sSW0rd" },
+                ],
+            }),
+        };
+
+        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
+
+        const signUpRes = await handleCall(signUpRequest);
+        assert.deepStrictEqual(signUpRes.status, 200);
+        const tokens = getSessionTokensFromResponse(signUpRes);
+        assert.notEqual(tokens.access, undefined);
+        assert.notEqual(tokens.refresh, undefined);
+
+        const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        const authenticatedResponse = await withPreParsedRequestResponse(
+            authenticatedRequest,
+            async (baseRequest, baseResponse) => {
+                const session = await Session.getSession(baseRequest, baseResponse);
+
+                return NextResponse.json({ userId: session.getUserId() });
+            }
+        );
+
+        assert.equal(authenticatedResponse.status, 200);
+        const authenticatedResponseJson = await authenticatedResponse.json();
+        assert(authenticatedResponseJson.userId === process.env.user);
     });
 });
 
