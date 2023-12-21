@@ -11,6 +11,10 @@ declare type Response =
       }
     | {
           status: "FEATURE_NOT_ENABLED_ERROR";
+      }
+    | {
+          status: "INPUT_VALIDATION_ERROR";
+          message: string;
       };
 export declare const createPasswordlessUser: (
     _: APIInterface,

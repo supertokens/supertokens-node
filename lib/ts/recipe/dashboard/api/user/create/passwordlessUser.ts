@@ -15,6 +15,10 @@ type Response =
       }
     | {
           status: "FEATURE_NOT_ENABLED_ERROR";
+      }
+    | {
+          status: "INPUT_VALIDATION_ERROR";
+          message: string;
       };
 
 export const createPasswordlessUser = async (
@@ -53,10 +57,10 @@ export const createPasswordlessUser = async (
         email = email.trim();
         const validateError = await passwordlessRecipe.config.validateEmailAddress(email, tenantId);
         if (validateError !== undefined) {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
+            return {
+                status: "INPUT_VALIDATION_ERROR",
                 message: validateError,
-            });
+            };
         }
     }
 
@@ -67,10 +71,10 @@ export const createPasswordlessUser = async (
     ) {
         const validateError = await passwordlessRecipe.config.validatePhoneNumber(phoneNumber, tenantId);
         if (validateError !== undefined) {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
+            return {
+                status: "INPUT_VALIDATION_ERROR",
                 message: validateError,
-            });
+            };
         }
 
         const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
