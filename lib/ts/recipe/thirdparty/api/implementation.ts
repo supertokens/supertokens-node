@@ -262,8 +262,11 @@ export default function getAPIInterface(): APIInterface {
                           userContext: input.userContext,
                       });
 
-                if (validateMfaRes.status !== "OK") {
-                    return validateMfaRes;
+                if (validateMfaRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: validateMfaRes.reason,
+                    };
                 }
             }
 
@@ -373,8 +376,11 @@ export default function getAPIInterface(): APIInterface {
                     userContext: input.userContext,
                 });
 
-                if (sessionRes.status !== "OK") {
-                    return sessionRes;
+                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: sessionRes.reason,
+                    };
                 }
 
                 let user = await getUser(response.user.id, input.userContext);

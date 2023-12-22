@@ -29,7 +29,6 @@ import {
     GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
     GetPhoneNumbersForFactorsFromOtherRecipesFunc,
-    MFAFlowErrors,
     RecipeInterface,
     TypeInput,
     TypeNormalisedInput,
@@ -228,7 +227,7 @@ export default class Recipe extends RecipeModule {
                   };
               }
         )
-    ): Promise<{ status: "OK" } | MFAFlowErrors> => {
+    ): Promise<{ status: "OK" } | { status: "MFA_FLOW_ERROR"; reason: string }> => {
         const tenantInfo = await Multitenancy.getTenant(input.tenantId, input.userContext);
         if (tenantInfo === undefined) {
             throw new SessionError({
@@ -252,7 +251,8 @@ export default class Recipe extends RecipeModule {
             // No session exists, so we need to check if it's a valid first factor before proceeding
             if (!validFirstFactors.includes(input.factorIdInProgress)) {
                 return {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR",
+                    status: "MFA_FLOW_ERROR",
+                    reason: `'${input.factorIdInProgress}' is not a valid first factor`,
                 };
             }
             return {
@@ -267,8 +267,8 @@ export default class Recipe extends RecipeModule {
                 // we allow factor setup only through sign up
 
                 return {
-                    status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                    message:
+                    status: "MFA_FLOW_ERROR",
+                    reason:
                         "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
                 };
             }
@@ -326,8 +326,8 @@ export default class Recipe extends RecipeModule {
                     }
                     if (!foundVerifiedEmail) {
                         return {
-                            status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                            message: "Cannot setup factor as the email is not verified",
+                            status: "MFA_FLOW_ERROR",
+                            reason: "Cannot setup factor because the email is not verified",
                         };
                     }
                 }
@@ -342,8 +342,8 @@ export default class Recipe extends RecipeModule {
                     }
                     if (!foundVerifiedPhoneNumber) {
                         return {
-                            status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                            message: "Cannot setup factor as the phone number is not verified",
+                            status: "MFA_FLOW_ERROR",
+                            reason: "Cannot setup factor as the phone number is not verified",
                         };
                     }
                 }
@@ -359,8 +359,8 @@ export default class Recipe extends RecipeModule {
             for (const user of users) {
                 if (user.isPrimaryUser && user.id !== sessionUser.id) {
                     return {
-                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                        message:
+                        status: "MFA_FLOW_ERROR",
+                        reason:
                             "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
                     };
                 }
@@ -401,7 +401,8 @@ export default class Recipe extends RecipeModule {
         });
         if (!canSetup) {
             return {
-                status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                status: "MFA_FLOW_ERROR",
+                reason: `Cannot setup factor as the user is not allowed to setup this factor: '${input.factorIdInProgress}'`,
             };
         }
 
@@ -430,7 +431,7 @@ export default class Recipe extends RecipeModule {
         | {
               status: "OK";
           }
-        | MFAFlowErrors
+        | { status: "MFA_FLOW_ERROR"; reason: string }
     > => {
         if (isFirstFactor) {
             await this.recipeInterfaceImpl.markFactorAsCompleteInSession({
@@ -477,8 +478,9 @@ export default class Recipe extends RecipeModule {
                         createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
                         return {
-                            status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                            message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_009)",
+                            status: "MFA_FLOW_ERROR",
+                            reason:
+                                "Error setting up factor for the user, because the account info is already associated with another primary user. Please contact support. (ERR_CODE_009)",
                         };
                     }
                 }
@@ -491,9 +493,9 @@ export default class Recipe extends RecipeModule {
 
                 if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
                     return {
-                        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                        message:
-                            "Error setting up MFA for the user because of the automatic account linking. Please contact support. (ERR_CODE_011)",
+                        status: "MFA_FLOW_ERROR",
+                        reason:
+                            "You found a bug. The newly created user is already associated with another primary user. Please contact support. (ERR_CODE_011)",
                     };
                 } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
                     this.querier.invalidateCoreCallCache(userContext);
@@ -506,8 +508,8 @@ export default class Recipe extends RecipeModule {
                     }); // recurse for race condition
                 } else if (linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
                     return {
-                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                        message:
+                        status: "MFA_FLOW_ERROR",
+                        reason:
                             "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_010)",
                     };
                 }
@@ -517,8 +519,8 @@ export default class Recipe extends RecipeModule {
                     sessionUser.id === userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor.user.id;
                 if (!loggedInUserLinkedToSessionUser) {
                     return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                        message:
+                        status: "MFA_FLOW_ERROR",
+                        reason:
                             "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
                     };
                 }

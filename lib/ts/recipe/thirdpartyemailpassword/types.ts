@@ -34,7 +34,6 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import { GeneralErrorResponse, User as GlobalUser, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
@@ -335,7 +334,6 @@ export type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -362,7 +360,6 @@ export type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -389,7 +386,6 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 

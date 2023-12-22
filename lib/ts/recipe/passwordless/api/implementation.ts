@@ -104,8 +104,11 @@ export default function getAPIImplementation(): APIInterface {
                           userContext: input.userContext,
                       });
 
-                if (validateRes.status !== "OK") {
-                    return validateRes;
+                if (validateRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: validateRes.reason,
+                    };
                 }
             }
 
@@ -207,8 +210,11 @@ export default function getAPIImplementation(): APIInterface {
                     userContext: input.userContext,
                 });
 
-                if (sessionRes.status !== "OK") {
-                    return sessionRes;
+                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: sessionRes.reason,
+                    };
                 }
 
                 let user = await getUser(response.user.id, input.userContext);
@@ -230,6 +236,7 @@ export default function getAPIImplementation(): APIInterface {
                 user: response.user,
             };
         },
+
         createCodePOST: async function (input) {
             const accountInfo: { phoneNumber?: string; email?: string } = {};
             if ("email" in input) {

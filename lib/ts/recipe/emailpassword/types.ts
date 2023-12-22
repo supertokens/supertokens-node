@@ -23,7 +23,6 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
@@ -266,7 +265,6 @@ export type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -293,7 +291,6 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 };

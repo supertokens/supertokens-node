@@ -28,7 +28,6 @@ import {
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 export type TypeInput = (
@@ -332,7 +331,6 @@ export type APIInterface = {
               reason: string;
           }
         | GeneralErrorResponse
-        | MFAFlowErrors
     >;
 
     emailExistsGET?: (input: {

@@ -19,7 +19,6 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type UserInfo = {
     thirdPartyUserId: string;
@@ -286,7 +285,6 @@ export type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 

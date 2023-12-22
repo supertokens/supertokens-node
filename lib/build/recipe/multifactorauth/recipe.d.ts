@@ -10,7 +10,6 @@ import {
     GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
     GetPhoneNumbersForFactorsFromOtherRecipesFunc,
-    MFAFlowErrors,
     RecipeInterface,
     TypeInput,
     TypeNormalisedInput,
@@ -77,7 +76,10 @@ export default class Recipe extends RecipeModule {
         | {
               status: "OK";
           }
-        | MFAFlowErrors
+        | {
+              status: "MFA_FLOW_ERROR";
+              reason: string;
+          }
     >;
     updateSessionAndUserAfterFactorCompletion: ({
         session,
@@ -101,7 +103,10 @@ export default class Recipe extends RecipeModule {
         | {
               status: "OK";
           }
-        | MFAFlowErrors
+        | {
+              status: "MFA_FLOW_ERROR";
+              reason: string;
+          }
     >;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (_user: User) => Record<string, string[] | undefined>;

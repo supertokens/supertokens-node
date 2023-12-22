@@ -38,7 +38,6 @@ import {
 } from "../../ingredients/smsdelivery/types";
 import { GeneralErrorResponse, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type DeviceType = DeviceTypeOriginal;
 
@@ -378,7 +377,6 @@ export type APIInterface = {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -458,7 +456,6 @@ export type APIInterface = {
                     reason: string;
                 }
               | GeneralErrorResponse
-              | MFAFlowErrors
           >);
 
     passwordlessUserEmailExistsGET:

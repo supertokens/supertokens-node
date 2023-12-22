@@ -9,7 +9,6 @@ import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
-import { MFAFlowErrors } from "../../multifactorauth/types";
 import SessionError from "../../session/error";
 import { getFactorFlowControlFlags } from "../../multifactorauth/utils";
 
@@ -584,7 +583,6 @@ export default function getAPIImplementation(): APIInterface {
                   status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
               }
-            | MFAFlowErrors
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -651,8 +649,11 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
 
-                if (mfaValidationRes.status !== "OK") {
-                    return mfaValidationRes;
+                if (mfaValidationRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_NOT_ALLOWED",
+                        reason: mfaValidationRes.reason,
+                    };
                 }
             }
 
@@ -686,8 +687,11 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
 
-                if (sessionRes.status !== "OK") {
-                    return sessionRes;
+                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_NOT_ALLOWED",
+                        reason: sessionRes.reason,
+                    };
                 }
 
                 let user = await getUser(response.user.id, userContext);
@@ -735,7 +739,6 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
-            | MFAFlowErrors
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -809,8 +812,11 @@ export default function getAPIImplementation(): APIInterface {
                     },
                     userContext,
                 });
-                if (mfaValidationRes.status !== "OK") {
-                    return mfaValidationRes;
+                if (mfaValidationRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_UP_NOT_ALLOWED",
+                        reason: mfaValidationRes.reason,
+                    };
                 }
             }
 
@@ -864,8 +870,11 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
 
-                if (sessionRes.status !== "OK") {
-                    return sessionRes;
+                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_UP_NOT_ALLOWED",
+                        reason: sessionRes.reason,
+                    };
                 }
 
                 let user = await getUser(response.user.id, userContext);
