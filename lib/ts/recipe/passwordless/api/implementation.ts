@@ -179,66 +179,58 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
+            let isFirstFactor = session === undefined;
             if (shouldCreateSession) {
-                if (mfaInstance === undefined) {
-                    session = await Session.createNewSession(
-                        input.options.req,
-                        input.options.res,
-                        input.tenantId,
-                        loginMethod.recipeUserId,
-                        {},
-                        {},
-                        input.userContext
-                    );
-
-                    return {
-                        status: "OK",
-                        createdNewRecipeUser: response.createdNewRecipeUser,
-                        user: response.user,
-                        session,
-                    };
-                } else {
-                    let sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                        req: input.options.req,
-                        res: input.options.res,
-                        tenantId: input.tenantId,
-                        factorIdInProgress: factorId,
-                        justCompletedFactorUserInfo: {
-                            createdNewUser: response.createdNewRecipeUser,
-                            recipeUserId: response.recipeUserId,
-                            user: response.user,
-                        },
-                        userContext: input.userContext,
-                    });
-
-                    if (sessionRes.status !== "OK") {
-                        return sessionRes;
-                    }
-
-                    let user = await getUser(response.user.id, input.userContext);
-
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-
-                    return {
-                        status: "OK",
-                        session: sessionRes.session,
-                        createdNewRecipeUser: response.createdNewRecipeUser,
-                        user,
-                    };
-                }
-            } else {
-                return {
-                    status: "OK",
-                    createdNewRecipeUser: response.createdNewRecipeUser,
-                    user: response.user,
-                    session: session!,
-                };
+                session = await Session.createNewSession(
+                    input.options.req,
+                    input.options.res,
+                    input.tenantId,
+                    loginMethod.recipeUserId,
+                    {},
+                    {},
+                    input.userContext
+                );
             }
+
+            if (session === undefined) {
+                throw new Error("should never come here");
+            }
+
+            if (mfaInstance !== undefined) {
+                let sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor,
+                    factorId: factorId,
+                    userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
+                        createdNewUser: response.createdNewRecipeUser,
+                        recipeUserId: response.recipeUserId,
+                        user: response.user,
+                    },
+                    userContext: input.userContext,
+                });
+
+                if (sessionRes.status !== "OK") {
+                    return sessionRes;
+                }
+
+                let user = await getUser(response.user.id, input.userContext);
+
+                if (user === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                response.user = user;
+            }
+
+            return {
+                status: "OK",
+                session,
+                createdNewRecipeUser: response.createdNewRecipeUser,
+                user: response.user,
+            };
         },
         createCodePOST: async function (input) {
             const accountInfo: { phoneNumber?: string; email?: string } = {};

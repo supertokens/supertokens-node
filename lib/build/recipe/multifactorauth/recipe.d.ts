@@ -78,20 +78,17 @@ export default class Recipe extends RecipeModule {
           }
         | MFAFlowErrors
     >;
-    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion: ({
-        req,
-        res,
-        tenantId,
-        factorIdInProgress,
-        justCompletedFactorUserInfo,
+    updateSessionAndUserAfterFactorCompletion: ({
+        session,
+        isFirstFactor,
+        factorId,
+        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
         userContext,
     }: {
-        req: BaseRequest;
-        res: BaseResponse;
-        tenantId: string;
-        factorIdInProgress: string;
-        isAlreadySetup?: boolean | undefined;
-        justCompletedFactorUserInfo?:
+        session: SessionContainerInterface;
+        isFirstFactor: boolean;
+        factorId: string;
+        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor?:
             | {
                   user: User;
                   createdNewUser: boolean;
@@ -100,11 +97,10 @@ export default class Recipe extends RecipeModule {
             | undefined;
         userContext: UserContext;
     }) => Promise<
-        | MFAFlowErrors
         | {
               status: "OK";
-              session: SessionContainerInterface;
           }
+        | MFAFlowErrors
     >;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (_user: User) => Record<string, string[] | undefined>;

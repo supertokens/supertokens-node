@@ -96,7 +96,7 @@ export async function getFactorFlowControlFlags(req: BaseRequest, res: BaseRespo
             shouldCheckIfSignInIsAllowed = false;
             shouldCheckIfSignUpIsAllowed = false;
             shouldAttemptAccountLinking = false;
-            shouldCreateSession = true;
+            shouldCreateSession = false;
         }
     }
 

@@ -656,63 +656,57 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
+            let isFirstFactor = session === undefined;
             if (shouldCreateSession) {
-                if (mfaInstance === undefined) {
-                    let session = await Session.createNewSession(
-                        options.req,
-                        options.res,
-                        tenantId,
-                        emailPasswordRecipeUser.recipeUserId,
-                        {},
-                        {},
-                        userContext
-                    );
-
-                    return {
-                        status: "OK",
-                        session,
-                        user: response.user,
-                    };
-                } else {
-                    const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                        req: options.req,
-                        res: options.res,
-                        tenantId,
-                        factorIdInProgress: "emailpassword",
-                        justCompletedFactorUserInfo: {
-                            user: response.user,
-                            createdNewUser: false,
-                            recipeUserId: emailPasswordRecipeUser.recipeUserId,
-                        },
-                        userContext,
-                    });
-
-                    if (sessionRes.status !== "OK") {
-                        return sessionRes;
-                    }
-
-                    let user = await getUser(response.user.id, userContext);
-
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-
-                    return {
-                        status: "OK",
-                        session: sessionRes.session,
-                        user,
-                    };
-                }
-            } else {
-                return {
-                    status: "OK",
-                    session: session!,
-                    user: response.user,
-                };
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
             }
+
+            if (session === undefined) {
+                throw new Error("should never happen!");
+            }
+
+            if (mfaInstance !== undefined) {
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor,
+                    factorId: "emailpassword",
+                    userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
+                        user: response.user,
+                        createdNewUser: false,
+                        recipeUserId: emailPasswordRecipeUser.recipeUserId,
+                    },
+                    userContext,
+                });
+
+                if (sessionRes.status !== "OK") {
+                    return sessionRes;
+                }
+
+                let user = await getUser(response.user.id, userContext);
+
+                if (user === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                response.user = user;
+            }
+
+            return {
+                status: "OK",
+                session,
+                user: response.user,
+            };
         },
 
         signUpPOST: async function ({
@@ -840,62 +834,56 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Race condition error - please call this API again");
             }
 
+            let isFirstFactor = session === undefined;
             if (shouldCreateSession) {
-                if (mfaInstance === undefined) {
-                    let session = await Session.createNewSession(
-                        options.req,
-                        options.res,
-                        tenantId,
-                        emailPasswordRecipeUser.recipeUserId,
-                        {},
-                        {},
-                        userContext
-                    );
-                    return {
-                        status: "OK",
-                        session,
-                        user: response.user,
-                    };
-                } else {
-                    const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                        req: options.req,
-                        res: options.res,
-                        tenantId,
-                        factorIdInProgress: "emailpassword",
-                        isAlreadySetup: false,
-                        justCompletedFactorUserInfo: {
-                            user: response.user,
-                            createdNewUser: true,
-                            recipeUserId: emailPasswordRecipeUser.recipeUserId,
-                        },
-                        userContext,
-                    });
-
-                    if (sessionRes.status !== "OK") {
-                        return sessionRes;
-                    }
-
-                    let user = await getUser(response.user.id, userContext);
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-
-                    return {
-                        status: "OK",
-                        session: sessionRes.session,
-                        user,
-                    };
-                }
-            } else {
-                return {
-                    status: "OK",
-                    session: session!,
-                    user: response.user,
-                };
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
             }
+
+            if (session === undefined) {
+                throw new Error("should never happen!");
+            }
+
+            if (mfaInstance !== undefined) {
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor,
+                    factorId: "emailpassword",
+                    userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
+                        user: response.user,
+                        createdNewUser: true,
+                        recipeUserId: emailPasswordRecipeUser.recipeUserId,
+                    },
+                    userContext,
+                });
+
+                if (sessionRes.status !== "OK") {
+                    return sessionRes;
+                }
+
+                let user = await getUser(response.user.id, userContext);
+                if (user === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                response.user = user;
+            }
+
+            return {
+                status: "OK",
+                session,
+                user: response.user,
+            };
         },
     };
 }

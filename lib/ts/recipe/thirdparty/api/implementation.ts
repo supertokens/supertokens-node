@@ -343,72 +343,60 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
+            let isFirstFactor = session === undefined;
             if (shouldCreateSession) {
-                if (mfaInstance === undefined) {
-                    let session = await Session.createNewSession(
-                        options.req,
-                        options.res,
-                        tenantId,
-                        loginMethod.recipeUserId,
-                        {},
-                        {},
-                        userContext
-                    );
-                    return {
-                        status: "OK",
-                        createdNewRecipeUser: response.createdNewRecipeUser,
-                        user: response.user,
-                        session,
-                        oAuthTokens: oAuthTokensToUse,
-                        rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
-                    };
-                } else {
-                    const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                        req: options.req,
-                        res: options.res,
-                        tenantId,
-                        factorIdInProgress: "thirdparty",
-                        isAlreadySetup,
-                        justCompletedFactorUserInfo: {
-                            user: response.user,
-                            createdNewUser: response.createdNewRecipeUser,
-                            recipeUserId: loginMethod.recipeUserId,
-                        },
-                        userContext: input.userContext,
-                    });
-
-                    if (sessionRes.status !== "OK") {
-                        return sessionRes;
-                    }
-
-                    let user = await getUser(response.user.id, input.userContext);
-
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-
-                    return {
-                        status: "OK",
-                        createdNewRecipeUser: response.createdNewRecipeUser,
-                        user,
-                        session: sessionRes.session,
-                        oAuthTokens: oAuthTokensToUse,
-                        rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
-                    };
-                }
-            } else {
-                return {
-                    status: "OK",
-                    createdNewRecipeUser: response.createdNewRecipeUser,
-                    user: response.user,
-                    session: session!,
-                    oAuthTokens: response.oAuthTokens,
-                    rawUserInfoFromProvider: response.rawUserInfoFromProvider,
-                };
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    tenantId,
+                    loginMethod.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
             }
+
+            if (session === undefined) {
+                throw new Error("should never come here");
+            }
+
+            if (mfaInstance !== undefined) {
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor,
+                    factorId: "thirdparty",
+                    userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
+                        user: response.user,
+                        createdNewUser: response.createdNewRecipeUser,
+                        recipeUserId: loginMethod.recipeUserId,
+                    },
+                    userContext: input.userContext,
+                });
+
+                if (sessionRes.status !== "OK") {
+                    return sessionRes;
+                }
+
+                let user = await getUser(response.user.id, input.userContext);
+
+                if (user === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                response.user = user;
+            }
+
+            return {
+                status: "OK",
+                createdNewRecipeUser: response.createdNewRecipeUser,
+                user: response.user,
+                session,
+                oAuthTokens: oAuthTokensToUse,
+                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+            };
         },
 
         appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options }): Promise<void> {

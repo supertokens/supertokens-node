@@ -65,7 +65,7 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
                 factorIdInProgress: "totp",
                 session,
-                isAlreadySetup: false, // since this is a sign up
+                isAlreadySetup: false, // since this is verifying a device
                 userContext,
             });
 
@@ -86,12 +86,10 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                    req: options.req,
-                    res: options.res,
-                    tenantId,
-                    factorIdInProgress: "totp",
-                    isAlreadySetup: false,
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor: false,
+                    factorId: "totp",
                     userContext,
                 });
                 if (sessionRes.status != "OK") {
@@ -119,12 +117,10 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                    req: options.req,
-                    res: options.res,
-                    tenantId,
-                    factorIdInProgress: "totp",
-                    isAlreadySetup: true,
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor: false,
+                    factorId: "totp",
                     userContext,
                 });
 
