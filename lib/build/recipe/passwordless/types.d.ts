@@ -14,7 +14,6 @@ import {
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
@@ -311,11 +310,10 @@ export declare type APIInterface = {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "SIGN_IN_UP_NOT_ALLOWED";
+              status: "SIGN_IN_UP_NOT_ALLOWED" | "SIGN_IN_UP_FAILED";
               reason: string;
           }
         | GeneralErrorResponse
-        | MFAFlowErrors
     >;
     emailExistsGET?: (input: {
         email: string;

@@ -54,6 +54,6 @@ describe(`mfa-autoinit: ${printPath("[test/mfa/mfa.autoInit.test.js]")}`, functi
         });
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password");
-        await MultiFactorAuth.addToDefaultRequiredFactorsForUser(user.user.id, "totp"); // should not have an error
+        await MultiFactorAuth.addToRequiredSecondaryFactorsForUser(user.user.id, "totp"); // should not have an error
     });
 });

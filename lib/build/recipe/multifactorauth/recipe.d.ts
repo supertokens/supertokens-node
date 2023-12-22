@@ -7,8 +7,9 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserCont
 import {
     APIInterface,
     GetAllFactorsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
-    MFAFlowErrors,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
     RecipeInterface,
     TypeInput,
     TypeNormalisedInput,
@@ -23,6 +24,8 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[];
     getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[];
+    getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[];
+    getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[];
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -50,47 +53,45 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
     getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    validateForMultifactorAuthBeforeFactorCompletion: ({
-        tenantId,
-        factorIdInProgress,
-        session,
-        userLoggingIn,
-        isAlreadySetup,
-        signUpInfo,
-        userContext,
-    }: {
-        tenantId: string;
-        factorIdInProgress: string;
-        session?: SessionContainerInterface | undefined;
-        userLoggingIn?: User | undefined;
-        isAlreadySetup?: boolean | undefined;
-        signUpInfo?:
+    validateForMultifactorAuthBeforeFactorCompletion: (
+        input: {
+            tenantId: string;
+            factorIdInProgress: string;
+            session?: SessionContainerInterface;
+            userContext: UserContext;
+        } & (
             | {
-                  email: string;
-                  isVerifiedFactor: boolean;
+                  userLoggingIn: User;
               }
-            | undefined;
-        userContext: UserContext;
-    }) => Promise<
+            | {
+                  isAlreadySetup: boolean;
+                  signUpInfo?: {
+                      email?: string;
+                      phoneNumber?: string;
+                      isVerifiedFactor: boolean;
+                  };
+              }
+        )
+    ) => Promise<
         | {
               status: "OK";
           }
-        | MFAFlowErrors
+        | {
+              status: "MFA_FLOW_ERROR";
+              reason: string;
+          }
     >;
-    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion: ({
-        req,
-        res,
-        tenantId,
-        factorIdInProgress,
-        justCompletedFactorUserInfo,
+    updateSessionAndUserAfterFactorCompletion: ({
+        session,
+        isFirstFactor,
+        factorId,
+        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
         userContext,
     }: {
-        req: BaseRequest;
-        res: BaseResponse;
-        tenantId: string;
-        factorIdInProgress: string;
-        isAlreadySetup?: boolean | undefined;
-        justCompletedFactorUserInfo?:
+        session: SessionContainerInterface;
+        isFirstFactor: boolean;
+        factorId: string;
+        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor?:
             | {
                   user: User;
                   createdNewUser: boolean;
@@ -99,10 +100,16 @@ export default class Recipe extends RecipeModule {
             | undefined;
         userContext: UserContext;
     }) => Promise<
-        | MFAFlowErrors
         | {
               status: "OK";
-              session: SessionContainerInterface;
+          }
+        | {
+              status: "MFA_FLOW_ERROR";
+              reason: string;
           }
     >;
+    addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
+    getEmailsForFactors: (_user: User) => Record<string, string[] | undefined>;
+    addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
+    getPhoneNumbersForFactors: (_user: User) => Record<string, string[] | undefined>;
 }

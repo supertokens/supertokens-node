@@ -268,7 +268,11 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         let accessToken = cookies.accessTokenFromAny;
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
-        assert.equal("ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR", res.body.status);
+        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal(
+            "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+            res.body.reason
+        );
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
@@ -352,7 +356,11 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         let accessToken = cookies.accessTokenFromAny;
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
-        assert.equal("ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR", res.body.status);
+        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal(
+            "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+            res.body.reason
+        );
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
@@ -464,7 +472,11 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         assert.equal("OK", res.body.status);
 
         res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
-        assert.equal("ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR", res.body.status);
+        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal(
+            "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+            res.body.reason
+        );
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
@@ -543,7 +555,8 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         let accessToken = cookies.accessTokenFromAny;
 
         res = await epSignUp(app, "test2@example.com", "password1", accessToken);
-        assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
+        assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal("Cannot setup factor because the email is not verified", res.body.reason);
     });
 
     it("test with account linking case 1", async function () {
@@ -633,7 +646,8 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         let accessToken = cookies.accessTokenFromAny;
 
         res = await epSignUp(app, "test2@example.com", "password2", accessToken);
-        assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
+        assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal("Cannot setup factor because the email is not verified", res.body.reason);
 
         res = await tpSignInUp(app, "custom", "test2@example.com", undefined);
         assert.equal("OK", res.body.status);

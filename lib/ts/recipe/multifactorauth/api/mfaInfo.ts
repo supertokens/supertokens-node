@@ -23,7 +23,7 @@ export default async function mfaInfo(
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (apiImplementation.mfaInfoGET === undefined) {
+    if (apiImplementation.updateSessionAndFetchMfaInfoPUT === undefined) {
         return false;
     }
 
@@ -34,7 +34,7 @@ export default async function mfaInfo(
         userContext
     );
 
-    let response = await apiImplementation.mfaInfoGET({
+    let response = await apiImplementation.updateSessionAndFetchMfaInfoPUT({
         options,
         session,
         userContext,

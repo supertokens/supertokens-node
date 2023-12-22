@@ -97,23 +97,14 @@ export default class Recipe extends RecipeModule {
                 PostSuperTokensInitCallbacks.addPostInitCallback(() => {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
-                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
-                            if (tenantConfig.totp.enabled === false) {
-                                return {
-                                    factorIds: [],
-                                    firstFactorIds: [],
-                                };
-                            }
+                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc(() => {
                             return {
                                 factorIds: ["totp"],
                                 firstFactorIds: [],
                             };
                         });
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
-                            async (user: User, tenantConfig: TenantConfig, userContext: UserContext) => {
-                                if (tenantConfig.totp.enabled === false) {
-                                    return [];
-                                }
+                            async (user: User, _tenantConfig: TenantConfig, userContext: UserContext) => {
                                 const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices(
                                     {
                                         userId: user.id,

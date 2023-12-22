@@ -16,7 +16,7 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
-import { validateAndNormaliseUserInput } from "./utils";
+import { isFakeEmail, validateAndNormaliseUserInput } from "./utils";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import STError from "./error";
 
@@ -127,6 +127,20 @@ export default class Recipe extends RecipeModule {
                                 return [];
                             }
                         );
+                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User) => {
+                            let result: Record<string, string[] | undefined> = {};
+                            result["thirdparty"] = [];
+                            for (const loginMethod of user.loginMethods) {
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                    if (!isFakeEmail(loginMethod.email!)) {
+                                        if (!result["thirdparty"].includes(loginMethod.email!)) {
+                                            result["thirdparty"].push(loginMethod.email!);
+                                        }
+                                    }
+                                }
+                            }
+                            return result;
+                        });
                     }
                 });
 

@@ -35,11 +35,8 @@ export declare type TenantConfig = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
-    totp: {
-        enabled: boolean;
-    };
     firstFactors?: string[];
-    defaultRequiredFactorIds?: string[];
+    requiredSecondaryFactors?: string[];
     coreConfig: {
         [key: string]: any;
     };
@@ -52,9 +49,8 @@ export declare type RecipeInterface = {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled?: boolean;
-            totpEnabled?: boolean;
             firstFactors?: string[];
-            defaultRequiredFactorIds?: string[];
+            requiredSecondaryFactors?: string[];
             coreConfig?: {
                 [key: string]: any;
             };

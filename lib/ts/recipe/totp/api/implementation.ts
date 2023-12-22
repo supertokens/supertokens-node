@@ -65,17 +65,15 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
                 factorIdInProgress: "totp",
                 session,
-                userLoggingIn: undefined,
-                isAlreadySetup: false, // since this is a sign up
+                isAlreadySetup: false, // since this is verifying a device
                 userContext,
             });
 
-            if (validateMfaRes.status === "DISALLOWED_FIRST_FACTOR_ERROR") {
-                throw new Error("Should never come here"); // TOTP is never a first factor
-            }
-
-            if (validateMfaRes.status !== "OK") {
-                return validateMfaRes;
+            if (validateMfaRes.status === "MFA_FLOW_ERROR") {
+                return {
+                    status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                    reason: validateMfaRes.reason,
+                };
             }
 
             const res = await options.recipeImplementation.verifyDevice({
@@ -87,16 +85,18 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                    req: options.req,
-                    res: options.res,
-                    tenantId,
-                    factorIdInProgress: "totp",
-                    isAlreadySetup: false,
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor: false,
+                    factorId: "totp",
                     userContext,
                 });
-                if (sessionRes.status != "OK") {
-                    return sessionRes;
+
+                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                        reason: sessionRes.reason,
+                    };
                 }
             }
 
@@ -120,17 +120,15 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                    req: options.req,
-                    res: options.res,
-                    tenantId,
-                    factorIdInProgress: "totp",
-                    isAlreadySetup: true,
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor: false,
+                    factorId: "totp",
                     userContext,
                 });
 
-                if (sessionRes.status != "OK") {
-                    return sessionRes;
+                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                    throw new Error("should never come here");
                 }
             }
 

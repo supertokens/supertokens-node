@@ -6,7 +6,7 @@ import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        mfaInfoGET: async ({ options, session, userContext }) => {
+        updateSessionAndFetchMfaInfoPUT: async ({ options, session, userContext }) => {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
             const user = await getUser(userId, userContext);
@@ -37,10 +37,9 @@ export default function getAPIInterface(): APIInterface {
             const availableFactors = await options.recipeInstance.getAllAvailableFactorIds(tenantConfig);
 
             // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-            const defaultRequiredFactorIdsForUser = await options.recipeImplementation.getDefaultRequiredFactorsForUser(
+            const requiredSecondaryFactorsForUser = await options.recipeImplementation.getRequiredSecondaryFactorsForUser(
                 {
-                    user: user!,
-                    tenantId,
+                    userId,
                     userContext,
                 }
             );
@@ -51,8 +50,8 @@ export default function getAPIInterface(): APIInterface {
                 accessTokenPayload: session.getAccessTokenPayload(),
                 tenantId,
                 factorsSetUpForUser: isAlreadySetup,
-                defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
-                defaultRequiredFactorIdsForUser,
+                requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
+                requiredSecondaryFactorsForUser,
                 completedFactors: completedFactors,
                 userContext,
             });
@@ -64,25 +63,14 @@ export default function getAPIInterface(): APIInterface {
                         session,
                         factorId: id,
                         completedFactors: completedFactors,
-                        defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
-                        defaultRequiredFactorIdsForUser,
+                        requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
+                        requiredSecondaryFactorsForUser,
                         factorsSetUpForUser: isAlreadySetup,
                         mfaRequirementsForAuth,
                         userContext,
                     })
                 ) {
                     isAllowedToSetup.push(id);
-                }
-            }
-
-            let selectedEmail = user.emails[0];
-
-            for (const loginMethod of user.loginMethods) {
-                if (loginMethod.recipeUserId.getAsString() === session.getRecipeUserId().getAsString()) {
-                    if (loginMethod.email !== undefined) {
-                        selectedEmail = loginMethod.email;
-                    }
-                    break;
                 }
             }
 
@@ -94,8 +82,8 @@ export default function getAPIInterface(): APIInterface {
                     isAllowedToSetup,
                     isAlreadySetup,
                 },
-                email: selectedEmail,
-                phoneNumber: user.phoneNumbers[0],
+                emails: options.recipeInstance.getEmailsForFactors(user),
+                phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user),
             };
         },
     };

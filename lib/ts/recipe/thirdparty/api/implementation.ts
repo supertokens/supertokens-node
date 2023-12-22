@@ -3,14 +3,12 @@ import Session from "../../session";
 import AccountLinking from "../../accountlinking/recipe";
 
 import { RecipeLevelUser } from "../../accountlinking/types";
-import { getUser, listUsersByAccountInfo } from "../../..";
+import { User, getUser, listUsersByAccountInfo } from "../../..";
 import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
-import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
-import { SessionContainerInterface } from "../../session/types";
-import { User } from "../../../types";
 import SessionError from "../../session/error";
+import { getFactorFlowControlFlags } from "../../multifactorauth/utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -71,36 +69,40 @@ export default function getAPIInterface(): APIInterface {
                 userContext
             );
 
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
-            let session: SessionContainerInterface | undefined = await Session.getSession(
-                input.options.req,
-                input.options.res,
-                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
-            );
+            let {
+                session,
+                mfaInstance,
+                shouldCheckIfSignInIsAllowed,
+                shouldCheckIfSignUpIsAllowed,
+                shouldAttemptAccountLinking,
+                shouldCreateSession,
+            } = await getFactorFlowControlFlags(input.options.req, input.options.res, input.userContext);
 
-            if (existingUsers.length === 0 && (session === undefined || mfaInstance === undefined)) {
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: {
-                        recipeId: "thirdparty",
-                        email: emailInfo.id,
-                        thirdParty: {
-                            id: provider.id,
-                            userId: userInfo.thirdPartyUserId,
+            if (existingUsers.length === 0) {
+                if (shouldCheckIfSignUpIsAllowed) {
+                    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                        newUser: {
+                            recipeId: "thirdparty",
+                            email: emailInfo.id,
+                            thirdParty: {
+                                id: provider.id,
+                                userId: userInfo.thirdPartyUserId,
+                            },
                         },
-                    },
-                    isVerified: emailInfo.isVerified,
-                    tenantId,
-                    userContext,
-                });
+                        isVerified: emailInfo.isVerified,
+                        tenantId,
+                        userContext,
+                    });
 
-                if (!isSignUpAllowed) {
-                    // On the frontend, this should show a UI of asking the user
-                    // to login using a different method.
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
-                    };
+                    if (!isSignUpAllowed) {
+                        // On the frontend, this should show a UI of asking the user
+                        // to login using a different method.
+                        return {
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
+                        };
+                    }
                 }
             } else {
                 // this is a sign in. So before we proceed, we need to check if an email change
@@ -211,47 +213,60 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            const userLoggingIn = existingUsers.length > 0 ? existingUsers[0] : undefined;
+            const isSignUp = existingUsers.length === 0;
+            let isAlreadySetup = false;
 
-            let sessionUser: User | undefined;
-            if (session !== undefined) {
-                if (userLoggingIn && userLoggingIn.id === session.getUserId()) {
-                    sessionUser = userLoggingIn;
-                } else {
-                    const user = await getUser(session.getUserId(), input.userContext);
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
+            if (mfaInstance !== undefined) {
+                if (!isSignUp) {
+                    let sessionUser: User | undefined;
+                    if (session !== undefined) {
+                        if (existingUsers.length > 0 && existingUsers[0].id === session.getUserId()) {
+                            sessionUser = existingUsers[0];
+                        } else {
+                            const user = await getUser(session.getUserId(), input.userContext);
+                            if (user === undefined) {
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Session user not found",
+                                });
+                            }
+                            sessionUser = user;
+                        }
                     }
-                    sessionUser = user;
+
+                    isAlreadySetup =
+                        sessionUser !== undefined &&
+                        sessionUser.thirdParty.length > 0 &&
+                        sessionUser.thirdParty.some(
+                            (tp) => tp.id === provider.id && tp.userId === userInfo.thirdPartyUserId
+                        );
                 }
-            }
 
-            let isAlreadySetup = undefined;
-            if (mfaInstance) {
-                isAlreadySetup = !sessionUser
-                    ? false
-                    : sessionUser.thirdParty.length > 0 &&
-                      sessionUser.thirdParty.some(
-                          (tp) => tp.id === provider.id && tp.userId === userInfo.thirdPartyUserId
-                      );
-                const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                    tenantId: input.tenantId,
-                    factorIdInProgress: "thirdparty",
-                    session,
-                    userLoggingIn,
-                    isAlreadySetup,
-                    signUpInfo: {
-                        email: emailInfo.id,
-                        isVerifiedFactor: emailInfo.isVerified,
-                    },
-                    userContext: input.userContext,
-                });
+                const validateMfaRes = isSignUp
+                    ? await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                          tenantId: input.tenantId,
+                          factorIdInProgress: "thirdparty",
+                          session,
+                          isAlreadySetup,
+                          signUpInfo: {
+                              email: emailInfo.id,
+                              isVerifiedFactor: emailInfo.isVerified,
+                          },
+                          userContext: input.userContext,
+                      })
+                    : await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                          tenantId: input.tenantId,
+                          factorIdInProgress: "thirdparty",
+                          session,
+                          userLoggingIn: existingUsers[0],
+                          userContext: input.userContext,
+                      });
 
-                if (validateMfaRes.status !== "OK") {
-                    return validateMfaRes;
+                if (validateMfaRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: validateMfaRes.reason,
+                    };
                 }
             }
 
@@ -301,35 +316,39 @@ export default function getAPIInterface(): APIInterface {
                 // conditions related to account linking and not related to email change. Email change
                 // condition checking happens before calling the recipe function anyway.
 
-                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    user: response.user,
-                    tenantId,
-                    userContext,
-                });
-
-                if (!isSignInAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
-                    };
-                }
-
-                // we do account linking only during sign in here cause during sign up,
-                // the recipe function above does account linking for us.
-                // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                if (session === undefined) {
-                    response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                        tenantId,
+                if (shouldCheckIfSignInIsAllowed) {
+                    let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                         user: response.user,
+                        tenantId,
                         userContext,
                     });
+
+                    if (!isSignInAllowed) {
+                        return {
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
+                        };
+                    }
+                }
+
+                if (shouldAttemptAccountLinking) {
+                    // we do account linking only during sign in here cause during sign up,
+                    // the recipe function above does account linking for us.
+                    // we do not want to attempt accountlinking when there is an active session and MFA is turned on
+                    if (session === undefined) {
+                        response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                            tenantId,
+                            user: response.user,
+                            userContext,
+                        });
+                    }
                 }
             }
 
-            if (mfaInstance === undefined) {
-                // No MFA, create session as usual
-                let session = await Session.createNewOrKeepExistingSession(
+            let isFirstFactor = session === undefined;
+            if (shouldCreateSession) {
+                session = await Session.createNewSession(
                     options.req,
                     options.res,
                     tenantId,
@@ -338,38 +357,49 @@ export default function getAPIInterface(): APIInterface {
                     {},
                     userContext
                 );
-                return {
-                    status: "OK",
-                    createdNewRecipeUser: response.createdNewRecipeUser,
-                    user: response.user,
-                    session,
-                    oAuthTokens: oAuthTokensToUse,
-                    rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
-                };
             }
 
-            const sessionRes = await mfaInstance.createOrUpdateSessionForMultifactorAuthAfterFactorCompletion({
-                req: options.req,
-                res: options.res,
-                tenantId,
-                factorIdInProgress: "thirdparty",
-                isAlreadySetup,
-                justCompletedFactorUserInfo: {
-                    user: response.user,
-                    createdNewUser: response.createdNewRecipeUser,
-                    recipeUserId: loginMethod.recipeUserId,
-                },
-                userContext: input.userContext,
-            });
-            if (sessionRes.status !== "OK") {
-                return sessionRes;
+            if (session === undefined) {
+                throw new Error("should never come here");
+            }
+
+            if (mfaInstance !== undefined) {
+                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
+                    session,
+                    isFirstFactor,
+                    factorId: "thirdparty",
+                    userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
+                        user: response.user,
+                        createdNewUser: response.createdNewRecipeUser,
+                        recipeUserId: loginMethod.recipeUserId,
+                    },
+                    userContext: input.userContext,
+                });
+
+                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                    return {
+                        status: "SIGN_IN_UP_FAILED",
+                        reason: sessionRes.reason,
+                    };
+                }
+
+                let user = await getUser(response.user.id, input.userContext);
+
+                if (user === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                response.user = user;
             }
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
-                user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
-                session: sessionRes.session,
+                user: response.user,
+                session,
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
             };

@@ -265,7 +265,7 @@ module.exports.tpSignInUp = async function (app, thirdPartyId, email, accessToke
 module.exports.getMfaInfo = async function (app, accessToken) {
     return await new Promise((resolve) =>
         request(app)
-            .get("/auth/mfa/info")
+            .put("/auth/mfa/info")
             .set("Authorization", `Bearer ${accessToken}`)
             .expect(200)
             .end((err, res) => {

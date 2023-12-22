@@ -5,7 +5,6 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type UserInfo = {
     thirdPartyUserId: string;
     email?: {
@@ -296,10 +295,9 @@ export declare type APIInterface = {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
               | {
-                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED" | "SIGN_IN_UP_FAILED";
                     reason: string;
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:

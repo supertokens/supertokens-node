@@ -25,7 +25,6 @@ import {
 } from "../../ingredients/smsdelivery/types";
 import { GeneralErrorResponse, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 export declare type DeviceType = DeviceTypeOriginal;
 export declare type TypeInput = (
     | {
@@ -367,10 +366,9 @@ export declare type APIInterface = {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
               | {
-                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED" | "SIGN_IN_UP_FAILED";
                     reason: string;
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
@@ -459,11 +457,10 @@ export declare type APIInterface = {
                     status: "RESTART_FLOW_ERROR";
                 }
               | {
-                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED" | "SIGN_IN_UP_FAILED";
                     reason: string;
                 }
               | GeneralErrorResponse
-              | MFAFlowErrors
           >);
     passwordlessUserEmailExistsGET:
         | undefined

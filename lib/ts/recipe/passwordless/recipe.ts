@@ -169,6 +169,51 @@ export default class Recipe extends RecipeModule {
                                 return allFactors.filter((id) => isFactorSetupForUser(user, id));
                             }
                         );
+                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User) => {
+                            let result: Record<string, string[] | undefined> = {};
+                            if (allFactors.includes("otp-email")) {
+                                result["otp-email"] = [];
+                            }
+                            if (allFactors.includes("link-email")) {
+                                result["link-email"] = [];
+                            }
+                            for (const loginMethod of user.loginMethods) {
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                    if (loginMethod.email !== undefined) {
+                                        if (allFactors.includes("otp-email")) {
+                                            result["otp-email"]!.push(loginMethod.email);
+                                        }
+                                        if (allFactors.includes("link-email")) {
+                                            result["link-email"]!.push(loginMethod.email);
+                                        }
+                                    }
+                                }
+                            }
+                            return result;
+                        });
+
+                        mfaInstance.addGetPhoneNumbersForFactorsFromOtherRecipes((user: User) => {
+                            let result: Record<string, string[] | undefined> = {};
+                            if (allFactors.includes("otp-phone")) {
+                                result["otp-phone"] = [];
+                            }
+                            if (allFactors.includes("link-phone")) {
+                                result["link-phone"] = [];
+                            }
+                            for (const loginMethod of user.loginMethods) {
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                    if (loginMethod.phoneNumber !== undefined) {
+                                        if (allFactors.includes("otp-phone")) {
+                                            result["otp-phone"]!.push(loginMethod.phoneNumber);
+                                        }
+                                        if (allFactors.includes("link-phone")) {
+                                            result["link-phone"]!.push(loginMethod.phoneNumber);
+                                        }
+                                    }
+                                }
+                            }
+                            return result;
+                        });
                     }
                 });
 

@@ -154,7 +154,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
 
         app.use(errorHandler());
 
-        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", {
+        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", undefined, {
             manualCall: true,
         });
 

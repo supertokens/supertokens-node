@@ -37,15 +37,6 @@ export type MFAClaimValue = {
     n: string[];
 };
 
-export type MFAFlowErrors = {
-    status:
-        | "DISALLOWED_FIRST_FACTOR_ERROR"
-        | "FACTOR_SETUP_NOT_ALLOWED_ERROR"
-        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-    message?: string;
-};
-
 export type TypeInput = {
     firstFactors?: string[];
 
@@ -76,8 +67,8 @@ export type RecipeInterface = {
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpForUser: string[];
-        defaultRequiredFactorIdsForUser: string[];
-        defaultRequiredFactorIdsForTenant: string[];
+        requiredSecondaryFactorsForUser: string[];
+        requiredSecondaryFactorsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
     }) => Promise<boolean>;
@@ -87,8 +78,8 @@ export type RecipeInterface = {
         accessTokenPayload: JSONObject;
         tenantId: string;
         factorsSetUpForUser: string[];
-        defaultRequiredFactorIdsForUser: string[];
-        defaultRequiredFactorIdsForTenant: string[];
+        requiredSecondaryFactorsForUser: string[];
+        requiredSecondaryFactorsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
@@ -101,11 +92,19 @@ export type RecipeInterface = {
 
     getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
 
-    getDefaultRequiredFactorsForUser(input: {
-        user: User;
-        tenantId: string;
+    getRequiredSecondaryFactorsForUser: (input: { userId: string; userContext: UserContext }) => Promise<string[]>;
+
+    addToRequiredSecondaryFactorsForUser: (input: {
+        userId: string;
+        factorId: string;
         userContext: UserContext;
-    }): Promise<string[]>;
+    }) => Promise<void>;
+
+    removeFromRequiredSecondaryFactorsForUser: (input: {
+        userId: string;
+        factorId: string;
+        userContext: UserContext;
+    }) => Promise<void>;
 };
 
 export type APIOptions = {
@@ -119,7 +118,7 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    mfaInfoGET: (input: {
+    updateSessionAndFetchMfaInfoPUT: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: UserContext;
@@ -130,8 +129,8 @@ export type APIInterface = {
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };
-              email?: string;
-              phoneNumber?: string;
+              emails: Record<string, string[] | undefined>;
+              phoneNumbers: Record<string, string[] | undefined>;
           }
         | GeneralErrorResponse
     >;
@@ -146,3 +145,6 @@ export type GetFactorsSetupForUserFromOtherRecipesFunc = (
 export type GetAllFactorsFromOtherRecipesFunc = (
     tenantConfig: TenantConfig
 ) => { factorIds: string[]; firstFactorIds: string[] };
+
+export type GetEmailsForFactorFromOtherRecipesFunc = (user: User) => Record<string, string[] | undefined>;
+export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (user: User) => Record<string, string[] | undefined>;

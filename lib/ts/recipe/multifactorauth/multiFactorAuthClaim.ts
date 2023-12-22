@@ -188,10 +188,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         });
 
         // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-        const defaultRequiredFactorIdsForUser = await recipeInstance.recipeInterfaceImpl.getDefaultRequiredFactorsForUser(
+        const requiredSecondaryFactorsForUser = await recipeInstance.recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
             {
-                user: user!,
-                tenantId: tenantId ?? DEFAULT_TENANT_ID,
+                userId,
                 userContext,
             }
         );
@@ -203,8 +202,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
             accessTokenPayload: currentPayload !== undefined ? currentPayload : {},
             tenantId: tenantId ?? DEFAULT_TENANT_ID,
             factorsSetUpForUser: isAlreadySetup,
-            defaultRequiredFactorIdsForTenant: tenantInfo?.defaultRequiredFactorIds ?? [],
-            defaultRequiredFactorIdsForUser,
+            requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
+            requiredSecondaryFactorsForUser,
             completedFactors: completedFactors,
             userContext,
         });

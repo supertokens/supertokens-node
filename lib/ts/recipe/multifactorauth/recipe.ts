@@ -21,13 +21,14 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { GET_MFA_INFO } from "./constants";
+import { UPDATE_SESSION_AND_FETCH_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
     GetAllFactorsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
-    MFAFlowErrors,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
     RecipeInterface,
     TypeInput,
     TypeNormalisedInput,
@@ -40,7 +41,6 @@ import { User } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 import Multitenancy from "../multitenancy";
-import Session from "../session";
 import AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser, listUsersByAccountInfo } from "../..";
 import { Querier } from "../../querier";
@@ -53,6 +53,9 @@ export default class Recipe extends RecipeModule {
 
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
     getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[] = [];
+
+    getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[] = [];
+    getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[] = [];
 
     config: TypeNormalisedInput;
 
@@ -127,10 +130,10 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled = (): APIHandled[] => {
         return [
             {
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(GET_MFA_INFO),
-                id: GET_MFA_INFO,
-                disabled: this.apiImpl.mfaInfoGET === undefined,
+                method: "put",
+                pathWithoutApiBasePath: new NormalisedURLPath(UPDATE_SESSION_AND_FETCH_MFA_INFO),
+                id: UPDATE_SESSION_AND_FETCH_MFA_INFO,
+                disabled: this.apiImpl.updateSessionAndFetchMfaInfoPUT === undefined,
             },
         ];
     };
@@ -153,7 +156,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
         };
-        if (id === GET_MFA_INFO) {
+        if (id === UPDATE_SESSION_AND_FETCH_MFA_INFO) {
             return await mfaInfoAPI(this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");
@@ -205,27 +208,27 @@ export default class Recipe extends RecipeModule {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    validateForMultifactorAuthBeforeFactorCompletion = async ({
-        tenantId,
-        factorIdInProgress,
-        session,
-        userLoggingIn,
-        isAlreadySetup,
-        signUpInfo,
-        userContext,
-    }: {
-        tenantId: string;
-        factorIdInProgress: string;
-        session?: SessionContainerInterface;
-        userLoggingIn?: User;
-        isAlreadySetup?: boolean;
-        signUpInfo?: {
-            email: string;
-            isVerifiedFactor: boolean;
-        };
-        userContext: UserContext;
-    }): Promise<{ status: "OK" } | MFAFlowErrors> => {
-        const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
+    validateForMultifactorAuthBeforeFactorCompletion = async (
+        input: {
+            tenantId: string;
+            factorIdInProgress: string;
+            session?: SessionContainerInterface;
+            userContext: UserContext;
+        } & (
+            | {
+                  userLoggingIn: User;
+              }
+            | {
+                  isAlreadySetup: boolean;
+                  signUpInfo?: {
+                      email?: string;
+                      phoneNumber?: string;
+                      isVerifiedFactor: boolean;
+                  };
+              }
+        )
+    ): Promise<{ status: "OK" } | { status: "MFA_FLOW_ERROR"; reason: string }> => {
+        const tenantInfo = await Multitenancy.getTenant(input.tenantId, input.userContext);
         if (tenantInfo === undefined) {
             throw new SessionError({
                 type: SessionError.UNAUTHORISED,
@@ -244,11 +247,12 @@ export default class Recipe extends RecipeModule {
             validFirstFactors = this.getAllAvailableFirstFactorIds(tenantConfig); // Last Priority, first factors based on initialised recipes
         }
 
-        if (session === undefined) {
+        if (input.session === undefined) {
             // No session exists, so we need to check if it's a valid first factor before proceeding
-            if (!validFirstFactors.includes(factorIdInProgress)) {
+            if (!validFirstFactors.includes(input.factorIdInProgress)) {
                 return {
-                    status: "DISALLOWED_FIRST_FACTOR_ERROR",
+                    status: "MFA_FLOW_ERROR",
+                    reason: `'${input.factorIdInProgress}' is not a valid first factor`,
                 };
             }
             return {
@@ -256,25 +260,26 @@ export default class Recipe extends RecipeModule {
             };
         }
 
-        let sessionUser;
-        if (userLoggingIn) {
-            if (userLoggingIn.id !== session.getUserId()) {
-                // the user trying to login is not linked to the session user, based on session behaviour
-                // we just return OK and do nothing or replace replace the existing session with a new one
-                // we are doing this because we allow factor setup only when creating a new user
+        if ("userLoggingIn" in input) {
+            if (input.userLoggingIn.id !== input.session.getUserId()) {
+                // here the user logging in is not linked to the session user and
+                // we do not allow factor setup for existing users through sign in.
+                // we allow factor setup only through sign up
 
-                // this can happen when you got into login screen with an existing session and tried to log in with a different credentials
-                // or a case while doing secondary factor for phone otp but the user created a different account with the same phone number
                 return {
-                    status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                    message:
+                    status: "MFA_FLOW_ERROR",
+                    reason:
                         "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
                 };
             }
-            sessionUser = userLoggingIn;
-        } else {
-            sessionUser = await getUser(session.getUserId(), userContext);
+
+            // we assume factor is already setup because the user logging in is already linked to the session user
+            return {
+                status: "OK",
+            };
         }
+
+        let sessionUser = await getUser(input.session.getUserId(), input.userContext);
 
         if (!sessionUser) {
             // Session user doesn't exist, maybe the user was deleted
@@ -285,17 +290,17 @@ export default class Recipe extends RecipeModule {
             });
         }
 
-        if (isAlreadySetup) {
+        if (input.isAlreadySetup) {
             return {
                 status: "OK",
             };
         }
 
-        // Check if the new user being created can be linked via MFA on the following conditions:
-        // 1. the new factor is a verified factor
-        // 2. the session user has a login method with same email and is verified
-        if (signUpInfo !== undefined) {
-            if (!signUpInfo.isVerifiedFactor) {
+        // Check if the new user being created can be considered for factor setup for MFA on the following conditions:
+        // 1. the new factor is a verified factor or the session user has a login method with same email and is verified
+        // 2. linking of the new user with the session user should not fail
+        if (input.signUpInfo !== undefined) {
+            if (!input.signUpInfo.isVerifiedFactor) {
                 /*
                     We discussed another method but did not go ahead with it, details below:
 
@@ -311,28 +316,51 @@ export default class Recipe extends RecipeModule {
                     would actually cause it to be linked with the e1 account.
                 */
 
-                let foundVerifiedEmail = false;
-                for (const lM of sessionUser?.loginMethods) {
-                    if (lM.email === signUpInfo.email && lM.verified) {
-                        foundVerifiedEmail = true;
-                        break;
+                if (input.signUpInfo.email !== undefined) {
+                    let foundVerifiedEmail = false;
+                    for (const lM of sessionUser?.loginMethods) {
+                        if (lM.email === input.signUpInfo.email && lM.verified) {
+                            foundVerifiedEmail = true;
+                            break;
+                        }
+                    }
+                    if (!foundVerifiedEmail) {
+                        return {
+                            status: "MFA_FLOW_ERROR",
+                            reason: "Cannot setup factor because the email is not verified",
+                        };
                     }
                 }
-                if (!foundVerifiedEmail) {
-                    return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                        message: "Cannot setup factor as the email is not verified",
-                    };
+
+                if (input.signUpInfo.phoneNumber !== undefined) {
+                    let foundVerifiedPhoneNumber = false;
+                    for (const lM of sessionUser?.loginMethods) {
+                        if (lM.phoneNumber === input.signUpInfo.phoneNumber && lM.verified) {
+                            foundVerifiedPhoneNumber = true;
+                            break;
+                        }
+                    }
+                    if (!foundVerifiedPhoneNumber) {
+                        return {
+                            status: "MFA_FLOW_ERROR",
+                            reason: "Cannot setup factor as the phone number is not verified",
+                        };
+                    }
                 }
             }
 
             // Check if there if the linking with session user going to fail and avoid user creation here
-            const users = await listUsersByAccountInfo(tenantId, { email: signUpInfo.email }, undefined, userContext);
+            const users = await listUsersByAccountInfo(
+                input.tenantId,
+                { email: input.signUpInfo.email },
+                undefined,
+                input.userContext
+            );
             for (const user of users) {
                 if (user.isPrimaryUser && user.id !== sessionUser.id) {
                     return {
-                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                        message:
+                        status: "MFA_FLOW_ERROR",
+                        reason:
                             "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
                     };
                 }
@@ -340,41 +368,41 @@ export default class Recipe extends RecipeModule {
         }
 
         // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-        const defaultRequiredFactorIdsForUser = await this.recipeInterfaceImpl.getDefaultRequiredFactorsForUser({
-            user: sessionUser,
-            tenantId,
-            userContext,
+        const requiredSecondaryFactorsForUser = await this.recipeInterfaceImpl.getRequiredSecondaryFactorsForUser({
+            userId: sessionUser.id,
+            userContext: input.userContext,
         });
         const factorsSetUpForUser = await this.recipeInterfaceImpl.getFactorsSetupForUser({
             user: sessionUser,
-            tenantId,
-            userContext,
+            tenantId: input.tenantId,
+            userContext: input.userContext,
         });
-        const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
+        const completedFactorsClaimValue = await input.session.getClaimValue(MultiFactorAuthClaim, input.userContext);
         const mfaRequirementsForAuth = await this.recipeInterfaceImpl.getMFARequirementsForAuth({
             user: sessionUser,
-            accessTokenPayload: session.getAccessTokenPayload(),
-            tenantId,
+            accessTokenPayload: input.session.getAccessTokenPayload(input.userContext),
+            tenantId: input.tenantId,
             factorsSetUpForUser,
-            defaultRequiredFactorIdsForTenant: tenantInfo.defaultRequiredFactorIds ?? [],
-            defaultRequiredFactorIdsForUser,
+            requiredSecondaryFactorsForTenant: tenantInfo.requiredSecondaryFactors ?? [],
+            requiredSecondaryFactorsForUser,
             completedFactors: completedFactorsClaimValue?.c ?? {},
-            userContext,
+            userContext: input.userContext,
         });
 
         const canSetup = await this.recipeInterfaceImpl.isAllowedToSetupFactor({
-            session,
-            factorId: factorIdInProgress,
+            session: input.session,
+            factorId: input.factorIdInProgress,
             completedFactors: completedFactorsClaimValue?.c ?? {},
-            defaultRequiredFactorIdsForTenant: tenantInfo.defaultRequiredFactorIds ?? [],
-            defaultRequiredFactorIdsForUser,
+            requiredSecondaryFactorsForTenant: tenantInfo.requiredSecondaryFactors ?? [],
+            requiredSecondaryFactorsForUser,
             factorsSetUpForUser,
             mfaRequirementsForAuth,
-            userContext,
+            userContext: input.userContext,
         });
         if (!canSetup) {
             return {
-                status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                status: "MFA_FLOW_ERROR",
+                reason: `Cannot setup factor as the user is not allowed to setup this factor: '${input.factorIdInProgress}'`,
             };
         }
 
@@ -383,20 +411,17 @@ export default class Recipe extends RecipeModule {
         };
     };
 
-    createOrUpdateSessionForMultifactorAuthAfterFactorCompletion = async ({
-        req,
-        res,
-        tenantId,
-        factorIdInProgress,
-        justCompletedFactorUserInfo,
+    updateSessionAndUserAfterFactorCompletion = async ({
+        session,
+        isFirstFactor,
+        factorId,
+        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
         userContext,
     }: {
-        req: BaseRequest;
-        res: BaseResponse;
-        tenantId: string;
-        factorIdInProgress: string;
-        isAlreadySetup?: boolean;
-        justCompletedFactorUserInfo?: {
+        session: SessionContainerInterface;
+        isFirstFactor: boolean;
+        factorId: string;
+        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor?: {
             user: User;
             createdNewUser: boolean;
             recipeUserId: RecipeUserId;
@@ -405,128 +430,144 @@ export default class Recipe extends RecipeModule {
     }): Promise<
         | {
               status: "OK";
-              session: SessionContainerInterface;
           }
-        | MFAFlowErrors
+        | { status: "MFA_FLOW_ERROR"; reason: string }
     > => {
-        let session = await Session.getSession(req, res, {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        });
-        if (
-            session === undefined // no session exists, so we can create a new one
-        ) {
-            if (justCompletedFactorUserInfo === undefined) {
-                throw new Error("should never come here"); // We wouldn't create new session from a recipe like TOTP
-            }
-
-            const newSession = await Session.createNewSession(
-                req,
-                res,
-                tenantId,
-                justCompletedFactorUserInfo.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+        if (isFirstFactor) {
             await this.recipeInterfaceImpl.markFactorAsCompleteInSession({
-                session: newSession,
-                factorId: factorIdInProgress,
+                session,
+                factorId: factorId,
                 userContext,
             });
             return {
                 status: "OK",
-                session: newSession,
             };
         }
 
-        while (true) {
-            // loop to handle race conditions
-            const sessionUser = await getUser(session.getUserId(), userContext);
+        // loop to handle race conditions
+        const sessionUser = await getUser(session.getUserId(), userContext);
 
-            // race condition, user deleted throw unauthorized
-            if (sessionUser === undefined) {
-                throw new SessionError({
-                    type: SessionError.UNAUTHORISED,
-                    message: "Session user not found",
-                });
-            }
+        // race condition, user deleted throw unauthorized
+        if (sessionUser === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Session user not found",
+            });
+        }
 
-            if (justCompletedFactorUserInfo !== undefined) {
-                if (justCompletedFactorUserInfo.createdNewUser) {
-                    // This is a newly created user, so it must be account linked with the session user
-                    if (!sessionUser.isPrimaryUser) {
-                        const createPrimaryRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.createPrimaryUser(
-                            {
-                                recipeUserId: new RecipeUserId(sessionUser.id),
-                                userContext,
-                            }
-                        );
-                        if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-                            // Race condition
-                            this.querier.invalidateCoreCallCache(userContext);
-                            continue;
-                        } else if (
-                            createPrimaryRes.status ===
-                            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                        ) {
-                            return {
-                                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                                message: "Error setting up MFA for the user. Please contact support. (ERR_CODE_009)",
-                            };
+        if (userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor !== undefined) {
+            if (userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor.createdNewUser) {
+                // This is a newly created user, so it must be account linked with the session user
+                if (!sessionUser.isPrimaryUser) {
+                    const createPrimaryRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.createPrimaryUser(
+                        {
+                            recipeUserId: new RecipeUserId(sessionUser.id),
+                            userContext,
                         }
-                    }
-
-                    const linkRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.linkAccounts({
-                        recipeUserId: justCompletedFactorUserInfo.recipeUserId,
-                        primaryUserId: sessionUser.id,
-                        userContext,
-                    });
-
-                    if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-                        return {
-                            status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                            message:
-                                "Error setting up MFA for the user because of the automatic account linking. Please contact support. (ERR_CODE_011)",
-                        };
-                    } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
-                        // Race condition
+                    );
+                    if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
                         this.querier.invalidateCoreCallCache(userContext);
-                        continue;
+                        return await this.updateSessionAndUserAfterFactorCompletion({
+                            session,
+                            isFirstFactor,
+                            factorId,
+                            userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
+                            userContext,
+                        }); // recurse for race condition
                     } else if (
-                        linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
                         return {
-                            status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                            message:
-                                "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_010)",
-                        };
-                    }
-                } else {
-                    // Not a new user we should check if the user is linked to the session user
-                    const loggedInUserLinkedToSessionUser = sessionUser.id === justCompletedFactorUserInfo.user.id;
-                    if (!loggedInUserLinkedToSessionUser) {
-                        return {
-                            status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                            message:
-                                "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
+                            status: "MFA_FLOW_ERROR",
+                            reason:
+                                "Error setting up factor for the user, because the account info is already associated with another primary user. Please contact support. (ERR_CODE_009)",
                         };
                     }
                 }
-            }
 
-            break;
+                const linkRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.linkAccounts({
+                    recipeUserId: userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor.recipeUserId,
+                    primaryUserId: sessionUser.id,
+                    userContext,
+                });
+
+                if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                    return {
+                        status: "MFA_FLOW_ERROR",
+                        reason:
+                            "You found a bug. The newly created user is already associated with another primary user. Please contact support. (ERR_CODE_011)",
+                    };
+                } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+                    this.querier.invalidateCoreCallCache(userContext);
+                    return await this.updateSessionAndUserAfterFactorCompletion({
+                        session,
+                        isFirstFactor,
+                        factorId,
+                        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
+                        userContext,
+                    }); // recurse for race condition
+                } else if (linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                    return {
+                        status: "MFA_FLOW_ERROR",
+                        reason:
+                            "Cannot complete factor setup as the account info is already associated with another primary user. Please contact support. (ERR_CODE_010)",
+                    };
+                }
+            } else {
+                // Not a new user we should check if the user is linked to the session user
+                const loggedInUserLinkedToSessionUser =
+                    sessionUser.id === userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor.user.id;
+                if (!loggedInUserLinkedToSessionUser) {
+                    return {
+                        status: "MFA_FLOW_ERROR",
+                        reason:
+                            "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
+                    };
+                }
+            }
         }
 
         await this.recipeInterfaceImpl.markFactorAsCompleteInSession({
             session: session,
-            factorId: factorIdInProgress,
+            factorId: factorId,
             userContext,
         });
 
         return {
             status: "OK",
-            session: session,
         };
+    };
+
+    addGetEmailsForFactorFromOtherRecipes = (func: GetEmailsForFactorFromOtherRecipesFunc) => {
+        this.getEmailsForFactorFromOtherRecipesFunc.push(func);
+    };
+
+    getEmailsForFactors = (_user: User): Record<string, string[] | undefined> => {
+        let result = {};
+
+        for (const func of this.getEmailsForFactorFromOtherRecipesFunc) {
+            result = {
+                ...result,
+                ...func(_user),
+            };
+        }
+        return result;
+    };
+
+    addGetPhoneNumbersForFactorsFromOtherRecipes = (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => {
+        this.getPhoneNumbersForFactorFromOtherRecipesFunc.push(func);
+    };
+
+    getPhoneNumbersForFactors = (_user: User): Record<string, string[] | undefined> => {
+        let result = {};
+
+        for (const func of this.getPhoneNumbersForFactorFromOtherRecipesFunc) {
+            result = {
+                ...result,
+                ...func(_user),
+            };
+        }
+
+        return result;
     };
 }

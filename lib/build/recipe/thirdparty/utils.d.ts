@@ -5,3 +5,4 @@ export declare function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput;
+export declare function isFakeEmail(email: string): boolean;

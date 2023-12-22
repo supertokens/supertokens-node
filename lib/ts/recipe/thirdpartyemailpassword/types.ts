@@ -34,7 +34,6 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import { GeneralErrorResponse, User as GlobalUser, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { MFAFlowErrors } from "../multifactorauth/types";
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
@@ -332,10 +331,9 @@ export type APIInterface = {
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | {
-                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED" | "SIGN_IN_UP_FAILED";
                     reason: string;
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -356,13 +354,12 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | {
-                    status: "SIGN_IN_NOT_ALLOWED";
+                    status: "SIGN_IN_NOT_ALLOWED" | "SIGN_IN_FAILED";
                     reason: string;
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
@@ -383,13 +380,12 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | {
-                    status: "SIGN_UP_NOT_ALLOWED";
+                    status: "SIGN_UP_NOT_ALLOWED" | "SIGN_UP_FAILED";
                     reason: string;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
-              | MFAFlowErrors
               | GeneralErrorResponse
           >);
 
