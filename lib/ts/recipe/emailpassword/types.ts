@@ -42,7 +42,7 @@ export type TypeNormalisedInput = {
 
 export type TypeInputFormField = {
     id: string;
-    validate?: (value: any, tenantId: string) => Promise<string | undefined>;
+    validate?: (value: any, tenantId: string, userContext: any) => Promise<string | undefined>;
     optional?: boolean;
 };
 
@@ -54,7 +54,7 @@ export type TypeInputSignUp = {
 
 export type NormalisedFormField = {
     id: string;
-    validate: (value: any, tenantId: string) => Promise<string | undefined>;
+    validate: (value: any, tenantId: string, userContext: any) => Promise<string | undefined>;
     optional: boolean;
 };
 
