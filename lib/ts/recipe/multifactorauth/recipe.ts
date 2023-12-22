@@ -21,7 +21,7 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { GET_MFA_INFO } from "./constants";
+import { UPDATE_SESSION_AND_GET_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
@@ -132,10 +132,10 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled = (): APIHandled[] => {
         return [
             {
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(GET_MFA_INFO),
-                id: GET_MFA_INFO,
-                disabled: this.apiImpl.mfaInfoGET === undefined,
+                method: "put",
+                pathWithoutApiBasePath: new NormalisedURLPath(UPDATE_SESSION_AND_GET_MFA_INFO),
+                id: UPDATE_SESSION_AND_GET_MFA_INFO,
+                disabled: this.apiImpl.updateSessionAndFetchMfaInfoPUT === undefined,
             },
         ];
     };
@@ -158,7 +158,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
         };
-        if (id === GET_MFA_INFO) {
+        if (id === UPDATE_SESSION_AND_GET_MFA_INFO) {
             return await mfaInfoAPI(this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");

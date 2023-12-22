@@ -6,7 +6,7 @@ import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        mfaInfoGET: async ({ options, session, userContext }) => {
+        updateSessionAndFetchMfaInfoPUT: async ({ options, session, userContext }) => {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
             const user = await getUser(userId, userContext);

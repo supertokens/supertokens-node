@@ -97,7 +97,7 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    mfaInfoGET: (input: {
+    updateSessionAndFetchMfaInfoPUT: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: UserContext;
