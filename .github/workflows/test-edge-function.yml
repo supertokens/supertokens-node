@@ -16,6 +16,7 @@ jobs:
             - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
             - run: npm install
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
+            - run: netlify deploy --alias $GITHUB_SHA --build --auth=$NETLIFY_AUTH_TOKEN
             - run: netlify deploy --skip-functions-cache --alias $GITHUB_SHA --build --json --auth=$NETLIFY_AUTH_TOKEN > deployInfo.json
             - run: cat deployInfo.json
             - run: |
