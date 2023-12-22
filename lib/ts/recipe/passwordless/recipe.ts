@@ -44,6 +44,7 @@ import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 import { User } from "../../user";
 import { isFactorSetupForUser } from "./utils";
 import { TenantConfig } from "../multitenancy/types";
+import { isFakeEmail } from "../thirdparty/utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -169,50 +170,83 @@ export default class Recipe extends RecipeModule {
                                 return allFactors.filter((id) => isFactorSetupForUser(user, id));
                             }
                         );
-                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User) => {
-                            let result: Record<string, string[] | undefined> = {};
-                            if (allFactors.includes("otp-email")) {
-                                result["otp-email"] = [];
+                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user, sessionRecipeUserId) => {
+                            // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
+                            let sessionEmail = user.loginMethods.find(
+                                (lm) => lm.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()
+                            )!.email;
+                            if (sessionEmail !== undefined && isFakeEmail(sessionEmail)) {
+                                sessionEmail = undefined;
                             }
-                            if (allFactors.includes("link-email")) {
-                                result["link-email"] = [];
-                            }
-                            for (const loginMethod of user.loginMethods) {
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                    if (loginMethod.email !== undefined) {
-                                        if (allFactors.includes("otp-email")) {
-                                            result["otp-email"]!.push(loginMethod.email);
-                                        }
-                                        if (allFactors.includes("link-email")) {
-                                            result["link-email"]!.push(loginMethod.email);
-                                        }
-                                    }
+
+                            const recipeLoginMethods = user.loginMethods.filter(
+                                (lm) =>
+                                    lm.recipeId === Recipe.RECIPE_ID && lm.email !== undefined && !isFakeEmail(lm.email)
+                            );
+
+                            // We order by join date ASC (so oldest first)
+                            let emails = recipeLoginMethods
+                                .sort((lma, lmb) => lma.timeJoined - lmb.timeJoined)
+                                .map((lm) => lm.email!);
+
+                            if (sessionEmail !== undefined) {
+                                if (emails.includes(sessionEmail)) {
+                                    // if the email address associated with the current session can be used here
+                                    // it should be the first one we recommend regardless of timeJoined
+                                    emails = [sessionEmail, ...emails.filter((email) => email !== sessionEmail)];
+                                } else if (emails.length === 0) {
+                                    emails = [sessionEmail];
                                 }
                             }
-                            return result;
+
+                            let res: Record<string, string[] | undefined> = {};
+                            if (allFactors.includes("otp-email")) {
+                                res["otp-email"] = emails;
+                            }
+
+                            if (allFactors.includes("link-email")) {
+                                res["link-email"] = emails;
+                            }
+                            return res;
                         });
 
-                        mfaInstance.addGetPhoneNumbersForFactorsFromOtherRecipes((user: User) => {
-                            let result: Record<string, string[] | undefined> = {};
-                            if (allFactors.includes("otp-phone")) {
-                                result["otp-phone"] = [];
-                            }
-                            if (allFactors.includes("link-phone")) {
-                                result["link-phone"] = [];
-                            }
-                            for (const loginMethod of user.loginMethods) {
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                    if (loginMethod.phoneNumber !== undefined) {
-                                        if (allFactors.includes("otp-phone")) {
-                                            result["otp-phone"]!.push(loginMethod.phoneNumber);
-                                        }
-                                        if (allFactors.includes("link-phone")) {
-                                            result["link-phone"]!.push(loginMethod.phoneNumber);
-                                        }
-                                    }
+                        mfaInstance.addGetPhoneNumbersForFactorsFromOtherRecipes((user, sessionRecipeUserId) => {
+                            // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
+                            let sessionPhone = user.loginMethods.find(
+                                (lm) => lm.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()
+                            )!.phoneNumber;
+
+                            const recipeLoginMethods = user.loginMethods.filter(
+                                (lm) => lm.recipeId === Recipe.RECIPE_ID && lm.phoneNumber !== undefined
+                            );
+
+                            // We order by join date ASC (so oldest first)
+                            let phoneNumbers = recipeLoginMethods
+                                .sort((lma, lmb) => lma.timeJoined - lmb.timeJoined)
+                                .map((lm) => lm.phoneNumber!);
+
+                            if (sessionPhone !== undefined) {
+                                if (phoneNumbers.includes(sessionPhone)) {
+                                    // if the phoneNumber associated with the current session can be used here
+                                    // it should be the first one we recommend regardless of timeJoined
+                                    phoneNumbers = [
+                                        sessionPhone,
+                                        ...phoneNumbers.filter((phoneNumber) => phoneNumber !== sessionPhone),
+                                    ];
+                                } else if (phoneNumbers.length === 0) {
+                                    phoneNumbers = [sessionPhone];
                                 }
                             }
-                            return result;
+
+                            let res: Record<string, string[] | undefined> = {};
+                            if (allFactors.includes("otp-phone")) {
+                                res["otp-phone"] = phoneNumbers;
+                            }
+
+                            if (allFactors.includes("link-phone")) {
+                                res["link-phone"] = phoneNumbers;
+                            }
+                            return res;
                         });
                     }
                 });

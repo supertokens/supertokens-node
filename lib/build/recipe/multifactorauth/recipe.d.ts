@@ -109,7 +109,7 @@ export default class Recipe extends RecipeModule {
           }
     >;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
-    getEmailsForFactors: (_user: User) => Record<string, string[] | undefined>;
+    getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
     addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
-    getPhoneNumbersForFactors: (_user: User) => Record<string, string[] | undefined>;
+    getPhoneNumbersForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
 }

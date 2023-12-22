@@ -21,6 +21,7 @@ import { SessionContainer } from "../session";
 import { SessionContainerInterface } from "../session/types";
 import Recipe from "./recipe";
 import { TenantConfig } from "../multitenancy/types";
+import RecipeUserId from "../../recipeUserId";
 
 export type MFARequirementList = (
     | {
@@ -146,5 +147,11 @@ export type GetAllFactorsFromOtherRecipesFunc = (
     tenantConfig: TenantConfig
 ) => { factorIds: string[]; firstFactorIds: string[] };
 
-export type GetEmailsForFactorFromOtherRecipesFunc = (user: User) => Record<string, string[] | undefined>;
-export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (user: User) => Record<string, string[] | undefined>;
+export type GetEmailsForFactorFromOtherRecipesFunc = (
+    user: User,
+    sessionRecipeUserId: RecipeUserId
+) => Record<string, string[] | undefined>;
+export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
+    user: User,
+    sessionRecipeUserId: RecipeUserId
+) => Record<string, string[] | undefined>;

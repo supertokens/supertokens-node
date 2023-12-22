@@ -82,8 +82,8 @@ export default function getAPIInterface(): APIInterface {
                     isAllowedToSetup,
                     isAlreadySetup,
                 },
-                emails: options.recipeInstance.getEmailsForFactors(user),
-                phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user),
+                emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
+                phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),
             };
         },
     };

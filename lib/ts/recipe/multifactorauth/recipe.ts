@@ -542,13 +542,13 @@ export default class Recipe extends RecipeModule {
         this.getEmailsForFactorFromOtherRecipesFunc.push(func);
     };
 
-    getEmailsForFactors = (_user: User): Record<string, string[] | undefined> => {
+    getEmailsForFactors = (user: User, sessionRecipeUserId: RecipeUserId): Record<string, string[] | undefined> => {
         let result = {};
 
         for (const func of this.getEmailsForFactorFromOtherRecipesFunc) {
             result = {
                 ...result,
-                ...func(_user),
+                ...func(user, sessionRecipeUserId),
             };
         }
         return result;
@@ -558,13 +558,16 @@ export default class Recipe extends RecipeModule {
         this.getPhoneNumbersForFactorFromOtherRecipesFunc.push(func);
     };
 
-    getPhoneNumbersForFactors = (_user: User): Record<string, string[] | undefined> => {
+    getPhoneNumbersForFactors = (
+        user: User,
+        sessionRecipeUserId: RecipeUserId
+    ): Record<string, string[] | undefined> => {
         let result = {};
 
         for (const func of this.getPhoneNumbersForFactorFromOtherRecipesFunc) {
             result = {
                 ...result,
-                ...func(_user),
+                ...func(user, sessionRecipeUserId),
             };
         }
 
