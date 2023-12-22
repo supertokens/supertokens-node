@@ -16,29 +16,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 import { types } from "util";
-import http from "http";
 
-const validateHeaderName =
-    typeof http.validateHeaderName === "function"
-        ? http.validateHeaderName
-        : (name) => {
-              if (!/^[\^`\-\w!#$%&'*+.|~]+$/.test(name)) {
-                  const err = new TypeError(`Header name must be a valid HTTP token [${name}]`);
-                  Object.defineProperty(err, "code", { value: "ERR_INVALID_HTTP_TOKEN" });
-                  throw err;
-              }
-          };
+const validateHeaderName = (name) => {
+    if (!/^[\^`\-\w!#$%&'*+.|~]+$/.test(name)) {
+        const err = new TypeError(`Header name must be a valid HTTP token [${name}]`);
+        Object.defineProperty(err, "code", { value: "ERR_INVALID_HTTP_TOKEN" });
+        throw err;
+    }
+};
 
-const validateHeaderValue =
-    typeof http.validateHeaderValue === "function"
-        ? http.validateHeaderValue
-        : (name, value) => {
-              if (/[^\t\u0020-\u007E\u0080-\u00FF]/.test(value)) {
-                  const err = new TypeError(`Invalid character in header content ["${name}"]`);
-                  Object.defineProperty(err, "code", { value: "ERR_INVALID_CHAR" });
-                  throw err;
-              }
-          };
+const validateHeaderValue = (name, value) => {
+    if (/[^\t\u0020-\u007E\u0080-\u00FF]/.test(value)) {
+        const err = new TypeError(`Invalid character in header content ["${name}"]`);
+        Object.defineProperty(err, "code", { value: "ERR_INVALID_CHAR" });
+        throw err;
+    }
+};
 
 /**
  * @typedef {Headers | Record<string, string> | Iterable<readonly [string, string]> | Iterable<Iterable<string>>} HeadersInit

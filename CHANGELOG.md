@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [16.6.8] - 2023-12-18
+## [16.6.9] - 2023-12-22
 
 -   Add session util functions `withSession` and `getSSRSession` for Next.js App directory.
+
+## [16.6.8] - 2023-12-18
+
+-   Fix App dir support by removing the import of the "http" module
 
 ## [16.6.7] - 2023-12-18
 
