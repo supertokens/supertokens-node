@@ -259,7 +259,7 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | {
-                    status: "SIGN_IN_NOT_ALLOWED";
+                    status: "SIGN_IN_NOT_ALLOWED" | "SIGN_IN_FAILED";
                     reason: string;
                 }
               | {
@@ -285,7 +285,7 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | {
-                    status: "SIGN_UP_NOT_ALLOWED";
+                    status: "SIGN_UP_NOT_ALLOWED" | "SIGN_UP_FAILED";
                     reason: string;
                 }
               | {

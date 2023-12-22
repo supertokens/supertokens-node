@@ -580,7 +580,7 @@ export default function getAPIImplementation(): APIInterface {
                   status: "WRONG_CREDENTIALS_ERROR";
               }
             | {
-                  status: "SIGN_IN_NOT_ALLOWED";
+                  status: "SIGN_IN_NOT_ALLOWED" | "SIGN_IN_FAILED";
                   reason: string;
               }
             | GeneralErrorResponse
@@ -689,7 +689,7 @@ export default function getAPIImplementation(): APIInterface {
 
                 if (sessionRes.status === "MFA_FLOW_ERROR") {
                     return {
-                        status: "SIGN_IN_NOT_ALLOWED",
+                        status: "SIGN_IN_FAILED",
                         reason: sessionRes.reason,
                     };
                 }
@@ -733,7 +733,7 @@ export default function getAPIImplementation(): APIInterface {
                   user: User;
               }
             | {
-                  status: "SIGN_UP_NOT_ALLOWED";
+                  status: "SIGN_UP_NOT_ALLOWED" | "SIGN_UP_FAILED";
                   reason: string;
               }
             | {
@@ -872,7 +872,7 @@ export default function getAPIImplementation(): APIInterface {
 
                 if (sessionRes.status === "MFA_FLOW_ERROR") {
                     return {
-                        status: "SIGN_UP_NOT_ALLOWED",
+                        status: "SIGN_UP_FAILED",
                         reason: sessionRes.reason,
                     };
                 }

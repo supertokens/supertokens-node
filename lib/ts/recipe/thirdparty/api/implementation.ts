@@ -378,7 +378,7 @@ export default function getAPIInterface(): APIInterface {
 
                 if (sessionRes.status === "MFA_FLOW_ERROR") {
                     return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        status: "SIGN_IN_UP_FAILED",
                         reason: sessionRes.reason,
                     };
                 }

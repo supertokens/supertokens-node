@@ -282,7 +282,7 @@ export type APIInterface = {
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | {
-                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED" | "SIGN_IN_UP_FAILED";
                     reason: string;
                 }
               | GeneralErrorResponse
