@@ -658,7 +658,7 @@ export default function getAPIImplementation(): APIInterface {
 
             if (shouldCreateSession) {
                 if (mfaInstance === undefined) {
-                    let session = await Session.createNewOrKeepExistingSession(
+                    let session = await Session.createNewSession(
                         options.req,
                         options.res,
                         tenantId,
