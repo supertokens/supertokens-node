@@ -65,7 +65,6 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
                 factorIdInProgress: "totp",
                 session,
-                userLoggingIn: undefined,
                 isAlreadySetup: false, // since this is a sign up
                 userContext,
             });
