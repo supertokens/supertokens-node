@@ -237,18 +237,26 @@ export default function getAPIInterface(): APIInterface {
                       sessionUser.thirdParty.some(
                           (tp) => tp.id === provider.id && tp.userId === userInfo.thirdPartyUserId
                       );
-                const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                    tenantId: input.tenantId,
-                    factorIdInProgress: "thirdparty",
-                    session,
-                    userLoggingIn,
-                    isAlreadySetup,
-                    signUpInfo: {
-                        email: emailInfo.id,
-                        isVerifiedFactor: emailInfo.isVerified,
-                    },
-                    userContext: input.userContext,
-                });
+                const validateMfaRes =
+                    userLoggingIn !== undefined
+                        ? await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                              tenantId: input.tenantId,
+                              factorIdInProgress: "thirdparty",
+                              session,
+                              userLoggingIn,
+                              userContext: input.userContext,
+                          })
+                        : await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
+                              tenantId: input.tenantId,
+                              factorIdInProgress: "thirdparty",
+                              session,
+                              isAlreadySetup,
+                              signUpInfo: {
+                                  email: emailInfo.id,
+                                  isVerifiedFactor: emailInfo.isVerified,
+                              },
+                              userContext: input.userContext,
+                          });
 
                 if (validateMfaRes.status !== "OK") {
                     return validateMfaRes;

@@ -138,8 +138,8 @@ export type APIInterface = {
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };
-              email?: string;
-              phoneNumber?: string;
+              emails: Record<string, string[] | undefined>;
+              phoneNumbers: Record<string, string[] | undefined>;
           }
         | GeneralErrorResponse
     >;
@@ -154,3 +154,6 @@ export type GetFactorsSetupForUserFromOtherRecipesFunc = (
 export type GetAllFactorsFromOtherRecipesFunc = (
     tenantConfig: TenantConfig
 ) => { factorIds: string[]; firstFactorIds: string[] };
+
+export type GetEmailsForFactorFromOtherRecipesFunc = (user: User) => Record<string, string[] | undefined>;
+export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (user: User) => Record<string, string[] | undefined>;

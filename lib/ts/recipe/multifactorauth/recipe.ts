@@ -26,7 +26,9 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
     GetAllFactorsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
     MFAFlowErrors,
     RecipeInterface,
     TypeInput,
@@ -53,6 +55,9 @@ export default class Recipe extends RecipeModule {
 
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
     getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[] = [];
+
+    getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[] = [];
+    getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[] = [];
 
     config: TypeNormalisedInput;
 
@@ -534,5 +539,38 @@ export default class Recipe extends RecipeModule {
             status: "OK",
             session: session,
         };
+    };
+
+    addGetEmailsForFactorFromOtherRecipes = (func: GetEmailsForFactorFromOtherRecipesFunc) => {
+        this.getEmailsForFactorFromOtherRecipesFunc.push(func);
+    };
+
+    getEmailsForFactors = (_user: User): Record<string, string[] | undefined> => {
+        let result = {};
+
+        for (const func of this.getEmailsForFactorFromOtherRecipesFunc) {
+            result = {
+                ...result,
+                ...func(_user),
+            };
+        }
+        return result;
+    };
+
+    addGetPhoneNumbersForFactorsFromOtherRecipes = (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => {
+        this.getPhoneNumbersForFactorFromOtherRecipesFunc.push(func);
+    };
+
+    getPhoneNumbersForFactors = (_user: User): Record<string, string[] | undefined> => {
+        let result = {};
+
+        for (const func of this.getPhoneNumbersForFactorFromOtherRecipesFunc) {
+            result = {
+                ...result,
+                ...func(_user),
+            };
+        }
+
+        return result;
     };
 }

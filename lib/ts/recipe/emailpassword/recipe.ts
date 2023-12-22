@@ -138,6 +138,18 @@ export default class Recipe extends RecipeModule {
                                 return [];
                             }
                         );
+                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User) => {
+                            let result: Record<string, string[] | undefined> = {};
+                            result["emailpassword"] = [];
+                            for (const loginMethod of user.loginMethods) {
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                    if (!result["emailpassword"].includes(loginMethod.email!)) {
+                                        result["emailpassword"].push(loginMethod.email!);
+                                    }
+                                }
+                            }
+                            return result;
+                        });
                     }
                 });
 

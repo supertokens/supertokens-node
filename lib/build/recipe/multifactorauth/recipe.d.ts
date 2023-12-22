@@ -7,7 +7,9 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserCont
 import {
     APIInterface,
     GetAllFactorsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
     MFAFlowErrors,
     RecipeInterface,
     TypeInput,
@@ -23,6 +25,8 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[];
     getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[];
+    getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[];
+    getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[];
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -102,4 +106,8 @@ export default class Recipe extends RecipeModule {
               session: SessionContainerInterface;
           }
     >;
+    addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
+    getEmailsForFactors: (_user: User) => Record<string, string[] | undefined>;
+    addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
+    getPhoneNumbersForFactors: (_user: User) => Record<string, string[] | undefined>;
 }

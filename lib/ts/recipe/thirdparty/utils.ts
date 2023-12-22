@@ -55,3 +55,7 @@ function validateAndNormaliseSignInAndUpConfig(
         providers: config.providers,
     };
 }
+
+export function isFakeEmail(email: string): boolean {
+    return email.endsWith(".fakeemail.com");
+}

@@ -74,17 +74,6 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let selectedEmail = user.emails[0];
-
-            for (const loginMethod of user.loginMethods) {
-                if (loginMethod.recipeUserId.getAsString() === session.getRecipeUserId().getAsString()) {
-                    if (loginMethod.email !== undefined) {
-                        selectedEmail = loginMethod.email;
-                    }
-                    break;
-                }
-            }
-
             await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
 
             return {
@@ -93,8 +82,8 @@ export default function getAPIInterface(): APIInterface {
                     isAllowedToSetup,
                     isAlreadySetup,
                 },
-                email: selectedEmail,
-                phoneNumber: user.phoneNumbers[0],
+                emails: options.recipeInstance.getEmailsForFactors(user),
+                phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user),
             };
         },
     };

@@ -108,8 +108,8 @@ export declare type APIInterface = {
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };
-              email?: string;
-              phoneNumber?: string;
+              emails: Record<string, string[] | undefined>;
+              phoneNumbers: Record<string, string[] | undefined>;
           }
         | GeneralErrorResponse
     >;
@@ -125,3 +125,7 @@ export declare type GetAllFactorsFromOtherRecipesFunc = (
     factorIds: string[];
     firstFactorIds: string[];
 };
+export declare type GetEmailsForFactorFromOtherRecipesFunc = (user: User) => Record<string, string[] | undefined>;
+export declare type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
+    user: User
+) => Record<string, string[] | undefined>;
