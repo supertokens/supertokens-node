@@ -15,9 +15,12 @@ if (typeof window !== "undefined") {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en">
-            <SuperTokensWrapper>
-                <body suppressHydrationWarning={true}>{children}</body>
-            </SuperTokensWrapper>
+            <body suppressHydrationWarning={true}>
+                <SuperTokensWrapper>
+                    {children}
+                    "!!!!!!!"
+                </SuperTokensWrapper>
+            </body>
         </html>
     );
 }

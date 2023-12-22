@@ -44,8 +44,8 @@ if (process.env.TEST_DEPLOYED_VERSION) {
     }
 }
 
-const apiDomain = deployInfo?.deploy_url ?? "http://localhost:3000";
-const websiteDomain = deployInfo?.deploy_url ?? "http://localhost:3000";
+const apiDomain = deployInfo?.url ?? deployInfo?.deploy_url ?? "http://localhost:3000";
+const websiteDomain = deployInfo?.url ?? deployInfo?.deploy_url ?? "http://localhost:3000";
 
 SuperTokensNode.init({
     supertokens: {
