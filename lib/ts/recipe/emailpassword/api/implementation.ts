@@ -11,6 +11,7 @@ import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import { MFAFlowErrors } from "../../multifactorauth/types";
+import SessionError from "../../session/error";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -689,10 +690,19 @@ export default function getAPIImplementation(): APIInterface {
                 return sessionRes;
             }
 
+            let user = await getUser(response.user.id, userContext);
+
+            if (user === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
+            }
+
             return {
                 status: "OK",
                 session: sessionRes.session,
-                user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
+                user,
             };
         },
 
@@ -836,7 +846,7 @@ export default function getAPIImplementation(): APIInterface {
                 return {
                     status: "OK",
                     session,
-                    user: (await getUser(response.user.id, userContext))!, // fetching user again cause the user might have been updated while setting up mfa
+                    user: response.user,
                 };
             }
 
@@ -858,10 +868,18 @@ export default function getAPIImplementation(): APIInterface {
                 return sessionRes;
             }
 
+            let user = await getUser(response.user.id, userContext);
+            if (user === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
+            }
+
             return {
                 status: "OK",
                 session: sessionRes.session,
-                user: response.user,
+                user,
             };
         },
     };
