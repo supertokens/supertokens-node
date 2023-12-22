@@ -135,7 +135,8 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.equal("OK", res.body.status);
 
         res = await plessEmailSignInUp(app, "test@example.com", undefined);
-        assert.equal("DISALLOWED_FIRST_FACTOR_ERROR", res.body.status);
+        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal("'otp-email' is not a valid first factor", res.body.reason);
     });
 
     it("test that only a valid first factor is allowed to login and tenant config is prioritised", async function () {
@@ -211,7 +212,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         const app = getTestExpressApp();
 
         await Multitenancy.createOrUpdateTenant("public", {
-            defaultRequiredFactorIds: ["otp-email", "otp-phone"],
+            requiredSecondaryFactors: ["otp-email", "otp-phone"],
         });
 
         await EmailPassword.signUp("public", "test@example.com", "password");
@@ -235,7 +236,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         accessToken = cookies.accessTokenFromAny;
 
         res = await plessPhoneSigninUp(app, "+919876543210", accessToken);
-        assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
+        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
     });
 
     it("test that existing user sign in results in factor setup not allowed error", async function () {
@@ -280,7 +281,11 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         let accessToken = cookies.accessTokenFromAny;
 
         res = await epSignIn(app, "test2@example.com", "password", accessToken);
-        assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
+        assert.equal("SIGN_IN_NOT_ALLOWED", res.body.status);
+        assert.equal(
+            "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
+            res.body.reason
+        );
 
         cookies = extractInfoFromResponse(res);
         assert.equal(undefined, cookies.accessTokenFromAny);
@@ -336,14 +341,12 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         let cookies = extractInfoFromResponse(res);
         const accessToken = cookies.accessTokenFromAny;
 
-        res = await getMfaInfo(app, accessToken);
-        assert.equal("OK", res.body.status);
-        assert.equal("test2@example.com", res.body.email);
-        assert.deepEqual(["emailpassword", "otp-email"], res.body.factors.isAlreadySetup);
-        assert.deepEqual(["emailpassword", "otp-email", "thirdparty", "totp"], res.body.factors.isAllowedToSetup);
-
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
-        assert.equal("FACTOR_SETUP_NOT_ALLOWED_ERROR", res.body.status);
+        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal(
+            "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
+            res.body.reason
+        );
         cookies = extractInfoFromResponse(res);
         assert.equal(undefined, cookies.accessTokenFromAny);
     });
