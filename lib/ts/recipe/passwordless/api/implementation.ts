@@ -88,13 +88,11 @@ export default function getAPIImplementation(): APIInterface {
                           tenantId: input.tenantId,
                           factorIdInProgress: factorId,
                           isAlreadySetup: false,
-                          signUpInfo:
-                              deviceInfo.email !== undefined
-                                  ? {
-                                        email: deviceInfo.email,
-                                        isVerifiedFactor: true,
-                                    }
-                                  : undefined,
+                          signUpInfo: {
+                              email: deviceInfo.email,
+                              phoneNumber: deviceInfo.phoneNumber,
+                              isVerifiedFactor: true,
+                          },
                           session,
                           userContext: input.userContext,
                       })

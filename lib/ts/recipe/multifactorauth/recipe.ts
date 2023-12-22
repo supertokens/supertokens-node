@@ -222,7 +222,8 @@ export default class Recipe extends RecipeModule {
             | {
                   isAlreadySetup: boolean;
                   signUpInfo?: {
-                      email: string;
+                      email?: string;
+                      phoneNumber?: string;
                       isVerifiedFactor: boolean;
                   };
               }
@@ -315,18 +316,36 @@ export default class Recipe extends RecipeModule {
                     would actually cause it to be linked with the e1 account.
                 */
 
-                let foundVerifiedEmail = false;
-                for (const lM of sessionUser?.loginMethods) {
-                    if (lM.email === input.signUpInfo.email && lM.verified) {
-                        foundVerifiedEmail = true;
-                        break;
+                if (input.signUpInfo.email !== undefined) {
+                    let foundVerifiedEmail = false;
+                    for (const lM of sessionUser?.loginMethods) {
+                        if (lM.email === input.signUpInfo.email && lM.verified) {
+                            foundVerifiedEmail = true;
+                            break;
+                        }
+                    }
+                    if (!foundVerifiedEmail) {
+                        return {
+                            status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                            message: "Cannot setup factor as the email is not verified",
+                        };
                     }
                 }
-                if (!foundVerifiedEmail) {
-                    return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                        message: "Cannot setup factor as the email is not verified",
-                    };
+
+                if (input.signUpInfo.phoneNumber !== undefined) {
+                    let foundVerifiedPhoneNumber = false;
+                    for (const lM of sessionUser?.loginMethods) {
+                        if (lM.phoneNumber === input.signUpInfo.phoneNumber && lM.verified) {
+                            foundVerifiedPhoneNumber = true;
+                            break;
+                        }
+                    }
+                    if (!foundVerifiedPhoneNumber) {
+                        return {
+                            status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
+                            message: "Cannot setup factor as the phone number is not verified",
+                        };
+                    }
                 }
             }
 

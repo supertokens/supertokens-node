@@ -67,7 +67,8 @@ export default class Recipe extends RecipeModule {
             | {
                   isAlreadySetup: boolean;
                   signUpInfo?: {
-                      email: string;
+                      email?: string;
+                      phoneNumber?: string;
                       isVerifiedFactor: boolean;
                   };
               }
