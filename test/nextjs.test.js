@@ -821,7 +821,8 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
             },
         });
 
-        const authenticatedResponse = await withSession(authenticatedRequest, async (session) => {
+        const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
+            if (err) return NextResponse.json(err, { status: 500 });
             return NextResponse.json({
                 userId: session.getUserId(),
                 sessionHandle: session.getHandle(),
@@ -835,7 +836,8 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
 
         const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
 
-        const unAuthenticatedResponse = await withSession(unAuthenticatedRequest, async (session) => {
+        const unAuthenticatedResponse = await withSession(unAuthenticatedRequest, async (err, session) => {
+            if (err) return NextResponse.json(err, { status: 500 });
             return NextResponse.json({
                 userId: session.getUserId(),
                 sessionHandle: session.getHandle(),
@@ -852,7 +854,8 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
 
         const responseWithFailedClaim = await withSession(
             requestWithFailedClaim,
-            async (session) => {
+            async (err, session) => {
+                if (err) return NextResponse.json(err, { status: 500 });
                 return NextResponse.json({
                     userId: session.getUserId(),
                     sessionHandle: session.getHandle(),
@@ -876,7 +879,8 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
             },
         });
 
-        const responseWithExpiredToken = await withSession(requestWithExpiredToken, async (session) => {
+        const responseWithExpiredToken = await withSession(requestWithExpiredToken, async (err, session) => {
+            if (err) return NextResponse.json(err, { status: 500 });
             return NextResponse.json({
                 userId: session.getUserId(),
                 sessionHandle: session.getHandle(),
@@ -885,6 +889,15 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         });
 
         assert.equal(responseWithExpiredToken.status, 401);
+
+        const requestThatThrows = {}; // this is an invalid request object and it will cause withSession to throw
+
+        const responseThatThrows = await withSession(requestThatThrows, async (err, session) => {
+            if (err) return NextResponse.json(err, { status: 500 });
+            throw new Error("test error");
+        });
+
+        assert.equal(responseThatThrows.status, 500);
     });
 
     it("withPreParsedRequestResponse", async function () {

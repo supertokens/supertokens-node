@@ -39,7 +39,7 @@ export default class NextJS {
     }>;
     static withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
         req: NextRequest,
-        handler: (session: SessionContainer | undefined) => Promise<NextResponse>,
+        handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<NextResponse>,
         options?: VerifySessionOptions,
         userContext?: Record<string, any>
     ): Promise<NextResponse>;
