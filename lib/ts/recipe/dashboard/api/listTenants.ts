@@ -16,6 +16,10 @@ import { APIInterface, APIOptions } from "../types";
 import Multitenancy from "../../multitenancy";
 import { ProviderConfig } from "../../thirdparty/types";
 import PasswordlessRecipe from "../../passwordless/recipe";
+import ThirdPartyPasswordlessRecipe from "../../thirdpartypasswordless/recipe";
+import EmailPasswordRecipe from "../../emailpassword/recipe";
+import ThirdPartyEmailPasswordRecipe from "../../thirdpartyemailpassword/recipe";
+import ThirdParty from "../../thirdparty/recipe";
 import { TypeNormalisedInput } from "../../passwordless/types";
 
 type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
@@ -53,7 +57,12 @@ export default async function listTenants(
     try {
         const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
         passwordlessContactMethod = passwordlessRecipe.config.contactMethod;
-    } catch (error) {}
+    } catch (_) {
+        try {
+            const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+            passwordlessContactMethod = thirdpartyPasswordlessRecipe.config.contactMethod;
+        } catch (_) {}
+    }
 
     if (tenantsRes.status !== "OK") {
         return tenantsRes;
@@ -72,11 +81,69 @@ export default async function listTenants(
             modifiedTenant.passwordless.contactMethod = passwordlessContactMethod;
         }
 
+        if (tenantsRes.tenants[i].tenantId === "public") {
+            const publicTenantLoginMethodsInfo = getPublicTenantLoginMethodsInfo();
+            modifiedTenant.emailPassword = publicTenantLoginMethodsInfo.emailPassword;
+            modifiedTenant.passwordless = publicTenantLoginMethodsInfo.passwordless;
+            modifiedTenant.thirdParty = publicTenantLoginMethodsInfo.thirdParty;
+        }
+
         finalTenants.push(modifiedTenant);
     }
 
     return {
         status: "OK",
         tenants: finalTenants,
+    };
+}
+
+function getPublicTenantLoginMethodsInfo() {
+    const passwordless: TenantListTenantType["passwordless"] = {
+        enabled: false,
+    };
+    const emailPassword: TenantListTenantType["emailPassword"] = {
+        enabled: false,
+    };
+    const thirdParty: TenantListTenantType["thirdParty"] = {
+        enabled: false,
+        providers: [],
+    };
+
+    try {
+        const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+        passwordless.enabled = true;
+        passwordless.contactMethod = thirdpartyPasswordlessRecipe.config.contactMethod;
+        thirdParty.enabled = true;
+        thirdParty.providers = thirdpartyPasswordlessRecipe.config.providers.map((provider) => provider.config);
+    } catch (_) {
+        try {
+            const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
+            passwordless.enabled = true;
+            passwordless.contactMethod = passwordlessRecipe.config.contactMethod;
+        } catch (_) {}
+    }
+
+    try {
+        const thirdpartyEmailPassword = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+        emailPassword.enabled = true;
+        thirdParty.enabled = true;
+        thirdParty.providers = thirdpartyEmailPassword.config.providers.map((provider) => provider.config);
+    } catch (_) {
+        try {
+            EmailPasswordRecipe.getInstanceOrThrowError();
+            emailPassword.enabled = true;
+        } catch (_) {}
+    }
+
+    try {
+        const thirdPartyRecipe = ThirdParty.getInstanceOrThrowError();
+        thirdParty.enabled = true;
+        thirdParty.providers = thirdPartyRecipe.providers.map((provider) => provider.config);
+    } catch (_) {}
+
+    return {
+        emailPassword,
+        passwordless,
+        thirdParty,
     };
 }

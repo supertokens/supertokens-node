@@ -79,7 +79,7 @@ import getRolesForUser from "./api/userroles/getRolesForUser";
 import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
-import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
+import { createPasswordlessUser } from "./api/user//create/passwordlessUser";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

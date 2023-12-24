@@ -10,6 +10,10 @@ declare type Response =
       }
     | {
           status: "EMAIL_ALREADY_EXISTS_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
+      }
+    | {
+          status: "INPUT_VALIDATION_ERROR";
+          message: string;
       };
 export declare const createEmailPasswordUser: (
     _: APIInterface,

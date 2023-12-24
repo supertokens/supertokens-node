@@ -2,9 +2,11 @@ import { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import Passwordless from "../../../../passwordless";
 import PasswordlessRecipe from "../../../../passwordless/recipe";
+import ThirdPartyPasswordlessRecipe from "../../../../thirdpartypasswordless/recipe";
 import { User } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 import { parsePhoneNumber } from "libphonenumber-js/max";
+import { defaultValidateEmail, defaultValidatePhoneNumber } from "../../../../passwordless/utils";
 
 type Response =
     | {
@@ -27,14 +29,18 @@ export const createPasswordlessUser = async (
     options: APIOptions,
     __: any
 ): Promise<Response> => {
-    let passwordlessRecipe: PasswordlessRecipe | undefined = undefined;
+    let passwordlessRecipe: PasswordlessRecipe | ThirdPartyPasswordlessRecipe | undefined = undefined;
 
     try {
         passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
-    } catch (error) {
-        return {
-            status: "FEATURE_NOT_ENABLED_ERROR",
-        };
+    } catch (_) {
+        try {
+            passwordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+        } catch (_) {
+            return {
+                status: "FEATURE_NOT_ENABLED_ERROR",
+            };
+        }
     }
 
     const requestBody = await options.req.getJSONBody();
@@ -55,7 +61,7 @@ export const createPasswordlessUser = async (
             passwordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
         email = email.trim();
-        const validateError = await passwordlessRecipe.config.validateEmailAddress(email, tenantId);
+        const validateError = await defaultValidateEmail(email);
         if (validateError !== undefined) {
             return {
                 status: "INPUT_VALIDATION_ERROR",
@@ -69,7 +75,7 @@ export const createPasswordlessUser = async (
         (passwordlessRecipe.config.contactMethod === "PHONE" ||
             passwordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
-        const validateError = await passwordlessRecipe.config.validatePhoneNumber(phoneNumber, tenantId);
+        const validateError = await defaultValidatePhoneNumber(phoneNumber);
         if (validateError !== undefined) {
             return {
                 status: "INPUT_VALIDATION_ERROR",
@@ -78,13 +84,7 @@ export const createPasswordlessUser = async (
         }
 
         const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
-        if (parsedPhoneNumber === undefined) {
-            // this can come here if the user has provided their own impl of validatePhoneNumber and
-            // the phone number is valid according to their impl, but not according to the libphonenumber-js lib.
-            phoneNumber = phoneNumber.trim();
-        } else {
-            phoneNumber = parsedPhoneNumber.format("E.164");
-        }
+        phoneNumber = parsedPhoneNumber.format("E.164");
     }
 
     const response = await Passwordless.signInUp(
