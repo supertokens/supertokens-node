@@ -127,19 +127,38 @@ export default class Recipe extends RecipeModule {
                                 return [];
                             }
                         );
-                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User) => {
-                            let result: Record<string, string[] | undefined> = {};
-                            result["thirdparty"] = [];
-                            for (const loginMethod of user.loginMethods) {
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                    if (!isFakeEmail(loginMethod.email!)) {
-                                        if (!result["thirdparty"].includes(loginMethod.email!)) {
-                                            result["thirdparty"].push(loginMethod.email!);
-                                        }
-                                    }
+                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
+                            // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
+                            let sessionEmail = user.loginMethods.find(
+                                (lm) => lm.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()
+                            )!.email;
+                            if (sessionEmail !== undefined && isFakeEmail(sessionEmail)) {
+                                sessionEmail = undefined;
+                            }
+
+                            const recipeLoginMethods = user.loginMethods.filter(
+                                (lm) =>
+                                    lm.recipeId === Recipe.RECIPE_ID && lm.email !== undefined && !isFakeEmail(lm.email)
+                            );
+
+                            // We order by join date ASC (so oldest first)
+                            let emails = recipeLoginMethods
+                                .sort((lma, lmb) => lma.timeJoined - lmb.timeJoined)
+                                .map((lm) => lm.email!);
+
+                            if (sessionEmail !== undefined) {
+                                if (emails.includes(sessionEmail)) {
+                                    // if the email address associated with the current session can be used here
+                                    // it should be the first one we recommend regardless of timeJoined
+                                    emails = [sessionEmail, ...emails.filter((email) => email !== sessionEmail)];
+                                } else if (emails.length === 0) {
+                                    emails = [sessionEmail];
                                 }
                             }
-                            return result;
+
+                            let res: Record<string, string[] | undefined> = {};
+                            res["thirdparty"] = emails;
+                            return res;
                         });
                     }
                 });
