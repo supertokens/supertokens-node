@@ -294,8 +294,7 @@ export default function getRecipeImplementation(
                 userContext
             );
             if (result.status === "OK") {
-                const userResult = new User(result.user);
-                return userResult;
+                return new User(result.user);
             }
             return undefined;
         },

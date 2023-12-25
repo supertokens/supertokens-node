@@ -29,6 +29,8 @@ type TenantListTenantType = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
+    firstFactors?: string[];
+    requiredSecondaryFactors?: string[];
 };
 
 export type Response = {
@@ -56,6 +58,8 @@ export default async function listTenants(
             emailPassword: currentTenant.emailPassword,
             passwordless: currentTenant.passwordless,
             thirdParty: currentTenant.thirdParty,
+            firstFactors: currentTenant.firstFactors,
+            requiredSecondaryFactors: currentTenant.requiredSecondaryFactors,
         };
         finalTenants.push(modifiedTenant);
     }
