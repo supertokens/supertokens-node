@@ -52,17 +52,6 @@ export default async function listTenants(
 ): Promise<Response> {
     let tenantsRes = await Multitenancy.listAllTenants(userContext);
     let finalTenants: TenantListTenantType[] = [];
-    let passwordlessContactMethod: PasswordlessContactMethod | undefined = undefined;
-
-    try {
-        const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
-        passwordlessContactMethod = passwordlessRecipe.config.contactMethod;
-    } catch (_) {
-        try {
-            const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-            passwordlessContactMethod = thirdpartyPasswordlessRecipe.config.contactMethod;
-        } catch (_) {}
-    }
 
     if (tenantsRes.status !== "OK") {
         return tenantsRes;
@@ -70,25 +59,15 @@ export default async function listTenants(
 
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         let currentTenant = tenantsRes.tenants[i];
-        let modifiedTenant: TenantListTenantType = {
+        let tenantDetailsFromCore: TenantListTenantType = {
             tenantId: currentTenant.tenantId,
             emailPassword: currentTenant.emailPassword,
             passwordless: currentTenant.passwordless,
             thirdParty: currentTenant.thirdParty,
         };
+        const normalisedTenantLoginMethodsInfo = normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore);
 
-        if (passwordlessContactMethod !== undefined) {
-            modifiedTenant.passwordless.contactMethod = passwordlessContactMethod;
-        }
-
-        if (tenantsRes.tenants[i].tenantId === "public") {
-            const publicTenantLoginMethodsInfo = getPublicTenantLoginMethodsInfo();
-            modifiedTenant.emailPassword = publicTenantLoginMethodsInfo.emailPassword;
-            modifiedTenant.passwordless = publicTenantLoginMethodsInfo.passwordless;
-            modifiedTenant.thirdParty = publicTenantLoginMethodsInfo.thirdParty;
-        }
-
-        finalTenants.push(modifiedTenant);
+        finalTenants.push(normalisedTenantLoginMethodsInfo);
     }
 
     return {
@@ -97,53 +76,67 @@ export default async function listTenants(
     };
 }
 
-function getPublicTenantLoginMethodsInfo() {
-    const passwordless: TenantListTenantType["passwordless"] = {
-        enabled: false,
-    };
-    const emailPassword: TenantListTenantType["emailPassword"] = {
-        enabled: false,
-    };
-    const thirdParty: TenantListTenantType["thirdParty"] = {
-        enabled: false,
-        providers: [],
+// basically this function make sures that a particular login method for a tenant is configured in the core and initilaized in the recipeList on backend sdk.
+
+function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: TenantListTenantType): TenantListTenantType {
+    const normalisedTenantLoginMethodsInfo: TenantListTenantType = {
+        tenantId: tenantDetailsFromCore.tenantId,
+        emailPassword: {
+            enabled: false,
+        },
+        passwordless: {
+            enabled: false,
+        },
+        thirdParty: {
+            enabled: false,
+            providers: [],
+        },
     };
 
-    try {
-        const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-        passwordless.enabled = true;
-        passwordless.contactMethod = thirdpartyPasswordlessRecipe.config.contactMethod;
-        thirdParty.enabled = true;
-        thirdParty.providers = thirdpartyPasswordlessRecipe.config.providers.map((provider) => provider.config);
-    } catch (_) {
+    if (tenantDetailsFromCore.passwordless.enabled === true) {
         try {
-            const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
-            passwordless.enabled = true;
-            passwordless.contactMethod = passwordlessRecipe.config.contactMethod;
+            const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+            normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
+            normalisedTenantLoginMethodsInfo.passwordless.contactMethod =
+                thirdpartyPasswordlessRecipe.config.contactMethod;
+            normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
+            normalisedTenantLoginMethodsInfo.thirdParty.providers = thirdpartyPasswordlessRecipe.config.providers.map(
+                (provider) => provider.config
+            );
+        } catch (_) {
+            try {
+                const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
+                normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
+                normalisedTenantLoginMethodsInfo.passwordless.contactMethod = passwordlessRecipe.config.contactMethod;
+            } catch (_) {}
+        }
+    }
+
+    if (tenantDetailsFromCore.emailPassword.enabled === true) {
+        try {
+            const thirdpartyEmailPassword = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+            normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
+            normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
+            normalisedTenantLoginMethodsInfo.thirdParty.providers = thirdpartyEmailPassword.config.providers.map(
+                (provider) => provider.config
+            );
+        } catch (_) {
+            try {
+                EmailPasswordRecipe.getInstanceOrThrowError();
+                normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
+            } catch (_) {}
+        }
+    }
+
+    if (tenantDetailsFromCore.thirdParty.enabled === true) {
+        try {
+            const thirdPartyRecipe = ThirdParty.getInstanceOrThrowError();
+            normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
+            normalisedTenantLoginMethodsInfo.thirdParty.providers = thirdPartyRecipe.providers.map(
+                (provider) => provider.config
+            );
         } catch (_) {}
     }
 
-    try {
-        const thirdpartyEmailPassword = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-        emailPassword.enabled = true;
-        thirdParty.enabled = true;
-        thirdParty.providers = thirdpartyEmailPassword.config.providers.map((provider) => provider.config);
-    } catch (_) {
-        try {
-            EmailPasswordRecipe.getInstanceOrThrowError();
-            emailPassword.enabled = true;
-        } catch (_) {}
-    }
-
-    try {
-        const thirdPartyRecipe = ThirdParty.getInstanceOrThrowError();
-        thirdParty.enabled = true;
-        thirdParty.providers = thirdPartyRecipe.providers.map((provider) => provider.config);
-    } catch (_) {}
-
-    return {
-        emailPassword,
-        passwordless,
-        thirdParty,
-    };
+    return normalisedTenantLoginMethodsInfo;
 }
