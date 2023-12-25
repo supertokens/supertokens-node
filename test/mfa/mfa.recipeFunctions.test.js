@@ -197,13 +197,13 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
             { rsfu: [], rsft: [], c: {}, e: [] },
             { rsfu: ["otp-phone"], rsft: [], c: {}, e: ["otp-phone"] },
             { rsfu: ["otp-phone", "otp-email"], rsft: [], c: {}, e: ["otp-phone", "otp-email"] },
-            { rsfu: ["otp-phone", "otp-email"], rsft: [], c: { "otp-email": 0 }, e: ["otp-phone"] },
+            { rsfu: ["otp-phone", "otp-email"], rsft: [], c: { "otp-email": 0 }, e: ["otp-phone", "otp-email"] },
             { rsfu: ["otp-phone"], rsft: ["otp-email"], c: {}, e: ["otp-phone", "otp-email"] },
             {
                 rsfu: ["otp-phone", "otp-email", "totp"],
                 rsft: [],
                 c: { "otp-phone": 0, "otp-email": 1 },
-                e: ["otp-email", "totp"],
+                e: ["otp-phone", "otp-email", "totp"],
             },
         ];
 
