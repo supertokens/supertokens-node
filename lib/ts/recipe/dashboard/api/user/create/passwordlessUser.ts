@@ -1,6 +1,7 @@
 import { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import Passwordless from "../../../../passwordless";
+import ThirdPartyPasswordless from "../../../../thirdpartypasswordless";
 import PasswordlessRecipe from "../../../../passwordless/recipe";
 import ThirdPartyPasswordlessRecipe from "../../../../thirdpartypasswordless/recipe";
 import { User } from "../../../../../types";
@@ -19,7 +20,11 @@ type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       }
     | {
-          status: "INPUT_VALIDATION_ERROR";
+          status: "EMAIL_VALIDATION_ERROR";
+          message: string;
+      }
+    | {
+          status: "PHONE_VALIDATION_ERROR";
           message: string;
       };
 
@@ -29,13 +34,16 @@ export const createPasswordlessUser = async (
     options: APIOptions,
     __: any
 ): Promise<Response> => {
-    let passwordlessRecipe: PasswordlessRecipe | ThirdPartyPasswordlessRecipe | undefined = undefined;
+    let passwordlessOrThirdpartyPasswordlessRecipe:
+        | PasswordlessRecipe
+        | ThirdPartyPasswordlessRecipe
+        | undefined = undefined;
 
     try {
-        passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
+        passwordlessOrThirdpartyPasswordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
     } catch (_) {
         try {
-            passwordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+            passwordlessOrThirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
         } catch (_) {
             return {
                 status: "FEATURE_NOT_ENABLED_ERROR",
@@ -57,39 +65,71 @@ export const createPasswordlessUser = async (
 
     if (
         email !== undefined &&
-        (passwordlessRecipe.config.contactMethod === "EMAIL" ||
-            passwordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE")
+        (passwordlessOrThirdpartyPasswordlessRecipe.config.contactMethod === "EMAIL" ||
+            passwordlessOrThirdpartyPasswordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
         email = email.trim();
-        const validateError = await defaultValidateEmail(email);
-        if (validateError !== undefined) {
+        let validationError: string | undefined = undefined;
+
+        if (passwordlessOrThirdpartyPasswordlessRecipe.config.validateEmailAddress !== undefined) {
+            validationError = await passwordlessOrThirdpartyPasswordlessRecipe.config.validateEmailAddress(
+                email,
+                tenantId
+            );
+        } else {
+            validationError = await defaultValidateEmail(email);
+        }
+        if (validationError !== undefined) {
             return {
-                status: "INPUT_VALIDATION_ERROR",
-                message: validateError,
+                status: "EMAIL_VALIDATION_ERROR",
+                message: validationError,
             };
         }
     }
 
     if (
         phoneNumber !== undefined &&
-        (passwordlessRecipe.config.contactMethod === "PHONE" ||
-            passwordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE")
+        (passwordlessOrThirdpartyPasswordlessRecipe.config.contactMethod === "PHONE" ||
+            passwordlessOrThirdpartyPasswordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
-        const validateError = await defaultValidatePhoneNumber(phoneNumber);
-        if (validateError !== undefined) {
+        let validationError: string | undefined = undefined;
+
+        if (passwordlessOrThirdpartyPasswordlessRecipe.config.validatePhoneNumber !== undefined) {
+            validationError = await passwordlessOrThirdpartyPasswordlessRecipe.config.validatePhoneNumber(
+                phoneNumber,
+                tenantId
+            );
+        } else {
+            validationError = await defaultValidatePhoneNumber(phoneNumber);
+        }
+
+        if (validationError !== undefined) {
             return {
-                status: "INPUT_VALIDATION_ERROR",
-                message: validateError,
+                status: "PHONE_VALIDATION_ERROR",
+                message: validationError,
             };
         }
 
         const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
-        phoneNumber = parsedPhoneNumber.format("E.164");
+        if (parsedPhoneNumber === undefined) {
+            // this can come here if the user has provided their own impl of validatePhoneNumber and
+            // the phone number is valid according to their impl, but not according to the libphonenumber-js lib.
+            phoneNumber = phoneNumber.trim();
+        } else {
+            phoneNumber = parsedPhoneNumber.format("E.164");
+        }
     }
 
-    const response = await Passwordless.signInUp(
-        email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
-    );
-
-    return response;
+    if (passwordlessOrThirdpartyPasswordlessRecipe.getRecipeId() === "thirdpartypasswordless") {
+        const response = await ThirdPartyPasswordless.passwordlessSignInUp(
+            email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
+        );
+        return response;
+    } else {
+        // not checking explicitly if the recipeId is passwordless or not because at this point of time it should be passowordless.
+        const response = await Passwordless.signInUp(
+            email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
+        );
+        return response;
+    }
 };

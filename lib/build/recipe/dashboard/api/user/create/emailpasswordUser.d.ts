@@ -12,13 +12,17 @@ declare type Response =
           status: "EMAIL_ALREADY_EXISTS_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
       }
     | {
-          status: "INPUT_VALIDATION_ERROR";
+          status: "EMAIL_VALIDATION_ERROR";
+          message: string;
+      }
+    | {
+          status: "PASSWORD_VALIDATION_ERROR";
           message: string;
       };
 export declare const createEmailPasswordUser: (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    __: any
+    userContext: any
 ) => Promise<Response>;
 export {};

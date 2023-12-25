@@ -1,11 +1,11 @@
 import { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import EmailPassword from "../../../../emailpassword";
+import ThirPartyEmailPassword from "../../../../thirdpartyemailpassword";
 import EmailPasswordRecipe from "../../../../emailpassword/recipe";
 import ThridPartyEmailPasswordRecipe from "../../../../thirdpartyemailpassword/recipe";
 import { User } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
-import { defaultEmailValidator, defaultPasswordValidator } from "../../../../emailpassword/utils";
 
 type Response =
     | {
@@ -17,7 +17,11 @@ type Response =
           status: "EMAIL_ALREADY_EXISTS_ERROR" | "FEATURE_NOT_ENABLED_ERROR";
       }
     | {
-          status: "INPUT_VALIDATION_ERROR";
+          status: "EMAIL_VALIDATION_ERROR";
+          message: string;
+      }
+    | {
+          status: "PASSWORD_VALIDATION_ERROR";
           message: string;
       };
 
@@ -25,13 +29,17 @@ export const createEmailPasswordUser = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    __: any
+    userContext: any
 ): Promise<Response> => {
+    let emailPasswordOrThirdpartyEmailPassword:
+        | EmailPasswordRecipe
+        | ThridPartyEmailPasswordRecipe
+        | undefined = undefined;
     try {
-        EmailPasswordRecipe.getInstanceOrThrowError();
+        emailPasswordOrThirdpartyEmailPassword = EmailPasswordRecipe.getInstanceOrThrowError();
     } catch (error) {
         try {
-            ThridPartyEmailPasswordRecipe.getInstanceOrThrowError();
+            emailPasswordOrThirdpartyEmailPassword = ThridPartyEmailPasswordRecipe.getInstanceOrThrowError();
         } catch {
             return {
                 status: "FEATURE_NOT_ENABLED_ERROR",
@@ -58,25 +66,47 @@ export const createEmailPasswordUser = async (
         });
     }
 
-    const validateEmailError = await defaultEmailValidator(email);
+    const emailFormField = emailPasswordOrThirdpartyEmailPassword.config.signUpFeature.formFields.find(
+        (field) => field.id === "email"
+    );
 
-    if (validateEmailError !== undefined) {
-        return {
-            status: "INPUT_VALIDATION_ERROR",
-            message: validateEmailError,
-        };
+    if (emailFormField !== undefined) {
+        const validateEmailError = await emailFormField.validate(email, tenantId, userContext);
+
+        if (validateEmailError !== undefined) {
+            return {
+                status: "EMAIL_VALIDATION_ERROR",
+                message: validateEmailError,
+            };
+        }
+    } else {
+        throw Error("This should never happen!");
     }
 
-    const validatePasswordError = await defaultPasswordValidator(password);
+    const passwordFormField = emailPasswordOrThirdpartyEmailPassword.config.signUpFeature.formFields.find(
+        (field) => field.id === "password"
+    );
 
-    if (validatePasswordError !== undefined) {
-        return {
-            status: "INPUT_VALIDATION_ERROR",
-            message: validatePasswordError,
-        };
+    if (passwordFormField !== undefined) {
+        const validatePasswordError = await passwordFormField.validate(password, tenantId, userContext);
+
+        if (validatePasswordError !== undefined) {
+            return {
+                status: "PASSWORD_VALIDATION_ERROR",
+                message: validatePasswordError,
+            };
+        }
+    } else {
+        throw Error("This should never happen!");
     }
 
-    const response = await EmailPassword.signUp(tenantId, email, password);
+    if (emailPasswordOrThirdpartyEmailPassword.getRecipeId() === "emailpassword") {
+        const response = await EmailPassword.signUp(tenantId, email, password);
+        return response;
+    } else {
+        // not checking explicitly if the recipeId is thirdpartyemailpassword or not because at this point of time it should be thirdpartyemailpassword.
 
-    return response;
+        const response = await ThirPartyEmailPassword.emailPasswordSignUp(tenantId, email, password);
+        return response;
+    }
 };

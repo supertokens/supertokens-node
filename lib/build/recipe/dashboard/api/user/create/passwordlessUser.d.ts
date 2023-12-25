@@ -13,7 +13,11 @@ declare type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       }
     | {
-          status: "INPUT_VALIDATION_ERROR";
+          status: "EMAIL_VALIDATION_ERROR";
+          message: string;
+      }
+    | {
+          status: "PHONE_VALIDATION_ERROR";
           message: string;
       };
 export declare const createPasswordlessUser: (
