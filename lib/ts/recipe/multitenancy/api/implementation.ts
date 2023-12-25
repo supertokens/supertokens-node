@@ -48,6 +48,27 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
+            let firstFactors: string[] | undefined = undefined;
+
+            if (tenantConfigRes.firstFactors !== undefined) {
+                firstFactors = tenantConfigRes.firstFactors;
+            } else if (options.staticFirstFactors !== undefined) {
+                firstFactors = options.staticFirstFactors;
+
+                // Filter based on enabled recipes
+                if (tenantConfigRes.emailPassword.enabled === false) {
+                    firstFactors = firstFactors.filter((factor) => factor !== "emailpassword");
+                }
+                if (tenantConfigRes.thirdParty.enabled === false) {
+                    firstFactors = firstFactors.filter((factor) => factor !== "thirdparty");
+                }
+                if (tenantConfigRes.passwordless.enabled === false) {
+                    firstFactors = firstFactors.filter(
+                        (factor) => !["otp-email", "otp-phone", "link-email", "link-phone"].includes(factor)
+                    );
+                }
+            }
+
             return {
                 status: "OK",
                 emailPassword: {
@@ -60,6 +81,7 @@ export default function getAPIInterface(): APIInterface {
                     enabled: tenantConfigRes.thirdParty.enabled,
                     providers: finalProviderList,
                 },
+                firstFactors,
             };
         },
     };

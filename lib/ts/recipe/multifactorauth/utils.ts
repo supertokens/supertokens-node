@@ -21,6 +21,10 @@ import SessionRecipe from "../session/recipe";
 import { UserContext } from "../../types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
+    if (config?.firstFactors !== undefined && config?.firstFactors.length === 0) {
+        throw new Error("'firstFactors' can be either undefined or a non-empty array");
+    }
+
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
