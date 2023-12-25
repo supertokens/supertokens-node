@@ -44,6 +44,7 @@ import {
     USERROLES_USER_API,
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
+    LIST_TENANT_LOGIN_METHODS,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -80,6 +81,7 @@ import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
 import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
+import getTenantLoginMethodsInfo from "./api/getTenantLoginMethodsInfo";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -344,6 +346,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "post",
             },
+            {
+                id: LIST_TENANT_LOGIN_METHODS,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(LIST_TENANT_LOGIN_METHODS)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -468,6 +476,10 @@ export default class Recipe extends RecipeModule {
         } else if (id === CREATE_PASSWORDLESS_USER) {
             if (req.getMethod() === "post") {
                 apiFunction = createPasswordlessUser;
+            }
+        } else if (id === LIST_TENANT_LOGIN_METHODS) {
+            if (req.getMethod() === "get") {
+                apiFunction = getTenantLoginMethodsInfo;
             }
         }
 
