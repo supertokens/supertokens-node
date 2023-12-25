@@ -45,6 +45,8 @@ export default class Recipe extends RecipeModule {
 
     staticThirdPartyProviders: ProviderInput[] = [];
 
+    staticFirstFactors: string[] | undefined = undefined;
+
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
@@ -135,6 +137,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             staticThirdPartyProviders: this.staticThirdPartyProviders,
+            staticFirstFactors: this.staticFirstFactors,
         };
         if (id === LOGIN_METHODS_API) {
             return await loginMethodsAPI(this.apiImpl, tenantId, options, userContext);

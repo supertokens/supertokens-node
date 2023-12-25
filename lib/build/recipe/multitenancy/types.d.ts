@@ -139,6 +139,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     staticThirdPartyProviders: ProviderInput[];
+    staticFirstFactors: string[] | undefined;
 };
 export declare type APIInterface = {
     loginMethodsGET: (input: {
@@ -162,6 +163,7 @@ export declare type APIInterface = {
                       name?: string;
                   }[];
               };
+              firstFactors?: string[];
           }
         | GeneralErrorResponse
     >;

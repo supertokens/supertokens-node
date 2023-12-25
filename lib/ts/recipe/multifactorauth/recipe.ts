@@ -41,6 +41,7 @@ import { User } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 import Multitenancy from "../multitenancy";
+import MultitenancyRecipe from "../multitenancy/recipe";
 import AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser, listUsersByAccountInfo } from "../..";
 import { Querier } from "../../querier";
@@ -81,6 +82,13 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
+
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+            const mtRecipe = MultitenancyRecipe.getInstance();
+            if (mtRecipe !== undefined) {
+                mtRecipe.staticFirstFactors = this.config.firstFactors;
+            }
+        });
 
         this.querier = Querier.getNewInstanceOrThrowError(recipeId);
     }
