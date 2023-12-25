@@ -1008,8 +1008,8 @@ class StringClaim extends PrimitiveClaim<string> {
                 claim: this,
                 id: key,
                 shouldRefetch: () => false,
-                validate: async (payload) => {
-                    const value = this.getValueFromPayload(payload);
+                validate: async (payload, userContext) => {
+                    const value = this.getValueFromPayload(payload, userContext);
                     if (!value || !value.startsWith(str)) {
                         return {
                             isValid: false,
@@ -1367,7 +1367,10 @@ Session.init({
                     boolClaim.validators.hasValue(true),
                 ],
                 createNewSession: async function (input) {
-                    input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
+                    input.accessTokenPayload = stringClaim.removeFromPayload(
+                        input.accessTokenPayload,
+                        input.userContext
+                    );
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
                         ...(await boolClaim.build(

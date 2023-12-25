@@ -36,6 +36,7 @@ let { middleware, errorHandler } = require("../framework/express");
 let STExpress = require("../");
 let fs = require("fs");
 let path = require("path");
+const { fail } = require("assert");
 
 describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () {
     beforeEach(async function () {
@@ -470,5 +471,124 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
         }
 
         assert(totalCount === 22);
+    });
+
+    it("test user context type usage everywhere", async function () {
+        function recursive(dir, done) {
+            let results = [];
+            fs.readdir(dir, function (err, list) {
+                if (err) return done(err);
+                let pending = list.length;
+                if (!pending) return done(null, results);
+                list.forEach(function (file) {
+                    file = path.resolve(dir, file);
+                    fs.stat(file, function (err, stat) {
+                        if (stat && stat.isDirectory()) {
+                            recursive(file, function (err, res) {
+                                results = results.concat(res);
+                                if (!--pending) done(null, results);
+                            });
+                        } else {
+                            results.push(file);
+                            if (!--pending) done(null, results);
+                        }
+                    });
+                });
+            });
+        }
+
+        let files = await new Promise((resolve, reject) => {
+            recursive("./lib/ts", (err, files) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(files);
+            });
+        });
+
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
+
+            let parts = file.split("/");
+            if (parts.length < 3) {
+                continue;
+            }
+
+            let content = fs.readFileSync(file).toString();
+            console.log(file);
+
+            let fileExceptions = [
+                {
+                    fileName: "lib/ts/index.ts",
+                    shouldNotContain: ["userContext?: UserContext", "userContext: Record<String, any>"],
+                    canContain: [],
+                },
+                {
+                    fileName: "lib/ts/utils.ts",
+                    shouldNotContain: [],
+                    canContain: [],
+                },
+                {
+                    fileName: "lib/ts/recipe/session/index.ts",
+                    shouldNotContain: ["userContext?: UserContext", "userContext: Record<String, any>"],
+                    canContain: [{ text: "userContext: UserContext", count: 1 }],
+                },
+                {
+                    fileName: "lib/ts/recipe/session/sessionClass.ts",
+                    shouldNotContain: [
+                        "userContext: UserContext",
+                        "userContext?: UserContext",
+                        "userContext: Record<String, any>",
+                    ],
+                    canContain: [],
+                },
+                {
+                    fileName: "lib/ts/recipe/session/types.ts",
+                    shouldNotContain: ["userContext: Record<String, any>", "userContext?: UserContext"],
+                    canContain: [{ text: "userContext?: Record<String, any>", count: 18 }],
+                },
+            ];
+
+            let fileExceptionFound = false;
+            for (let fileException of fileExceptions) {
+                if (file.endsWith(fileException.fileName)) {
+                    fileExceptionFound = fileException;
+                }
+            }
+
+            if (!fileExceptionFound) {
+                if (parts[parts.length - 1] === "index.ts" && parts[parts.length - 3] === "recipe") {
+                    fileExceptionFound = {
+                        shouldNotContain: [
+                            "userContext: UserContext",
+                            "userContext?: UserContext",
+                            "userContext: Record<String, any>",
+                        ],
+                        canContain: [],
+                    };
+                } else {
+                    fileExceptionFound = {
+                        shouldNotContain: [
+                            "userContext: Record<String, any>",
+                            "userContext?: Record<String, any>",
+                            "userContext?: UserContext",
+                        ],
+                        canContain: [],
+                    };
+                }
+            }
+
+            for (let shouldNotContain of fileExceptionFound.shouldNotContain) {
+                if (content.toLowerCase().includes(shouldNotContain.toLowerCase())) {
+                    fail(`${file} cannot contain ${shouldNotContain}`);
+                }
+            }
+
+            for (let canContain of fileExceptionFound.canContain) {
+                if (content.toLowerCase().split(canContain.text.toLowerCase()).length - 1 !== canContain.count) {
+                    fail(`${file} should contain ${canContain.text} only ${canContain.count} times`);
+                }
+            }
+        }
     });
 });
