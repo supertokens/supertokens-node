@@ -81,7 +81,7 @@ export const createEmailPasswordUser = async (
         }
     } else {
         // this should never happen.
-        throw Error("emailFormFiled is undefined");
+        throw new Error("emailFormFiled is undefined");
     }
 
     const passwordFormField = emailPasswordOrThirdpartyEmailPassword.config.signUpFeature.formFields.find(
@@ -99,7 +99,7 @@ export const createEmailPasswordUser = async (
         }
     } else {
         // this should never happen.
-        throw Error("passwordFormField is undefined");
+        throw new Error("passwordFormField is undefined");
     }
 
     if (emailPasswordOrThirdpartyEmailPassword.getRecipeId() === "emailpassword") {
