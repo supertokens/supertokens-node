@@ -99,7 +99,7 @@ export default function getAPIImplementation(): APIInterface {
                     : await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
                           tenantId: input.tenantId,
                           factorIdInProgress: factorId,
-                          userLoggingIn: existingUsers[0],
+                          userSigningInForFactor: existingUsers[0],
                           session,
                           userContext: input.userContext,
                       });

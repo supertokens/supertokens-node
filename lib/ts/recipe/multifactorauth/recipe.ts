@@ -224,7 +224,7 @@ export default class Recipe extends RecipeModule {
             userContext: UserContext;
         } & (
             | {
-                  userLoggingIn: User;
+                  userSigningInForFactor: User;
               }
             | {
                   isAlreadySetup: boolean;
@@ -268,8 +268,8 @@ export default class Recipe extends RecipeModule {
             };
         }
 
-        if ("userLoggingIn" in input) {
-            if (input.userLoggingIn.id !== input.session.getUserId()) {
+        if ("userSigningInForFactor" in input) {
+            if (input.userSigningInForFactor.id !== input.session.getUserId()) {
                 // here the user logging in is not linked to the session user and
                 // we do not allow factor setup for existing users through sign in.
                 // we allow factor setup only through sign up
