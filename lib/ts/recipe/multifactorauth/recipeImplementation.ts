@@ -8,16 +8,11 @@ import { logDebugMessage } from "../../logger";
 
 export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
     return {
-        getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
-            const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-            if (tenantInfo === undefined) {
-                throw new Error("should never happen");
-            }
-            let { status: _, ...tenantConfig } = tenantInfo;
+        getFactorsSetupForUser: async function ({ user, userContext }) {
             let factorIds: string[] = [];
 
             for (const func of recipeInstance.getFactorsSetupForUserFromOtherRecipesFuncs) {
-                let result = await func(user, tenantConfig, userContext);
+                let result = await func(user, userContext);
                 if (result !== undefined) {
                     for (const factorId of result) {
                         if (!factorIds.includes(factorId)) {
@@ -112,7 +107,6 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             });
             const factorsSetUpForUser = await this.getFactorsSetupForUser({
                 user: user,
-                tenantId,
                 userContext,
             });
             const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({

@@ -33,7 +33,6 @@ import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 import { User } from "../../user";
-import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -111,22 +110,17 @@ export default class Recipe extends RecipeModule {
                                 firstFactorIds: ["thirdparty"],
                             };
                         });
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
-                            async (user: User, tenantConfig: TenantConfig) => {
-                                if (tenantConfig.thirdParty.enabled === false) {
-                                    return [];
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
+                            for (const loginMethod of user.loginMethods) {
+                                // We deliberately do not check for matching tenantId because we assume
+                                // MFA is app-wide by default. User can always override MFA function
+                                // to make it tenant specific.
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                    return ["thirdparty"];
                                 }
-                                for (const loginMethod of user.loginMethods) {
-                                    // We deliberately do not check for matching tenantId because we assume
-                                    // MFA is app-wide by default. User can always override MFA function
-                                    // to make it tenant specific.
-                                    if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                        return ["thirdparty"];
-                                    }
-                                }
-                                return [];
                             }
-                        );
+                            return [];
+                        });
                         mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
                             // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
                             let sessionEmail = user.loginMethods.find(

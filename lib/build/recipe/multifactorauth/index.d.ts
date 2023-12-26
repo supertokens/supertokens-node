@@ -16,11 +16,7 @@ export default class Wrapper {
         factorId: string,
         userContext?: Record<string, any>
     ): Promise<void>;
-    static getFactorsSetupForUser(
-        tenantId: string,
-        userId: string,
-        userContext?: Record<string, any>
-    ): Promise<string[]>;
+    static getFactorsSetupForUser(userId: string, userContext?: Record<string, any>): Promise<string[]>;
     static getRequiredSecondaryFactorsForUser(userId: string, userContext?: Record<string, any>): Promise<string[]>;
     static addToRequiredSecondaryFactorsForUser(
         userId: string,
