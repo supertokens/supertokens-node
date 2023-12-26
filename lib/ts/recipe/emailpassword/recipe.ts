@@ -42,7 +42,6 @@ import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 import { User } from "../../user";
-import { TenantConfig } from "../multitenancy/types";
 import { isFakeEmail } from "../thirdparty/utils";
 
 export default class Recipe extends RecipeModule {
@@ -122,23 +121,17 @@ export default class Recipe extends RecipeModule {
                                 firstFactorIds: ["emailpassword"],
                             };
                         });
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
-                            async (user: User, tenantConfig: TenantConfig) => {
-                                if (tenantConfig.emailPassword.enabled === false) {
-                                    return [];
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
+                            for (const loginMethod of user.loginMethods) {
+                                // We deliberately do not check for matching tenantId because we assume
+                                // MFA is app-wide by default. User can always override MFA function
+                                // to make it tenant specific.
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
+                                    return ["emailpassword"];
                                 }
-
-                                for (const loginMethod of user.loginMethods) {
-                                    // We deliberately do not check for matching tenantId because we assume
-                                    // MFA is app-wide by default. User can always override MFA function
-                                    // to make it tenant specific.
-                                    if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                        return ["emailpassword"];
-                                    }
-                                }
-                                return [];
                             }
-                        );
+                            return [];
+                        });
                         mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
                             // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
                             let sessionEmail = user.loginMethods.find(

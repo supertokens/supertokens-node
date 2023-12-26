@@ -27,7 +27,6 @@ export default function getAPIInterface(): APIInterface {
             }
 
             const isAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
-                tenantId,
                 user,
                 userContext,
             });

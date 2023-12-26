@@ -183,7 +183,6 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         const recipeInstance = MultiFactorAuthRecipe.getInstanceOrThrowError();
         const isAlreadySetup = await recipeInstance.recipeInterfaceImpl.getFactorsSetupForUser({
             user,
-            tenantId: tenantId ?? DEFAULT_TENANT_ID,
             userContext,
         });
 

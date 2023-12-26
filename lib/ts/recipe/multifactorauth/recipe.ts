@@ -422,7 +422,6 @@ export default class Recipe extends RecipeModule {
         });
         const factorsSetUpForUser = await this.recipeInterfaceImpl.getFactorsSetupForUser({
             user: sessionUser,
-            tenantId: input.tenantId,
             userContext: input.userContext,
         });
         const completedFactorsClaimValue = await input.session.getClaimValue(MultiFactorAuthClaim, input.userContext);

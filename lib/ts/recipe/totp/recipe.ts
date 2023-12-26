@@ -46,7 +46,6 @@ import removeDeviceAPI from "./api/removeDevice";
 import { User, getUser } from "../..";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
-import { TenantConfig } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -104,7 +103,7 @@ export default class Recipe extends RecipeModule {
                             };
                         });
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
-                            async (user: User, _tenantConfig: TenantConfig, userContext: UserContext) => {
+                            async (user: User, userContext: UserContext) => {
                                 const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices(
                                     {
                                         userId: user.id,
