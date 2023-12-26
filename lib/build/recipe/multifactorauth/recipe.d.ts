@@ -107,6 +107,9 @@ export default class Recipe extends RecipeModule {
               status: "MFA_FLOW_ERROR";
               reason: string;
           }
+        | {
+              status: "RECURSE_FOR_RACE_CONDITION";
+          }
     >;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
