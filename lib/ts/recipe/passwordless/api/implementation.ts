@@ -24,24 +24,24 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            while (true) {
-                let existingUsers = await listUsersByAccountInfo(
-                    input.tenantId,
-                    {
-                        phoneNumber: deviceInfo.phoneNumber,
-                        email: deviceInfo.email,
-                    },
-                    false,
-                    input.userContext
-                );
-                existingUsers = existingUsers.filter((u) =>
-                    u.loginMethods.some(
-                        (m) =>
-                            m.recipeId === "passwordless" &&
-                            (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
-                    )
-                );
+            let existingUsers = await listUsersByAccountInfo(
+                input.tenantId,
+                {
+                    phoneNumber: deviceInfo.phoneNumber,
+                    email: deviceInfo.email,
+                },
+                false,
+                input.userContext
+            );
+            existingUsers = existingUsers.filter((u) =>
+                u.loginMethods.some(
+                    (m) =>
+                        m.recipeId === "passwordless" &&
+                        (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
+                )
+            );
 
+            while (true) {
                 let {
                     session,
                     mfaInstance,
