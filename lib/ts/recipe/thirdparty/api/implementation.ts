@@ -51,25 +51,25 @@ export default function getAPIInterface(): APIInterface {
                 };
             }
 
-            let emailInfo = userInfo.email;
-            if (emailInfo === undefined) {
-                return {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER",
-                };
-            }
-            let existingUsers = await listUsersByAccountInfo(
-                tenantId,
-                {
-                    thirdParty: {
-                        id: provider.id,
-                        userId: userInfo.thirdPartyUserId,
-                    },
-                },
-                false,
-                userContext
-            );
-
             while (true) {
+                let emailInfo = userInfo.email;
+                if (emailInfo === undefined) {
+                    return {
+                        status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+                    };
+                }
+                let existingUsers = await listUsersByAccountInfo(
+                    tenantId,
+                    {
+                        thirdParty: {
+                            id: provider.id,
+                            userId: userInfo.thirdPartyUserId,
+                        },
+                    },
+                    false,
+                    userContext
+                );
+
                 let {
                     session,
                     mfaInstance,
