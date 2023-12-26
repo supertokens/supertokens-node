@@ -14,7 +14,6 @@
  */
 import { APIInterface, APIOptions } from "../types";
 import Multitenancy from "../../multitenancy";
-import { ProviderConfig } from "../../thirdparty/types";
 import PasswordlessRecipe from "../../passwordless/recipe";
 import ThirdPartyPasswordlessRecipe from "../../thirdpartypasswordless/recipe";
 import EmailPasswordRecipe from "../../emailpassword/recipe";
@@ -35,7 +34,6 @@ type TenantLoginMethodType = {
     };
     thirdParty: {
         enabled: boolean;
-        providers: ProviderConfig[];
     };
 };
 
@@ -89,7 +87,6 @@ function normaliseTenantLoginMethodsWithInitConfig(
         },
         thirdParty: {
             enabled: false,
-            providers: tenantDetailsFromCore.thirdParty.providers,
         },
     };
 

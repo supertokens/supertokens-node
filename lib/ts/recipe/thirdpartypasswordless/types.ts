@@ -56,6 +56,10 @@ export type TypeInput = (
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (
+              phoneNumber: string,
+              tenantId: string
+          ) => Promise<string | undefined> | string | undefined;
       }
 ) & {
     /**

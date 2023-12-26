@@ -1,6 +1,5 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../types";
-import { ProviderConfig } from "../../thirdparty/types";
 import { TypeNormalisedInput } from "../../passwordless/types";
 declare type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 declare type TenantLoginMethodType = {
@@ -14,7 +13,6 @@ declare type TenantLoginMethodType = {
     };
     thirdParty: {
         enabled: boolean;
-        providers: ProviderConfig[];
     };
 };
 export declare type Response = {

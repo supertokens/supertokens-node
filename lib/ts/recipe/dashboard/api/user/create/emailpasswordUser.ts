@@ -68,38 +68,28 @@ export const createEmailPasswordUser = async (
 
     const emailFormField = emailPasswordOrThirdpartyEmailPassword.config.signUpFeature.formFields.find(
         (field) => field.id === "email"
-    );
+    )!; // using non-null assertion as the field with id email will always exists in formFields array.
 
-    if (emailFormField !== undefined) {
-        const validateEmailError = await emailFormField.validate(email, tenantId, userContext);
+    const validateEmailError = await emailFormField.validate(email, tenantId, userContext);
 
-        if (validateEmailError !== undefined) {
-            return {
-                status: "EMAIL_VALIDATION_ERROR",
-                message: validateEmailError,
-            };
-        }
-    } else {
-        // this should never happen.
-        throw new Error("emailFormFiled is undefined");
+    if (validateEmailError !== undefined) {
+        return {
+            status: "EMAIL_VALIDATION_ERROR",
+            message: validateEmailError,
+        };
     }
 
     const passwordFormField = emailPasswordOrThirdpartyEmailPassword.config.signUpFeature.formFields.find(
         (field) => field.id === "password"
-    );
+    )!; // using non-null assertion as the field with id password will always exists in formFields array.
 
-    if (passwordFormField !== undefined) {
-        const validatePasswordError = await passwordFormField.validate(password, tenantId, userContext);
+    const validatePasswordError = await passwordFormField.validate(password, tenantId, userContext);
 
-        if (validatePasswordError !== undefined) {
-            return {
-                status: "PASSWORD_VALIDATION_ERROR",
-                message: validatePasswordError,
-            };
-        }
-    } else {
-        // this should never happen.
-        throw new Error("passwordFormField is undefined");
+    if (validatePasswordError !== undefined) {
+        return {
+            status: "PASSWORD_VALIDATION_ERROR",
+            message: validatePasswordError,
+        };
     }
 
     if (emailPasswordOrThirdpartyEmailPassword.getRecipeId() === "emailpassword") {

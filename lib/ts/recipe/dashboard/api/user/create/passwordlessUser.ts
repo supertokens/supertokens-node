@@ -7,7 +7,6 @@ import ThirdPartyPasswordlessRecipe from "../../../../thirdpartypasswordless/rec
 import { User } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 import { parsePhoneNumber } from "libphonenumber-js/max";
-import { defaultValidateEmail, defaultValidatePhoneNumber } from "../../../../passwordless/utils";
 
 type Response =
     | {
@@ -34,16 +33,14 @@ export const createPasswordlessUser = async (
     options: APIOptions,
     __: any
 ): Promise<Response> => {
-    let passwordlessOrThirdpartyPasswordlessRecipe:
-        | PasswordlessRecipe
-        | ThirdPartyPasswordlessRecipe
-        | undefined = undefined;
+    let passwordlessOrThirdpartyPasswordlessRecipe: PasswordlessRecipe | undefined = undefined;
 
     try {
         passwordlessOrThirdpartyPasswordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
     } catch (_) {
         try {
-            passwordlessOrThirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+            passwordlessOrThirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError()
+                .passwordlessRecipe;
         } catch (_) {
             return {
                 status: "FEATURE_NOT_ENABLED_ERROR",
@@ -71,14 +68,7 @@ export const createPasswordlessUser = async (
         email = email.trim();
         let validationError: string | undefined = undefined;
 
-        if (passwordlessOrThirdpartyPasswordlessRecipe.config.validateEmailAddress !== undefined) {
-            validationError = await passwordlessOrThirdpartyPasswordlessRecipe.config.validateEmailAddress(
-                email,
-                tenantId
-            );
-        } else {
-            validationError = await defaultValidateEmail(email);
-        }
+        validationError = await passwordlessOrThirdpartyPasswordlessRecipe.config.validateEmailAddress(email, tenantId);
         if (validationError !== undefined) {
             return {
                 status: "EMAIL_VALIDATION_ERROR",
@@ -94,14 +84,10 @@ export const createPasswordlessUser = async (
     ) {
         let validationError: string | undefined = undefined;
 
-        if (passwordlessOrThirdpartyPasswordlessRecipe.config.validatePhoneNumber !== undefined) {
-            validationError = await passwordlessOrThirdpartyPasswordlessRecipe.config.validatePhoneNumber(
-                phoneNumber,
-                tenantId
-            );
-        } else {
-            validationError = await defaultValidatePhoneNumber(phoneNumber);
-        }
+        validationError = await passwordlessOrThirdpartyPasswordlessRecipe.config.validatePhoneNumber(
+            phoneNumber,
+            tenantId
+        );
 
         if (validationError !== undefined) {
             return {
