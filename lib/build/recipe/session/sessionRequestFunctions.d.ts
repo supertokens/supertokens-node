@@ -16,7 +16,7 @@ export declare function getSessionFromRequest({
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     options?: VerifySessionOptions;
-    userContext?: UserContext;
+    userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined>;
 export declare function refreshSessionInRequest({
     res,

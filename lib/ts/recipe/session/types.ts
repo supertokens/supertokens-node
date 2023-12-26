@@ -354,20 +354,20 @@ export type RecipeInterface = {
 };
 
 export interface SessionContainerInterface {
-    revokeSession(userContext?: UserContext): Promise<void>;
+    revokeSession(userContext?: Record<string, any>): Promise<void>;
 
-    getSessionDataFromDatabase(userContext?: UserContext): Promise<any>;
+    getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any>;
 
-    updateSessionDataInDatabase(newSessionData: any, userContext?: UserContext): Promise<any>;
+    updateSessionDataInDatabase(newSessionData: any, userContext?: Record<string, any>): Promise<any>;
 
-    getUserId(userContext?: UserContext): string;
+    getUserId(userContext?: Record<string, any>): string;
 
-    getRecipeUserId(userContext?: UserContext): RecipeUserId;
-    getTenantId(userContext?: UserContext): string;
+    getRecipeUserId(userContext?: Record<string, any>): RecipeUserId;
+    getTenantId(userContext?: Record<string, any>): string;
 
-    getAccessTokenPayload(userContext?: UserContext): any;
+    getAccessTokenPayload(userContext?: Record<string, any>): any;
 
-    getHandle(userContext?: UserContext): string;
+    getHandle(userContext?: Record<string, any>): string;
 
     getAllSessionTokensDangerously(): {
         accessToken: string;
@@ -377,20 +377,20 @@ export interface SessionContainerInterface {
         accessAndFrontTokenUpdated: boolean;
     };
 
-    getAccessToken(userContext?: UserContext): string;
+    getAccessToken(userContext?: Record<string, any>): string;
 
-    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: UserContext): Promise<void>;
+    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: Record<string, any>): Promise<void>;
 
-    getTimeCreated(userContext?: UserContext): Promise<number>;
+    getTimeCreated(userContext?: Record<string, any>): Promise<number>;
 
-    getExpiry(userContext?: UserContext): Promise<number>;
+    getExpiry(userContext?: Record<string, any>): Promise<number>;
 
-    assertClaims(claimValidators: SessionClaimValidator[], userContext?: UserContext): Promise<void>;
-    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: UserContext): Promise<void>;
-    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: UserContext): Promise<void>;
-    getClaimValue<T>(claim: SessionClaim<T>, userContext?: UserContext): Promise<T | undefined>;
-    removeClaim(claim: SessionClaim<any>, userContext?: UserContext): Promise<void>;
-    attachToRequestResponse(reqResInfo: ReqResInfo, userContext?: UserContext): Promise<void> | void;
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: Record<string, any>): Promise<void>;
+    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<void>;
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: Record<string, any>): Promise<void>;
+    getClaimValue<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<T | undefined>;
+    removeClaim(claim: SessionClaim<any>, userContext?: Record<string, any>): Promise<void>;
+    attachToRequestResponse(reqResInfo: ReqResInfo, userContext?: Record<string, any>): Promise<void> | void;
 }
 
 export type APIOptions = {
@@ -500,14 +500,14 @@ export abstract class SessionClaim<T> {
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayloadByMerge_internal(payload: JSONObject, userContext?: UserContext): JSONObject;
+    abstract removeFromPayloadByMerge_internal(payload: JSONObject, userContext: UserContext): JSONObject;
 
     /**
      * Removes the claim from the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayload(payload: JSONObject, userContext?: UserContext): JSONObject;
+    abstract removeFromPayload(payload: JSONObject, userContext: UserContext): JSONObject;
 
     /**
      * Gets the value of the claim stored in the payload

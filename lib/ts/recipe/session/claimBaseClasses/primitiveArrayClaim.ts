@@ -27,7 +27,7 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
             },
         };
     }
-    removeFromPayloadByMerge_internal(payload: any, _userContext?: UserContext): any {
+    removeFromPayloadByMerge_internal(payload: any, _userContext: UserContext): any {
         const res = {
             ...payload,
             [this.key]: null,
@@ -36,7 +36,7 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
         return res;
     }
 
-    removeFromPayload(payload: any, _userContext?: UserContext): any {
+    removeFromPayload(payload: any, _userContext: UserContext): any {
         const res = {
             ...payload,
         };
@@ -45,11 +45,11 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
         return res;
     }
 
-    getValueFromPayload(payload: any, _userContext?: UserContext): T[] | undefined {
+    getValueFromPayload(payload: any, _userContext: UserContext): T[] | undefined {
         return payload[this.key]?.v;
     }
 
-    getLastRefetchTime(payload: any, _userContext?: UserContext): number | undefined {
+    getLastRefetchTime(payload: any, _userContext: UserContext): number | undefined {
         return payload[this.key]?.t;
     }
 

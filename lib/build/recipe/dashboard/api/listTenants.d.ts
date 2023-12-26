@@ -14,6 +14,8 @@ declare type TenantListTenantType = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
+    firstFactors?: string[];
+    requiredSecondaryFactors?: string[];
 };
 export declare type Response = {
     status: "OK";

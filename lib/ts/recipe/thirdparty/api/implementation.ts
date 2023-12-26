@@ -258,7 +258,7 @@ export default function getAPIInterface(): APIInterface {
                           tenantId: input.tenantId,
                           factorIdInProgress: "thirdparty",
                           session,
-                          userLoggingIn: existingUsers[0],
+                          userSigningInForFactor: existingUsers[0],
                           userContext: input.userContext,
                       });
 

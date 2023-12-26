@@ -13,10 +13,10 @@ export declare class PrimitiveClaim<T extends JSONPrimitive> extends SessionClai
     readonly defaultMaxAgeInSeconds: number | undefined;
     constructor(config: { key: string; fetchValue: SessionClaim<T>["fetchValue"]; defaultMaxAgeInSeconds?: number });
     addToPayload_internal(payload: any, value: T, _userContext: UserContext): any;
-    removeFromPayloadByMerge_internal(payload: any, _userContext?: UserContext): any;
-    removeFromPayload(payload: any, _userContext?: UserContext): any;
-    getValueFromPayload(payload: any, _userContext?: UserContext): T | undefined;
-    getLastRefetchTime(payload: any, _userContext?: UserContext): number | undefined;
+    removeFromPayloadByMerge_internal(payload: any, _userContext: UserContext): any;
+    removeFromPayload(payload: any, _userContext: UserContext): any;
+    getValueFromPayload(payload: any, _userContext: UserContext): T | undefined;
+    getLastRefetchTime(payload: any, _userContext: UserContext): number | undefined;
     validators: {
         hasValue: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
     };

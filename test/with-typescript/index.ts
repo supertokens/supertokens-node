@@ -1008,8 +1008,8 @@ class StringClaim extends PrimitiveClaim<string> {
                 claim: this,
                 id: key,
                 shouldRefetch: () => false,
-                validate: async (payload) => {
-                    const value = this.getValueFromPayload(payload);
+                validate: async (payload, userContext) => {
+                    const value = this.getValueFromPayload(payload, userContext);
                     if (!value || !value.startsWith(str)) {
                         return {
                             isValid: false,
@@ -1367,7 +1367,10 @@ Session.init({
                     boolClaim.validators.hasValue(true),
                 ],
                 createNewSession: async function (input) {
-                    input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
+                    input.accessTokenPayload = stringClaim.removeFromPayload(
+                        input.accessTokenPayload,
+                        input.userContext
+                    );
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
                         ...(await boolClaim.build(
@@ -1910,7 +1913,7 @@ Supertokens.init({
 });
 
 // const noMFARequired
-MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedDefaultFactors();
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedMFARequirementForAuth();
 MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([]);
 MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([
     { oneOf: ["emailpassword", "thirdparty"] }, // We can include the first factors here... that feels a bit weird but it works.

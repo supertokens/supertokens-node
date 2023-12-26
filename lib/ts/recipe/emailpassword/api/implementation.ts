@@ -645,7 +645,7 @@ export default function getAPIImplementation(): APIInterface {
                     tenantId,
                     factorIdInProgress: "emailpassword",
                     session,
-                    userLoggingIn: response.user,
+                    userSigningInForFactor: response.user,
                     userContext,
                 });
 

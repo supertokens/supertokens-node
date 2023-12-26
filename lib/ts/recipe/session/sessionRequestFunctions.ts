@@ -35,7 +35,7 @@ export async function getSessionFromRequest({
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     options?: VerifySessionOptions;
-    userContext?: UserContext;
+    userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
     const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;

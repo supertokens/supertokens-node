@@ -114,7 +114,7 @@ export default class Recipe extends RecipeModule {
 
                 PostSuperTokensInitCallbacks.addPostInitCallback(() => {
                     SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
-                        MultiFactorAuthClaim.validators.hasCompletedDefaultFactors()
+                        MultiFactorAuthClaim.validators.hasCompletedMFARequirementForAuth()
                     );
                 });
                 return Recipe.instance;
@@ -224,7 +224,7 @@ export default class Recipe extends RecipeModule {
             userContext: UserContext;
         } & (
             | {
-                  userLoggingIn: User;
+                  userSigningInForFactor: User;
               }
             | {
                   isAlreadySetup: boolean;
@@ -268,8 +268,8 @@ export default class Recipe extends RecipeModule {
             };
         }
 
-        if ("userLoggingIn" in input) {
-            if (input.userLoggingIn.id !== input.session.getUserId()) {
+        if ("userSigningInForFactor" in input) {
+            if (input.userSigningInForFactor.id !== input.session.getUserId()) {
                 // here the user logging in is not linked to the session user and
                 // we do not allow factor setup for existing users through sign in.
                 // we allow factor setup only through sign up
@@ -503,7 +503,7 @@ export default class Recipe extends RecipeModule {
                     return {
                         status: "MFA_FLOW_ERROR",
                         reason:
-                            "You found a bug. The newly created user is already associated with another primary user. Please contact support. (ERR_CODE_011)",
+                            "The newly created user is already associated with another primary user. Please contact support. (ERR_CODE_011)",
                     };
                 } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
                     this.querier.invalidateCoreCallCache(userContext);

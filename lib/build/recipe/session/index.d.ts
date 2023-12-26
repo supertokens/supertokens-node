@@ -12,7 +12,7 @@ import {
     RecipeInterface,
 } from "./types";
 import Recipe from "./recipe";
-import { JSONObject } from "../../types";
+import { JSONObject, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
@@ -39,7 +39,7 @@ export default class SessionWrapper {
         overrideGlobalClaimValidators?: (
             globalClaimValidators: SessionClaimValidator[],
             sessionInfo: SessionInformation,
-            userContext: Record<string, any>
+            userContext: UserContext
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
         userContext?: Record<string, any>
     ): Promise<

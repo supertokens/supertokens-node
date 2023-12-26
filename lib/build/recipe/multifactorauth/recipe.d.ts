@@ -61,7 +61,7 @@ export default class Recipe extends RecipeModule {
             userContext: UserContext;
         } & (
             | {
-                  userLoggingIn: User;
+                  userSigningInForFactor: User;
               }
             | {
                   isAlreadySetup: boolean;
