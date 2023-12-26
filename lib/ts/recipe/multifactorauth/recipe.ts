@@ -503,7 +503,7 @@ export default class Recipe extends RecipeModule {
                     return {
                         status: "MFA_FLOW_ERROR",
                         reason:
-                            "You found a bug. The newly created user is already associated with another primary user. Please contact support. (ERR_CODE_011)",
+                            "The newly created user is already associated with another primary user. Please contact support. (ERR_CODE_011)",
                     };
                 } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
                     this.querier.invalidateCoreCallCache(userContext);
