@@ -281,7 +281,7 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
 
                 // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                shouldAttemptAccountLinkingIfAllowed: session === undefined,
+                shouldAttemptAccountLinkingIfAllowed: shouldAttemptAccountLinking,
                 userContext,
             });
 
