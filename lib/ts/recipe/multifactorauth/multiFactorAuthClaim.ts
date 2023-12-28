@@ -87,8 +87,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                                     },
                                 };
                             }
-                        } else if (typeof req === "object" && "allOf" in req) {
-                            const res = req.allOf
+                        } else if (typeof req === "object" && "allOfInAnyOrder" in req) {
+                            const res = req.allOfInAnyOrder
                                 .map((r) => checkFactorRequirement(r, c))
                                 .filter((v) => v.isValid === false);
                             if (res.length !== 0) {
@@ -96,7 +96,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                                     isValid: false,
                                     reason: {
                                         message: "Some factor checkers failed in the list",
-                                        allOf: req.allOf,
+                                        allOfInAnyOrder: req.allOfInAnyOrder,
                                         failures: res,
                                     },
                                 };
@@ -148,8 +148,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         nextFactors.add(factorId);
                     }
                 }
-            } else if ("allOf" in req) {
-                for (const factorId of req.allOf) {
+            } else if ("allOfInAnyOrder" in req) {
+                for (const factorId of req.allOfInAnyOrder) {
                     if (completedClaims[factorId] === undefined) {
                         nextFactors.add(factorId);
                     }
