@@ -57,19 +57,20 @@ export default function getAPIInterface(): APIInterface {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER",
                 };
             }
-            let existingUsers = await listUsersByAccountInfo(
-                tenantId,
-                {
-                    thirdParty: {
-                        id: provider.id,
-                        userId: userInfo.thirdPartyUserId,
-                    },
-                },
-                false,
-                userContext
-            );
 
             while (true) {
+                let existingUsers = await listUsersByAccountInfo(
+                    tenantId,
+                    {
+                        thirdParty: {
+                            id: provider.id,
+                            userId: userInfo.thirdPartyUserId,
+                        },
+                    },
+                    false,
+                    userContext
+                );
+
                 let {
                     session,
                     mfaInstance,
