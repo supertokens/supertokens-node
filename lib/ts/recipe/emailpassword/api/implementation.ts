@@ -650,10 +650,14 @@ export default function getAPIImplementation(): APIInterface {
                         userContext,
                     });
 
-                    if (mfaValidationRes.status === "MFA_FLOW_ERROR") {
+                    if (mfaValidationRes.status === "RECURSE_FOR_RACE") {
+                        continue;
+                    }
+
+                    if (mfaValidationRes.status !== "OK") {
                         return {
                             status: "SIGN_IN_NOT_ALLOWED",
-                            reason: mfaValidationRes.reason,
+                            reason: mfaInstance.getReasonForStatus(mfaValidationRes.status),
                         };
                     }
                 }
@@ -688,14 +692,7 @@ export default function getAPIImplementation(): APIInterface {
                         userContext,
                     });
 
-                    if (sessionRes.status === "MFA_FLOW_ERROR") {
-                        return {
-                            status: "SIGN_IN_FAILED",
-                            reason: sessionRes.reason,
-                        };
-                    }
-
-                    if (sessionRes.status === "RECURSE_FOR_RACE_CONDITION") {
+                    if (sessionRes.status === "RECURSE_FOR_RACE") {
                         continue;
                     }
 
@@ -819,10 +816,15 @@ export default function getAPIImplementation(): APIInterface {
                         },
                         userContext,
                     });
-                    if (mfaValidationRes.status === "MFA_FLOW_ERROR") {
+
+                    if (mfaValidationRes.status === "RECURSE_FOR_RACE") {
+                        continue;
+                    }
+
+                    if (mfaValidationRes.status !== "OK") {
                         return {
                             status: "SIGN_UP_NOT_ALLOWED",
-                            reason: mfaValidationRes.reason,
+                            reason: mfaInstance.getReasonForStatus(mfaValidationRes.status),
                         };
                     }
                 }
@@ -877,14 +879,7 @@ export default function getAPIImplementation(): APIInterface {
                         userContext,
                     });
 
-                    if (sessionRes.status === "MFA_FLOW_ERROR") {
-                        return {
-                            status: "SIGN_UP_FAILED",
-                            reason: sessionRes.reason,
-                        };
-                    }
-
-                    if (sessionRes.status === "RECURSE_FOR_RACE_CONDITION") {
+                    if (sessionRes.status === "RECURSE_FOR_RACE") {
                         continue;
                     }
 

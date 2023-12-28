@@ -77,8 +77,15 @@ export default class Recipe extends RecipeModule {
               status: "OK";
           }
         | {
-              status: "MFA_FLOW_ERROR";
-              reason: string;
+              status:
+                  | "INVALID_FIRST_FACTOR_ERROR"
+                  | "UNRELATED_USER_SIGN_IN_ERROR"
+                  | "EMAIL_NOT_VERIFIED_ERROR"
+                  | "PHONE_NUMBER_NOT_VERIFIED_ERROR"
+                  | "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR"
+                  | "CANNOT_LINK_FACTOR_ACCOUNT_ERROR"
+                  | "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR"
+                  | "RECURSE_FOR_RACE";
           }
     >;
     updateSessionAndUserAfterFactorCompletion: ({
@@ -104,13 +111,25 @@ export default class Recipe extends RecipeModule {
               status: "OK";
           }
         | {
-              status: "MFA_FLOW_ERROR";
-              reason: string;
-          }
-        | {
-              status: "RECURSE_FOR_RACE_CONDITION";
+              status: "RECURSE_FOR_RACE";
           }
     >;
+    getReasonForStatus: (
+        status:
+            | "INVALID_FIRST_FACTOR_ERROR"
+            | "UNRELATED_USER_SIGN_IN_ERROR"
+            | "EMAIL_NOT_VERIFIED_ERROR"
+            | "PHONE_NUMBER_NOT_VERIFIED_ERROR"
+            | "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR"
+            | "CANNOT_LINK_FACTOR_ACCOUNT_ERROR"
+            | "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR"
+    ) =>
+        | "This login method is not a valid first factor."
+        | "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)"
+        | "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)"
+        | "The factor setup is not allowed because the phone number is not verified. Please contact support. (ERR_CODE_011)"
+        | "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)"
+        | "Factor setup was disallowed due to security reasons. Please contact support. (ERR_CODE_013)";
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
     addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;

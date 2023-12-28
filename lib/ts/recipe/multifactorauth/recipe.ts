@@ -235,7 +235,20 @@ export default class Recipe extends RecipeModule {
                   };
               }
         )
-    ): Promise<{ status: "OK" } | { status: "MFA_FLOW_ERROR"; reason: string }> => {
+    ): Promise<
+        | { status: "OK" }
+        | {
+              status:
+                  | "INVALID_FIRST_FACTOR_ERROR"
+                  | "UNRELATED_USER_SIGN_IN_ERROR"
+                  | "EMAIL_NOT_VERIFIED_ERROR"
+                  | "PHONE_NUMBER_NOT_VERIFIED_ERROR"
+                  | "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR"
+                  | "CANNOT_LINK_FACTOR_ACCOUNT_ERROR"
+                  | "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR"
+                  | "RECURSE_FOR_RACE";
+          }
+    > => {
         const tenantInfo = await Multitenancy.getTenant(input.tenantId, input.userContext);
         if (tenantInfo === undefined) {
             throw new SessionError({
@@ -259,8 +272,7 @@ export default class Recipe extends RecipeModule {
             // No session exists, so we need to check if it's a valid first factor before proceeding
             if (!validFirstFactors.includes(input.factorIdInProgress)) {
                 return {
-                    status: "MFA_FLOW_ERROR",
-                    reason: `'${input.factorIdInProgress}' is not a valid first factor`,
+                    status: "INVALID_FIRST_FACTOR_ERROR",
                 };
             }
             return {
@@ -275,9 +287,7 @@ export default class Recipe extends RecipeModule {
                 // we allow factor setup only through sign up
 
                 return {
-                    status: "MFA_FLOW_ERROR",
-                    reason:
-                        "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_011)",
+                    status: "UNRELATED_USER_SIGN_IN_ERROR",
                 };
             }
 
@@ -334,8 +344,7 @@ export default class Recipe extends RecipeModule {
                     }
                     if (!foundVerifiedEmail) {
                         return {
-                            status: "MFA_FLOW_ERROR",
-                            reason: "Cannot setup factor because the email is not verified",
+                            status: "EMAIL_NOT_VERIFIED_ERROR",
                         };
                     }
                 }
@@ -343,57 +352,39 @@ export default class Recipe extends RecipeModule {
                 if (input.signUpInfo.phoneNumber !== undefined) {
                     let foundVerifiedPhoneNumber = false;
                     for (const lM of sessionUser?.loginMethods) {
-                        if (lM.phoneNumber === input.signUpInfo.phoneNumber && lM.verified) {
+                        if (lM.phoneNumber === input.signUpInfo.phoneNumber) {
                             foundVerifiedPhoneNumber = true;
                             break;
                         }
                     }
                     if (!foundVerifiedPhoneNumber) {
                         return {
-                            status: "MFA_FLOW_ERROR",
-                            reason: "Cannot setup factor as the phone number is not verified",
+                            status: "PHONE_NUMBER_NOT_VERIFIED_ERROR",
                         };
                     }
                 }
             }
 
             if (!sessionUser.isPrimaryUser) {
-                for (const email of sessionUser.emails) {
-                    const users = await listUsersByAccountInfo(
-                        input.tenantId,
-                        { email: email },
-                        undefined,
-                        input.userContext
-                    );
-
-                    for (const user of users) {
-                        if (user.isPrimaryUser) {
-                            return {
-                                status: "MFA_FLOW_ERROR",
-                                reason:
-                                    "Cannot setup factor as the session user cannot become a primary user. Please contact support. (ERR_CODE_009)",
-                            };
-                        }
+                const canCreatePrimary = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUser(
+                    {
+                        recipeUserId: sessionUser.loginMethods[0].recipeUserId,
+                        userContext: input.userContext,
                     }
+                );
+
+                if (canCreatePrimary.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                    // RACE since we just checked that it was not a primary user
+                    this.querier.invalidateCoreCallCache(input.userContext);
+                    return {
+                        status: "RECURSE_FOR_RACE",
+                    };
                 }
 
-                for (const phoneNumber of sessionUser.phoneNumbers) {
-                    const users = await listUsersByAccountInfo(
-                        input.tenantId,
-                        { phoneNumber: phoneNumber },
-                        undefined,
-                        input.userContext
-                    );
-
-                    for (const user of users) {
-                        if (user.isPrimaryUser) {
-                            return {
-                                status: "MFA_FLOW_ERROR",
-                                reason:
-                                    "Cannot setup factor as the session user cannot become a primary user. Please contact support. (ERR_CODE_009)",
-                            };
-                        }
-                    }
+                if (canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                    return {
+                        status: "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR",
+                    };
                 }
             }
 
@@ -407,9 +398,7 @@ export default class Recipe extends RecipeModule {
             for (const user of users) {
                 if (user.isPrimaryUser && user.id !== sessionUser.id) {
                     return {
-                        status: "MFA_FLOW_ERROR",
-                        reason:
-                            "Cannot setup factor as the account info for factor being setup is already associated with another primary user. Please contact support. (ERR_CODE_010)",
+                        status: "CANNOT_LINK_FACTOR_ACCOUNT_ERROR",
                     };
                 }
             }
@@ -448,8 +437,7 @@ export default class Recipe extends RecipeModule {
         });
         if (!canSetup) {
             return {
-                status: "MFA_FLOW_ERROR",
-                reason: `Cannot setup factor as the user is not allowed to setup this factor: '${input.factorIdInProgress}'`,
+                status: "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR",
             };
         }
 
@@ -478,8 +466,7 @@ export default class Recipe extends RecipeModule {
         | {
               status: "OK";
           }
-        | { status: "MFA_FLOW_ERROR"; reason: string }
-        | { status: "RECURSE_FOR_RACE_CONDITION" }
+        | { status: "RECURSE_FOR_RACE" }
     > => {
         if (isFirstFactor) {
             await this.recipeInterfaceImpl.markFactorAsCompleteInSession({
@@ -492,7 +479,6 @@ export default class Recipe extends RecipeModule {
             };
         }
 
-        // loop to handle race conditions
         const sessionUser = await getUser(session.getUserId(), userContext);
 
         // race condition, user deleted throw unauthorized
@@ -515,19 +501,15 @@ export default class Recipe extends RecipeModule {
                     );
                     if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
                         this.querier.invalidateCoreCallCache(userContext);
-                        return await this.updateSessionAndUserAfterFactorCompletion({
-                            session,
-                            isFirstFactor,
-                            factorId,
-                            userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
-                            userContext,
-                        }); // recurse for race condition
+                        return {
+                            status: "RECURSE_FOR_RACE",
+                        };
                     } else if (
                         createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
                         this.querier.invalidateCoreCallCache(userContext);
                         return {
-                            status: "RECURSE_FOR_RACE_CONDITION",
+                            status: "RECURSE_FOR_RACE",
                         };
                     }
                 }
@@ -538,24 +520,10 @@ export default class Recipe extends RecipeModule {
                     userContext,
                 });
 
-                if (linkRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                if (linkRes.status !== "OK") {
                     this.querier.invalidateCoreCallCache(userContext);
                     return {
-                        status: "RECURSE_FOR_RACE_CONDITION",
-                    };
-                } else if (linkRes.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
-                    this.querier.invalidateCoreCallCache(userContext);
-                    return await this.updateSessionAndUserAfterFactorCompletion({
-                        session,
-                        isFirstFactor,
-                        factorId,
-                        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
-                        userContext,
-                    }); // recurse for race condition
-                } else if (linkRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-                    this.querier.invalidateCoreCallCache(userContext);
-                    return {
-                        status: "RECURSE_FOR_RACE_CONDITION",
+                        status: "RECURSE_FOR_RACE",
                     };
                 }
             } else {
@@ -564,9 +532,7 @@ export default class Recipe extends RecipeModule {
                     sessionUser.id === userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor.user.id;
                 if (!loggedInUserLinkedToSessionUser) {
                     return {
-                        status: "MFA_FLOW_ERROR",
-                        reason:
-                            "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_011)",
+                        status: "RECURSE_FOR_RACE",
                     };
                 }
             }
@@ -581,6 +547,33 @@ export default class Recipe extends RecipeModule {
         return {
             status: "OK",
         };
+    };
+
+    getReasonForStatus = (
+        status:
+            | "INVALID_FIRST_FACTOR_ERROR"
+            | "UNRELATED_USER_SIGN_IN_ERROR"
+            | "EMAIL_NOT_VERIFIED_ERROR"
+            | "PHONE_NUMBER_NOT_VERIFIED_ERROR"
+            | "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR"
+            | "CANNOT_LINK_FACTOR_ACCOUNT_ERROR"
+            | "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR"
+    ) => {
+        switch (status) {
+            case "INVALID_FIRST_FACTOR_ERROR":
+                return `This login method is not a valid first factor.`;
+            case "UNRELATED_USER_SIGN_IN_ERROR":
+                return "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)";
+            case "EMAIL_NOT_VERIFIED_ERROR":
+                return "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)";
+            case "PHONE_NUMBER_NOT_VERIFIED_ERROR":
+                return "The factor setup is not allowed because the phone number is not verified. Please contact support. (ERR_CODE_011)";
+            case "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR":
+            case "CANNOT_LINK_FACTOR_ACCOUNT_ERROR":
+                return "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)";
+            case "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR":
+                return "Factor setup was disallowed due to security reasons. Please contact support. (ERR_CODE_013)";
+        }
     };
 
     addGetEmailsForFactorFromOtherRecipes = (func: GetEmailsForFactorFromOtherRecipesFunc) => {

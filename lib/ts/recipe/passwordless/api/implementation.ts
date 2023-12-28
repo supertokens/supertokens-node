@@ -105,10 +105,14 @@ export default function getAPIImplementation(): APIInterface {
                               userContext: input.userContext,
                           });
 
-                    if (validateRes.status === "MFA_FLOW_ERROR") {
+                    if (validateRes.status === "RECURSE_FOR_RACE") {
+                        continue;
+                    }
+
+                    if (validateRes.status !== "OK") {
                         return {
                             status: "SIGN_IN_UP_NOT_ALLOWED",
-                            reason: validateRes.reason,
+                            reason: mfaInstance.getReasonForStatus(validateRes.status),
                         };
                     }
                 }
@@ -211,14 +215,7 @@ export default function getAPIImplementation(): APIInterface {
                         userContext: input.userContext,
                     });
 
-                    if (sessionRes.status === "MFA_FLOW_ERROR") {
-                        return {
-                            status: "SIGN_IN_UP_FAILED",
-                            reason: sessionRes.reason,
-                        };
-                    }
-
-                    if (sessionRes.status === "RECURSE_FOR_RACE_CONDITION") {
+                    if (sessionRes.status === "RECURSE_FOR_RACE") {
                         continue;
                     }
 

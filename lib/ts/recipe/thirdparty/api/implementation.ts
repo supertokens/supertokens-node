@@ -263,10 +263,14 @@ export default function getAPIInterface(): APIInterface {
                               userContext: input.userContext,
                           });
 
-                    if (validateMfaRes.status === "MFA_FLOW_ERROR") {
+                    if (validateMfaRes.status === "RECURSE_FOR_RACE") {
+                        continue;
+                    }
+
+                    if (validateMfaRes.status !== "OK") {
                         return {
                             status: "SIGN_IN_UP_NOT_ALLOWED",
-                            reason: validateMfaRes.reason,
+                            reason: mfaInstance.getReasonForStatus(validateMfaRes.status),
                         };
                     }
                 }
@@ -377,14 +381,7 @@ export default function getAPIInterface(): APIInterface {
                         userContext: input.userContext,
                     });
 
-                    if (sessionRes.status === "MFA_FLOW_ERROR") {
-                        return {
-                            status: "SIGN_IN_UP_FAILED",
-                            reason: sessionRes.reason,
-                        };
-                    }
-
-                    if (sessionRes.status === "RECURSE_FOR_RACE_CONDITION") {
+                    if (sessionRes.status === "RECURSE_FOR_RACE") {
                         continue;
                     }
 

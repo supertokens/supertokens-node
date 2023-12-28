@@ -69,10 +69,10 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            if (validateMfaRes.status === "MFA_FLOW_ERROR") {
+            if (validateMfaRes.status === "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR") {
                 return {
                     status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                    reason: validateMfaRes.reason,
+                    reason: mfaInstance.getReasonForStatus(validateMfaRes.status),
                 };
             }
 
@@ -92,11 +92,8 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                 });
 
-                if (sessionRes.status === "MFA_FLOW_ERROR") {
-                    return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                        reason: sessionRes.reason,
-                    };
+                if (sessionRes.status !== "OK") {
+                    throw new Error("should never come here");
                 }
             }
 
@@ -127,7 +124,7 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                 });
 
-                if (sessionRes.status === "MFA_FLOW_ERROR") {
+                if (sessionRes.status !== "OK") {
                     throw new Error("should never come here");
                 }
             }

@@ -136,7 +136,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
 
         res = await plessEmailSignInUp(app, "test@example.com", undefined);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal("'otp-email' is not a valid first factor", res.body.reason);
+        assert.equal("This login method is not a valid first factor.", res.body.reason);
     });
 
     it("test that only a valid first factor is allowed to login and tenant config is prioritised", async function () {
@@ -283,7 +283,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         res = await epSignIn(app, "test2@example.com", "password", accessToken);
         assert.equal("SIGN_IN_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
+            "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)",
             res.body.reason
         );
 
@@ -344,7 +344,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because the user already exists and not linked to the session user. Please contact support. (ERR_CODE_013)",
+            "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)",
             res.body.reason
         );
         cookies = extractInfoFromResponse(res);

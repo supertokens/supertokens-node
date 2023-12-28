@@ -53,7 +53,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
         });
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password");
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user.user.id);
         assert.deepEqual(factorIds, ["emailpassword"]);
     });
 
@@ -85,7 +85,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
             tenantId: "public",
             phoneNumber: "+919876543210",
         });
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user.user.id);
         assert.deepEqual(factorIds, ["otp-phone"]);
     });
 
@@ -125,7 +125,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
         }).generate();
         await Totp.verifyDevice("public", user.user.id, deviceRes.deviceName, otp);
 
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user.user.id);
         assert.deepEqual(factorIds, ["otp-phone", "totp"]);
     });
 
@@ -161,7 +161,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
         await AccountLinking.createPrimaryUser(new SuperTokens.RecipeUserId(user1.user.id));
         await AccountLinking.linkAccounts(new SuperTokens.RecipeUserId(user2.user.id), user1.user.id);
 
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user1.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user1.user.id);
         assert.deepEqual(factorIds, ["emailpassword", "otp-phone"]);
     });
 
@@ -197,13 +197,13 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
             { rsfu: [], rsft: [], c: {}, e: [] },
             { rsfu: ["otp-phone"], rsft: [], c: {}, e: ["otp-phone"] },
             { rsfu: ["otp-phone", "otp-email"], rsft: [], c: {}, e: ["otp-phone", "otp-email"] },
-            { rsfu: ["otp-phone", "otp-email"], rsft: [], c: { "otp-email": 0 }, e: ["otp-phone"] },
+            { rsfu: ["otp-phone", "otp-email"], rsft: [], c: { "otp-email": 0 }, e: ["otp-phone", "otp-email"] },
             { rsfu: ["otp-phone"], rsft: ["otp-email"], c: {}, e: ["otp-phone", "otp-email"] },
             {
                 rsfu: ["otp-phone", "otp-email", "totp"],
                 rsft: [],
                 c: { "otp-phone": 0, "otp-email": 1 },
-                e: ["otp-email", "totp"],
+                e: ["otp-phone", "otp-email", "totp"],
             },
         ];
 
