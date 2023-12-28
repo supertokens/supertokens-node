@@ -481,6 +481,12 @@ export default class Recipe extends RecipeModule {
 
         const sessionUser = await getUser(session.getUserId(), userContext);
 
+        if (process.env.TEST_MODE === "testing") {
+            if ((this as any)._induceRaceCondition !== undefined) {
+                await (this as any)._induceRaceCondition();
+            }
+        }
+
         // race condition, user deleted throw unauthorized
         if (sessionUser === undefined) {
             throw new SessionError({
