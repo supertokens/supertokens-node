@@ -37,6 +37,7 @@ type TenantLoginMethodType = {
     };
     thirdPartyPasswordless?: {
         enabled: boolean;
+        contactMethod?: PasswordlessContactMethod;
     };
     thirdParty: {
         enabled: boolean;
@@ -105,11 +106,9 @@ function normaliseTenantLoginMethodsWithInitConfig(
     if (tenantDetailsFromCore.passwordless.enabled === true) {
         try {
             const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
-            normalisedTenantLoginMethodsInfo.passwordless.contactMethod =
-                thirdpartyPasswordlessRecipe.config.contactMethod;
             normalisedTenantLoginMethodsInfo.thirdPartyPasswordless!.enabled = true;
-            normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
+            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless!.contactMethod =
+                thirdpartyPasswordlessRecipe.config.contactMethod;
         } catch (_) {
             try {
                 const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
@@ -122,9 +121,7 @@ function normaliseTenantLoginMethodsWithInitConfig(
     if (tenantDetailsFromCore.emailPassword.enabled === true) {
         try {
             ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
             normalisedTenantLoginMethodsInfo.thirdPartyEmailPasssword!.enabled = true;
-            normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
         } catch (_) {
             try {
                 EmailPasswordRecipe.getInstanceOrThrowError();
