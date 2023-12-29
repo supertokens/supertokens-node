@@ -27,12 +27,16 @@ type TenantLoginMethodType = {
     tenantId: string;
     emailPassword: {
         enabled: boolean;
-        isThirdParty?: boolean;
+    };
+    thirdPartyEmailPasssword?: {
+        enabled: boolean;
     };
     passwordless: {
         enabled: boolean;
-        isThirdParty?: boolean;
         contactMethod?: PasswordlessContactMethod;
+    };
+    thirdPartyPasswordless?: {
+        enabled: boolean;
     };
     thirdParty: {
         enabled: boolean;
@@ -83,11 +87,15 @@ function normaliseTenantLoginMethodsWithInitConfig(
         tenantId: tenantDetailsFromCore.tenantId,
         emailPassword: {
             enabled: false,
-            isThirdParty: false,
+        },
+        thirdPartyEmailPasssword: {
+            enabled: false,
         },
         passwordless: {
             enabled: false,
-            isThirdParty: false,
+        },
+        thirdPartyPasswordless: {
+            enabled: false,
         },
         thirdParty: {
             enabled: false,
@@ -100,7 +108,7 @@ function normaliseTenantLoginMethodsWithInitConfig(
             normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
             normalisedTenantLoginMethodsInfo.passwordless.contactMethod =
                 thirdpartyPasswordlessRecipe.config.contactMethod;
-            normalisedTenantLoginMethodsInfo.passwordless.isThirdParty = true;
+            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless!.enabled = true;
             normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
         } catch (_) {
             try {
@@ -115,7 +123,7 @@ function normaliseTenantLoginMethodsWithInitConfig(
         try {
             ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
             normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
-            normalisedTenantLoginMethodsInfo.emailPassword.isThirdParty = true;
+            normalisedTenantLoginMethodsInfo.thirdPartyEmailPasssword!.enabled = true;
             normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
         } catch (_) {
             try {

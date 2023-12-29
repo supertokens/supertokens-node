@@ -6,12 +6,16 @@ declare type TenantLoginMethodType = {
     tenantId: string;
     emailPassword: {
         enabled: boolean;
-        isThirdParty?: boolean;
+    };
+    thirdPartyEmailPasssword?: {
+        enabled: boolean;
     };
     passwordless: {
         enabled: boolean;
-        isThirdParty?: boolean;
         contactMethod?: PasswordlessContactMethod;
+    };
+    thirdPartyPasswordless?: {
+        enabled: boolean;
     };
     thirdParty: {
         enabled: boolean;
