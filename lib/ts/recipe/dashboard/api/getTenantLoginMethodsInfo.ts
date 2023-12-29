@@ -1,4 +1,4 @@
-/* Copyright (c) 2022, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -27,9 +27,11 @@ type TenantLoginMethodType = {
     tenantId: string;
     emailPassword: {
         enabled: boolean;
+        isThirdParty?: boolean;
     };
     passwordless: {
         enabled: boolean;
+        isThirdParty?: boolean;
         contactMethod?: PasswordlessContactMethod;
     };
     thirdParty: {
@@ -81,9 +83,11 @@ function normaliseTenantLoginMethodsWithInitConfig(
         tenantId: tenantDetailsFromCore.tenantId,
         emailPassword: {
             enabled: false,
+            isThirdParty: false,
         },
         passwordless: {
             enabled: false,
+            isThirdParty: false,
         },
         thirdParty: {
             enabled: false,
@@ -96,6 +100,7 @@ function normaliseTenantLoginMethodsWithInitConfig(
             normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
             normalisedTenantLoginMethodsInfo.passwordless.contactMethod =
                 thirdpartyPasswordlessRecipe.config.contactMethod;
+            normalisedTenantLoginMethodsInfo.passwordless.isThirdParty = true;
             normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
         } catch (_) {
             try {
@@ -110,6 +115,7 @@ function normaliseTenantLoginMethodsWithInitConfig(
         try {
             ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
             normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
+            normalisedTenantLoginMethodsInfo.emailPassword.isThirdParty = true;
             normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
         } catch (_) {
             try {

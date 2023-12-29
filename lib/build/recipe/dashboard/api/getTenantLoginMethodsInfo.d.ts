@@ -6,6 +6,7 @@ declare type TenantLoginMethodType = {
     tenantId: string;
     emailPassword: {
         enabled: boolean;
+        isThirdpartyEmailPasswordEnabled?: boolean;
     };
     passwordless: {
         enabled: boolean;
