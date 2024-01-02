@@ -116,7 +116,7 @@ function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: {
         } catch (_) {}
     }
 
-    if (tenantDetailsFromCore.thirdParty.enabled === true && tenantDetailsFromCore.passwordless.enabled === true) {
+    if (tenantDetailsFromCore.thirdParty.enabled === true || tenantDetailsFromCore.passwordless.enabled === true) {
         try {
             const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
             normalisedTenantLoginMethodsInfo.thirdPartyPasswordless.enabled = true;
@@ -132,7 +132,7 @@ function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: {
         } catch (_) {}
     }
 
-    if (tenantDetailsFromCore.thirdParty.enabled === true && tenantDetailsFromCore.emailPassword.enabled === true) {
+    if (tenantDetailsFromCore.thirdParty.enabled === true || tenantDetailsFromCore.emailPassword.enabled === true) {
         try {
             ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
             normalisedTenantLoginMethodsInfo.thirdPartyEmailPasssword.enabled = true;
