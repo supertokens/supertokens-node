@@ -30,6 +30,7 @@ const {
     withPreParsedRequestResponse,
 } = require("../lib/build/nextjs");
 const { verifySession } = require("../recipe/session/framework/express");
+const SessionError = require("../lib/build/recipe/session/error").default;
 const { testApiHandler } = require("next-test-api-route-handler");
 const { NextRequest, NextResponse } = require("next/server");
 
@@ -790,6 +791,7 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
             requestWithExpiredToken.headers
         );
         assert.equal(sessionContainer.session, undefined);
+        assert.equal(sessionContainer.hasToken, true);
     });
 
     it("withSession", async function () {
@@ -833,6 +835,26 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         assert.equal(authenticatedResponse.status, 200);
         const authenticatedResponseJson = await authenticatedResponse.json();
         assert(authenticatedResponseJson.userId === process.env.user);
+
+        const requestWhereHandlerThrowsSTError = authenticatedRequest;
+        const responseWhereHandlerThrowsSTError = await withSession(
+            requestWhereHandlerThrowsSTError,
+            async (err, session) => {
+                throw new SessionError({ message: "Authentication Required!", type: "UNAUTHORISED" });
+            }
+        );
+        assert.equal(responseWhereHandlerThrowsSTError.status, 401);
+
+        const requestWhereHandlerThrowsUnknownError = authenticatedRequest;
+        const unknownError = new Error("Unknown error");
+        try {
+            await withSession(requestWhereHandlerThrowsUnknownError, async (err, session) => {
+                throw unknownError;
+            });
+            assert.fail("should not come here");
+        } catch (error) {
+            assert.strictEqual(error, unknownError);
+        }
 
         const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
 
@@ -941,6 +963,26 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         assert.equal(authenticatedResponse.status, 200);
         const authenticatedResponseJson = await authenticatedResponse.json();
         assert(authenticatedResponseJson.userId === process.env.user);
+
+        const requestWhereHandlerThrowsSTError = authenticatedRequest;
+        const responseWhereHandlerThrowsSTError = await withSession(
+            requestWhereHandlerThrowsSTError,
+            async (err, session) => {
+                throw new SessionError({ message: "Authentication Required!", type: "UNAUTHORISED" });
+            }
+        );
+        assert.equal(responseWhereHandlerThrowsSTError.status, 401);
+
+        const requestWhereHandlerThrowsUnknownError = authenticatedRequest;
+        const unknownError = new Error("Unknown error");
+        try {
+            await withSession(requestWhereHandlerThrowsUnknownError, async (err, session) => {
+                throw unknownError;
+            });
+            assert.fail("should not come here");
+        } catch (error) {
+            assert.strictEqual(error, unknownError);
+        }
     });
 });
 

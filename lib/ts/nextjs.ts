@@ -14,9 +14,18 @@
  */
 import { serialize } from "cookie";
 import { errorHandler } from "./framework/express";
-import { CollectingResponse, PreParsedRequest, middleware } from "./framework/custom";
+import {
+    CollectingResponse,
+    PreParsedRequest,
+    middleware,
+    errorHandler as customErrorHandler,
+} from "./framework/custom";
 import { HTTPMethod } from "./types";
 import Session, { SessionContainer, VerifySessionOptions } from "./recipe/session";
+import SessionRecipe from "./recipe/session/recipe";
+import { getToken } from "./recipe/session/cookieAndHeaders";
+import { availableTokenTransferMethods } from "./recipe/session/constants";
+
 function next(
     request: any,
     response: any,
@@ -142,18 +151,30 @@ export default class NextJS {
     }> {
         let baseResponse = new CollectingResponse();
 
+        const recipe = SessionRecipe.getInstanceOrThrowError();
+        const tokenTransferMethod = recipe.config.getTokenTransferMethod({
+            req: baseRequest,
+            forCreateNewSession: false,
+            userContext,
+        });
+        const transferMethods = tokenTransferMethod === "any" ? availableTokenTransferMethods : [tokenTransferMethod];
+
+        const hasToken = transferMethods.some(
+            (transferMethod) => getToken(baseRequest, "access", transferMethod) !== undefined
+        );
+
         try {
             let session = await Session.getSession(baseRequest, baseResponse, options, userContext);
             return {
                 session,
                 hasInvalidClaims: false,
-                hasToken: session !== undefined,
+                hasToken,
                 baseResponse,
             };
         } catch (err) {
             if (Session.Error.isErrorFromSuperTokens(err)) {
                 return {
-                    hasToken: err.type !== Session.Error.UNAUTHORISED,
+                    hasToken,
                     hasInvalidClaims: err.type === Session.Error.INVALID_CLAIMS,
                     session: undefined,
                     baseResponse,
@@ -231,7 +252,20 @@ export default class NextJS {
                 return nextResponse as NextResponse;
             }
 
-            let userResponse = await handler(undefined, session);
+            let userResponse: NextResponse;
+
+            try {
+                userResponse = await handler(undefined, session);
+            } catch (err) {
+                await customErrorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
+                    if (errorHandlerError) throw errorHandlerError;
+                });
+
+                userResponse = new Response(baseResponse.body, {
+                    status: baseResponse.statusCode,
+                    headers: baseResponse.headers,
+                }) as NextResponse;
+            }
 
             let didAddCookies = false;
             let didAddHeaders = false;
@@ -297,7 +331,20 @@ export default class NextJS {
         });
 
         let baseResponse = new CollectingResponse();
-        let userResponse = await handler(baseRequest, baseResponse);
+        let userResponse: NextResponse;
+
+        try {
+            userResponse = await handler(baseRequest, baseResponse);
+        } catch (err) {
+            await customErrorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
+                if (errorHandlerError) throw errorHandlerError;
+            });
+
+            userResponse = new Response(baseResponse.body, {
+                status: baseResponse.statusCode,
+                headers: baseResponse.headers,
+            }) as NextResponse;
+        }
 
         let didAddCookies = false;
         let didAddHeaders = false;
