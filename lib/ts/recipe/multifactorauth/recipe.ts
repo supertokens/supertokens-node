@@ -141,7 +141,7 @@ export default class Recipe extends RecipeModule {
                 method: "put",
                 pathWithoutApiBasePath: new NormalisedURLPath(UPDATE_SESSION_AND_FETCH_MFA_INFO),
                 id: UPDATE_SESSION_AND_FETCH_MFA_INFO,
-                disabled: this.apiImpl.updateSessionAndFetchMfaInfoPUT === undefined,
+                disabled: this.apiImpl.resyncSessionAndFetchMFAInfoPUT === undefined,
             },
         ];
     };

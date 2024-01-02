@@ -119,17 +119,14 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    updateSessionAndFetchMfaInfoPUT: (input: {
+    resyncSessionAndFetchMFAInfoPUT: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
-              factors: {
-                  isAlreadySetup: string[];
-                  isAllowedToSetup: string[];
-              };
+              factorsThatAreAlreadySetup: string[];
               emails: Record<string, string[] | undefined>;
               phoneNumbers: Record<string, string[] | undefined>;
           }
