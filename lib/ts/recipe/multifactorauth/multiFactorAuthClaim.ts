@@ -208,7 +208,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                 userContext,
             }
         );
-        const completedFactorsClaimValue = currentPayload && (currentPayload[this.key] as JSONObject);
+        const completedFactorsClaimValue =
+            currentPayload === undefined ? undefined : (currentPayload[this.key] as JSONObject);
         const completedFactors: Record<string, number> =
             (completedFactorsClaimValue?.c as Record<string, number>) ?? {};
         const mfaRequirementsForAuth = await recipeInstance.recipeInterfaceImpl.getMFARequirementsForAuth({
