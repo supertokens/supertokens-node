@@ -121,7 +121,7 @@ describe(`mfa race conditions: ${printPath("[test/mfa/mfa.raceConditions.test.js
             assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
             let reason = res.body.reason;
             assert.equal(
-                "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)",
+                "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_011)",
                 reason
             );
 
@@ -202,7 +202,7 @@ describe(`mfa race conditions: ${printPath("[test/mfa/mfa.raceConditions.test.js
             assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
             let reason = res.body.reason;
             assert.equal(
-                "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)",
+                "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_011)",
                 reason
             );
 
@@ -285,7 +285,7 @@ describe(`mfa race conditions: ${printPath("[test/mfa/mfa.raceConditions.test.js
             assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
             let reason = res.body.reason;
             assert.equal(
-                "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)",
+                "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_011)",
                 reason
             );
 
