@@ -47,20 +47,10 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         throw new Error("This should never happen, claim value not present in payload");
                     }
 
-                    const { n } = claimVal;
-
-                    if (n.length === 0) {
-                        return {
-                            isValid: true,
-                        };
-                    }
+                    const { v } = claimVal;
 
                     return {
-                        isValid: false,
-                        reason: {
-                            message: "not all required factors have been completed",
-                            nextFactorOptions: n,
-                        },
+                        isValid: v,
                     };
                 },
             }),
@@ -143,7 +133,37 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
 
-    public buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[] {
+    public isRequirementsSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
+        for (const req of requirements) {
+            if (typeof req === "object" && "oneOf" in req) {
+                const res = req.oneOf
+                    .map((r) => checkFactorRequirement(r, completedClaims))
+                    .filter((v) => v.isValid === false);
+                if (res.length === req.oneOf.length) {
+                    return false;
+                }
+            } else if (typeof req === "object" && "allOfInAnyOrder" in req) {
+                const res = req.allOfInAnyOrder
+                    .map((r) => checkFactorRequirement(r, completedClaims))
+                    .filter((v) => v.isValid === false);
+                if (res.length !== 0) {
+                    return false;
+                }
+            } else {
+                const res = checkFactorRequirement(req, completedClaims);
+                if (res.isValid !== true) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public getNextSetOfUnsatisfiedFactors(
+        completedClaims: MFAClaimValue["c"],
+        requirements: MFARequirementList
+    ): string[] {
         for (const req of requirements) {
             const nextFactors: Set<string> = new Set();
 
@@ -225,7 +245,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
         return {
             c: completedFactors,
-            n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
+            v: MultiFactorAuthClaim.isRequirementsSatisfied(completedFactors, mfaRequirementsForAuth),
         };
     };
 
@@ -238,7 +258,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     ...prevValue?.c,
                     ...value.c,
                 },
-                n: value.n,
+                v: value.v,
             },
         };
     };

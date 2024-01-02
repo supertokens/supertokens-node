@@ -56,7 +56,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
         isAllowedToSetupFactor: async function (
             this: RecipeInterface,
-            { factorId, session, factorsSetUpForUser, userContext }
+            { factorId, session, factorsSetUpForUser, mfaRequirementsForAuth, userContext }
         ) {
             const claimVal = await session.getClaimValue(MultiFactorAuthClaim, userContext);
             if (!claimVal) {
@@ -86,17 +86,23 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
             // return completedGroups.length >= 2;
 
-            if (claimVal.n.some((id) => factorsSetUpForUser.includes(id))) {
+            const setOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
+                claimVal.c,
+                mfaRequirementsForAuth
+            );
+
+            if (setOfUnsatisfiedFactors.some((id) => factorsSetUpForUser.includes(id))) {
                 logDebugMessage(
-                    `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next array: ${claimVal.n.join(
+                    `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.join(
                         ", "
                     )}`
                 );
                 return false;
             }
+
             logDebugMessage(
-                `isAllowedToSetupFactor ${factorId}: true because the next array is ${
-                    claimVal.n.length === 0 ? "empty" : "cannot be completed otherwise"
+                `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${
+                    setOfUnsatisfiedFactors.length === 0 ? "empty" : "cannot be completed otherwise"
                 }`
             );
             return true;
@@ -134,10 +140,10 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 completedFactors: completed,
                 userContext,
             });
-            const next = MultiFactorAuthClaim.buildNextArray(completed, mfaRequirementsForAuth);
+            const isAuthComplete = MultiFactorAuthClaim.isRequirementsSatisfied(completed, mfaRequirementsForAuth);
             await session.setClaimValue(MultiFactorAuthClaim, {
                 c: completed,
-                n: next,
+                v: isAuthComplete,
             });
         },
 

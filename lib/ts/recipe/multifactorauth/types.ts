@@ -35,7 +35,7 @@ export type MFARequirementList = (
 
 export type MFAClaimValue = {
     c: Record<string, number>;
-    n: string[];
+    v: boolean;
 };
 
 export type TypeInput = {
@@ -126,7 +126,7 @@ export type APIInterface = {
     }) => Promise<
         | {
               status: "OK";
-              factorsThatAreAlreadySetup: string[];
+              nextFactors: string[];
               emails: Record<string, string[] | undefined>;
               phoneNumbers: Record<string, string[] | undefined>;
           }
