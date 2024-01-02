@@ -13,7 +13,7 @@ export declare type MFARequirementList = (
           oneOf: string[];
       }
     | {
-          allOf: string[];
+          allOfInAnyOrder: string[];
       }
     | string
 )[];

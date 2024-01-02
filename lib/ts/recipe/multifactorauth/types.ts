@@ -28,7 +28,7 @@ export type MFARequirementList = (
           oneOf: string[];
       }
     | {
-          allOf: string[];
+          allOfInAnyOrder: string[];
       }
     | string
 )[];
