@@ -28,14 +28,14 @@ type TenantLoginMethodType = {
     emailPassword: {
         enabled: boolean;
     };
-    thirdPartyEmailPasssword?: {
+    thirdPartyEmailPasssword: {
         enabled: boolean;
     };
     passwordless: {
         enabled: boolean;
         contactMethod?: PasswordlessContactMethod;
     };
-    thirdPartyPasswordless?: {
+    thirdPartyPasswordless: {
         enabled: boolean;
         contactMethod?: PasswordlessContactMethod;
     };
@@ -58,10 +58,6 @@ export default async function getTenantLoginMethodsInfo(
     const tenantsRes = await Multitenancy.listAllTenants(userContext);
     const finalTenants: TenantLoginMethodType[] = [];
 
-    if (tenantsRes.status !== "OK") {
-        return tenantsRes;
-    }
-
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         const currentTenant = tenantsRes.tenants[i];
 
@@ -81,9 +77,18 @@ export default async function getTenantLoginMethodsInfo(
     };
 }
 
-function normaliseTenantLoginMethodsWithInitConfig(
-    tenantDetailsFromCore: TenantLoginMethodType
-): TenantLoginMethodType {
+function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: {
+    tenantId: string;
+    emailPassword: {
+        enabled: boolean;
+    };
+    passwordless: {
+        enabled: boolean;
+    };
+    thirdParty: {
+        enabled: boolean;
+    };
+}): TenantLoginMethodType {
     const normalisedTenantLoginMethodsInfo: TenantLoginMethodType = {
         tenantId: tenantDetailsFromCore.tenantId,
         emailPassword: {
@@ -105,29 +110,33 @@ function normaliseTenantLoginMethodsWithInitConfig(
 
     if (tenantDetailsFromCore.passwordless.enabled === true) {
         try {
+            const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
+            normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
+            normalisedTenantLoginMethodsInfo.passwordless.contactMethod = passwordlessRecipe.config.contactMethod;
+        } catch (_) {}
+    }
+
+    if (tenantDetailsFromCore.thirdParty.enabled === true && tenantDetailsFromCore.passwordless.enabled === true) {
+        try {
             const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless!.enabled = true;
-            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless!.contactMethod =
+            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless.enabled = true;
+            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless.contactMethod =
                 thirdpartyPasswordlessRecipe.config.contactMethod;
-        } catch (_) {
-            try {
-                const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
-                normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
-                normalisedTenantLoginMethodsInfo.passwordless.contactMethod = passwordlessRecipe.config.contactMethod;
-            } catch (_) {}
-        }
+        } catch (_) {}
     }
 
     if (tenantDetailsFromCore.emailPassword.enabled === true) {
         try {
+            EmailPasswordRecipe.getInstanceOrThrowError();
+            normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
+        } catch (_) {}
+    }
+
+    if (tenantDetailsFromCore.thirdParty.enabled === true && tenantDetailsFromCore.emailPassword.enabled === true) {
+        try {
             ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.thirdPartyEmailPasssword!.enabled = true;
-        } catch (_) {
-            try {
-                EmailPasswordRecipe.getInstanceOrThrowError();
-                normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
-            } catch (_) {}
-        }
+            normalisedTenantLoginMethodsInfo.thirdPartyEmailPasssword.enabled = true;
+        } catch (_) {}
     }
 
     if (tenantDetailsFromCore.thirdParty.enabled === true) {
