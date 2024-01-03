@@ -161,7 +161,9 @@ export default class NextJS {
         const transferMethods = tokenTransferMethod === "any" ? availableTokenTransferMethods : [tokenTransferMethod];
         const hasToken = transferMethods.some((transferMethod) => {
             const token = getToken(baseRequest, "access", transferMethod);
-            if (!token) return false;
+            if (!token) {
+                return false;
+            }
 
             try {
                 parseJWTWithoutSignatureVerification(token);
