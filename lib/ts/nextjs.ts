@@ -25,6 +25,7 @@ import Session, { SessionContainer, VerifySessionOptions } from "./recipe/sessio
 import SessionRecipe from "./recipe/session/recipe";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { availableTokenTransferMethods } from "./recipe/session/constants";
+import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
 
 function next(
     request: any,
@@ -158,10 +159,17 @@ export default class NextJS {
             userContext,
         });
         const transferMethods = tokenTransferMethod === "any" ? availableTokenTransferMethods : [tokenTransferMethod];
+        const hasToken = transferMethods.some((transferMethod) => {
+            const token = getToken(baseRequest, "access", transferMethod);
+            if (!token) return false;
 
-        const hasToken = transferMethods.some(
-            (transferMethod) => getToken(baseRequest, "access", transferMethod) !== undefined
-        );
+            try {
+                parseJWTWithoutSignatureVerification(token);
+                return true;
+            } catch {
+                return false;
+            }
+        });
 
         try {
             let session = await Session.getSession(baseRequest, baseResponse, options, userContext);

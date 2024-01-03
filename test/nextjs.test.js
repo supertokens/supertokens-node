@@ -145,7 +145,7 @@ describe(`Next.js Pages Router: ${printPath("[test/nextjs.test.js]")}`, function
                     assert.deepStrictEqual(respJson.user.emails[0], "john.doe@supertokens.io");
                     assert.strictEqual(respJson.user.id, process.env.user);
                     assert.notStrictEqual(res.headers.get("front-token"), undefined);
-                    const tokens = getSessionTokensFromResponse(res);
+                    const tokens = getSessionTokensFromResponseHeaders(res);
                     assert.notEqual(tokens.access, undefined);
                     assert.notEqual(tokens.refresh, undefined);
                 },
@@ -181,7 +181,7 @@ describe(`Next.js Pages Router: ${printPath("[test/nextjs.test.js]")}`, function
                     assert.deepStrictEqual(respJson.status, "OK");
                     assert.deepStrictEqual(respJson.user.emails[0], "john.doe@supertokens.io");
                     assert(res.headers.get("front-token") !== undefined);
-                    tokens = getSessionTokensFromResponse(res);
+                    tokens = getSessionTokensFromResponseHeaders(res);
                     assert.notEqual(tokens.access, undefined);
                     assert.notEqual(tokens.refresh, undefined);
                 },
@@ -680,7 +680,7 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         assert.deepStrictEqual(respJson.user.emails[0], userEmail);
         assert.strictEqual(respJson.user.id, process.env.user);
         assert.notStrictEqual(signUpRes.headers.get("front-token"), undefined);
-        const tokens = getSessionTokensFromResponse(signUpRes);
+        const tokens = getSessionTokensFromResponseHeaders(signUpRes);
         assert.notEqual(tokens.access, undefined);
         assert.notEqual(tokens.refresh, undefined);
     });
@@ -714,33 +714,13 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         assert.deepStrictEqual(respJson.user.emails[0], userEmail);
         assert.strictEqual(respJson.user.id, process.env.user);
         assert.notStrictEqual(signInRes.headers.get("front-token"), undefined);
-        const tokens = getSessionTokensFromResponse(signInRes);
+        const tokens = getSessionTokensFromResponseHeaders(signInRes);
         assert.notEqual(tokens.access, undefined);
         assert.notEqual(tokens.refresh, undefined);
     });
 
     it("getSSRSession", async function () {
-        const handleCall = getAppDirRequestHandler(NextResponse);
-
-        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
-        const requestInfo = {
-            method: "POST",
-            headers: { rid: "emailpassword" },
-            body: JSON.stringify({
-                formFields: [
-                    { id: "email", value: userEmail },
-                    { id: "password", value: "P@sSW0rd" },
-                ],
-            }),
-        };
-
-        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
-
-        const signUpRes = await handleCall(signUpRequest);
-        assert.deepStrictEqual(signUpRes.status, 200);
-        const tokens = getSessionTokensFromResponse(signUpRes);
-        assert.notEqual(tokens.access, undefined);
-        assert.notEqual(tokens.refresh, undefined);
+        const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
 
         const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
             headers: {
@@ -795,27 +775,7 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
     });
 
     it("withSession", async function () {
-        const handleCall = getAppDirRequestHandler(NextResponse);
-
-        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
-        const requestInfo = {
-            method: "POST",
-            headers: { rid: "emailpassword" },
-            body: JSON.stringify({
-                formFields: [
-                    { id: "email", value: userEmail },
-                    { id: "password", value: "P@sSW0rd" },
-                ],
-            }),
-        };
-
-        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
-
-        const signUpRes = await handleCall(signUpRequest);
-        assert.deepStrictEqual(signUpRes.status, 200);
-        const tokens = getSessionTokensFromResponse(signUpRes);
-        assert.notEqual(tokens.access, undefined);
-        assert.notEqual(tokens.refresh, undefined);
+        const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
 
         const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
             headers: {
@@ -923,27 +883,7 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
     });
 
     it("withPreParsedRequestResponse", async function () {
-        const handleCall = getAppDirRequestHandler(NextResponse);
-
-        const userEmail = `john.doe.${Date.now()}@supertokens.com`;
-        const requestInfo = {
-            method: "POST",
-            headers: { rid: "emailpassword" },
-            body: JSON.stringify({
-                formFields: [
-                    { id: "email", value: userEmail },
-                    { id: "password", value: "P@sSW0rd" },
-                ],
-            }),
-        };
-
-        const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
-
-        const signUpRes = await handleCall(signUpRequest);
-        assert.deepStrictEqual(signUpRes.status, 200);
-        const tokens = getSessionTokensFromResponse(signUpRes);
-        assert.notEqual(tokens.access, undefined);
-        assert.notEqual(tokens.refresh, undefined);
+        const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
 
         const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
             headers: {
@@ -1022,15 +962,29 @@ describe(`getSSRSession:hasToken`, function () {
         });
 
         it("should return hasToken value correctly", async function () {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
+
             const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
 
             sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
 
             assert.equal(sessionContainer.hasToken, false);
 
-            const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
+            const requestWithInvalidToken = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
                     Authorization: `Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithInvalidToken.cookies.getAll(),
+                requestWithInvalidToken.headers
+            );
+            assert.equal(sessionContainer.hasToken, false);
+
+            const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Authorization: `Bearer ${tokens.access}`,
                 },
             });
 
@@ -1042,7 +996,7 @@ describe(`getSSRSession:hasToken`, function () {
 
             const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
-                    Cookie: `sAccessToken=Bearer some-random-token`,
+                    Cookie: `sAccessToken=${tokens.access}`,
                 },
             });
 
@@ -1086,15 +1040,29 @@ describe(`getSSRSession:hasToken`, function () {
         });
 
         it("should return hasToken value correctly", async function () {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
+
             const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
 
             sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
 
             assert.equal(sessionContainer.hasToken, false);
 
+            const requestWithInvalidToken = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Cookie: `sAccessToken=some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithInvalidToken.cookies.getAll(),
+                requestWithInvalidToken.headers
+            );
+            assert.equal(sessionContainer.hasToken, false);
+
             const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
-                    Authorization: `Bearer some-random-token`,
+                    Authorization: `Bearer ${tokens.access}`,
                 },
             });
 
@@ -1106,7 +1074,7 @@ describe(`getSSRSession:hasToken`, function () {
 
             const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
-                    Cookie: `sAccessToken=Bearer some-random-token`,
+                    Cookie: `sAccessToken=${tokens.access}`,
                 },
             });
 
@@ -1150,15 +1118,29 @@ describe(`getSSRSession:hasToken`, function () {
         });
 
         it("should return hasToken value correctly", async function () {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
+
             const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
 
             sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
 
             assert.equal(sessionContainer.hasToken, false);
 
-            const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
+            const requestWithInvalidToken = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
                     Authorization: `Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithInvalidToken.cookies.getAll(),
+                requestWithInvalidToken.headers
+            );
+            assert.equal(sessionContainer.hasToken, false);
+
+            const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Authorization: `Bearer ${tokens.access}`,
                 },
             });
 
@@ -1170,7 +1152,7 @@ describe(`getSSRSession:hasToken`, function () {
 
             const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
-                    Cookie: `sAccessToken=Bearer some-random-token`,
+                    Cookie: `sAccessToken=${tokens.access}`,
                 },
             });
 
@@ -1183,9 +1165,55 @@ describe(`getSSRSession:hasToken`, function () {
     });
 });
 
-function getSessionTokensFromResponse(response) {
+async function getValidTokensAfterSignup({ tokenTransferMethod = "header" } = {}) {
+    const handleCall = getAppDirRequestHandler(NextResponse);
+
+    const userEmail = `john.doe.${Date.now()}@supertokens.com`;
+    const requestInfo = {
+        method: "POST",
+        headers: { rid: "emailpassword" },
+        body: JSON.stringify({
+            formFields: [
+                { id: "email", value: userEmail },
+                { id: "password", value: "P@sSW0rd" },
+            ],
+        }),
+    };
+
+    const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
+
+    const signUpRes = await handleCall(signUpRequest);
+    assert.deepStrictEqual(signUpRes.status, 200);
+    const tokens =
+        tokenTransferMethod === "header"
+            ? getSessionTokensFromResponseHeaders(signUpRes)
+            : getSessionTokensFromResponseCookies(signUpRes);
+    assert.notEqual(tokens.access, undefined);
+    assert.notEqual(tokens.refresh, undefined);
+    return tokens;
+}
+
+function getSessionTokensFromResponseHeaders(response) {
     return {
         access: response.headers.get("st-access-token"),
         refresh: response.headers.get("st-refresh-token"),
     };
+}
+
+function getSessionTokensFromResponseCookies(response) {
+    const tokens = {};
+    response.headers.getSetCookie().forEach((header) => {
+        const matchAccessToken = header.match(/sAccessToken=([^;]+)/);
+        const matchRefreshToken = header.match(/sRefreshToken=([^;]+)/);
+
+        if (matchAccessToken) {
+            tokens.access = matchAccessToken[1];
+        }
+
+        if (matchRefreshToken) {
+            tokens.refresh = matchRefreshToken[1];
+        }
+    });
+
+    return tokens;
 }
