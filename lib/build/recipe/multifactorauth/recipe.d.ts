@@ -124,11 +124,12 @@ export default class Recipe extends RecipeModule {
             | "CANNOT_LINK_FACTOR_ACCOUNT_ERROR"
             | "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR"
     ) =>
-        | "This login method is not a valid first factor."
-        | "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)"
-        | "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)"
-        | "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_011)"
-        | "Factor setup was disallowed due to security reasons. Please contact support. (ERR_CODE_012)";
+        | "This login method is not a valid first factor. Please contact support. (ERR_CODE_009)"
+        | "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_010)"
+        | "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_011)"
+        | "Cannot setup factor because there is another account with same email or phone number as the currently session user. Please contact support. (ERR_CODE_012)"
+        | "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_013)"
+        | "Factor setup was disallowed due to security reasons. Please contact support. (ERR_CODE_014)";
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
     addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
