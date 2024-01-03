@@ -115,7 +115,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (mfaInstance !== undefined) {
                     if (session === undefined) {
                         // First factor flow
-                        await mfaInstance.checkForValidFirstFactor(input.tenantId, "thirdparty", input.userContext);
+                        await mfaInstance.checkForValidFirstFactor(input.tenantId, factorId, input.userContext);
                     } else {
                         // Secondary factor flow
 
