@@ -258,7 +258,9 @@ export default class NextJS {
                 userResponse = await handler(undefined, session);
             } catch (err) {
                 await customErrorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
-                    if (errorHandlerError) throw errorHandlerError;
+                    if (errorHandlerError) {
+                        throw errorHandlerError;
+                    }
                 });
 
                 userResponse = new Response(baseResponse.body, {
@@ -337,7 +339,9 @@ export default class NextJS {
             userResponse = await handler(baseRequest, baseResponse);
         } catch (err) {
             await customErrorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
-                if (errorHandlerError) throw errorHandlerError;
+                if (errorHandlerError) {
+                    throw errorHandlerError;
+                }
             });
 
             userResponse = new Response(baseResponse.body, {

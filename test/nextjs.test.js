@@ -965,9 +965,9 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         assert(authenticatedResponseJson.userId === process.env.user);
 
         const requestWhereHandlerThrowsSTError = authenticatedRequest;
-        const responseWhereHandlerThrowsSTError = await withSession(
+        const responseWhereHandlerThrowsSTError = await withPreParsedRequestResponse(
             requestWhereHandlerThrowsSTError,
-            async (err, session) => {
+            async (baseRequest, baseResponse) => {
                 throw new SessionError({ message: "Authentication Required!", type: "UNAUTHORISED" });
             }
         );
@@ -976,13 +976,210 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         const requestWhereHandlerThrowsUnknownError = authenticatedRequest;
         const unknownError = new Error("Unknown error");
         try {
-            await withSession(requestWhereHandlerThrowsUnknownError, async (err, session) => {
-                throw unknownError;
-            });
+            await withPreParsedRequestResponse(
+                requestWhereHandlerThrowsUnknownError,
+                async (baseRequest, baseResponse) => {
+                    throw unknownError;
+                }
+            );
             assert.fail("should not come here");
         } catch (error) {
             assert.strictEqual(error, unknownError);
         }
+    });
+});
+
+describe(`getSSRSession:hasToken`, function () {
+    describe("tokenTransferMethod = any", function () {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            const connectionURI = await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        getTokenTransferMethod: () => "any",
+                    }),
+                ],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("should return hasToken value correctly", async function () {
+            const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
+
+            sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
+
+            assert.equal(sessionContainer.hasToken, false);
+
+            const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Authorization: `Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithTokenInHeader.cookies.getAll(),
+                requestWithTokenInHeader.headers
+            );
+            assert.equal(sessionContainer.hasToken, true);
+
+            const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Cookie: `sAccessToken=Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithTokenInCookie.cookies.getAll(),
+                requestWithTokenInCookie.headers
+            );
+            assert.equal(sessionContainer.hasToken, true);
+        });
+    });
+
+    describe("tokenTransferMethod = cookie", function () {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            const connectionURI = await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        getTokenTransferMethod: () => "cookie",
+                    }),
+                ],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("should return hasToken value correctly", async function () {
+            const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
+
+            sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
+
+            assert.equal(sessionContainer.hasToken, false);
+
+            const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Authorization: `Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithTokenInHeader.cookies.getAll(),
+                requestWithTokenInHeader.headers
+            );
+            assert.equal(sessionContainer.hasToken, false);
+
+            const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Cookie: `sAccessToken=Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithTokenInCookie.cookies.getAll(),
+                requestWithTokenInCookie.headers
+            );
+            assert.equal(sessionContainer.hasToken, true);
+        });
+    });
+
+    describe("tokenTransferMethod = header", function () {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            const connectionURI = await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        getTokenTransferMethod: () => "header",
+                    }),
+                ],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("should return hasToken value correctly", async function () {
+            const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
+
+            sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
+
+            assert.equal(sessionContainer.hasToken, false);
+
+            const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Authorization: `Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithTokenInHeader.cookies.getAll(),
+                requestWithTokenInHeader.headers
+            );
+            assert.equal(sessionContainer.hasToken, true);
+
+            const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Cookie: `sAccessToken=Bearer some-random-token`,
+                },
+            });
+
+            sessionContainer = await getSSRSession(
+                requestWithTokenInCookie.cookies.getAll(),
+                requestWithTokenInCookie.headers
+            );
+            assert.equal(sessionContainer.hasToken, false);
+        });
     });
 });
 

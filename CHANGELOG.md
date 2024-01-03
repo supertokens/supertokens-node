@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [16.6.9] - 2023-12-22
 
--   Add session util functions `withSession` and `getSSRSession` for Next.js App directory.
+-   Add session util functions `withSession`, `getSSRSession` and `withPreParsedRequestResponse` for Next.js App directory.
+-   Previously, the custom framework's `errorHandler` callback function was invoked only upon encountering an error. This behavior has been rectified, and now the callback is invoked in both error and success cases.
 
 ## [16.6.8] - 2023-12-18
 
