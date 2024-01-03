@@ -263,6 +263,7 @@ export default class NextJS {
                     }
                 });
 
+                // The headers in the userResponse are set twice from baseResponse, but the resulting response contains unique headers.
                 userResponse = new Response(baseResponse.body, {
                     status: baseResponse.statusCode,
                     headers: baseResponse.headers,
@@ -344,6 +345,7 @@ export default class NextJS {
                 }
             });
 
+            // The headers in the userResponse are set twice from baseResponse, but the resulting response contains unique headers.
             userResponse = new Response(baseResponse.body, {
                 status: baseResponse.statusCode,
                 headers: baseResponse.headers,
