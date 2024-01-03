@@ -10,7 +10,15 @@ export default class Wrapper {
         session: SessionContainerInterface,
         factorId: string,
         userContext?: Record<string, any>
-    ): Promise<boolean>;
+    ): Promise<
+        | {
+              isAllowed: true;
+          }
+        | {
+              isAllowed: false;
+              reason: string;
+          }
+    >;
     static markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
