@@ -24,6 +24,13 @@ import { logDebugMessage } from "../../logger";
 export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
     return {
         getFactorsSetupForUser: async function ({ user, userContext }) {
+            // factors setup for user are provided by each of the initialized recipes
+            // each of the recipe checks if there is a matching recipe in the login
+            // methods of the user specified and based on that returns the factor ids
+            // in case of passwordless, the factor ids are based on the contact method
+            // and flow configs and the relavant factor ids are returned
+            // https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1752852720
+
             let factorIds: string[] = [];
 
             for (const func of recipeInstance.getFactorsSetupForUserFromOtherRecipesFuncs) {
@@ -43,6 +50,8 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             requiredSecondaryFactorsForUser,
             requiredSecondaryFactorsForTenant,
         }) {
+            // default requirements for Auth is the union of required factors for user and tenant
+            // https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1752852720
             const allFactors: Set<string> = new Set();
             for (const factor of requiredSecondaryFactorsForUser) {
                 allFactors.add(factor);

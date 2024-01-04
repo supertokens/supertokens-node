@@ -63,6 +63,9 @@ export async function getFactorFlowControlFlags(req: BaseRequest, res: BaseRespo
     //       - If linking is not allowed, we return a support status code
     //       - The code path should never use the session overwrite boolean in this case!
 
+    // This function returns flags based on all the above flows and in each of the sign in/up API
+    // implementation, we perform the actions based on these flags.
+
     let session = await Session.getSession(
         req,
         res,

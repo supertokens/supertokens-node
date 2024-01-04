@@ -232,6 +232,9 @@ export default class Recipe extends RecipeModule {
         // so we don't need to do additional checks here
         let validFirstFactors = tenantConfig.firstFactors ?? this.config.firstFactors;
 
+        // We return a 401 if the factor is not a valid first factor. It's likely that the user
+        // is trying to setup a secondary factor without an active session.
+        // https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1874931338
         if (validFirstFactors !== undefined && !validFirstFactors.includes(factorId)) {
             throw new SessionError({
                 type: SessionError.UNAUTHORISED,
