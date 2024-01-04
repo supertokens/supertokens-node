@@ -51,6 +51,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
                     return {
                         isValid: v,
+                        reason: v === false ? "MFA requirement for auth is not satisfied" : undefined,
                     };
                 },
             }),
@@ -134,30 +135,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     };
 
     public isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
-        for (const req of requirements) {
-            if (typeof req === "object" && "oneOf" in req) {
-                const res = req.oneOf
-                    .map((r) => checkFactorRequirement(r, completedClaims))
-                    .filter((v) => v.isValid === false);
-                if (res.length === req.oneOf.length) {
-                    return false;
-                }
-            } else if (typeof req === "object" && "allOfInAnyOrder" in req) {
-                const res = req.allOfInAnyOrder
-                    .map((r) => checkFactorRequirement(r, completedClaims))
-                    .filter((v) => v.isValid === false);
-                if (res.length !== 0) {
-                    return false;
-                }
-            } else {
-                const res = checkFactorRequirement(req, completedClaims);
-                if (res.isValid !== true) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return this.getNextSetOfUnsatisfiedFactors(completedClaims, requirements).length === 0;
     }
 
     public getNextSetOfUnsatisfiedFactors(
