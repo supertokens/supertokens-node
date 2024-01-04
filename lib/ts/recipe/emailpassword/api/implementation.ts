@@ -642,27 +642,30 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 if (mfaInstance !== undefined) {
-                    const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                        tenantId,
-                        factorIdInProgress: "emailpassword",
-                        session,
-                        userSigningInForFactor: response.user,
-                        userContext,
-                    });
+                    if (session === undefined) {
+                        await mfaInstance.checkForValidFirstFactor(tenantId, "emailpassword", userContext);
+                    } else {
+                        let sessionUser = await getUser(session.getUserId(), userContext);
 
-                    if (mfaValidationRes.status === "RECURSE_FOR_RACE") {
-                        continue;
-                    }
+                        if (sessionUser === undefined) {
+                            // Session user doesn't exist, maybe the user was deleted
+                            // Race condition, user got deleted in parallel, throw unauthorized
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Session user not found",
+                            });
+                        }
 
-                    if (mfaValidationRes.status !== "OK") {
-                        return {
-                            status: "SIGN_IN_NOT_ALLOWED",
-                            reason: mfaInstance.getReasonForStatus(mfaValidationRes.status),
-                        };
+                        const res = await mfaInstance.checkIfFactorUserLinkedToSessionUser(sessionUser, response.user);
+                        if (res.status !== "OK") {
+                            return {
+                                status: "SIGN_IN_NOT_ALLOWED",
+                                reason: res.reason,
+                            };
+                        }
                     }
                 }
 
-                let isFirstFactor = session === undefined;
                 if (shouldCreateSession) {
                     session = await Session.createNewSession(
                         options.req,
@@ -680,32 +683,11 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 if (mfaInstance !== undefined) {
-                    const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
-                        session,
-                        isFirstFactor,
+                    await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                        session: session,
                         factorId: "emailpassword",
-                        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
-                            user: response.user,
-                            createdNewUser: false,
-                            recipeUserId: emailPasswordRecipeUser.recipeUserId,
-                        },
                         userContext,
                     });
-
-                    if (sessionRes.status === "RECURSE_FOR_RACE") {
-                        continue;
-                    }
-
-                    let user = await getUser(response.user.id, userContext);
-
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-
-                    response.user = user;
                 }
 
                 return {
@@ -804,28 +786,65 @@ export default function getAPIImplementation(): APIInterface {
                     }
                 }
 
-                if (mfaInstance !== undefined) {
-                    const mfaValidationRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                        tenantId,
-                        factorIdInProgress: "emailpassword",
-                        session,
-                        isAlreadySetup: false, // since this is a sign up
-                        signUpInfo: {
-                            email,
-                            isVerifiedFactor: false,
-                        },
-                        userContext,
-                    });
-
-                    if (mfaValidationRes.status === "RECURSE_FOR_RACE") {
-                        continue;
+                let sessionUser: User | undefined;
+                if (mfaInstance !== undefined && session !== undefined) {
+                    sessionUser = await getUser(session.getUserId(), userContext);
+                    if (sessionUser === undefined) {
+                        // Session user doesn't exist, maybe the user was deleted
+                        // Race condition, user got deleted in parallel, throw unauthorized
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Session user not found",
+                        });
                     }
+                }
 
-                    if (mfaValidationRes.status !== "OK") {
-                        return {
-                            status: "SIGN_UP_NOT_ALLOWED",
-                            reason: mfaInstance.getReasonForStatus(mfaValidationRes.status),
-                        };
+                if (mfaInstance !== undefined) {
+                    if (session === undefined) {
+                        await mfaInstance.checkForValidFirstFactor(tenantId, "emailpassword", userContext);
+                    } else {
+                        const isAllowedRes = await mfaInstance.isAllowedToSetupFactor(
+                            tenantId,
+                            session,
+                            sessionUser!,
+                            "emailpassword",
+                            userContext
+                        );
+                        if (isAllowedRes.status !== "OK") {
+                            return {
+                                status: "SIGN_UP_NOT_ALLOWED",
+                                reason: isAllowedRes.reason,
+                            };
+                        }
+
+                        let accountInfo = { email };
+
+                        const verifiedRes = mfaInstance.checkFactorUserAccountInfoForVerification(
+                            sessionUser!,
+                            accountInfo
+                        );
+                        if (verifiedRes.status !== "OK") {
+                            return {
+                                status: "SIGN_UP_NOT_ALLOWED",
+                                reason: verifiedRes.reason,
+                            };
+                        }
+
+                        const linkRes = await mfaInstance.checkIfFactorUserCanBeLinkedWithSessionUser(
+                            tenantId,
+                            sessionUser!,
+                            accountInfo,
+                            userContext
+                        );
+
+                        if (linkRes.status === "RECURSE_FOR_RACE") {
+                            continue;
+                        } else if (linkRes.status === "VALIDATION_ERROR") {
+                            return {
+                                status: "SIGN_UP_NOT_ALLOWED",
+                                reason: linkRes.reason,
+                            };
+                        }
                     }
                 }
 
@@ -867,31 +886,33 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 if (mfaInstance !== undefined) {
-                    const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
-                        session,
-                        isFirstFactor,
+                    if (!isFirstFactor) {
+                        const linkRes = await mfaInstance.linkAccountsForFactorSetup(
+                            sessionUser!,
+                            response.recipeUserId,
+                            userContext
+                        );
+
+                        if (linkRes.status !== "OK") {
+                            continue; // retry from validation
+                        }
+
+                        let user = await getUser(response.user.id, userContext);
+                        if (user === undefined) {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Session user not found",
+                            });
+                        }
+
+                        response.user = user;
+                    }
+
+                    await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                        session: session,
                         factorId: "emailpassword",
-                        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
-                            user: response.user,
-                            createdNewUser: true,
-                            recipeUserId: emailPasswordRecipeUser.recipeUserId,
-                        },
                         userContext,
                     });
-
-                    if (sessionRes.status === "RECURSE_FOR_RACE") {
-                        continue;
-                    }
-
-                    let user = await getUser(response.user.id, userContext);
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-
-                    response.user = user;
                 }
 
                 return {

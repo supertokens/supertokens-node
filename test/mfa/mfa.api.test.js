@@ -150,8 +150,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.equal("OK", res.body.status);
 
         res = await plessEmailSignInUp(app, "test@example.com", undefined);
-        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal("This login method is not a valid first factor.", res.body.reason);
+        assert.equal(401, res.status);
     });
 
     it("test that only a valid first factor is allowed to login and tenant config is prioritised", async function () {
@@ -190,11 +189,6 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
 
         let res = await epSignIn(app, "test@example.com", "password");
         assert.equal("OK", res.body.status);
-
-        const code = await Passwordless.createCode({
-            tenantId: "public",
-            email: "test@example.com",
-        });
 
         res = await plessEmailSignInUp(app, "test@example.com");
         assert.equal("OK", res.body.status);

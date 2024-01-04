@@ -51,7 +51,15 @@ export declare type RecipeInterface = {
         requiredSecondaryFactorsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
-    }) => Promise<boolean>;
+    }) => Promise<
+        | {
+              isAllowed: true;
+          }
+        | {
+              isAllowed: false;
+              reason: string;
+          }
+    >;
     getMFARequirementsForAuth: (input: {
         user: User;
         accessTokenPayload: JSONObject;

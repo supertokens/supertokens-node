@@ -101,7 +101,6 @@ module.exports.epSignIn = async function (app, email, password, accessToken) {
                         },
                     ],
                 })
-                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -153,7 +152,6 @@ module.exports.plessEmailSignInUp = async function (app, email, accessToken) {
                     userInputCode: code.userInputCode,
                     deviceId: code.deviceId,
                 })
-                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         reject(err);

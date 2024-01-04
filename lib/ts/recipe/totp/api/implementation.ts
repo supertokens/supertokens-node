@@ -17,6 +17,7 @@ import { APIInterface } from "../";
 import TotpRecipe from "../recipe";
 import SessionError from "../../session/error";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -76,18 +77,25 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("should never come here"); // TOTP can't work without MFA
             }
 
-            const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                tenantId,
-                factorIdInProgress: "totp",
-                session,
-                isAlreadySetup: false, // since this is verifying a device
-                userContext,
-            });
+            let sessionUser = await getUser(session.getUserId(), userContext);
+            if (sessionUser === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
+            }
 
-            if (validateMfaRes.status === "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR") {
+            const isAllowedRes = await mfaInstance.isAllowedToSetupFactor(
+                tenantId,
+                session,
+                sessionUser,
+                "totp",
+                userContext
+            );
+            if (isAllowedRes.status !== "OK") {
                 return {
                     status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                    reason: mfaInstance.getReasonForStatus(validateMfaRes.status),
+                    reason: isAllowedRes.reason,
                 };
             }
 
@@ -100,16 +108,11 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
-                    session,
-                    isFirstFactor: false,
-                    factorId: "totp",
+                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                    session: session,
+                    factorId: "thirdparty",
                     userContext,
                 });
-
-                if (sessionRes.status !== "OK") {
-                    throw new Error("should never come here");
-                }
             }
 
             return res;
@@ -132,16 +135,11 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
-                    session,
-                    isFirstFactor: false,
+                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                    session: session,
                     factorId: "totp",
                     userContext,
                 });
-
-                if (sessionRes.status !== "OK") {
-                    throw new Error("should never come here");
-                }
             }
 
             return res;

@@ -53,82 +53,71 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
     getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    validateForMultifactorAuthBeforeFactorCompletion: (
-        input: {
-            tenantId: string;
-            factorIdInProgress: string;
-            session?: SessionContainerInterface;
-            userContext: UserContext;
-        } & (
-            | {
-                  userSigningInForFactor: User;
-              }
-            | {
-                  isAlreadySetup: boolean;
-                  signUpInfo?: {
-                      email?: string;
-                      phoneNumber?: string;
-                      isVerifiedFactor: boolean;
-                  };
-              }
-        )
+    checkForValidFirstFactor: (tenantId: string, factorId: string, userContext: UserContext) => Promise<void>;
+    checkIfFactorUserLinkedToSessionUser: (
+        sessionUser: User,
+        factorUser: User
+    ) =>
+        | {
+              status: "OK";
+          }
+        | {
+              status: "VALIDATION_ERROR";
+              reason: string;
+          };
+    isAllowedToSetupFactor: (
+        tenantId: string,
+        session: SessionContainerInterface,
+        sessionUser: User,
+        factorId: string,
+        userContext: UserContext
     ) => Promise<
         | {
               status: "OK";
           }
         | {
-              status:
-                  | "INVALID_FIRST_FACTOR_ERROR"
-                  | "UNRELATED_USER_SIGN_IN_ERROR"
-                  | "EMAIL_NOT_VERIFIED_ERROR"
-                  | "PHONE_NUMBER_NOT_VERIFIED_ERROR"
-                  | "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR"
-                  | "CANNOT_LINK_FACTOR_ACCOUNT_ERROR"
-                  | "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR"
-                  | "RECURSE_FOR_RACE";
+              status: "FACTOR_SETUP_NOT_ALLOWED_ERROR";
+              reason: string;
           }
     >;
-    updateSessionAndUserAfterFactorCompletion: ({
-        session,
-        isFirstFactor,
-        factorId,
-        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
-        userContext,
-    }: {
-        session: SessionContainerInterface;
-        isFirstFactor: boolean;
-        factorId: string;
-        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor?:
-            | {
-                  user: User;
-                  createdNewUser: boolean;
-                  recipeUserId: RecipeUserId;
-              }
-            | undefined;
-        userContext: UserContext;
-    }) => Promise<
+    checkFactorUserAccountInfoForVerification: (
+        sessionUser: User,
+        accountInfo: {
+            email?: string;
+            phoneNumber?: string;
+        }
+    ) =>
         | {
               status: "OK";
           }
         | {
-              status: "RECURSE_FOR_RACE";
+              status: "VALIDATION_ERROR";
+              reason: string;
+          };
+    checkIfFactorUserCanBeLinkedWithSessionUser: (
+        tenantId: string,
+        sessionUser: User,
+        accountInfo: {
+            email?: string;
+            phoneNumber?: string;
+        },
+        userContext: UserContext
+    ) => Promise<
+        | {
+              status: "OK" | "RECURSE_FOR_RACE";
+          }
+        | {
+              status: "VALIDATION_ERROR";
+              reason: string;
           }
     >;
-    getReasonForStatus: (
-        status:
-            | "INVALID_FIRST_FACTOR_ERROR"
-            | "UNRELATED_USER_SIGN_IN_ERROR"
-            | "EMAIL_NOT_VERIFIED_ERROR"
-            | "PHONE_NUMBER_NOT_VERIFIED_ERROR"
-            | "SESSION_USER_CANNOT_BECOME_PRIMARY_ERROR"
-            | "CANNOT_LINK_FACTOR_ACCOUNT_ERROR"
-            | "FACTOR_SETUP_DISALLOWED_FOR_USER_ERROR"
-    ) =>
-        | "This login method is not a valid first factor."
-        | "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)"
-        | "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)"
-        | "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_011)"
-        | "Factor setup was disallowed due to security reasons. Please contact support. (ERR_CODE_012)";
+    linkAccountsForFactorSetup: (
+        sessionUser: User,
+        factorUserRecipeUserId: RecipeUserId,
+        userContext: UserContext
+    ) => Promise<{
+        status: "OK" | "RECURSE_FOR_RACE";
+    }>;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
     addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
