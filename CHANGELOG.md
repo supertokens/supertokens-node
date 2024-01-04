@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [16.6.9] - 2023-12-22
-
 -   Added user creation apis on dashboard recipe to create Emailpassword and Passwordless recipe users.
 
 ## [16.6.8] - 2023-12-18
