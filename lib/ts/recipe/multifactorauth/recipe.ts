@@ -434,7 +434,14 @@ export default class Recipe extends RecipeModule {
         userContext: UserContext
     ): Promise<{ status: "OK" | "RECURSE_FOR_RACE" }> => {
         // if we are here, it means that all the validations passed in the first place. So any error
-        // in this function must result in retry.
+        // in this function must result in retry from the validation.
+
+        // At this point, we have the recipe user for the new factor created. This means that
+        // when retrying for passwordless / thirdparty signInUp, where we check for existing user,
+        // we are going to find the user with the account info, technically converting this from
+        // sign up to a sign in operation. We need this behaviour to make the API repeatable.
+
+        // For emailpassword sign up, when we retry, the return point would be from the validation.
 
         if (!sessionUser.isPrimaryUser) {
             const createPrimaryRes = await AccountLinkingRecipe.getInstance().recipeInterfaceImpl.createPrimaryUser({
