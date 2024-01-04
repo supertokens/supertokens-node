@@ -61,6 +61,97 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         await cleanST();
     });
 
+    it("test with firstFactors not set allows all factors", async function () {
+        const connectionURI = await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                config: {
+                                    thirdPartyId: "custom",
+                                    clients: [
+                                        {
+                                            clientId: "clientid1",
+                                        },
+                                    ],
+                                },
+                                override: (oI) => {
+                                    oI.exchangeAuthCodeForOAuthTokens = async (input) => {
+                                        return input.redirectURIInfo.redirectURIQueryParams;
+                                    };
+                                    oI.getUserInfo = async (input) => {
+                                        return {
+                                            thirdPartyUserId: input.oAuthTokens.email,
+                                            email: {
+                                                id: input.oAuthTokens.email,
+                                                isVerified: true,
+                                            },
+                                        };
+                                    };
+                                    return oI;
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "custom2",
+                                    clients: [
+                                        {
+                                            clientId: "clientid1",
+                                        },
+                                    ],
+                                },
+                                override: (oI) => {
+                                    oI.exchangeAuthCodeForOAuthTokens = async (input) => {
+                                        return input.redirectURIInfo.redirectURIQueryParams;
+                                    };
+                                    oI.getUserInfo = async (input) => {
+                                        return {
+                                            thirdPartyUserId: "custom2" + input.oAuthTokens.email,
+                                            email: {
+                                                id: input.oAuthTokens.email,
+                                                isVerified: true,
+                                            },
+                                        };
+                                    };
+                                    return oI;
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Totp.init(),
+                MultiFactorAuth.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = getTestExpressApp();
+
+        let res = await epSignUp(app, "test@example.com", "password1");
+        assert.equal("OK", res.body.status);
+
+        res = await tpSignInUp(app, "custom", "test@example.com");
+        assert.equal("OK", res.body.status);
+
+        res = await plessEmailSignInUp(app, "test@example.com");
+        assert.equal("OK", res.body.status);
+    });
+
     it("test mfa info after first factor", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
