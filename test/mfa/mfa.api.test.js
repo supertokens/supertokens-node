@@ -98,7 +98,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         res = await getMfaInfo(app, accessToken);
         assert.equal("OK", res.body.status);
         assert.deepEqual(res.body.emails.emailpassword, ["test@example.com"]);
-        assert.deepEqual(["emailpassword"], res.body.factors.isAlreadySetup);
+        assert.deepEqual([], res.body.factors.next);
         assert.deepEqual(["emailpassword", "otp-email", "thirdparty", "totp"], res.body.factors.isAllowedToSetup);
 
         res = await plessEmailSignInUp(app, "test@example.com", accessToken);
@@ -112,7 +112,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.deepEqual(res.body.emails.emailpassword, ["test@example.com"]);
         assert.deepEqual(res.body.emails["otp-email"], ["test@example.com"]);
 
-        assert.deepEqual(["emailpassword", "otp-email"], res.body.factors.isAlreadySetup);
+        assert.deepEqual([], res.body.factors.next);
         assert.deepEqual(["emailpassword", "otp-email", "thirdparty", "totp"], res.body.factors.isAllowedToSetup);
     });
 
