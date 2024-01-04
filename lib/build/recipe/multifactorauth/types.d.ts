@@ -107,7 +107,7 @@ export declare type APIInterface = {
               status: "OK";
               factors: {
                   next: string[];
-                  isAllowedToSetup: string[];
+                  isAlreadySetup: string[];
               };
               emails: Record<string, string[] | undefined>;
               phoneNumbers: Record<string, string[] | undefined>;

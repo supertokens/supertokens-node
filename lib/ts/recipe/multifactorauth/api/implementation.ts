@@ -103,7 +103,7 @@ export default function getAPIInterface(): APIInterface {
                     next: nextSetOfUnsatisfiedFactors.filter(
                         (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
                     ),
-                    isAllowedToSetup,
+                    isAlreadySetup,
                 },
                 emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
                 phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),
