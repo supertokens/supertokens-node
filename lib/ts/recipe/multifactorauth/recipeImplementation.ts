@@ -92,14 +92,18 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                         ", "
                     )}`
                 );
-                return false;
+                return {
+                    isAllowed: false,
+                    reason:
+                        "Factor setup was disallowed due to security reasons. Please contact support. (ERR_CODE_013)",
+                };
             }
             logDebugMessage(
                 `isAllowedToSetupFactor ${factorId}: true because the next array is ${
                     claimVal.n.length === 0 ? "empty" : "cannot be completed otherwise"
                 }`
             );
-            return true;
+            return { isAllowed: true };
         },
 
         markFactorAsCompleteInSession: async function (this: RecipeInterface, { session, factorId, userContext }) {

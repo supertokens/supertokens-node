@@ -285,7 +285,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)",
+            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
             res.body.reason
         );
 
@@ -373,7 +373,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)",
+            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
             res.body.reason
         );
 
@@ -489,7 +489,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because there is another account with same email or phone number. Please contact support. (ERR_CODE_012)",
+            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
             res.body.reason
         );
 
