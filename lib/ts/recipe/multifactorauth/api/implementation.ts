@@ -99,9 +99,12 @@ export default function getAPIInterface(): APIInterface {
 
             return {
                 status: "OK",
-                nextFactors: nextSetOfUnsatisfiedFactors.filter(
-                    (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
-                ),
+                factors: {
+                    next: nextSetOfUnsatisfiedFactors.filter(
+                        (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
+                    ),
+                    isAllowedToSetup,
+                },
                 emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
                 phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),
             };

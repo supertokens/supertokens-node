@@ -105,7 +105,10 @@ export declare type APIInterface = {
     }) => Promise<
         | {
               status: "OK";
-              nextFactors: string[];
+              factors: {
+                  next: string[];
+                  isAllowedToSetup: string[];
+              };
               emails: Record<string, string[] | undefined>;
               phoneNumbers: Record<string, string[] | undefined>;
           }
