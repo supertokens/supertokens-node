@@ -51,7 +51,12 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
                     return {
                         isValid: v,
-                        reason: v === false ? "MFA requirement for auth is not satisfied" : undefined,
+                        reason:
+                            v === false
+                                ? {
+                                      message: "MFA requirement for auth is not satisfied",
+                                  }
+                                : undefined,
                     };
                 },
             }),
