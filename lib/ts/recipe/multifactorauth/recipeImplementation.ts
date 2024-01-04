@@ -144,7 +144,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 completedFactors: completed,
                 userContext,
             });
-            const isAuthComplete = MultiFactorAuthClaim.isRequirementsSatisfied(completed, mfaRequirementsForAuth);
+            const isAuthComplete = MultiFactorAuthClaim.isRequirementListSatisfied(completed, mfaRequirementsForAuth);
             await session.setClaimValue(MultiFactorAuthClaim, {
                 c: completed,
                 v: isAuthComplete,

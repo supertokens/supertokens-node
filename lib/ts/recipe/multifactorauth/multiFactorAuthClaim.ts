@@ -133,7 +133,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
 
-    public isRequirementsSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
+    public isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
         for (const req of requirements) {
             if (typeof req === "object" && "oneOf" in req) {
                 const res = req.oneOf
@@ -245,7 +245,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
         return {
             c: completedFactors,
-            v: MultiFactorAuthClaim.isRequirementsSatisfied(completedFactors, mfaRequirementsForAuth),
+            v: MultiFactorAuthClaim.isRequirementListSatisfied(completedFactors, mfaRequirementsForAuth),
         };
     };
 

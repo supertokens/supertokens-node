@@ -14,7 +14,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         hasCompletedMFARequirementForAuth: (id?: string) => SessionClaimValidator;
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
-    isRequirementsSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;
+    isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;
     getNextSetOfUnsatisfiedFactors(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
     fetchValue: (
         userId: string,
