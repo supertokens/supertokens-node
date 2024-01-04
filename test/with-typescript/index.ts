@@ -199,6 +199,17 @@ ThirdPartyPasswordless.init({
 });
 
 ThirdPartyPasswordless.init({
+    contactMethod: "EMAIL_OR_PHONE",
+    flowType: "USER_INPUT_CODE",
+    async validateEmailAddress(email, tenantId) {
+        return undefined;
+    },
+    async validatePhoneNumber(phoneNumber, tenantId) {
+        return undefined;
+    },
+});
+
+ThirdPartyPasswordless.init({
     emailDelivery: {
         override: (oI) => {
             return {

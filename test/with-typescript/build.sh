@@ -12,4 +12,5 @@ if [ "$(echo $version | cut -d'.' -f1)" -ge 5 ]; then
     npx tsc -p tsconfig.json --noEmit
 else
     echo -e "${RED}TypeScript version is less than 5. Please run 'npm install' inside 'test/with-typescript'.${NC}"
+    exit 1
 fi
