@@ -401,7 +401,7 @@ export default class Recipe extends RecipeModule {
                 return {
                     status: "VALIDATION_ERROR",
                     reason:
-                        "Cannot setup factor because there is another account with same email or phone number as the currently session user. Please contact support. (ERR_CODE_011)",
+                        "Cannot setup factor because there is another account with same email or phone number as the current session user. Please contact support. (ERR_CODE_011)",
                 };
             }
         }
