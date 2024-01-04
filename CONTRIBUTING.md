@@ -31,7 +31,9 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 3. `cd supertokens-node`
 4. Install the project dependencies  
    `npm i -d`
-5. Add git pre-commit hooks  
+5. Install the dependencies inside `test/with-typescript`  
+   `cd test/with-typescript && npm i && cd ../..`
+6. Add git pre-commit hooks  
    `npm run set-up-hooks`
 
 ## Modifying Code

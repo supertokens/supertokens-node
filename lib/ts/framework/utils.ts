@@ -20,7 +20,6 @@ import type { IncomingMessage } from "http";
 import { ServerResponse } from "http";
 import STError from "../error";
 import type { HTTPMethod } from "../types";
-import { NextApiRequest } from "next";
 import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
@@ -156,10 +155,7 @@ export async function parseURLEncodedFormData(req: IncomingMessage) {
     return body;
 }
 
-export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
-    method: HTTPMethod,
-    request: Request | NextApiRequest
-) {
+export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(method: HTTPMethod, request: Request) {
     // according to https://github.com/supertokens/supertokens-node/issues/33
     if (method === "post" || method === "put") {
         if (typeof request.body === "string") {
@@ -193,7 +189,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     }
 }
 
-export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request | NextApiRequest) {
+export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request) {
     if (typeof request.body === "string") {
         try {
             request.body = Object.fromEntries(new URLSearchParams(request.body).entries());
