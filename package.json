@@ -4,7 +4,7 @@
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
-        "test": "TEST_MODE=testing npx mocha --timeout 500000",
+        "test": "TEST_MODE=testing npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.js --timeout 500000",
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npm run build",
         "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npm run build && cd ../.. && npm run post-build",
         "pretty": "npx pretty-quick .",
@@ -79,6 +79,7 @@
         "next": "^14.0.4",
         "next-test-api-route-handler": "^3.1.10",
         "nock": "11.7.0",
+        "node-fetch": "^2.7.0",
         "prettier": "2.0.5",
         "pretty-quick": "^3.1.1",
         "react": "^18.2.0",
