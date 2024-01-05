@@ -7,13 +7,13 @@ orbs:
 jobs:
     test-dev-tag-as-not-passed:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_20
+            - image: rishabhpoddar/supertokens_website_sdk_testing
         steps:
             - checkout
             - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
     test-unit:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_20
+            - image: rishabhpoddar/supertokens_node_driver_testing_node_20
         resource_class: large
         parameters:
             cdi-version:
@@ -30,7 +30,7 @@ jobs:
             - slack/status
     test-website:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_20
+            - image: rishabhpoddar/supertokens_website_sdk_testing
         resource_class: large
         parallelism: 4
         steps:
@@ -45,7 +45,7 @@ jobs:
             - slack/status
     test-authreact:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_20
+            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
         resource_class: large
         parallelism: 4
         steps:
@@ -63,7 +63,7 @@ jobs:
             - slack/status
     test-success:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_20
+            - image: rishabhpoddar/supertokens_website_sdk_testing
         steps:
             - checkout
             - run: (cd .circleci/ && ./markAsSuccess.sh)
