@@ -255,8 +255,7 @@ export default class Recipe extends RecipeModule {
         if (sessionUser.id !== factorUser.id) {
             return {
                 status: "VALIDATION_ERROR",
-                reason:
-                    "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_009)",
             };
         }
 
@@ -356,8 +355,7 @@ export default class Recipe extends RecipeModule {
             if (!foundVerifiedEmail) {
                 return {
                     status: "VALIDATION_ERROR",
-                    reason:
-                        "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)",
+                    reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
                 };
             }
         }
@@ -403,8 +401,7 @@ export default class Recipe extends RecipeModule {
             if (canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
                 return {
                     status: "VALIDATION_ERROR",
-                    reason:
-                        "Cannot setup factor because there is another account with same email or phone number as the current session user. Please contact support. (ERR_CODE_011)",
+                    reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_011)",
                 };
             }
         }
@@ -420,8 +417,7 @@ export default class Recipe extends RecipeModule {
             if (user.isPrimaryUser && user.id !== sessionUser.id) {
                 return {
                     status: "VALIDATION_ERROR",
-                    reason:
-                        "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
+                    reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_012)",
                 };
             }
         }
