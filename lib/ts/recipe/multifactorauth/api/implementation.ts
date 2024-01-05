@@ -104,6 +104,7 @@ export default function getAPIInterface(): APIInterface {
                         (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
                     ),
                     isAlreadySetup,
+                    isAllowedToSetup,
                 },
                 emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
                 phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),

@@ -129,6 +129,7 @@ export type APIInterface = {
               factors: {
                   next: string[];
                   isAlreadySetup: string[];
+                  isAllowedToSetup: string[];
               };
               emails: Record<string, string[] | undefined>;
               phoneNumbers: Record<string, string[] | undefined>;
