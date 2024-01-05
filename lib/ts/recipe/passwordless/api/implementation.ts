@@ -305,7 +305,7 @@ export default function getAPIImplementation(): APIInterface {
                 accountInfo.email = input.email;
             }
             if ("phoneNumber" in input) {
-                accountInfo.email = input.phoneNumber;
+                accountInfo.phoneNumber = input.phoneNumber;
             }
 
             let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
@@ -378,7 +378,13 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             if (mfaInstance !== undefined && session !== undefined && existingUsers.length === 0) {
-                const factorId = `${"userInputCode" in input ? "otp" : "link"}-${"email" in input ? "email" : "phone"}`;
+                // TODO MFA we need to see how to figure out the factorId
+                // We might need to make FDI changes to specify which factorId to use
+
+                const factorIds = [
+                    `otp-${"email" in input ? "email" : "phone"}`,
+                    `link-${"email" in input ? "email" : "phone"}`,
+                ];
 
                 const sessionUser = await getUser(session.getUserId(), input.userContext);
                 if (sessionUser === undefined) {
@@ -388,13 +394,26 @@ export default function getAPIImplementation(): APIInterface {
                     });
                 }
 
-                await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
-                    input.tenantId,
-                    session,
-                    sessionUser!,
-                    factorId,
-                    input.userContext
-                );
+                let claimErr = undefined;
+                let errorCount = 0;
+                for (const factorId of factorIds) {
+                    try {
+                        await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
+                            input.tenantId,
+                            session,
+                            sessionUser!,
+                            factorId,
+                            input.userContext
+                        );
+                    } catch (err) {
+                        errorCount++;
+                        claimErr = err;
+                    }
+                }
+
+                if (errorCount === factorIds.length) {
+                    throw claimErr;
+                }
             }
 
             let response = await input.options.recipeImplementation.createCode(
