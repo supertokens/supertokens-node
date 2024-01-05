@@ -1,4 +1,4 @@
-FROM docker rishabhpoddar/supertokens_core_testing:ubuntu22
+FROM rishabhpoddar/supertokens_core_testing:ubuntu22
 
 RUN apt-get update
 
