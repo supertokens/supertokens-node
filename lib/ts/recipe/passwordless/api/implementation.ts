@@ -377,7 +377,7 @@ export default function getAPIImplementation(): APIInterface {
                 );
             }
 
-            if (mfaInstance !== undefined && session !== undefined) {
+            if (mfaInstance !== undefined && session !== undefined && existingUsers.length === 0) {
                 const factorId = `${"userInputCode" in input ? "otp" : "link"}-${"email" in input ? "email" : "phone"}`;
 
                 const sessionUser = await getUser(session.getUserId(), input.userContext);
