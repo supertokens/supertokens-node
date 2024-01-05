@@ -13,7 +13,7 @@ jobs:
             - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
     test-unit:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: rishabhpoddar/supertokens_website_sdk_testing_node_20
         resource_class: large
         parameters:
             cdi-version:
@@ -45,7 +45,7 @@ jobs:
             - slack/status
     test-authreact:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: rishabhpoddar/supertokens_website_sdk_testing_node_20
         resource_class: large
         parallelism: 4
         steps:
