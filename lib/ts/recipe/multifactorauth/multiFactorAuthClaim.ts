@@ -47,20 +47,16 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         throw new Error("This should never happen, claim value not present in payload");
                     }
 
-                    const { n } = claimVal;
-
-                    if (n.length === 0) {
-                        return {
-                            isValid: true,
-                        };
-                    }
+                    const { v } = claimVal;
 
                     return {
-                        isValid: false,
-                        reason: {
-                            message: "not all required factors have been completed",
-                            nextFactorOptions: n,
-                        },
+                        isValid: v,
+                        reason:
+                            v === false
+                                ? {
+                                      message: "MFA requirement for auth is not satisfied",
+                                  }
+                                : undefined,
                     };
                 },
             }),
@@ -143,7 +139,14 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
 
-    public buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[] {
+    public isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
+        return this.getNextSetOfUnsatisfiedFactors(completedClaims, requirements).length === 0;
+    }
+
+    public getNextSetOfUnsatisfiedFactors(
+        completedClaims: MFAClaimValue["c"],
+        requirements: MFARequirementList
+    ): string[] {
         for (const req of requirements) {
             const nextFactors: Set<string> = new Set();
 
@@ -225,7 +228,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
         return {
             c: completedFactors,
-            n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
+            v: MultiFactorAuthClaim.isRequirementListSatisfied(completedFactors, mfaRequirementsForAuth),
         };
     };
 
@@ -238,7 +241,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     ...prevValue?.c,
                     ...value.c,
                 },
-                n: value.n,
+                v: value.v,
             },
         };
     };

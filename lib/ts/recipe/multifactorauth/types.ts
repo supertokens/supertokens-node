@@ -35,7 +35,7 @@ export type MFARequirementList = (
 
 export type MFAClaimValue = {
     c: Record<string, number>;
-    n: string[];
+    v: boolean;
 };
 
 export type TypeInput = {
@@ -119,7 +119,7 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    updateSessionAndFetchMfaInfoPUT: (input: {
+    resyncSessionAndFetchMFAInfoPUT: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: UserContext;
@@ -127,6 +127,7 @@ export type APIInterface = {
         | {
               status: "OK";
               factors: {
+                  next: string[];
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };

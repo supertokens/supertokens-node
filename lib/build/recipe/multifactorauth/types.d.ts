@@ -19,7 +19,7 @@ export declare type MFARequirementList = (
 )[];
 export declare type MFAClaimValue = {
     c: Record<string, number>;
-    n: string[];
+    v: boolean;
 };
 export declare type TypeInput = {
     firstFactors?: string[];
@@ -98,7 +98,7 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    updateSessionAndFetchMfaInfoPUT: (input: {
+    resyncSessionAndFetchMFAInfoPUT: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: UserContext;
@@ -106,6 +106,7 @@ export declare type APIInterface = {
         | {
               status: "OK";
               factors: {
+                  next: string[];
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };

@@ -21,7 +21,7 @@ import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        updateSessionAndFetchMfaInfoPUT: async ({ options, session, userContext }) => {
+        resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
             const user = await getUser(userId, userContext);
@@ -70,7 +70,7 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            const isAllowedToSetup = [];
+            const isAllowedToSetup: string[] = [];
             for (const id of availableFactors) {
                 if (
                     await options.recipeImplementation.isAllowedToSetupFactor({
@@ -88,13 +88,23 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
+            const c = (await session.getClaimValue(MultiFactorAuthClaim, userContext))?.c ?? {};
+
+            const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
+                c,
+                mfaRequirementsForAuth
+            );
+
             await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
 
             return {
                 status: "OK",
                 factors: {
-                    isAllowedToSetup,
+                    next: nextSetOfUnsatisfiedFactors.filter(
+                        (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
+                    ),
                     isAlreadySetup,
+                    isAllowedToSetup,
                 },
                 emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
                 phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),
