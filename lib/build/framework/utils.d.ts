@@ -4,7 +4,6 @@ import type { Request, Response } from "express";
 import type { IncomingMessage } from "http";
 import { ServerResponse } from "http";
 import type { HTTPMethod } from "../types";
-import { NextApiRequest } from "next";
 export declare function getCookieValueFromHeaders(headers: any, key: string): string | undefined;
 export declare function getCookieValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
 export declare function getHeaderValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
@@ -13,11 +12,9 @@ export declare function parseJSONBodyFromRequest(req: IncomingMessage): Promise<
 export declare function parseURLEncodedFormData(req: IncomingMessage): Promise<any>;
 export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: Request | NextApiRequest
+    request: Request
 ): Promise<void>;
-export declare function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: Request | NextApiRequest
-): Promise<void>;
+export declare function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request): Promise<void>;
 export declare function setHeaderForExpressLikeResponse(
     res: Response,
     key: string,
