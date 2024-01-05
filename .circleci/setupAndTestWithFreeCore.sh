@@ -51,7 +51,7 @@ echo $SUPERTOKENS_API_KEY > apiPassword
 cd ../project/
 
 if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
-    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.js --no-config --timeout 500000 $(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/**/*.test.js')
+    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --no-config --timeout 500000 $(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/**/*.test.js')
 else
     TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 fi
