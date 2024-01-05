@@ -317,12 +317,11 @@ export default function getAPIImplementation(): APIInterface {
                 )
             );
 
-            let {
-                session,
-                mfaInstance,
-                shouldCheckIfSignInIsAllowed,
-                shouldCheckIfSignUpIsAllowed,
-            } = await getFactorFlowControlFlags(input.options.req, input.options.res, input.userContext);
+            let { shouldCheckIfSignInIsAllowed, shouldCheckIfSignUpIsAllowed } = await getFactorFlowControlFlags(
+                input.options.req,
+                input.options.res,
+                input.userContext
+            );
 
             if (existingUsers.length === 0) {
                 if (shouldCheckIfSignUpIsAllowed) {
@@ -377,44 +376,11 @@ export default function getAPIImplementation(): APIInterface {
                 );
             }
 
-            if (mfaInstance !== undefined && session !== undefined && existingUsers.length === 0) {
-                // TODO MFA we need to see how to figure out the factorId
-                // We might need to make FDI changes to specify which factorId to use
-
-                const factorIds = [
-                    `otp-${"email" in input ? "email" : "phone"}`,
-                    `link-${"email" in input ? "email" : "phone"}`,
-                ];
-
-                const sessionUser = await getUser(session.getUserId(), input.userContext);
-                if (sessionUser === undefined) {
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "Session user not found",
-                    });
-                }
-
-                let claimErr = undefined;
-                let errorCount = 0;
-                for (const factorId of factorIds) {
-                    try {
-                        await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
-                            input.tenantId,
-                            session,
-                            sessionUser!,
-                            factorId,
-                            input.userContext
-                        );
-                    } catch (err) {
-                        errorCount++;
-                        claimErr = err;
-                    }
-                }
-
-                if (errorCount === factorIds.length) {
-                    throw claimErr;
-                }
-            }
+            // if (mfaInstance !== undefined && session !== undefined && existingUsers.length === 0) {
+            // Ideally we want to check if the user is allowed to setup a factor, but unfortunately
+            // we can't distinguish between otp- or link- factors at this point. So we simply allow
+            // and then check during consume code
+            // }
 
             let response = await input.options.recipeImplementation.createCode(
                 "email" in input
