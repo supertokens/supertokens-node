@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -26,7 +26,7 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async isAllowedToSetupFactor(
+    static async checkAllowedToSetupFactorElseThrowInvalidClaimError(
         session: SessionContainerInterface,
         factorId: string,
         userContext?: Record<string, any>
@@ -61,7 +61,7 @@ export default class Wrapper {
             completedFactors,
             userContext: ctx,
         });
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isAllowedToSetupFactor({
+        Recipe.getInstanceOrThrowError().recipeInterfaceImpl.checkAllowedToSetupFactorElseThrowInvalidClaimError({
             session,
             factorId,
             completedFactors,
@@ -132,14 +132,15 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
-export let isAllowedToSetupFactor = Wrapper.isAllowedToSetupFactor;
+export let checkAllowedToSetupFactorElseThrowInvalidClaimError =
+    Wrapper.checkAllowedToSetupFactorElseThrowInvalidClaimError;
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
 export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
 export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFactorsForUser;
 export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
 export const removeFromRequiredSecondaryFactorsForUser = Wrapper.removeFromRequiredSecondaryFactorsForUser;
 
-export const FACTORS = {
+export const Factors = {
     EMAILPASSWORD: "emailpassword",
     OTP_EMAIL: "otp-email",
     OTP_PHONE: "otp-phone",

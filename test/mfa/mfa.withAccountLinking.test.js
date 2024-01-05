@@ -1,3 +1,18 @@
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 const {
     printPath,
     setupST,
@@ -270,7 +285,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
             res.body.reason
         );
 
@@ -358,7 +373,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
             res.body.reason
         );
 
@@ -474,7 +489,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor as the email is already associated with another primary user. Please contact support. (ERR_CODE_012)",
+            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
             res.body.reason
         );
 
@@ -556,7 +571,10 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await epSignUp(app, "test2@example.com", "password1", accessToken);
         assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal("Cannot setup factor because the email is not verified", res.body.reason);
+        assert.equal(
+            "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)",
+            res.body.reason
+        );
     });
 
     it("test with account linking case 1", async function () {
@@ -647,7 +665,10 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await epSignUp(app, "test2@example.com", "password2", accessToken);
         assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal("Cannot setup factor because the email is not verified", res.body.reason);
+        assert.equal(
+            "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)",
+            res.body.reason
+        );
 
         res = await tpSignInUp(app, "custom", "test2@example.com", undefined);
         assert.equal("OK", res.body.status);

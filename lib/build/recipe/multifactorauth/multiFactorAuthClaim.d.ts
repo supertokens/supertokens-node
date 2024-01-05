@@ -14,7 +14,8 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         hasCompletedMFARequirementForAuth: (id?: string) => SessionClaimValidator;
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
-    buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
+    isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;
+    getNextSetOfUnsatisfiedFactors(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
     fetchValue: (
         userId: string,
         _recipeUserId: RecipeUserId,
@@ -23,7 +24,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         userContext: UserContext
     ) => Promise<{
         c: Record<string, number>;
-        n: string[];
+        v: boolean;
     }>;
     addToPayload_internal: (
         payload: JSONObject,
@@ -39,7 +40,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
                   c: {
                       [x: string]: number;
                   };
-                  n: string[];
+                  v: boolean;
               }
             | null
             | undefined;

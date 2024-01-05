@@ -1970,8 +1970,11 @@ Supertokens.init({
                 functions: (oI) => ({
                     ...oI,
                     getMFARequirementsForAuth: () => ["otp-phone"],
-                    isAllowedToSetupFactor: (input) => {
-                        return oI.isAllowedToSetupFactor({ ...input, mfaRequirementsForAuth: ["otp-phone"] });
+                    checkAllowedToSetupFactorElseThrowInvalidClaimError: (input) => {
+                        return oI.checkAllowedToSetupFactorElseThrowInvalidClaimError({
+                            ...input,
+                            mfaRequirementsForAuth: ["otp-phone"],
+                        });
                     },
                 }),
             },

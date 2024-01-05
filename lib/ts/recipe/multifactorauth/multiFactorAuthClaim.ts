@@ -1,3 +1,18 @@
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { SessionClaimValidator } from "../session";
@@ -32,20 +47,16 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         throw new Error("This should never happen, claim value not present in payload");
                     }
 
-                    const { n } = claimVal;
-
-                    if (n.length === 0) {
-                        return {
-                            isValid: true,
-                        };
-                    }
+                    const { v } = claimVal;
 
                     return {
-                        isValid: false,
-                        reason: {
-                            message: "not all required factors have been completed",
-                            nextFactorOptions: n,
-                        },
+                        isValid: v,
+                        reason:
+                            v === false
+                                ? {
+                                      message: "MFA requirement for auth is not satisfied",
+                                  }
+                                : undefined,
                     };
                 },
             }),
@@ -87,8 +98,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                                     },
                                 };
                             }
-                        } else if (typeof req === "object" && "allOf" in req) {
-                            const res = req.allOf
+                        } else if (typeof req === "object" && "allOfInAnyOrder" in req) {
+                            const res = req.allOfInAnyOrder
                                 .map((r) => checkFactorRequirement(r, c))
                                 .filter((v) => v.isValid === false);
                             if (res.length !== 0) {
@@ -96,7 +107,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                                     isValid: false,
                                     reason: {
                                         message: "Some factor checkers failed in the list",
-                                        allOf: req.allOf,
+                                        allOfInAnyOrder: req.allOfInAnyOrder,
                                         failures: res,
                                     },
                                 };
@@ -128,7 +139,14 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
 
-    public buildNextArray(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[] {
+    public isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
+        return this.getNextSetOfUnsatisfiedFactors(completedClaims, requirements).length === 0;
+    }
+
+    public getNextSetOfUnsatisfiedFactors(
+        completedClaims: MFAClaimValue["c"],
+        requirements: MFARequirementList
+    ): string[] {
         for (const req of requirements) {
             const nextFactors: Set<string> = new Set();
 
@@ -148,8 +166,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         nextFactors.add(factorId);
                     }
                 }
-            } else if ("allOf" in req) {
-                for (const factorId of req.allOf) {
+            } else if ("allOfInAnyOrder" in req) {
+                for (const factorId of req.allOfInAnyOrder) {
                     if (completedClaims[factorId] === undefined) {
                         nextFactors.add(factorId);
                     }
@@ -193,7 +211,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                 userContext,
             }
         );
-        const completedFactorsClaimValue = currentPayload && (currentPayload[this.key] as JSONObject);
+        const completedFactorsClaimValue =
+            currentPayload === undefined ? undefined : (currentPayload[this.key] as JSONObject);
         const completedFactors: Record<string, number> =
             (completedFactorsClaimValue?.c as Record<string, number>) ?? {};
         const mfaRequirementsForAuth = await recipeInstance.recipeInterfaceImpl.getMFARequirementsForAuth({
@@ -209,7 +228,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
         return {
             c: completedFactors,
-            n: MultiFactorAuthClaim.buildNextArray(completedFactors, mfaRequirementsForAuth),
+            v: MultiFactorAuthClaim.isRequirementListSatisfied(completedFactors, mfaRequirementsForAuth),
         };
     };
 
@@ -222,7 +241,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     ...prevValue?.c,
                     ...value.c,
                 },
-                n: value.n,
+                v: value.v,
             },
         };
     };

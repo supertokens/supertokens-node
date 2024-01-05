@@ -1,3 +1,18 @@
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 import Multitenancy from "../../multitenancy";
 import { APIInterface } from "../";
 import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
@@ -6,7 +21,7 @@ import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        updateSessionAndFetchMfaInfoPUT: async ({ options, session, userContext }) => {
+        resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
             const userId = session.getUserId();
             const tenantId = session.getTenantId();
             const user = await getUser(userId, userContext);
@@ -55,10 +70,10 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            const isAllowedToSetup = [];
+            const isAllowedToSetup: string[] = [];
             for (const id of availableFactors) {
-                if (
-                    await options.recipeImplementation.isAllowedToSetupFactor({
+                try {
+                    await options.recipeImplementation.checkAllowedToSetupFactorElseThrowInvalidClaimError({
                         session,
                         factorId: id,
                         completedFactors: completedFactors,
@@ -67,19 +82,30 @@ export default function getAPIInterface(): APIInterface {
                         factorsSetUpForUser: isAlreadySetup,
                         mfaRequirementsForAuth,
                         userContext,
-                    })
-                ) {
+                    });
                     isAllowedToSetup.push(id);
+                } catch (err) {
+                    // ignore
                 }
             }
+
+            const c = (await session.getClaimValue(MultiFactorAuthClaim, userContext))?.c ?? {};
+
+            const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
+                c,
+                mfaRequirementsForAuth
+            );
 
             await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
 
             return {
                 status: "OK",
                 factors: {
-                    isAllowedToSetup,
+                    next: nextSetOfUnsatisfiedFactors.filter(
+                        (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
+                    ),
                     isAlreadySetup,
+                    isAllowedToSetup,
                 },
                 emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
                 phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),

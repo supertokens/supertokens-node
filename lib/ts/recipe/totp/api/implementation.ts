@@ -1,7 +1,23 @@
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 import { APIInterface } from "../";
 import TotpRecipe from "../recipe";
 import SessionError from "../../session/error";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -61,20 +77,21 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("should never come here"); // TOTP can't work without MFA
             }
 
-            const validateMfaRes = await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                tenantId,
-                factorIdInProgress: "totp",
-                session,
-                isAlreadySetup: false, // since this is verifying a device
-                userContext,
-            });
-
-            if (validateMfaRes.status === "MFA_FLOW_ERROR") {
-                return {
-                    status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                    reason: validateMfaRes.reason,
-                };
+            let sessionUser = await getUser(session.getUserId(), userContext);
+            if (sessionUser === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
             }
+
+            await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
+                tenantId,
+                session,
+                sessionUser,
+                "totp",
+                userContext
+            );
 
             const res = await options.recipeImplementation.verifyDevice({
                 tenantId,
@@ -85,19 +102,11 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
-                    session,
-                    isFirstFactor: false,
-                    factorId: "totp",
+                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                    session: session,
+                    factorId: "thirdparty",
                     userContext,
                 });
-
-                if (sessionRes.status === "MFA_FLOW_ERROR") {
-                    return {
-                        status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                        reason: sessionRes.reason,
-                    };
-                }
             }
 
             return res;
@@ -120,16 +129,11 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (res.status === "OK") {
-                const sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
-                    session,
-                    isFirstFactor: false,
+                await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                    session: session,
                     factorId: "totp",
                     userContext,
                 });
-
-                if (sessionRes.status === "MFA_FLOW_ERROR") {
-                    throw new Error("should never come here");
-                }
             }
 
             return res;

@@ -53,64 +53,63 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
     getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    validateForMultifactorAuthBeforeFactorCompletion: (
-        input: {
-            tenantId: string;
-            factorIdInProgress: string;
-            session?: SessionContainerInterface;
-            userContext: UserContext;
-        } & (
-            | {
-                  userSigningInForFactor: User;
-              }
-            | {
-                  isAlreadySetup: boolean;
-                  signUpInfo?: {
-                      email?: string;
-                      phoneNumber?: string;
-                      isVerifiedFactor: boolean;
-                  };
-              }
-        )
+    checkForValidFirstFactor: (tenantId: string, factorId: string, userContext: UserContext) => Promise<void>;
+    checkIfFactorUserLinkedToSessionUser: (
+        sessionUser: User,
+        factorUser: User
+    ) =>
+        | {
+              status: "OK";
+          }
+        | {
+              status: "VALIDATION_ERROR";
+              reason: string;
+          };
+    checkAllowedToSetupFactorElseThrowInvalidClaimError: (
+        tenantId: string,
+        session: SessionContainerInterface,
+        sessionUser: User,
+        factorId: string,
+        userContext: UserContext
+    ) => Promise<void>;
+    checkFactorUserAccountInfoForVerification: (
+        sessionUser: User,
+        accountInfo: {
+            email?: string;
+            phoneNumber?: string;
+        }
+    ) =>
+        | {
+              status: "OK";
+          }
+        | {
+              status: "VALIDATION_ERROR";
+              reason: string;
+          };
+    checkIfFactorUserCanBeLinkedWithSessionUser: (
+        tenantId: string,
+        sessionUser: User,
+        accountInfo: {
+            email?: string;
+            phoneNumber?: string;
+        },
+        userContext: UserContext
     ) => Promise<
         | {
-              status: "OK";
+              status: "OK" | "RECURSE_FOR_RACE";
           }
         | {
-              status: "MFA_FLOW_ERROR";
+              status: "VALIDATION_ERROR";
               reason: string;
           }
     >;
-    updateSessionAndUserAfterFactorCompletion: ({
-        session,
-        isFirstFactor,
-        factorId,
-        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor,
-        userContext,
-    }: {
-        session: SessionContainerInterface;
-        isFirstFactor: boolean;
-        factorId: string;
-        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor?:
-            | {
-                  user: User;
-                  createdNewUser: boolean;
-                  recipeUserId: RecipeUserId;
-              }
-            | undefined;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "MFA_FLOW_ERROR";
-              reason: string;
-          }
-        | {
-              status: "RECURSE_FOR_RACE_CONDITION";
-          }
-    >;
+    linkAccountsForFactorSetup: (
+        sessionUser: User,
+        factorUserRecipeUserId: RecipeUserId,
+        userContext: UserContext
+    ) => Promise<{
+        status: "OK" | "RECURSE_FOR_RACE";
+    }>;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
     addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;

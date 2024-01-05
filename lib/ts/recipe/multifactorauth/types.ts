@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -28,14 +28,14 @@ export type MFARequirementList = (
           oneOf: string[];
       }
     | {
-          allOf: string[];
+          allOfInAnyOrder: string[];
       }
     | string
 )[];
 
 export type MFAClaimValue = {
     c: Record<string, number>;
-    n: string[];
+    v: boolean;
 };
 
 export type TypeInput = {
@@ -63,7 +63,7 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    isAllowedToSetupFactor: (input: {
+    checkAllowedToSetupFactorElseThrowInvalidClaimError: (input: {
         session: SessionContainer;
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
@@ -72,7 +72,7 @@ export type RecipeInterface = {
         requiredSecondaryFactorsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
-    }) => Promise<boolean>;
+    }) => Promise<void>;
 
     getMFARequirementsForAuth: (input: {
         user: User;
@@ -119,7 +119,7 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    updateSessionAndFetchMfaInfoPUT: (input: {
+    resyncSessionAndFetchMFAInfoPUT: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: UserContext;
@@ -127,6 +127,7 @@ export type APIInterface = {
         | {
               status: "OK";
               factors: {
+                  next: string[];
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };

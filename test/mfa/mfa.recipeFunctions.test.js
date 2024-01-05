@@ -1,3 +1,18 @@
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
 let assert = require("assert");
 const express = require("express");
@@ -53,7 +68,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
         });
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password");
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user.user.id);
         assert.deepEqual(factorIds, ["emailpassword"]);
     });
 
@@ -85,7 +100,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
             tenantId: "public",
             phoneNumber: "+919876543210",
         });
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user.user.id);
         assert.deepEqual(factorIds, ["otp-phone"]);
     });
 
@@ -125,7 +140,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
         }).generate();
         await Totp.verifyDevice("public", user.user.id, deviceRes.deviceName, otp);
 
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user.user.id);
         assert.deepEqual(factorIds, ["otp-phone", "totp"]);
     });
 
@@ -161,7 +176,7 @@ describe(`mfa-recipeFunctions: ${printPath("[test/mfa/mfa.recipeFunctions.test.j
         await AccountLinking.createPrimaryUser(new SuperTokens.RecipeUserId(user1.user.id));
         await AccountLinking.linkAccounts(new SuperTokens.RecipeUserId(user2.user.id), user1.user.id);
 
-        let factorIds = await MultiFactorAuth.getFactorsSetupForUser("public", user1.user.id);
+        let factorIds = await MultiFactorAuth.getFactorsSetupForUser(user1.user.id);
         assert.deepEqual(factorIds, ["emailpassword", "otp-phone"]);
     });
 

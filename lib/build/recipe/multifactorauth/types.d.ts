@@ -13,13 +13,13 @@ export declare type MFARequirementList = (
           oneOf: string[];
       }
     | {
-          allOf: string[];
+          allOfInAnyOrder: string[];
       }
     | string
 )[];
 export declare type MFAClaimValue = {
     c: Record<string, number>;
-    n: string[];
+    v: boolean;
 };
 export declare type TypeInput = {
     firstFactors?: string[];
@@ -42,7 +42,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    isAllowedToSetupFactor: (input: {
+    checkAllowedToSetupFactorElseThrowInvalidClaimError: (input: {
         session: SessionContainer;
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
@@ -51,7 +51,7 @@ export declare type RecipeInterface = {
         requiredSecondaryFactorsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
-    }) => Promise<boolean>;
+    }) => Promise<void>;
     getMFARequirementsForAuth: (input: {
         user: User;
         accessTokenPayload: JSONObject;
@@ -90,7 +90,7 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    updateSessionAndFetchMfaInfoPUT: (input: {
+    resyncSessionAndFetchMFAInfoPUT: (input: {
         options: APIOptions;
         session: SessionContainerInterface;
         userContext: UserContext;
@@ -98,6 +98,7 @@ export declare type APIInterface = {
         | {
               status: "OK";
               factors: {
+                  next: string[];
                   isAlreadySetup: string[];
                   isAllowedToSetup: string[];
               };

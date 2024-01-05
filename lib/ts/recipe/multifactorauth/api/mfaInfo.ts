@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -23,7 +23,7 @@ export default async function mfaInfo(
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (apiImplementation.updateSessionAndFetchMfaInfoPUT === undefined) {
+    if (apiImplementation.resyncSessionAndFetchMFAInfoPUT === undefined) {
         return false;
     }
 
@@ -34,7 +34,7 @@ export default async function mfaInfo(
         userContext
     );
 
-    let response = await apiImplementation.updateSessionAndFetchMfaInfoPUT({
+    let response = await apiImplementation.resyncSessionAndFetchMFAInfoPUT({
         options,
         session,
         userContext,

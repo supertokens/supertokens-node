@@ -3,7 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import Session from "../../session";
-import { getUser, listUsersByAccountInfo } from "../../..";
+import { User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { SessionContainerInterface } from "../../session/types";
 import { getFactorFlowControlFlags } from "../../multifactorauth/utils";
@@ -24,24 +24,24 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            let existingUsers = await listUsersByAccountInfo(
-                input.tenantId,
-                {
-                    phoneNumber: deviceInfo.phoneNumber,
-                    email: deviceInfo.email,
-                },
-                false,
-                input.userContext
-            );
-            existingUsers = existingUsers.filter((u) =>
-                u.loginMethods.some(
-                    (m) =>
-                        m.recipeId === "passwordless" &&
-                        (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
-                )
-            );
-
             while (true) {
+                let existingUsers = await listUsersByAccountInfo(
+                    input.tenantId,
+                    {
+                        phoneNumber: deviceInfo.phoneNumber,
+                        email: deviceInfo.email,
+                    },
+                    false,
+                    input.userContext
+                );
+                existingUsers = existingUsers.filter((u) =>
+                    u.loginMethods.some(
+                        (m) =>
+                            m.recipeId === "passwordless" &&
+                            (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
+                    )
+                );
+
                 let {
                     session,
                     mfaInstance,
@@ -80,36 +80,100 @@ export default function getAPIImplementation(): APIInterface {
                     );
                 }
 
-                const isSignUp = existingUsers.length === 0;
+                const isSignIn = existingUsers.length !== 0;
+
+                let sessionUser: User | undefined;
+
+                if (mfaInstance !== undefined && session !== undefined) {
+                    sessionUser = await getUser(session.getUserId(), input.userContext);
+                    if (sessionUser === undefined) {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Session user not found",
+                        });
+                    }
+                }
                 const factorId = `${"userInputCode" in input ? "otp" : "link"}-${deviceInfo.email ? "email" : "phone"}`;
 
-                if (mfaInstance !== undefined) {
-                    const validateRes = isSignUp
-                        ? await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                              tenantId: input.tenantId,
-                              factorIdInProgress: factorId,
-                              isAlreadySetup: false,
-                              signUpInfo: {
-                                  email: deviceInfo.email,
-                                  phoneNumber: deviceInfo.phoneNumber,
-                                  isVerifiedFactor: true,
-                              },
-                              session,
-                              userContext: input.userContext,
-                          })
-                        : await mfaInstance.validateForMultifactorAuthBeforeFactorCompletion({
-                              tenantId: input.tenantId,
-                              factorIdInProgress: factorId,
-                              userSigningInForFactor: existingUsers[0],
-                              session,
-                              userContext: input.userContext,
-                          });
+                // Reference for MFA Flows:
+                // first factor | signIn / signUp
+                //     -> check if valid first factor - handled via config and a util function
+                //     -> mark factor as complete in session - recipe function
 
-                    if (validateRes.status === "MFA_FLOW_ERROR") {
-                        return {
-                            status: "SIGN_IN_UP_NOT_ALLOWED",
-                            reason: validateRes.reason,
-                        };
+                // second factor
+                //     signIn / complete factor
+                //         if there is a factor user
+                //             -> check factor user linked to session user - util `isFactorUserLinkedToSessionUser`
+                //     signUp / setup factor
+                //         -> check if factor setup is allowed - recipe function `isAllowedToSetupFactor`
+                //         if there is a factor user
+                //             -> check if factor user account info is verified - util - `checkFactorUserAccountInfoForVerification` (not necessary for passwordless)
+                //             -> check if factor user can be linked to session user - util - `checkIfFactorUserCanBeLinkedWithSessionUser`
+                //             -> link accounts for factor setup - recipe function (if failed, retry API logic) - util - `linkAccountsForFactorSetup`
+                //     -> mark factor as complete in session - recipe function
+
+                if (mfaInstance !== undefined) {
+                    if (session === undefined) {
+                        // First factor flow
+                        await mfaInstance.checkForValidFirstFactor(input.tenantId, factorId, input.userContext);
+                    } else {
+                        // Secondary factor flow
+
+                        if (isSignIn) {
+                            // Sign in flow (Factor completion)
+                            const res = await mfaInstance.checkIfFactorUserLinkedToSessionUser(
+                                sessionUser!,
+                                existingUsers[0]
+                            );
+                            if (res.status !== "OK") {
+                                return {
+                                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                                    reason: res.reason,
+                                };
+                            }
+                        } else {
+                            // Sign up flow (Factor setup)
+
+                            await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
+                                input.tenantId,
+                                session,
+                                sessionUser!,
+                                factorId,
+                                input.userContext
+                            );
+
+                            let accountInfo = { email: deviceInfo.email, phoneNumber: deviceInfo.phoneNumber };
+
+                            // We don't need to do this because we can assume passwordless users are verified
+                            // if (false) {
+                            //     const verifiedRes = mfaInstance.checkFactorUserAccountInfoForVerification(
+                            //         sessionUser!,
+                            //         accountInfo
+                            //     );
+                            //     if (verifiedRes.status !== "OK") {
+                            //         return {
+                            //             status: "SIGN_IN_UP_NOT_ALLOWED",
+                            //             reason: verifiedRes.reason,
+                            //         };
+                            //     }
+                            // }
+
+                            const linkRes = await mfaInstance.checkIfFactorUserCanBeLinkedWithSessionUser(
+                                input.tenantId,
+                                sessionUser!,
+                                accountInfo,
+                                input.userContext
+                            );
+
+                            if (linkRes.status === "RECURSE_FOR_RACE") {
+                                continue;
+                            } else if (linkRes.status === "VALIDATION_ERROR") {
+                                return {
+                                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                                    reason: linkRes.reason,
+                                };
+                            }
+                        }
                     }
                 }
 
@@ -199,39 +263,33 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 if (mfaInstance !== undefined) {
-                    let sessionRes = await mfaInstance.updateSessionAndUserAfterFactorCompletion({
-                        session,
-                        isFirstFactor,
-                        factorId: factorId,
-                        userInfoOfUserThatCompletedSignInOrUpToCompleteCurrentFactor: {
-                            createdNewUser: response.createdNewRecipeUser,
-                            recipeUserId: response.recipeUserId,
-                            user: response.user,
-                        },
+                    if (!isFirstFactor) {
+                        const linkRes = await mfaInstance.linkAccountsForFactorSetup(
+                            sessionUser!,
+                            response.recipeUserId,
+                            input.userContext
+                        );
+
+                        if (linkRes.status !== "OK") {
+                            continue; // retry from validation
+                        }
+
+                        let user = await getUser(response.user.id, input.userContext);
+                        if (user === undefined) {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Session user not found",
+                            });
+                        }
+
+                        response.user = user;
+                    }
+
+                    await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                        session: session,
+                        factorId,
                         userContext: input.userContext,
                     });
-
-                    if (sessionRes.status === "MFA_FLOW_ERROR") {
-                        return {
-                            status: "SIGN_IN_UP_FAILED",
-                            reason: sessionRes.reason,
-                        };
-                    }
-
-                    if (sessionRes.status === "RECURSE_FOR_RACE_CONDITION") {
-                        continue;
-                    }
-
-                    let user = await getUser(response.user.id, input.userContext);
-
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-
-                    response.user = user;
                 }
 
                 return {
