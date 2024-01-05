@@ -85,19 +85,13 @@ export default function getAPIInterface(): APIInterface {
                 });
             }
 
-            const isAllowedRes = await mfaInstance.isAllowedToSetupFactor(
+            await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
                 tenantId,
                 session,
                 sessionUser,
                 "totp",
                 userContext
             );
-            if (isAllowedRes.status !== "OK") {
-                return {
-                    status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                    reason: isAllowedRes.reason,
-                };
-            }
 
             const res = await options.recipeImplementation.verifyDevice({
                 tenantId,

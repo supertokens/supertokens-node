@@ -63,7 +63,7 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    isAllowedToSetupFactor: (input: {
+    checkAllowedToSetupFactorElseThrowInvalidClaimError: (input: {
         session: SessionContainer;
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
@@ -72,7 +72,7 @@ export type RecipeInterface = {
         requiredSecondaryFactorsForTenant: string[];
         completedFactors: Record<string, number>;
         userContext: UserContext;
-    }) => Promise<{ isAllowed: true } | { isAllowed: false; reason: string }>;
+    }) => Promise<void>;
 
     getMFARequirementsForAuth: (input: {
         user: User;

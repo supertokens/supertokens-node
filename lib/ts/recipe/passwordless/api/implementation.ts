@@ -134,19 +134,13 @@ export default function getAPIImplementation(): APIInterface {
                         } else {
                             // Sign up flow (Factor setup)
 
-                            const isAllowedRes = await mfaInstance.isAllowedToSetupFactor(
+                            await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
                                 input.tenantId,
                                 session,
                                 sessionUser!,
                                 factorId,
                                 input.userContext
                             );
-                            if (isAllowedRes.status !== "OK") {
-                                return {
-                                    status: "SIGN_IN_UP_NOT_ALLOWED",
-                                    reason: isAllowedRes.reason,
-                                };
-                            }
 
                             let accountInfo = { email: deviceInfo.email, phoneNumber: deviceInfo.phoneNumber };
 

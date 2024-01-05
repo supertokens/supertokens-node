@@ -6,19 +6,11 @@ import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static MultiFactorAuthClaim: import("./multiFactorAuthClaim").MultiFactorAuthClaimClass;
-    static isAllowedToSetupFactor(
+    static checkAllowedToSetupFactorElseThrowInvalidClaimError(
         session: SessionContainerInterface,
         factorId: string,
         userContext?: Record<string, any>
-    ): Promise<
-        | {
-              isAllowed: true;
-          }
-        | {
-              isAllowed: false;
-              reason: string;
-          }
-    >;
+    ): Promise<void>;
     static markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
@@ -38,13 +30,13 @@ export default class Wrapper {
     ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
-export declare let isAllowedToSetupFactor: typeof Wrapper.isAllowedToSetupFactor;
+export declare let checkAllowedToSetupFactorElseThrowInvalidClaimError: typeof Wrapper.checkAllowedToSetupFactorElseThrowInvalidClaimError;
 export declare let markFactorAsCompleteInSession: typeof Wrapper.markFactorAsCompleteInSession;
 export declare let getFactorsSetupForUser: typeof Wrapper.getFactorsSetupForUser;
 export declare let getRequiredSecondaryFactorsForUser: typeof Wrapper.getRequiredSecondaryFactorsForUser;
 export declare const addToRequiredSecondaryFactorsForUser: typeof Wrapper.addToRequiredSecondaryFactorsForUser;
 export declare const removeFromRequiredSecondaryFactorsForUser: typeof Wrapper.removeFromRequiredSecondaryFactorsForUser;
-export declare const FACTORS: {
+export declare const Factors: {
     EMAILPASSWORD: string;
     OTP_EMAIL: string;
     OTP_PHONE: string;

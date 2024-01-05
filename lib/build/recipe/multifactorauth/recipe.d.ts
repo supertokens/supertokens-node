@@ -65,21 +65,13 @@ export default class Recipe extends RecipeModule {
               status: "VALIDATION_ERROR";
               reason: string;
           };
-    isAllowedToSetupFactor: (
+    checkAllowedToSetupFactorElseThrowInvalidClaimError: (
         tenantId: string,
         session: SessionContainerInterface,
         sessionUser: User,
         factorId: string,
         userContext: UserContext
-    ) => Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-    >;
+    ) => Promise<void>;
     checkFactorUserAccountInfoForVerification: (
         sessionUser: User,
         accountInfo: {

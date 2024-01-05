@@ -264,13 +264,13 @@ export default class Recipe extends RecipeModule {
         };
     };
 
-    isAllowedToSetupFactor = async (
+    checkAllowedToSetupFactorElseThrowInvalidClaimError = async (
         tenantId: string,
         session: SessionContainerInterface,
         sessionUser: User,
         factorId: string,
         userContext: UserContext
-    ): Promise<{ status: "OK" } | { status: "FACTOR_SETUP_NOT_ALLOWED_ERROR"; reason: string }> => {
+    ): Promise<void> => {
         // this is a utility function that populates all the necessary info for the recipe function
         const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
         if (tenantInfo === undefined) {
@@ -300,7 +300,7 @@ export default class Recipe extends RecipeModule {
             userContext: userContext,
         });
 
-        const canSetup = await this.recipeInterfaceImpl.isAllowedToSetupFactor({
+        await this.recipeInterfaceImpl.checkAllowedToSetupFactorElseThrowInvalidClaimError({
             session: session,
             factorId: factorId,
             completedFactors: completedFactorsClaimValue?.c ?? {},
@@ -310,16 +310,6 @@ export default class Recipe extends RecipeModule {
             mfaRequirementsForAuth,
             userContext: userContext,
         });
-        if (!canSetup.isAllowed) {
-            return {
-                status: "FACTOR_SETUP_NOT_ALLOWED_ERROR",
-                reason: canSetup.reason,
-            };
-        }
-
-        return {
-            status: "OK",
-        };
     };
 
     checkFactorUserAccountInfoForVerification = (

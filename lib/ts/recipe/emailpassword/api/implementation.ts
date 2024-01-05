@@ -803,19 +803,13 @@ export default function getAPIImplementation(): APIInterface {
                     if (session === undefined) {
                         await mfaInstance.checkForValidFirstFactor(tenantId, "emailpassword", userContext);
                     } else {
-                        const isAllowedRes = await mfaInstance.isAllowedToSetupFactor(
+                        await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
                             tenantId,
                             session,
                             sessionUser!,
                             "emailpassword",
                             userContext
                         );
-                        if (isAllowedRes.status !== "OK") {
-                            return {
-                                status: "SIGN_UP_NOT_ALLOWED",
-                                reason: isAllowedRes.reason,
-                            };
-                        }
 
                         let accountInfo = { email };
 

@@ -72,8 +72,8 @@ export default function getAPIInterface(): APIInterface {
 
             const isAllowedToSetup: string[] = [];
             for (const id of availableFactors) {
-                if (
-                    await options.recipeImplementation.isAllowedToSetupFactor({
+                try {
+                    await options.recipeImplementation.checkAllowedToSetupFactorElseThrowInvalidClaimError({
                         session,
                         factorId: id,
                         completedFactors: completedFactors,
@@ -82,9 +82,10 @@ export default function getAPIInterface(): APIInterface {
                         factorsSetUpForUser: isAlreadySetup,
                         mfaRequirementsForAuth,
                         userContext,
-                    })
-                ) {
+                    });
                     isAllowedToSetup.push(id);
+                } catch (err) {
+                    // ignore
                 }
             }
 

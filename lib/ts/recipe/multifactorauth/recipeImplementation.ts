@@ -20,6 +20,7 @@ import type MultiFactorAuthRecipe from "./recipe";
 import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
 import { logDebugMessage } from "../../logger";
+import { SessionClaimValidator } from "../session";
 
 export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
     return {
@@ -63,15 +64,10 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             return [{ oneOf: [...allFactors] }];
         },
 
-        isAllowedToSetupFactor: async function (
+        checkAllowedToSetupFactorElseThrowInvalidClaimError: async function (
             this: RecipeInterface,
             { factorId, session, factorsSetUpForUser, mfaRequirementsForAuth, userContext }
         ) {
-            const claimVal = await session.getClaimValue(MultiFactorAuthClaim, userContext);
-            if (!claimVal) {
-                throw new Error("should never happen");
-            }
-
             // // This solution: checks for 2FA (we'd allow factor setup if the user has set up only 1 factor group or completed at least 2)
             // const factorGroups = [
             //     ["otp-phone", "link-phone"],
@@ -95,30 +91,43 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
             // return completedGroups.length >= 2;
 
-            const setOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
-                claimVal.c,
-                mfaRequirementsForAuth
-            );
+            const validator: SessionClaimValidator = {
+                id: MultiFactorAuthClaim.key,
+                claim: MultiFactorAuthClaim,
+                shouldRefetch: () => false,
+                validate: async (payload) => {
+                    const claimVal = MultiFactorAuthClaim.getValueFromPayload(payload);
+                    if (!claimVal) {
+                        throw new Error("should never happen");
+                    }
 
-            if (setOfUnsatisfiedFactors.some((id) => factorsSetUpForUser.includes(id))) {
-                logDebugMessage(
-                    `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.join(
-                        ", "
-                    )}`
-                );
-                return {
-                    isAllowed: false,
-                    reason:
-                        "Factor setup was disallowed due to security reasons. Please contact support. (ERR_CODE_013)",
-                };
-            }
+                    const setOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
+                        claimVal.c,
+                        mfaRequirementsForAuth
+                    );
 
-            logDebugMessage(
-                `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${
-                    setOfUnsatisfiedFactors.length === 0 ? "empty" : "cannot be completed otherwise"
-                }`
-            );
-            return { isAllowed: true };
+                    if (setOfUnsatisfiedFactors.some((id) => factorsSetUpForUser.includes(id))) {
+                        logDebugMessage(
+                            `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.join(
+                                ", "
+                            )}`
+                        );
+                        return {
+                            isValid: false,
+                            reason: "Does not satisfy MFA requirements",
+                        };
+                    }
+
+                    logDebugMessage(
+                        `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${
+                            setOfUnsatisfiedFactors.length === 0 ? "empty" : "cannot be completed otherwise"
+                        }`
+                    );
+                    return { isValid: true };
+                },
+            };
+
+            await session.assertClaims([validator], userContext);
         },
 
         markFactorAsCompleteInSession: async function (this: RecipeInterface, { session, factorId, userContext }) {

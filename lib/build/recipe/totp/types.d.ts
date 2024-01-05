@@ -209,10 +209,6 @@ export declare type APIInterface = {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
           }
-        | {
-              status: "FACTOR_SETUP_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
         | GeneralErrorResponse
     >;
     verifyTOTPPOST: (input: {
