@@ -1202,7 +1202,7 @@ function getSessionTokensFromResponseHeaders(response) {
 
 function getSessionTokensFromResponseCookies(response) {
     const tokens = {};
-    response.headers.getSetCookie().forEach((header) => {
+    response.headers.getAll("Set-Cookie").forEach((header) => {
         const matchAccessToken = header.match(/sAccessToken=([^;]+)/);
         const matchRefreshToken = header.match(/sRefreshToken=([^;]+)/);
 
