@@ -1,11 +1,9 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
-import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import Session from "../../session";
 import { User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
-import { SessionContainerInterface } from "../../session/types";
 import { getFactorFlowControlFlags } from "../../multifactorauth/utils";
 import SessionError from "../../session/error";
 
@@ -307,15 +305,8 @@ export default function getAPIImplementation(): APIInterface {
                 accountInfo.email = input.email;
             }
             if ("phoneNumber" in input) {
-                accountInfo.email = input.phoneNumber;
+                accountInfo.phoneNumber = input.phoneNumber;
             }
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
-
-            let session: SessionContainerInterface | undefined = await Session.getSession(
-                input.options.req,
-                input.options.res,
-                { sessionRequired: false, overrideGlobalClaimValidators: () => [] }
-            );
 
             let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
             existingUsers = existingUsers.filter((u) =>
@@ -326,8 +317,14 @@ export default function getAPIImplementation(): APIInterface {
                 )
             );
 
+            let { shouldCheckIfSignInIsAllowed, shouldCheckIfSignUpIsAllowed } = await getFactorFlowControlFlags(
+                input.options.req,
+                input.options.res,
+                input.userContext
+            );
+
             if (existingUsers.length === 0) {
-                if (session === undefined || mfaInstance === undefined) {
+                if (shouldCheckIfSignUpIsAllowed) {
                     let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                         newUser: {
                             recipeId: "passwordless",
@@ -358,23 +355,33 @@ export default function getAPIImplementation(): APIInterface {
                 if (loginMethod === undefined) {
                     throw new Error("Should never come here");
                 }
-                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    user: existingUsers[0],
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
-                if (!isSignInAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-                    };
+
+                if (shouldCheckIfSignInIsAllowed) {
+                    let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
+                        user: existingUsers[0],
+                        tenantId: input.tenantId,
+                        userContext: input.userContext,
+                    });
+                    if (!isSignInAllowed) {
+                        return {
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
+                        };
+                    }
                 }
             } else {
                 throw new Error(
                     "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
                 );
             }
+
+            // if (mfaInstance !== undefined && session !== undefined && existingUsers.length === 0) {
+            // Ideally we want to check if the user is allowed to setup a factor, but unfortunately
+            // we can't distinguish between otp- or link- factors at this point. So we simply allow
+            // and then check during consume code
+            // }
+
             let response = await input.options.recipeImplementation.createCode(
                 "email" in input
                     ? {

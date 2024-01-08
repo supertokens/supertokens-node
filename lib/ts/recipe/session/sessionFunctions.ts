@@ -34,8 +34,8 @@ export async function createNewSession(
     tenantId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
-    accessTokenPayload: any = {},
-    sessionDataInDatabase: any = {},
+    accessTokenPayload: any,
+    sessionDataInDatabase: any,
     userContext: UserContext
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
