@@ -1202,9 +1202,12 @@ function getSessionTokensFromResponseHeaders(response) {
 
 function getSessionTokensFromResponseCookies(response) {
     const tokens = {};
-    response.headers.getAll("Set-Cookie").forEach((header) => {
-        const matchAccessToken = header.match(/sAccessToken=([^;]+)/);
-        const matchRefreshToken = header.match(/sRefreshToken=([^;]+)/);
+
+    const setCookieHeader = response.headers.get("Set-Cookie");
+
+    if (setCookieHeader) {
+        const matchAccessToken = setCookieHeader.match(/sAccessToken=([^;]+)/);
+        const matchRefreshToken = setCookieHeader.match(/sRefreshToken=([^;]+)/);
 
         if (matchAccessToken) {
             tokens.access = matchAccessToken[1];
@@ -1213,7 +1216,7 @@ function getSessionTokensFromResponseCookies(response) {
         if (matchRefreshToken) {
             tokens.refresh = matchRefreshToken[1];
         }
-    });
+    }
 
     return tokens;
 }
