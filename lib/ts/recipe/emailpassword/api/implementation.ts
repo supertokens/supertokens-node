@@ -580,7 +580,7 @@ export default function getAPIImplementation(): APIInterface {
                   status: "WRONG_CREDENTIALS_ERROR";
               }
             | {
-                  status: "SIGN_IN_NOT_ALLOWED" | "SIGN_IN_FAILED";
+                  status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
               }
             | GeneralErrorResponse
@@ -718,7 +718,7 @@ export default function getAPIImplementation(): APIInterface {
                   user: User;
               }
             | {
-                  status: "SIGN_UP_NOT_ALLOWED" | "SIGN_UP_FAILED";
+                  status: "SIGN_UP_NOT_ALLOWED";
                   reason: string;
               }
             | {
