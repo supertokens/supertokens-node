@@ -64,20 +64,43 @@ export default class Wrapper {
         });
     }
 
-    static async resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext?: any) {
+    static async resetPasswordUsingToken(
+        tenantId: string,
+        token: string,
+        newPassword: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+        | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+    > {
         const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
 
         if (consumeResp.status !== "OK") {
             return consumeResp;
         }
 
-        return await Wrapper.updateEmailOrPassword({
+        let result = await Wrapper.updateEmailOrPassword({
             recipeUserId: new RecipeUserId(consumeResp.userId),
             email: consumeResp.email,
             password: newPassword,
             tenantIdForPasswordPolicy: tenantId,
             userContext,
         });
+
+        if (result.status === "EMAIL_ALREADY_EXISTS_ERROR" || result.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            throw new global.Error("Should never come here cause we are not updating email");
+        }
+        if (result.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+            return {
+                status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                failureReason: result.failureReason,
+            };
+        }
+        return {
+            status: result.status,
+        };
     }
 
     static consumePasswordResetToken(tenantId: string, token: string, userContext?: any) {

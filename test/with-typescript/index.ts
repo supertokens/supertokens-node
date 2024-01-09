@@ -1958,3 +1958,39 @@ NextJS.getSSRSession(nextRequest.cookies.getAll(), nextRequest.headers);
 NextJS.withSession(nextRequest, async function test(session): Promise<NextResponse> {
     return NextResponse.json({});
 });
+
+EmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
+    // @ts-expect-error
+    if (resp.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+    }
+    // @ts-expect-error
+    if (resp.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+    }
+
+    if (
+        resp.status === "OK" ||
+        resp.status === "PASSWORD_POLICY_VIOLATED_ERROR" ||
+        resp.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR" ||
+        resp.status === "UNKNOWN_USER_ID_ERROR"
+    ) {
+        return;
+    }
+});
+
+ThirdPartyEmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
+    // @ts-expect-error
+    if (resp.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+    }
+    // @ts-expect-error
+    if (resp.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+    }
+
+    if (
+        resp.status === "OK" ||
+        resp.status === "PASSWORD_POLICY_VIOLATED_ERROR" ||
+        resp.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR" ||
+        resp.status === "UNKNOWN_USER_ID_ERROR"
+    ) {
+        return;
+    }
+});

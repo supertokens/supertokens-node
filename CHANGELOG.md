@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.7.1] - 2024-01-09
+
+-   Fixes type output of `resetPasswordUsingToken` in emailpassword and thirdpartyemailpassword recipe to not include statuses that happen based on email change.
+
 ## [16.7.0] - 2023-12-22
 
 -   Add session util functions `withSession`, `getSSRSession` and `withPreParsedRequestResponse` for Next.js App directory.
