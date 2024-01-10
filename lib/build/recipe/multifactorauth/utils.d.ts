@@ -24,3 +24,8 @@ export declare function getFactorFlowControlFlags(
     session: import("../session").SessionContainer | undefined;
     mfaInstance: MultiFactorAuthRecipe | undefined;
 }>;
+export declare const isValidFirstFactor: (
+    tenantId: string,
+    factorId: string,
+    userContext: UserContext
+) => Promise<boolean>;

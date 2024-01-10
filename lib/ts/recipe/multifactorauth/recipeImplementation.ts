@@ -17,7 +17,6 @@ import { RecipeInterface } from "./";
 import UserMetadataRecipe from "../usermetadata/recipe";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import type MultiFactorAuthRecipe from "./recipe";
-import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
 import { logDebugMessage } from "../../logger";
 import { SessionClaimValidator } from "../session";
@@ -64,7 +63,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             return [{ oneOf: [...allFactors] }];
         },
 
-        checkAllowedToSetupFactorElseThrowInvalidClaimError: async function (
+        assertAllowedToSetupFactorElseThrowInvalidClaimError: async function (
             this: RecipeInterface,
             { factorId, session, factorsSetUpForUser, mfaRequirementsForAuth, userContext }
         ) {
@@ -136,37 +135,17 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 ...currentValue?.c,
                 [factorId]: Math.floor(Date.now() / 1000),
             };
-            const tenantId = session.getTenantId();
+
             const user = await getUser(session.getUserId(), userContext);
             if (user === undefined) {
                 throw new Error("User not found!");
             }
 
-            const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-
-            const requiredSecondaryFactorsForUser = await this.getRequiredSecondaryFactorsForUser({
-                userId: user.id,
-                userContext,
-            });
-            const factorsSetUpForUser = await this.getFactorsSetupForUser({
-                user: user,
-                userContext,
-            });
-            const mfaRequirementsForAuth = await this.getMFARequirementsForAuth({
-                user,
-                accessTokenPayload: session.getAccessTokenPayload(),
-                tenantId,
-                factorsSetUpForUser,
-                requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
-                requiredSecondaryFactorsForUser,
-                completedFactors: completed,
-                userContext,
-            });
-            const isAuthComplete = MultiFactorAuthClaim.isRequirementListSatisfied(completed, mfaRequirementsForAuth);
             await session.setClaimValue(MultiFactorAuthClaim, {
                 c: completed,
-                v: isAuthComplete,
+                v: currentValue?.v,
             });
+            session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates value for `v`
         },
 
         getRequiredSecondaryFactorsForUser: async function ({ userId, userContext }) {

@@ -197,7 +197,6 @@ module.exports.plessPhoneSigninUp = async function (app, phoneNumber, accessToke
                     userInputCode: code.userInputCode,
                     deviceId: code.deviceId,
                 })
-                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         reject(err);
@@ -216,7 +215,6 @@ module.exports.plessPhoneSigninUp = async function (app, phoneNumber, accessToke
                     userInputCode: code.userInputCode,
                     deviceId: code.deviceId,
                 })
-                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         reject(err);

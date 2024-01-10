@@ -328,7 +328,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.equal(true, res.body.user.isPrimaryUser);
         assert.equal(2, res.body.user.loginMethods.length);
 
-        // Try setting up totp without 2FA
+        // Try setting up otp-phone without 2FA
         res = await epSignIn(app, "test@example.com", "password");
         assert.equal("OK", res.body.status);
 
@@ -336,7 +336,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         accessToken = cookies.accessTokenFromAny;
 
         res = await plessPhoneSigninUp(app, "+919876543210", accessToken);
-        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.equal(403, res.status);
     });
 
     it("test that existing user sign in results in factor setup not allowed error", async function () {
@@ -383,7 +383,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         res = await epSignIn(app, "test2@example.com", "password", accessToken);
         assert.equal("SIGN_IN_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)",
+            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_009)",
             res.body.reason
         );
 
@@ -444,7 +444,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "The factor you are trying to complete is not setup with the current user account. Please contact support. (ERR_CODE_009)",
+            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_013)",
             res.body.reason
         );
         cookies = extractInfoFromResponse(res);

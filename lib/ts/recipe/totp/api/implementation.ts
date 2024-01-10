@@ -16,6 +16,7 @@
 import { APIInterface } from "../";
 import TotpRecipe from "../recipe";
 import SessionError from "../../session/error";
+import MultiFactorAuth from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import { getUser } from "../../..";
 
@@ -54,13 +55,7 @@ export default function getAPIInterface(): APIInterface {
                 });
             }
 
-            await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
-                session.getTenantId(),
-                session,
-                sessionUser,
-                "totp",
-                userContext
-            );
+            await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
 
             return await options.recipeImplementation.createDevice({
                 userId,
@@ -106,14 +101,6 @@ export default function getAPIInterface(): APIInterface {
                     message: "Session user not found",
                 });
             }
-
-            await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
-                tenantId,
-                session,
-                sessionUser,
-                "totp",
-                userContext
-            );
 
             const res = await options.recipeImplementation.verifyDevice({
                 tenantId,

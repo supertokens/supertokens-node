@@ -42,7 +42,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    checkAllowedToSetupFactorElseThrowInvalidClaimError: (input: {
+    assertAllowedToSetupFactorElseThrowInvalidClaimError: (input: {
         session: SessionContainer;
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;

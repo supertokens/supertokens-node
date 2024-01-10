@@ -15,7 +15,6 @@ import {
     TypeNormalisedInput,
 } from "./types";
 import { User } from "../../user";
-import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
@@ -53,63 +52,6 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
     getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    checkForValidFirstFactor: (tenantId: string, factorId: string, userContext: UserContext) => Promise<void>;
-    checkIfFactorUserLinkedToSessionUser: (
-        sessionUser: User,
-        factorUser: User
-    ) =>
-        | {
-              status: "OK";
-          }
-        | {
-              status: "VALIDATION_ERROR";
-              reason: string;
-          };
-    checkAllowedToSetupFactorElseThrowInvalidClaimError: (
-        tenantId: string,
-        session: SessionContainerInterface,
-        sessionUser: User,
-        factorId: string,
-        userContext: UserContext
-    ) => Promise<void>;
-    checkFactorUserAccountInfoForVerification: (
-        sessionUser: User,
-        accountInfo: {
-            email?: string;
-            phoneNumber?: string;
-        }
-    ) =>
-        | {
-              status: "OK";
-          }
-        | {
-              status: "VALIDATION_ERROR";
-              reason: string;
-          };
-    checkIfFactorUserCanBeLinkedWithSessionUser: (
-        tenantId: string,
-        sessionUser: User,
-        accountInfo: {
-            email?: string;
-            phoneNumber?: string;
-        },
-        userContext: UserContext
-    ) => Promise<
-        | {
-              status: "OK" | "RECURSE_FOR_RACE";
-          }
-        | {
-              status: "VALIDATION_ERROR";
-              reason: string;
-          }
-    >;
-    linkAccountsForFactorSetup: (
-        sessionUser: User,
-        factorUserRecipeUserId: RecipeUserId,
-        userContext: UserContext
-    ) => Promise<{
-        status: "OK" | "RECURSE_FOR_RACE";
-    }>;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
     addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;

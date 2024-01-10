@@ -26,7 +26,7 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async checkAllowedToSetupFactorElseThrowInvalidClaimError(
+    static async assertAllowedToSetupFactorElseThrowInvalidClaimError(
         session: SessionContainerInterface,
         factorId: string,
         userContext?: Record<string, any>
@@ -34,7 +34,7 @@ export default class Wrapper {
         let ctx = getUserContext(userContext);
         const user = await getUser(session.getUserId(), ctx);
         if (!user) {
-            throw new Error("UKNKNOWN_USER_ID");
+            throw new Error("Session user not found");
         }
         const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
             user,
@@ -61,14 +61,49 @@ export default class Wrapper {
             completedFactors,
             userContext: ctx,
         });
-        Recipe.getInstanceOrThrowError().recipeInterfaceImpl.checkAllowedToSetupFactorElseThrowInvalidClaimError({
-            session,
-            factorId,
-            completedFactors,
-            mfaRequirementsForAuth: requirements,
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
+            {
+                session,
+                factorId,
+                completedFactors,
+                mfaRequirementsForAuth: requirements,
+                factorsSetUpForUser: factorsSetup,
+                requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
+                requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
+                userContext: ctx,
+            }
+        );
+    }
+
+    static async getMFARequirementsForAuth(session: SessionContainerInterface, userContext?: Record<string, any>) {
+        let ctx = getUserContext(userContext);
+        const user = await getUser(session.getUserId(), ctx);
+        if (!user) {
+            throw new Error("Session user not found");
+        }
+        const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            user,
+            userContext: ctx,
+        });
+        const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
+        const completedFactors = mfaClaimValue?.c ?? {};
+        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
+            {
+                userId: session.getUserId(),
+                userContext: ctx,
+            }
+        );
+
+        const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
+        const defaultMFARequirementsForTenant: string[] = tenantInfo?.requiredSecondaryFactors ?? [];
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
+            user,
+            accessTokenPayload: session.getAccessTokenPayload(),
+            tenantId: session.getTenantId(),
             factorsSetUpForUser: factorsSetup,
             requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
             requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
+            completedFactors,
             userContext: ctx,
         });
     }
@@ -89,7 +124,7 @@ export default class Wrapper {
         const ctx = getUserContext(userContext);
         const user = await getUser(userId, ctx);
         if (!user) {
-            throw new Error("UKNKNOWN_USER_ID");
+            throw new Error("Unknown user id");
         }
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
@@ -132,8 +167,8 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
-export let checkAllowedToSetupFactorElseThrowInvalidClaimError =
-    Wrapper.checkAllowedToSetupFactorElseThrowInvalidClaimError;
+export let assertAllowedToSetupFactorElseThrowInvalidClaimError =
+    Wrapper.assertAllowedToSetupFactorElseThrowInvalidClaimError;
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
 export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
 export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFactorsForUser;
