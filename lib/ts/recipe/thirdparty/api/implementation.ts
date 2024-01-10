@@ -11,6 +11,7 @@ import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import { UserContext } from "../../../types";
 import { UserInfo } from "../types";
 import SessionRecipe from "../../session/recipe";
+import { isValidFirstFactor } from "../../multifactorauth/utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -369,7 +370,7 @@ export default function getAPIInterface(): APIInterface {
 
                                 await checkIfSignInIsAllowed(tenantId, signInUpResponse.user, userContext);
 
-                                await checkIfValidFirstFactor(mfaInstance, tenantId, userContext);
+                                await checkIfValidFirstFactor(tenantId, userContext);
 
                                 signInUpResponse.user = await attemptAccountLinking(
                                     tenantId,
@@ -408,7 +409,7 @@ export default function getAPIInterface(): APIInterface {
 
                                 await checkIfSignUpIsAllowed(tenantId, emailInfo, provider, userInfo, userContext);
 
-                                await checkIfValidFirstFactor(mfaInstance, tenantId, userContext);
+                                await checkIfValidFirstFactor(tenantId, userContext);
 
                                 let signInUpResponse = await options.recipeImplementation.signInUp({
                                     thirdPartyId: provider.id,
@@ -803,16 +804,8 @@ const attemptAccountLinking = async (tenantId: string, user: User, userContext: 
     });
 };
 
-const checkIfValidFirstFactor = async (
-    mfaInstance: MultiFactorAuthRecipe,
-    tenantId: string,
-    userContext: UserContext
-) => {
-    let isValid = await mfaInstance.recipeInterfaceImpl.isValidFirstFactor({
-        tenantId,
-        factorId: "thirdparty",
-        userContext,
-    });
+const checkIfValidFirstFactor = async (tenantId: string, userContext: UserContext) => {
+    let isValid = await isValidFirstFactor(tenantId, "thirdparty", userContext);
     if (!isValid) {
         throw new SessionError({
             type: SessionError.UNAUTHORISED,

@@ -13,6 +13,7 @@ import SessionError from "../../session/error";
 import MultiFactorAuth from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import SessionRecipe from "../../session/recipe";
+import { isValidFirstFactor } from "../../multifactorauth/utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -704,7 +705,7 @@ export default function getAPIImplementation(): APIInterface {
 
                         await checkIfSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
-                        await checkIfValidFirstFactor(mfaInstance, tenantId, userContext);
+                        await checkIfValidFirstFactor(tenantId, userContext);
 
                         signInResponse.user = await attemptAccountLinking(tenantId, signInResponse.user, userContext);
 
@@ -1080,16 +1081,8 @@ const attemptAccountLinking = async (tenantId: string, user: User, userContext: 
     });
 };
 
-const checkIfValidFirstFactor = async (
-    mfaInstance: MultiFactorAuthRecipe,
-    tenantId: string,
-    userContext: UserContext
-) => {
-    let isValid = await mfaInstance.recipeInterfaceImpl.isValidFirstFactor({
-        tenantId,
-        factorId: "emailpassword",
-        userContext,
-    });
+const checkIfValidFirstFactor = async (tenantId: string, userContext: UserContext) => {
+    let isValid = isValidFirstFactor(tenantId, "emailpassword", userContext);
 
     if (!isValid) {
         throw new SessionError({

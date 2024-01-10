@@ -4,7 +4,7 @@ import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
 import { RecipeUserId, User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
-import { getFactorFlowControlFlags } from "../../multifactorauth/utils";
+import { getFactorFlowControlFlags, isValidFirstFactor } from "../../multifactorauth/utils";
 import SessionError from "../../session/error";
 import MultiFactorAuth from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
@@ -325,7 +325,7 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                await checkIfValidFirstFactor(mfaInstance, input.tenantId, factorId, input.userContext);
+                                await checkIfValidFirstFactor(input.tenantId, factorId, input.userContext);
 
                                 consumeCodeResponse.user = await attemptAccountLinking(
                                     input.tenantId,
@@ -367,7 +367,7 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                await checkIfValidFirstFactor(mfaInstance, input.tenantId, factorId, input.userContext);
+                                await checkIfValidFirstFactor(input.tenantId, factorId, input.userContext);
 
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
@@ -942,17 +942,8 @@ const attemptAccountLinking = async (tenantId: string, user: User, userContext: 
     });
 };
 
-const checkIfValidFirstFactor = async (
-    mfaInstance: MultiFactorAuthRecipe,
-    tenantId: string,
-    factorId: string,
-    userContext: UserContext
-) => {
-    let isValid = await mfaInstance.recipeInterfaceImpl.isValidFirstFactor({
-        tenantId,
-        factorId,
-        userContext,
-    });
+const checkIfValidFirstFactor = async (tenantId: string, factorId: string, userContext: UserContext) => {
+    let isValid = await isValidFirstFactor(tenantId, factorId, userContext);
     if (!isValid) {
         throw new SessionError({
             type: SessionError.UNAUTHORISED,

@@ -106,8 +106,6 @@ export type RecipeInterface = {
         factorId: string;
         userContext: UserContext;
     }) => Promise<void>;
-
-    isValidFirstFactor: (input: { tenantId: string; factorId: string; userContext: UserContext }) => Promise<boolean>;
 };
 
 export type APIOptions = {

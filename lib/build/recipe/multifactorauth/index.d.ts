@@ -11,6 +11,10 @@ export default class Wrapper {
         factorId: string,
         userContext?: Record<string, any>
     ): Promise<void>;
+    static getMFARequirementsForAuth(
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<import("./types").MFARequirementList>;
     static markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,

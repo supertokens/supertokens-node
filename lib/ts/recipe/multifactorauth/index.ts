@@ -34,7 +34,7 @@ export default class Wrapper {
         let ctx = getUserContext(userContext);
         const user = await getUser(session.getUserId(), ctx);
         if (!user) {
-            throw new Error("UKNKNOWN_USER_ID");
+            throw new Error("Session user not found");
         }
         const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
             user,
@@ -73,6 +73,39 @@ export default class Wrapper {
         });
     }
 
+    static async getMFARequirementsForAuth(session: SessionContainerInterface, userContext?: Record<string, any>) {
+        let ctx = getUserContext(userContext);
+        const user = await getUser(session.getUserId(), ctx);
+        if (!user) {
+            throw new Error("Session user not found");
+        }
+        const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            user,
+            userContext: ctx,
+        });
+        const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
+        const completedFactors = mfaClaimValue?.c ?? {};
+        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
+            {
+                userId: session.getUserId(),
+                userContext: ctx,
+            }
+        );
+
+        const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
+        const defaultMFARequirementsForTenant: string[] = tenantInfo?.requiredSecondaryFactors ?? [];
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
+            user,
+            accessTokenPayload: session.getAccessTokenPayload(),
+            tenantId: session.getTenantId(),
+            factorsSetUpForUser: factorsSetup,
+            requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
+            requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
+            completedFactors,
+            userContext: ctx,
+        });
+    }
+
     static async markFactorAsCompleteInSession(
         session: SessionContainerInterface,
         factorId: string,
@@ -89,7 +122,7 @@ export default class Wrapper {
         const ctx = getUserContext(userContext);
         const user = await getUser(userId, ctx);
         if (!user) {
-            throw new Error("UKNKNOWN_USER_ID");
+            throw new Error("Unknown user id");
         }
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
