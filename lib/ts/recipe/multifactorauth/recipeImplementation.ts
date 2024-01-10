@@ -47,6 +47,29 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             return factorIds;
         },
 
+        isValidFirstFactor: async ({ tenantId, factorId, userContext }): Promise<boolean> => {
+            const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
+            if (tenantInfo === undefined) {
+                throw new Error("tenant not found");
+            }
+            const { status: _, ...tenantConfig } = tenantInfo;
+
+            // we prioritise the firstFactors configured in tenant. If not present, we fallback to the recipe config
+
+            // if validFirstFactors is undefined, we assume it's valid. We assume it's valid because we will still get errors
+            // if the loginMethod is disabled in core, or not initialised in the recipe
+
+            // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
+            // so we don't need to do additional checks here
+            let validFirstFactors = tenantConfig.firstFactors ?? this.config.firstFactors;
+
+            if (validFirstFactors !== undefined && !validFirstFactors.includes(factorId)) {
+                return false;
+            }
+
+            return true;
+        },
+
         getMFARequirementsForAuth: async function ({
             requiredSecondaryFactorsForUser,
             requiredSecondaryFactorsForTenant,
