@@ -325,7 +325,7 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                await checkIfValidFirstFactor(mfaInstance, input.tenantId, input.userContext);
+                                await checkIfValidFirstFactor(mfaInstance, input.tenantId, factorId, input.userContext);
 
                                 consumeCodeResponse.user = await attemptAccountLinking(
                                     input.tenantId,
@@ -512,7 +512,6 @@ export default function getAPIImplementation(): APIInterface {
                                 }
 
                                 consumeCodeResponse.user = await linkAccountsForFactorSetup(
-                                    mfaInstance,
                                     sessionUser,
                                     consumeCodeResponse.recipeUserId,
                                     input.userContext
@@ -943,11 +942,12 @@ const attemptAccountLinking = async (tenantId: string, user: User, userContext: 
 const checkIfValidFirstFactor = async (
     mfaInstance: MultiFactorAuthRecipe,
     tenantId: string,
+    factorId: string,
     userContext: UserContext
 ) => {
     let isValid = await mfaInstance.recipeInterfaceImpl.isValidFirstFactor({
         tenantId,
-        factorId: "thirdparty",
+        factorId,
         userContext,
     });
     if (!isValid) {
@@ -961,13 +961,28 @@ const checkIfValidFirstFactor = async (
     }
 };
 
-const linkAccountsForFactorSetup = async (
-    mfaInstance: MultiFactorAuthRecipe,
-    sessionUser: User,
-    recipeUserId: RecipeUserId,
-    userContext: UserContext
-) => {
-    const linkRes = await mfaInstance.linkAccountsForFactorSetup(sessionUser, recipeUserId, userContext);
+const linkAccountsForFactorSetup = async (sessionUser: User, recipeUserId: RecipeUserId, userContext: UserContext) => {
+    if (!sessionUser.isPrimaryUser) {
+        const createPrimaryRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
+            recipeUserId: new RecipeUserId(sessionUser.id),
+            userContext,
+        });
+        if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+            throw new RecurseError();
+        } else if (createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            throw new RecurseError();
+        }
+    }
+
+    const linkRes = await AccountLinking.getInstance().recipeInterfaceImpl.linkAccounts({
+        recipeUserId: recipeUserId,
+        primaryUserId: sessionUser.id,
+        userContext,
+    });
+
+    if (linkRes.status !== "OK") {
+        throw new RecurseError();
+    }
 
     if (linkRes.status !== "OK") {
         throw new RecurseError();

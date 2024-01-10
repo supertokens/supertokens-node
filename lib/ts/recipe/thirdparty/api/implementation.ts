@@ -521,6 +521,10 @@ export default function getAPIInterface(): APIInterface {
                                 // Active session / secondary factor
                                 // Sign Up / Factor setup
 
+                                if (emailInfo.isVerified === false) {
+                                    checkFactorUserAccountInfoForVerification(sessionUser, { email: emailInfo.id });
+                                }
+
                                 await MultiFactorAuth.checkAllowedToSetupFactorElseThrowInvalidClaimError(
                                     session,
                                     "thirdparty",
@@ -553,7 +557,6 @@ export default function getAPIInterface(): APIInterface {
                                 }
 
                                 signInUpResponse.user = await linkAccountsForFactorSetup(
-                                    mfaInstance,
                                     sessionUser,
                                     signInUpResponse.recipeUserId,
                                     userContext
@@ -817,13 +820,28 @@ const checkIfValidFirstFactor = async (
     }
 };
 
-const linkAccountsForFactorSetup = async (
-    mfaInstance: MultiFactorAuthRecipe,
-    sessionUser: User,
-    recipeUserId: RecipeUserId,
-    userContext: UserContext
-) => {
-    const linkRes = await mfaInstance.linkAccountsForFactorSetup(sessionUser, recipeUserId, userContext);
+const linkAccountsForFactorSetup = async (sessionUser: User, recipeUserId: RecipeUserId, userContext: UserContext) => {
+    if (!sessionUser.isPrimaryUser) {
+        const createPrimaryRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
+            recipeUserId: new RecipeUserId(sessionUser.id),
+            userContext,
+        });
+        if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+            throw new RecurseError();
+        } else if (createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            throw new RecurseError();
+        }
+    }
+
+    const linkRes = await AccountLinking.getInstance().recipeInterfaceImpl.linkAccounts({
+        recipeUserId: recipeUserId,
+        primaryUserId: sessionUser.id,
+        userContext,
+    });
+
+    if (linkRes.status !== "OK") {
+        throw new RecurseError();
+    }
 
     if (linkRes.status !== "OK") {
         throw new RecurseError();
@@ -873,6 +891,43 @@ const checkIfFactorUserCanBeLinkedWithSessionUser = async (
             throw new SignInUpError({
                 status: "SIGN_IN_UP_NOT_ALLOWED",
                 reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_012)",
+            });
+        }
+    }
+};
+
+const checkFactorUserAccountInfoForVerification = (sessionUser: User, accountInfo: { email: string }) => {
+    /*
+        We discussed another method but did not go ahead with it, details below:
+
+        We can allow the second factor to be linked to first factor even if the emails are different 
+        and not verified as long as there is no other user that exists (recipe or primary) that has the 
+        same email as that of the second factor. For example, if first factor is google login with e1 
+        and second factor is email password with e2, we allow linking them as long as there is no other 
+        user with email e2.
+
+        We rejected this idea cause if auto account linking is switched off, then someone else can sign up 
+        with google using e2. This is OK as it would not link (since account linking is switched off). 
+        But, then if account linking is switched on, then the google sign in (and not sign up) with e2 
+        would actually cause it to be linked with the e1 account.
+    */
+
+    // we allow setup of unverified account info only if the session user has the same account info
+    // and it is verified
+
+    if (accountInfo.email !== undefined) {
+        let foundVerifiedEmail = false;
+        for (const lM of sessionUser?.loginMethods) {
+            if (lM.email === accountInfo.email && lM.verified) {
+                foundVerifiedEmail = true;
+                break;
+            }
+        }
+
+        if (!foundVerifiedEmail) {
+            throw new SignInUpError({
+                status: "SIGN_IN_UP_NOT_ALLOWED",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
             });
         }
     }

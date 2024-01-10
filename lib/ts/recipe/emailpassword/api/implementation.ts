@@ -10,7 +10,9 @@ import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import SessionError from "../../session/error";
-import { getFactorFlowControlFlags } from "../../multifactorauth/utils";
+import MultiFactorAuth from "../../multifactorauth";
+import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import SessionRecipe from "../../session/recipe";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -557,6 +559,7 @@ export default function getAPIImplementation(): APIInterface {
                 return doUpdatePassword(new RecipeUserId(userIdForWhomTokenWasGenerated));
             }
         },
+
         signInPOST: async function ({
             formFields,
             tenantId,
@@ -588,113 +591,195 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            while (true) {
-                let {
-                    session,
-                    mfaInstance,
-                    shouldCheckIfSignInIsAllowed,
-                    shouldAttemptAccountLinking,
-                    shouldCreateSession,
-                } = await getFactorFlowControlFlags(options.req, options.res, userContext);
-
-                let response = await options.recipeImplementation.signIn({ email, password, tenantId, userContext });
-                if (response.status === "WRONG_CREDENTIALS_ERROR") {
-                    return response;
-                }
-
-                let emailPasswordRecipeUser = response.user.loginMethods.find(
-                    (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
+            try {
+                let session = await Session.getSession(
+                    options.req,
+                    options.res,
+                    {
+                        sessionRequired: false,
+                        overrideGlobalClaimValidators: () => [],
+                    },
+                    userContext
                 );
+                const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
-                if (emailPasswordRecipeUser === undefined) {
-                    // this can happen cause of some race condition, but it's not a big deal.
-                    throw new Error("Race condition error - please call this API again");
-                }
+                if (mfaInstance === undefined) {
+                    if (session === undefined) {
+                        // MFA is disabled
+                        // No Active session
+                        // Sign In
 
-                if (shouldCheckIfSignInIsAllowed) {
-                    // Here we do this check after sign in is done cause:
-                    // - We first want to check if the credentials are correct first or not
-                    // - The above recipe function marks the email as verified if other linked users
-                    // with the same email are verified. The function below checks for the email verification
-                    // so we want to call it only once this is up to date,
+                        let signInResponse = await options.recipeImplementation.signIn({
+                            email,
+                            password,
+                            tenantId,
+                            userContext,
+                        });
 
-                    let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                        user: response.user,
-                        tenantId,
-                        userContext,
-                    });
+                        if (signInResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                            return signInResponse;
+                        }
 
-                    if (!isSignInAllowed) {
+                        await checkIfSignInIsAllowed(tenantId, signInResponse.user, userContext);
+
+                        signInResponse.user = await attemptAccountLinking(tenantId, signInResponse.user, userContext);
+
+                        session = await Session.createNewSession(
+                            options.req,
+                            options.res,
+                            tenantId,
+                            signInResponse.recipeUserId,
+                            {},
+                            {},
+                            userContext
+                        );
+
                         return {
-                            status: "SIGN_IN_NOT_ALLOWED",
-                            reason:
-                                "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
+                            status: "OK",
+                            session,
+                            user: signInResponse.user,
+                        };
+                    } else {
+                        // active session
+                        let overwriteSessionDuringSignIn = SessionRecipe.getInstanceOrThrowError().config
+                            .overwriteSessionDuringSignIn;
+                        // MFA is disabled
+                        // Active session
+                        // Sign In
+
+                        let signInResponse = await options.recipeImplementation.signIn({
+                            email,
+                            password,
+                            tenantId,
+                            userContext,
+                        });
+
+                        if (signInResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                            return signInResponse;
+                        }
+
+                        if (overwriteSessionDuringSignIn) {
+                            await checkIfSignInIsAllowed(tenantId, signInResponse.user, userContext);
+
+                            signInResponse.user = await attemptAccountLinking(
+                                tenantId,
+                                signInResponse.user,
+                                userContext
+                            );
+
+                            session = await Session.createNewSession(
+                                options.req,
+                                options.res,
+                                tenantId,
+                                signInResponse.recipeUserId,
+                                {},
+                                {},
+                                userContext
+                            );
+                        }
+
+                        return {
+                            status: "OK",
+                            session,
+                            user: signInResponse.user,
                         };
                     }
-                }
-
-                if (shouldAttemptAccountLinking) {
-                    response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                        tenantId,
-                        user: response.user,
-                        userContext,
-                    });
-                }
-
-                if (mfaInstance !== undefined) {
+                } else {
+                    // MFA is active
                     if (session === undefined) {
-                        await mfaInstance.checkForValidFirstFactor(tenantId, "emailpassword", userContext);
-                    } else {
-                        let sessionUser = await getUser(session.getUserId(), userContext);
+                        // MFA is enabled
+                        // No Active session / first factor
+                        // Sign In
 
+                        let signInResponse = await options.recipeImplementation.signIn({
+                            email,
+                            password,
+                            tenantId,
+                            userContext,
+                        });
+
+                        if (signInResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                            return signInResponse;
+                        }
+
+                        await checkIfSignInIsAllowed(tenantId, signInResponse.user, userContext);
+
+                        await checkIfValidFirstFactor(mfaInstance, tenantId, userContext);
+
+                        signInResponse.user = await attemptAccountLinking(tenantId, signInResponse.user, userContext);
+
+                        session = await Session.createNewSession(
+                            options.req,
+                            options.res,
+                            tenantId,
+                            signInResponse.recipeUserId,
+                            {},
+                            {},
+                            userContext
+                        );
+
+                        await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                            session: session,
+                            factorId: "emailpassword",
+                            userContext,
+                        });
+
+                        return {
+                            status: "OK",
+                            session,
+                            user: signInResponse.user,
+                        };
+                    } else {
+                        // secondary factors
+                        let sessionUser = await getUser(session.getUserId(), userContext);
                         if (sessionUser === undefined) {
-                            // Session user doesn't exist, maybe the user was deleted
-                            // Race condition, user got deleted in parallel, throw unauthorized
                             throw new SessionError({
                                 type: SessionError.UNAUTHORISED,
                                 message: "Session user not found",
                             });
                         }
 
-                        const res = await mfaInstance.checkIfFactorUserLinkedToSessionUser(sessionUser, response.user);
-                        if (res.status !== "OK") {
+                        // MFA is enabled
+                        // Active session / secondary factor
+                        // Sign In / Factor completion
+
+                        let signInResponse = await options.recipeImplementation.signIn({
+                            email,
+                            password,
+                            tenantId,
+                            userContext,
+                        });
+
+                        if (signInResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                            return signInResponse;
+                        }
+
+                        if (signInResponse.user.id !== sessionUser.id) {
                             return {
                                 status: "SIGN_IN_NOT_ALLOWED",
-                                reason: res.reason,
+                                reason: "TODO MFA error with support code",
                             };
                         }
+
+                        await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                            session: session,
+                            factorId: "emailpassword",
+                            userContext,
+                        });
+
+                        return {
+                            status: "OK",
+                            session,
+                            user: signInResponse.user,
+                        };
                     }
                 }
-
-                if (shouldCreateSession) {
-                    session = await Session.createNewSession(
-                        options.req,
-                        options.res,
-                        tenantId,
-                        emailPasswordRecipeUser.recipeUserId,
-                        {},
-                        {},
-                        userContext
-                    );
+            } catch (err) {
+                if (err instanceof SignInError) {
+                    return err.response;
+                } else {
+                    throw err;
                 }
-
-                if (session === undefined) {
-                    throw new Error("should never happen!");
-                }
-
-                if (mfaInstance !== undefined) {
-                    await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
-                        session: session,
-                        factorId: "emailpassword",
-                        userContext,
-                    });
-                }
-
-                return {
-                    status: "OK",
-                    session,
-                    user: response.user,
-                };
             }
         },
 
@@ -730,191 +815,441 @@ export default function getAPIImplementation(): APIInterface {
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
             while (true) {
-                let {
-                    session,
-                    mfaInstance,
-                    shouldCheckIfSignUpIsAllowed,
-                    shouldAttemptAccountLinking,
-                    shouldCreateSession,
-                } = await getFactorFlowControlFlags(options.req, options.res, userContext);
-
-                if (shouldCheckIfSignUpIsAllowed) {
-                    // Here we do this check because if the input email already exists with a primary user,
-                    // then we do not allow sign up, cause even though we do not link this and the existing
-                    // account right away, and we send an email verification link, the user
-                    // may click on it by mistake assuming it's for their existing account - resulting
-                    // in account take over. In this case, we return an EMAIL_ALREADY_EXISTS_ERROR
-                    // and if the user goes through the forgot password flow, it will create
-                    // an account there and it will work fine cause there the email is also verified.
-
-                    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                        newUser: {
-                            recipeId: "emailpassword",
-                            email,
-                        },
-                        isVerified: false,
-                        tenantId,
-                        userContext,
-                    });
-
-                    if (!isSignUpAllowed) {
-                        const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo(
-                            {
-                                tenantId,
-                                accountInfo: {
-                                    email,
-                                },
-                                doUnionOfAccountInfo: false,
-                                userContext,
-                            }
-                        );
-                        if (
-                            conflictingUsers.some((u) =>
-                                u.loginMethods.some((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email))
-                            )
-                        ) {
-                            return {
-                                status: "EMAIL_ALREADY_EXISTS_ERROR",
-                            };
-                        }
-
-                        return {
-                            status: "SIGN_UP_NOT_ALLOWED",
-                            reason:
-                                "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                        };
-                    }
-                }
-
-                let sessionUser: User | undefined;
-                if (mfaInstance !== undefined && session !== undefined) {
-                    sessionUser = await getUser(session.getUserId(), userContext);
-                    if (sessionUser === undefined) {
-                        // Session user doesn't exist, maybe the user was deleted
-                        // Race condition, user got deleted in parallel, throw unauthorized
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Session user not found",
-                        });
-                    }
-                }
-
-                if (mfaInstance !== undefined) {
-                    if (session === undefined) {
-                        await mfaInstance.checkForValidFirstFactor(tenantId, "emailpassword", userContext);
-                    } else {
-                        await mfaInstance.checkAllowedToSetupFactorElseThrowInvalidClaimError(
-                            tenantId,
-                            session,
-                            sessionUser!,
-                            "emailpassword",
-                            userContext
-                        );
-
-                        let accountInfo = { email };
-
-                        const verifiedRes = mfaInstance.checkFactorUserAccountInfoForVerification(
-                            sessionUser!,
-                            accountInfo
-                        );
-                        if (verifiedRes.status !== "OK") {
-                            return {
-                                status: "SIGN_UP_NOT_ALLOWED",
-                                reason: verifiedRes.reason,
-                            };
-                        }
-
-                        const linkRes = await mfaInstance.checkIfFactorUserCanBeLinkedWithSessionUser(
-                            tenantId,
-                            sessionUser!,
-                            accountInfo,
-                            userContext
-                        );
-
-                        if (linkRes.status === "RECURSE_FOR_RACE") {
-                            continue;
-                        } else if (linkRes.status === "VALIDATION_ERROR") {
-                            return {
-                                status: "SIGN_UP_NOT_ALLOWED",
-                                reason: linkRes.reason,
-                            };
-                        }
-                    }
-                }
-
-                // this function may also do account linking
-                let response = await options.recipeImplementation.signUp({
-                    tenantId,
-                    email,
-                    password,
-                    shouldAttemptAccountLinkingIfAllowed: shouldAttemptAccountLinking,
-                    userContext,
-                });
-                if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                    return response;
-                }
-                let emailPasswordRecipeUser = response.user.loginMethods.find(
-                    (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
-                );
-
-                if (emailPasswordRecipeUser === undefined) {
-                    // this can happen cause of some race condition, but it's not a big deal.
-                    throw new Error("Race condition error - please call this API again");
-                }
-
-                let isFirstFactor = session === undefined;
-                if (shouldCreateSession) {
-                    session = await Session.createNewSession(
+                try {
+                    let session = await Session.getSession(
                         options.req,
                         options.res,
-                        tenantId,
-                        emailPasswordRecipeUser.recipeUserId,
-                        {},
-                        {},
+                        {
+                            sessionRequired: false,
+                            overrideGlobalClaimValidators: () => [],
+                        },
                         userContext
                     );
-                }
+                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
-                if (session === undefined) {
-                    throw new Error("should never happen!");
-                }
+                    if (mfaInstance === undefined) {
+                        if (session === undefined) {
+                            // MFA is disabled
+                            // No Active session
+                            // Sign Up
 
-                if (mfaInstance !== undefined) {
-                    if (!isFirstFactor) {
-                        const linkRes = await mfaInstance.linkAccountsForFactorSetup(
-                            sessionUser!,
-                            response.recipeUserId,
-                            userContext
-                        );
+                            await checkIfSignUpIsAllowed(tenantId, email, userContext);
 
-                        if (linkRes.status !== "OK") {
-                            continue; // retry from validation
-                        }
-
-                        let user = await getUser(response.user.id, userContext);
-                        if (user === undefined) {
-                            throw new SessionError({
-                                type: SessionError.UNAUTHORISED,
-                                message: "Session user not found",
+                            let signUpResponse = await options.recipeImplementation.signUp({
+                                tenantId,
+                                email,
+                                password,
+                                shouldAttemptAccountLinkingIfAllowed: true,
+                                userContext,
                             });
+                            if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                                return signUpResponse;
+                            }
+
+                            session = await Session.createNewSession(
+                                options.req,
+                                options.res,
+                                tenantId,
+                                signUpResponse.recipeUserId,
+                                {},
+                                {},
+                                userContext
+                            );
+
+                            return {
+                                status: "OK",
+                                session,
+                                user: signUpResponse.user,
+                            };
+                        } else {
+                            // active session
+                            let overwriteSessionDuringSignIn = SessionRecipe.getInstanceOrThrowError().config
+                                .overwriteSessionDuringSignIn;
+                            // MFA is disabled
+                            // Active session
+                            // Sign Up
+
+                            await checkIfSignUpIsAllowed(tenantId, email, userContext);
+
+                            let signUpResponse = await options.recipeImplementation.signUp({
+                                tenantId,
+                                email,
+                                password,
+                                shouldAttemptAccountLinkingIfAllowed: true,
+                                userContext,
+                            });
+                            if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                                return signUpResponse;
+                            }
+
+                            if (overwriteSessionDuringSignIn) {
+                                session = await Session.createNewSession(
+                                    options.req,
+                                    options.res,
+                                    tenantId,
+                                    signUpResponse.recipeUserId,
+                                    {},
+                                    {},
+                                    userContext
+                                );
+                            }
+
+                            return {
+                                status: "OK",
+                                session,
+                                user: signUpResponse.user,
+                            };
                         }
+                    } else {
+                        // MFA is active
+                        if (session === undefined) {
+                            // MFA is enabled
+                            // No Active session / first factor
+                            // Sign Up
 
-                        response.user = user;
+                            await checkIfSignUpIsAllowed(tenantId, email, userContext);
+                            let signUpResponse = await options.recipeImplementation.signUp({
+                                tenantId,
+                                email,
+                                password,
+                                shouldAttemptAccountLinkingIfAllowed: true,
+                                userContext,
+                            });
+                            if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                                return signUpResponse;
+                            }
+
+                            session = await Session.createNewSession(
+                                options.req,
+                                options.res,
+                                tenantId,
+                                signUpResponse.recipeUserId,
+                                {},
+                                {},
+                                userContext
+                            );
+
+                            await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                                session: session,
+                                factorId: "emailpassword",
+                                userContext,
+                            });
+
+                            return {
+                                status: "OK",
+                                session,
+                                user: signUpResponse.user,
+                            };
+                        } else {
+                            // secondary factors
+                            let sessionUser = await getUser(session.getUserId(), userContext);
+                            if (sessionUser === undefined) {
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Session user not found",
+                                });
+                            }
+
+                            // MFA is enabled
+                            // Active session / secondary factor
+                            // Sign Up / Factor setup
+
+                            checkFactorUserAccountInfoForVerification(sessionUser, { email });
+
+                            await MultiFactorAuth.checkAllowedToSetupFactorElseThrowInvalidClaimError(
+                                session,
+                                "emailpassword",
+                                userContext
+                            );
+
+                            await checkIfFactorUserCanBeLinkedWithSessionUser(
+                                tenantId,
+                                sessionUser,
+                                { email },
+                                userContext
+                            );
+
+                            let signUpResponse = await options.recipeImplementation.signUp({
+                                tenantId,
+                                email,
+                                password,
+                                shouldAttemptAccountLinkingIfAllowed: false,
+                                userContext,
+                            });
+                            if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                                return signUpResponse;
+                            }
+
+                            signUpResponse.user = await linkAccountsForFactorSetup(
+                                sessionUser,
+                                signUpResponse.recipeUserId,
+                                userContext
+                            );
+
+                            await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
+                                session: session,
+                                factorId: "emailpassword",
+                                userContext,
+                            });
+
+                            return {
+                                status: "OK",
+                                session,
+                                user: signUpResponse.user,
+                            };
+                        }
                     }
-
-                    await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
-                        session: session,
-                        factorId: "emailpassword",
-                        userContext,
-                    });
+                } catch (err) {
+                    if (err instanceof SignUpError) {
+                        return err.response;
+                    } else if (err instanceof RecurseError) {
+                        continue;
+                    } else {
+                        throw err;
+                    }
                 }
-
-                return {
-                    status: "OK",
-                    session,
-                    user: response.user,
-                };
             }
         },
     };
 }
+
+class SignUpError extends Error {
+    response:
+        | {
+              status: "SIGN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          };
+
+    constructor(
+        response:
+            | { status: "SIGN_UP_NOT_ALLOWED"; reason: string }
+            | {
+                  status: "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+    ) {
+        super(response.status);
+
+        this.response = response;
+    }
+}
+
+class SignInError extends Error {
+    response: {
+        status: "SIGN_IN_NOT_ALLOWED";
+        reason: string;
+    };
+
+    constructor(response: { status: "SIGN_IN_NOT_ALLOWED"; reason: string }) {
+        super(response.status);
+
+        this.response = response;
+    }
+}
+
+class RecurseError extends Error {
+    constructor() {
+        super("RECURSE");
+    }
+}
+
+const checkIfSignInIsAllowed = async (tenantId: string, user: User, userContext: UserContext) => {
+    let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
+        user,
+        tenantId,
+        userContext,
+    });
+
+    if (!isSignInAllowed) {
+        throw new SignInError({
+            status: "SIGN_IN_NOT_ALLOWED",
+            reason:
+                "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
+        });
+    }
+};
+
+const attemptAccountLinking = async (tenantId: string, user: User, userContext: UserContext) => {
+    return await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+        tenantId,
+        user,
+        userContext,
+    });
+};
+
+const checkIfValidFirstFactor = async (
+    mfaInstance: MultiFactorAuthRecipe,
+    tenantId: string,
+    userContext: UserContext
+) => {
+    let isValid = await mfaInstance.recipeInterfaceImpl.isValidFirstFactor({
+        tenantId,
+        factorId: "emailpassword",
+        userContext,
+    });
+
+    if (!isValid) {
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "Session is required for secondary factors",
+            payload: {
+                clearTokens: false,
+            },
+        });
+    }
+};
+
+const checkIfSignUpIsAllowed = async (tenantId: string, email: string, userContext: UserContext) => {
+    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+        newUser: {
+            recipeId: "emailpassword",
+            email,
+        },
+        isVerified: false,
+        tenantId,
+        userContext,
+    });
+
+    if (!isSignUpAllowed) {
+        if (!isSignUpAllowed) {
+            const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId,
+                accountInfo: {
+                    email,
+                },
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
+            if (
+                conflictingUsers.some((u) =>
+                    u.loginMethods.some((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email))
+                )
+            ) {
+                throw new SignUpError({
+                    status: "EMAIL_ALREADY_EXISTS_ERROR",
+                });
+            }
+
+            throw new SignUpError({
+                status: "SIGN_UP_NOT_ALLOWED",
+                reason:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+            });
+        }
+    }
+};
+
+const checkFactorUserAccountInfoForVerification = (sessionUser: User, accountInfo: { email: string }) => {
+    /*
+        We discussed another method but did not go ahead with it, details below:
+
+        We can allow the second factor to be linked to first factor even if the emails are different 
+        and not verified as long as there is no other user that exists (recipe or primary) that has the 
+        same email as that of the second factor. For example, if first factor is google login with e1 
+        and second factor is email password with e2, we allow linking them as long as there is no other 
+        user with email e2.
+
+        We rejected this idea cause if auto account linking is switched off, then someone else can sign up 
+        with google using e2. This is OK as it would not link (since account linking is switched off). 
+        But, then if account linking is switched on, then the google sign in (and not sign up) with e2 
+        would actually cause it to be linked with the e1 account.
+    */
+
+    // we allow setup of unverified account info only if the session user has the same account info
+    // and it is verified
+
+    if (accountInfo.email !== undefined) {
+        let foundVerifiedEmail = false;
+        for (const lM of sessionUser?.loginMethods) {
+            if (lM.email === accountInfo.email && lM.verified) {
+                foundVerifiedEmail = true;
+                break;
+            }
+        }
+
+        if (!foundVerifiedEmail) {
+            throw new SignUpError({
+                status: "SIGN_UP_NOT_ALLOWED",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
+            });
+        }
+    }
+};
+
+const checkIfFactorUserCanBeLinkedWithSessionUser = async (
+    tenantId: string,
+    sessionUser: User,
+    accountInfo: { email: string },
+    userContext: UserContext
+) => {
+    if (!sessionUser.isPrimaryUser) {
+        const canCreatePrimary = await AccountLinking.getInstance().recipeInterfaceImpl.canCreatePrimaryUser({
+            recipeUserId: sessionUser.loginMethods[0].recipeUserId,
+            userContext,
+        });
+
+        if (canCreatePrimary.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+            // Race condition since we just checked that it was not a primary user
+            throw new RecurseError();
+        }
+
+        if (canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            throw new SignUpError({
+                status: "SIGN_UP_NOT_ALLOWED",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_011)",
+            });
+        }
+    }
+
+    // Check if there if the linking with session user going to fail and avoid user creation here
+    const users = await listUsersByAccountInfo(tenantId, accountInfo, true, userContext);
+    for (const user of users) {
+        if (user.isPrimaryUser && user.id !== sessionUser.id) {
+            throw new SignUpError({
+                status: "SIGN_UP_NOT_ALLOWED",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_012)",
+            });
+        }
+    }
+};
+
+const linkAccountsForFactorSetup = async (sessionUser: User, recipeUserId: RecipeUserId, userContext: UserContext) => {
+    if (!sessionUser.isPrimaryUser) {
+        const createPrimaryRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
+            recipeUserId: new RecipeUserId(sessionUser.id),
+            userContext,
+        });
+        if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+            throw new RecurseError();
+        } else if (createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            throw new RecurseError();
+        }
+    }
+
+    const linkRes = await AccountLinking.getInstance().recipeInterfaceImpl.linkAccounts({
+        recipeUserId: recipeUserId,
+        primaryUserId: sessionUser.id,
+        userContext,
+    });
+
+    if (linkRes.status !== "OK") {
+        throw new RecurseError();
+    }
+
+    if (linkRes.status !== "OK") {
+        throw new RecurseError();
+    }
+
+    let user = await getUser(recipeUserId.getAsString(), userContext);
+    if (user === undefined) {
+        // linked user not found
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "User not found",
+        });
+    }
+
+    return user;
+};
