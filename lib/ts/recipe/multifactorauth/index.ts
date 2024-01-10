@@ -61,7 +61,7 @@ export default class Wrapper {
             completedFactors,
             userContext: ctx,
         });
-        Recipe.getInstanceOrThrowError().recipeInterfaceImpl.checkAllowedToSetupFactorElseThrowInvalidClaimError({
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.checkAllowedToSetupFactorElseThrowInvalidClaimError({
             session,
             factorId,
             completedFactors,

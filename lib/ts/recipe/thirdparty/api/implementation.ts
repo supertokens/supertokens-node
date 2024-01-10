@@ -407,6 +407,9 @@ export default function getAPIInterface(): APIInterface {
                                 // Sign Up
 
                                 await checkIfSignUpIsAllowed(tenantId, emailInfo, provider, userInfo, userContext);
+
+                                await checkIfValidFirstFactor(mfaInstance, tenantId, userContext);
+
                                 let signInUpResponse = await options.recipeImplementation.signInUp({
                                     thirdPartyId: provider.id,
                                     thirdPartyUserId: userInfo.thirdPartyUserId,
@@ -498,7 +501,8 @@ export default function getAPIInterface(): APIInterface {
                                 if (signInUpResponse.user.id !== sessionUser.id) {
                                     return {
                                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                                        reason: "TODO MFA error with support code",
+                                        reason:
+                                            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_016)",
                                     };
                                 }
 
@@ -879,7 +883,7 @@ const checkIfFactorUserCanBeLinkedWithSessionUser = async (
         if (canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             throw new SignInUpError({
                 status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_011)",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_018)",
             });
         }
     }
@@ -890,7 +894,7 @@ const checkIfFactorUserCanBeLinkedWithSessionUser = async (
         if (user.isPrimaryUser && user.id !== sessionUser.id) {
             throw new SignInUpError({
                 status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_012)",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_019)",
             });
         }
     }
@@ -927,7 +931,7 @@ const checkFactorUserAccountInfoForVerification = (sessionUser: User, accountInf
         if (!foundVerifiedEmail) {
             throw new SignInUpError({
                 status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_017)",
             });
         }
     }

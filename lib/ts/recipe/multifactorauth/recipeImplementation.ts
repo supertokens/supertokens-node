@@ -47,7 +47,10 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             return factorIds;
         },
 
-        isValidFirstFactor: async ({ tenantId, factorId, userContext }): Promise<boolean> => {
+        isValidFirstFactor: async function (
+            this: RecipeInterface,
+            { tenantId, factorId, userContext }
+        ): Promise<boolean> {
             const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
             if (tenantInfo === undefined) {
                 throw new Error("tenant not found");
@@ -61,7 +64,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
             // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
             // so we don't need to do additional checks here
-            let validFirstFactors = tenantConfig.firstFactors ?? this.config.firstFactors;
+            let validFirstFactors = tenantConfig.firstFactors ?? recipeInstance.config.firstFactors;
 
             if (validFirstFactors !== undefined && !validFirstFactors.includes(factorId)) {
                 return false;

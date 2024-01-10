@@ -757,7 +757,8 @@ export default function getAPIImplementation(): APIInterface {
                         if (signInResponse.user.id !== sessionUser.id) {
                             return {
                                 status: "SIGN_IN_NOT_ALLOWED",
-                                reason: "TODO MFA error with support code",
+                                reason:
+                                    "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_009)",
                             };
                         }
 

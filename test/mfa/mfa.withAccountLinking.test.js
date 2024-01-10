@@ -285,7 +285,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
+            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_015)",
             res.body.reason
         );
 
@@ -373,7 +373,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
+            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_015)",
             res.body.reason
         );
 
@@ -489,7 +489,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "Cannot setup factor because there is another account with same email or phone number of the factor being setup. Please contact support. (ERR_CODE_012)",
+            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_019)",
             res.body.reason
         );
 
@@ -572,7 +572,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await epSignUp(app, "test2@example.com", "password1", accessToken);
         assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)",
+            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
             res.body.reason
         );
     });
@@ -666,7 +666,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
         res = await epSignUp(app, "test2@example.com", "password2", accessToken);
         assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
         assert.equal(
-            "The factor setup is not allowed because the email is not verified. Please contact support. (ERR_CODE_010)",
+            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
             res.body.reason
         );
 

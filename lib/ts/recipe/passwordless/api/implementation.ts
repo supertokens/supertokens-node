@@ -367,6 +367,8 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
+                                await checkIfValidFirstFactor(mfaInstance, input.tenantId, factorId, input.userContext);
+
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
                                         ? {
@@ -454,7 +456,8 @@ export default function getAPIImplementation(): APIInterface {
                                 if (consumeCodeResponse.user.id !== sessionUser.id) {
                                     return {
                                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                                        reason: "TODO MFA error with support code",
+                                        reason:
+                                            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_013)",
                                     };
                                 }
 
@@ -1020,7 +1023,7 @@ const checkIfFactorUserCanBeLinkedWithSessionUser = async (
         if (canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             throw new SignInUpError({
                 status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_011)",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_014)",
             });
         }
     }
@@ -1031,7 +1034,7 @@ const checkIfFactorUserCanBeLinkedWithSessionUser = async (
         if (user.isPrimaryUser && user.id !== sessionUser.id) {
             throw new SignInUpError({
                 status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_012)",
+                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_015)",
             });
         }
     }
