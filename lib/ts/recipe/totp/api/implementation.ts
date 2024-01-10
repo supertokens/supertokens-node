@@ -55,7 +55,7 @@ export default function getAPIInterface(): APIInterface {
                 });
             }
 
-            await MultiFactorAuth.checkAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
+            await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
 
             return await options.recipeImplementation.createDevice({
                 userId,

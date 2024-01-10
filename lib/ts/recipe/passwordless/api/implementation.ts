@@ -478,7 +478,7 @@ export default function getAPIImplementation(): APIInterface {
                                 // Active session / secondary factor
                                 // Sign In / Factor setup
 
-                                await MultiFactorAuth.checkAllowedToSetupFactorElseThrowInvalidClaimError(
+                                await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(
                                     session,
                                     factorId,
                                     input.userContext

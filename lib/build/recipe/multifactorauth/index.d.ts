@@ -6,7 +6,7 @@ import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static MultiFactorAuthClaim: import("./multiFactorAuthClaim").MultiFactorAuthClaimClass;
-    static checkAllowedToSetupFactorElseThrowInvalidClaimError(
+    static assertAllowedToSetupFactorElseThrowInvalidClaimError(
         session: SessionContainerInterface,
         factorId: string,
         userContext?: Record<string, any>
@@ -34,7 +34,7 @@ export default class Wrapper {
     ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
-export declare let checkAllowedToSetupFactorElseThrowInvalidClaimError: typeof Wrapper.checkAllowedToSetupFactorElseThrowInvalidClaimError;
+export declare let assertAllowedToSetupFactorElseThrowInvalidClaimError: typeof Wrapper.assertAllowedToSetupFactorElseThrowInvalidClaimError;
 export declare let markFactorAsCompleteInSession: typeof Wrapper.markFactorAsCompleteInSession;
 export declare let getFactorsSetupForUser: typeof Wrapper.getFactorsSetupForUser;
 export declare let getRequiredSecondaryFactorsForUser: typeof Wrapper.getRequiredSecondaryFactorsForUser;

@@ -958,7 +958,7 @@ export default function getAPIImplementation(): APIInterface {
 
                             checkFactorUserAccountInfoForVerification(sessionUser, { email });
 
-                            await MultiFactorAuth.checkAllowedToSetupFactorElseThrowInvalidClaimError(
+                            await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(
                                 session,
                                 "emailpassword",
                                 userContext

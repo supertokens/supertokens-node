@@ -138,7 +138,9 @@ export const isValidFirstFactor = async function (
     // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
     // so we don't need to do additional checks here
     let validFirstFactors =
-        tenantConfig.firstFactors ?? MultiFactorAuthRecipe.getInstanceOrThrowError().config.firstFactors;
+        tenantConfig.firstFactors !== undefined
+            ? tenantConfig.firstFactors
+            : MultiFactorAuthRecipe.getInstanceOrThrowError().config.firstFactors;
 
     if (validFirstFactors !== undefined && !validFirstFactors.includes(factorId)) {
         return false;

@@ -26,7 +26,7 @@ export default class Wrapper {
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
 
-    static async checkAllowedToSetupFactorElseThrowInvalidClaimError(
+    static async assertAllowedToSetupFactorElseThrowInvalidClaimError(
         session: SessionContainerInterface,
         factorId: string,
         userContext?: Record<string, any>
@@ -61,16 +61,18 @@ export default class Wrapper {
             completedFactors,
             userContext: ctx,
         });
-        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.checkAllowedToSetupFactorElseThrowInvalidClaimError({
-            session,
-            factorId,
-            completedFactors,
-            mfaRequirementsForAuth: requirements,
-            factorsSetUpForUser: factorsSetup,
-            requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
-            requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
-            userContext: ctx,
-        });
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
+            {
+                session,
+                factorId,
+                completedFactors,
+                mfaRequirementsForAuth: requirements,
+                factorsSetUpForUser: factorsSetup,
+                requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
+                requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
+                userContext: ctx,
+            }
+        );
     }
 
     static async getMFARequirementsForAuth(session: SessionContainerInterface, userContext?: Record<string, any>) {
@@ -165,8 +167,8 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
-export let checkAllowedToSetupFactorElseThrowInvalidClaimError =
-    Wrapper.checkAllowedToSetupFactorElseThrowInvalidClaimError;
+export let assertAllowedToSetupFactorElseThrowInvalidClaimError =
+    Wrapper.assertAllowedToSetupFactorElseThrowInvalidClaimError;
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
 export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
 export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFactorsForUser;
