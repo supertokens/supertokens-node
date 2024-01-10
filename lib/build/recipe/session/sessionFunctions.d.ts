@@ -59,6 +59,7 @@ export declare function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     disableAntiCsrf: boolean,
+    useDynamicAccessTokenSigningKey: boolean,
     userContext: UserContext
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
