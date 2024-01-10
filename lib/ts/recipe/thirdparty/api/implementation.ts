@@ -536,7 +536,7 @@ export default function getAPIInterface(): APIInterface {
                                     userContext
                                 );
 
-                                await checkIfFactorUserCanBeLinkedWithSessionUser(
+                                await checkIfFactorUserBeingCreatedCanBeLinkedWithSessionUser(
                                     tenantId,
                                     sessionUser,
                                     { email: emailInfo.id },
@@ -856,7 +856,7 @@ const linkAccountsForFactorSetup = async (sessionUser: User, recipeUserId: Recip
     return user;
 };
 
-const checkIfFactorUserCanBeLinkedWithSessionUser = async (
+const checkIfFactorUserBeingCreatedCanBeLinkedWithSessionUser = async (
     tenantId: string,
     sessionUser: User,
     accountInfo: { email: string },
@@ -881,7 +881,7 @@ const checkIfFactorUserCanBeLinkedWithSessionUser = async (
         }
     }
 
-    // Check if there if the linking with session user going to fail and avoid user creation here
+    // Check if the linking with session user going to fail and avoid user creation here
     const users = await listUsersByAccountInfo(tenantId, accountInfo, true, userContext);
     for (const user of users) {
         if (user.isPrimaryUser && user.id !== sessionUser.id) {
@@ -915,7 +915,7 @@ const checkFactorUserAccountInfoForVerification = (sessionUser: User, accountInf
     if (accountInfo.email !== undefined) {
         let foundVerifiedEmail = false;
         for (const lM of sessionUser?.loginMethods) {
-            if (lM.email === accountInfo.email && lM.verified) {
+            if (lM.hasSameEmailAs(accountInfo.email) && lM.verified) {
                 foundVerifiedEmail = true;
                 break;
             }

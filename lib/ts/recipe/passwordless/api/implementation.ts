@@ -484,7 +484,7 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                await checkIfFactorUserCanBeLinkedWithSessionUser(
+                                await checkIfFactorUserBeingCreatedCanBeLinkedWithSessionUser(
                                     input.tenantId,
                                     sessionUser,
                                     { email: deviceInfo.email, phoneNumber: deviceInfo.phoneNumber },
@@ -994,7 +994,7 @@ const linkAccountsForFactorSetup = async (sessionUser: User, recipeUserId: Recip
     return user;
 };
 
-const checkIfFactorUserCanBeLinkedWithSessionUser = async (
+const checkIfFactorUserBeingCreatedCanBeLinkedWithSessionUser = async (
     tenantId: string,
     sessionUser: User,
     accountInfo: { email?: string; phoneNumber?: string },
@@ -1019,7 +1019,7 @@ const checkIfFactorUserCanBeLinkedWithSessionUser = async (
         }
     }
 
-    // Check if there if the linking with session user going to fail and avoid user creation here
+    // Check if the linking with session user going to fail and avoid user creation here
     const users = await listUsersByAccountInfo(tenantId, accountInfo, true, userContext);
     for (const user of users) {
         if (user.isPrimaryUser && user.id !== sessionUser.id) {
