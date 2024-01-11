@@ -93,7 +93,7 @@ export default function getAPIInterface(): APIInterface {
                 mfaRequirementsForAuth
             );
 
-            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
+            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates `v` in the MFA claim
 
             return {
                 status: "OK",
