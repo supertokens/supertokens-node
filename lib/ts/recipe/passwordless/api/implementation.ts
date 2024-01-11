@@ -4,7 +4,7 @@ import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
 import { RecipeUserId, User, getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
-import { getFactorFlowControlFlags, isValidFirstFactor } from "../../multifactorauth/utils";
+import { isValidFirstFactor } from "../../multifactorauth/utils";
 import SessionError from "../../session/error";
 import MultiFactorAuth from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
@@ -565,14 +565,20 @@ export default function getAPIImplementation(): APIInterface {
                 )
             );
 
-            let { shouldCheckIfSignInIsAllowed, shouldCheckIfSignUpIsAllowed } = await getFactorFlowControlFlags(
+            let session = await Session.getSession(
                 input.options.req,
                 input.options.res,
+                {
+                    sessionRequired: false,
+                    overrideGlobalClaimValidators: () => [],
+                },
                 input.userContext
             );
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
             if (existingUsers.length === 0) {
-                if (shouldCheckIfSignUpIsAllowed) {
+                if (session === undefined || mfaInstance === undefined) {
+                    // We don't need to check if sign up is allowed if MFA is enabled and there is an active session
                     let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                         newUser: {
                             recipeId: "passwordless",
@@ -604,19 +610,17 @@ export default function getAPIImplementation(): APIInterface {
                     throw new Error("Should never come here");
                 }
 
-                if (shouldCheckIfSignInIsAllowed) {
-                    let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                        user: existingUsers[0],
-                        tenantId: input.tenantId,
-                        userContext: input.userContext,
-                    });
-                    if (!isSignInAllowed) {
-                        return {
-                            status: "SIGN_IN_UP_NOT_ALLOWED",
-                            reason:
-                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-                        };
-                    }
+                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
+                    user: existingUsers[0],
+                    tenantId: input.tenantId,
+                    userContext: input.userContext,
+                });
+                if (!isSignInAllowed) {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
+                    };
                 }
             } else {
                 throw new Error(

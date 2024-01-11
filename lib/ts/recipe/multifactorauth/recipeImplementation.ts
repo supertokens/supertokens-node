@@ -143,7 +143,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
             await session.setClaimValue(MultiFactorAuthClaim, {
                 c: completed,
-                v: currentValue?.v,
+                v: currentValue?.v == undefined ? false : currentValue.v,
             });
             session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates value for `v`
         },

@@ -18,7 +18,7 @@ export declare type MFARequirementList = (
     | string
 )[];
 export declare type MFAClaimValue = {
-    c: Record<string, number>;
+    c: Record<string, number> | undefined;
     v: boolean;
 };
 export declare type TypeInput = {

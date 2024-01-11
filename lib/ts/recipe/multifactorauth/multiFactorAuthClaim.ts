@@ -147,6 +147,10 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         completedClaims: MFAClaimValue["c"],
         requirements: MFARequirementList
     ): string[] {
+        if (completedClaims === undefined) {
+            completedClaims = {};
+        }
+
         for (const req of requirements) {
             const nextFactors: Set<string> = new Set();
 
