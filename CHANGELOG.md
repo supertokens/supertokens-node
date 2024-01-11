@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   Add Multitenancy APIs dashboard APIs for:
+    -   Fetching a tenant's info
+    -   Deleting a tenant
+    -   Listing all tenants with their user counts
+
 ## [16.7.1] - 2024-01-09
 
 -   Fixes type output of `resetPasswordUsingToken` in emailpassword and thirdpartyemailpassword recipe to not include statuses that happen based on email change.
