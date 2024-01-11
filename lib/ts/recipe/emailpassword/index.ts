@@ -27,18 +27,11 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(
-        tenantId: string,
-        email: string,
-        password: string,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
-        userContext?: Record<string, any>
-    ) {
+    static signUp(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            shouldAttemptAccountLinkingIfAllowed: shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(userContext),
         });
     }

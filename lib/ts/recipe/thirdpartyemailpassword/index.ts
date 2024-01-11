@@ -63,18 +63,11 @@ export default class Wrapper {
         });
     }
 
-    static emailPasswordSignUp(
-        tenantId: string,
-        email: string,
-        password: string,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
-        userContext?: Record<string, any>
-    ) {
+    static emailPasswordSignUp(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
             email,
             password,
             tenantId,
-            shouldAttemptAccountLinkingIfAllowed: shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(userContext),
         });
     }

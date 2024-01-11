@@ -130,7 +130,6 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -356,6 +355,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session?: SessionContainerInterface;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;
           }) => Promise<
@@ -381,6 +381,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session?: SessionContainerInterface;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;
           }) => Promise<

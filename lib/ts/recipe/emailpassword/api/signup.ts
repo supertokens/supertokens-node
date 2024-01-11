@@ -18,6 +18,7 @@ import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
 import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function signUpAPI(
     apiImplementation: APIInterface,
@@ -44,9 +45,20 @@ export default async function signUpAPI(
         userContext
     );
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
     let result = await apiImplementation.signUpPOST({
         formFields,
         tenantId,
+        session,
         options,
         userContext: userContext,
     });

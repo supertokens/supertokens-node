@@ -42,7 +42,6 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
         userContext?: Record<string, any>
     ): Promise<
         | {
