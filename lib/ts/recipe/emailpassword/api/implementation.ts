@@ -623,7 +623,11 @@ export default function getAPIImplementation(): APIInterface {
 
                         await checkIfSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
-                        signInResponse.user = await attemptAccountLinking(tenantId, signInResponse.user, userContext);
+                        signInResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                            tenantId,
+                            user: signInResponse.user,
+                            userContext,
+                        });
 
                         session = await Session.createNewSession(
                             options.req,
@@ -662,11 +666,11 @@ export default function getAPIImplementation(): APIInterface {
                         if (overwriteSessionDuringSignIn) {
                             await checkIfSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
-                            signInResponse.user = await attemptAccountLinking(
+                            signInResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                                 tenantId,
-                                signInResponse.user,
-                                userContext
-                            );
+                                user: signInResponse.user,
+                                userContext,
+                            });
 
                             session = await Session.createNewSession(
                                 options.req,
@@ -707,7 +711,13 @@ export default function getAPIImplementation(): APIInterface {
 
                         await checkIfValidFirstFactor(tenantId, userContext);
 
-                        signInResponse.user = await attemptAccountLinking(tenantId, signInResponse.user, userContext);
+                        signInResponse.user = await await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
+                            {
+                                tenantId,
+                                user: signInResponse.user,
+                                userContext,
+                            }
+                        );
 
                         session = await Session.createNewSession(
                             options.req,
@@ -1071,14 +1081,6 @@ const checkIfSignInIsAllowed = async (tenantId: string, user: User, userContext:
                 "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
         });
     }
-};
-
-const attemptAccountLinking = async (tenantId: string, user: User, userContext: UserContext) => {
-    return await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-        tenantId,
-        user,
-        userContext,
-    });
 };
 
 const checkIfValidFirstFactor = async (tenantId: string, userContext: UserContext) => {

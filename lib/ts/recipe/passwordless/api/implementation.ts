@@ -97,10 +97,12 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                consumeCodeResponse.user = await attemptAccountLinking(
-                                    input.tenantId,
-                                    consumeCodeResponse.user,
-                                    input.userContext
+                                consumeCodeResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
+                                    {
+                                        tenantId: input.tenantId,
+                                        user: consumeCodeResponse.user,
+                                        userContext: input.userContext,
+                                    }
                                 );
 
                                 session = await Session.createNewSession(
@@ -209,10 +211,12 @@ export default function getAPIImplementation(): APIInterface {
                                         input.userContext
                                     );
 
-                                    consumeCodeResponse.user = await attemptAccountLinking(
-                                        input.tenantId,
-                                        consumeCodeResponse.user,
-                                        input.userContext
+                                    consumeCodeResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
+                                        {
+                                            tenantId: input.tenantId,
+                                            user: consumeCodeResponse.user,
+                                            userContext: input.userContext,
+                                        }
                                     );
 
                                     session = await Session.createNewSession(
@@ -327,10 +331,12 @@ export default function getAPIImplementation(): APIInterface {
 
                                 await checkIfValidFirstFactor(input.tenantId, factorId, input.userContext);
 
-                                consumeCodeResponse.user = await attemptAccountLinking(
-                                    input.tenantId,
-                                    consumeCodeResponse.user,
-                                    input.userContext
+                                consumeCodeResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
+                                    {
+                                        tenantId: input.tenantId,
+                                        user: consumeCodeResponse.user,
+                                        userContext: input.userContext,
+                                    }
                                 );
 
                                 session = await Session.createNewSession(
@@ -936,14 +942,6 @@ const checkIfSignInIsAllowed = async (tenantId: string, user: User, userContext:
                 "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
         });
     }
-};
-
-const attemptAccountLinking = async (tenantId: string, user: User, userContext: UserContext) => {
-    return await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-        tenantId,
-        user,
-        userContext,
-    });
 };
 
 const checkIfValidFirstFactor = async (tenantId: string, factorId: string, userContext: UserContext) => {
