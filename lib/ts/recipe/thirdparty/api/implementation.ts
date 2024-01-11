@@ -222,8 +222,8 @@ export default function getAPIInterface(): APIInterface {
                             }
                         } else {
                             // active session
-                            let overwriteSessionDuringSignIn = SessionRecipe.getInstanceOrThrowError().config
-                                .overwriteSessionDuringSignIn;
+                            let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
+                                .overwriteSessionDuringSignInUp;
                             if (isSignIn) {
                                 // MFA is disabled
                                 // Active session
@@ -249,7 +249,7 @@ export default function getAPIInterface(): APIInterface {
                                     rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                                     tenantId,
 
-                                    shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignIn,
+                                    shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                     userContext,
                                 });
 
@@ -257,7 +257,7 @@ export default function getAPIInterface(): APIInterface {
                                     return signInUpResponse;
                                 }
 
-                                if (overwriteSessionDuringSignIn) {
+                                if (overwriteSessionDuringSignInUp) {
                                     await checkIfSignInIsAllowed(tenantId, signInUpResponse.user, userContext);
 
                                     signInUpResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
@@ -304,7 +304,7 @@ export default function getAPIInterface(): APIInterface {
                                     rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                                     tenantId,
 
-                                    shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignIn,
+                                    shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                     userContext,
                                 });
 
@@ -312,7 +312,7 @@ export default function getAPIInterface(): APIInterface {
                                     return signInUpResponse;
                                 }
 
-                                if (overwriteSessionDuringSignIn) {
+                                if (overwriteSessionDuringSignInUp) {
                                     session = await Session.createNewSession(
                                         options.req,
                                         options.res,

@@ -174,8 +174,8 @@ export default function getAPIImplementation(): APIInterface {
                             }
                         } else {
                             // active session
-                            let overwriteSessionDuringSignIn = SessionRecipe.getInstanceOrThrowError().config
-                                .overwriteSessionDuringSignIn;
+                            let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
+                                .overwriteSessionDuringSignInUp;
                             if (isSignIn) {
                                 // MFA is disabled
                                 // Active session
@@ -188,14 +188,14 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignIn,
+                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignIn,
+                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -204,7 +204,7 @@ export default function getAPIImplementation(): APIInterface {
                                     return consumeCodeResponse;
                                 }
 
-                                if (overwriteSessionDuringSignIn) {
+                                if (overwriteSessionDuringSignInUp) {
                                     await checkIfSignInIsAllowed(
                                         input.tenantId,
                                         consumeCodeResponse.user,
@@ -255,14 +255,14 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignIn,
+                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignIn,
+                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -271,7 +271,7 @@ export default function getAPIImplementation(): APIInterface {
                                     return consumeCodeResponse;
                                 }
 
-                                if (overwriteSessionDuringSignIn) {
+                                if (overwriteSessionDuringSignInUp) {
                                     session = await Session.createNewSession(
                                         input.options.req,
                                         input.options.res,

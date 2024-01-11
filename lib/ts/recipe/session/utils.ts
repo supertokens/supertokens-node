@@ -289,7 +289,7 @@ export function validateAndNormaliseUserInput(
         antiCsrfFunctionOrString: antiCsrf,
         override,
         invalidClaimStatusCode,
-        overwriteSessionDuringSignIn: config?.overwriteSessionDuringSignIn ?? false,
+        overwriteSessionDuringSignInUp: config?.overwriteSessionDuringSignInUp ?? false,
     };
 }
 

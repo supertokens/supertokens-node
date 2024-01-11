@@ -646,8 +646,8 @@ export default function getAPIImplementation(): APIInterface {
                         };
                     } else {
                         // active session
-                        let overwriteSessionDuringSignIn = SessionRecipe.getInstanceOrThrowError().config
-                            .overwriteSessionDuringSignIn;
+                        let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
+                            .overwriteSessionDuringSignInUp;
                         // MFA is disabled
                         // Active session
                         // Sign In
@@ -663,7 +663,7 @@ export default function getAPIImplementation(): APIInterface {
                             return signInResponse;
                         }
 
-                        if (overwriteSessionDuringSignIn) {
+                        if (overwriteSessionDuringSignInUp) {
                             await checkIfSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
                             signInResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
@@ -875,8 +875,8 @@ export default function getAPIImplementation(): APIInterface {
                             };
                         } else {
                             // active session
-                            let overwriteSessionDuringSignIn = SessionRecipe.getInstanceOrThrowError().config
-                                .overwriteSessionDuringSignIn;
+                            let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
+                                .overwriteSessionDuringSignInUp;
                             // MFA is disabled
                             // Active session
                             // Sign Up
@@ -894,7 +894,7 @@ export default function getAPIImplementation(): APIInterface {
                                 return signUpResponse;
                             }
 
-                            if (overwriteSessionDuringSignIn) {
+                            if (overwriteSessionDuringSignInUp) {
                                 session = await Session.createNewSession(
                                     options.req,
                                     options.res,
