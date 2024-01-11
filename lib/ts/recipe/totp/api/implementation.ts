@@ -102,6 +102,8 @@ export default function getAPIInterface(): APIInterface {
                 });
             }
 
+            await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
+
             const res = await options.recipeImplementation.verifyDevice({
                 tenantId,
                 userId,
