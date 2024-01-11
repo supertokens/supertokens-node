@@ -22,4 +22,5 @@ export declare const CREATE_EMAIL_PASSWORD_USER = "/api/user/emailpassword";
 export declare const CREATE_PASSWORDLESS_USER = "/api/user/passwordless";
 export declare const LIST_TENANT_LOGIN_METHODS = "/api/tenants/login-methods";
 export declare const USERROLES_USER_API = "/api/userroles/user/roles";
+export declare const TENANT_INFO_API = "/api/tenant";
 export declare const UNLINK_USER = "/api/user/unlink";
