@@ -105,9 +105,9 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                         mfaRequirementsForAuth
                     );
 
-                    if (setOfUnsatisfiedFactors.some((id) => factorsSetUpForUser.includes(id))) {
+                    if (setOfUnsatisfiedFactors.factorIds.some((id) => factorsSetUpForUser.includes(id))) {
                         logDebugMessage(
-                            `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.join(
+                            `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
                                 ", "
                             )}`
                         );
@@ -119,7 +119,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
                     logDebugMessage(
                         `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${
-                            setOfUnsatisfiedFactors.length === 0 ? "empty" : "cannot be completed otherwise"
+                            setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"
                         }`
                     );
                     return { isValid: true };

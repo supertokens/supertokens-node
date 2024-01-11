@@ -98,7 +98,7 @@ export default function getAPIInterface(): APIInterface {
             return {
                 status: "OK",
                 factors: {
-                    next: nextSetOfUnsatisfiedFactors.filter(
+                    next: nextSetOfUnsatisfiedFactors.factorIds.filter(
                         (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
                     ),
                     isAlreadySetup,

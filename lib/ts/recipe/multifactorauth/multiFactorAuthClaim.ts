@@ -22,7 +22,6 @@ import { MFAClaimValue, MFARequirementList } from "./types";
 import Multitenancy from "../multitenancy";
 import MultiFactorAuthRecipe from "./recipe";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { checkFactorRequirement } from "./utils";
 import { UserContext } from "../../types";
 
 /**
@@ -83,52 +82,40 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
                     const { c } = claimVal;
 
-                    for (const req of requirements) {
-                        if (typeof req === "object" && "oneOf" in req) {
-                            const res = req.oneOf
-                                .map((r) => checkFactorRequirement(r, c))
-                                .filter((v) => v.isValid === false);
-                            if (res.length === req.oneOf.length) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: "All factor checkers failed in the list",
-                                        oneOf: req.oneOf,
-                                        failures: res,
-                                    },
-                                };
-                            }
-                        } else if (typeof req === "object" && "allOfInAnyOrder" in req) {
-                            const res = req.allOfInAnyOrder
-                                .map((r) => checkFactorRequirement(r, c))
-                                .filter((v) => v.isValid === false);
-                            if (res.length !== 0) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: "Some factor checkers failed in the list",
-                                        allOfInAnyOrder: req.allOfInAnyOrder,
-                                        failures: res,
-                                    },
-                                };
-                            }
-                        } else {
-                            const res = checkFactorRequirement(req, c);
-                            if (res.isValid !== true) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: "Factor validation failed: " + res.message,
-                                        factorId: res.id,
-                                    },
-                                };
-                            }
-                        }
+                    const unsatisfiedFactors = this.getNextSetOfUnsatisfiedFactors(c, requirements);
+
+                    if (unsatisfiedFactors.factorIds.length === 0) {
+                        return {
+                            isValid: true,
+                        };
                     }
 
-                    return {
-                        isValid: true,
-                    };
+                    if (unsatisfiedFactors.type === "requirement") {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message:
+                                    "Factor validation failed: " + unsatisfiedFactors.factorIds[0] + " not completed",
+                                factorId: unsatisfiedFactors.factorIds[0],
+                            },
+                        };
+                    } else if (unsatisfiedFactors.type === "oneOf") {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message: "All factor checkers failed in the list",
+                                oneOf: unsatisfiedFactors.factorIds,
+                            },
+                        };
+                    } else {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message: "Some factor checkers failed in the list",
+                                allOfInAnyOrder: unsatisfiedFactors.factorIds,
+                            },
+                        };
+                    }
                 },
             }),
         };
@@ -140,13 +127,13 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     };
 
     public isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
-        return this.getNextSetOfUnsatisfiedFactors(completedClaims, requirements).length === 0;
+        return this.getNextSetOfUnsatisfiedFactors(completedClaims, requirements).factorIds.length === 0;
     }
 
     public getNextSetOfUnsatisfiedFactors(
         completedClaims: MFAClaimValue["c"],
         requirements: MFARequirementList
-    ): string[] {
+    ): { factorIds: string[]; type: "requirement" | "oneOf" | "allOfInAnyOrder" } {
         if (completedClaims === undefined) {
             // if completedClaims is undefined, we can assume that no factors are completed
             // this can happen when an old session is migrated with MFA claim and we don't know what was the first factor
@@ -157,9 +144,11 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
         for (const req of requirements) {
             const nextFactors: Set<string> = new Set();
+            let type: "requirement" | "oneOf" | "allOfInAnyOrder" = "requirement";
 
             if (typeof req === "string") {
                 if (completedClaims[req] === undefined) {
+                    type = "requirement";
                     nextFactors.add(req);
                 }
             } else if ("oneOf" in req) {
@@ -170,22 +159,31 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     }
                 }
                 if (!satisfied) {
+                    type = "oneOf";
                     for (const factorId of req.oneOf) {
                         nextFactors.add(factorId);
                     }
                 }
             } else if ("allOfInAnyOrder" in req) {
                 for (const factorId of req.allOfInAnyOrder) {
+                    type = "allOfInAnyOrder";
                     if (completedClaims[factorId] === undefined) {
                         nextFactors.add(factorId);
                     }
                 }
             }
             if (nextFactors.size > 0) {
-                return Array.from(nextFactors);
+                return {
+                    factorIds: Array.from(nextFactors),
+                    type: type,
+                };
             }
         }
-        return [];
+
+        return {
+            factorIds: [],
+            type: "requirement",
+        };
     }
 
     public fetchValue = async (

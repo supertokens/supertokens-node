@@ -15,7 +15,13 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
     isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;
-    getNextSetOfUnsatisfiedFactors(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
+    getNextSetOfUnsatisfiedFactors(
+        completedClaims: MFAClaimValue["c"],
+        requirements: MFARequirementList
+    ): {
+        factorIds: string[];
+        type: "requirement" | "oneOf" | "allOfInAnyOrder";
+    };
     fetchValue: (
         userId: string,
         _recipeUserId: RecipeUserId,

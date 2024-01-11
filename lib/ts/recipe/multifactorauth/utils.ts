@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, MFAClaimValue } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import MultiFactorAuthRecipe from "./recipe";
 import Multitenancy from "../multitenancy";
 import { UserContext } from "../../types";
@@ -32,14 +32,6 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     return {
         firstFactors: config?.firstFactors,
         override,
-    };
-}
-
-export function checkFactorRequirement(req: string, completedFactors: MFAClaimValue["c"]) {
-    return {
-        id: req,
-        isValid: completedFactors !== undefined && completedFactors[req] !== undefined,
-        message: "Not completed",
     };
 }
 
