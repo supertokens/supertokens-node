@@ -593,6 +593,23 @@ export default function getAPIImplementation(): APIInterface {
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
             try {
+                // Factor Login flow is described here -> https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1857915021
+
+                // - no session -> normal operation
+                // - with session:
+                //   - mfa disabled ->
+                //     - if session overwrite is not allowed -> we don’t do auto account linking and no manual account linking (even if user has switched on automatic account linking)
+                //       - the 2nd account already exists -> no op (do not change the db)
+                //       - the 2nd account does not exist -> isSignUpAllowed -> create a recipe user
+                //     - if session overwrite is allowed -> we ignore the input session and just do normal operation as if there was no input session.
+                //   - mfa enabled -> we don’t do auto account linking (even if user has switched on automatic account linking)
+                //     - the 2nd account already exists:
+                //       - if user is already linked to first account -> modify session’s completed and next array
+                //       - if user is not already linked to first account -> Contact support case (cause we can’t do account linking here cause the other account may have some info already in it, and we do not call shouldDoAutomaticAccountLinking function)
+                //     - the 2nd account does not exist -> creating and linking (if linking is allowed, if not, we aren’t creating either + isAllowedToSetupFactor + (2nd factor is verification || login method with same email and its verified))
+                //       - If linking is not allowed, we return a support status code
+                //       - The code path should never use the session overwrite boolean in this case!
+
                 let session = await Session.getSession(
                     options.req,
                     options.res,
@@ -828,6 +845,23 @@ export default function getAPIImplementation(): APIInterface {
 
             while (true) {
                 try {
+                    // Factor Login flow is described here -> https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1857915021
+
+                    // - no session -> normal operation
+                    // - with session:
+                    //   - mfa disabled ->
+                    //     - if session overwrite is not allowed -> we don’t do auto account linking and no manual account linking (even if user has switched on automatic account linking)
+                    //       - the 2nd account already exists -> no op (do not change the db)
+                    //       - the 2nd account does not exist -> isSignUpAllowed -> create a recipe user
+                    //     - if session overwrite is allowed -> we ignore the input session and just do normal operation as if there was no input session.
+                    //   - mfa enabled -> we don’t do auto account linking (even if user has switched on automatic account linking)
+                    //     - the 2nd account already exists:
+                    //       - if user is already linked to first account -> modify session’s completed and next array
+                    //       - if user is not already linked to first account -> Contact support case (cause we can’t do account linking here cause the other account may have some info already in it, and we do not call shouldDoAutomaticAccountLinking function)
+                    //     - the 2nd account does not exist -> creating and linking (if linking is allowed, if not, we aren’t creating either + isAllowedToSetupFactor + (2nd factor is verification || login method with same email and its verified))
+                    //       - If linking is not allowed, we return a support status code
+                    //       - The code path should never use the session overwrite boolean in this case!
+
                     let session = await Session.getSession(
                         options.req,
                         options.res,
