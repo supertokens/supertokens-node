@@ -21,7 +21,7 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { UPDATE_SESSION_AND_FETCH_MFA_INFO } from "./constants";
+import { RESYNC_SESSION_AND_FETCH_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
@@ -34,7 +34,7 @@ import {
     TypeNormalisedInput,
 } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import mfaInfoAPI from "./api/mfaInfo";
+import mfaInfoAPI from "./api/resyncSessionAndFetchMFAInfo";
 import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { User } from "../../user";
@@ -134,8 +134,8 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "put",
-                pathWithoutApiBasePath: new NormalisedURLPath(UPDATE_SESSION_AND_FETCH_MFA_INFO),
-                id: UPDATE_SESSION_AND_FETCH_MFA_INFO,
+                pathWithoutApiBasePath: new NormalisedURLPath(RESYNC_SESSION_AND_FETCH_MFA_INFO),
+                id: RESYNC_SESSION_AND_FETCH_MFA_INFO,
                 disabled: this.apiImpl.resyncSessionAndFetchMFAInfoPUT === undefined,
             },
         ];
@@ -159,7 +159,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
         };
-        if (id === UPDATE_SESSION_AND_FETCH_MFA_INFO) {
+        if (id === RESYNC_SESSION_AND_FETCH_MFA_INFO) {
             return await mfaInfoAPI(this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");

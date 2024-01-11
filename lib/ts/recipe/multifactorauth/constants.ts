@@ -13,4 +13,4 @@
  * under the License.
  */
 
-export const UPDATE_SESSION_AND_FETCH_MFA_INFO = "/mfa/info";
+export const RESYNC_SESSION_AND_FETCH_MFA_INFO = "/mfa/info";
