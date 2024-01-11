@@ -23,6 +23,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/metadata"), { userId }, userContext);
         },
 
+        getUserMetadataInternal: function ({ userId, userContext }) {
+            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/metadata"), { userId }, userContext);
+        },
+
         updateUserMetadata: function ({ userId, metadataUpdate, userContext }) {
             return querier.sendPutRequest(
                 new NormalisedURLPath("/recipe/user/metadata"),
