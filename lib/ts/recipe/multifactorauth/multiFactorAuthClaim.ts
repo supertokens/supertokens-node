@@ -148,6 +148,10 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         requirements: MFARequirementList
     ): string[] {
         if (completedClaims === undefined) {
+            // if completedClaims is undefined, we can assume that no factors are completed
+            // this can happen when an old session is migrated with MFA claim and we don't know what was the first factor
+            // it is okay to assume no factors are completed at this stage because the MFA requirements are generally about
+            // the second factors. In the worst case, the user will be asked to do the factor again, which should be okay.
             completedClaims = {};
         }
 
@@ -217,8 +221,14 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         );
         const completedFactorsClaimValue =
             currentPayload === undefined ? undefined : (currentPayload[this.key] as JSONObject);
+
+        // if completedClaims is undefined, we can assume that no factors are completed
+        // this can happen when an old session is migrated with MFA claim and we don't know what was the first factor
+        // it is okay to assume no factors are completed at this stage because the MFA requirements are generally about
+        // the second factors. In the worst case, the user will be asked to do the factor again, which should be okay.
         const completedFactors: Record<string, number> =
-            (completedFactorsClaimValue?.c as Record<string, number>) ?? {};
+            (completedFactorsClaimValue?.c as Record<string, number> | undefined) ?? {};
+
         const mfaRequirementsForAuth = await recipeInstance.recipeInterfaceImpl.getMFARequirementsForAuth({
             user,
             accessTokenPayload: currentPayload !== undefined ? currentPayload : {},

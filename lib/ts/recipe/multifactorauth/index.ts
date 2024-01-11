@@ -41,7 +41,13 @@ export default class Wrapper {
             userContext: ctx,
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
+
+        // if MFA claim or c is missing, we can assume that no factors are completed
+        // this can happen when an old session is migrated with MFA claim and we don't know what was the first factor
+        // it is okay to assume no factors are completed at this stage because the MFA requirements are generally about
+        // the second factors. In the worst case, the user will be asked to do the factor again, which should be okay.
         const completedFactors = mfaClaimValue?.c ?? {};
+
         const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
             {
                 userId: session.getUserId(),
@@ -50,7 +56,12 @@ export default class Wrapper {
         );
 
         const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
-        const defaultMFARequirementsForTenant: string[] = tenantInfo?.requiredSecondaryFactors ?? [];
+
+        if (tenantInfo === undefined) {
+            throw new Error("Tenant not found");
+        }
+
+        const defaultMFARequirementsForTenant: string[] = tenantInfo.requiredSecondaryFactors ?? [];
         const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
             user,
             accessTokenPayload: session.getAccessTokenPayload(),
@@ -95,7 +106,12 @@ export default class Wrapper {
         );
 
         const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
-        const defaultMFARequirementsForTenant: string[] = tenantInfo?.requiredSecondaryFactors ?? [];
+
+        if (tenantInfo === undefined) {
+            throw new Error("Tenant not found");
+        }
+
+        const defaultMFARequirementsForTenant: string[] = tenantInfo.requiredSecondaryFactors ?? [];
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
             user,
             accessTokenPayload: session.getAccessTokenPayload(),
