@@ -50,7 +50,6 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe: (err: any) => err is STError;
     addGetAllFactorsFromOtherRecipesFunc: (f: GetAllFactorsFromOtherRecipesFunc) => void;
     getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
-    getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;

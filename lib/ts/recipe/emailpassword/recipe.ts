@@ -111,15 +111,9 @@ export default class Recipe extends RecipeModule {
                     if (mfaInstance !== undefined) {
                         mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
                             if (tenantConfig.emailPassword.enabled === false) {
-                                return {
-                                    factorIds: [],
-                                    firstFactorIds: [],
-                                };
+                                return [];
                             }
-                            return {
-                                factorIds: ["emailpassword"],
-                                firstFactorIds: ["emailpassword"],
-                            };
+                            return ["emailpassword"];
                         });
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                             for (const loginMethod of user.loginMethods) {

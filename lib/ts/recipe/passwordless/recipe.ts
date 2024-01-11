@@ -148,15 +148,9 @@ export default class Recipe extends RecipeModule {
                     if (mfaInstance !== undefined) {
                         mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
                             if (tenantConfig.passwordless.enabled === false) {
-                                return {
-                                    factorIds: [],
-                                    firstFactorIds: [],
-                                };
+                                return [];
                             }
-                            return {
-                                factorIds: allFactors,
-                                firstFactorIds: allFactors,
-                            };
+                            return allFactors;
                         });
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                             // We deliberately do not check for matching tenantId because we assume

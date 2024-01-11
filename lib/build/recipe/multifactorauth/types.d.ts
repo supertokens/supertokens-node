@@ -112,12 +112,7 @@ export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
     user: User,
     userContext: UserContext
 ) => Promise<string[]>;
-export declare type GetAllFactorsFromOtherRecipesFunc = (
-    tenantConfig: TenantConfig
-) => {
-    factorIds: string[];
-    firstFactorIds: string[];
-};
+export declare type GetAllFactorsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
 export declare type GetEmailsForFactorFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId

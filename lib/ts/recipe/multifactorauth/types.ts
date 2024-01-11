@@ -140,9 +140,7 @@ export type APIInterface = {
 
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
 
-export type GetAllFactorsFromOtherRecipesFunc = (
-    tenantConfig: TenantConfig
-) => { factorIds: string[]; firstFactorIds: string[] };
+export type GetAllFactorsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
 
 export type GetEmailsForFactorFromOtherRecipesFunc = (
     user: User,

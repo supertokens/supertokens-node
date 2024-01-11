@@ -97,10 +97,7 @@ export default class Recipe extends RecipeModule {
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     if (mfaInstance !== undefined) {
                         mfaInstance.addGetAllFactorsFromOtherRecipesFunc(() => {
-                            return {
-                                factorIds: ["totp"],
-                                firstFactorIds: [],
-                            };
+                            return ["totp"];
                         });
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
                             async (user: User, userContext: UserContext) => {

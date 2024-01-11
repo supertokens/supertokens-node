@@ -185,20 +185,7 @@ export default class Recipe extends RecipeModule {
         let factorIds: string[] = [];
         for (const func of this.getAllFactorsFromOtherRecipesFunc) {
             const factorIdsRes = func(tenantConfig);
-            for (const factorId of factorIdsRes.factorIds) {
-                if (!factorIds.includes(factorId)) {
-                    factorIds.push(factorId);
-                }
-            }
-        }
-        return factorIds;
-    };
-
-    getAllAvailableFirstFactorIds = (tenantConfig: TenantConfig) => {
-        let factorIds: string[] = [];
-        for (const func of this.getAllFactorsFromOtherRecipesFunc) {
-            const factorIdsRes = func(tenantConfig);
-            for (const factorId of factorIdsRes.firstFactorIds) {
+            for (const factorId of factorIdsRes) {
                 if (!factorIds.includes(factorId)) {
                     factorIds.push(factorId);
                 }
