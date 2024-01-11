@@ -822,7 +822,11 @@ const linkAccountsForFactorSetup = async (sessionUser: User, recipeUserId: Recip
             userContext,
         });
         if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-            throw new RecurseError();
+            // Session user is linked to another primary user, which means the session is revoked as well
+            throw new SessionError({
+                type: SessionError.TRY_REFRESH_TOKEN,
+                message: "Session may be revoked",
+            });
         } else if (createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             throw new RecurseError();
         }
@@ -867,8 +871,11 @@ const checkIfFactorUserBeingCreatedCanBeLinkedWithSessionUser = async (
         });
 
         if (canCreatePrimary.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-            // Race condition since we just checked that it was not a primary user
-            throw new RecurseError();
+            // Session user is linked to another primary user, which means the session is revoked as well
+            throw new SessionError({
+                type: SessionError.TRY_REFRESH_TOKEN,
+                message: "Session may be revoked",
+            });
         }
 
         if (canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
