@@ -46,6 +46,7 @@ import {
     CREATE_PASSWORDLESS_USER,
     LIST_TENANT_LOGIN_METHODS,
     TENANT_INFO_API,
+    LIST_TENANTS_WITH_USER_COUNT,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -84,6 +85,7 @@ import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
 import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
 import getTenantLoginMethodsInfo from "./api/getTenantLoginMethodsInfo";
 import getTenantInfo from "./api/multitenancy/getTenantInfo";
+import listAllTenantsWithUserCount from "./api/multitenancy/listAllTenantsWithUserCount";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -360,6 +362,14 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "get",
             },
+            {
+                id: LIST_TENANTS_WITH_USER_COUNT,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(LIST_TENANTS_WITH_USER_COUNT)
+                ),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -492,6 +502,10 @@ export default class Recipe extends RecipeModule {
         } else if (id === TENANT_INFO_API) {
             if (req.getMethod() === "get") {
                 apiFunction = getTenantInfo;
+            }
+        } else if (id === LIST_TENANTS_WITH_USER_COUNT) {
+            if (req.getMethod() === "get") {
+                apiFunction = listAllTenantsWithUserCount;
             }
         }
 

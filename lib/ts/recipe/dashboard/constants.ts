@@ -41,5 +41,6 @@ export const LIST_TENANT_LOGIN_METHODS = "/api/tenants/login-methods";
 export const USERROLES_USER_API = "/api/userroles/user/roles";
 
 export const TENANT_INFO_API = "/api/tenant";
+export const LIST_TENANTS_WITH_USER_COUNT = "/api/tenants/list-with-user-count";
 
 export const UNLINK_USER = "/api/user/unlink";
