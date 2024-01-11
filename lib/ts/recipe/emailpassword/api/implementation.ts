@@ -3,7 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse, User, UserContext } from "../../../types";
-import { listUsersByAccountInfo, getUser } from "../../../";
+import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
@@ -20,6 +20,7 @@ export default function getAPIImplementation(): APIInterface {
         emailExistsGET: async function ({
             email,
             tenantId,
+            userContext,
         }: {
             email: string;
             tenantId: string;
@@ -35,13 +36,14 @@ export default function getAPIImplementation(): APIInterface {
             // even if the above returns true, we still need to check if there
             // exists an email password user with the same email cause the function
             // above does not check for that.
-            let users = await listUsersByAccountInfo(
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
-                {
+                accountInfo: {
                     email,
                 },
-                false
-            );
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
             let emailPasswordUserExists =
                 users.find((u) => {
                     return (
@@ -136,13 +138,14 @@ export default function getAPIImplementation(): APIInterface {
             /**
              * check if primaryUserId is linked with this email
              */
-            let users = await listUsersByAccountInfo(
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
-                {
+                accountInfo: {
                     email,
                 },
-                false
-            );
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
 
             // we find the recipe user ID of the email password account from the user's list
             // for later use.
@@ -762,7 +765,15 @@ export default function getAPIImplementation(): APIInterface {
 
                         await assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
-                        await assertThatEmailPasswordIsValidFirstFactor(tenantId, userContext);
+                        if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Session is required for secondary factors",
+                                payload: {
+                                    clearTokens: false,
+                                },
+                            });
+                        }
 
                         signInResponse.user = await await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
                             {
@@ -898,6 +909,12 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
+            class RecurseError extends Error {
+                constructor() {
+                    super("RECURSE");
+                }
+            }
+
             const assertThatSignUpIsAllowed = async (tenantId: string, email: string, userContext: UserContext) => {
                 let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
@@ -1013,7 +1030,12 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 // Check if the linking with session user going to fail and avoid user creation here
-                const users = await listUsersByAccountInfo(tenantId, accountInfo, true, userContext);
+                const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo,
+                    doUnionOfAccountInfo: false,
+                    userContext,
+                });
                 for (const user of users) {
                     if (user.isPrimaryUser && user.id !== sessionUser.id) {
                         throw new SignUpError({
@@ -1183,6 +1205,17 @@ export default function getAPIImplementation(): APIInterface {
                             // Sign Up
 
                             await assertThatSignUpIsAllowed(tenantId, email, userContext);
+
+                            if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Session is required for secondary factors",
+                                    payload: {
+                                        clearTokens: false,
+                                    },
+                                });
+                            }
+
                             let signUpResponse = await options.recipeImplementation.signUp({
                                 tenantId,
                                 email,
@@ -1277,23 +1310,3 @@ export default function getAPIImplementation(): APIInterface {
         },
     };
 }
-
-class RecurseError extends Error {
-    constructor() {
-        super("RECURSE");
-    }
-}
-
-const assertThatEmailPasswordIsValidFirstFactor = async (tenantId: string, userContext: UserContext) => {
-    let isValid = isValidFirstFactor(tenantId, "emailpassword", userContext);
-
-    if (!isValid) {
-        throw new SessionError({
-            type: SessionError.UNAUTHORISED,
-            message: "Session is required for secondary factors",
-            payload: {
-                clearTokens: false,
-            },
-        });
-    }
-};
