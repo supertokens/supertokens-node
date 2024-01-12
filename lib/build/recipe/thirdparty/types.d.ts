@@ -257,6 +257,7 @@ export declare type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   options: APIOptions;
                   userContext: UserContext;
               } & (
