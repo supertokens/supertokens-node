@@ -643,28 +643,45 @@ export default function getAPIImplementation(): APIInterface {
             try {
                 // Factor Login flow is described here -> https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1857915021
 
-                // - no session -> normal operation
-                // - with session:
-                //   - mfa disabled ->
-                //     - if session overwrite is not allowed -> we don’t do auto account linking and no manual account linking (even if user has switched on automatic account linking)
-                //       - the 2nd account already exists -> no op (do not change the db)
-                //       - the 2nd account does not exist -> isSignUpAllowed -> create a recipe user
-                //     - if session overwrite is allowed -> we ignore the input session and just do normal operation as if there was no input session.
-                //   - mfa enabled -> we don’t do auto account linking (even if user has switched on automatic account linking)
-                //     - the 2nd account already exists:
-                //       - if user is already linked to first account -> modify session’s completed and next array
-                //       - if user is not already linked to first account -> Contact support case (cause we can’t do account linking here cause the other account may have some info already in it, and we do not call shouldDoAutomaticAccountLinking function)
-                //     - the 2nd account does not exist -> creating and linking (if linking is allowed, if not, we aren’t creating either + isAllowedToSetupFactor + (2nd factor is verification || login method with same email and its verified))
-                //       - If linking is not allowed, we return a support status code
-                //       - The code path should never use the session overwrite boolean in this case!
+                //  - mfa disabled
+                //    - no session (normal operation)
+                //      - sign in
+                //        - recipe signIn
+                //        - check isSignInAllowed
+                //        - auto account linking
+                //        - create session
+                //        - return
+                //    - with session
+                //      - sign in
+                //        - recipe signIn
+                //        - if overwriteSessionDuringSignInUp === true
+                //          - check isSignInAllowed
+                //          - auto account linking
+                //          - create session
+                //        - return
+                //  - mfa enabled
+                //    - no session (normal operation + check for valid first factor + mark factor as complete)
+                //      - sign in
+                //        - recipe signIn
+                //        - check isSignInAllowed
+                //        - check if valid first factor
+                //        - auto account linking
+                //        - create session
+                //        - mark factor as complete in session
+                //        - return
+                //    - with session
+                //      - sign in
+                //        - recipe signIn
+                //        - check isSignInAllowed
+                //        - check if factor user is linked to session user (support code if failed)
+                //        - mark factor as complete in session
+                //        - return
 
                 const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
                 if (mfaInstance === undefined) {
                     if (session === undefined) {
-                        // MFA is disabled
-                        // No Active session
-                        // Sign In
+                        // This branch - MFA is disabled / No active session / Sign in
 
                         let signInResponse = await options.recipeImplementation.signIn({
                             email,
@@ -701,12 +718,9 @@ export default function getAPIImplementation(): APIInterface {
                             user: signInResponse.user,
                         };
                     } else {
-                        // active session
+                        // This branch - MFA is disabled / Active session / Sign in
                         let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
                             .overwriteSessionDuringSignInUp;
-                        // MFA is disabled
-                        // Active session
-                        // Sign In
 
                         let signInResponse = await options.recipeImplementation.signIn({
                             email,
@@ -746,11 +760,8 @@ export default function getAPIImplementation(): APIInterface {
                         };
                     }
                 } else {
-                    // MFA is active
                     if (session === undefined) {
-                        // MFA is enabled
-                        // No Active session / first factor
-                        // Sign In
+                        // This branch - MFA is enabled / No active session (First Factor) / Sign in
 
                         let signInResponse = await options.recipeImplementation.signIn({
                             email,
@@ -801,7 +812,8 @@ export default function getAPIImplementation(): APIInterface {
                             user: signInResponse.user,
                         };
                     } else {
-                        // secondary factors
+                        // This branch - MFA is enabled / Active Session (secondary factor) / Sign in
+
                         let sessionUser = await getUser(session.getUserId(), userContext);
                         if (sessionUser === undefined) {
                             throw new SessionError({
@@ -809,10 +821,6 @@ export default function getAPIImplementation(): APIInterface {
                                 message: "Session user not found",
                             });
                         }
-
-                        // MFA is enabled
-                        // Active session / secondary factor
-                        // Sign In / Factor completion
 
                         let signInResponse = await options.recipeImplementation.signIn({
                             email,
@@ -1059,6 +1067,11 @@ export default function getAPIImplementation(): APIInterface {
                     });
                     if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
                         // Session user is linked to another primary user, which means the session is revoked as well
+
+                        // We cannot recurse here because when the session user if fetched again,
+                        // it will be a primary user and we will end up trying factor setup with that user
+                        // Also this session would have been revoked and we won't be able to catch it again
+
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
                             message: "Session may be revoked",
@@ -1098,28 +1111,47 @@ export default function getAPIImplementation(): APIInterface {
                 try {
                     // Factor Login flow is described here -> https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1857915021
 
-                    // - no session -> normal operation
-                    // - with session:
-                    //   - mfa disabled ->
-                    //     - if session overwrite is not allowed -> we don’t do auto account linking and no manual account linking (even if user has switched on automatic account linking)
-                    //       - the 2nd account already exists -> no op (do not change the db)
-                    //       - the 2nd account does not exist -> isSignUpAllowed -> create a recipe user
-                    //     - if session overwrite is allowed -> we ignore the input session and just do normal operation as if there was no input session.
-                    //   - mfa enabled -> we don’t do auto account linking (even if user has switched on automatic account linking)
-                    //     - the 2nd account already exists:
-                    //       - if user is already linked to first account -> modify session’s completed and next array
-                    //       - if user is not already linked to first account -> Contact support case (cause we can’t do account linking here cause the other account may have some info already in it, and we do not call shouldDoAutomaticAccountLinking function)
-                    //     - the 2nd account does not exist -> creating and linking (if linking is allowed, if not, we aren’t creating either + isAllowedToSetupFactor + (2nd factor is verification || login method with same email and its verified))
-                    //       - If linking is not allowed, we return a support status code
-                    //       - The code path should never use the session overwrite boolean in this case!
+                    //  - mfa disabled
+                    //    - no session (normal operation)
+                    //      - sign up
+                    //        - check isSignUpAllowed
+                    //        - recipe signUp (with auto account linking)
+                    //        - create session
+                    //        - return
+                    //    - with session
+                    //      - sign up
+                    //        - check isSignUpAllowed
+                    //        - if overwriteSessionDuringSignInUp === true
+                    //          - recipe signUp (with auto account linking)
+                    //          - create session
+                    //        - else
+                    //          - recipe signUp (without auto account linking)
+                    //        - return
+                    //  - mfa enabled
+                    //    - no session (normal operation + check for valid first factor + mark factor as complete)
+                    //      - sign up
+                    //        - check isSignUpAllowed
+                    //        - check if valid first factor
+                    //        - recipe signUp (with auto account linking)
+                    //        - create session
+                    //        - mark factor as complete in session
+                    //        - return
+                    //    - with session
+                    //      - sign up
+                    //        - check for matching verified email in session user (support code if failed)
+                    //        - check if allowed to setup (returns claim error if failed)
+                    //        - check if factor user can be linked to session user (if failed, support code / unauthorized)
+                    //        - recipe signUp (with auto account linking)
+                    //        - link factor user to session user (if failed, recurse or unauthorized)
+                    //        - create session
+                    //        - mark factor as complete in session
+                    //        - return
 
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
                     if (mfaInstance === undefined) {
                         if (session === undefined) {
-                            // MFA is disabled
-                            // No Active session
-                            // Sign Up
+                            // This branch - MFA is disabled / No active session / Sign up
 
                             await assertThatSignUpIsAllowed(tenantId, email, userContext);
 
@@ -1149,12 +1181,10 @@ export default function getAPIImplementation(): APIInterface {
                                 user: signUpResponse.user,
                             };
                         } else {
-                            // active session
+                            // This branch - MFA is disabled / Active session / Sign up
+
                             let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
                                 .overwriteSessionDuringSignInUp;
-                            // MFA is disabled
-                            // Active session
-                            // Sign Up
 
                             await assertThatSignUpIsAllowed(tenantId, email, userContext);
 
@@ -1198,12 +1228,8 @@ export default function getAPIImplementation(): APIInterface {
                             };
                         }
                     } else {
-                        // MFA is active
+                        // This branch - MFA is enabled / No active session (First Factor) / Sign up
                         if (session === undefined) {
-                            // MFA is enabled
-                            // No Active session / first factor
-                            // Sign Up
-
                             await assertThatSignUpIsAllowed(tenantId, email, userContext);
 
                             if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
@@ -1244,7 +1270,8 @@ export default function getAPIImplementation(): APIInterface {
                                 user: signUpResponse.user,
                             };
                         } else {
-                            // secondary factors
+                            // This branch - MFA is enabled / Active Session (secondary factor) / Sign up (Factor setup)
+
                             let sessionUser = await getUser(session.getUserId(), userContext);
                             if (sessionUser === undefined) {
                                 throw new SessionError({
@@ -1252,10 +1279,6 @@ export default function getAPIImplementation(): APIInterface {
                                     message: "Session user not found",
                                 });
                             }
-
-                            // MFA is enabled
-                            // Active session / secondary factor
-                            // Sign Up / Factor setup
 
                             assertFactorUserHasMatchingVerifiedEmailInSessionUser(sessionUser, { email });
 
@@ -1279,7 +1302,7 @@ export default function getAPIImplementation(): APIInterface {
                                 userContext,
                             });
                             if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                                return signUpResponse;
+                                throw new SignUpError(signUpResponse);
                             }
 
                             signUpResponse.user = await linkAccountsForFactorSetup(
