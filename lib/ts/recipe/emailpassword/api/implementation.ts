@@ -877,12 +877,6 @@ export default function getAPIImplementation(): APIInterface {
 
             /* Helper functions Begin */
 
-            class RecurseError extends Error {
-                constructor() {
-                    super("RECURSE");
-                }
-            }
-
             const assertThatSignUpIsAllowed = async (tenantId: string, email: string, userContext: UserContext) => {
                 let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
@@ -1332,5 +1326,11 @@ class SignUpError extends Error {
         super(response.status);
 
         this.response = response;
+    }
+}
+
+class RecurseError extends Error {
+    constructor() {
+        super("RECURSE");
     }
 }
