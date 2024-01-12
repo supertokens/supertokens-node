@@ -599,29 +599,6 @@ export default function getAPIImplementation(): APIInterface {
 
             /* Helper functions Begin */
 
-            class SignInError extends Error {
-                response:
-                    | {
-                          status: "SIGN_IN_NOT_ALLOWED";
-                          reason: string;
-                      }
-                    | {
-                          status: "WRONG_CREDENTIALS_ERROR";
-                      };
-
-                constructor(
-                    response:
-                        | { status: "SIGN_IN_NOT_ALLOWED"; reason: string }
-                        | {
-                              status: "WRONG_CREDENTIALS_ERROR";
-                          }
-                ) {
-                    super(response.status);
-
-                    this.response = response;
-                }
-            }
-
             const assertThatSignInIsAllowed = async (tenantId: string, user: User, userContext: UserContext) => {
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     user,
@@ -763,6 +740,16 @@ export default function getAPIImplementation(): APIInterface {
                     if (session === undefined) {
                         // This branch - MFA is enabled / No active session (First Factor) / Sign in
 
+                        if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Session is required for secondary factors",
+                                payload: {
+                                    clearTokens: false,
+                                },
+                            });
+                        }
+
                         let signInResponse = await options.recipeImplementation.signIn({
                             email,
                             password,
@@ -775,16 +762,6 @@ export default function getAPIImplementation(): APIInterface {
                         }
 
                         await assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
-
-                        if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
-                            throw new SessionError({
-                                type: SessionError.UNAUTHORISED,
-                                message: "Session is required for secondary factors",
-                                payload: {
-                                    clearTokens: false,
-                                },
-                            });
-                        }
 
                         signInResponse.user = await await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
                             {
@@ -833,6 +810,12 @@ export default function getAPIImplementation(): APIInterface {
                             throw new SignInError(signInResponse);
                         }
 
+                        // If the user is already linked to the session user, then the following function does not throw.
+                        // We are keeping this check just in case the implementation of it changes in future.
+                        // We expect this to always pass.
+                        assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
+
+                        // Check if the factor user is linked to the session user
                         if (signInResponse.user.id !== sessionUser.id) {
                             return {
                                 status: "SIGN_IN_NOT_ALLOWED",
@@ -893,29 +876,6 @@ export default function getAPIImplementation(): APIInterface {
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
             /* Helper functions Begin */
-
-            class SignUpError extends Error {
-                response:
-                    | {
-                          status: "SIGN_UP_NOT_ALLOWED";
-                          reason: string;
-                      }
-                    | {
-                          status: "EMAIL_ALREADY_EXISTS_ERROR";
-                      };
-
-                constructor(
-                    response:
-                        | { status: "SIGN_UP_NOT_ALLOWED"; reason: string }
-                        | {
-                              status: "EMAIL_ALREADY_EXISTS_ERROR";
-                          }
-                ) {
-                    super(response.status);
-
-                    this.response = response;
-                }
-            }
 
             class RecurseError extends Error {
                 constructor() {
@@ -1090,19 +1050,14 @@ export default function getAPIImplementation(): APIInterface {
                 });
 
                 if (linkRes.status !== "OK") {
+                    // we have the following cases here:
+                    // 1. Input user is not primary user - when we recurse, we notice that it's not primary user and we will check if it can be made primary and do it again
+                    // 2. Recipe user id is already lined to another primary user - when we recurse, we will find a conflicting user for the email and the validation will fail
+                    // 3. Account info already associated with another primary user - when we recurse, we fall back on the same point as case 2 (above)
                     throw new RecurseError();
                 }
 
-                let user = await getUser(recipeUserId.getAsString(), userContext);
-                if (user === undefined) {
-                    // linked user not found
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "User not found",
-                    });
-                }
-
-                return user;
+                return linkRes.user;
             };
 
             /* Helper functions End */
@@ -1230,8 +1185,6 @@ export default function getAPIImplementation(): APIInterface {
                     } else {
                         // This branch - MFA is enabled / No active session (First Factor) / Sign up
                         if (session === undefined) {
-                            await assertThatSignUpIsAllowed(tenantId, email, userContext);
-
                             if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
                                 throw new SessionError({
                                     type: SessionError.UNAUTHORISED,
@@ -1241,6 +1194,8 @@ export default function getAPIImplementation(): APIInterface {
                                     },
                                 });
                             }
+
+                            await assertThatSignUpIsAllowed(tenantId, email, userContext);
 
                             let signUpResponse = await options.recipeImplementation.signUp({
                                 tenantId,
@@ -1332,4 +1287,50 @@ export default function getAPIImplementation(): APIInterface {
             }
         },
     };
+}
+
+class SignInError extends Error {
+    response:
+        | {
+              status: "SIGN_IN_NOT_ALLOWED";
+              reason: string;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          };
+
+    constructor(
+        response:
+            | { status: "SIGN_IN_NOT_ALLOWED"; reason: string }
+            | {
+                  status: "WRONG_CREDENTIALS_ERROR";
+              }
+    ) {
+        super(response.status);
+
+        this.response = response;
+    }
+}
+
+class SignUpError extends Error {
+    response:
+        | {
+              status: "SIGN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          };
+
+    constructor(
+        response:
+            | { status: "SIGN_UP_NOT_ALLOWED"; reason: string }
+            | {
+                  status: "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+    ) {
+        super(response.status);
+
+        this.response = response;
+    }
 }
