@@ -17,6 +17,7 @@ import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils"
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function consumeCode(
     apiImplementation: APIInterface,
@@ -61,6 +62,16 @@ export default async function consumeCode(
         });
     }
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
     let result = await apiImplementation.consumeCodePOST(
         deviceId !== undefined
             ? {
@@ -68,6 +79,7 @@ export default async function consumeCode(
                   userInputCode,
                   preAuthSessionId,
                   tenantId,
+                  session,
                   options,
                   userContext,
               }
@@ -76,6 +88,7 @@ export default async function consumeCode(
                   options,
                   preAuthSessionId,
                   tenantId,
+                  session,
                   userContext,
               }
     );

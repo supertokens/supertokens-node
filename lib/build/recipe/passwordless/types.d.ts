@@ -291,6 +291,7 @@ export declare type APIInterface = {
               }
         ) & {
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
             userContext: UserContext;
         }

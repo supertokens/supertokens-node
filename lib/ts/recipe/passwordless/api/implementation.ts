@@ -2,7 +2,7 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
-import { RecipeUserId, User, getUser, listUsersByAccountInfo } from "../../..";
+import { RecipeUserId, User, getUser } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { isValidFirstFactor } from "../../multifactorauth/utils";
 import SessionError from "../../session/error";
@@ -14,33 +14,217 @@ import SessionRecipe from "../../session/recipe";
 export default function getAPIImplementation(): APIInterface {
     return {
         consumeCodePOST: async function (input) {
+            /* Helper functions Begin */
+
+            class SignInUpError extends Error {
+                response:
+                    | {
+                          status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+                          failedCodeInputAttemptCount: number;
+                          maximumCodeInputAttempts: number;
+                      }
+                    | { status: "RESTART_FLOW_ERROR" }
+                    | {
+                          status: "SIGN_IN_UP_NOT_ALLOWED";
+                          reason: string;
+                      };
+
+                constructor(
+                    response:
+                        | {
+                              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+                              failedCodeInputAttemptCount: number;
+                              maximumCodeInputAttempts: number;
+                          }
+                        | { status: "RESTART_FLOW_ERROR" }
+                        | { status: "SIGN_IN_UP_NOT_ALLOWED"; reason: string }
+                ) {
+                    super(response.status);
+
+                    this.response = response;
+                }
+            }
+
+            class RecurseError extends Error {
+                constructor() {
+                    super("RECURSE");
+                }
+            }
+
+            const assertThatSignUpIsAllowed = async (
+                tenantId: string,
+                email: string | undefined,
+                phoneNumber: string | undefined,
+                userContext: UserContext
+            ) => {
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                    newUser: {
+                        recipeId: "passwordless",
+                        email,
+                        phoneNumber,
+                    },
+                    isVerified: true,
+                    tenantId: tenantId,
+                    userContext,
+                });
+
+                if (!isSignUpAllowed) {
+                    // On the frontend, this should show a UI of asking the user
+                    // to login using a different method.
+                    throw new SignInUpError({
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                    });
+                }
+            };
+
+            const assertThatSignInIsAllowed = async (tenantId: string, user: User, userContext: UserContext) => {
+                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
+                    tenantId,
+                    user,
+                    userContext,
+                });
+
+                if (!isSignInAllowed) {
+                    throw new SignInUpError({
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
+                    });
+                }
+            };
+
+            const linkAccountsForFactorSetup = async (
+                sessionUser: User,
+                recipeUserId: RecipeUserId,
+                userContext: UserContext
+            ) => {
+                if (!sessionUser.isPrimaryUser) {
+                    const createPrimaryRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
+                        recipeUserId: new RecipeUserId(sessionUser.id),
+                        userContext,
+                    });
+                    if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                        // Session user is linked to another primary user, which means the session is revoked as well
+
+                        // We cannot recurse here because when the session user if fetched again,
+                        // it will be a primary user and we will end up trying factor setup with that user
+                        // Also this session would have been revoked and we won't be able to catch it again
+
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Session may be revoked",
+                        });
+                    } else if (
+                        createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    ) {
+                        throw new RecurseError();
+                    }
+                }
+
+                const linkRes = await AccountLinking.getInstance().recipeInterfaceImpl.linkAccounts({
+                    recipeUserId: recipeUserId,
+                    primaryUserId: sessionUser.id,
+                    userContext,
+                });
+
+                if (linkRes.status !== "OK") {
+                    throw new RecurseError();
+                }
+
+                let user = await getUser(recipeUserId.getAsString(), userContext);
+                if (user === undefined) {
+                    // linked user not found
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "User not found",
+                    });
+                }
+
+                return user;
+            };
+
+            const assertThatFactorUserBeingCreatedCanBeLinkedWithSessionUser = async (
+                tenantId: string,
+                sessionUser: User,
+                accountInfo: { email?: string; phoneNumber?: string },
+                userContext: UserContext
+            ) => {
+                if (!sessionUser.isPrimaryUser) {
+                    const canCreatePrimary = await AccountLinking.getInstance().recipeInterfaceImpl.canCreatePrimaryUser(
+                        {
+                            recipeUserId: sessionUser.loginMethods[0].recipeUserId,
+                            userContext,
+                        }
+                    );
+
+                    if (canCreatePrimary.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                        // Session user is linked to another primary user, which means the session is revoked as well
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Session may be revoked",
+                        });
+                    }
+
+                    if (
+                        canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    ) {
+                        throw new SignInUpError({
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_014)",
+                        });
+                    }
+                }
+
+                // Check if the linking with session user going to fail and avoid user creation here
+                const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                    tenantId,
+                    accountInfo,
+                    doUnionOfAccountInfo: true,
+                    userContext,
+                });
+                for (const user of users) {
+                    if (user.isPrimaryUser && user.id !== sessionUser.id) {
+                        throw new SignInUpError({
+                            status: "SIGN_IN_UP_NOT_ALLOWED",
+                            reason:
+                                "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_015)",
+                        });
+                    }
+                }
+            };
+
+            /* Helper functions End */
+
             const deviceInfo = await input.options.recipeImplementation.listCodesByPreAuthSessionId({
                 tenantId: input.tenantId,
                 preAuthSessionId: input.preAuthSessionId,
                 userContext: input.userContext,
             });
 
-            if (!deviceInfo) {
-                return {
-                    status: "RESTART_FLOW_ERROR",
-                };
-            }
-
             while (true) {
                 try {
+                    if (!deviceInfo) {
+                        throw new SignInUpError({
+                            status: "RESTART_FLOW_ERROR",
+                        });
+                    }
+
                     const factorId = `${"userInputCode" in input ? "otp" : "link"}-${
                         deviceInfo.email ? "email" : "phone"
                     }`;
 
-                    let existingUsers = await listUsersByAccountInfo(
-                        input.tenantId,
-                        {
+                    let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                        tenantId: input.tenantId,
+                        accountInfo: {
                             phoneNumber: deviceInfo.phoneNumber,
                             email: deviceInfo.email,
                         },
-                        false,
-                        input.userContext
-                    );
+                        doUnionOfAccountInfo: false,
+                        userContext: input.userContext,
+                    });
                     existingUsers = existingUsers.filter((u) =>
                         u.loginMethods.some(
                             (m) =>
@@ -51,39 +235,77 @@ export default function getAPIImplementation(): APIInterface {
 
                     // Factor Login flow is described here -> https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1857915021
 
-                    // - no session -> normal operation
-                    // - with session:
-                    //   - mfa disabled ->
-                    //     - if session overwrite is not allowed -> we don’t do auto account linking and no manual account linking (even if user has switched on automatic account linking)
-                    //       - the 2nd account already exists -> no op (do not change the db)
-                    //       - the 2nd account does not exist -> isSignUpAllowed -> create a recipe user
-                    //     - if session overwrite is allowed -> we ignore the input session and just do normal operation as if there was no input session.
-                    //   - mfa enabled -> we don’t do auto account linking (even if user has switched on automatic account linking)
-                    //     - the 2nd account already exists:
-                    //       - if user is already linked to first account -> modify session’s completed and next array
-                    //       - if user is not already linked to first account -> Contact support case (cause we can’t do account linking here cause the other account may have some info already in it, and we do not call shouldDoAutomaticAccountLinking function)
-                    //     - the 2nd account does not exist -> creating and linking (if linking is allowed, if not, we aren’t creating either + isAllowedToSetupFactor + (2nd factor is verification || login method with same email and its verified))
-                    //       - If linking is not allowed, we return a support status code
-                    //       - The code path should never use the session overwrite boolean in this case!
+                    //  - mfa disabled
+                    //    - no session (normal operation)
+                    //      - sign in
+                    //        - recipe signIn
+                    //        - check isSignInAllowed
+                    //        - auto account linking
+                    //        - create session
+                    //        - return
+                    //      - sign up
+                    //        - check isSignUpAllowed
+                    //        - recipe signUp (with auto account linking)
+                    //        - create session
+                    //        - return
+                    //    - with session
+                    //      - sign in
+                    //        - recipe signIn
+                    //        - if overwriteSessionDuringSignInUp === true
+                    //          - check isSignInAllowed
+                    //          - auto account linking
+                    //          - create session
+                    //        - return
+                    //      - sign up
+                    //        - check isSignUpAllowed
+                    //        - if overwriteSessionDuringSignInUp === true
+                    //          - recipe signUp (with auto account linking)
+                    //          - create session
+                    //        - else
+                    //          - recipe signUp (without auto account linking)
+                    //        - return
+                    //  - mfa enabled
+                    //    - no session (normal operation + check for valid first factor + mark factor as complete)
+                    //      - sign in
+                    //        - recipe signIn
+                    //        - check isSignInAllowed
+                    //        - check if valid first factor
+                    //        - auto account linking
+                    //        - create session
+                    //        - mark factor as complete in session
+                    //        - return
+                    //      - sign up
+                    //        - check isSignUpAllowed
+                    //        - check if valid first factor
+                    //        - recipe signUp (with auto account linking)
+                    //        - create session
+                    //        - mark factor as complete in session
+                    //        - return
+                    //    - with session
+                    //      - sign in
+                    //        - recipe signIn
+                    //        - check isSignInAllowed
+                    //        - check if factor user is linked to session user (support code if failed)
+                    //        - mark factor as complete in session
+                    //        - return
+                    //      - sign up
+                    //        - check for matching verified email/phone number in session user (support code if failed) - not necessary for passwordless as it's already a verified factor
+                    //        - check if allowed to setup (returns claim error if failed)
+                    //        - check if factor user can be linked to session user (if failed, support code / unauthorized)
+                    //        - recipe signUp (with auto account linking)
+                    //        - link factor user to session user (if failed, recurse or unauthorized)
+                    //        - create session
+                    //        - mark factor as complete in session
+                    //        - return
 
-                    let session = await Session.getSession(
-                        input.options.req,
-                        input.options.res,
-                        {
-                            sessionRequired: false,
-                            overrideGlobalClaimValidators: () => [],
-                        },
-                        input.userContext
-                    );
+                    let { session } = input;
                     const mfaInstance = MultiFactorAuthRecipe.getInstance();
                     let isSignIn = existingUsers.length !== 0;
 
                     if (mfaInstance === undefined) {
                         if (session === undefined) {
                             if (isSignIn) {
-                                // MFA is disabled
-                                // No Active session
-                                // Sign In
+                                // This branch - MFA is disabled / No active session / Sign in
 
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
@@ -105,10 +327,10 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
-                                await checkIfSignInIsAllowed(
+                                await assertThatSignInIsAllowed(
                                     input.tenantId,
                                     consumeCodeResponse.user,
                                     input.userContext
@@ -139,11 +361,9 @@ export default function getAPIImplementation(): APIInterface {
                                     user: consumeCodeResponse.user,
                                 };
                             } else {
-                                // MFA is disabled
-                                // No Active session
-                                // Sign Up
+                                // This branch - MFA is disabled / No active session / Sign up
 
-                                await checkIfSignUpIsAllowed(
+                                await assertThatSignUpIsAllowed(
                                     input.tenantId,
                                     deviceInfo.email,
                                     deviceInfo.phoneNumber,
@@ -169,7 +389,7 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
                                 session = await Session.createNewSession(
@@ -190,13 +410,11 @@ export default function getAPIImplementation(): APIInterface {
                                 };
                             }
                         } else {
-                            // active session
                             let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
                                 .overwriteSessionDuringSignInUp;
+
                             if (isSignIn) {
-                                // MFA is disabled
-                                // Active session
-                                // Sign In
+                                // This branch - MFA is disabled / Active session / Sign in
 
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
@@ -218,11 +436,11 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
                                 if (overwriteSessionDuringSignInUp) {
-                                    await checkIfSignInIsAllowed(
+                                    await assertThatSignInIsAllowed(
                                         input.tenantId,
                                         consumeCodeResponse.user,
                                         input.userContext
@@ -254,11 +472,9 @@ export default function getAPIImplementation(): APIInterface {
                                     user: consumeCodeResponse.user,
                                 };
                             } else {
-                                // MFA is disabled
-                                // Active session
-                                // Sign Up
+                                // This branch - MFA is disabled / Active session / Sign up
 
-                                await checkIfSignUpIsAllowed(
+                                await assertThatSignUpIsAllowed(
                                     input.tenantId,
                                     deviceInfo.email,
                                     deviceInfo.phoneNumber,
@@ -285,7 +501,7 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
                                 if (overwriteSessionDuringSignInUp) {
@@ -309,13 +525,9 @@ export default function getAPIImplementation(): APIInterface {
                             }
                         }
                     } else {
-                        // MFA is active
                         if (session === undefined) {
-                            // first factor
                             if (isSignIn) {
-                                // MFA is enabled
-                                // No Active session / first factor
-                                // Sign In
+                                // This branch - MFA is enabled / No active session (first factor) / Sign in
 
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
@@ -337,16 +549,24 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
-                                await checkIfSignInIsAllowed(
+                                await assertThatSignInIsAllowed(
                                     input.tenantId,
                                     consumeCodeResponse.user,
                                     input.userContext
                                 );
 
-                                await checkIfValidFirstFactor(input.tenantId, factorId, input.userContext);
+                                if (!(await isValidFirstFactor(input.tenantId, factorId, input.userContext))) {
+                                    throw new SessionError({
+                                        type: SessionError.UNAUTHORISED,
+                                        message: "Session is required for secondary factors",
+                                        payload: {
+                                            clearTokens: false,
+                                        },
+                                    });
+                                }
 
                                 consumeCodeResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
                                     {
@@ -379,18 +599,24 @@ export default function getAPIImplementation(): APIInterface {
                                     user: consumeCodeResponse.user,
                                 };
                             } else {
-                                // MFA is enabled
-                                // No Active session / first factor
-                                // Sign Up
+                                // This branch - MFA is enabled / No active session (first factor) / Sign up
 
-                                await checkIfSignUpIsAllowed(
+                                await assertThatSignUpIsAllowed(
                                     input.tenantId,
                                     deviceInfo.email,
                                     deviceInfo.phoneNumber,
                                     input.userContext
                                 );
 
-                                await checkIfValidFirstFactor(input.tenantId, factorId, input.userContext);
+                                if (!(await isValidFirstFactor(input.tenantId, factorId, input.userContext))) {
+                                    throw new SessionError({
+                                        type: SessionError.UNAUTHORISED,
+                                        message: "Session is required for secondary factors",
+                                        payload: {
+                                            clearTokens: false,
+                                        },
+                                    });
+                                }
 
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
@@ -412,7 +638,7 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
                                 session = await Session.createNewSession(
@@ -439,7 +665,6 @@ export default function getAPIImplementation(): APIInterface {
                                 };
                             }
                         } else {
-                            // secondary factors
                             let sessionUser = await getUser(session.getUserId(), input.userContext);
                             if (sessionUser === undefined) {
                                 throw new SessionError({
@@ -449,9 +674,7 @@ export default function getAPIImplementation(): APIInterface {
                             }
 
                             if (isSignIn) {
-                                // MFA is enabled
-                                // Active session / secondary factor
-                                // Sign In / Factor completion
+                                // This branch - MFA is enabled / Active session (secondary factor) / Sign in
 
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
@@ -473,15 +696,15 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
                                 if (consumeCodeResponse.user.id !== sessionUser.id) {
-                                    return {
+                                    throw new SignInUpError({
                                         status: "SIGN_IN_UP_NOT_ALLOWED",
                                         reason:
                                             "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_013)",
-                                    };
+                                    });
                                 }
 
                                 await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
@@ -497,9 +720,7 @@ export default function getAPIImplementation(): APIInterface {
                                     user: consumeCodeResponse.user,
                                 };
                             } else {
-                                // MFA is enabled
-                                // Active session / secondary factor
-                                // Sign In / Factor setup
+                                // This branch - MFA is enabled / Active session (secondary factor) / Sign up (factor setup)
 
                                 await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(
                                     session,
@@ -507,7 +728,7 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                await checkIfFactorUserBeingCreatedCanBeLinkedWithSessionUser(
+                                await assertThatFactorUserBeingCreatedCanBeLinkedWithSessionUser(
                                     input.tenantId,
                                     sessionUser,
                                     { email: deviceInfo.email, phoneNumber: deviceInfo.phoneNumber },
@@ -534,7 +755,7 @@ export default function getAPIImplementation(): APIInterface {
                                 );
 
                                 if (consumeCodeResponse.status !== "OK") {
-                                    return consumeCodeResponse;
+                                    throw new SignInUpError(consumeCodeResponse);
                                 }
 
                                 consumeCodeResponse.user = await linkAccountsForFactorSetup(
@@ -579,7 +800,12 @@ export default function getAPIImplementation(): APIInterface {
                 accountInfo.phoneNumber = input.phoneNumber;
             }
 
-            let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
+            let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: input.tenantId,
+                accountInfo,
+                doUnionOfAccountInfo: false,
+                userContext: input.userContext,
+            });
             existingUsers = existingUsers.filter((u) =>
                 u.loginMethods.some(
                     (m) =>
@@ -751,16 +977,16 @@ export default function getAPIImplementation(): APIInterface {
                 preAuthSessionId: response.preAuthSessionId,
             };
         },
+
         emailExistsGET: async function (input) {
-            let users = await listUsersByAccountInfo(
-                input.tenantId,
-                {
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: input.tenantId,
+                accountInfo: {
                     email: input.email,
-                    // tenantId: input.tenantId,
                 },
-                false,
-                input.userContext
-            );
+                doUnionOfAccountInfo: false,
+                userContext: input.userContext,
+            });
 
             return {
                 exists: users.length > 0,
@@ -768,15 +994,14 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         phoneNumberExistsGET: async function (input) {
-            let users = await listUsersByAccountInfo(
-                input.tenantId,
-                {
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: input.tenantId,
+                accountInfo: {
                     phoneNumber: input.phoneNumber,
-                    // tenantId: input.tenantId,
                 },
-                false,
-                input.userContext
-            );
+                doUnionOfAccountInfo: false,
+                userContext: input.userContext,
+            });
 
             return {
                 exists: users.length > 0,
@@ -897,158 +1122,3 @@ export default function getAPIImplementation(): APIInterface {
         },
     };
 }
-
-class SignInUpError extends Error {
-    response: {
-        status: "SIGN_IN_UP_NOT_ALLOWED";
-        reason: string;
-    };
-
-    constructor(response: { status: "SIGN_IN_UP_NOT_ALLOWED"; reason: string }) {
-        super(response.status);
-
-        this.response = response;
-    }
-}
-
-class RecurseError extends Error {
-    constructor() {
-        super("RECURSE");
-    }
-}
-
-const checkIfSignUpIsAllowed = async (
-    tenantId: string,
-    email: string | undefined,
-    phoneNumber: string | undefined,
-    userContext: UserContext
-) => {
-    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-        newUser: {
-            recipeId: "passwordless",
-            email,
-            phoneNumber,
-        },
-        isVerified: true,
-        tenantId: tenantId,
-        userContext,
-    });
-
-    if (!isSignUpAllowed) {
-        // On the frontend, this should show a UI of asking the user
-        // to login using a different method.
-        throw new SignInUpError({
-            status: "SIGN_IN_UP_NOT_ALLOWED",
-            reason:
-                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-        });
-    }
-};
-
-const checkIfSignInIsAllowed = async (tenantId: string, user: User, userContext: UserContext) => {
-    let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-        tenantId,
-        user,
-        userContext,
-    });
-
-    if (!isSignInAllowed) {
-        throw new SignInUpError({
-            status: "SIGN_IN_UP_NOT_ALLOWED",
-            reason:
-                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-        });
-    }
-};
-
-const checkIfValidFirstFactor = async (tenantId: string, factorId: string, userContext: UserContext) => {
-    let isValid = await isValidFirstFactor(tenantId, factorId, userContext);
-    if (!isValid) {
-        throw new SessionError({
-            type: SessionError.UNAUTHORISED,
-            message: "Session is required for secondary factors",
-            payload: {
-                clearTokens: false,
-            },
-        });
-    }
-};
-
-const linkAccountsForFactorSetup = async (sessionUser: User, recipeUserId: RecipeUserId, userContext: UserContext) => {
-    if (!sessionUser.isPrimaryUser) {
-        const createPrimaryRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
-            recipeUserId: new RecipeUserId(sessionUser.id),
-            userContext,
-        });
-        if (createPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-            // Session user is linked to another primary user, which means the session is revoked as well
-            throw new SessionError({
-                type: SessionError.TRY_REFRESH_TOKEN,
-                message: "Session may be revoked",
-            });
-        } else if (createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-            throw new RecurseError();
-        }
-    }
-
-    const linkRes = await AccountLinking.getInstance().recipeInterfaceImpl.linkAccounts({
-        recipeUserId: recipeUserId,
-        primaryUserId: sessionUser.id,
-        userContext,
-    });
-
-    if (linkRes.status !== "OK") {
-        throw new RecurseError();
-    }
-
-    let user = await getUser(recipeUserId.getAsString(), userContext);
-    if (user === undefined) {
-        // linked user not found
-        throw new SessionError({
-            type: SessionError.UNAUTHORISED,
-            message: "User not found",
-        });
-    }
-
-    return user;
-};
-
-const checkIfFactorUserBeingCreatedCanBeLinkedWithSessionUser = async (
-    tenantId: string,
-    sessionUser: User,
-    accountInfo: { email?: string; phoneNumber?: string },
-    userContext: UserContext
-) => {
-    if (!sessionUser.isPrimaryUser) {
-        const canCreatePrimary = await AccountLinking.getInstance().recipeInterfaceImpl.canCreatePrimaryUser({
-            recipeUserId: sessionUser.loginMethods[0].recipeUserId,
-            userContext,
-        });
-
-        if (canCreatePrimary.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-            // Session user is linked to another primary user, which means the session is revoked as well
-            throw new SessionError({
-                type: SessionError.TRY_REFRESH_TOKEN,
-                message: "Session may be revoked",
-            });
-        }
-
-        if (canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
-            throw new SignInUpError({
-                status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_014)",
-            });
-        }
-    }
-
-    // Check if the linking with session user going to fail and avoid user creation here
-    const users = await listUsersByAccountInfo(tenantId, accountInfo, true, userContext);
-    for (const user of users) {
-        if (user.isPrimaryUser && user.id !== sessionUser.id) {
-            throw new SignInUpError({
-                status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_015)",
-            });
-        }
-    }
-};
