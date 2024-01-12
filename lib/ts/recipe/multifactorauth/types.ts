@@ -119,23 +119,25 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    resyncSessionAndFetchMFAInfoPUT: (input: {
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              factors: {
-                  next: string[];
-                  isAlreadySetup: string[];
-                  isAllowedToSetup: string[];
-              };
-              emails: Record<string, string[] | undefined>;
-              phoneNumbers: Record<string, string[] | undefined>;
-          }
-        | GeneralErrorResponse
-    >;
+    resyncSessionAndFetchMFAInfoPUT:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    factors: {
+                        next: string[];
+                        isAlreadySetup: string[];
+                        isAllowedToSetup: string[];
+                    };
+                    emails: Record<string, string[] | undefined>;
+                    phoneNumbers: Record<string, string[] | undefined>;
+                }
+              | GeneralErrorResponse
+          >);
 };
 
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;

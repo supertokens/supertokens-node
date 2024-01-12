@@ -90,23 +90,25 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    resyncSessionAndFetchMFAInfoPUT: (input: {
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              factors: {
-                  next: string[];
-                  isAlreadySetup: string[];
-                  isAllowedToSetup: string[];
-              };
-              emails: Record<string, string[] | undefined>;
-              phoneNumbers: Record<string, string[] | undefined>;
-          }
-        | GeneralErrorResponse
-    >;
+    resyncSessionAndFetchMFAInfoPUT:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    factors: {
+                        next: string[];
+                        isAlreadySetup: string[];
+                        isAllowedToSetup: string[];
+                    };
+                    emails: Record<string, string[] | undefined>;
+                    phoneNumbers: Record<string, string[] | undefined>;
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
     user: User,

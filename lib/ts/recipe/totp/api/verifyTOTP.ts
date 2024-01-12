@@ -23,7 +23,7 @@ export default async function verifyTOTPAPI(
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (apiImplementation.createDevicePOST === undefined) {
+    if (apiImplementation.verifyTOTPPOST === undefined) {
         return false;
     }
 
