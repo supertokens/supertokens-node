@@ -810,11 +810,6 @@ export default function getAPIImplementation(): APIInterface {
                             throw new SignInError(signInResponse);
                         }
 
-                        // If the user is already linked to the session user, then the following function does not throw.
-                        // We are keeping this check just in case the implementation of it changes in future.
-                        // We expect this to always pass.
-                        assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
-
                         // Check if the factor user is linked to the session user
                         if (signInResponse.user.id !== sessionUser.id) {
                             return {
@@ -823,6 +818,11 @@ export default function getAPIImplementation(): APIInterface {
                                     "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_009)",
                             };
                         }
+
+                        // If the user is already linked to the session user, then the following function does not throw.
+                        // We expect this to always pass.
+                        // We are keeping this check just in case the implementation of it changes in future.
+                        assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
                         await MultiFactorAuth.markFactorAsCompleteInSession(session, "emailpassword", userContext);
 
