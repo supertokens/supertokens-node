@@ -1,63 +1,34 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import {
-    RecipeInterface,
-    APIInterface,
-    PasswordlessAPIOptions,
-    ThirdPartyAPIOptions,
-    TypeThirdPartyPasswordlessEmailDeliveryInput,
-} from "./types";
+import { RecipeInterface, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions, TypeThirdPartyPasswordlessEmailDeliveryInput } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static thirdPartyGetProvider(
-        tenantId: string,
-        thirdPartyId: string,
-        clientType: string | undefined,
-        userContext?: Record<string, any>
-    ): Promise<TypeProvider | undefined>;
-    static thirdPartyManuallyCreateOrUpdateUser(
-        tenantId: string,
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: string,
-        isVerified: boolean,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewRecipeUser: boolean;
-              user: import("../../types").User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-        | {
-              status: "SIGN_IN_UP_NOT_ALLOWED";
-              reason: string;
-          }
-    >;
-    static createCode(
-        input: (
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              }
-        ) & {
-            userInputCode?: string;
-            tenantId: string;
-            userContext?: Record<string, any>;
-        }
-    ): Promise<{
+    static thirdPartyGetProvider(tenantId: string, thirdPartyId: string, clientType: string | undefined, userContext?: Record<string, any>): Promise<TypeProvider | undefined>;
+    static thirdPartyManuallyCreateOrUpdateUser(tenantId: string, thirdPartyId: string, thirdPartyUserId: string, email: string, isVerified: boolean, shouldAttemptAccountLinkingIfAllowed?: boolean, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        createdNewRecipeUser: boolean;
+        user: import("../../types").User;
+        recipeUserId: RecipeUserId;
+    } | {
+        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+        reason: string;
+    } | {
+        status: "SIGN_IN_UP_NOT_ALLOWED";
+        reason: string;
+    }>;
+    static createCode(input: ({
+        email: string;
+    } | {
+        phoneNumber: string;
+    }) & {
+        userInputCode?: string;
+        tenantId: string;
+        userContext?: Record<string, any>;
+    }): Promise<{
         status: "OK";
         preAuthSessionId: string;
         codeId: string;
@@ -72,85 +43,63 @@ export default class Wrapper {
         userInputCode?: string;
         tenantId: string;
         userContext?: Record<string, any>;
-    }): Promise<
-        | {
-              status: "OK";
-              preAuthSessionId: string;
-              codeId: string;
-              deviceId: string;
-              userInputCode: string;
-              linkCode: string;
-              codeLifetime: number;
-              timeCreated: number;
-          }
-        | {
-              status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR";
-          }
-    >;
-    static consumeCode(
-        input:
-            | {
-                  preAuthSessionId: string;
-                  userInputCode: string;
-                  deviceId: string;
-                  tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
-                  userContext?: Record<string, any>;
-              }
-            | {
-                  preAuthSessionId: string;
-                  linkCode: string;
-                  tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
-                  userContext?: Record<string, any>;
-              }
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewRecipeUser: boolean;
-              user: import("../../types").User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
-              failedCodeInputAttemptCount: number;
-              maximumCodeInputAttempts: number;
-          }
-        | {
-              status: "RESTART_FLOW_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        preAuthSessionId: string;
+        codeId: string;
+        deviceId: string;
+        userInputCode: string;
+        linkCode: string;
+        codeLifetime: number;
+        timeCreated: number;
+    } | {
+        status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR";
+    }>;
+    static consumeCode(input: {
+        preAuthSessionId: string;
+        userInputCode: string;
+        deviceId: string;
+        tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext?: Record<string, any>;
+    } | {
+        preAuthSessionId: string;
+        linkCode: string;
+        tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext?: Record<string, any>;
+    }): Promise<{
+        status: "OK";
+        createdNewRecipeUser: boolean;
+        user: import("../../types").User;
+        recipeUserId: RecipeUserId;
+    } | {
+        status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+        failedCodeInputAttemptCount: number;
+        maximumCodeInputAttempts: number;
+    } | {
+        status: "RESTART_FLOW_ERROR";
+    }>;
     static updatePasswordlessUser(input: {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: Record<string, any>;
-    }): Promise<
-        | {
-              status:
-                  | "OK"
-                  | "UNKNOWN_USER_ID_ERROR"
-                  | "EMAIL_ALREADY_EXISTS_ERROR"
-                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-    >;
-    static revokeAllCodes(
-        input:
-            | {
-                  email: string;
-                  tenantId: string;
-                  userContext?: Record<string, any>;
-              }
-            | {
-                  phoneNumber: string;
-                  tenantId: string;
-                  userContext?: Record<string, any>;
-              }
-    ): Promise<{
+    }): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
+    } | {
+        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" | "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR";
+        reason: string;
+    }>;
+    static revokeAllCodes(input: {
+        email: string;
+        tenantId: string;
+        userContext?: Record<string, any>;
+    } | {
+        phoneNumber: string;
+        tenantId: string;
+        userContext?: Record<string, any>;
+    }): Promise<{
         status: "OK";
     }>;
     static revokeCode(input: {
@@ -180,49 +129,37 @@ export default class Wrapper {
         tenantId: string;
         userContext?: Record<string, any>;
     }): Promise<import("../passwordless/types").DeviceType | undefined>;
-    static createMagicLink(
-        input:
-            | {
-                  email: string;
-                  tenantId: string;
-                  userContext?: Record<string, any>;
-              }
-            | {
-                  phoneNumber: string;
-                  tenantId: string;
-                  userContext?: Record<string, any>;
-              }
-    ): Promise<string>;
-    static passwordlessSignInUp(
-        input:
-            | {
-                  email: string;
-                  tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
-                  userContext?: Record<string, any>;
-              }
-            | {
-                  phoneNumber: string;
-                  tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
-                  userContext?: Record<string, any>;
-              }
-    ): Promise<{
+    static createMagicLink(input: {
+        email: string;
+        tenantId: string;
+        userContext?: Record<string, any>;
+    } | {
+        phoneNumber: string;
+        tenantId: string;
+        userContext?: Record<string, any>;
+    }): Promise<string>;
+    static passwordlessSignInUp(input: {
+        email: string;
+        tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext?: Record<string, any>;
+    } | {
+        phoneNumber: string;
+        tenantId: string;
+        shouldAttemptAccountLinkingIfAllowed?: boolean;
+        userContext?: Record<string, any>;
+    }): Promise<{
         status: string;
         createdNewRecipeUser: boolean;
         recipeUserId: RecipeUserId;
         user: import("../../types").User;
     }>;
-    static sendEmail(
-        input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
-            userContext?: Record<string, any>;
-        }
-    ): Promise<void>;
-    static sendSms(
-        input: TypePasswordlessSmsDeliveryInput & {
-            userContext?: Record<string, any>;
-        }
-    ): Promise<void>;
+    static sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
+        userContext?: Record<string, any>;
+    }): Promise<void>;
+    static sendSms(input: TypePasswordlessSmsDeliveryInput & {
+        userContext?: Record<string, any>;
+    }): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

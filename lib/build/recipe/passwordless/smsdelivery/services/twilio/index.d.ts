@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ServiceInterface, TypeInput } from "../../../../../ingredients/smsdelivery/services/twilio";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
@@ -7,9 +6,7 @@ export default class TwilioService implements SmsDeliveryInterface<TypePasswordl
     serviceImpl: ServiceInterface<TypePasswordlessSmsDeliveryInput>;
     private config;
     constructor(config: TypeInput<TypePasswordlessSmsDeliveryInput>);
-    sendSms: (
-        input: TypePasswordlessSmsDeliveryInput & {
-            userContext: UserContext;
-        }
-    ) => Promise<void>;
+    sendSms: (input: TypePasswordlessSmsDeliveryInput & {
+        userContext: UserContext;
+    }) => Promise<void>;
 }

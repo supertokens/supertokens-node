@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BooleanClaim } from "../session/claims";
 import { SessionClaimValidator } from "../session";
 /**

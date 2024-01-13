@@ -53,8 +53,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         reason:
                             v === false
                                 ? {
-                                      message: "MFA requirement for auth is not satisfied",
-                                  }
+                                    message: "MFA requirement for auth is not satisfied",
+                                }
                                 : undefined,
                     };
                 },
@@ -189,7 +189,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     public fetchValue = async (
         userId: string,
         _recipeUserId: RecipeUserId,
-        tenantId: string | undefined,
+        tenantId: string,
         currentPayload: JSONObject | undefined,
         userContext: UserContext
     ) => {
@@ -206,6 +206,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
         const recipeInstance = MultiFactorAuthRecipe.getInstanceOrThrowError();
         const isAlreadySetup = await recipeInstance.recipeInterfaceImpl.getFactorsSetupForUser({
+            tenantId,
             user,
             userContext,
         });

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import ProviderActiveDirectory from "./activeDirectory";
 import ProviderBoxySAML from "./boxySaml";
 import ProviderApple from "./apple";

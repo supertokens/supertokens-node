@@ -23,7 +23,7 @@ import { SessionClaimValidator } from "../session";
 
 export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
     return {
-        getFactorsSetupForUser: async function ({ user, userContext }) {
+        getFactorsSetupForUser: async function ({ tenantId, user, userContext }) {
             // factors setup for user are provided by each of the initialized recipes
             // each of the recipe checks if there is a matching recipe in the login
             // methods of the user specified and based on that returns the factor ids
@@ -34,7 +34,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             let factorIds: string[] = [];
 
             for (const func of recipeInstance.getFactorsSetupForUserFromOtherRecipesFuncs) {
-                let result = await func(user, userContext);
+                let result = await func(tenantId, user, userContext);
                 if (result !== undefined) {
                     for (const factorId of result) {
                         if (!factorIds.includes(factorId)) {
@@ -118,8 +118,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                     }
 
                     logDebugMessage(
-                        `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${
-                            setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"
+                        `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"
                         }`
                     );
                     return { isValid: true };

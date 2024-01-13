@@ -25,11 +25,11 @@ import RecipeUserId from "../../recipeUserId";
 
 export type MFARequirementList = (
     | {
-          oneOf: string[];
-      }
+        oneOf: string[];
+    }
     | {
-          allOfInAnyOrder: string[];
-      }
+        allOfInAnyOrder: string[];
+    }
     | string
 )[];
 
@@ -91,7 +91,7 @@ export type RecipeInterface = {
         userContext: UserContext;
     }) => Promise<void>;
 
-    getFactorsSetupForUser: (input: { user: User; userContext: UserContext }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
 
     getRequiredSecondaryFactorsForUser: (input: { userId: string; userContext: UserContext }) => Promise<string[]>;
 
@@ -120,35 +120,35 @@ export type APIOptions = {
 
 export type APIInterface = {
     resyncSessionAndFetchMFAInfoPUT:
-        | undefined
-        | ((input: {
-              options: APIOptions;
-              session: SessionContainerInterface;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    factors: {
-                        next: string[];
-                        isAlreadySetup: string[];
-                        isAllowedToSetup: string[];
-                    };
-                    emails: Record<string, string[] | undefined>;
-                    phoneNumbers: Record<string, string[] | undefined>;
-                }
-              | GeneralErrorResponse
-          >);
+    | undefined
+    | ((input: {
+        options: APIOptions;
+        session: SessionContainerInterface;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+            status: "OK";
+            factors: {
+                next: string[];
+                isAlreadySetup: string[];
+                isAllowedToSetup: string[];
+            };
+            emails: Record<string, string[] | undefined>;
+            phoneNumbers: Record<string, string[] | undefined>;
+        }
+        | GeneralErrorResponse
+    >);
 };
 
-export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
+export type GetFactorsSetupForUserFromOtherRecipesFunc = (tenantId: string, user: User, userContext: UserContext) => Promise<string[]>;
 
 export type GetAllFactorsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
 
 export type GetEmailsForFactorFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
-) => Record<string, string[] | undefined>;
+) => { status: "OK", factorIdToEmailsMap: Record<string, string[]> } | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" };
 export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
-) => Record<string, string[] | undefined>;
+) => { status: "OK", factorIdToPhoneNumberMap: Record<string, string[]> } | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" };

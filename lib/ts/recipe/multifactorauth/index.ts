@@ -37,6 +37,7 @@ export default class Wrapper {
             throw new Error("Session user not found");
         }
         const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            tenantId: session.getTenantId(),
             user,
             userContext: ctx,
         });
@@ -93,6 +94,7 @@ export default class Wrapper {
             throw new Error("Session user not found");
         }
         const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            tenantId: session.getTenantId(),
             user,
             userContext: ctx,
         });
@@ -136,7 +138,7 @@ export default class Wrapper {
         });
     }
 
-    static async getFactorsSetupForUser(userId: string, userContext?: Record<string, any>) {
+    static async getFactorsSetupForUser(tenantId: string, userId: string, userContext?: Record<string, any>) {
         const ctx = getUserContext(userContext);
         const user = await getUser(userId, ctx);
         if (!user) {
@@ -144,6 +146,7 @@ export default class Wrapper {
         }
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+            tenantId,
             user,
             userContext: ctx,
         });
@@ -191,7 +194,7 @@ export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFact
 export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
 export const removeFromRequiredSecondaryFactorsForUser = Wrapper.removeFromRequiredSecondaryFactorsForUser;
 
-export const Factors = {
+export const FactorIds = {
     EMAILPASSWORD: "emailpassword",
     OTP_EMAIL: "otp-email",
     OTP_PHONE: "otp-phone",

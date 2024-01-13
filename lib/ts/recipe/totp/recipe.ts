@@ -100,7 +100,7 @@ export default class Recipe extends RecipeModule {
                             return ["totp"];
                         });
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
-                            async (user: User, userContext: UserContext) => {
+                            async (_: string, user: User, userContext: UserContext) => {
                                 const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices(
                                     {
                                         userId: user.id,

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { UserContext, User as UserType } from "./types";
@@ -11,11 +10,7 @@ export default class SuperTokensWrapper {
     static RecipeUserId: typeof RecipeUserId;
     static User: typeof User;
     static getAllCORSHeaders(): string[];
-    static getUserCount(
-        includeRecipeIds?: string[],
-        tenantId?: string,
-        userContext?: Record<string, any>
-    ): Promise<number>;
+    static getUserCount(includeRecipeIds?: string[], tenantId?: string, userContext?: Record<string, any>): Promise<number>;
     static getUsersOldestFirst(input: {
         tenantId: string;
         limit?: number;
@@ -48,31 +43,25 @@ export default class SuperTokensWrapper {
         externalUserIdInfo?: string;
         force?: boolean;
         userContext?: Record<string, any>;
-    }): Promise<
-        | {
-              status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
-          }
-        | {
-              status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
-              doesSuperTokensUserIdExist: boolean;
-              doesExternalUserIdExist: boolean;
-          }
-    >;
+    }): Promise<{
+        status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
+    } | {
+        status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
+        doesSuperTokensUserIdExist: boolean;
+        doesExternalUserIdExist: boolean;
+    }>;
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         userContext?: Record<string, any>;
-    }): Promise<
-        | {
-              status: "OK";
-              superTokensUserId: string;
-              externalUserId: string;
-              externalUserIdInfo: string | undefined;
-          }
-        | {
-              status: "UNKNOWN_MAPPING_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        superTokensUserId: string;
+        externalUserId: string;
+        externalUserIdInfo: string | undefined;
+    } | {
+        status: "UNKNOWN_MAPPING_ERROR";
+    }>;
     static deleteUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
@@ -91,23 +80,12 @@ export default class SuperTokensWrapper {
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
     static getUser(userId: string, userContext?: Record<string, any>): Promise<UserType | undefined>;
-    static listUsersByAccountInfo(
-        tenantId: string,
-        accountInfo: AccountInfo,
-        doUnionOfAccountInfo?: boolean,
-        userContext?: Record<string, any>
-    ): Promise<UserType[]>;
-    static deleteUser(
-        userId: string,
-        removeAllLinkedAccounts?: boolean,
-        userContext?: Record<string, any>
-    ): Promise<{
+    static listUsersByAccountInfo(tenantId: string, accountInfo: AccountInfo, doUnionOfAccountInfo?: boolean, userContext?: Record<string, any>): Promise<UserType[]>;
+    static deleteUser(userId: string, removeAllLinkedAccounts?: boolean, userContext?: Record<string, any>): Promise<{
         status: "OK";
     }>;
     static convertToRecipeUserId(recipeUserId: string): RecipeUserId;
-    static getRequestFromUserContext(
-        userContext: UserContext | undefined
-    ): import("./framework").BaseRequest | undefined;
+    static getRequestFromUserContext(userContext: UserContext | undefined): import("./framework").BaseRequest | undefined;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;

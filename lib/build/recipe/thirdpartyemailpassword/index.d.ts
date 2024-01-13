@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
@@ -8,115 +7,57 @@ import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static thirdPartyGetProvider(
-        tenantId: string,
-        thirdPartyId: string,
-        clientType: string | undefined,
-        userContext?: Record<string, any>
-    ): Promise<TypeProvider | undefined>;
-    static thirdPartyManuallyCreateOrUpdateUser(
-        tenantId: string,
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: string,
-        isVerified: boolean,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewRecipeUser: boolean;
-              user: import("../../types").User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-        | {
-              status: "SIGN_IN_UP_NOT_ALLOWED";
-              reason: string;
-          }
-    >;
-    static emailPasswordSignUp(
-        tenantId: string,
-        email: string,
-        password: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              user: import("../../types").User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-    >;
-    static emailPasswordSignIn(
-        tenantId: string,
-        email: string,
-        password: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              user: import("../../types").User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
-    >;
-    static createResetPasswordToken(
-        tenantId: string,
-        userId: string,
-        email: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "UNKNOWN_USER_ID_ERROR";
-          }
-    >;
-    static resetPasswordUsingToken(
-        tenantId: string,
-        token: string,
-        newPassword: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-        | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-        | {
-              status: "PASSWORD_POLICY_VIOLATED_ERROR";
-              failureReason: string;
-          }
-    >;
-    static consumePasswordResetToken(
-        tenantId: string,
-        token: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-    >;
+    static thirdPartyGetProvider(tenantId: string, thirdPartyId: string, clientType: string | undefined, userContext?: Record<string, any>): Promise<TypeProvider | undefined>;
+    static thirdPartyManuallyCreateOrUpdateUser(tenantId: string, thirdPartyId: string, thirdPartyUserId: string, email: string, isVerified: boolean, shouldAttemptAccountLinkingIfAllowed?: boolean, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        createdNewRecipeUser: boolean;
+        user: import("../../types").User;
+        recipeUserId: RecipeUserId;
+    } | {
+        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+        reason: string;
+    } | {
+        status: "SIGN_IN_UP_NOT_ALLOWED";
+        reason: string;
+    }>;
+    static emailPasswordSignUp(tenantId: string, email: string, password: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        user: import("../../types").User;
+        recipeUserId: RecipeUserId;
+    } | {
+        status: "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
+    static emailPasswordSignIn(tenantId: string, email: string, password: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        user: import("../../types").User;
+        recipeUserId: RecipeUserId;
+    } | {
+        status: "WRONG_CREDENTIALS_ERROR";
+    }>;
+    static createResetPasswordToken(tenantId: string, userId: string, email: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        token: string;
+    } | {
+        status: "UNKNOWN_USER_ID_ERROR";
+    }>;
+    static resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext?: Record<string, any>): Promise<{
+        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    } | {
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+    } | {
+        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+        reason: string;
+    } | {
+        status: "PASSWORD_POLICY_VIOLATED_ERROR";
+        failureReason: string;
+    }>;
+    static consumePasswordResetToken(tenantId: string, token: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        email: string;
+        userId: string;
+    } | {
+        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     static updateEmailOrPassword(input: {
         recipeUserId: RecipeUserId;
         email?: string;
@@ -124,46 +65,27 @@ export default class Wrapper {
         userContext?: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
-    }): Promise<
-        | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
-          }
-        | {
-              status: "PASSWORD_POLICY_VIOLATED_ERROR";
-              failureReason: string;
-          }
-    >;
-    static createResetPasswordLink(
-        tenantId: string,
-        userId: string,
-        email: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              link: string;
-          }
-        | {
-              status: "UNKNOWN_USER_ID_ERROR";
-          }
-    >;
-    static sendResetPasswordEmail(
-        tenantId: string,
-        userId: string,
-        email: string,
-        userContext?: Record<string, any>
-    ): Promise<{
+    }): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+    } | {
+        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+        reason: string;
+    } | {
+        status: "PASSWORD_POLICY_VIOLATED_ERROR";
+        failureReason: string;
+    }>;
+    static createResetPasswordLink(tenantId: string, userId: string, email: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        link: string;
+    } | {
+        status: "UNKNOWN_USER_ID_ERROR";
+    }>;
+    static sendResetPasswordEmail(tenantId: string, userId: string, email: string, userContext?: Record<string, any>): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR";
     }>;
-    static sendEmail(
-        input: TypeEmailPasswordEmailDeliveryInput & {
-            userContext?: Record<string, any>;
-        }
-    ): Promise<void>;
+    static sendEmail(input: TypeEmailPasswordEmailDeliveryInput & {
+        userContext?: Record<string, any>;
+    }): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

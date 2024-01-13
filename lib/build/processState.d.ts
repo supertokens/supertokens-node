@@ -1,4 +1,3 @@
-// @ts-nocheck
 export declare enum PROCESS_STATE {
     CALLING_SERVICE_IN_VERIFY = 0,
     CALLING_SERVICE_IN_GET_API_VERSION = 1,
@@ -7,7 +6,7 @@ export declare enum PROCESS_STATE {
     IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS = 4,
     IS_SIGN_UP_ALLOWED_CALLED = 5,
     IS_SIGN_IN_ALLOWED_CALLED = 6,
-    IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED = 7,
+    IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED = 7
 }
 export declare class ProcessState {
     history: PROCESS_STATE[];

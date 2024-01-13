@@ -39,6 +39,7 @@ export default function getAPIInterface(): APIInterface {
             }
 
             const isAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
+                tenantId: session.getTenantId(),
                 user,
                 userContext,
             });
@@ -95,6 +96,19 @@ export default function getAPIInterface(): APIInterface {
 
             await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates `v` in the MFA claim
 
+            let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId());
+            let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId());
+            if (getEmailsForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID" ||
+                getPhoneNumbersForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID") {
+                throw new SessionError({
+                    type: "UNAUTHORISED",
+                    message: "User no longer associated with the session",
+                    payload: {
+                        clearTokens: true
+                    }
+                })
+            }
+
             return {
                 status: "OK",
                 factors: {
@@ -104,8 +118,8 @@ export default function getAPIInterface(): APIInterface {
                     isAlreadySetup,
                     isAllowedToSetup,
                 },
-                emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
-                phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),
+                emails: getEmailsForFactorsResult.factorIdToEmailsMap,
+                phoneNumbers: getPhoneNumbersForFactorsResult.factorIdToPhoneNumberMap,
             };
         },
     };

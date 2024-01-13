@@ -1,103 +1,53 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static PermissionClaim: import("./permissionClaim").PermissionClaimClass;
     static UserRoleClaim: import("./userRoleClaim").UserRoleClaimClass;
-    static addRoleToUser(
-        tenantId: string,
-        userId: string,
-        role: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              didUserAlreadyHaveRole: boolean;
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
-    static removeUserRole(
-        tenantId: string,
-        userId: string,
-        role: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              didUserHaveRole: boolean;
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
-    static getRolesForUser(
-        tenantId: string,
-        userId: string,
-        userContext?: Record<string, any>
-    ): Promise<{
+    static addRoleToUser(tenantId: string, userId: string, role: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        didUserAlreadyHaveRole: boolean;
+    } | {
+        status: "UNKNOWN_ROLE_ERROR";
+    }>;
+    static removeUserRole(tenantId: string, userId: string, role: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        didUserHaveRole: boolean;
+    } | {
+        status: "UNKNOWN_ROLE_ERROR";
+    }>;
+    static getRolesForUser(tenantId: string, userId: string, userContext?: Record<string, any>): Promise<{
         status: "OK";
         roles: string[];
     }>;
-    static getUsersThatHaveRole(
-        tenantId: string,
-        role: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              users: string[];
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
-    static createNewRoleOrAddPermissions(
-        role: string,
-        permissions: string[],
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getUsersThatHaveRole(tenantId: string, role: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        users: string[];
+    } | {
+        status: "UNKNOWN_ROLE_ERROR";
+    }>;
+    static createNewRoleOrAddPermissions(role: string, permissions: string[], userContext?: Record<string, any>): Promise<{
         status: "OK";
         createdNewRole: boolean;
     }>;
-    static getPermissionsForRole(
-        role: string,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              permissions: string[];
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
-    static removePermissionsFromRole(
-        role: string,
-        permissions: string[],
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getPermissionsForRole(role: string, userContext?: Record<string, any>): Promise<{
+        status: "OK";
+        permissions: string[];
+    } | {
+        status: "UNKNOWN_ROLE_ERROR";
+    }>;
+    static removePermissionsFromRole(role: string, permissions: string[], userContext?: Record<string, any>): Promise<{
         status: "OK" | "UNKNOWN_ROLE_ERROR";
     }>;
-    static getRolesThatHavePermission(
-        permission: string,
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getRolesThatHavePermission(permission: string, userContext?: Record<string, any>): Promise<{
         status: "OK";
         roles: string[];
     }>;
-    static deleteRole(
-        role: string,
-        userContext?: Record<string, any>
-    ): Promise<{
+    static deleteRole(role: string, userContext?: Record<string, any>): Promise<{
         status: "OK";
         didRoleExist: boolean;
     }>;
-    static getAllRoles(
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getAllRoles(userContext?: Record<string, any>): Promise<{
         status: "OK";
         roles: string[];
     }>;
