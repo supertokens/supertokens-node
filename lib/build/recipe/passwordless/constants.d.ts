@@ -1,3 +1,4 @@
+// @ts-nocheck
 export declare const CREATE_CODE_API = "/signinup/code";
 export declare const RESEND_CODE_API = "/signinup/code/resend";
 export declare const CONSUME_CODE_API = "/signinup/code/consume";

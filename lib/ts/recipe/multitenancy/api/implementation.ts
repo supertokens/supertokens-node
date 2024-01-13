@@ -1,6 +1,6 @@
 import { APIInterface } from "../";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
-import { FactorIds } from "../../multifactorauth"
+import { FactorIds } from "../../multifactorauth";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -65,7 +65,13 @@ export default function getAPIInterface(): APIInterface {
                 }
                 if (tenantConfigRes.passwordless.enabled === false) {
                     firstFactors = firstFactors.filter(
-                        (factor) => ![FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE, FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE].includes(factor)
+                        (factor) =>
+                            ![
+                                FactorIds.OTP_EMAIL,
+                                FactorIds.OTP_PHONE,
+                                FactorIds.LINK_EMAIL,
+                                FactorIds.LINK_PHONE,
+                            ].includes(factor)
                     );
                 }
             }

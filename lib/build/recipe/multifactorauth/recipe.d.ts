@@ -1,9 +1,19 @@
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
-import { APIInterface, GetAllFactorsFromOtherRecipesFunc, GetEmailsForFactorFromOtherRecipesFunc, GetFactorsSetupForUserFromOtherRecipesFunc, GetPhoneNumbersForFactorsFromOtherRecipesFunc, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import {
+    APIInterface,
+    GetAllFactorsFromOtherRecipesFunc,
+    GetEmailsForFactorFromOtherRecipesFunc,
+    GetFactorsSetupForUserFromOtherRecipesFunc,
+    GetPhoneNumbersForFactorsFromOtherRecipesFunc,
+    RecipeInterface,
+    TypeInput,
+    TypeNormalisedInput,
+} from "./types";
 import { User } from "../../user";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
@@ -26,7 +36,15 @@ export default class Recipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, _tenantId: string, req: BaseRequest, res: BaseResponse, _: NormalisedURLPath, __: HTTPMethod, userContext: UserContext) => Promise<boolean>;
+    handleAPIRequest: (
+        id: string,
+        _tenantId: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        _: NormalisedURLPath,
+        __: HTTPMethod,
+        userContext: UserContext
+    ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
@@ -34,17 +52,27 @@ export default class Recipe extends RecipeModule {
     getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
     addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
     addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
-    getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => {
-        status: "OK";
-        factorIdToEmailsMap: Record<string, string[]>;
-    } | {
-        status: "UNKNOWN_SESSION_RECIPE_USER_ID";
-    };
+    getEmailsForFactors: (
+        user: User,
+        sessionRecipeUserId: RecipeUserId
+    ) =>
+        | {
+              status: "OK";
+              factorIdToEmailsMap: Record<string, string[]>;
+          }
+        | {
+              status: "UNKNOWN_SESSION_RECIPE_USER_ID";
+          };
     addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
-    getPhoneNumbersForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => {
-        status: "OK";
-        factorIdToPhoneNumberMap: Record<string, string[]>;
-    } | {
-        status: "UNKNOWN_SESSION_RECIPE_USER_ID";
-    };
+    getPhoneNumbersForFactors: (
+        user: User,
+        sessionRecipeUserId: RecipeUserId
+    ) =>
+        | {
+              status: "OK";
+              factorIdToPhoneNumberMap: Record<string, string[]>;
+          }
+        | {
+              status: "UNKNOWN_SESSION_RECIPE_USER_ID";
+          };
 }

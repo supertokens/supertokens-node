@@ -1,3 +1,4 @@
+// @ts-nocheck
 import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
@@ -11,37 +12,73 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput | undefined, _recipes: {}, _ingredients: {});
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        config: TypeInput | undefined,
+        _recipes: {},
+        _ingredients: {}
+    );
     static init(config?: TypeInput): RecipeListFunction;
     static getInstance(): Recipe;
     getAPIsHandled(): APIHandled[];
-    handleAPIRequest(_id: string, _tenantId: string, _req: BaseRequest, _response: BaseResponse, _path: normalisedURLPath, _method: HTTPMethod): Promise<boolean>;
+    handleAPIRequest(
+        _id: string,
+        _tenantId: string,
+        _req: BaseRequest,
+        _response: BaseResponse,
+        _path: normalisedURLPath,
+        _method: HTTPMethod
+    ): Promise<boolean>;
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
     static reset(): void;
-    createPrimaryUserIdOrLinkAccounts: ({ tenantId, user, userContext, }: {
+    createPrimaryUserIdOrLinkAccounts: ({
+        tenantId,
+        user,
+        userContext,
+    }: {
         tenantId: string;
         user: User;
         userContext: UserContext;
     }) => Promise<User>;
-    getPrimaryUserThatCanBeLinkedToRecipeUserId: ({ tenantId, user, userContext, }: {
+    getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
+        tenantId,
+        user,
+        userContext,
+    }: {
         tenantId: string;
         user: User;
         userContext: UserContext;
     }) => Promise<User | undefined>;
-    isSignInAllowed: ({ user, tenantId, userContext, }: {
+    isSignInAllowed: ({
+        user,
+        tenantId,
+        userContext,
+    }: {
         user: User;
         tenantId: string;
         userContext: UserContext;
     }) => Promise<boolean>;
-    isSignUpAllowed: ({ newUser, isVerified, tenantId, userContext, }: {
+    isSignUpAllowed: ({
+        newUser,
+        isVerified,
+        tenantId,
+        userContext,
+    }: {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
         tenantId: string;
         userContext: UserContext;
     }) => Promise<boolean>;
-    isSignInUpAllowedHelper: ({ accountInfo, isVerified, tenantId, isSignIn, userContext, }: {
+    isSignInUpAllowedHelper: ({
+        accountInfo,
+        isVerified,
+        tenantId,
+        isSignIn,
+        userContext,
+    }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
         tenantId: string;

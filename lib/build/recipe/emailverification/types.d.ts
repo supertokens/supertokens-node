@@ -1,6 +1,10 @@
+// @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { TypeInput as EmailDeliveryTypeInput, TypeInputWithService as EmailDeliveryTypeInputWithService } from "../../ingredients/emaildelivery/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
@@ -9,28 +13,48 @@ import { User } from "../../types";
 export declare type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForRecipeUserId?: (recipeUserId: RecipeUserId, userContext: UserContext) => Promise<{
-        status: "OK";
-        email: string;
-    } | {
-        status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
-    }>;
+    getEmailForRecipeUserId?: (
+        recipeUserId: RecipeUserId,
+        userContext: UserContext
+    ) => Promise<
+        | {
+              status: "OK";
+              email: string;
+          }
+        | {
+              status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
     mode: "REQUIRED" | "OPTIONAL";
-    getEmailDeliveryConfig: (isInServerlessEnv: boolean) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForRecipeUserId?: (recipeUserId: RecipeUserId, userContext: UserContext) => Promise<{
-        status: "OK";
-        email: string;
-    } | {
-        status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
-    }>;
+    getEmailDeliveryConfig: (
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
+    getEmailForRecipeUserId?: (
+        recipeUserId: RecipeUserId,
+        userContext: UserContext
+    ) => Promise<
+        | {
+              status: "OK";
+              email: string;
+          }
+        | {
+              status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -44,28 +68,30 @@ export declare type RecipeInterface = {
         email: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        token: string;
-    } | {
-        status: "EMAIL_ALREADY_VERIFIED_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
     verifyEmailUsingToken(input: {
         token: string;
         attemptAccountLinking: boolean;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        user: UserEmailInfo;
-    } | {
-        status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-    }>;
-    isEmailVerified(input: {
-        recipeUserId: RecipeUserId;
-        email: string;
-        userContext: UserContext;
-    }): Promise<boolean>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: UserEmailInfo;
+          }
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+    >;
+    isEmailVerified(input: { recipeUserId: RecipeUserId; email: string; userContext: UserContext }): Promise<boolean>;
     revokeEmailVerificationTokens(input: {
         recipeUserId: RecipeUserId;
         email: string;
@@ -93,38 +119,55 @@ export declare type APIOptions = {
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
 };
 export declare type APIInterface = {
-    verifyEmailPOST: undefined | ((input: {
-        token: string;
-        tenantId: string;
-        options: APIOptions;
-        userContext: UserContext;
-        session?: SessionContainerInterface;
-    }) => Promise<{
-        status: "OK";
-        user: UserEmailInfo;
-        newSession?: SessionContainerInterface;
-    } | {
-        status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-    } | GeneralErrorResponse>);
-    isEmailVerifiedGET: undefined | ((input: {
-        options: APIOptions;
-        userContext: UserContext;
-        session: SessionContainerInterface;
-    }) => Promise<{
-        status: "OK";
-        isVerified: boolean;
-        newSession?: SessionContainerInterface;
-    } | GeneralErrorResponse>);
-    generateEmailVerifyTokenPOST: undefined | ((input: {
-        options: APIOptions;
-        userContext: UserContext;
-        session: SessionContainerInterface;
-    }) => Promise<{
-        status: "OK";
-    } | {
-        status: "EMAIL_ALREADY_VERIFIED_ERROR";
-        newSession?: SessionContainerInterface;
-    } | GeneralErrorResponse>);
+    verifyEmailPOST:
+        | undefined
+        | ((input: {
+              token: string;
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+              session?: SessionContainerInterface;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: UserEmailInfo;
+                    newSession?: SessionContainerInterface;
+                }
+              | {
+                    status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
+    isEmailVerifiedGET:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              userContext: UserContext;
+              session: SessionContainerInterface;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    isVerified: boolean;
+                    newSession?: SessionContainerInterface;
+                }
+              | GeneralErrorResponse
+          >);
+    generateEmailVerifyTokenPOST:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              userContext: UserContext;
+              session: SessionContainerInterface;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR";
+                    newSession?: SessionContainerInterface;
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
@@ -136,9 +179,16 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
     emailVerifyLink: string;
     tenantId: string;
 };
-export declare type GetEmailForRecipeUserIdFunc = (user: User | undefined, recipeUserId: RecipeUserId, userContext: UserContext) => Promise<{
-    status: "OK";
-    email: string;
-} | {
-    status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
-}>;
+export declare type GetEmailForRecipeUserIdFunc = (
+    user: User | undefined,
+    recipeUserId: RecipeUserId,
+    userContext: UserContext
+) => Promise<
+    | {
+          status: "OK";
+          email: string;
+      }
+    | {
+          status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+      }
+>;

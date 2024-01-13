@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
@@ -114,10 +115,7 @@ export declare type TypeProvider = {
         };
         userContext: UserContext;
     }) => Promise<any>;
-    getUserInfo: (input: {
-        oAuthTokens: any;
-        userContext: UserContext;
-    }) => Promise<UserInfo>;
+    getUserInfo: (input: { oAuthTokens: any; userContext: UserContext }) => Promise<UserInfo>;
 };
 export declare type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];
@@ -135,14 +133,20 @@ export declare type TypeNormalisedInputSignInAndUp = {
 export declare type TypeInput = {
     signInAndUpFeature?: TypeInputSignInAndUp;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -172,26 +176,29 @@ export declare type RecipeInterface = {
         tenantId: string;
         shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        createdNewRecipeUser: boolean;
-        recipeUserId: RecipeUserId;
-        user: User;
-        oAuthTokens: {
-            [key: string]: any;
-        };
-        rawUserInfoFromProvider: {
-            fromIdTokenPayload?: {
-                [key: string]: any;
-            };
-            fromUserInfoAPI?: {
-                [key: string]: any;
-            };
-        };
-    } | {
-        status: "SIGN_IN_UP_NOT_ALLOWED";
-        reason: string;
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              recipeUserId: RecipeUserId;
+              user: User;
+              oAuthTokens: {
+                  [key: string]: any;
+              };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: {
+                      [key: string]: any;
+                  };
+                  fromUserInfoAPI?: {
+                      [key: string]: any;
+                  };
+              };
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
     manuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
@@ -200,18 +207,22 @@ export declare type RecipeInterface = {
         tenantId: string;
         shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        createdNewRecipeUser: boolean;
-        user: User;
-        recipeUserId: RecipeUserId;
-    } | {
-        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-        reason: string;
-    } | {
-        status: "SIGN_IN_UP_NOT_ALLOWED";
-        reason: string;
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -224,61 +235,80 @@ export declare type APIOptions = {
     appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
-    authorisationUrlGET: undefined | ((input: {
-        provider: TypeProvider;
-        redirectURIOnProviderDashboard: string;
-        tenantId: string;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        urlWithQueryParams: string;
-        pkceCodeVerifier?: string;
-    } | GeneralErrorResponse>);
-    signInUpPOST: undefined | ((input: {
-        provider: TypeProvider;
-        tenantId: string;
-        session?: SessionContainerInterface;
-        options: APIOptions;
-        userContext: UserContext;
-    } & ({
-        redirectURIInfo: {
-            redirectURIOnProviderDashboard: string;
-            redirectURIQueryParams: any;
-            pkceCodeVerifier?: string;
-        };
-    } | {
-        oAuthTokens: {
-            [key: string]: any;
-        };
-    })) => Promise<{
-        status: "OK";
-        createdNewRecipeUser: boolean;
-        user: User;
-        session: SessionContainerInterface;
-        oAuthTokens: {
-            [key: string]: any;
-        };
-        rawUserInfoFromProvider: {
-            fromIdTokenPayload?: {
-                [key: string]: any;
-            };
-            fromUserInfoAPI?: {
-                [key: string]: any;
-            };
-        };
-    } | {
-        status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-    } | {
-        status: "SIGN_IN_UP_NOT_ALLOWED";
-        reason: string;
-    } | GeneralErrorResponse>);
-    appleRedirectHandlerPOST: undefined | ((input: {
-        formPostInfoFromProvider: {
-            [key: string]: any;
-        };
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<void>);
+    authorisationUrlGET:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              redirectURIOnProviderDashboard: string;
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    urlWithQueryParams: string;
+                    pkceCodeVerifier?: string;
+                }
+              | GeneralErrorResponse
+          >);
+    signInUpPOST:
+        | undefined
+        | ((
+              input: {
+                  provider: TypeProvider;
+                  tenantId: string;
+                  session?: SessionContainerInterface;
+                  options: APIOptions;
+                  userContext: UserContext;
+              } & (
+                  | {
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: string;
+                            redirectURIQueryParams: any;
+                            pkceCodeVerifier?: string;
+                        };
+                    }
+                  | {
+                        oAuthTokens: {
+                            [key: string]: any;
+                        };
+                    }
+              )
+          ) => Promise<
+              | {
+                    status: "OK";
+                    createdNewRecipeUser: boolean;
+                    user: User;
+                    session: SessionContainerInterface;
+                    oAuthTokens: {
+                        [key: string]: any;
+                    };
+                    rawUserInfoFromProvider: {
+                        fromIdTokenPayload?: {
+                            [key: string]: any;
+                        };
+                        fromUserInfoAPI?: {
+                            [key: string]: any;
+                        };
+                    };
+                }
+              | {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+                }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | GeneralErrorResponse
+          >);
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: {
+              formPostInfoFromProvider: {
+                  [key: string]: any;
+              };
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<void>);
 };
 export {};

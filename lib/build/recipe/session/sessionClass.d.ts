@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
 import { Helpers } from "./recipeImplementation";
 import RecipeUserId from "../../recipeUserId";
@@ -14,7 +15,20 @@ export default class Session implements SessionContainerInterface {
     protected reqResInfo: ReqResInfo | undefined;
     protected accessTokenUpdated: boolean;
     protected tenantId: string;
-    constructor(helpers: Helpers, accessToken: string, frontToken: string, refreshToken: TokenInfo | undefined, antiCsrfToken: string | undefined, sessionHandle: string, userId: string, recipeUserId: RecipeUserId, userDataInAccessToken: any, reqResInfo: ReqResInfo | undefined, accessTokenUpdated: boolean, tenantId: string);
+    constructor(
+        helpers: Helpers,
+        accessToken: string,
+        frontToken: string,
+        refreshToken: TokenInfo | undefined,
+        antiCsrfToken: string | undefined,
+        sessionHandle: string,
+        userId: string,
+        recipeUserId: RecipeUserId,
+        userDataInAccessToken: any,
+        reqResInfo: ReqResInfo | undefined,
+        accessTokenUpdated: boolean,
+        tenantId: string
+    );
     getRecipeUserId(_userContext?: Record<string, any>): RecipeUserId;
     revokeSession(userContext?: Record<string, any>): Promise<void>;
     getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any>;

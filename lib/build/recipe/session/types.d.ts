@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
@@ -54,14 +55,29 @@ export declare type TypeInput = {
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         openIdFeature?: {
-            functions?: (originalImplementation: OpenIdRecipeInterface, builder?: OverrideableBuilder<OpenIdRecipeInterface>) => OpenIdRecipeInterface;
-            apis?: (originalImplementation: OpenIdAPIInterface, builder?: OverrideableBuilder<OpenIdAPIInterface>) => OpenIdAPIInterface;
+            functions?: (
+                originalImplementation: OpenIdRecipeInterface,
+                builder?: OverrideableBuilder<OpenIdRecipeInterface>
+            ) => OpenIdRecipeInterface;
+            apis?: (
+                originalImplementation: OpenIdAPIInterface,
+                builder?: OverrideableBuilder<OpenIdAPIInterface>
+            ) => OpenIdAPIInterface;
             jwtFeature?: {
-                functions?: (originalImplementation: JWTRecipeInterface, builder?: OverrideableBuilder<JWTRecipeInterface>) => JWTRecipeInterface;
-                apis?: (originalImplementation: JWTAPIInterface, builder?: OverrideableBuilder<JWTAPIInterface>) => JWTAPIInterface;
+                functions?: (
+                    originalImplementation: JWTRecipeInterface,
+                    builder?: OverrideableBuilder<JWTRecipeInterface>
+                ) => JWTRecipeInterface;
+                apis?: (
+                    originalImplementation: JWTAPIInterface,
+                    builder?: OverrideableBuilder<JWTAPIInterface>
+                ) => JWTAPIInterface;
             };
         };
     };
@@ -79,10 +95,11 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     overwriteSessionDuringSignInUp: boolean;
-    antiCsrfFunctionOrString: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | ((input: {
-        request: BaseRequest | undefined;
-        userContext: UserContext;
-    }) => "VIA_CUSTOM_HEADER" | "NONE");
+    antiCsrfFunctionOrString:
+        | "VIA_TOKEN"
+        | "VIA_CUSTOM_HEADER"
+        | "NONE"
+        | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => "VIA_CUSTOM_HEADER" | "NONE");
     getTokenTransferMethod: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
@@ -91,14 +108,29 @@ export declare type TypeNormalisedInput = {
     invalidClaimStatusCode: number;
     exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         openIdFeature?: {
-            functions?: (originalImplementation: OpenIdRecipeInterface, builder?: OverrideableBuilder<OpenIdRecipeInterface>) => OpenIdRecipeInterface;
-            apis?: (originalImplementation: OpenIdAPIInterface, builder?: OverrideableBuilder<OpenIdAPIInterface>) => OpenIdAPIInterface;
+            functions?: (
+                originalImplementation: OpenIdRecipeInterface,
+                builder?: OverrideableBuilder<OpenIdRecipeInterface>
+            ) => OpenIdRecipeInterface;
+            apis?: (
+                originalImplementation: OpenIdAPIInterface,
+                builder?: OverrideableBuilder<OpenIdAPIInterface>
+            ) => OpenIdAPIInterface;
             jwtFeature?: {
-                functions?: (originalImplementation: JWTRecipeInterface, builder?: OverrideableBuilder<JWTRecipeInterface>) => JWTRecipeInterface;
-                apis?: (originalImplementation: JWTAPIInterface, builder?: OverrideableBuilder<JWTAPIInterface>) => JWTAPIInterface;
+                functions?: (
+                    originalImplementation: JWTRecipeInterface,
+                    builder?: OverrideableBuilder<JWTRecipeInterface>
+                ) => JWTRecipeInterface;
+                apis?: (
+                    originalImplementation: JWTAPIInterface,
+                    builder?: OverrideableBuilder<JWTAPIInterface>
+                ) => JWTAPIInterface;
             };
         };
     };
@@ -110,10 +142,22 @@ export interface ErrorHandlerMiddleware {
     (message: string, request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<void>;
 }
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, recipeUserId: RecipeUserId, request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<void>;
+    (
+        sessionHandle: string,
+        userId: string,
+        recipeUserId: RecipeUserId,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: UserContext
+    ): Promise<void>;
 }
 export interface InvalidClaimErrorHandlerMiddleware {
-    (validatorErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<void>;
+    (
+        validatorErrors: ClaimValidationError[],
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: UserContext
+    ): Promise<void>;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
@@ -125,7 +169,11 @@ export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
     checkDatabase?: boolean;
-    overrideGlobalClaimValidators?: (globalClaimValidators: SessionClaimValidator[], session: SessionContainerInterface, userContext: UserContext) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
+    overrideGlobalClaimValidators?: (
+        globalClaimValidators: SessionClaimValidator[],
+        session: SessionContainerInterface,
+        userContext: UserContext
+    ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
@@ -181,14 +229,8 @@ export declare type RecipeInterface = {
         fetchAcrossAllTenants?: boolean;
         userContext: UserContext;
     }): Promise<string[]>;
-    revokeSession(input: {
-        sessionHandle: string;
-        userContext: UserContext;
-    }): Promise<boolean>;
-    revokeMultipleSessions(input: {
-        sessionHandles: string[];
-        userContext: UserContext;
-    }): Promise<string[]>;
+    revokeSession(input: { sessionHandle: string; userContext: UserContext }): Promise<boolean>;
+    revokeMultipleSessions(input: { sessionHandles: string[]; userContext: UserContext }): Promise<string[]>;
     updateSessionDataInDatabase(input: {
         sessionHandle: string;
         newSessionData: any;
@@ -206,21 +248,24 @@ export declare type RecipeInterface = {
         accessToken: string;
         newAccessTokenPayload?: any;
         userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        session: {
-            handle: string;
-            userId: string;
-            recipeUserId: RecipeUserId;
-            userDataInJWT: any;
-            tenantId: string;
-        };
-        accessToken?: {
-            token: string;
-            expiry: number;
-            createdTime: number;
-        };
-    } | undefined>;
+    }): Promise<
+        | {
+              status: "OK";
+              session: {
+                  handle: string;
+                  userId: string;
+                  recipeUserId: RecipeUserId;
+                  userDataInJWT: any;
+                  tenantId: string;
+              };
+              accessToken?: {
+                  token: string;
+                  expiry: number;
+                  createdTime: number;
+              };
+          }
+        | undefined
+    >;
     validateClaims(input: {
         userId: string;
         recipeUserId: RecipeUserId;
@@ -246,17 +291,16 @@ export declare type RecipeInterface = {
         sessionHandle: string;
         claim: SessionClaim<T>;
         userContext: UserContext;
-    }): Promise<{
-        status: "SESSION_DOES_NOT_EXIST_ERROR";
-    } | {
-        status: "OK";
-        value: T | undefined;
-    }>;
-    removeClaim(input: {
-        sessionHandle: string;
-        claim: SessionClaim<any>;
-        userContext: UserContext;
-    }): Promise<boolean>;
+    }): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              value: T | undefined;
+          }
+    >;
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: UserContext }): Promise<boolean>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: Record<string, any>): Promise<void>;
@@ -299,17 +343,21 @@ export declare type APIInterface = {
      * since it's not something that is directly called by the user on the
      * frontend anyway
      */
-    refreshPOST: undefined | ((input: {
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<SessionContainerInterface>);
-    signOutPOST: undefined | ((input: {
-        options: APIOptions;
-        session: SessionContainerInterface | undefined;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-    } | GeneralErrorResponse>);
+    refreshPOST:
+        | undefined
+        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<SessionContainerInterface>);
+    signOutPOST:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface | undefined;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
@@ -326,25 +374,30 @@ export declare type SessionInformation = {
     timeCreated: number;
     tenantId: string;
 };
-export declare type ClaimValidationResult = {
-    isValid: true;
-} | {
-    isValid: false;
-    reason?: JSONValue;
-};
+export declare type ClaimValidationResult =
+    | {
+          isValid: true;
+      }
+    | {
+          isValid: false;
+          reason?: JSONValue;
+      };
 export declare type ClaimValidationError = {
     id: string;
     reason?: JSONValue;
 };
-export declare type SessionClaimValidator = (// We split the type like this to express that either both claim and shouldRefetch is defined or neither.
-{
-    claim: SessionClaim<any>;
-    /**
-     * Decides if we need to refetch the claim value before checking the payload with `isValid`.
-     * E.g.: if the information in the payload is expired, or is not sufficient for this check.
-     */
-    shouldRefetch: (payload: any, userContext: UserContext) => Promise<boolean> | boolean;
-} | {}) & {
+export declare type SessionClaimValidator = (
+    | // We split the type like this to express that either both claim and shouldRefetch is defined or neither.
+    {
+          claim: SessionClaim<any>;
+          /**
+           * Decides if we need to refetch the claim value before checking the payload with `isValid`.
+           * E.g.: if the information in the payload is expired, or is not sufficient for this check.
+           */
+          shouldRefetch: (payload: any, userContext: UserContext) => Promise<boolean> | boolean;
+      }
+    | {}
+) & {
     id: string;
     /**
      * Decides if the claim is valid based on the payload (and not checking DB or anything else)
@@ -359,7 +412,13 @@ export declare abstract class SessionClaim<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchValue(userId: string, recipeUserId: RecipeUserId, tenantId: string, currentPayload: JSONObject | undefined, userContext: UserContext): Promise<T | undefined> | T | undefined;
+    abstract fetchValue(
+        userId: string,
+        recipeUserId: RecipeUserId,
+        tenantId: string,
+        currentPayload: JSONObject | undefined,
+        userContext: UserContext
+    ): Promise<T | undefined> | T | undefined;
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
      *
@@ -384,7 +443,13 @@ export declare abstract class SessionClaim<T> {
      * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: UserContext): T | undefined;
-    build(userId: string, recipeUserId: RecipeUserId, tenantId: string, currentPayload: JSONObject | undefined, userContext: UserContext): Promise<JSONObject>;
+    build(
+        userId: string,
+        recipeUserId: RecipeUserId,
+        tenantId: string,
+        currentPayload: JSONObject | undefined,
+        userContext: UserContext
+    ): Promise<JSONObject>;
 }
 export declare type ReqResInfo = {
     res: BaseResponse;

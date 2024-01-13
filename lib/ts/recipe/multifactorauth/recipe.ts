@@ -202,18 +202,23 @@ export default class Recipe extends RecipeModule {
         this.getEmailsForFactorFromOtherRecipesFunc.push(func);
     };
 
-    getEmailsForFactors = (user: User, sessionRecipeUserId: RecipeUserId): { status: "OK", factorIdToEmailsMap: Record<string, string[]> } | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" } => {
-        let result: { status: "OK", factorIdToEmailsMap: Record<string, string[]> } = {
+    getEmailsForFactors = (
+        user: User,
+        sessionRecipeUserId: RecipeUserId
+    ):
+        | { status: "OK"; factorIdToEmailsMap: Record<string, string[]> }
+        | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" } => {
+        let result: { status: "OK"; factorIdToEmailsMap: Record<string, string[]> } = {
             status: "OK",
             factorIdToEmailsMap: {},
-        }
+        };
 
         for (const func of this.getEmailsForFactorFromOtherRecipesFunc) {
-            let funcResult = func(user, sessionRecipeUserId)
+            let funcResult = func(user, sessionRecipeUserId);
             if (funcResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID") {
                 return {
-                    status: "UNKNOWN_SESSION_RECIPE_USER_ID"
-                }
+                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
+                };
             }
             result.factorIdToEmailsMap = {
                 ...result.factorIdToEmailsMap,
@@ -230,18 +235,20 @@ export default class Recipe extends RecipeModule {
     getPhoneNumbersForFactors = (
         user: User,
         sessionRecipeUserId: RecipeUserId
-    ): { status: "OK", factorIdToPhoneNumberMap: Record<string, string[]> } | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" } => {
-        let result: { status: "OK", factorIdToPhoneNumberMap: Record<string, string[]> } = {
+    ):
+        | { status: "OK"; factorIdToPhoneNumberMap: Record<string, string[]> }
+        | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" } => {
+        let result: { status: "OK"; factorIdToPhoneNumberMap: Record<string, string[]> } = {
             status: "OK",
             factorIdToPhoneNumberMap: {},
-        }
+        };
 
         for (const func of this.getPhoneNumbersForFactorFromOtherRecipesFunc) {
-            let funcResult = func(user, sessionRecipeUserId)
+            let funcResult = func(user, sessionRecipeUserId);
             if (funcResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID") {
                 return {
-                    status: "UNKNOWN_SESSION_RECIPE_USER_ID"
-                }
+                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
+                };
             }
             result.factorIdToPhoneNumberMap = {
                 ...result.factorIdToPhoneNumberMap,

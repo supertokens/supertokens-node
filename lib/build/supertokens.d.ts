@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -15,34 +16,53 @@ export default class SuperTokens {
     static init(config: TypeInput): void;
     static reset(): void;
     static getInstanceOrThrowError(): SuperTokens;
-    handleAPI: (matchedRecipe: RecipeModule, id: string, tenantId: string, request: BaseRequest, response: BaseResponse, path: NormalisedURLPath, method: HTTPMethod, userContext: UserContext) => Promise<boolean>;
+    handleAPI: (
+        matchedRecipe: RecipeModule,
+        id: string,
+        tenantId: string,
+        request: BaseRequest,
+        response: BaseResponse,
+        path: NormalisedURLPath,
+        method: HTTPMethod,
+        userContext: UserContext
+    ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
-    getUserCount: (includeRecipeIds: string[] | undefined, tenantId: string | undefined, userContext: UserContext) => Promise<number>;
+    getUserCount: (
+        includeRecipeIds: string[] | undefined,
+        tenantId: string | undefined,
+        userContext: UserContext
+    ) => Promise<number>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
-    } | {
-        status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
-        doesSuperTokensUserIdExist: boolean;
-        doesExternalUserIdExist: boolean;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
+          }
+        | {
+              status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
+              doesSuperTokensUserIdExist: boolean;
+              doesExternalUserIdExist: boolean;
+          }
+    >;
     getUserIdMapping: (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        superTokensUserId: string;
-        externalUserId: string;
-        externalUserIdInfo: string | undefined;
-    } | {
-        status: "UNKNOWN_MAPPING_ERROR";
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              superTokensUserId: string;
+              externalUserId: string;
+              externalUserIdInfo: string | undefined;
+          }
+        | {
+              status: "UNKNOWN_MAPPING_ERROR";
+          }
+    >;
     deleteUserIdMapping: (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";

@@ -97,16 +97,21 @@ export default function getAPIInterface(): APIInterface {
             await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates `v` in the MFA claim
 
             let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId());
-            let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId());
-            if (getEmailsForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID" ||
-                getPhoneNumbersForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID") {
+            let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(
+                user,
+                session.getRecipeUserId()
+            );
+            if (
+                getEmailsForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID" ||
+                getPhoneNumbersForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID"
+            ) {
                 throw new SessionError({
                     type: "UNAUTHORISED",
                     message: "User no longer associated with the session",
                     payload: {
-                        clearTokens: true
-                    }
-                })
+                        clearTokens: true,
+                    },
+                });
             }
 
             return {

@@ -1,7 +1,12 @@
+// @ts-nocheck
 import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
 import RecipeUserId from "../../recipeUserId";
-export declare function getInfoFromAccessToken(jwtInfo: ParsedJWTInfo, jwks: jose.JWTVerifyGetKey, doAntiCsrfCheck: boolean): Promise<{
+export declare function getInfoFromAccessToken(
+    jwtInfo: ParsedJWTInfo,
+    jwks: jose.JWTVerifyGetKey,
+    doAntiCsrfCheck: boolean
+): Promise<{
     sessionHandle: string;
     userId: string;
     recipeUserId: RecipeUserId;

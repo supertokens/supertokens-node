@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Request, Response, NextFunction } from "express";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
@@ -22,7 +23,16 @@ export declare class ExpressResponse extends BaseResponse {
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     removeHeader: (key: string) => void;
-    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
+    setCookie: (
+        key: string,
+        value: string,
+        domain: string | undefined,
+        secure: boolean,
+        httpOnly: boolean,
+        expires: number,
+        path: string,
+        sameSite: "strict" | "lax" | "none"
+    ) => void;
     /**
      * @param {number} statusCode
      */

@@ -133,7 +133,11 @@ export default class Recipe extends RecipeModule {
                                 // cause if it is fake, then we should not consider it as setup
                                 // so that the frontend asks the user to enter an email,
                                 // or uses the email of another login method.
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID && loginMethod.tenantIds.includes(tenantId) && !isFakeEmail(loginMethod.email!)) {
+                                if (
+                                    loginMethod.recipeId === Recipe.RECIPE_ID &&
+                                    loginMethod.tenantIds.includes(tenantId) &&
+                                    !isFakeEmail(loginMethod.email!)
+                                ) {
                                     return ["emailpassword"];
                                 }
                             }
@@ -141,18 +145,18 @@ export default class Recipe extends RecipeModule {
                         });
 
                         mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
-                            // This function is called in the MFA info endpoint API. 
+                            // This function is called in the MFA info endpoint API.
                             // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
 
                             // preparing some reusable variables for the logic below...
-                            let sessionLoginMethod = user.loginMethods.find(lM => {
+                            let sessionLoginMethod = user.loginMethods.find((lM) => {
                                 return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
-                            })
+                            });
                             if (sessionLoginMethod === undefined) {
                                 // this can happen maybe cause this login method
                                 // was unlinked from the user or deleted entirely...
                                 return {
-                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID"
+                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
                                 };
                             }
 
@@ -160,21 +164,25 @@ export default class Recipe extends RecipeModule {
                                 return a.timeJoined - b.timeJoined;
                             });
 
-
                             // MAIN LOGIC FOR THE FUNCTION STARTS HERE
-                            let nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined: string[] = []
+                            let nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined: string[] = [];
                             for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
                                 // in the if statement below, we also check for if the email
                                 // is fake or not cause if it is fake, then we consider that
                                 // that login method is not setup for emailpassword, and instead
                                 // we want to ask the user to enter their email, or to use
                                 // another login method that has no fake email.
-                                if (orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID && !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
+                                if (
+                                    orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID &&
+                                    !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                ) {
                                     // each emailpassword loginMethod for a user
                                     // is guaranteed to have an email field and
                                     // that is unique across other emailpassword loginMethods
                                     // for this user.
-                                    nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                    nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.push(
+                                        orderedLoginMethodsByTimeJoinedOldestFirst[i].email!
+                                    );
                                 }
                             }
 
@@ -191,32 +199,37 @@ export default class Recipe extends RecipeModule {
 
                                 // when constructing the emails array, we prioritize
                                 // the session user's email cause it's a better UX
-                                // for setting or asking for the password for the same email 
+                                // for setting or asking for the password for the same email
                                 // that the user used to login.
                                 let emailsResult: string[] = [];
                                 if (sessionLoginMethod.email !== undefined && !isFakeEmail(sessionLoginMethod.email)) {
-                                    emailsResult = [sessionLoginMethod.email]
+                                    emailsResult = [sessionLoginMethod.email];
                                 }
 
                                 for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
-                                    if (orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined && !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
+                                    if (
+                                        orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
+                                        !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                    ) {
                                         // we have the if check below cause different loginMethods
                                         // across different recipes can have the same email.
-                                        if (!emailsResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
-                                            emailsResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                        if (
+                                            !emailsResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                        ) {
+                                            emailsResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!);
                                         }
                                     }
                                 }
                                 return {
                                     status: "OK",
                                     factorIdToEmailsMap: {
-                                        emailpassword: emailsResult
-                                    }
-                                }
+                                        emailpassword: emailsResult,
+                                    },
+                                };
                             } else if (nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.length === 1) {
-                                // we return just this email cause if this emailpassword 
-                                // user is from the same tenant that the user is logging into, 
-                                // then they have to use this since new factor setup won't 
+                                // we return just this email cause if this emailpassword
+                                // user is from the same tenant that the user is logging into,
+                                // then they have to use this since new factor setup won't
                                 // be allowed. Even if this emailpassword user is not from
                                 // the same tenant as the user's session, we still return just
                                 // this cause that way we still just have one emailpassword
@@ -224,9 +237,9 @@ export default class Recipe extends RecipeModule {
                                 return {
                                     status: "OK",
                                     factorIdToEmailsMap: {
-                                        emailpassword: nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined
-                                    }
-                                }
+                                        emailpassword: nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined,
+                                    },
+                                };
                             }
 
                             // Finally, we return all emails that have emailpassword login
@@ -234,22 +247,37 @@ export default class Recipe extends RecipeModule {
                             // if the session's email is in the list of
                             // nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined (for better UX)
                             let emailsResult: string[] = [];
-                            if (sessionLoginMethod.email !== undefined && nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.includes(sessionLoginMethod.email)) {
-                                emailsResult = [sessionLoginMethod.email]
+                            if (
+                                sessionLoginMethod.email !== undefined &&
+                                nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.includes(
+                                    sessionLoginMethod.email
+                                )
+                            ) {
+                                emailsResult = [sessionLoginMethod.email];
                             }
 
-                            for (let i = 0; i < nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.length; i++) {
-                                if (!emailsResult.includes(nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined[i])) {
-                                    emailsResult.push(nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined[i])
+                            for (
+                                let i = 0;
+                                i < nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.length;
+                                i++
+                            ) {
+                                if (
+                                    !emailsResult.includes(
+                                        nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined[i]
+                                    )
+                                ) {
+                                    emailsResult.push(
+                                        nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined[i]
+                                    );
                                 }
                             }
 
                             return {
                                 status: "OK",
                                 factorIdToEmailsMap: {
-                                    emailpassword: emailsResult
-                                }
-                            }
+                                    emailpassword: emailsResult,
+                                },
+                            };
                         });
                     }
                 });

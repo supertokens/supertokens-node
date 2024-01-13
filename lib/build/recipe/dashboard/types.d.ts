@@ -1,3 +1,4 @@
+// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo, User, UserContext } from "../../types";
@@ -5,7 +6,10 @@ export declare type TypeInput = {
     apiKey?: string;
     admins?: string[];
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -14,14 +18,15 @@ export declare type TypeNormalisedInput = {
     admins?: string[];
     authMode: AuthMode;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type RecipeInterface = {
-    getDashboardBundleLocation(input: {
-        userContext: UserContext;
-    }): Promise<string>;
+    getDashboardBundleLocation(input: { userContext: UserContext }): Promise<string>;
     shouldAllowAccess(input: {
         req: BaseRequest;
         config: TypeNormalisedInput;
@@ -38,12 +43,14 @@ export declare type APIOptions = {
     appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
-    dashboardGET: undefined | ((input: {
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<string>);
+    dashboardGET: undefined | ((input: { options: APIOptions; userContext: UserContext }) => Promise<string>);
 };
-export declare type APIFunction = (apiImplementation: APIInterface, tenantId: string, options: APIOptions, userContext: UserContext) => Promise<any>;
+export declare type APIFunction = (
+    apiImplementation: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: UserContext
+) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 export declare type AuthMode = "api-key" | "email-password";
 export declare type UserWithFirstAndLastName = User & {

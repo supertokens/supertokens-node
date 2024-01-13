@@ -8,7 +8,7 @@
         "sourceMap": true,
         "skipLibCheck": true,
         "noFallthroughCasesInSwitch": true,
-        "lib": ["ES2017"],
+        "lib": ["ES2017", "DOM"], // "DOM" is required for Request and Response types
         "noEmit": true
     },
     "include": ["./**/*"],

@@ -154,10 +154,10 @@ export default class Recipe extends RecipeModule {
                         });
                         mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (_: string, user: User) => {
                             // We deliberately do not check for matching tenantId because
-                            // even if the user is logging into a tenant does not have 
-                            // passwordless loginMethod, the frontend will call the 
+                            // even if the user is logging into a tenant does not have
+                            // passwordless loginMethod, the frontend will call the
                             // same consumeCode API as if there was a passwordless user.
-                            // the only diff is that a new recipe user will be created, 
+                            // the only diff is that a new recipe user will be created,
                             // which is OK.
                             function isFactorSetupForUser(user: User, factorId: string) {
                                 for (const loginMethod of user.loginMethods) {
@@ -186,18 +186,18 @@ export default class Recipe extends RecipeModule {
                             return allFactors.filter((id) => isFactorSetupForUser(user, id));
                         });
                         mfaInstance.addGetEmailsForFactorFromOtherRecipes((user, sessionRecipeUserId) => {
-                            // This function is called in the MFA info endpoint API. 
+                            // This function is called in the MFA info endpoint API.
                             // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
 
                             // preparing some reusable variables for the logic below...
-                            const sessionLoginMethod = user.loginMethods.find(lM => {
+                            const sessionLoginMethod = user.loginMethods.find((lM) => {
                                 return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
-                            })
+                            });
                             if (sessionLoginMethod === undefined) {
                                 // this can happen maybe cause this login method
                                 // was unlinked from the user or deleted entirely...
                                 return {
-                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID"
+                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
                                 };
                             }
 
@@ -205,9 +205,8 @@ export default class Recipe extends RecipeModule {
                                 return a.timeJoined - b.timeJoined;
                             });
 
-
                             // MAIN LOGIC FOR THE FUNCTION STARTS HERE
-                            let nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = []
+                            let nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = [];
                             for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
                                 // in the if statement below, we also check for if the email
                                 // is fake or not cause if it is fake, then we consider that
@@ -215,10 +214,15 @@ export default class Recipe extends RecipeModule {
                                 // we want to ask the user to enter their email, or to use
                                 // another login method that has no fake email.
                                 if (orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID) {
-                                    if (orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined && !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
+                                    if (
+                                        orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
+                                        !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                    ) {
                                         // loginmethods for passwordless are guaranteed to have unique emails
                                         // across all the loginmethods for a user.
-                                        nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                        nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.push(
+                                            orderedLoginMethodsByTimeJoinedOldestFirst[i].email!
+                                        );
                                     }
                                 }
                             }
@@ -236,19 +240,27 @@ export default class Recipe extends RecipeModule {
 
                                 // when constructing the emails array, we prioritize
                                 // the session user's email cause it's a better UX
-                                // for setting or asking for the OTP for the same email 
+                                // for setting or asking for the OTP for the same email
                                 // that the user used to login.
                                 let emailsResult: string[] = [];
-                                if (sessionLoginMethod!.email !== undefined && !isFakeEmail(sessionLoginMethod!.email)) {
-                                    emailsResult = [sessionLoginMethod!.email]
+                                if (
+                                    sessionLoginMethod!.email !== undefined &&
+                                    !isFakeEmail(sessionLoginMethod!.email)
+                                ) {
+                                    emailsResult = [sessionLoginMethod!.email];
                                 }
 
                                 for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
-                                    if (orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined && !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
+                                    if (
+                                        orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
+                                        !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                    ) {
                                         // we have the if check below cause different loginMethods
                                         // across different recipes can have the same email.
-                                        if (!emailsResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
-                                            emailsResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                        if (
+                                            !emailsResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                                        ) {
+                                            emailsResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!);
                                         }
                                     }
                                 }
@@ -261,23 +273,27 @@ export default class Recipe extends RecipeModule {
                                 }
                                 return {
                                     status: "OK",
-                                    factorIdToEmailsMap
-                                }
+                                    factorIdToEmailsMap,
+                                };
                             } else if (nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length === 1) {
-                                // we return just this email and not others cause we want to 
+                                // we return just this email and not others cause we want to
                                 // not create more loginMethods with passwordless for the user
                                 // object.
                                 let factorIdToEmailsMap: Record<string, string[]> = {};
                                 if (allFactors.includes(FactorIds.OTP_EMAIL)) {
-                                    factorIdToEmailsMap[FactorIds.OTP_EMAIL] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
+                                    factorIdToEmailsMap[
+                                        FactorIds.OTP_EMAIL
+                                    ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
                                 }
                                 if (allFactors.includes(FactorIds.LINK_EMAIL)) {
-                                    factorIdToEmailsMap[FactorIds.LINK_EMAIL] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
+                                    factorIdToEmailsMap[
+                                        FactorIds.LINK_EMAIL
+                                    ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
                                 }
                                 return {
                                     status: "OK",
-                                    factorIdToEmailsMap
-                                }
+                                    factorIdToEmailsMap,
+                                };
                             }
 
                             // Finally, we return all emails that have passwordless login
@@ -285,13 +301,26 @@ export default class Recipe extends RecipeModule {
                             // if the session's email is in the list of
                             // nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined (for better UX)
                             let emailsResult: string[] = [];
-                            if (sessionLoginMethod!.email !== undefined && nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.includes(sessionLoginMethod!.email)) {
-                                emailsResult = [sessionLoginMethod!.email]
+                            if (
+                                sessionLoginMethod!.email !== undefined &&
+                                nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.includes(
+                                    sessionLoginMethod!.email
+                                )
+                            ) {
+                                emailsResult = [sessionLoginMethod!.email];
                             }
 
-                            for (let i = 0; i < nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length; i++) {
-                                if (!emailsResult.includes(nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i])) {
-                                    emailsResult.push(nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i])
+                            for (
+                                let i = 0;
+                                i < nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length;
+                                i++
+                            ) {
+                                if (
+                                    !emailsResult.includes(
+                                        nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i]
+                                    )
+                                ) {
+                                    emailsResult.push(nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i]);
                                 }
                             }
 
@@ -304,23 +333,23 @@ export default class Recipe extends RecipeModule {
                             }
                             return {
                                 status: "OK",
-                                factorIdToEmailsMap
-                            }
+                                factorIdToEmailsMap,
+                            };
                         });
 
                         mfaInstance.addGetPhoneNumbersForFactorsFromOtherRecipes((user, sessionRecipeUserId) => {
-                            // This function is called in the MFA info endpoint API. 
+                            // This function is called in the MFA info endpoint API.
                             // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
 
                             // preparing some reusable variables for the logic below...
-                            const sessionLoginMethod = user.loginMethods.find(lM => {
+                            const sessionLoginMethod = user.loginMethods.find((lM) => {
                                 return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
-                            })
+                            });
                             if (sessionLoginMethod === undefined) {
                                 // this can happen maybe cause this login method
                                 // was unlinked from the user or deleted entirely...
                                 return {
-                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID"
+                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
                                 };
                             }
 
@@ -328,9 +357,8 @@ export default class Recipe extends RecipeModule {
                                 return a.timeJoined - b.timeJoined;
                             });
 
-
                             // MAIN LOGIC FOR THE FUNCTION STARTS HERE
-                            let phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = []
+                            let phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = [];
                             for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
                                 // in the if statement below, we also check for if the email
                                 // is fake or not cause if it is fake, then we consider that
@@ -341,7 +369,9 @@ export default class Recipe extends RecipeModule {
                                     if (orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber !== undefined) {
                                         // loginmethods for passwordless are guaranteed to have unique phone numbers
                                         // across all the loginmethods for a user.
-                                        phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!)
+                                        phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.push(
+                                            orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!
+                                        );
                                     }
                                 }
                             }
@@ -358,19 +388,25 @@ export default class Recipe extends RecipeModule {
 
                                 // when constructing the phone numbers array, we prioritize
                                 // the session user's phone number cause it's a better UX
-                                // for setting or asking for the OTP for the same phone number 
+                                // for setting or asking for the OTP for the same phone number
                                 // that the user used to login.
                                 let phonesResult: string[] = [];
                                 if (sessionLoginMethod!.phoneNumber !== undefined) {
-                                    phonesResult = [sessionLoginMethod!.phoneNumber]
+                                    phonesResult = [sessionLoginMethod!.phoneNumber];
                                 }
 
                                 for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
                                     if (orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber !== undefined) {
                                         // we have the if check below cause different loginMethods
                                         // across different recipes can have the same phone number.
-                                        if (!phonesResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!)) {
-                                            phonesResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!)
+                                        if (
+                                            !phonesResult.includes(
+                                                orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!
+                                            )
+                                        ) {
+                                            phonesResult.push(
+                                                orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!
+                                            );
                                         }
                                     }
                                 }
@@ -383,23 +419,27 @@ export default class Recipe extends RecipeModule {
                                 }
                                 return {
                                     status: "OK",
-                                    factorIdToPhoneNumberMap
-                                }
+                                    factorIdToPhoneNumberMap,
+                                };
                             } else if (phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length === 1) {
-                                // we return just this phone number and not others cause we want to 
+                                // we return just this phone number and not others cause we want to
                                 // not create more loginMethods with passwordless for the user
                                 // object.
                                 let factorIdToPhoneNumberMap: Record<string, string[]> = {};
                                 if (allFactors.includes(FactorIds.OTP_PHONE)) {
-                                    factorIdToPhoneNumberMap[FactorIds.OTP_PHONE] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
+                                    factorIdToPhoneNumberMap[
+                                        FactorIds.OTP_PHONE
+                                    ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
                                 }
                                 if (allFactors.includes(FactorIds.LINK_PHONE)) {
-                                    factorIdToPhoneNumberMap[FactorIds.LINK_PHONE] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
+                                    factorIdToPhoneNumberMap[
+                                        FactorIds.LINK_PHONE
+                                    ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
                                 }
                                 return {
                                     status: "OK",
-                                    factorIdToPhoneNumberMap
-                                }
+                                    factorIdToPhoneNumberMap,
+                                };
                             }
 
                             // Finally, we return all phones that have passwordless login
@@ -407,13 +447,26 @@ export default class Recipe extends RecipeModule {
                             // if the session's phone is in the list of
                             // phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined (for better UX)
                             let phonesResult: string[] = [];
-                            if (sessionLoginMethod!.phoneNumber !== undefined && phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.includes(sessionLoginMethod!.phoneNumber)) {
-                                phonesResult = [sessionLoginMethod!.phoneNumber]
+                            if (
+                                sessionLoginMethod!.phoneNumber !== undefined &&
+                                phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.includes(
+                                    sessionLoginMethod!.phoneNumber
+                                )
+                            ) {
+                                phonesResult = [sessionLoginMethod!.phoneNumber];
                             }
 
-                            for (let i = 0; i < phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length; i++) {
-                                if (!phonesResult.includes(phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i])) {
-                                    phonesResult.push(phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i])
+                            for (
+                                let i = 0;
+                                i < phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length;
+                                i++
+                            ) {
+                                if (
+                                    !phonesResult.includes(
+                                        phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i]
+                                    )
+                                ) {
+                                    phonesResult.push(phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i]);
                                 }
                             }
 
@@ -426,8 +479,8 @@ export default class Recipe extends RecipeModule {
                             }
                             return {
                                 status: "OK",
-                                factorIdToPhoneNumberMap
-                            }
+                                factorIdToPhoneNumberMap,
+                            };
                         });
                     }
                 });
@@ -533,17 +586,17 @@ export default class Recipe extends RecipeModule {
     createMagicLink = async (
         input:
             | {
-                email: string;
-                tenantId: string;
-                request: BaseRequest | undefined;
-                userContext: UserContext;
-            }
+                  email: string;
+                  tenantId: string;
+                  request: BaseRequest | undefined;
+                  userContext: UserContext;
+              }
             | {
-                phoneNumber: string;
-                tenantId: string;
-                request: BaseRequest | undefined;
-                userContext: UserContext;
-            }
+                  phoneNumber: string;
+                  tenantId: string;
+                  request: BaseRequest | undefined;
+                  userContext: UserContext;
+              }
     ): Promise<string> => {
         let userInputCode =
             this.config.getCustomUserInputCode !== undefined
@@ -553,17 +606,17 @@ export default class Recipe extends RecipeModule {
         const codeInfo = await this.recipeInterfaceImpl.createCode(
             "email" in input
                 ? {
-                    email: input.email,
-                    userInputCode,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                }
+                      email: input.email,
+                      userInputCode,
+                      tenantId: input.tenantId,
+                      userContext: input.userContext,
+                  }
                 : {
-                    phoneNumber: input.phoneNumber,
-                    userInputCode,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                }
+                      phoneNumber: input.phoneNumber,
+                      userInputCode,
+                      tenantId: input.tenantId,
+                      userContext: input.userContext,
+                  }
         );
 
         const appInfo = this.getAppInfo();
@@ -592,49 +645,49 @@ export default class Recipe extends RecipeModule {
     signInUp = async (
         input:
             | {
-                email: string;
-                tenantId: string;
-                shouldAttemptAccountLinkingIfAllowed: boolean;
-                userContext: UserContext;
-            }
+                  email: string;
+                  tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
+                  userContext: UserContext;
+              }
             | {
-                phoneNumber: string;
-                tenantId: string;
-                shouldAttemptAccountLinkingIfAllowed: boolean;
-                userContext: UserContext;
-            }
+                  phoneNumber: string;
+                  tenantId: string;
+                  shouldAttemptAccountLinkingIfAllowed: boolean;
+                  userContext: UserContext;
+              }
     ) => {
         let codeInfo = await this.recipeInterfaceImpl.createCode(
             "email" in input
                 ? {
-                    email: input.email,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                }
+                      email: input.email,
+                      tenantId: input.tenantId,
+                      userContext: input.userContext,
+                  }
                 : {
-                    phoneNumber: input.phoneNumber,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                }
+                      phoneNumber: input.phoneNumber,
+                      tenantId: input.tenantId,
+                      userContext: input.userContext,
+                  }
         );
 
         let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
             this.config.flowType === "MAGIC_LINK"
                 ? {
-                    preAuthSessionId: codeInfo.preAuthSessionId,
-                    linkCode: codeInfo.linkCode,
-                    tenantId: input.tenantId,
-                    shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
-                    userContext: input.userContext,
-                }
+                      preAuthSessionId: codeInfo.preAuthSessionId,
+                      linkCode: codeInfo.linkCode,
+                      tenantId: input.tenantId,
+                      shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
+                      userContext: input.userContext,
+                  }
                 : {
-                    preAuthSessionId: codeInfo.preAuthSessionId,
-                    deviceId: codeInfo.deviceId,
-                    userInputCode: codeInfo.userInputCode,
-                    tenantId: input.tenantId,
-                    shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
-                    userContext: input.userContext,
-                }
+                      preAuthSessionId: codeInfo.preAuthSessionId,
+                      deviceId: codeInfo.deviceId,
+                      userInputCode: codeInfo.userInputCode,
+                      tenantId: input.tenantId,
+                      shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
+                      userContext: input.userContext,
+                  }
         );
 
         if (consumeCodeResponse.status === "OK") {

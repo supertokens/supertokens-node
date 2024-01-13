@@ -118,7 +118,8 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                     }
 
                     logDebugMessage(
-                        `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"
+                        `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${
+                            setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"
                         }`
                     );
                     return { isValid: true };

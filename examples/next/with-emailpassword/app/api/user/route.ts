@@ -1,8 +1,13 @@
 import { NextResponse, NextRequest } from "next/server";
-import { withSession } from "../../../middleware";
+import { withSession } from "supertokens-node/nextjs";
+import supertokens from "supertokens-node";
+import { backendConfig } from "../../../config/backendConfig";
+
+supertokens.init(backendConfig());
 
 export async function GET(request: NextRequest) {
-    return withSession(request, async (session) => {
+    return withSession(request, async (err, session) => {
+        if (err) return NextResponse.json(err, { status: 500 });
         if (session === undefined) {
             return new NextResponse("Authentication required", {
                 status: 401,

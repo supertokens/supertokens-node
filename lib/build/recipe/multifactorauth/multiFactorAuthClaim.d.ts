@@ -1,3 +1,4 @@
+// @ts-nocheck
 import RecipeUserId from "../../recipeUserId";
 import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
@@ -14,23 +15,45 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
     isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;
-    getNextSetOfUnsatisfiedFactors(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): {
+    getNextSetOfUnsatisfiedFactors(
+        completedClaims: MFAClaimValue["c"],
+        requirements: MFARequirementList
+    ): {
         factorIds: string[];
         type: "requirement" | "oneOf" | "allOfInAnyOrder";
     };
-    fetchValue: (userId: string, _recipeUserId: RecipeUserId, tenantId: string, currentPayload: JSONObject | undefined, userContext: UserContext) => Promise<{
+    fetchValue: (
+        userId: string,
+        _recipeUserId: RecipeUserId,
+        tenantId: string,
+        currentPayload: JSONObject | undefined,
+        userContext: UserContext
+    ) => Promise<{
         c: Record<string, number>;
         v: boolean;
     }>;
-    addToPayload_internal: (payload: JSONObject, value: MFAClaimValue) => {
-        [x: string]: string | number | boolean | JSONObject | import("../../types").JSONArray | {
-            c: {
-                [x: string]: number;
-            };
-            v: boolean;
-        } | null | undefined;
+    addToPayload_internal: (
+        payload: JSONObject,
+        value: MFAClaimValue
+    ) => {
+        [x: string]:
+            | string
+            | number
+            | boolean
+            | JSONObject
+            | import("../../types").JSONArray
+            | {
+                  c: {
+                      [x: string]: number;
+                  };
+                  v: boolean;
+              }
+            | null
+            | undefined;
     };
-    removeFromPayload: (payload: JSONObject) => {
+    removeFromPayload: (
+        payload: JSONObject
+    ) => {
         [x: string]: import("../../types").JSONValue;
     };
     removeFromPayloadByMerge_internal: () => {

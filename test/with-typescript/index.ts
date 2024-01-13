@@ -33,6 +33,7 @@ import JWT from "../../recipe/jwt";
 import AccountLinking from "../../recipe/accountlinking";
 import MultiFactorAuth from "../../recipe/multifactorauth";
 import { verifySession as customVerifySession } from "../../recipe/session/framework/custom";
+import { NextRequest, NextResponse } from "next/server";
 
 UserRoles.init({
     override: {
@@ -195,6 +196,17 @@ ThirdPartyPasswordless.init({
                 ...oI,
             };
         },
+    },
+});
+
+ThirdPartyPasswordless.init({
+    contactMethod: "EMAIL_OR_PHONE",
+    flowType: "USER_INPUT_CODE",
+    async validateEmailAddress(email, tenantId) {
+        return undefined;
+    },
+    async validatePhoneNumber(phoneNumber, tenantId) {
+        return undefined;
     },
 });
 
@@ -924,6 +936,7 @@ import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
 import { serialize } from "cookie";
+import { Response } from "express";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {
@@ -1997,22 +2010,28 @@ Supertokens.init({
     ],
 });
 
-const nextAppDirMiddleware = customFramework.middleware<NextApiRequest>((req) => {
+const nextAppDirMiddleware = customFramework.middleware<NextRequest>((req) => {
     const query = Object.fromEntries(new URL(req.url!).searchParams.entries());
+
+    const cookies: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.cookies)) {
+        if (value !== undefined) {
+            cookies[key] = value;
+        }
+    }
 
     return new customFramework.PreParsedRequest({
         method: req.method as HTTPMethod,
         url: req.url!,
         query: query,
         headers: req.headers,
-        cookies: req.cookies,
-        getFormBody: () => req.body,
-        getJSONBody: () => req.body,
+        cookies: cookies,
+        getFormBody: async () => req.body,
+        getJSONBody: async () => req.body,
     });
 });
 
-// We do not have Next13 typings here, but this is almost the exact same code we will have in the app dir example
-async function handleCall(req: NextApiRequest): Promise<any> {
+async function handleCall(req: NextRequest): Promise<NextResponse> {
     const baseResponse = new customFramework.CollectingResponse();
 
     const { handled, error } = await nextAppDirMiddleware(req, baseResponse);
@@ -2021,10 +2040,7 @@ async function handleCall(req: NextApiRequest): Promise<any> {
         throw error;
     }
     if (!handled) {
-        return {
-            status: 404,
-            body: "Not Found",
-        };
+        return new NextResponse("Not found", { status: 404 });
     }
 
     for (const respCookie of baseResponse.cookies) {
@@ -2041,10 +2057,55 @@ async function handleCall(req: NextApiRequest): Promise<any> {
         );
     }
 
-    return { body: baseResponse.body, headers: baseResponse.headers, status: baseResponse.statusCode };
+    return new NextResponse(baseResponse.body, {
+        headers: baseResponse.headers,
+        status: baseResponse.statusCode,
+    });
 }
 
-class NextResponse {}
 NextJS.getAppDirRequestHandler(NextResponse);
 
 customVerifySession({ checkDatabase: true })(new PreParsedRequest({} as any), new CollectingResponse());
+
+const nextRequest = new NextRequest("http://localhost:3000/api/user");
+
+NextJS.getSSRSession(nextRequest.cookies.getAll(), nextRequest.headers);
+NextJS.withSession(nextRequest, async function test(session): Promise<NextResponse> {
+    return NextResponse.json({});
+});
+
+EmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
+    // @ts-expect-error
+    if (resp.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+    }
+    // @ts-expect-error
+    if (resp.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+    }
+
+    if (
+        resp.status === "OK" ||
+        resp.status === "PASSWORD_POLICY_VIOLATED_ERROR" ||
+        resp.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR" ||
+        resp.status === "UNKNOWN_USER_ID_ERROR"
+    ) {
+        return;
+    }
+});
+
+ThirdPartyEmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
+    // @ts-expect-error
+    if (resp.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+    }
+    // @ts-expect-error
+    if (resp.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+    }
+
+    if (
+        resp.status === "OK" ||
+        resp.status === "PASSWORD_POLICY_VIOLATED_ERROR" ||
+        resp.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR" ||
+        resp.status === "UNKNOWN_USER_ID_ERROR"
+    ) {
+        return;
+    }
+});
