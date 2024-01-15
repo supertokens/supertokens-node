@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Fetching a tenant's info
     -   Deleting a tenant
     -   Listing all tenants with their user counts
+    -   Creating or updating an existing tenant
 
 ## [16.7.1] - 2024-01-09
 
