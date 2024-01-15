@@ -87,6 +87,7 @@ import getTenantLoginMethodsInfo from "./api/getTenantLoginMethodsInfo";
 import getTenantInfo from "./api/multitenancy/getTenantInfo";
 import listAllTenantsWithUserCount from "./api/multitenancy/listAllTenantsWithUserCount";
 import deleteTenant from "./api/multitenancy/deleteTenant";
+import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -377,6 +378,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "delete",
             },
+            {
+                id: TENANT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
+                disabled: false,
+                method: "post",
+            },
         ];
     };
 
@@ -507,6 +514,9 @@ export default class Recipe extends RecipeModule {
                 apiFunction = getTenantLoginMethodsInfo;
             }
         } else if (id === TENANT_API) {
+            if (req.getMethod() === "post") {
+                apiFunction = createOrUpdateTenant;
+            }
             if (req.getMethod() === "get") {
                 apiFunction = getTenantInfo;
             }
