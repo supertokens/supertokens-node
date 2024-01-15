@@ -49,7 +49,7 @@ export default async function getTenantInfo(
 ): Promise<Response> {
     const tenantId = options.req.getKeyValueFromQuery("tenantId");
 
-    if (tenantId === undefined || tenantId === "") {
+    if (typeof tenantId !== "string" || tenantId === "") {
         throw new SuperTokensError({
             message: "Missing required parameter 'tenantId'",
             type: SuperTokensError.BAD_INPUT_ERROR,

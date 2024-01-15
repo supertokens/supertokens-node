@@ -15,29 +15,29 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
+import RecipeUserId from "../../../../recipeUserId";
 
-export type Response = {
-    status: "OK";
-};
+export type Response = ReturnType<typeof Multitenancy.disassociateUserFromTenant>;
 
-export default async function deleteTenant(
+export default async function disassociateUserFromTenant(
     _: APIInterface,
     __: string,
     options: APIOptions,
     userContext: any
-): Promise<Response> {
-    const tenantId = options.req.getKeyValueFromQuery("tenantId");
+): Response {
+    const requestBody = await options.req.getJSONBody();
+    const { tenantId, userId } = requestBody;
 
-    if (typeof tenantId !== "string" || tenantId === "") {
+    if (typeof tenantId !== "string" || tenantId === "" || typeof userId !== "string" || userId === "") {
         throw new SuperTokensError({
-            message: "Missing required parameter 'tenantId'",
+            message: "Missing required parameter 'tenantId' or 'userId'",
             type: SuperTokensError.BAD_INPUT_ERROR,
         });
     }
 
-    await Multitenancy.deleteTenant(tenantId, userContext);
+    const recipeUserId = new RecipeUserId(userId);
 
-    return {
-        status: "OK",
-    };
+    const response = await Multitenancy.disassociateUserFromTenant(tenantId, recipeUserId, userContext);
+
+    return response;
 }

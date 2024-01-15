@@ -42,5 +42,7 @@ export const USERROLES_USER_API = "/api/userroles/user/roles";
 
 export const TENANT_API = "/api/tenant";
 export const LIST_TENANTS_WITH_USER_COUNT = "/api/tenants/list-with-user-count";
+export const ASSOCIATE_USER_TO_TENANT = "/api/tenants/user/associate";
+export const DISASSOCIATE_USER_FROM_TENANT = "/api/tenants/user/disassociate";
 
 export const UNLINK_USER = "/api/user/unlink";

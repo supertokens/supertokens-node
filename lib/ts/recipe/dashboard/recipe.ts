@@ -47,6 +47,8 @@ import {
     LIST_TENANT_LOGIN_METHODS,
     TENANT_API,
     LIST_TENANTS_WITH_USER_COUNT,
+    DISASSOCIATE_USER_FROM_TENANT,
+    ASSOCIATE_USER_TO_TENANT,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -88,6 +90,8 @@ import getTenantInfo from "./api/multitenancy/getTenantInfo";
 import listAllTenantsWithUserCount from "./api/multitenancy/listAllTenantsWithUserCount";
 import deleteTenant from "./api/multitenancy/deleteTenant";
 import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
+import associateUserToTenant from "./api/multitenancy/associateUserToTenant";
+import disassociateUserFromTenant from "./api/multitenancy/disassociateUserFromTenant";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -384,6 +388,20 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "post",
             },
+            {
+                id: ASSOCIATE_USER_TO_TENANT,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(ASSOCIATE_USER_TO_TENANT)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: DISASSOCIATE_USER_FROM_TENANT,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(DISASSOCIATE_USER_FROM_TENANT)
+                ),
+                disabled: false,
+                method: "put",
+            },
         ];
     };
 
@@ -527,6 +545,11 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "get") {
                 apiFunction = listAllTenantsWithUserCount;
             }
+        } else if (id === ASSOCIATE_USER_TO_TENANT) {
+            apiFunction = associateUserToTenant;
+        }
+        if (id === DISASSOCIATE_USER_FROM_TENANT) {
+            apiFunction = disassociateUserFromTenant;
         }
 
         // If the id doesnt match any APIs return false

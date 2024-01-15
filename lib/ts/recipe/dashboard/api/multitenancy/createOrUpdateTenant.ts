@@ -34,7 +34,7 @@ export default async function createOrUpdateTenant(
     const requestBody = await options.req.getJSONBody();
     const { tenantId, ...config } = requestBody;
 
-    if (tenantId === undefined || tenantId === "") {
+    if (typeof tenantId !== "string" || tenantId === "") {
         throw new SuperTokensError({
             message: "Missing required parameter 'tenantId'",
             type: SuperTokensError.BAD_INPUT_ERROR,
