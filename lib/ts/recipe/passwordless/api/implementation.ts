@@ -146,7 +146,7 @@ export default function getAPIImplementation(): APIInterface {
                 const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                     tenantId,
                     accountInfo,
-                    doUnionOfAccountInfo: true,
+                    doUnionOfAccountInfo: false,
                     userContext,
                 });
                 for (const user of users) {
