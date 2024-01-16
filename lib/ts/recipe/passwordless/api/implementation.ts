@@ -170,7 +170,7 @@ export default function getAPIImplementation(): APIInterface {
 
             while (true) {
                 try {
-                    if (!deviceInfo) {
+                    if (deviceInfo === undefined) {
                         throw new SignInUpError({
                             status: "RESTART_FLOW_ERROR",
                         });
