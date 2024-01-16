@@ -94,19 +94,14 @@ export default function getAPIImplementation(): APIInterface {
                 });
 
                 if (linkRes.status !== "OK") {
+                    // we have the following cases here:
+                    // 1. Input user is not primary user - when we recurse, we notice that it's not primary user and we will check if it can be made primary and do it again
+                    // 2. Recipe user id is already lined to another primary user - when we recurse, we will find a conflicting user for the email and the validation will fail
+                    // 3. Account info already associated with another primary user - when we recurse, we fall back on the same point as case 2 (above)
                     throw new RecurseError();
                 }
 
-                let user = await getUser(recipeUserId.getAsString(), userContext);
-                if (user === undefined) {
-                    // linked user not found
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "User not found",
-                    });
-                }
-
-                return user;
+                return linkRes.user;
             };
 
             const assertThatFactorUserBeingCreatedCanBeLinkedWithSessionUser = async (
