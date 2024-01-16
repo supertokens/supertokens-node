@@ -15,42 +15,6 @@ export default function getAPIImplementation(): APIInterface {
     return {
         consumeCodePOST: async function (input) {
             /* Helper functions Begin */
-
-            class SignInUpError extends Error {
-                response:
-                    | {
-                          status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
-                          failedCodeInputAttemptCount: number;
-                          maximumCodeInputAttempts: number;
-                      }
-                    | { status: "RESTART_FLOW_ERROR" }
-                    | {
-                          status: "SIGN_IN_UP_NOT_ALLOWED";
-                          reason: string;
-                      };
-
-                constructor(
-                    response:
-                        | {
-                              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
-                              failedCodeInputAttemptCount: number;
-                              maximumCodeInputAttempts: number;
-                          }
-                        | { status: "RESTART_FLOW_ERROR" }
-                        | { status: "SIGN_IN_UP_NOT_ALLOWED"; reason: string }
-                ) {
-                    super(response.status);
-
-                    this.response = response;
-                }
-            }
-
-            class RecurseError extends Error {
-                constructor() {
-                    super("RECURSE");
-                }
-            }
-
             const assertThatSignUpIsAllowed = async (
                 tenantId: string,
                 email: string | undefined,
@@ -529,6 +493,16 @@ export default function getAPIImplementation(): APIInterface {
                             if (isSignIn) {
                                 // This branch - MFA is enabled / No active session (first factor) / Sign in
 
+                                if (!(await isValidFirstFactor(input.tenantId, factorId, input.userContext))) {
+                                    throw new SessionError({
+                                        type: SessionError.UNAUTHORISED,
+                                        message: "Session is required for secondary factors",
+                                        payload: {
+                                            clearTokens: false,
+                                        },
+                                    });
+                                }
+
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
                                         ? {
@@ -557,16 +531,6 @@ export default function getAPIImplementation(): APIInterface {
                                     consumeCodeResponse.user,
                                     input.userContext
                                 );
-
-                                if (!(await isValidFirstFactor(input.tenantId, factorId, input.userContext))) {
-                                    throw new SessionError({
-                                        type: SessionError.UNAUTHORISED,
-                                        message: "Session is required for secondary factors",
-                                        payload: {
-                                            clearTokens: false,
-                                        },
-                                    });
-                                }
 
                                 consumeCodeResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
                                     {
@@ -601,13 +565,6 @@ export default function getAPIImplementation(): APIInterface {
                             } else {
                                 // This branch - MFA is enabled / No active session (first factor) / Sign up
 
-                                await assertThatSignUpIsAllowed(
-                                    input.tenantId,
-                                    deviceInfo.email,
-                                    deviceInfo.phoneNumber,
-                                    input.userContext
-                                );
-
                                 if (!(await isValidFirstFactor(input.tenantId, factorId, input.userContext))) {
                                     throw new SessionError({
                                         type: SessionError.UNAUTHORISED,
@@ -617,6 +574,13 @@ export default function getAPIImplementation(): APIInterface {
                                         },
                                     });
                                 }
+
+                                await assertThatSignUpIsAllowed(
+                                    input.tenantId,
+                                    deviceInfo.email,
+                                    deviceInfo.phoneNumber,
+                                    input.userContext
+                                );
 
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
@@ -1121,4 +1085,39 @@ export default function getAPIImplementation(): APIInterface {
             }
         },
     };
+}
+
+class SignInUpError extends Error {
+    response:
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          };
+
+    constructor(
+        response:
+            | {
+                  status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+                  failedCodeInputAttemptCount: number;
+                  maximumCodeInputAttempts: number;
+              }
+            | { status: "RESTART_FLOW_ERROR" }
+            | { status: "SIGN_IN_UP_NOT_ALLOWED"; reason: string }
+    ) {
+        super(response.status);
+
+        this.response = response;
+    }
+}
+
+class RecurseError extends Error {
+    constructor() {
+        super("RECURSE");
+    }
 }
