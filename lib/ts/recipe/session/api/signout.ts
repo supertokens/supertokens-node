@@ -35,7 +35,7 @@ export default async function signOutAPI(
         config: options.config,
         recipeInterfaceImpl: options.recipeImplementation,
         options: {
-            sessionRequired: false,
+            sessionRequired: true,
             overrideGlobalClaimValidators: () => [],
         },
         userContext,
