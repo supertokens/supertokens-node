@@ -150,7 +150,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
         getRequiredSecondaryFactorsForUser: async function ({ userId, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadataInternal({
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
                 userId,
                 userContext,
             });
@@ -160,7 +160,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
         addToRequiredSecondaryFactorsForUser: async function ({ userId, factorId, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadataInternal({
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
                 userId,
                 userContext,
             });
@@ -180,7 +180,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 },
             };
 
-            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadata({
                 userId: userId,
                 metadataUpdate,
                 userContext,
@@ -189,7 +189,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
         removeFromRequiredSecondaryFactorsForUser: async function ({ userId, factorId, userContext }) {
             const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadataInternal({
+            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
                 userId,
                 userContext,
             });
@@ -214,7 +214,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 },
             };
 
-            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadataInternal({
+            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadata({
                 userId: userId,
                 metadataUpdate,
                 userContext,

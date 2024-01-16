@@ -47,15 +47,6 @@ export type RecipeInterface = {
         metadata: any;
     }>;
 
-    // same as getUserMetadata, but used internally. As of now for multifactorauth.
-    getUserMetadataInternal: (input: {
-        userId: string;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        metadata: any;
-    }>;
-
     /**
      * Updates the metadata object of the user by doing a shallow merge of the stored and the update JSONs
      * and removing properties set to null on the root level of the update object.
@@ -65,16 +56,6 @@ export type RecipeInterface = {
      *   - result: `{ "preferences": { "theme":"dark" }, "notifications": { "sms": true } }`
      */
     updateUserMetadata: (input: {
-        userId: string;
-        metadataUpdate: JSONObject;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        metadata: JSONObject;
-    }>;
-
-    // same as updateUserMetadata, but used internally. As of now for multifactorauth.
-    updateUserMetadataInternal: (input: {
         userId: string;
         metadataUpdate: JSONObject;
         userContext: UserContext;
