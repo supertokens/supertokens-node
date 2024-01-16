@@ -123,7 +123,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let user = (
-                await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
+                await EmailPassword.signUp("public", "test@example.com", "password123", {
                     doNotLink: true,
                 })
             ).user;
@@ -318,7 +318,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
 
             let user = (
-                await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
+                await EmailPassword.signUp("public", "test@example.com", "password123", {
                     doNotLink: true,
                 })
             ).user;
@@ -1500,7 +1500,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
             assert(user.isPrimaryUser);
 
-            let response = await EmailPassword.signUp("public", "test2@example.com", "password123", undefined, {
+            let response = await EmailPassword.signUp("public", "test2@example.com", "password123", {
                 doNotLink: true,
             });
             assert(response.user.isPrimaryUser === false);
