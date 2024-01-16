@@ -47,20 +47,23 @@ export const isValidFirstFactor = async function (
     const { status: _, ...tenantConfig } = tenantInfo;
 
     // we prioritise the firstFactors configured in tenant. If not present, we fallback to the recipe config
-
-    // if validFirstFactors is undefined, we assume it's valid. We assume it's valid because we will still get errors
-    // if the loginMethod is disabled in core, or not initialised in the recipeList
-
     // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
     // so we don't need to do additional checks here
+
     let validFirstFactors =
         tenantConfig.firstFactors !== undefined
             ? tenantConfig.firstFactors
             : MultiFactorAuthRecipe.getInstanceOrThrowError().config.firstFactors;
 
-    if (validFirstFactors !== undefined && !validFirstFactors.includes(factorId)) {
-        return false;
+    if (validFirstFactors === undefined) {
+        // if validFirstFactors is undefined, we can safely assume it to be true because we would then
+        // have other points of failure:
+        // - if login method is disabled in core for the tenant
+        // - if appropriate recipe is not initialized, will result in a 404
+        // In all other cases, we just want to allow all available login methods to be used as first factor
+
+        return true;
     }
 
-    return true;
+    return validFirstFactors.includes(factorId);
 };
