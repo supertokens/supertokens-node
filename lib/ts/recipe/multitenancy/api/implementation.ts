@@ -1,6 +1,5 @@
 import { APIInterface } from "../";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
-import { FactorIds } from "../../multifactorauth";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -57,6 +56,7 @@ export default function getAPIInterface(): APIInterface {
                 firstFactors = options.staticFirstFactors;
 
                 // Filter based on enabled recipes
+                // TODO MFA use constants
                 if (tenantConfigRes.emailPassword.enabled === false) {
                     firstFactors = firstFactors.filter((factor) => factor !== "emailpassword");
                 }
@@ -65,13 +65,7 @@ export default function getAPIInterface(): APIInterface {
                 }
                 if (tenantConfigRes.passwordless.enabled === false) {
                     firstFactors = firstFactors.filter(
-                        (factor) =>
-                            ![
-                                FactorIds.OTP_EMAIL,
-                                FactorIds.OTP_PHONE,
-                                FactorIds.LINK_EMAIL,
-                                FactorIds.LINK_PHONE,
-                            ].includes(factor)
+                        (factor) => !["otp-email", "otp-phone", "link-email", "link-phone"].includes(factor)
                     );
                 }
             }
