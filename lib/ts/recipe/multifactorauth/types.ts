@@ -34,7 +34,7 @@ export type MFARequirementList = (
 )[];
 
 export type MFAClaimValue = {
-    c: Record<string, number> | undefined;
+    c: Record<string, number | undefined>;
     v: boolean;
 };
 
@@ -70,7 +70,7 @@ export type RecipeInterface = {
         factorsSetUpForUser: string[];
         requiredSecondaryFactorsForUser: string[];
         requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
+        completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<void>;
 
@@ -81,7 +81,7 @@ export type RecipeInterface = {
         factorsSetUpForUser: string[];
         requiredSecondaryFactorsForUser: string[];
         requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
+        completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
 

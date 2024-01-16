@@ -29,7 +29,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         currentPayload: JSONObject | undefined,
         userContext: UserContext
     ) => Promise<{
-        c: Record<string, number>;
+        c: Record<string, number | undefined>;
         v: boolean;
     }>;
     addToPayload_internal: (
@@ -44,7 +44,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
             | import("../../types").JSONArray
             | {
                   c: {
-                      [x: string]: number;
+                      [x: string]: number | undefined;
                   };
                   v: boolean;
               }

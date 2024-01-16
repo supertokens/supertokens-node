@@ -18,7 +18,7 @@ export declare type MFARequirementList = (
     | string
 )[];
 export declare type MFAClaimValue = {
-    c: Record<string, number> | undefined;
+    c: Record<string, number | undefined>;
     v: boolean;
 };
 export declare type TypeInput = {
@@ -49,7 +49,7 @@ export declare type RecipeInterface = {
         factorsSetUpForUser: string[];
         requiredSecondaryFactorsForUser: string[];
         requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
+        completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<void>;
     getMFARequirementsForAuth: (input: {
@@ -59,7 +59,7 @@ export declare type RecipeInterface = {
         factorsSetUpForUser: string[];
         requiredSecondaryFactorsForUser: string[];
         requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
+        completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
     markFactorAsCompleteInSession: (input: {
