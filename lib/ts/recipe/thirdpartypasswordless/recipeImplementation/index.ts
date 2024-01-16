@@ -25,6 +25,11 @@ export default function getRecipeInterface(
         consumeCode: async function (input) {
             return originalPasswordlessImplementation.consumeCode.bind(DerivedPwdless(this))(input);
         },
+        consumeCodeWithoutAttemptingAccountLinking: async function (input) {
+            return originalPasswordlessImplementation.consumeCodeWithoutAttemptingAccountLinking.bind(
+                DerivedPwdless(this)
+            )(input);
+        },
         createCode: async function (input) {
             return originalPasswordlessImplementation.createCode.bind(DerivedPwdless(this))(input);
         },

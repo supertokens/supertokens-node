@@ -647,13 +647,11 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
     ) => {
@@ -677,7 +675,6 @@ export default class Recipe extends RecipeModule {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
                       tenantId: input.tenantId,
-                      shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
                       userContext: input.userContext,
                   }
                 : {
@@ -685,7 +682,6 @@ export default class Recipe extends RecipeModule {
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
                       tenantId: input.tenantId,
-                      shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed,
                       userContext: input.userContext,
                   }
         );

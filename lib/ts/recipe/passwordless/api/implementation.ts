@@ -273,14 +273,12 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -335,14 +333,12 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -375,6 +371,7 @@ export default function getAPIImplementation(): APIInterface {
                             if (isSignIn) {
                                 // This branch - MFA is disabled / Active session / Sign in
 
+                                // Sign in operation never attempts auto account linking
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
                                         ? {
@@ -382,14 +379,12 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -440,24 +435,42 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
-                                    "deviceId" in input
-                                        ? {
-                                              preAuthSessionId: input.preAuthSessionId,
-                                              deviceId: input.deviceId,
-                                              userInputCode: input.userInputCode,
-                                              tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
-                                              userContext: input.userContext,
-                                          }
-                                        : {
-                                              preAuthSessionId: input.preAuthSessionId,
-                                              linkCode: input.linkCode,
-                                              tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
-                                              userContext: input.userContext,
-                                          }
-                                );
+                                let consumeCodeResponse;
+                                if (overwriteSessionDuringSignInUp === false) {
+                                    consumeCodeResponse = await input.options.recipeImplementation.consumeCodeWithoutAttemptingAccountLinking(
+                                        "deviceId" in input
+                                            ? {
+                                                  preAuthSessionId: input.preAuthSessionId,
+                                                  deviceId: input.deviceId,
+                                                  userInputCode: input.userInputCode,
+                                                  tenantId: input.tenantId,
+                                                  userContext: input.userContext,
+                                              }
+                                            : {
+                                                  preAuthSessionId: input.preAuthSessionId,
+                                                  linkCode: input.linkCode,
+                                                  tenantId: input.tenantId,
+                                                  userContext: input.userContext,
+                                              }
+                                    );
+                                } else {
+                                    consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
+                                        "deviceId" in input
+                                            ? {
+                                                  preAuthSessionId: input.preAuthSessionId,
+                                                  deviceId: input.deviceId,
+                                                  userInputCode: input.userInputCode,
+                                                  tenantId: input.tenantId,
+                                                  userContext: input.userContext,
+                                              }
+                                            : {
+                                                  preAuthSessionId: input.preAuthSessionId,
+                                                  linkCode: input.linkCode,
+                                                  tenantId: input.tenantId,
+                                                  userContext: input.userContext,
+                                              }
+                                    );
+                                }
 
                                 if (consumeCodeResponse.status !== "OK") {
                                     throw new SignInUpError(consumeCodeResponse);
@@ -505,14 +518,12 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -584,14 +595,12 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: true,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -635,6 +644,7 @@ export default function getAPIImplementation(): APIInterface {
                             if (isSignIn) {
                                 // This branch - MFA is enabled / Active session (secondary factor) / Sign in
 
+                                // Consume code does not do auto account linking during sign in
                                 let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                     "deviceId" in input
                                         ? {
@@ -642,14 +652,12 @@ export default function getAPIImplementation(): APIInterface {
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: false,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: false,
                                               userContext: input.userContext,
                                           }
                                 );
@@ -694,21 +702,19 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                let consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
+                                let consumeCodeResponse = await input.options.recipeImplementation.consumeCodeWithoutAttemptingAccountLinking(
                                     "deviceId" in input
                                         ? {
                                               preAuthSessionId: input.preAuthSessionId,
                                               deviceId: input.deviceId,
                                               userInputCode: input.userInputCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: false,
                                               userContext: input.userContext,
                                           }
                                         : {
                                               preAuthSessionId: input.preAuthSessionId,
                                               linkCode: input.linkCode,
                                               tenantId: input.tenantId,
-                                              shouldAttemptAccountLinkingIfAllowed: false,
                                               userContext: input.userContext,
                                           }
                                 );

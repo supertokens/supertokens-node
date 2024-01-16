@@ -66,20 +66,17 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
-            shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -180,19 +177,16 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
     ) {
         return Recipe.getInstanceOrThrowError().signInUp({
             ...input,
-            shouldAttemptAccountLinkingIfAllowed: input.shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(input.userContext),
         });
     }
