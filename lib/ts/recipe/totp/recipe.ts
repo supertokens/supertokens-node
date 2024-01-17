@@ -96,7 +96,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the totp.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the Totp.init function?");
     }
 
     static getInstance(): Recipe | undefined {

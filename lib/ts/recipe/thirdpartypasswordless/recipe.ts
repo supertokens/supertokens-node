@@ -194,7 +194,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the ThirdPartyPasswordless.init function?");
     }
 
     getAPIsHandled = (): APIHandled[] => {

@@ -57,7 +57,7 @@ export default class OpenIdRecipe extends RecipeModule {
         if (OpenIdRecipe.instance !== undefined) {
             return OpenIdRecipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the Openid.init function?");
     }
 
     static init(config?: TypeInput): RecipeListFunction {

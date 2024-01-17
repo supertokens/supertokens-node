@@ -482,6 +482,7 @@ export class Querier {
             if (
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") ||
+                    err.message.includes("fetch failed") ||
                     err.message.includes("ECONNREFUSED") ||
                     err.code === "ECONNREFUSED")
             ) {
