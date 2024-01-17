@@ -91,7 +91,7 @@ export type RecipeInterface = {
         userContext: UserContext;
     }) => Promise<void>;
 
-    getFactorsSetupForUser: (input: { tenantId: string; user: User; userContext: UserContext }) => Promise<string[]>;
+    getFactorsSetupForUser: (input: { user: User; userContext: UserContext }) => Promise<string[]>;
 
     getRequiredSecondaryFactorsForUser: (input: { userId: string; userContext: UserContext }) => Promise<string[]>;
 
@@ -140,11 +140,7 @@ export type APIInterface = {
           >);
 };
 
-export type GetFactorsSetupForUserFromOtherRecipesFunc = (
-    tenantId: string,
-    user: User,
-    userContext: UserContext
-) => Promise<string[]>;
+export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
 
 export type GetAllFactorsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
 

@@ -87,7 +87,7 @@ export default class Recipe extends RecipeModule {
                     }
                     return ["thirdparty"];
                 });
-                mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (_: string, user: User) => {
+                mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                     for (const loginMethod of user.loginMethods) {
                         // We deliberately do not check for matching tenantId because
                         // even if the user is logging into a tenant does not have

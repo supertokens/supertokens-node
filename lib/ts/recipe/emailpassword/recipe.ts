@@ -115,7 +115,7 @@ export default class Recipe extends RecipeModule {
                             }
                             return ["emailpassword"];
                         });
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (tenantId: string, user: User) => {
+                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                             for (const loginMethod of user.loginMethods) {
                                 // Here we check for matching tenantId because if we don't then
                                 // things can go wrong in the following scenario:
@@ -133,11 +133,7 @@ export default class Recipe extends RecipeModule {
                                 // cause if it is fake, then we should not consider it as setup
                                 // so that the frontend asks the user to enter an email,
                                 // or uses the email of another login method.
-                                if (
-                                    loginMethod.recipeId === Recipe.RECIPE_ID &&
-                                    loginMethod.tenantIds.includes(tenantId) &&
-                                    !isFakeEmail(loginMethod.email!)
-                                ) {
+                                if (loginMethod.recipeId === Recipe.RECIPE_ID && !isFakeEmail(loginMethod.email!)) {
                                     return ["emailpassword"];
                                 }
                             }
