@@ -19,7 +19,6 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { TypeNormalisedInput } from "./types";
 import { UserContext } from "../../types";
 import { getUser } from "../..";
-import SessionError from "../session/error";
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -79,12 +78,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 });
                 if (emailOrPhoneInfo.status === "OK") {
                     input.userIdentifierInfo = emailOrPhoneInfo.info;
-                } else if (emailOrPhoneInfo.status === "UNKNOWN_USER_ID_ERROR") {
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "Unknown User ID provided",
-                    });
-                } else if (emailOrPhoneInfo.status === "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR") {
+                } else {
                     // Ignore since UserIdentifierInfo is optional
                 }
             }

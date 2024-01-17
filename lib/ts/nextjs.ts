@@ -21,7 +21,7 @@ import {
     middleware,
     errorHandler as customErrorHandler,
 } from "./framework/custom";
-import { HTTPMethod } from "./types";
+import { HTTPMethod, UserContext } from "./types";
 import Session, { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import SessionRecipe from "./recipe/session/recipe";
 import { getToken } from "./recipe/session/cookieAndHeaders";
@@ -142,8 +142,8 @@ export default class NextJS {
 
     private static async commonSSRSession(
         baseRequest: PreParsedRequest,
-        options?: VerifySessionOptions,
-        userContext?: Record<string, any>
+        options: VerifySessionOptions | undefined,
+        userContext: UserContext
     ): Promise<{
         session: SessionContainer | undefined;
         hasToken: boolean;
@@ -157,7 +157,7 @@ export default class NextJS {
         const tokenTransferMethod = recipe.config.getTokenTransferMethod({
             req: baseRequest,
             forCreateNewSession: false,
-            userContext: getUserContext(userContext),
+            userContext,
         });
         const transferMethods = tokenTransferMethod === "any" ? availableTokenTransferMethods : [tokenTransferMethod];
         const hasToken = transferMethods.some((transferMethod) => {
@@ -226,7 +226,7 @@ export default class NextJS {
         const { baseResponse, nextResponse, ...result } = await NextJS.commonSSRSession(
             baseRequest,
             options,
-            userContext
+            getUserContext(userContext)
         );
         return result;
     }
@@ -256,7 +256,7 @@ export default class NextJS {
             const { session, nextResponse, baseResponse } = await NextJS.commonSSRSession(
                 baseRequest,
                 options,
-                userContext
+                getUserContext(userContext)
             );
 
             if (nextResponse) {

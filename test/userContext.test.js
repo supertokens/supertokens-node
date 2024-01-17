@@ -470,7 +470,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             totalCount += count;
         }
 
-        assert(totalCount === 22);
+        assert(totalCount === 31);
     });
 
     it("test user context type usage everywhere", async function () {
@@ -546,6 +546,11 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                     fileName: "lib/ts/recipe/session/types.ts",
                     shouldNotContain: ["userContext: Record<String, any>", "userContext?: UserContext"],
                     canContain: [{ text: "userContext?: Record<String, any>", count: 18 }],
+                },
+                {
+                    fileName: "lib/ts/nextjs.ts",
+                    shouldNotContain: ["userContext: Record<String, any>", "userContext?: UserContext"],
+                    canContain: [{ text: "userContext?: Record<String, any>", count: 2 }],
                 },
             ];
 
