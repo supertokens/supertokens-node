@@ -1068,6 +1068,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                Session.init(),
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
