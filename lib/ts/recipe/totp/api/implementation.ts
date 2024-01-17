@@ -14,10 +14,8 @@
  */
 
 import { APIInterface } from "../";
-import SessionError from "../../session/error";
 import MultiFactorAuth from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
-import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -27,15 +25,7 @@ export default function getAPIInterface(): APIInterface {
             let mfaInstance = MultiFactorAuthRecipe.getInstance();
 
             if (mfaInstance === undefined) {
-                throw new Error("should never come here"); // TOTP can't work without MFA
-            }
-
-            const sessionUser = await getUser(session.getUserId(), userContext);
-            if (sessionUser === undefined) {
-                throw new SessionError({
-                    type: SessionError.UNAUTHORISED,
-                    message: "Session user not found",
-                });
+                throw new Error("should never come here"); // If TOTP initialised, MFA is auto initialised. This should never happen.
             }
 
             await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
@@ -73,15 +63,7 @@ export default function getAPIInterface(): APIInterface {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
             if (mfaInstance === undefined) {
-                throw new Error("should never come here"); // TOTP can't work without MFA
-            }
-
-            let sessionUser = await getUser(session.getUserId(), userContext);
-            if (sessionUser === undefined) {
-                throw new SessionError({
-                    type: SessionError.UNAUTHORISED,
-                    message: "Session user not found",
-                });
+                throw new Error("should never come here"); // If TOTP initialised, MFA is auto initialised. This should never happen.
             }
 
             await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
@@ -97,7 +79,7 @@ export default function getAPIInterface(): APIInterface {
             if (res.status === "OK") {
                 await mfaInstance.recipeInterfaceImpl.markFactorAsCompleteInSession({
                     session: session,
-                    factorId: "thirdparty",
+                    factorId: "totp",
                     userContext,
                 });
             }
@@ -111,7 +93,7 @@ export default function getAPIInterface(): APIInterface {
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance === undefined) {
-                throw new Error("should never come here"); // TOTP can't work without MFA
+                throw new Error("should never come here"); // If TOTP initialised, MFA is auto initialised. This should never happen.
             }
 
             const res = await options.recipeImplementation.verifyTOTP({
