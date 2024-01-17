@@ -69,6 +69,27 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
+
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance !== undefined) {
+                mfaInstance.addGetAllFactorsFromOtherRecipesFunc(() => {
+                    return ["totp"];
+                });
+                mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User, userContext: UserContext) => {
+                    const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
+                        userId: user.id,
+                        userContext,
+                    });
+                    for (const device of deviceRes.devices) {
+                        if (device.verified) {
+                            return ["totp"];
+                        }
+                    }
+                    return [];
+                });
+            }
+        });
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -86,31 +107,6 @@ export default class Recipe extends RecipeModule {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
-
-                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
-                    if (mfaInstance !== undefined) {
-                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc(() => {
-                            return ["totp"];
-                        });
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(
-                            async (user: User, userContext: UserContext) => {
-                                const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices(
-                                    {
-                                        userId: user.id,
-                                        userContext,
-                                    }
-                                );
-                                for (const device of deviceRes.devices) {
-                                    if (device.verified) {
-                                        return ["totp"];
-                                    }
-                                }
-                                return [];
-                            }
-                        );
-                    }
-                });
 
                 return Recipe.instance;
             } else {

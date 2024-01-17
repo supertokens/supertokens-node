@@ -97,6 +97,350 @@ export default class Recipe extends RecipeModule {
             ingredients.smsDelivery === undefined
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
+
+        let otpOrLink: string[] = [];
+        let emailOrPhone: string[] = [];
+
+        if (this.config.flowType === "MAGIC_LINK") {
+            otpOrLink.push("link");
+        } else if (this.config.flowType === "USER_INPUT_CODE") {
+            otpOrLink.push("otp");
+        } else {
+            otpOrLink.push("otp");
+            otpOrLink.push("link");
+        }
+
+        if (this.config.contactMethod === "EMAIL") {
+            emailOrPhone.push("email");
+        } else if (this.config.contactMethod === "PHONE") {
+            emailOrPhone.push("phone");
+        } else {
+            emailOrPhone.push("email");
+            emailOrPhone.push("phone");
+        }
+
+        const allFactors: string[] = [];
+        for (const ol of otpOrLink) {
+            for (const ep of emailOrPhone) {
+                allFactors.push(`${ol}-${ep}`);
+            }
+        }
+
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+
+            if (mfaInstance !== undefined) {
+                mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
+                    if (tenantConfig.passwordless.enabled === false) {
+                        return [];
+                    }
+                    return allFactors;
+                });
+                mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
+                    // We deliberately do not check for matching tenantId because
+                    // even if the user is logging into a tenant does not have
+                    // passwordless loginMethod, the frontend will call the
+                    // same consumeCode API as if there was a passwordless user.
+                    // the only diff is that a new recipe user will be created,
+                    // which is OK.
+                    function isFactorSetupForUser(user: User, factorId: string) {
+                        for (const loginMethod of user.loginMethods) {
+                            if (loginMethod.recipeId !== Recipe.RECIPE_ID) {
+                                continue;
+                            }
+
+                            // Notice that we also check for if the email is fake or not,
+                            // cause if it is fake, then we should not consider it as setup
+                            // so that the frontend asks the user to enter an email,
+                            // or uses the email of another login method.
+                            if (loginMethod.email !== undefined && !isFakeEmail(loginMethod.email)) {
+                                if (factorId == FactorIds.OTP_EMAIL || factorId == FactorIds.LINK_EMAIL) {
+                                    return true;
+                                }
+                            }
+
+                            if (loginMethod.phoneNumber !== undefined) {
+                                if (factorId == FactorIds.OTP_PHONE || factorId == FactorIds.LINK_PHONE) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }
+                    return allFactors.filter((id) => isFactorSetupForUser(user, id));
+                });
+                mfaInstance.addGetEmailsForFactorFromOtherRecipes((user, sessionRecipeUserId) => {
+                    // This function is called in the MFA info endpoint API.
+                    // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
+
+                    // preparing some reusable variables for the logic below...
+                    const sessionLoginMethod = user.loginMethods.find((lM) => {
+                        return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
+                    });
+                    if (sessionLoginMethod === undefined) {
+                        // this can happen maybe cause this login method
+                        // was unlinked from the user or deleted entirely...
+                        return {
+                            status: "UNKNOWN_SESSION_RECIPE_USER_ID",
+                        };
+                    }
+
+                    const orderedLoginMethodsByTimeJoinedOldestFirst = user.loginMethods.sort((a, b) => {
+                        return a.timeJoined - b.timeJoined;
+                    });
+
+                    // MAIN LOGIC FOR THE FUNCTION STARTS HERE
+                    let nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = [];
+                    for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
+                        // in the if statement below, we also check for if the email
+                        // is fake or not cause if it is fake, then we consider that
+                        // that login method is not setup for passwordless, and instead
+                        // we want to ask the user to enter their email, or to use
+                        // another login method that has no fake email.
+                        if (orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID) {
+                            if (
+                                orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
+                                !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                            ) {
+                                // loginmethods for passwordless are guaranteed to have unique emails
+                                // across all the loginmethods for a user.
+                                nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.push(
+                                    orderedLoginMethodsByTimeJoinedOldestFirst[i].email!
+                                );
+                            }
+                        }
+                    }
+
+                    if (nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length === 0) {
+                        // this means that this factor is not setup for email based factors.
+                        // However, we still check if there is an email for this user
+                        // from other loginMethods, and return those. The frontend
+                        // will then call the consumeCode API eventually.
+
+                        // first we check if the session loginMethod has an email
+                        // and return that. Cause if it does, then the UX will be good
+                        // in that the user will set a password for the the email
+                        // they used to login into the current session.
+
+                        // when constructing the emails array, we prioritize
+                        // the session user's email cause it's a better UX
+                        // for setting or asking for the OTP for the same email
+                        // that the user used to login.
+                        let emailsResult: string[] = [];
+                        if (sessionLoginMethod!.email !== undefined && !isFakeEmail(sessionLoginMethod!.email)) {
+                            emailsResult = [sessionLoginMethod!.email];
+                        }
+
+                        for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
+                            if (
+                                orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
+                                !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                            ) {
+                                // we have the if check below cause different loginMethods
+                                // across different recipes can have the same email.
+                                if (!emailsResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
+                                    emailsResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!);
+                                }
+                            }
+                        }
+                        let factorIdToEmailsMap: Record<string, string[]> = {};
+                        if (allFactors.includes(FactorIds.OTP_EMAIL)) {
+                            factorIdToEmailsMap[FactorIds.OTP_EMAIL] = emailsResult;
+                        }
+                        if (allFactors.includes(FactorIds.LINK_EMAIL)) {
+                            factorIdToEmailsMap[FactorIds.LINK_EMAIL] = emailsResult;
+                        }
+                        return {
+                            status: "OK",
+                            factorIdToEmailsMap,
+                        };
+                    } else if (nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length === 1) {
+                        // we return just this email and not others cause we want to
+                        // not create more loginMethods with passwordless for the user
+                        // object.
+                        let factorIdToEmailsMap: Record<string, string[]> = {};
+                        if (allFactors.includes(FactorIds.OTP_EMAIL)) {
+                            factorIdToEmailsMap[
+                                FactorIds.OTP_EMAIL
+                            ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
+                        }
+                        if (allFactors.includes(FactorIds.LINK_EMAIL)) {
+                            factorIdToEmailsMap[
+                                FactorIds.LINK_EMAIL
+                            ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
+                        }
+                        return {
+                            status: "OK",
+                            factorIdToEmailsMap,
+                        };
+                    }
+
+                    // Finally, we return all emails that have passwordless login
+                    // method for this user, but keep the session's email first
+                    // if the session's email is in the list of
+                    // nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined (for better UX)
+                    let emailsResult: string[] = [];
+                    if (
+                        sessionLoginMethod!.email !== undefined &&
+                        nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.includes(sessionLoginMethod!.email)
+                    ) {
+                        emailsResult = [sessionLoginMethod!.email];
+                    }
+
+                    for (let i = 0; i < nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length; i++) {
+                        if (!emailsResult.includes(nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i])) {
+                            emailsResult.push(nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i]);
+                        }
+                    }
+
+                    let factorIdToEmailsMap: Record<string, string[]> = {};
+                    if (allFactors.includes(FactorIds.OTP_EMAIL)) {
+                        factorIdToEmailsMap[FactorIds.OTP_EMAIL] = emailsResult;
+                    }
+                    if (allFactors.includes(FactorIds.LINK_EMAIL)) {
+                        factorIdToEmailsMap[FactorIds.LINK_EMAIL] = emailsResult;
+                    }
+                    return {
+                        status: "OK",
+                        factorIdToEmailsMap,
+                    };
+                });
+
+                mfaInstance.addGetPhoneNumbersForFactorsFromOtherRecipes((user, sessionRecipeUserId) => {
+                    // This function is called in the MFA info endpoint API.
+                    // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
+
+                    // preparing some reusable variables for the logic below...
+                    const sessionLoginMethod = user.loginMethods.find((lM) => {
+                        return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
+                    });
+                    if (sessionLoginMethod === undefined) {
+                        // this can happen maybe cause this login method
+                        // was unlinked from the user or deleted entirely...
+                        return {
+                            status: "UNKNOWN_SESSION_RECIPE_USER_ID",
+                        };
+                    }
+
+                    const orderedLoginMethodsByTimeJoinedOldestFirst = user.loginMethods.sort((a, b) => {
+                        return a.timeJoined - b.timeJoined;
+                    });
+
+                    // MAIN LOGIC FOR THE FUNCTION STARTS HERE
+                    let phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = [];
+                    for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
+                        // in the if statement below, we also check for if the email
+                        // is fake or not cause if it is fake, then we consider that
+                        // that login method is not setup for passwordless, and instead
+                        // we want to ask the user to enter their email, or to use
+                        // another login method that has no fake email.
+                        if (orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID) {
+                            if (orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber !== undefined) {
+                                // loginmethods for passwordless are guaranteed to have unique phone numbers
+                                // across all the loginmethods for a user.
+                                phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.push(
+                                    orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!
+                                );
+                            }
+                        }
+                    }
+                    if (phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length === 0) {
+                        // this means that this factor is not setup for phone based factors.
+                        // However, we still check if there is a phone for this user
+                        // from other loginMethods, and return those. The frontend
+                        // will then call the consumeCode API eventually.
+
+                        // first we check if the session loginMethod has a phone number
+                        // and return that. Cause if it does, then the UX will be good
+                        // in that the user will set a password for the the email
+                        // they used to login into the current session.
+
+                        // when constructing the phone numbers array, we prioritize
+                        // the session user's phone number cause it's a better UX
+                        // for setting or asking for the OTP for the same phone number
+                        // that the user used to login.
+                        let phonesResult: string[] = [];
+                        if (sessionLoginMethod!.phoneNumber !== undefined) {
+                            phonesResult = [sessionLoginMethod!.phoneNumber];
+                        }
+
+                        for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
+                            if (orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber !== undefined) {
+                                // we have the if check below cause different loginMethods
+                                // across different recipes can have the same phone number.
+                                if (
+                                    !phonesResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!)
+                                ) {
+                                    phonesResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!);
+                                }
+                            }
+                        }
+                        let factorIdToPhoneNumberMap: Record<string, string[]> = {};
+                        if (allFactors.includes(FactorIds.OTP_PHONE)) {
+                            factorIdToPhoneNumberMap[FactorIds.OTP_PHONE] = phonesResult;
+                        }
+                        if (allFactors.includes(FactorIds.LINK_PHONE)) {
+                            factorIdToPhoneNumberMap[FactorIds.LINK_PHONE] = phonesResult;
+                        }
+                        return {
+                            status: "OK",
+                            factorIdToPhoneNumberMap,
+                        };
+                    } else if (phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length === 1) {
+                        // we return just this phone number and not others cause we want to
+                        // not create more loginMethods with passwordless for the user
+                        // object.
+                        let factorIdToPhoneNumberMap: Record<string, string[]> = {};
+                        if (allFactors.includes(FactorIds.OTP_PHONE)) {
+                            factorIdToPhoneNumberMap[
+                                FactorIds.OTP_PHONE
+                            ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
+                        }
+                        if (allFactors.includes(FactorIds.LINK_PHONE)) {
+                            factorIdToPhoneNumberMap[
+                                FactorIds.LINK_PHONE
+                            ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
+                        }
+                        return {
+                            status: "OK",
+                            factorIdToPhoneNumberMap,
+                        };
+                    }
+
+                    // Finally, we return all phones that have passwordless login
+                    // method for this user, but keep the session's phone first
+                    // if the session's phone is in the list of
+                    // phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined (for better UX)
+                    let phonesResult: string[] = [];
+                    if (
+                        sessionLoginMethod!.phoneNumber !== undefined &&
+                        phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.includes(
+                            sessionLoginMethod!.phoneNumber
+                        )
+                    ) {
+                        phonesResult = [sessionLoginMethod!.phoneNumber];
+                    }
+
+                    for (let i = 0; i < phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length; i++) {
+                        if (!phonesResult.includes(phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i])) {
+                            phonesResult.push(phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i]);
+                        }
+                    }
+
+                    let factorIdToPhoneNumberMap: Record<string, string[]> = {};
+                    if (allFactors.includes(FactorIds.OTP_PHONE)) {
+                        factorIdToPhoneNumberMap[FactorIds.OTP_PHONE] = phonesResult;
+                    }
+                    if (allFactors.includes(FactorIds.LINK_PHONE)) {
+                        factorIdToPhoneNumberMap[FactorIds.LINK_PHONE] = phonesResult;
+                    }
+                    return {
+                        status: "OK",
+                        factorIdToPhoneNumberMap,
+                    };
+                });
+            }
+        });
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -112,377 +456,6 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
                     emailDelivery: undefined,
                     smsDelivery: undefined,
-                });
-
-                let otpOrLink: string[] = [];
-                let emailOrPhone: string[] = [];
-
-                if (Recipe.instance.config.flowType === "MAGIC_LINK") {
-                    otpOrLink.push("link");
-                } else if (Recipe.instance.config.flowType === "USER_INPUT_CODE") {
-                    otpOrLink.push("otp");
-                } else {
-                    otpOrLink.push("otp");
-                    otpOrLink.push("link");
-                }
-
-                if (Recipe.instance.config.contactMethod === "EMAIL") {
-                    emailOrPhone.push("email");
-                } else if (Recipe.instance.config.contactMethod === "PHONE") {
-                    emailOrPhone.push("phone");
-                } else {
-                    emailOrPhone.push("email");
-                    emailOrPhone.push("phone");
-                }
-
-                const allFactors: string[] = [];
-                for (const ol of otpOrLink) {
-                    for (const ep of emailOrPhone) {
-                        allFactors.push(`${ol}-${ep}`);
-                    }
-                }
-
-                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
-
-                    if (mfaInstance !== undefined) {
-                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
-                            if (tenantConfig.passwordless.enabled === false) {
-                                return [];
-                            }
-                            return allFactors;
-                        });
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
-                            // We deliberately do not check for matching tenantId because
-                            // even if the user is logging into a tenant does not have
-                            // passwordless loginMethod, the frontend will call the
-                            // same consumeCode API as if there was a passwordless user.
-                            // the only diff is that a new recipe user will be created,
-                            // which is OK.
-                            function isFactorSetupForUser(user: User, factorId: string) {
-                                for (const loginMethod of user.loginMethods) {
-                                    if (loginMethod.recipeId !== Recipe.RECIPE_ID) {
-                                        continue;
-                                    }
-
-                                    // Notice that we also check for if the email is fake or not,
-                                    // cause if it is fake, then we should not consider it as setup
-                                    // so that the frontend asks the user to enter an email,
-                                    // or uses the email of another login method.
-                                    if (loginMethod.email !== undefined && !isFakeEmail(loginMethod.email)) {
-                                        if (factorId == FactorIds.OTP_EMAIL || factorId == FactorIds.LINK_EMAIL) {
-                                            return true;
-                                        }
-                                    }
-
-                                    if (loginMethod.phoneNumber !== undefined) {
-                                        if (factorId == FactorIds.OTP_PHONE || factorId == FactorIds.LINK_PHONE) {
-                                            return true;
-                                        }
-                                    }
-                                }
-                                return false;
-                            }
-                            return allFactors.filter((id) => isFactorSetupForUser(user, id));
-                        });
-                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user, sessionRecipeUserId) => {
-                            // This function is called in the MFA info endpoint API.
-                            // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
-
-                            // preparing some reusable variables for the logic below...
-                            const sessionLoginMethod = user.loginMethods.find((lM) => {
-                                return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
-                            });
-                            if (sessionLoginMethod === undefined) {
-                                // this can happen maybe cause this login method
-                                // was unlinked from the user or deleted entirely...
-                                return {
-                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
-                                };
-                            }
-
-                            const orderedLoginMethodsByTimeJoinedOldestFirst = user.loginMethods.sort((a, b) => {
-                                return a.timeJoined - b.timeJoined;
-                            });
-
-                            // MAIN LOGIC FOR THE FUNCTION STARTS HERE
-                            let nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = [];
-                            for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
-                                // in the if statement below, we also check for if the email
-                                // is fake or not cause if it is fake, then we consider that
-                                // that login method is not setup for passwordless, and instead
-                                // we want to ask the user to enter their email, or to use
-                                // another login method that has no fake email.
-                                if (orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID) {
-                                    if (
-                                        orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
-                                        !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
-                                    ) {
-                                        // loginmethods for passwordless are guaranteed to have unique emails
-                                        // across all the loginmethods for a user.
-                                        nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.push(
-                                            orderedLoginMethodsByTimeJoinedOldestFirst[i].email!
-                                        );
-                                    }
-                                }
-                            }
-
-                            if (nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length === 0) {
-                                // this means that this factor is not setup for email based factors.
-                                // However, we still check if there is an email for this user
-                                // from other loginMethods, and return those. The frontend
-                                // will then call the consumeCode API eventually.
-
-                                // first we check if the session loginMethod has an email
-                                // and return that. Cause if it does, then the UX will be good
-                                // in that the user will set a password for the the email
-                                // they used to login into the current session.
-
-                                // when constructing the emails array, we prioritize
-                                // the session user's email cause it's a better UX
-                                // for setting or asking for the OTP for the same email
-                                // that the user used to login.
-                                let emailsResult: string[] = [];
-                                if (
-                                    sessionLoginMethod!.email !== undefined &&
-                                    !isFakeEmail(sessionLoginMethod!.email)
-                                ) {
-                                    emailsResult = [sessionLoginMethod!.email];
-                                }
-
-                                for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
-                                    if (
-                                        orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
-                                        !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
-                                    ) {
-                                        // we have the if check below cause different loginMethods
-                                        // across different recipes can have the same email.
-                                        if (
-                                            !emailsResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
-                                        ) {
-                                            emailsResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!);
-                                        }
-                                    }
-                                }
-                                let factorIdToEmailsMap: Record<string, string[]> = {};
-                                if (allFactors.includes(FactorIds.OTP_EMAIL)) {
-                                    factorIdToEmailsMap[FactorIds.OTP_EMAIL] = emailsResult;
-                                }
-                                if (allFactors.includes(FactorIds.LINK_EMAIL)) {
-                                    factorIdToEmailsMap[FactorIds.LINK_EMAIL] = emailsResult;
-                                }
-                                return {
-                                    status: "OK",
-                                    factorIdToEmailsMap,
-                                };
-                            } else if (nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length === 1) {
-                                // we return just this email and not others cause we want to
-                                // not create more loginMethods with passwordless for the user
-                                // object.
-                                let factorIdToEmailsMap: Record<string, string[]> = {};
-                                if (allFactors.includes(FactorIds.OTP_EMAIL)) {
-                                    factorIdToEmailsMap[
-                                        FactorIds.OTP_EMAIL
-                                    ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
-                                }
-                                if (allFactors.includes(FactorIds.LINK_EMAIL)) {
-                                    factorIdToEmailsMap[
-                                        FactorIds.LINK_EMAIL
-                                    ] = nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined;
-                                }
-                                return {
-                                    status: "OK",
-                                    factorIdToEmailsMap,
-                                };
-                            }
-
-                            // Finally, we return all emails that have passwordless login
-                            // method for this user, but keep the session's email first
-                            // if the session's email is in the list of
-                            // nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined (for better UX)
-                            let emailsResult: string[] = [];
-                            if (
-                                sessionLoginMethod!.email !== undefined &&
-                                nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.includes(
-                                    sessionLoginMethod!.email
-                                )
-                            ) {
-                                emailsResult = [sessionLoginMethod!.email];
-                            }
-
-                            for (
-                                let i = 0;
-                                i < nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined.length;
-                                i++
-                            ) {
-                                if (
-                                    !emailsResult.includes(
-                                        nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i]
-                                    )
-                                ) {
-                                    emailsResult.push(nonFakeEmailsThatPasswordlessLoginMethodOrderedByTimeJoined[i]);
-                                }
-                            }
-
-                            let factorIdToEmailsMap: Record<string, string[]> = {};
-                            if (allFactors.includes(FactorIds.OTP_EMAIL)) {
-                                factorIdToEmailsMap[FactorIds.OTP_EMAIL] = emailsResult;
-                            }
-                            if (allFactors.includes(FactorIds.LINK_EMAIL)) {
-                                factorIdToEmailsMap[FactorIds.LINK_EMAIL] = emailsResult;
-                            }
-                            return {
-                                status: "OK",
-                                factorIdToEmailsMap,
-                            };
-                        });
-
-                        mfaInstance.addGetPhoneNumbersForFactorsFromOtherRecipes((user, sessionRecipeUserId) => {
-                            // This function is called in the MFA info endpoint API.
-                            // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
-
-                            // preparing some reusable variables for the logic below...
-                            const sessionLoginMethod = user.loginMethods.find((lM) => {
-                                return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
-                            });
-                            if (sessionLoginMethod === undefined) {
-                                // this can happen maybe cause this login method
-                                // was unlinked from the user or deleted entirely...
-                                return {
-                                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
-                                };
-                            }
-
-                            const orderedLoginMethodsByTimeJoinedOldestFirst = user.loginMethods.sort((a, b) => {
-                                return a.timeJoined - b.timeJoined;
-                            });
-
-                            // MAIN LOGIC FOR THE FUNCTION STARTS HERE
-                            let phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined: string[] = [];
-                            for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
-                                // in the if statement below, we also check for if the email
-                                // is fake or not cause if it is fake, then we consider that
-                                // that login method is not setup for passwordless, and instead
-                                // we want to ask the user to enter their email, or to use
-                                // another login method that has no fake email.
-                                if (orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID) {
-                                    if (orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber !== undefined) {
-                                        // loginmethods for passwordless are guaranteed to have unique phone numbers
-                                        // across all the loginmethods for a user.
-                                        phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.push(
-                                            orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!
-                                        );
-                                    }
-                                }
-                            }
-                            if (phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length === 0) {
-                                // this means that this factor is not setup for phone based factors.
-                                // However, we still check if there is a phone for this user
-                                // from other loginMethods, and return those. The frontend
-                                // will then call the consumeCode API eventually.
-
-                                // first we check if the session loginMethod has a phone number
-                                // and return that. Cause if it does, then the UX will be good
-                                // in that the user will set a password for the the email
-                                // they used to login into the current session.
-
-                                // when constructing the phone numbers array, we prioritize
-                                // the session user's phone number cause it's a better UX
-                                // for setting or asking for the OTP for the same phone number
-                                // that the user used to login.
-                                let phonesResult: string[] = [];
-                                if (sessionLoginMethod!.phoneNumber !== undefined) {
-                                    phonesResult = [sessionLoginMethod!.phoneNumber];
-                                }
-
-                                for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
-                                    if (orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber !== undefined) {
-                                        // we have the if check below cause different loginMethods
-                                        // across different recipes can have the same phone number.
-                                        if (
-                                            !phonesResult.includes(
-                                                orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!
-                                            )
-                                        ) {
-                                            phonesResult.push(
-                                                orderedLoginMethodsByTimeJoinedOldestFirst[i].phoneNumber!
-                                            );
-                                        }
-                                    }
-                                }
-                                let factorIdToPhoneNumberMap: Record<string, string[]> = {};
-                                if (allFactors.includes(FactorIds.OTP_PHONE)) {
-                                    factorIdToPhoneNumberMap[FactorIds.OTP_PHONE] = phonesResult;
-                                }
-                                if (allFactors.includes(FactorIds.LINK_PHONE)) {
-                                    factorIdToPhoneNumberMap[FactorIds.LINK_PHONE] = phonesResult;
-                                }
-                                return {
-                                    status: "OK",
-                                    factorIdToPhoneNumberMap,
-                                };
-                            } else if (phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length === 1) {
-                                // we return just this phone number and not others cause we want to
-                                // not create more loginMethods with passwordless for the user
-                                // object.
-                                let factorIdToPhoneNumberMap: Record<string, string[]> = {};
-                                if (allFactors.includes(FactorIds.OTP_PHONE)) {
-                                    factorIdToPhoneNumberMap[
-                                        FactorIds.OTP_PHONE
-                                    ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
-                                }
-                                if (allFactors.includes(FactorIds.LINK_PHONE)) {
-                                    factorIdToPhoneNumberMap[
-                                        FactorIds.LINK_PHONE
-                                    ] = phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined;
-                                }
-                                return {
-                                    status: "OK",
-                                    factorIdToPhoneNumberMap,
-                                };
-                            }
-
-                            // Finally, we return all phones that have passwordless login
-                            // method for this user, but keep the session's phone first
-                            // if the session's phone is in the list of
-                            // phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined (for better UX)
-                            let phonesResult: string[] = [];
-                            if (
-                                sessionLoginMethod!.phoneNumber !== undefined &&
-                                phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.includes(
-                                    sessionLoginMethod!.phoneNumber
-                                )
-                            ) {
-                                phonesResult = [sessionLoginMethod!.phoneNumber];
-                            }
-
-                            for (
-                                let i = 0;
-                                i < phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined.length;
-                                i++
-                            ) {
-                                if (
-                                    !phonesResult.includes(
-                                        phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i]
-                                    )
-                                ) {
-                                    phonesResult.push(phoneNumbersThatPasswordlessLoginMethodOrderedByTimeJoined[i]);
-                                }
-                            }
-
-                            let factorIdToPhoneNumberMap: Record<string, string[]> = {};
-                            if (allFactors.includes(FactorIds.OTP_PHONE)) {
-                                factorIdToPhoneNumberMap[FactorIds.OTP_PHONE] = phonesResult;
-                            }
-                            if (allFactors.includes(FactorIds.LINK_PHONE)) {
-                                factorIdToPhoneNumberMap[FactorIds.LINK_PHONE] = phonesResult;
-                            }
-                            return {
-                                status: "OK",
-                                factorIdToPhoneNumberMap,
-                            };
-                        });
-                    }
                 });
 
                 return Recipe.instance;
