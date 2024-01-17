@@ -28,8 +28,6 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
         defaultSkew: config?.defaultSkew ?? 1,
         defaultPeriod: config?.defaultPeriod ?? 30,
 
-        getUserIdentifierInfoForUserId: config?.getUserIdentifierInfoForUserId,
-
         override,
     };
 }

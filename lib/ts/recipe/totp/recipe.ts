@@ -29,13 +29,7 @@ import {
     LIST_TOTP_DEVICES,
     REMOVE_TOTP_DEVICE,
 } from "./constants";
-import {
-    APIInterface,
-    GetUserIdentifierInfoForUserIdFunc,
-    RecipeInterface,
-    TypeInput,
-    TypeNormalisedInput,
-} from "./types";
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 
 import createDeviceAPI from "./api/createDevice";
@@ -43,7 +37,7 @@ import verifyDeviceAPI from "./api/verifyDevice";
 import verifyTOTPAPI from "./api/verifyTOTP";
 import listDevicesAPI from "./api/listDevices";
 import removeDeviceAPI from "./api/removeDevice";
-import { User, getUser } from "../..";
+import { User } from "../..";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
 
@@ -210,48 +204,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    getUserIdentifierInfoForUserId: GetUserIdentifierInfoForUserIdFunc = async (userId, userContext) => {
-        if (this.config.getUserIdentifierInfoForUserId !== undefined) {
-            const userRes = await this.config.getUserIdentifierInfoForUserId(userId, userContext);
-            if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
-                return userRes;
-            }
-        }
-
-        let user = await getUser(userId, userContext);
-
-        if (user === undefined) {
-            return {
-                status: "UNKNOWN_USER_ID_ERROR",
-            };
-        }
-
-        const primaryLoginMethod = user.loginMethods.find((method) => method.recipeUserId.getAsString() === user!.id);
-
-        if (primaryLoginMethod !== undefined) {
-            if (primaryLoginMethod.email !== undefined) {
-                return {
-                    info: primaryLoginMethod.email,
-                    status: "OK",
-                };
-            } else if (primaryLoginMethod.phoneNumber !== undefined) {
-                return {
-                    info: primaryLoginMethod.phoneNumber,
-                    status: "OK",
-                };
-            }
-        }
-
-        if (user.emails.length > 0) {
-            return { info: user.emails[0], status: "OK" };
-        } else if (user.phoneNumbers.length > 0) {
-            return { info: user.phoneNumbers[0], status: "OK" };
-        }
-
-        return {
-            status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR",
-        };
     };
 }

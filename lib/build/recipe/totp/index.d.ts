@@ -5,6 +5,7 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static createDevice(
         userId: string,
+        userIdentifierInfo?: string,
         deviceName?: string,
         skew?: number,
         period?: number,
@@ -20,6 +21,14 @@ export default class Wrapper {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
           }
     >;
+    static updateDevice(
+        userId: string,
+        existingDeviceName: string,
+        newDeviceName: string,
+        userContext?: Record<string, any>
+    ): Promise<{
+        status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR";
+    }>;
     static listDevices(
         userId: string,
         userContext?: Record<string, any>
@@ -31,14 +40,6 @@ export default class Wrapper {
             skew: number;
             verified: boolean;
         }[];
-    }>;
-    static updateDevice(
-        userId: string,
-        existingDeviceName: string,
-        newDeviceName: string,
-        userContext?: Record<string, any>
-    ): Promise<{
-        status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR";
     }>;
     static removeDevice(
         userId: string,

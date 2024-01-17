@@ -18,23 +18,10 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 
-export type GetUserIdentifierInfoForUserIdFunc = (
-    userId: string,
-    userContext: UserContext
-) => Promise<
-    | {
-          status: "OK";
-          info: string;
-      }
-    | { status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
->;
-
 export type TypeInput = {
     issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
-
-    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
 
     override?: {
         functions?: (
@@ -50,8 +37,6 @@ export type TypeNormalisedInput = {
     defaultSkew: number;
     defaultPeriod: number;
 
-    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
-
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -62,6 +47,14 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
+    getUserIdentifierInfoForUserId: (input: {
+        userId: string;
+        userContext: UserContext;
+    }) => Promise<
+        | { status: "OK"; info: string }
+        | { status: "UNKNOWN_USER_ID_ERROR" | "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR" }
+    >;
+
     createDevice: (input: {
         userId: string;
         userIdentifierInfo?: string;

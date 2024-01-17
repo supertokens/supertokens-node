@@ -18,17 +18,77 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { TypeNormalisedInput } from "./types";
 import { UserContext } from "../../types";
+import { getUser } from "../..";
+import SessionError from "../session/error";
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
-        createDevice: async (input: {
-            userId: string;
-            deviceName?: string;
-            skew?: number;
-            period?: number;
-            userIdentifierInfo?: string;
-            userContext: UserContext;
-        }) => {
+        getUserIdentifierInfoForUserId: async function (this: RecipeInterface, { userId, userContext }) {
+            let user = await getUser(userId, userContext);
+
+            if (user === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            }
+
+            const primaryLoginMethod = user.loginMethods.find(
+                (method) => method.recipeUserId.getAsString() === user!.id
+            );
+
+            if (primaryLoginMethod !== undefined) {
+                if (primaryLoginMethod.email !== undefined) {
+                    return {
+                        info: primaryLoginMethod.email,
+                        status: "OK",
+                    };
+                } else if (primaryLoginMethod.phoneNumber !== undefined) {
+                    return {
+                        info: primaryLoginMethod.phoneNumber,
+                        status: "OK",
+                    };
+                }
+            }
+
+            if (user.emails.length > 0) {
+                return { info: user.emails[0], status: "OK" };
+            } else if (user.phoneNumbers.length > 0) {
+                return { info: user.phoneNumbers[0], status: "OK" };
+            }
+
+            return {
+                status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR",
+            };
+        },
+
+        createDevice: async function (
+            this: RecipeInterface,
+            input: {
+                userId: string;
+                deviceName?: string;
+                skew?: number;
+                period?: number;
+                userIdentifierInfo?: string;
+                userContext: UserContext;
+            }
+        ) {
+            if (input.userIdentifierInfo === undefined) {
+                const emailOrPhoneInfo = await this.getUserIdentifierInfoForUserId({
+                    userId: input.userId,
+                    userContext: input.userContext,
+                });
+                if (emailOrPhoneInfo.status === "OK") {
+                    input.userIdentifierInfo = emailOrPhoneInfo.info;
+                } else if (emailOrPhoneInfo.status === "UNKNOWN_USER_ID_ERROR") {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Unknown User ID provided",
+                    });
+                } else if (emailOrPhoneInfo.status === "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR") {
+                    // Ignore since UserIdentifierInfo is optional
+                }
+            }
+
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/totp/device"),
                 {
