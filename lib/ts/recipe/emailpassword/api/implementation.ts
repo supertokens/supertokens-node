@@ -1111,7 +1111,7 @@ export default function getAPIImplementation(): APIInterface {
                                 userContext,
                             });
                             if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                                return signUpResponse;
+                                throw new SignUpError(signUpResponse);
                             }
 
                             session = await Session.createNewSession(
@@ -1155,7 +1155,7 @@ export default function getAPIImplementation(): APIInterface {
                             }
 
                             if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                                return signUpResponse;
+                                throw new SignUpError(signUpResponse);
                             }
 
                             if (overwriteSessionDuringSignInUp) {
@@ -1198,7 +1198,7 @@ export default function getAPIImplementation(): APIInterface {
                                 userContext,
                             });
                             if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                                return signUpResponse;
+                                throw new SignUpError(signUpResponse);
                             }
 
                             session = await Session.createNewSession(

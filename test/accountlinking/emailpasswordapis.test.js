@@ -1189,7 +1189,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password123", {
                 doNotLink: true,
             });
             assert(!epUser.user.isPrimaryUser);

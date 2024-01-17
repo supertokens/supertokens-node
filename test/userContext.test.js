@@ -155,7 +155,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
 
         app.use(errorHandler());
 
-        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", undefined, {
+        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", {
             manualCall: true,
         });
 
@@ -257,7 +257,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
 
         app.use(errorHandler());
 
-        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", undefined, {
+        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", {
             manualCall: true,
         });
 
@@ -390,7 +390,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
 
         app.use(errorHandler());
 
-        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", undefined, {
+        await EmailPassword.signUp("public", "random@gmail.com", "validpass123", {
             manualCall: true,
         });
 

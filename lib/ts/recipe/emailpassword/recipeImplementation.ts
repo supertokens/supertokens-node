@@ -20,13 +20,11 @@ export default function getRecipeInterface(
                 email,
                 password,
                 tenantId,
-                shouldAttemptAccountLinkingIfAllowed,
                 userContext,
             }: {
                 email: string;
                 password: string;
                 tenantId: string;
-                shouldAttemptAccountLinkingIfAllowed: boolean;
                 userContext: UserContext;
             }
         ): Promise<
@@ -49,13 +47,11 @@ export default function getRecipeInterface(
 
             let updatedUser = response.user;
 
-            if (shouldAttemptAccountLinkingIfAllowed) {
-                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    tenantId,
-                    user: response.user,
-                    userContext,
-                });
-            }
+            updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                tenantId,
+                user: response.user,
+                userContext,
+            });
 
             return {
                 status: "OK",
