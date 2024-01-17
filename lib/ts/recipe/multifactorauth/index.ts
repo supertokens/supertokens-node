@@ -197,7 +197,6 @@ export const FactorIds = {
     OTP_PHONE: "otp-phone",
     LINK_EMAIL: "link-email",
     LINK_PHONE: "link-phone",
-    THIRDPARTY: "thirdparty",
     TOTP: "totp",
 };
 

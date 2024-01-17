@@ -11,7 +11,7 @@ import { UserContext } from "../../types";
 export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     constructor(key?: string);
     validators: {
-        hasCompletedMFARequirementForAuth: (id?: string) => SessionClaimValidator;
+        hasCompletedMFARequirementsForAuth: (id?: string) => SessionClaimValidator;
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
     isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;

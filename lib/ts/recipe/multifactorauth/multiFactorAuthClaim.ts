@@ -32,9 +32,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         super(key ?? "st-mfa");
 
         this.validators = {
-            hasCompletedMFARequirementForAuth: (id?: string) => ({
+            hasCompletedMFARequirementsForAuth: (claimKey?: string) => ({
                 claim: this,
-                id: id ?? this.key,
+                id: claimKey ?? this.key,
 
                 shouldRefetch: (payload) => {
                     const value = this.getValueFromPayload(payload);
@@ -60,9 +60,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                 },
             }),
 
-            hasCompletedFactors: (requirements: MFARequirementList, id?: string) => ({
+            hasCompletedFactors: (requirements: MFARequirementList, claimKey?: string) => ({
                 claim: this,
-                id: id ?? this.key,
+                id: claimKey ?? this.key,
 
                 shouldRefetch: (payload) => {
                     const value = this.getValueFromPayload(payload);
@@ -122,7 +122,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     }
 
     public validators: {
-        hasCompletedMFARequirementForAuth: (id?: string) => SessionClaimValidator;
+        hasCompletedMFARequirementsForAuth: (id?: string) => SessionClaimValidator;
         hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
     };
 

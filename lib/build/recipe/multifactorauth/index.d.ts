@@ -46,7 +46,6 @@ export declare const FactorIds: {
     OTP_PHONE: string;
     LINK_EMAIL: string;
     LINK_PHONE: string;
-    THIRDPARTY: string;
     TOTP: string;
 };
 export { MultiFactorAuthClaim };

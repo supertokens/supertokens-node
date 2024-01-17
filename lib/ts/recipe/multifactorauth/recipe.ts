@@ -109,7 +109,7 @@ export default class Recipe extends RecipeModule {
 
                 PostSuperTokensInitCallbacks.addPostInitCallback(() => {
                     SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
-                        MultiFactorAuthClaim.validators.hasCompletedMFARequirementForAuth()
+                        MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()
                     );
                 });
                 return Recipe.instance;

@@ -1926,7 +1926,7 @@ Supertokens.init({
 });
 
 // const noMFARequired
-MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedMFARequirementForAuth();
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth();
 MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([]);
 MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedFactors([
     { oneOf: ["emailpassword", "thirdparty"] }, // We can include the first factors here... that feels a bit weird but it works.
