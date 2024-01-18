@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Listing all tenants with their user counts
     -   Creating or updating an existing tenant
     -   Associating and disassociating a user from a tenant
+    -   Creating or updating third party config for a tenant
+    -   Deleting third party config for a tenant
 
 ## [16.7.1] - 2024-01-09
 
