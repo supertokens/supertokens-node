@@ -14,7 +14,7 @@
  */
 
 import { RecipeInterface } from "./";
-import UserMetadataRecipe from "../usermetadata/recipe";
+import UserMetadata from "../usermetadata";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import type MultiFactorAuthRecipe from "./recipe";
 import { getUser } from "../..";
@@ -162,21 +162,13 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
         },
 
         getRequiredSecondaryFactorsForUser: async function ({ userId, userContext }) {
-            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
-                userId,
-                userContext,
-            });
+            const metadata = await UserMetadata.getUserMetadata(userId, userContext);
 
             return metadata.metadata._supertokens?.requiredSecondaryFactors ?? [];
         },
 
         addToRequiredSecondaryFactorsForUser: async function ({ userId, factorId, userContext }) {
-            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
-                userId,
-                userContext,
-            });
+            const metadata = await UserMetadata.getUserMetadata(userId, userContext);
 
             const factorIds = metadata.metadata._supertokens?.requiredSecondaryFactors ?? [];
             if (factorIds.includes(factorId)) {
@@ -193,19 +185,11 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 },
             };
 
-            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadata({
-                userId: userId,
-                metadataUpdate,
-                userContext,
-            });
+            await UserMetadata.updateUserMetadata(userId, metadataUpdate, userContext);
         },
 
         removeFromRequiredSecondaryFactorsForUser: async function ({ userId, factorId, userContext }) {
-            const userMetadataInstance = UserMetadataRecipe.getInstanceOrThrowError();
-            const metadata = await userMetadataInstance.recipeInterfaceImpl.getUserMetadata({
-                userId,
-                userContext,
-            });
+            const metadata = await UserMetadata.getUserMetadata(userId, userContext);
 
             if (metadata.metadata._supertokens?.requiredSecondaryFactors === undefined) {
                 return;
@@ -226,11 +210,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 },
             };
 
-            await userMetadataInstance.recipeInterfaceImpl.updateUserMetadata({
-                userId: userId,
-                metadataUpdate,
-                userContext,
-            });
+            await UserMetadata.updateUserMetadata(userId, metadataUpdate, userContext);
         },
     };
 }
