@@ -822,7 +822,7 @@ export default function getAPIImplementation(): APIInterface {
                         // If the user is already linked to the session user, then the following function does not throw.
                         // We expect this to always pass.
                         // We are keeping this check just in case the implementation of it changes in future.
-                        assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
+                        await assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
                         await MultiFactorAuth.markFactorAsCompleteInSession(session, "emailpassword", userContext);
 
