@@ -211,13 +211,12 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 return;
             }
 
-            const factorIds = metadata.metadata._supertokens.requiredSecondaryFactors ?? [];
+            let factorIds: string[] = metadata.metadata._supertokens.requiredSecondaryFactors ?? [];
             if (!factorIds.includes(factorId)) {
                 return;
             }
 
-            const index = factorIds.indexOf(factorId);
-            factorIds.splice(index, 1);
+            factorIds = factorIds.filter((id: string) => id !== factorId);
 
             const metadataUpdate = {
                 ...metadata.metadata,
