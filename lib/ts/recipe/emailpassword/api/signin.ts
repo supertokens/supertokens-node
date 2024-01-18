@@ -51,6 +51,10 @@ export default async function signInAPI(
         userContext
     );
 
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signInPOST({
         formFields,
         tenantId,

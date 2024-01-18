@@ -92,6 +92,10 @@ export default async function signInUpAPI(
         userContext
     );
 
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signInUpPOST({
         provider,
         redirectURIInfo,

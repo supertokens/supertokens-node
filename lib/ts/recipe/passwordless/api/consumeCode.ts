@@ -72,6 +72,10 @@ export default async function consumeCode(
         userContext
     );
 
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.consumeCodePOST(
         deviceId !== undefined
             ? {

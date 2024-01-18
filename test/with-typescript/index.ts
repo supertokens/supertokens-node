@@ -795,6 +795,7 @@ EmailPassword.init({
                     if (input.type === "PASSWORD_RESET") {
                     }
                     await oI.sendEmail(input);
+                    EmailPassword.signUp("public", "test@example.com", "password123", input.userContext);
                 },
             };
         },

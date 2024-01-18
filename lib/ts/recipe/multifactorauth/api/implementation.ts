@@ -38,7 +38,7 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Tenant not found");
             }
 
-            const isAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
+            const factorsAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
                 user,
                 userContext,
             });
@@ -60,14 +60,14 @@ export default function getAPIInterface(): APIInterface {
                 user: user,
                 accessTokenPayload: session.getAccessTokenPayload(),
                 tenantId,
-                factorsSetUpForUser: isAlreadySetup,
+                factorsSetUpForUser: factorsAlreadySetup,
                 requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
                 requiredSecondaryFactorsForUser,
                 completedFactors: completedFactors,
                 userContext,
             });
 
-            const isAllowedToSetup: string[] = [];
+            const factorsAllowedToSetup: string[] = [];
             for (const id of availableFactors) {
                 try {
                     await options.recipeImplementation.assertAllowedToSetupFactorElseThrowInvalidClaimError({
@@ -76,24 +76,29 @@ export default function getAPIInterface(): APIInterface {
                         completedFactors: completedFactors,
                         requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
                         requiredSecondaryFactorsForUser,
-                        factorsSetUpForUser: isAlreadySetup,
+                        factorsSetUpForUser: factorsAlreadySetup,
                         mfaRequirementsForAuth,
                         userContext,
                     });
-                    isAllowedToSetup.push(id);
+                    factorsAllowedToSetup.push(id);
                 } catch (err) {
                     // ignore
                 }
             }
 
-            const c = (await session.getClaimValue(MultiFactorAuthClaim, userContext))?.c ?? {};
-
             const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
-                c,
+                completedFactors,
                 mfaRequirementsForAuth
             );
 
-            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates `v` in the MFA claim
+            await session.setClaimValue(
+                MultiFactorAuthClaim,
+                {
+                    c: completedFactors,
+                    v: MultiFactorAuthClaim.isRequirementListSatisfied(completedFactors, mfaRequirementsForAuth),
+                },
+                userContext
+            );
 
             let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId());
             let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(
@@ -117,10 +122,10 @@ export default function getAPIInterface(): APIInterface {
                 status: "OK",
                 factors: {
                     next: nextSetOfUnsatisfiedFactors.factorIds.filter(
-                        (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
+                        (factorId) => factorsAllowedToSetup.includes(factorId) || factorsAlreadySetup.includes(factorId)
                     ),
-                    isAlreadySetup,
-                    isAllowedToSetup,
+                    alreadySetup: factorsAlreadySetup,
+                    allowedToSetup: factorsAllowedToSetup,
                 },
                 emails: getEmailsForFactorsResult.factorIdToEmailsMap,
                 phoneNumbers: getPhoneNumbersForFactorsResult.factorIdToPhoneNumberMap,

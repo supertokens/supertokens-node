@@ -67,28 +67,17 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             this: RecipeInterface,
             { factorId, session, factorsSetUpForUser, mfaRequirementsForAuth, userContext }
         ) {
-            // // This solution: checks for 2FA (we'd allow factor setup if the user has set up only 1 factor group or completed at least 2)
-            // const factorGroups = [
-            //     ["otp-phone", "link-phone"],
-            //     ["otp-email", "link-email"],
-            //     ["emailpassword"],
-            //     ["thirdparty"],
-            // ];
-            // const setUpGroups = Array.from(
-            //     new Set(factorsSetUpForUser.map((id) => factorGroups.find((f) => f.includes(id)) || [id]))
-            // );
+            // We allow the user to set up a factor when:
+            // 1. MFA requirements is completed by the user (when there are no unsatisfied factors)
+            // 2. The factor is unsatisfied and the user has not set up any factors in the set of unsatisfied factors
 
-            // const completedGroups = setUpGroups.filter((group) => group.some((id) => claimVal.c[id] !== undefined));
+            // If the user has a factor in the set of unsatisfied factors, that is already setup for the user, we would
+            // disallow any new factor setup until the user has completed it.
 
-            // // If the user completed every factor they could
-            // if (setUpGroups.length === completedGroups.length) {
-            //     logDebugMessage(
-            //         `isAllowedToSetupFactor ${factorId}: true because the user completed all factors they have set up and this is required`
-            //     );
-            //     return true;
-            // }
-
-            // return completedGroups.length >= 2;
+            // So the next set of unsatisfied factors must be either empty or should only contain factors that are not
+            // setup for the user.
+            // We allow when the next set of unsatisfied factors only contains factors that are not setup for the user
+            // because the user will not be able to complete the MFA requirements for auth otherwise.
 
             const validator: SessionClaimValidator = {
                 id: MultiFactorAuthClaim.key,
@@ -107,18 +96,18 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
                     if (setOfUnsatisfiedFactors.factorIds.some((id) => factorsSetUpForUser.includes(id))) {
                         logDebugMessage(
-                            `isAllowedToSetupFactor ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
+                            `assertAllowedToSetupFactorElseThrowInvalidClaimError ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
                                 ", "
                             )}`
                         );
                         return {
                             isValid: false,
-                            reason: "Does not satisfy MFA requirements",
+                            reason: "Completed factors in the session does not satisfy the MFA requirements for auth",
                         };
                     }
 
                     logDebugMessage(
-                        `isAllowedToSetupFactor ${factorId}: true because the next set of unsatisfied factors is ${
+                        `assertAllowedToSetupFactorElseThrowInvalidClaimError ${factorId}: true because the next set of unsatisfied factors is ${
                             setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"
                         }`
                     );

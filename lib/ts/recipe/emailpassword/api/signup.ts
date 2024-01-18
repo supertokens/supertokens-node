@@ -55,6 +55,10 @@ export default async function signUpAPI(
         userContext
     );
 
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signUpPOST({
         formFields,
         tenantId,
