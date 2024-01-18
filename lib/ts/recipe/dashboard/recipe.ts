@@ -48,6 +48,7 @@ import {
     TENANT_API,
     DISASSOCIATE_USER_FROM_TENANT,
     ASSOCIATE_USER_TO_TENANT,
+    TENANT_THIRD_PARTY,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -90,6 +91,8 @@ import deleteTenant from "./api/multitenancy/deleteTenant";
 import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
 import associateUserToTenant from "./api/multitenancy/associateUserToTenant";
 import disassociateUserFromTenant from "./api/multitenancy/disassociateUserFromTenant";
+import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
+import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -392,6 +395,18 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "put",
             },
+            {
+                id: TENANT_THIRD_PARTY,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: TENANT_THIRD_PARTY,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
+                disabled: false,
+                method: "delete",
+            },
         ];
     };
 
@@ -533,9 +548,15 @@ export default class Recipe extends RecipeModule {
             }
         } else if (id === ASSOCIATE_USER_TO_TENANT) {
             apiFunction = associateUserToTenant;
-        }
-        if (id === DISASSOCIATE_USER_FROM_TENANT) {
+        } else if (id === DISASSOCIATE_USER_FROM_TENANT) {
             apiFunction = disassociateUserFromTenant;
+        } else if (id === TENANT_THIRD_PARTY) {
+            if (req.getMethod() === "delete") {
+                apiFunction = deleteThirdPartyConfig;
+            }
+            if (req.getMethod() === "post") {
+                apiFunction = createOrUpdateThirdPartyConfig;
+            }
         }
 
         // If the id doesnt match any APIs return false

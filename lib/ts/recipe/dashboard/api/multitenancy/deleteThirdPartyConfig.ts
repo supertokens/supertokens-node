@@ -18,25 +18,26 @@ import SuperTokensError from "../../../../error";
 
 export type Response = {
     status: "OK";
-    didExist: boolean;
+    didConfigExist: boolean;
 };
 
-export default async function deleteTenant(
+export default async function deleteThirdPartyConfig(
     _: APIInterface,
     __: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> {
     const tenantId = options.req.getKeyValueFromQuery("tenantId");
+    const thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
 
-    if (typeof tenantId !== "string" || tenantId === "") {
+    if (typeof tenantId !== "string" || tenantId === "" || typeof thirdPartyId !== "string" || thirdPartyId === "") {
         throw new SuperTokensError({
-            message: "Missing required parameter 'tenantId'",
+            message: "Missing required parameter 'tenantId' or 'thirdPartyId'",
             type: SuperTokensError.BAD_INPUT_ERROR,
         });
     }
 
-    const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);
+    const deleteThirdPartyRes = await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
 
-    return deleteTenantRes;
+    return deleteThirdPartyRes;
 }

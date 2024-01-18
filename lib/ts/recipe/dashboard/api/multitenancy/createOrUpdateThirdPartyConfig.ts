@@ -16,18 +16,23 @@ import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
 
-export type Response = {
-    status: "OK";
-    didExist: boolean;
-};
+export type Response =
+    | {
+          status: "OK";
+          createdNew: boolean;
+      }
+    | {
+          status: "INVALID_PROVIDER_CONFIG";
+      };
 
-export default async function deleteTenant(
+export default async function createOrUpdateThirdPartyConfig(
     _: APIInterface,
     __: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const tenantId = options.req.getKeyValueFromQuery("tenantId");
+    const requestBody = await options.req.getJSONBody();
+    const { tenantId, providerConfig } = requestBody;
 
     if (typeof tenantId !== "string" || tenantId === "") {
         throw new SuperTokensError({
@@ -36,7 +41,20 @@ export default async function deleteTenant(
         });
     }
 
-    const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);
+    let thirdPartyRes;
 
-    return deleteTenantRes;
+    try {
+        thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
+            tenantId,
+            providerConfig,
+            undefined,
+            userContext
+        );
+    } catch (_) {
+        return {
+            status: "INVALID_PROVIDER_CONFIG",
+        };
+    }
+
+    return thirdPartyRes;
 }

@@ -51,8 +51,5 @@ export default async function createOrUpdateTenant(
         };
     }
 
-    return {
-        status: "OK",
-        createdNew: tenantRes.createdNew,
-    };
+    return tenantRes;
 }
