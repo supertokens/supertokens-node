@@ -763,13 +763,11 @@ export default function getAPIImplementation(): APIInterface {
 
                         await assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
-                        signInResponse.user = await await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
-                            {
-                                tenantId,
-                                user: signInResponse.user,
-                                userContext,
-                            }
-                        );
+                        signInResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                            tenantId,
+                            user: signInResponse.user,
+                            userContext,
+                        });
 
                         session = await Session.createNewSession(
                             options.req,
@@ -939,22 +937,20 @@ export default function getAPIImplementation(): APIInterface {
                 // we allow setup of unverified account info only if the session user has the same account info
                 // and it is verified
 
-                if (accountInfo.email !== undefined) {
-                    let foundVerifiedEmail = false;
-                    for (const lM of sessionUser.loginMethods) {
-                        if (lM.hasSameEmailAs(accountInfo.email) && lM.verified) {
-                            foundVerifiedEmail = true;
-                            break;
-                        }
+                let foundVerifiedEmail = false;
+                for (const lM of sessionUser.loginMethods) {
+                    if (lM.hasSameEmailAs(accountInfo.email) && lM.verified) {
+                        foundVerifiedEmail = true;
+                        break;
                     }
+                }
 
-                    if (!foundVerifiedEmail) {
-                        throw new SignUpError({
-                            status: "SIGN_UP_NOT_ALLOWED",
-                            reason:
-                                "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
-                        });
-                    }
+                if (!foundVerifiedEmail) {
+                    throw new SignUpError({
+                        status: "SIGN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
+                    });
                 }
             };
 
@@ -983,6 +979,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (
                         canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
+                        // Session user has conflicting account info with another primary user
                         throw new SignUpError({
                             status: "SIGN_UP_NOT_ALLOWED",
                             reason:
@@ -992,14 +989,16 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 // Check if the linking with session user going to fail and avoid user creation here
-                const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                    tenantId,
-                    accountInfo,
-                    doUnionOfAccountInfo: false,
-                    userContext,
-                });
-                for (const user of users) {
-                    if (user.isPrimaryUser && user.id !== sessionUser.id) {
+                const usersWithSameEmail = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo(
+                    {
+                        tenantId,
+                        accountInfo,
+                        doUnionOfAccountInfo: false,
+                        userContext,
+                    }
+                );
+                for (const userWithSameEmail of usersWithSameEmail) {
+                    if (userWithSameEmail.isPrimaryUser && userWithSameEmail.id !== sessionUser.id) {
                         throw new SignUpError({
                             status: "SIGN_UP_NOT_ALLOWED",
                             reason:
@@ -1033,6 +1032,9 @@ export default function getAPIImplementation(): APIInterface {
                     } else if (
                         createPrimaryRes.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
+                        // We had determined during validation that the linking is going to pass, but now it has failed
+                        // due to another parallel request. So we recurse again from the validation phase and return
+                        // appropriate error from there
                         throw new RecurseError();
                     }
                 }
@@ -1044,6 +1046,10 @@ export default function getAPIImplementation(): APIInterface {
                 });
 
                 if (linkRes.status !== "OK") {
+                    // We had determined during validation that the linking is going to pass, but now it has failed
+                    // due to another parallel request. So we recurse again from the validation phase and return
+                    // appropriate error from there
+
                     // we have the following cases here:
                     // 1. Input user is not primary user - when we recurse, we notice that it's not primary user and we will check if it can be made primary and do it again
                     // 2. Recipe user id is already lined to another primary user - when we recurse, we will find a conflicting user for the email and the validation will fail
