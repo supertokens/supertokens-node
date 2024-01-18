@@ -142,15 +142,15 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
         },
 
         markFactorAsCompleteInSession: async function (this: RecipeInterface, { session, factorId, userContext }) {
-            const currentValue = await session.getClaimValue(MultiFactorAuthClaim);
-            const completed = {
-                ...currentValue?.c,
+            const currentClaimValue = await session.getClaimValue(MultiFactorAuthClaim);
+            const updatedCompletedFactors = {
+                ...currentClaimValue?.c,
                 [factorId]: Math.floor(Date.now() / 1000),
             };
 
             await session.setClaimValue(MultiFactorAuthClaim, {
-                c: completed,
-                v: currentValue?.v == undefined ? false : currentValue.v,
+                c: updatedCompletedFactors,
+                v: currentClaimValue?.v == undefined ? false : currentClaimValue.v,
             });
             await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates value for `v`
         },

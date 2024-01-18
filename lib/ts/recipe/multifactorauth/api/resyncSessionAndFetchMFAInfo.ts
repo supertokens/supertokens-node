@@ -18,7 +18,7 @@ import { APIInterface, APIOptions } from "..";
 import Session from "../../session";
 import { UserContext } from "../../../types";
 
-export default async function mfaInfo(
+export default async function resyncSessionAndFetchMFAInfo(
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext

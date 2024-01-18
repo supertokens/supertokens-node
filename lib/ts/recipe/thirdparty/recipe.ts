@@ -81,7 +81,7 @@ export default class Recipe extends RecipeModule {
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
-                mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
+                mfaInstance.addFuncToGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                     for (const loginMethod of user.loginMethods) {
                         // We deliberately do not check for matching tenantId because
                         // even if the user is logging into a tenant does not have

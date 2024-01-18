@@ -32,21 +32,31 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ) {
         let ctx = getUserContext(userContext);
-        const sessionUser = await getUser(session.getUserId(), ctx);
-        if (!sessionUser) {
-            throw new Error("Session user not found");
-        }
-        const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-            user: sessionUser,
+
+        const mfaInfo = await getMFARelatedInfoFromSession({
+            session,
+            assumeEmptyCompletedIfNotFound: false,
             userContext: ctx,
         });
+
+        if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
+            throw new Error("Session user not found");
+        } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
+            throw new Error("MFA claim value not found");
+        } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
+            throw new Error("Tenant not found");
+        }
+
+        if (mfaInfo.status !== "OK") {
+            throw new Error("should never come here");
+        }
 
         await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
             {
                 session,
                 factorId,
-                mfaRequirementsForAuth: await this.getMFARequirementsForAuth(session, ctx),
-                factorsSetUpForUser: factorsSetup,
+                mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
+                factorsSetUpForUser: mfaInfo.factorsSetUpForUser,
                 userContext: ctx,
             }
         );
@@ -81,7 +91,7 @@ export default class Wrapper {
         factorId: string,
         userContext?: Record<string, any>
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.markFactorAsCompleteInSession({
             session,
             factorId,
             userContext: getUserContext(userContext),

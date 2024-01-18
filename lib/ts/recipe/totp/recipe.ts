@@ -76,18 +76,20 @@ export default class Recipe extends RecipeModule {
                 mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes(() => {
                     return ["totp"];
                 });
-                mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User, userContext: UserContext) => {
-                    const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
-                        userId: user.id,
-                        userContext,
-                    });
-                    for (const device of deviceRes.devices) {
-                        if (device.verified) {
-                            return ["totp"];
+                mfaInstance.addFuncToGetFactorsSetupForUserFromOtherRecipes(
+                    async (user: User, userContext: UserContext) => {
+                        const deviceRes = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
+                            userId: user.id,
+                            userContext,
+                        });
+                        for (const device of deviceRes.devices) {
+                            if (device.verified) {
+                                return ["totp"];
+                            }
                         }
+                        return [];
                     }
-                    return [];
-                });
+                );
             }
         });
     }

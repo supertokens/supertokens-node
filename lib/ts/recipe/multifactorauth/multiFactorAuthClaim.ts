@@ -79,31 +79,37 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
                     const { c: completedFactors } = claimVal;
 
-                    const unsatisfiedFactors = this.getNextSetOfUnsatisfiedFactors(completedFactors, requirementList);
+                    const nextSetOfUnsatisfiedFactors = this.getNextSetOfUnsatisfiedFactors(
+                        completedFactors,
+                        requirementList
+                    );
 
-                    if (unsatisfiedFactors.factorIds.length === 0) {
+                    if (nextSetOfUnsatisfiedFactors.factorIds.length === 0) {
+                        // No item in the requirementList is left unsatisfied, hence is Valid
                         return {
                             isValid: true,
                         };
                     }
 
-                    if (unsatisfiedFactors.type === "string") {
+                    if (nextSetOfUnsatisfiedFactors.type === "string") {
                         return {
                             isValid: false,
                             reason: {
                                 message:
-                                    "Factor validation failed: " + unsatisfiedFactors.factorIds[0] + " not completed",
-                                factorId: unsatisfiedFactors.factorIds[0],
+                                    "Factor validation failed: " +
+                                    nextSetOfUnsatisfiedFactors.factorIds[0] +
+                                    " not completed",
+                                factorId: nextSetOfUnsatisfiedFactors.factorIds[0],
                             },
                         };
-                    } else if (unsatisfiedFactors.type === "oneOf") {
+                    } else if (nextSetOfUnsatisfiedFactors.type === "oneOf") {
                         return {
                             isValid: false,
                             reason: {
                                 message:
                                     "None of these factors are complete in the session: " +
-                                    unsatisfiedFactors.factorIds.join(", "),
-                                oneOf: unsatisfiedFactors.factorIds,
+                                    nextSetOfUnsatisfiedFactors.factorIds.join(", "),
+                                oneOf: nextSetOfUnsatisfiedFactors.factorIds,
                             },
                         };
                     } else {
@@ -112,8 +118,8 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                             reason: {
                                 message:
                                     "Some of the factors are not complete in the session: " +
-                                    unsatisfiedFactors.factorIds.join(", "),
-                                allOfInAnyOrder: unsatisfiedFactors.factorIds,
+                                    nextSetOfUnsatisfiedFactors.factorIds.join(", "),
+                                allOfInAnyOrder: nextSetOfUnsatisfiedFactors.factorIds,
                             },
                         };
                     }
@@ -131,6 +137,13 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         completedFactors: MFAClaimValue["c"],
         requirementList: MFARequirementList
     ): { factorIds: string[]; type: "string" | "oneOf" | "allOfInAnyOrder" } {
+        // This function checks each of the requrement one by one and returns the list of unsatisfied factors
+        // from the item which is not satisfied.
+        // For example:
+        //   1. if requirementList is ["f1", { oneOf: ["f2", "f3"] }, "f4"] and user has completed f1, this functions returns ["f2", "f3"]
+        //   2. if requirementList is ["f1", { allOfInAnyOrder: ["f2", "f3"] }, "f4"] and user has completed f1, f2, this functions returns the group ["f2", "f3"]
+        //   3. if requirementList is [ oneOf: ["f1", "f2"], allofInAnyOrder: ["f3", "f4"], "f5" ] and user has completed f1, f3, this functions returns the group ["f3", "f4"] since that's the first group of factors which is not satisfied
+
         for (const req of requirementList) {
             const nextFactors: Set<string> = new Set();
             let type: "string" | "oneOf" | "allOfInAnyOrder" = "string";
@@ -197,7 +210,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                 v: this.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds.length === 0,
             };
         } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
-            throw new Error("should never happen");
+            throw new Error("should never happen"); // because we assume missing claim value as empty completed factors in the function `getMFARelatedInfoFromSession`
         } else if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
             throw new Error("Unknown User ID provided");
         } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {

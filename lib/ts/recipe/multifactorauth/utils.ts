@@ -80,6 +80,7 @@ export const isValidFirstFactor = async function (
     return validFirstFactors.includes(factorId);
 };
 
+// This function is to reuse a piece of code that is needed in multiple places
 export const getMFARelatedInfoFromSession = async function (
     input: (
         | {

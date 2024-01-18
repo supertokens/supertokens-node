@@ -30,10 +30,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (mfaInfo.status === "OK") {
-                const factorsAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
-                    user: mfaInfo.sessionUser,
-                    userContext,
-                });
+                const factorsAlreadySetup = mfaInfo.factorsSetUpForUser;
                 const allAvailableSecondaryFactors = await options.recipeInstance.getAllAvailableSecondaryFactorIds(
                     mfaInfo.tenantConfig
                 );
@@ -83,6 +80,12 @@ export default function getAPIInterface(): APIInterface {
                 return {
                     status: "OK",
                     factors: {
+                        // next array is filtered to only include factors that are allowed to be setup or are already setup
+                        // we do this because the factor chooser in the frontend will be based on the next array only
+                        // we do not simply filter out the factors that are not allowed to be setup because in the case
+                        // where user has already setup a factor and not completed it, none of the factors will be allowed to
+                        // be setup, and that that will result in an empty next array. However, we want to show the factor
+                        // that the user has already setup in that case.
                         next: nextSetOfUnsatisfiedFactors.factorIds.filter(
                             (factorId) =>
                                 factorsAllowedToSetup.includes(factorId) || factorsAlreadySetup.includes(factorId)

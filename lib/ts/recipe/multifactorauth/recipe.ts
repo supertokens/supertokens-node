@@ -34,7 +34,7 @@ import {
     TypeNormalisedInput,
 } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import mfaInfoAPI from "./api/resyncSessionAndFetchMFAInfo";
+import resyncSessionAndFetchMFAInfoAPI from "./api/resyncSessionAndFetchMFAInfo";
 import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { User } from "../../user";
@@ -159,7 +159,7 @@ export default class Recipe extends RecipeModule {
             res,
         };
         if (id === RESYNC_SESSION_AND_FETCH_MFA_INFO) {
-            return await mfaInfoAPI(this.apiImpl, options, userContext);
+            return await resyncSessionAndFetchMFAInfoAPI(this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");
     };
@@ -195,7 +195,7 @@ export default class Recipe extends RecipeModule {
         return factorIds;
     };
 
-    addGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {
+    addFuncToGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 

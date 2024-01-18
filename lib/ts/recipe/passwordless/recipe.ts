@@ -136,7 +136,7 @@ export default class Recipe extends RecipeModule {
                     }
                     return allFactors;
                 });
-                mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
+                mfaInstance.addFuncToGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                     // We deliberately do not check for matching tenantId because
                     // even if the user is logging into a tenant does not have
                     // passwordless loginMethod, the frontend will call the

@@ -52,7 +52,7 @@ export default class Recipe extends RecipeModule {
         f: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc
     ) => void;
     getAllAvailableSecondaryFactorIds: (tenantConfig: TenantConfig) => string[];
-    addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
+    addFuncToGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
     addFuncToGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
     getEmailsForFactors: (
         user: User,
