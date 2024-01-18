@@ -13,10 +13,22 @@
  * under the License.
  */
 
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    MFAClaimValue,
+    MFARequirementList,
+} from "./types";
 import MultiFactorAuthRecipe from "./recipe";
 import Multitenancy from "../multitenancy";
 import { UserContext } from "../../types";
+import { SessionContainerInterface } from "../session/types";
+import { User, getUser } from "../..";
+import Recipe from "./recipe";
+import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
+import { TenantConfig } from "../multitenancy/types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     if (config?.firstFactors !== undefined && config?.firstFactors.length === 0) {
@@ -66,4 +78,114 @@ export const isValidFirstFactor = async function (
     }
 
     return validFirstFactors.includes(factorId);
+};
+
+export const getMFARelatedInfoFromSession = async function (
+    input: (
+        | {
+              userId: string;
+              tenantId: string;
+              accessTokenPayload: any;
+          }
+        | {
+              session: SessionContainerInterface;
+          }
+    ) & {
+        assumeEmptyCompletedIfNotFound: boolean;
+        userContext: UserContext;
+    }
+): Promise<
+    | {
+          status: "SESSION_USER_NOT_FOUND_ERROR" | "MFA_CLAIM_VALUE_NOT_FOUND_ERROR" | "TENANT_NOT_FOUND_ERROR";
+      }
+    | {
+          status: "OK";
+          sessionUser: User;
+          factorsSetUpForUser: string[];
+          completedFactors: MFAClaimValue["c"];
+          requiredSecondaryFactorsForUser: string[];
+          requiredSecondaryFactorsForTenant: string[];
+          mfaRequirementsForAuth: MFARequirementList;
+          tenantConfig: TenantConfig;
+      }
+> {
+    let userId: string;
+    let tenantId: string;
+    let accessTokenPayload: any;
+
+    if ("session" in input) {
+        userId = input.session.getUserId();
+        tenantId = input.session.getTenantId();
+        accessTokenPayload = input.session.getAccessTokenPayload();
+    } else {
+        userId = input.userId;
+        tenantId = input.tenantId;
+        accessTokenPayload = input.accessTokenPayload;
+    }
+
+    const sessionUser = await getUser(userId, input.userContext);
+    if (sessionUser === undefined) {
+        return {
+            status: "SESSION_USER_NOT_FOUND_ERROR",
+        };
+    }
+
+    const factorsSetUpForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+        user: sessionUser,
+        userContext: input.userContext,
+    });
+
+    const mfaClaimValue = MultiFactorAuthClaim.getValueFromPayload(accessTokenPayload);
+
+    if (mfaClaimValue === undefined) {
+        if (!input.assumeEmptyCompletedIfNotFound) {
+            return {
+                status: "MFA_CLAIM_VALUE_NOT_FOUND_ERROR",
+            };
+        }
+    }
+
+    const completedFactors = mfaClaimValue?.c ?? {};
+
+    const requiredSecondaryFactorsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
+        {
+            userId,
+            userContext: input.userContext,
+        }
+    );
+
+    const tenantInfo = await Multitenancy.getTenant(tenantId, input.userContext);
+
+    if (tenantInfo === undefined) {
+        return {
+            status: "TENANT_NOT_FOUND_ERROR",
+        };
+    }
+
+    const { status: _, ...tenantConfig } = tenantInfo;
+
+    const requiredSecondaryFactorsForTenant: string[] = tenantInfo.requiredSecondaryFactors ?? [];
+    const mfaRequirementsForAuth = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth(
+        {
+            user: sessionUser,
+            accessTokenPayload,
+            tenantId,
+            factorsSetUpForUser,
+            requiredSecondaryFactorsForUser,
+            requiredSecondaryFactorsForTenant,
+            completedFactors,
+            userContext: input.userContext,
+        }
+    );
+
+    return {
+        status: "OK",
+        sessionUser,
+        factorsSetUpForUser,
+        completedFactors,
+        requiredSecondaryFactorsForUser,
+        requiredSecondaryFactorsForTenant,
+        mfaRequirementsForAuth,
+        tenantConfig,
+    };
 };

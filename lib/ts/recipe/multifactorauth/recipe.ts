@@ -83,6 +83,14 @@ export default class Recipe extends RecipeModule {
             if (mtRecipe !== undefined) {
                 mtRecipe.staticFirstFactors = this.config.firstFactors;
             }
+
+            // We don't add MultiFactorAuthClaim as a global claim because the values are populated
+            // on factor setup / completion any way (in the sign in / up APIs).
+            // SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(MultiFactorAuthClaim);
+
+            SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
+                MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()
+            );
         });
 
         this.querier = Querier.getNewInstanceOrThrowError(recipeId);
@@ -103,15 +111,6 @@ export default class Recipe extends RecipeModule {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
-
-                // We do not want to add the MFA claim as a global claim (which would make createNewSession set it up)
-                // because we want to add it in the sign-in APIs manually.
-
-                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
-                        MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()
-                    );
-                });
                 return Recipe.instance;
             } else {
                 throw new Error(

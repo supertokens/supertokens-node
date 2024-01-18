@@ -17,7 +17,6 @@ import { RecipeInterface } from "./";
 import UserMetadata from "../usermetadata";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import type MultiFactorAuthRecipe from "./recipe";
-import { getUser } from "../..";
 import { logDebugMessage } from "../../logger";
 import { SessionClaimValidator } from "../session";
 
@@ -149,11 +148,6 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 [factorId]: Math.floor(Date.now() / 1000),
             };
 
-            const user = await getUser(session.getUserId(), userContext);
-            if (user === undefined) {
-                throw new Error("User not found!");
-            }
-
             await session.setClaimValue(MultiFactorAuthClaim, {
                 c: completed,
                 v: currentValue?.v == undefined ? false : currentValue.v,
@@ -206,7 +200,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 ...metadata.metadata,
                 _supertokens: {
                     ...metadata.metadata._supertokens,
-                    requiredSecondaryFactorsForUser: factorIds,
+                    requiredSecondaryFactors: factorIds,
                 },
             };
 

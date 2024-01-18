@@ -13,118 +13,98 @@
  * under the License.
  */
 
-import Multitenancy from "../../multitenancy";
 import { APIInterface } from "../";
 import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
-import { getUser } from "../../..";
 import SessionError from "../../session/error";
+import { getMFARelatedInfoFromSession } from "../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
         resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
-            const userId = session.getUserId();
-            const tenantId = session.getTenantId();
-            const user = await getUser(userId, userContext);
+            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // ensure claim value is present
 
-            if (user === undefined) {
+            const mfaInfo = await getMFARelatedInfoFromSession({
+                session,
+                assumeEmptyCompletedIfNotFound: false,
+                userContext,
+            });
+
+            if (mfaInfo.status === "OK") {
+                const factorsAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
+                    user: mfaInfo.sessionUser,
+                    userContext,
+                });
+                const allAvailableSecondaryFactors = await options.recipeInstance.getAllAvailableSecondaryFactorIds(
+                    mfaInfo.tenantConfig
+                );
+
+                const factorsAllowedToSetup: string[] = [];
+                for (const id of allAvailableSecondaryFactors) {
+                    try {
+                        await options.recipeImplementation.assertAllowedToSetupFactorElseThrowInvalidClaimError({
+                            session,
+                            factorId: id,
+                            factorsSetUpForUser: factorsAlreadySetup,
+                            mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
+                            userContext,
+                        });
+                        factorsAllowedToSetup.push(id);
+                    } catch (err) {
+                        // ignore
+                    }
+                }
+
+                const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
+                    mfaInfo.completedFactors,
+                    mfaInfo.mfaRequirementsForAuth
+                );
+
+                let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(
+                    mfaInfo.sessionUser,
+                    session.getRecipeUserId()
+                );
+                let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(
+                    mfaInfo.sessionUser,
+                    session.getRecipeUserId()
+                );
+                if (
+                    getEmailsForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID" ||
+                    getPhoneNumbersForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID"
+                ) {
+                    throw new SessionError({
+                        type: "UNAUTHORISED",
+                        message: "User no longer associated with the session",
+                        payload: {
+                            clearTokens: true,
+                        },
+                    });
+                }
+
+                return {
+                    status: "OK",
+                    factors: {
+                        next: nextSetOfUnsatisfiedFactors.factorIds.filter(
+                            (factorId) =>
+                                factorsAllowedToSetup.includes(factorId) || factorsAlreadySetup.includes(factorId)
+                        ),
+                        alreadySetup: factorsAlreadySetup,
+                        allowedToSetup: factorsAllowedToSetup,
+                    },
+                    emails: getEmailsForFactorsResult.factorIdToEmailsMap,
+                    phoneNumbers: getPhoneNumbersForFactorsResult.factorIdToPhoneNumberMap,
+                };
+            } else if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
                 throw new SessionError({
                     type: SessionError.UNAUTHORISED,
                     message: "Session user not found",
                 });
-            }
-            const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-
-            if (tenantInfo === undefined) {
+            } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
                 throw new Error("Tenant not found");
+            } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
+                throw new Error("should never come here");
+            } else {
+                throw new Error("should never come here");
             }
-
-            const factorsAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
-                user,
-                userContext,
-            });
-
-            const { status: _, ...tenantConfig } = tenantInfo;
-
-            const availableFactors = await options.recipeInstance.getAllAvailableSecondaryFactorIds(tenantConfig);
-
-            // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-            const requiredSecondaryFactorsForUser = await options.recipeImplementation.getRequiredSecondaryFactorsForUser(
-                {
-                    userId,
-                    userContext,
-                }
-            );
-
-            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
-
-            const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
-            if (completedFactorsClaimValue === undefined) {
-                throw new Error("should never happen"); // since we have called the fetchAndSetClaim already
-            }
-
-            const completedFactors = completedFactorsClaimValue.c;
-            const mfaRequirementsForAuth = await options.recipeImplementation.getMFARequirementsForAuth({
-                user: user,
-                accessTokenPayload: session.getAccessTokenPayload(),
-                tenantId,
-                factorsSetUpForUser: factorsAlreadySetup,
-                requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
-                requiredSecondaryFactorsForUser,
-                completedFactors: completedFactors,
-                userContext,
-            });
-
-            const factorsAllowedToSetup: string[] = [];
-            for (const id of availableFactors) {
-                try {
-                    await options.recipeImplementation.assertAllowedToSetupFactorElseThrowInvalidClaimError({
-                        session,
-                        factorId: id,
-                        factorsSetUpForUser: factorsAlreadySetup,
-                        mfaRequirementsForAuth,
-                        userContext,
-                    });
-                    factorsAllowedToSetup.push(id);
-                } catch (err) {
-                    // ignore
-                }
-            }
-
-            const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
-                completedFactors,
-                mfaRequirementsForAuth
-            );
-
-            let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId());
-            let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(
-                user,
-                session.getRecipeUserId()
-            );
-            if (
-                getEmailsForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID" ||
-                getPhoneNumbersForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID"
-            ) {
-                throw new SessionError({
-                    type: "UNAUTHORISED",
-                    message: "User no longer associated with the session",
-                    payload: {
-                        clearTokens: true,
-                    },
-                });
-            }
-
-            return {
-                status: "OK",
-                factors: {
-                    next: nextSetOfUnsatisfiedFactors.factorIds.filter(
-                        (factorId) => factorsAllowedToSetup.includes(factorId) || factorsAlreadySetup.includes(factorId)
-                    ),
-                    alreadySetup: factorsAlreadySetup,
-                    allowedToSetup: factorsAllowedToSetup,
-                },
-                emails: getEmailsForFactorsResult.factorIdToEmailsMap,
-                phoneNumbers: getPhoneNumbersForFactorsResult.factorIdToPhoneNumberMap,
-            };
         },
     };
 }

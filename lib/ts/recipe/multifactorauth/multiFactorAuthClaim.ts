@@ -13,15 +13,13 @@
  * under the License.
  */
 
-import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
-import Multitenancy from "../multitenancy";
-import MultiFactorAuthRecipe from "./recipe";
 import { UserContext } from "../../types";
+import { getMFARelatedInfoFromSession } from "./utils";
 
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
@@ -59,7 +57,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                 },
             }),
 
-            hasCompletedFactors: (requirements: MFARequirementList, claimKey?: string) => ({
+            hasCompletedRequirementList: (requirementList: MFARequirementList, claimKey?: string) => ({
                 claim: this,
                 id: claimKey ?? this.key,
 
@@ -68,7 +66,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                     return value === undefined;
                 },
                 validate: async (payload) => {
-                    if (requirements.length === 0) {
+                    if (requirementList.length === 0) {
                         return {
                             isValid: true, // No requirements to satisfy
                         };
@@ -81,7 +79,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
                     const { c: completedFactors } = claimVal;
 
-                    const unsatisfiedFactors = this.getNextSetOfUnsatisfiedFactors(completedFactors, requirements);
+                    const unsatisfiedFactors = this.getNextSetOfUnsatisfiedFactors(completedFactors, requirementList);
 
                     if (unsatisfiedFactors.factorIds.length === 0) {
                         return {
@@ -126,30 +124,26 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
 
     public validators: {
         hasCompletedMFARequirementsForAuth: (id?: string) => SessionClaimValidator;
-        hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
+        hasCompletedRequirementList(requirementList: MFARequirementList, id?: string): SessionClaimValidator;
     };
 
-    public isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
-        return this.getNextSetOfUnsatisfiedFactors(completedClaims, requirements).factorIds.length === 0;
-    }
-
     public getNextSetOfUnsatisfiedFactors(
-        completedClaims: MFAClaimValue["c"],
-        requirements: MFARequirementList
+        completedFactors: MFAClaimValue["c"],
+        requirementList: MFARequirementList
     ): { factorIds: string[]; type: "string" | "oneOf" | "allOfInAnyOrder" } {
-        for (const req of requirements) {
+        for (const req of requirementList) {
             const nextFactors: Set<string> = new Set();
             let type: "string" | "oneOf" | "allOfInAnyOrder" = "string";
 
             if (typeof req === "string") {
-                if (completedClaims[req] === undefined) {
+                if (completedFactors[req] === undefined) {
                     type = "string";
                     nextFactors.add(req);
                 }
             } else if ("oneOf" in req) {
                 let satisfied = false;
                 for (const factorId of req.oneOf) {
-                    if (completedClaims[factorId] !== undefined) {
+                    if (completedFactors[factorId] !== undefined) {
                         satisfied = true;
                     }
                 }
@@ -162,7 +156,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
             } else if ("allOfInAnyOrder" in req) {
                 for (const factorId of req.allOfInAnyOrder) {
                     type = "allOfInAnyOrder";
-                    if (completedClaims[factorId] === undefined) {
+                    if (completedFactors[factorId] === undefined) {
                         nextFactors.add(factorId);
                     }
                 }
@@ -188,53 +182,29 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         currentPayload: JSONObject | undefined,
         userContext: UserContext
     ) => {
-        const user = await getUser(userId, userContext);
+        const mfaInfo = await getMFARelatedInfoFromSession({
+            userId,
+            tenantId,
+            accessTokenPayload: currentPayload,
+            assumeEmptyCompletedIfNotFound: true,
+            userContext,
+        });
 
-        if (user === undefined) {
-            throw new Error("Unknown User ID provided");
-        }
-        const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-
-        if (tenantInfo === undefined) {
+        if (mfaInfo.status === "OK") {
+            let { completedFactors, mfaRequirementsForAuth } = mfaInfo;
+            return {
+                c: completedFactors,
+                v: this.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds.length === 0,
+            };
+        } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
             throw new Error("should never happen");
+        } else if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
+            throw new Error("Unknown User ID provided");
+        } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
+            throw new Error("Tenant not found");
+        } else {
+            throw new Error("should never come here");
         }
-
-        const recipeInstance = MultiFactorAuthRecipe.getInstanceOrThrowError();
-        const factorsSetupForUser = await recipeInstance.recipeInterfaceImpl.getFactorsSetupForUser({
-            user,
-            userContext,
-        });
-
-        // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-        const requiredSecondaryFactorsForUser = await recipeInstance.recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
-            {
-                userId,
-                userContext,
-            }
-        );
-        const completedFactorsClaimValue =
-            currentPayload === undefined ? undefined : (currentPayload[this.key] as JSONObject);
-
-        const completedFactors: MFAClaimValue["c"] = (completedFactorsClaimValue?.c ?? {}) as Record<
-            string,
-            number | undefined
-        >;
-
-        const mfaRequirementsForAuth = await recipeInstance.recipeInterfaceImpl.getMFARequirementsForAuth({
-            user,
-            accessTokenPayload: currentPayload !== undefined ? currentPayload : {},
-            tenantId: tenantId,
-            factorsSetUpForUser: factorsSetupForUser,
-            requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
-            requiredSecondaryFactorsForUser,
-            completedFactors: completedFactors,
-            userContext,
-        });
-
-        return {
-            c: completedFactors,
-            v: MultiFactorAuthClaim.isRequirementListSatisfied(completedFactors, mfaRequirementsForAuth),
-        };
     };
 
     public addToPayload_internal = (payload: JSONObject, value: MFAClaimValue) => {

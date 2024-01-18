@@ -12,12 +12,11 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
     constructor(key?: string);
     validators: {
         hasCompletedMFARequirementsForAuth: (id?: string) => SessionClaimValidator;
-        hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
+        hasCompletedRequirementList(requirementList: MFARequirementList, id?: string): SessionClaimValidator;
     };
-    isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;
     getNextSetOfUnsatisfiedFactors(
-        completedClaims: MFAClaimValue["c"],
-        requirements: MFARequirementList
+        completedFactors: MFAClaimValue["c"],
+        requirementList: MFARequirementList
     ): {
         factorIds: string[];
         type: "string" | "oneOf" | "allOfInAnyOrder";

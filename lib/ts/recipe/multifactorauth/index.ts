@@ -17,9 +17,9 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
-import Multitenancy from "../multitenancy";
 import { getUser } from "../..";
 import { getUserContext } from "../../utils";
+import { getMFARelatedInfoFromSession } from "./utils";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -32,12 +32,12 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ) {
         let ctx = getUserContext(userContext);
-        const user = await getUser(session.getUserId(), ctx);
-        if (!user) {
+        const sessionUser = await getUser(session.getUserId(), ctx);
+        if (!sessionUser) {
             throw new Error("Session user not found");
         }
         const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-            user,
+            user: sessionUser,
             userContext: ctx,
         });
 
@@ -54,45 +54,26 @@ export default class Wrapper {
 
     static async getMFARequirementsForAuth(session: SessionContainerInterface, userContext?: Record<string, any>) {
         let ctx = getUserContext(userContext);
-        const user = await getUser(session.getUserId(), ctx);
-        if (!user) {
-            throw new Error("Session user not found");
-        }
-        const factorsSetup = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
-            user,
+
+        const mfaInfo = await getMFARelatedInfoFromSession({
+            session,
+            assumeEmptyCompletedIfNotFound: false,
             userContext: ctx,
         });
-        const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
 
-        if (mfaClaimValue === undefined) {
+        if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
+            throw new Error("Session user not found");
+        } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
             throw new Error("MFA claim value not found");
-        }
-
-        const completedFactors = mfaClaimValue.c;
-        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
-            {
-                userId: session.getUserId(),
-                userContext: ctx,
-            }
-        );
-
-        const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
-
-        if (tenantInfo === undefined) {
+        } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
             throw new Error("Tenant not found");
         }
 
-        const defaultMFARequirementsForTenant: string[] = tenantInfo.requiredSecondaryFactors ?? [];
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
-            user,
-            accessTokenPayload: session.getAccessTokenPayload(),
-            tenantId: session.getTenantId(),
-            factorsSetUpForUser: factorsSetup,
-            requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
-            requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
-            completedFactors,
-            userContext: ctx,
-        });
+        if (mfaInfo.status !== "OK") {
+            throw new Error("should never come here");
+        }
+
+        return mfaInfo.mfaRequirementsForAuth;
     }
 
     static async markFactorAsCompleteInSession(
