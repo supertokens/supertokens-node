@@ -25,7 +25,7 @@ import { RESYNC_SESSION_AND_FETCH_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
-    GetAllFactorsFromOtherRecipesFunc,
+    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
     GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
     GetPhoneNumbersForFactorsFromOtherRecipesFunc,
@@ -48,7 +48,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID = "multifactorauth";
 
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
-    getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[] = [];
+    getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc[] = [];
 
     getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[] = [];
     getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[] = [];
@@ -177,13 +177,15 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    addGetAllFactorsFromOtherRecipesFunc = (f: GetAllFactorsFromOtherRecipesFunc) => {
-        this.getAllFactorsFromOtherRecipesFunc.push(f);
+    addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes = (
+        f: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc
+    ) => {
+        this.getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs.push(f);
     };
 
-    getAllAvailableFactorIds = (tenantConfig: TenantConfig) => {
+    getAllAvailableSecondaryFactorIds = (tenantConfig: TenantConfig) => {
         let factorIds: string[] = [];
-        for (const func of this.getAllFactorsFromOtherRecipesFunc) {
+        for (const func of this.getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs) {
             const factorIdsRes = func(tenantConfig);
             for (const factorId of factorIdsRes) {
                 if (!factorIds.includes(factorId)) {
@@ -198,7 +200,7 @@ export default class Recipe extends RecipeModule {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    addGetEmailsForFactorFromOtherRecipes = (func: GetEmailsForFactorFromOtherRecipesFunc) => {
+    addFuncToGetEmailsForFactorFromOtherRecipes = (func: GetEmailsForFactorFromOtherRecipesFunc) => {
         this.getEmailsForFactorFromOtherRecipesFunc.push(func);
     };
 
@@ -228,7 +230,7 @@ export default class Recipe extends RecipeModule {
         return result;
     };
 
-    addGetPhoneNumbersForFactorsFromOtherRecipes = (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => {
+    addFuncToGetPhoneNumbersForFactorsFromOtherRecipes = (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => {
         this.getPhoneNumbersForFactorFromOtherRecipesFunc.push(func);
     };
 

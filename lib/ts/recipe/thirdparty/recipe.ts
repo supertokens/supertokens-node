@@ -81,12 +81,6 @@ export default class Recipe extends RecipeModule {
 
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
-                mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
-                    if (tenantConfig.thirdParty.enabled === false) {
-                        return [];
-                    }
-                    return ["thirdparty"];
-                });
                 mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                     for (const loginMethod of user.loginMethods) {
                         // We deliberately do not check for matching tenantId because
@@ -106,7 +100,8 @@ export default class Recipe extends RecipeModule {
                     }
                     return [];
                 });
-                mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
+
+                mfaInstance.addFuncToGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
                     // This function is called in the MFA info endpoint API.
                     // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
 

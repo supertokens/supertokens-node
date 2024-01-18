@@ -106,6 +106,27 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                         };
                     }
 
+                    if (
+                        setOfUnsatisfiedFactors.factorIds.length > 0 &&
+                        !setOfUnsatisfiedFactors.factorIds.includes(factorId)
+                    ) {
+                        // It can be a security issue if we don't do this check
+                        // Consider this case:
+                        //   Requirements: [{oneOf: ["totp", "otp-email"]}, "otp-phone"] (this is what I call the lower sms costs case)
+                        //   The user has setup otp-phone previously, but no totp or email
+                        //   During sign-in, they'd be allowed to add a new phone number, then set up TOTP and complete sign-in, completely bypassing the old phone number.
+
+                        logDebugMessage(
+                            `assertAllowedToSetupFactorElseThrowInvalidClaimError ${factorId}: false because user is trying to set up factor that is not in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
+                                ", "
+                            )}`
+                        );
+                        return {
+                            isValid: false,
+                            reason: "Not allowed to setup factor that is not in the next set of unsatisfied factors",
+                        };
+                    }
+
                     logDebugMessage(
                         `assertAllowedToSetupFactorElseThrowInvalidClaimError ${factorId}: true because the next set of unsatisfied factors is ${
                             setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"

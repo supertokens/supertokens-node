@@ -45,7 +45,7 @@ export default function getAPIInterface(): APIInterface {
 
             const { status: _, ...tenantConfig } = tenantInfo;
 
-            const availableFactors = await options.recipeInstance.getAllAvailableFactorIds(tenantConfig);
+            const availableFactors = await options.recipeInstance.getAllAvailableSecondaryFactorIds(tenantConfig);
 
             // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
             const requiredSecondaryFactorsForUser = await options.recipeImplementation.getRequiredSecondaryFactorsForUser(
@@ -54,8 +54,15 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                 }
             );
+
+            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
+
             const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
-            const completedFactors = completedFactorsClaimValue?.c ?? {};
+            if (completedFactorsClaimValue === undefined) {
+                throw new Error("should never happen"); // since we have called the fetchAndSetClaim already
+            }
+
+            const completedFactors = completedFactorsClaimValue.c;
             const mfaRequirementsForAuth = await options.recipeImplementation.getMFARequirementsForAuth({
                 user: user,
                 accessTokenPayload: session.getAccessTokenPayload(),
@@ -74,8 +81,6 @@ export default function getAPIInterface(): APIInterface {
                         session,
                         factorId: id,
                         completedFactors: completedFactors,
-                        requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
-                        requiredSecondaryFactorsForUser,
                         factorsSetUpForUser: factorsAlreadySetup,
                         mfaRequirementsForAuth,
                         userContext,

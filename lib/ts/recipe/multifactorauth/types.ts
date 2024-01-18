@@ -68,8 +68,6 @@ export type RecipeInterface = {
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpForUser: string[];
-        requiredSecondaryFactorsForUser: string[];
-        requiredSecondaryFactorsForTenant: string[];
         completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<void>;
@@ -142,7 +140,7 @@ export type APIInterface = {
 
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
 
-export type GetAllFactorsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
+export type GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
 
 export type GetEmailsForFactorFromOtherRecipesFunc = (
     user: User,

@@ -130,7 +130,7 @@ export default class Recipe extends RecipeModule {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
 
             if (mfaInstance !== undefined) {
-                mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
+                mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes((tenantConfig) => {
                     if (tenantConfig.passwordless.enabled === false) {
                         return [];
                     }
@@ -169,7 +169,7 @@ export default class Recipe extends RecipeModule {
                     }
                     return allFactors.filter((id) => isFactorSetupForUser(user, id));
                 });
-                mfaInstance.addGetEmailsForFactorFromOtherRecipes((user, sessionRecipeUserId) => {
+                mfaInstance.addFuncToGetEmailsForFactorFromOtherRecipes((user, sessionRecipeUserId) => {
                     // This function is called in the MFA info endpoint API.
                     // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
 
@@ -306,7 +306,7 @@ export default class Recipe extends RecipeModule {
                     };
                 });
 
-                mfaInstance.addGetPhoneNumbersForFactorsFromOtherRecipes((user, sessionRecipeUserId) => {
+                mfaInstance.addFuncToGetPhoneNumbersForFactorsFromOtherRecipes((user, sessionRecipeUserId) => {
                     // This function is called in the MFA info endpoint API.
                     // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
 

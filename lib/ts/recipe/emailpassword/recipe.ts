@@ -94,7 +94,7 @@ export default class Recipe extends RecipeModule {
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
-                mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
+                mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes((tenantConfig) => {
                     if (tenantConfig.emailPassword.enabled === false) {
                         return [];
                     }
@@ -125,7 +125,7 @@ export default class Recipe extends RecipeModule {
                     return [];
                 });
 
-                mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
+                mfaInstance.addFuncToGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
                     // This function is called in the MFA info endpoint API.
                     // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
 

@@ -42,45 +42,19 @@ export default class Wrapper {
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
 
-        // if MFA claim or c is missing, we can assume that no factors are completed
-        // this can happen when an old session is migrated with MFA claim and we don't know what was the first factor
-        // it is okay to assume no factors are completed at this stage because the MFA requirements are generally about
-        // the second factors. In the worst case, the user will be asked to do the factor again, which should be okay.
-        const completedFactors = mfaClaimValue?.c ?? {};
-
-        const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
-            {
-                userId: session.getUserId(),
-                userContext: ctx,
-            }
-        );
-
-        const tenantInfo = await Multitenancy.getTenant(session.getTenantId(), userContext);
-
-        if (tenantInfo === undefined) {
-            throw new Error("Tenant not found");
+        if (mfaClaimValue === undefined) {
+            throw new Error("MFA claim value not found");
         }
 
-        const defaultMFARequirementsForTenant: string[] = tenantInfo.requiredSecondaryFactors ?? [];
-        const requirements = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth({
-            user,
-            accessTokenPayload: session.getAccessTokenPayload(),
-            tenantId: session.getTenantId(),
-            factorsSetUpForUser: factorsSetup,
-            requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
-            requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
-            completedFactors,
-            userContext: ctx,
-        });
+        const completedFactors = mfaClaimValue.c;
+
         await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
             {
                 session,
                 factorId,
                 completedFactors,
-                mfaRequirementsForAuth: requirements,
+                mfaRequirementsForAuth: await this.getMFARequirementsForAuth(session, ctx),
                 factorsSetUpForUser: factorsSetup,
-                requiredSecondaryFactorsForUser: defaultMFARequirementsForUser,
-                requiredSecondaryFactorsForTenant: defaultMFARequirementsForTenant,
                 userContext: ctx,
             }
         );
@@ -97,7 +71,12 @@ export default class Wrapper {
             userContext: ctx,
         });
         const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
-        const completedFactors = mfaClaimValue?.c ?? {};
+
+        if (mfaClaimValue === undefined) {
+            throw new Error("MFA claim value not found");
+        }
+
+        const completedFactors = mfaClaimValue.c;
         const defaultMFARequirementsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
             {
                 userId: session.getUserId(),
