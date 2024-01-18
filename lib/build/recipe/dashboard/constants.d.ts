@@ -23,7 +23,6 @@ export declare const CREATE_PASSWORDLESS_USER = "/api/user/passwordless";
 export declare const LIST_TENANT_LOGIN_METHODS = "/api/tenants/login-methods";
 export declare const USERROLES_USER_API = "/api/userroles/user/roles";
 export declare const TENANT_API = "/api/tenant";
-export declare const LIST_TENANTS_WITH_USER_COUNT = "/api/tenants/list-with-user-count";
 export declare const ASSOCIATE_USER_TO_TENANT = "/api/tenants/user/associate";
 export declare const DISASSOCIATE_USER_FROM_TENANT = "/api/tenants/user/disassociate";
 export declare const UNLINK_USER = "/api/user/unlink";

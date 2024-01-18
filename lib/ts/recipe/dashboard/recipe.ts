@@ -46,7 +46,6 @@ import {
     CREATE_PASSWORDLESS_USER,
     LIST_TENANT_LOGIN_METHODS,
     TENANT_API,
-    LIST_TENANTS_WITH_USER_COUNT,
     DISASSOCIATE_USER_FROM_TENANT,
     ASSOCIATE_USER_TO_TENANT,
 } from "./constants";
@@ -87,7 +86,6 @@ import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
 import listTenants from "./api/multitenancy/listTenants";
 import getTenantLoginMethodsInfo from "./api/multitenancy/getTenantLoginMethodsInfo";
 import getTenantInfo from "./api/multitenancy/getTenantInfo";
-import listAllTenantsWithUserCount from "./api/multitenancy/listAllTenantsWithUserCount";
 import deleteTenant from "./api/multitenancy/deleteTenant";
 import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
 import associateUserToTenant from "./api/multitenancy/associateUserToTenant";
@@ -369,14 +367,6 @@ export default class Recipe extends RecipeModule {
                 method: "get",
             },
             {
-                id: LIST_TENANTS_WITH_USER_COUNT,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(LIST_TENANTS_WITH_USER_COUNT)
-                ),
-                disabled: false,
-                method: "get",
-            },
-            {
                 id: TENANT_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
                 disabled: false,
@@ -540,10 +530,6 @@ export default class Recipe extends RecipeModule {
             }
             if (req.getMethod() === "delete") {
                 apiFunction = deleteTenant;
-            }
-        } else if (id === LIST_TENANTS_WITH_USER_COUNT) {
-            if (req.getMethod() === "get") {
-                apiFunction = listAllTenantsWithUserCount;
             }
         } else if (id === ASSOCIATE_USER_TO_TENANT) {
             apiFunction = associateUserToTenant;

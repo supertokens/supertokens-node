@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
-import { ProviderConfig } from "../../thirdparty/types";
+import { APIInterface, APIOptions } from "../../types";
+import { ProviderConfig } from "../../../thirdparty/types";
 declare type TenantListTenantType = {
     tenantId: string;
     emailPassword: {
@@ -13,10 +13,16 @@ declare type TenantListTenantType = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
+    userCount?: number;
 };
 export declare type Response = {
     status: "OK";
     tenants: TenantListTenantType[];
 };
-export default function listTenants(_: APIInterface, __: string, ___: APIOptions, userContext: any): Promise<Response>;
+export default function listTenants(
+    _: APIInterface,
+    __: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response>;
 export {};

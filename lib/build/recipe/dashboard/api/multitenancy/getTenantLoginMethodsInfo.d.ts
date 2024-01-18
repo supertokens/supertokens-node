@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
-import { TypeNormalisedInput } from "../../passwordless/types";
+import { APIInterface, APIOptions } from "../../types";
+import { TypeNormalisedInput } from "../../../passwordless/types";
 declare type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 declare type TenantLoginMethodType = {
     tenantId: string;
