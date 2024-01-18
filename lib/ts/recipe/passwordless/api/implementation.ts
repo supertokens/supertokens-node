@@ -136,6 +136,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (
                         canCreatePrimary.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
+                        // Session user has conflicting account info with another primary user
                         throw new SignInUpError({
                             status: "SIGN_IN_UP_NOT_ALLOWED",
                             reason:
