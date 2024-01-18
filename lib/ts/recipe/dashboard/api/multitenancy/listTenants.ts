@@ -12,9 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
-import Multitenancy from "../../multitenancy";
-import { ProviderConfig } from "../../thirdparty/types";
+import { APIInterface, APIOptions } from "../../types";
+import Multitenancy from "../../../multitenancy";
+import { ProviderConfig } from "../../../thirdparty/types";
 
 type TenantListTenantType = {
     tenantId: string;

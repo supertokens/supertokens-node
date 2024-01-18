@@ -12,14 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
-import Multitenancy from "../../multitenancy";
-import PasswordlessRecipe from "../../passwordless/recipe";
-import ThirdPartyPasswordlessRecipe from "../../thirdpartypasswordless/recipe";
-import EmailPasswordRecipe from "../../emailpassword/recipe";
-import ThirdPartyEmailPasswordRecipe from "../../thirdpartyemailpassword/recipe";
-import ThirdParty from "../../thirdparty/recipe";
-import { TypeNormalisedInput } from "../../passwordless/types";
+import { APIInterface, APIOptions } from "../../types";
+import Multitenancy from "../../../multitenancy";
+import PasswordlessRecipe from "../../../passwordless/recipe";
+import ThirdPartyPasswordlessRecipe from "../../../thirdpartypasswordless/recipe";
+import EmailPasswordRecipe from "../../../emailpassword/recipe";
+import ThirdPartyEmailPasswordRecipe from "../../../thirdpartyemailpassword/recipe";
+import ThirdParty from "../../../thirdparty/recipe";
+import { TypeNormalisedInput } from "../../../passwordless/types";
 
 type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 
