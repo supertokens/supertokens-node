@@ -82,7 +82,10 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             const validator: SessionClaimValidator = {
                 id: MultiFactorAuthClaim.key,
                 claim: MultiFactorAuthClaim,
-                shouldRefetch: () => false,
+                shouldRefetch: (payload) => {
+                    const value = MultiFactorAuthClaim.getValueFromPayload(payload);
+                    return value === undefined;
+                },
                 validate: async (payload) => {
                     const claimVal = MultiFactorAuthClaim.getValueFromPayload(payload);
                     if (!claimVal) {

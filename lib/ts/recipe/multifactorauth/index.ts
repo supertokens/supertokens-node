@@ -40,19 +40,11 @@ export default class Wrapper {
             user,
             userContext: ctx,
         });
-        const mfaClaimValue = await session.getClaimValue(MultiFactorAuthClaim, ctx);
-
-        if (mfaClaimValue === undefined) {
-            throw new Error("MFA claim value not found");
-        }
-
-        const completedFactors = mfaClaimValue.c;
 
         await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
             {
                 session,
                 factorId,
-                completedFactors,
                 mfaRequirementsForAuth: await this.getMFARequirementsForAuth(session, ctx),
                 factorsSetUpForUser: factorsSetup,
                 userContext: ctx,

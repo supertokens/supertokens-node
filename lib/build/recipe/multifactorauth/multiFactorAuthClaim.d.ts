@@ -20,7 +20,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         requirements: MFARequirementList
     ): {
         factorIds: string[];
-        type: "requirement" | "oneOf" | "allOfInAnyOrder";
+        type: "string" | "oneOf" | "allOfInAnyOrder";
     };
     fetchValue: (
         userId: string,

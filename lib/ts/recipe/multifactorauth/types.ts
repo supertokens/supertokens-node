@@ -68,7 +68,6 @@ export type RecipeInterface = {
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpForUser: string[];
-        completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<void>;
 

@@ -80,7 +80,6 @@ export default function getAPIInterface(): APIInterface {
                     await options.recipeImplementation.assertAllowedToSetupFactorElseThrowInvalidClaimError({
                         session,
                         factorId: id,
-                        completedFactors: completedFactors,
                         factorsSetUpForUser: factorsAlreadySetup,
                         mfaRequirementsForAuth,
                         userContext,
@@ -94,15 +93,6 @@ export default function getAPIInterface(): APIInterface {
             const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
                 completedFactors,
                 mfaRequirementsForAuth
-            );
-
-            await session.setClaimValue(
-                MultiFactorAuthClaim,
-                {
-                    c: completedFactors,
-                    v: MultiFactorAuthClaim.isRequirementListSatisfied(completedFactors, mfaRequirementsForAuth),
-                },
-                userContext
             );
 
             let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId());
