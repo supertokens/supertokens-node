@@ -46,10 +46,9 @@ export default async function createOrUpdateTenant(
     try {
         tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
     } catch (_) {
-        throw new SuperTokensError({
-            message: "Invalid tenantId",
-            type: SuperTokensError.BAD_INPUT_ERROR,
-        });
+        return {
+            status: "INVALID_TENANT_ID",
+        };
     }
 
     return {

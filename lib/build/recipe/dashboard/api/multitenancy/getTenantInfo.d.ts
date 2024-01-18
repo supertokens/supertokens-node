@@ -1,19 +1,17 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
+import { ProviderConfig } from "../../../thirdparty/types";
 export declare type Response =
     | {
           status: "OK";
           tenant: {
-              id: string;
+              tenantId: string;
               emailPassword: {
                   enabled: boolean;
               };
               thirdParty: {
                   enabled: boolean;
-                  providers: Array<{
-                      id: string;
-                      name: string;
-                  }>;
+                  providers: ProviderConfig[];
               };
               passwordless: {
                   enabled: boolean;

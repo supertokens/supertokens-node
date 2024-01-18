@@ -96,11 +96,10 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
         });
 
         assert.strictEqual(tenantInfoResponse.status, "OK");
-        assert.strictEqual(tenantInfoResponse.tenant.id, "tenant1");
+        assert.strictEqual(tenantInfoResponse.tenant.tenantId, "tenant1");
         assert.strictEqual(tenantInfoResponse.tenant.emailPassword.enabled, true);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.enabled, true);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers.length, 1);
-        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers[0].id, "google");
-        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers[0].name, "google");
+        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers[0].thirdPartyId, "google");
     });
 });

@@ -15,21 +15,19 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
+import { ProviderConfig } from "../../../thirdparty/types";
 
 export type Response =
     | {
           status: "OK";
           tenant: {
-              id: string;
+              tenantId: string;
               emailPassword: {
                   enabled: boolean;
               };
               thirdParty: {
                   enabled: boolean;
-                  providers: Array<{
-                      id: string;
-                      name: string;
-                  }>;
+                  providers: ProviderConfig[];
               };
               passwordless: {
                   enabled: boolean;
@@ -69,17 +67,10 @@ export default async function getTenantInfo(
     }
 
     const tenant = {
-        id: tenantId,
+        tenantId,
         emailPassword: tenantRes.emailPassword,
         passwordless: tenantRes.passwordless,
-        thirdParty: {
-            ...tenantRes.thirdParty,
-            providers:
-                tenantRes.thirdParty.providers?.map((provider) => ({
-                    id: provider.thirdPartyId,
-                    name: provider.name ?? "",
-                })) ?? [],
-        },
+        thirdParty: tenantRes.thirdParty,
         coreConfig: tenantRes.coreConfig,
     };
 

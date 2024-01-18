@@ -18,6 +18,7 @@ import SuperTokensError from "../../../../error";
 
 export type Response = {
     status: "OK";
+    didExist: boolean;
 };
 
 export default async function deleteTenant(
@@ -35,9 +36,10 @@ export default async function deleteTenant(
         });
     }
 
-    await Multitenancy.deleteTenant(tenantId, userContext);
+    const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);
 
     return {
         status: "OK",
+        didExist: deleteTenantRes.didExist,
     };
 }
