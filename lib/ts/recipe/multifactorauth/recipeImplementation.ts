@@ -155,7 +155,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 c: completed,
                 v: currentValue?.v == undefined ? false : currentValue.v,
             });
-            session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates value for `v`
+            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates value for `v`
         },
 
         getRequiredSecondaryFactorsForUser: async function ({ userId, userContext }) {
