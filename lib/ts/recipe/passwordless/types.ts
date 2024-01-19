@@ -300,6 +300,7 @@ export type APIInterface = {
     createCodePOST?: (
         input: ({ email: string } | { phoneNumber: string }) & {
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
             userContext: UserContext;
         }

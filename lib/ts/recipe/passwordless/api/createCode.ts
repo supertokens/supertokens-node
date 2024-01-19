@@ -18,6 +18,7 @@ import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
 import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function createCode(
     apiImplementation: APIInterface,
@@ -92,10 +93,24 @@ export default async function createCode(
         }
     }
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.createCodePOST(
         email !== undefined
-            ? { email, tenantId, options, userContext }
-            : { phoneNumber: phoneNumber!, tenantId, options, userContext }
+            ? { email, tenantId, session, options, userContext }
+            : { phoneNumber: phoneNumber!, tenantId, session, options, userContext }
     );
 
     send200Response(options.res, result);
