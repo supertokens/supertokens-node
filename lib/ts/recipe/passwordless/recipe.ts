@@ -41,6 +41,7 @@ import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } 
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
@@ -439,6 +440,16 @@ export default class Recipe extends RecipeModule {
                         factorIdToPhoneNumberMap,
                     };
                 });
+            }
+
+            const mtRecipe = MultitenancyRecipe.getInstance();
+            if (mtRecipe !== undefined) {
+                mtRecipe.passwordlessFactors = [
+                    FactorIds.OTP_EMAIL,
+                    FactorIds.OTP_PHONE,
+                    FactorIds.LINK_EMAIL,
+                    FactorIds.LINK_PHONE,
+                ];
             }
         });
     }

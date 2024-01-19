@@ -41,8 +41,10 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
+import { FactorIds } from "../multifactorauth";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -250,6 +252,11 @@ export default class Recipe extends RecipeModule {
                         },
                     };
                 });
+            }
+
+            const mtRecipe = MultitenancyRecipe.getInstance();
+            if (mtRecipe !== undefined) {
+                mtRecipe.emailpasswordFactors = [FactorIds.EMAILPASSWORD];
             }
         });
     }

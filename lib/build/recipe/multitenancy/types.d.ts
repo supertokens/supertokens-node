@@ -140,6 +140,9 @@ export declare type APIOptions = {
     res: BaseResponse;
     staticThirdPartyProviders: ProviderInput[];
     staticFirstFactors: string[] | undefined;
+    emailpasswordFactors: string[];
+    passwordlessFactors: string[];
+    thirdPartyFactors: string[];
 };
 export declare type APIInterface = {
     loginMethodsGET: (input: {

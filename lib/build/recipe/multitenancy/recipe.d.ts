@@ -15,6 +15,9 @@ export default class Recipe extends RecipeModule {
     isInServerlessEnv: boolean;
     staticThirdPartyProviders: ProviderInput[];
     staticFirstFactors: string[] | undefined;
+    emailpasswordFactors: string[];
+    passwordlessFactors: string[];
+    thirdPartyFactors: string[];
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): Recipe;
