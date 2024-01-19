@@ -97,21 +97,15 @@ export const getMFARelatedInfoFromSession = async function (
     ) & {
         userContext: UserContext;
     }
-): Promise<
-    | {
-          status: "TENANT_NOT_FOUND_ERROR";
-      }
-    | {
-          status: "OK";
-          sessionUser: User;
-          factorsSetUpForUser: string[];
-          completedFactors: MFAClaimValue["c"];
-          requiredSecondaryFactorsForUser: string[];
-          requiredSecondaryFactorsForTenant: string[];
-          mfaRequirementsForAuth: MFARequirementList;
-          tenantConfig: TenantConfig;
-      }
-> {
+): Promise<{
+    sessionUser: User;
+    factorsSetUpForUser: string[];
+    completedFactors: MFAClaimValue["c"];
+    requiredSecondaryFactorsForUser: string[];
+    requiredSecondaryFactorsForTenant: string[];
+    mfaRequirementsForAuth: MFARequirementList;
+    tenantConfig: TenantConfig;
+}> {
     let sessionRecipeUserId: RecipeUserId;
     let tenantId: string;
     let accessTokenPayload: any;
@@ -227,9 +221,10 @@ export const getMFARelatedInfoFromSession = async function (
     const tenantInfo = await Multitenancy.getTenant(tenantId, input.userContext);
 
     if (tenantInfo === undefined) {
-        return {
-            status: "TENANT_NOT_FOUND_ERROR",
-        };
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "Tenant not found",
+        });
     }
 
     const { status: _, ...tenantConfig } = tenantInfo;
@@ -249,7 +244,6 @@ export const getMFARelatedInfoFromSession = async function (
     );
 
     return {
-        status: "OK",
         sessionUser,
         factorsSetUpForUser,
         completedFactors,

@@ -38,10 +38,6 @@ export default class Wrapper {
             userContext: ctx,
         });
 
-        if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
-            throw new Error("Tenant not found");
-        }
-
         await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
             {
                 session,
@@ -60,10 +56,6 @@ export default class Wrapper {
             session,
             userContext: ctx,
         });
-
-        if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
-            throw new Error("Tenant not found");
-        }
 
         return mfaInfo.mfaRequirementsForAuth;
     }

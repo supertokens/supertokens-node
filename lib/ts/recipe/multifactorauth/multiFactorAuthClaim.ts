@@ -202,17 +202,11 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
             userContext,
         });
 
-        if (mfaInfo.status === "OK") {
-            let { completedFactors, mfaRequirementsForAuth } = mfaInfo;
-            return {
-                c: completedFactors,
-                v: this.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds.length === 0,
-            };
-        } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
-            throw new Error("Tenant not found");
-        } else {
-            throw new Error("should never come here");
-        }
+        let { completedFactors, mfaRequirementsForAuth } = mfaInfo;
+        return {
+            c: completedFactors,
+            v: this.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds.length === 0,
+        };
     };
 
     public addToPayload_internal = (payload: JSONObject, value: MFAClaimValue) => {

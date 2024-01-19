@@ -28,10 +28,6 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
-                throw new Error("Tenant not found");
-            }
-
             const factorsAlreadySetup = mfaInfo.factorsSetUpForUser;
             const allAvailableSecondaryFactors = await options.recipeInstance.getAllAvailableSecondaryFactorIds(
                 mfaInfo.tenantConfig

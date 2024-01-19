@@ -23,18 +23,12 @@ export declare const getMFARelatedInfoFromSession: (
     ) & {
         userContext: UserContext;
     }
-) => Promise<
-    | {
-          status: "TENANT_NOT_FOUND_ERROR";
-      }
-    | {
-          status: "OK";
-          sessionUser: User;
-          factorsSetUpForUser: string[];
-          completedFactors: MFAClaimValue["c"];
-          requiredSecondaryFactorsForUser: string[];
-          requiredSecondaryFactorsForTenant: string[];
-          mfaRequirementsForAuth: MFARequirementList;
-          tenantConfig: TenantConfig;
-      }
->;
+) => Promise<{
+    sessionUser: User;
+    factorsSetUpForUser: string[];
+    completedFactors: MFAClaimValue["c"];
+    requiredSecondaryFactorsForUser: string[];
+    requiredSecondaryFactorsForTenant: string[];
+    mfaRequirementsForAuth: MFARequirementList;
+    tenantConfig: TenantConfig;
+}>;
