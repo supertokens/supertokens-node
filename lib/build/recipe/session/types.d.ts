@@ -350,7 +350,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
-              session: SessionContainerInterface | undefined;
+              session: SessionContainerInterface;
               userContext: UserContext;
           }) => Promise<
               | {

@@ -420,7 +420,7 @@ export type APIInterface = {
               // case a session does not exist and the sign out button is pressed. It is
               // rare that something needs to be done in this case, but making it like this
               // has little disadvantages.
-              session: SessionContainerInterface | undefined;
+              session: SessionContainerInterface;
               userContext: UserContext;
           }) => Promise<
               | {
