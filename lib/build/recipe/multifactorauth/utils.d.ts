@@ -2,7 +2,7 @@
 import { TypeInput, TypeNormalisedInput, MFAClaimValue, MFARequirementList } from "./types";
 import { UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
-import { User } from "../..";
+import { RecipeUserId, User } from "../..";
 import { TenantConfig } from "../multitenancy/types";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
 export declare const isValidFirstFactor: (
@@ -13,7 +13,7 @@ export declare const isValidFirstFactor: (
 export declare const getMFARelatedInfoFromSession: (
     input: (
         | {
-              userId: string;
+              sessionRecipeUserId: RecipeUserId;
               tenantId: string;
               accessTokenPayload: any;
           }
@@ -21,12 +21,11 @@ export declare const getMFARelatedInfoFromSession: (
               session: SessionContainerInterface;
           }
     ) & {
-        assumeEmptyCompletedIfNotFound: boolean;
         userContext: UserContext;
     }
 ) => Promise<
     | {
-          status: "SESSION_USER_NOT_FOUND_ERROR" | "MFA_CLAIM_VALUE_NOT_FOUND_ERROR" | "TENANT_NOT_FOUND_ERROR";
+          status: "TENANT_NOT_FOUND_ERROR";
       }
     | {
           status: "OK";

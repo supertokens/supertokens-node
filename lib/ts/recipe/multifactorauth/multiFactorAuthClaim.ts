@@ -189,17 +189,16 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     }
 
     public fetchValue = async (
-        userId: string,
-        _recipeUserId: RecipeUserId,
+        _userId: string,
+        recipeUserId: RecipeUserId,
         tenantId: string,
         currentPayload: JSONObject | undefined,
         userContext: UserContext
     ) => {
         const mfaInfo = await getMFARelatedInfoFromSession({
-            userId,
+            sessionRecipeUserId: recipeUserId,
             tenantId,
             accessTokenPayload: currentPayload,
-            assumeEmptyCompletedIfNotFound: true,
             userContext,
         });
 
@@ -209,10 +208,6 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                 c: completedFactors,
                 v: this.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds.length === 0,
             };
-        } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
-            throw new Error("should never happen"); // because we assume missing claim value as empty completed factors in the function `getMFARelatedInfoFromSession`
-        } else if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
-            throw new Error("Unknown User ID provided");
         } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
             throw new Error("Tenant not found");
         } else {

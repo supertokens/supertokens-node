@@ -25,10 +25,13 @@ import MultiFactorAuthRecipe from "./recipe";
 import Multitenancy from "../multitenancy";
 import { UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
-import { User, getUser } from "../..";
+import { RecipeUserId, User, getUser } from "../..";
 import Recipe from "./recipe";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { TenantConfig } from "../multitenancy/types";
+import Session from "../session";
+import SessionError from "../session/error";
+import { FactorIds } from ".";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     if (config?.firstFactors !== undefined && config?.firstFactors.length === 0) {
@@ -84,7 +87,7 @@ export const isValidFirstFactor = async function (
 export const getMFARelatedInfoFromSession = async function (
     input: (
         | {
-              userId: string;
+              sessionRecipeUserId: RecipeUserId;
               tenantId: string;
               accessTokenPayload: any;
           }
@@ -92,12 +95,11 @@ export const getMFARelatedInfoFromSession = async function (
               session: SessionContainerInterface;
           }
     ) & {
-        assumeEmptyCompletedIfNotFound: boolean;
         userContext: UserContext;
     }
 ): Promise<
     | {
-          status: "SESSION_USER_NOT_FOUND_ERROR" | "MFA_CLAIM_VALUE_NOT_FOUND_ERROR" | "TENANT_NOT_FOUND_ERROR";
+          status: "TENANT_NOT_FOUND_ERROR";
       }
     | {
           status: "OK";
@@ -110,25 +112,29 @@ export const getMFARelatedInfoFromSession = async function (
           tenantConfig: TenantConfig;
       }
 > {
-    let userId: string;
+    let sessionRecipeUserId: RecipeUserId;
     let tenantId: string;
     let accessTokenPayload: any;
+    let sessionHandle: string;
 
     if ("session" in input) {
-        userId = input.session.getUserId();
+        sessionRecipeUserId = input.session.getRecipeUserId();
         tenantId = input.session.getTenantId();
         accessTokenPayload = input.session.getAccessTokenPayload();
+        sessionHandle = input.session.getHandle(input.userContext);
     } else {
-        userId = input.userId;
+        sessionRecipeUserId = input.sessionRecipeUserId;
         tenantId = input.tenantId;
         accessTokenPayload = input.accessTokenPayload;
+        sessionHandle = accessTokenPayload.sessionhandle;
     }
 
-    const sessionUser = await getUser(userId, input.userContext);
+    const sessionUser = await getUser(sessionRecipeUserId.getAsString(), input.userContext);
     if (sessionUser === undefined) {
-        return {
-            status: "SESSION_USER_NOT_FOUND_ERROR",
-        };
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "Session user not found",
+        });
     }
 
     const factorsSetUpForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
@@ -136,21 +142,84 @@ export const getMFARelatedInfoFromSession = async function (
         userContext: input.userContext,
     });
 
-    const mfaClaimValue = MultiFactorAuthClaim.getValueFromPayload(accessTokenPayload);
+    let mfaClaimValue = MultiFactorAuthClaim.getValueFromPayload(accessTokenPayload);
 
     if (mfaClaimValue === undefined) {
-        if (!input.assumeEmptyCompletedIfNotFound) {
-            return {
-                status: "MFA_CLAIM_VALUE_NOT_FOUND_ERROR",
-            };
+        // This can happen with older session, because we did not add MFA claims previously.
+        // We try to determine best possible factorId based on the session's recipe user id.
+
+        const sessionInfo = await Session.getSessionInformation(sessionHandle);
+
+        if (sessionInfo === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Session not found",
+            });
         }
+
+        const firstFactorTime = sessionInfo.timeCreated;
+        let computedFirstFactorIdForSession: string | undefined = undefined;
+        for (const lM of sessionUser.loginMethods) {
+            if (lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()) {
+                if (lM.recipeId === "emailpassword") {
+                    if (await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, input.userContext)) {
+                        computedFirstFactorIdForSession = FactorIds.EMAILPASSWORD;
+                        break;
+                    }
+                } else if (lM.recipeId === "thirdparty") {
+                    if (await isValidFirstFactor(tenantId, FactorIds.THIRDPARTY, input.userContext)) {
+                        computedFirstFactorIdForSession = FactorIds.THIRDPARTY;
+                        break;
+                    }
+                } else {
+                    if (lM.email !== undefined) {
+                        if (await isValidFirstFactor(tenantId, FactorIds.LINK_EMAIL, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                        if (await isValidFirstFactor(tenantId, FactorIds.OTP_EMAIL, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                    }
+
+                    if (lM.phoneNumber !== undefined) {
+                        if (await isValidFirstFactor(tenantId, FactorIds.LINK_PHONE, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                        if (await isValidFirstFactor(tenantId, FactorIds.OTP_PHONE, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (computedFirstFactorIdForSession === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Incorrect login method used",
+                payload: {
+                    clearTokens: true,
+                },
+            });
+        }
+
+        mfaClaimValue = {
+            c: {
+                [computedFirstFactorIdForSession]: firstFactorTime,
+            },
+            v: true, // True assuming one login method was enough to login in older sessions. It will be recomputed based on MFA requirements later on.
+        };
     }
 
-    const completedFactors = mfaClaimValue?.c ?? {};
+    const completedFactors = mfaClaimValue.c;
 
     const requiredSecondaryFactorsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
         {
-            userId,
+            userId: sessionUser.id,
             userContext: input.userContext,
         }
     );

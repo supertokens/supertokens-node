@@ -22,8 +22,8 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
         type: "string" | "oneOf" | "allOfInAnyOrder";
     };
     fetchValue: (
-        userId: string,
-        _recipeUserId: RecipeUserId,
+        _userId: string,
+        recipeUserId: RecipeUserId,
         tenantId: string,
         currentPayload: JSONObject | undefined,
         userContext: UserContext

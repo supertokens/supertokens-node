@@ -35,20 +35,11 @@ export default class Wrapper {
 
         const mfaInfo = await getMFARelatedInfoFromSession({
             session,
-            assumeEmptyCompletedIfNotFound: false,
             userContext: ctx,
         });
 
-        if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
-            throw new Error("Session user not found");
-        } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
-            throw new Error("MFA claim value not found");
-        } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
+        if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
             throw new Error("Tenant not found");
-        }
-
-        if (mfaInfo.status !== "OK") {
-            throw new Error("should never come here");
         }
 
         await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
@@ -67,20 +58,11 @@ export default class Wrapper {
 
         const mfaInfo = await getMFARelatedInfoFromSession({
             session,
-            assumeEmptyCompletedIfNotFound: false,
             userContext: ctx,
         });
 
-        if (mfaInfo.status === "SESSION_USER_NOT_FOUND_ERROR") {
-            throw new Error("Session user not found");
-        } else if (mfaInfo.status === "MFA_CLAIM_VALUE_NOT_FOUND_ERROR") {
-            throw new Error("MFA claim value not found");
-        } else if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
+        if (mfaInfo.status === "TENANT_NOT_FOUND_ERROR") {
             throw new Error("Tenant not found");
-        }
-
-        if (mfaInfo.status !== "OK") {
-            throw new Error("should never come here");
         }
 
         return mfaInfo.mfaRequirementsForAuth;
