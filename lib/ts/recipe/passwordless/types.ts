@@ -175,7 +175,7 @@ export type RecipeInterface = {
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
-    consumeCodeWithoutAttemptingAccountLinking: (
+    createRecipeUser: (
         input:
             | {
                   userInputCode: string;
@@ -203,6 +203,7 @@ export type RecipeInterface = {
               maximumCodeInputAttempts: number;
           }
         | { status: "RESTART_FLOW_ERROR" }
+        | { status: "USER_ALREADY_EXISTS_ERROR" }
     >;
 
     updateUser: (input: {

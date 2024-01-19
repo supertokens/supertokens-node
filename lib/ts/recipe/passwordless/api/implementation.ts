@@ -459,7 +459,7 @@ export default function getAPIImplementation(): APIInterface {
 
                                 let consumeCodeResponse;
                                 if (overwriteSessionDuringSignInUp === false) {
-                                    consumeCodeResponse = await input.options.recipeImplementation.consumeCodeWithoutAttemptingAccountLinking(
+                                    consumeCodeResponse = await input.options.recipeImplementation.createRecipeUser(
                                         "deviceId" in input
                                             ? {
                                                   preAuthSessionId: input.preAuthSessionId,
@@ -475,6 +475,10 @@ export default function getAPIImplementation(): APIInterface {
                                                   userContext: input.userContext,
                                               }
                                     );
+
+                                    if (consumeCodeResponse.status === "USER_ALREADY_EXISTS_ERROR") {
+                                        throw new Error("should never happen"); // this is a sign up branch
+                                    }
                                 } else {
                                     consumeCodeResponse = await input.options.recipeImplementation.consumeCode(
                                         "deviceId" in input
@@ -733,7 +737,7 @@ export default function getAPIImplementation(): APIInterface {
                                     input.userContext
                                 );
 
-                                let consumeCodeResponse = await input.options.recipeImplementation.consumeCodeWithoutAttemptingAccountLinking(
+                                let consumeCodeResponse = await input.options.recipeImplementation.createRecipeUser(
                                     "deviceId" in input
                                         ? {
                                               preAuthSessionId: input.preAuthSessionId,
@@ -749,6 +753,10 @@ export default function getAPIImplementation(): APIInterface {
                                               userContext: input.userContext,
                                           }
                                 );
+
+                                if (consumeCodeResponse.status === "USER_ALREADY_EXISTS_ERROR") {
+                                    throw new Error("should never come here"); // this is a sign up branch
+                                }
 
                                 if (consumeCodeResponse.status !== "OK") {
                                     throw new SignInUpError(consumeCodeResponse);

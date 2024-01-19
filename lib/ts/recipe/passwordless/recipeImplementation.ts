@@ -22,7 +22,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
     return {
         consumeCode: async function (this: RecipeInterface, input) {
-            let response = await this.consumeCodeWithoutAttemptingAccountLinking(input);
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
+                copyAndRemoveUserContextAndTenantId(input),
+                input.userContext
+            );
 
             if (response.status !== "OK") {
                 return response;
@@ -59,7 +63,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return response;
         },
 
-        consumeCodeWithoutAttemptingAccountLinking: async function (this: RecipeInterface, input) {
+        createRecipeUser: async function (this: RecipeInterface, input) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
                 copyAndRemoveUserContextAndTenantId(input),
@@ -70,9 +74,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            logDebugMessage("Passwordless.consumeCode code consumed OK");
+            logDebugMessage("Passwordless.createRecipeUser code consumed OK");
             response.user = new User(response.user);
             response.recipeUserId = new RecipeUserId(response.recipeUserId);
+
+            if (!response.createdNewUser) {
+                return {
+                    status: "USER_ALREADY_EXISTS_ERROR",
+                };
+            }
 
             return {
                 status: "OK",
