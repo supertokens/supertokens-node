@@ -290,8 +290,6 @@ export default function getAPIInterface(): APIInterface {
                             rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                             tenantId,
 
-                            // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                            shouldAttemptAccountLinkingIfAllowed: true,
                             userContext,
                         });
 
@@ -360,8 +358,6 @@ export default function getAPIInterface(): APIInterface {
                             rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                             tenantId,
 
-                            // we do not want to attempt accountlinking when there is an active session and MFA is turned on
-                            shouldAttemptAccountLinkingIfAllowed: true,
                             userContext,
                         });
 
@@ -403,50 +399,51 @@ export default function getAPIInterface(): APIInterface {
                     if (isSignIn) {
                         // This branch - MFA is disabled / Active session / Sign in
 
-                        if (overwriteSessionDuringSignInUp && mfaInstance !== undefined) {
-                            // Again, everything is a normal operation here except when MFA is enabled and
-                            // overwriteSessionDuringSignInUp is set to true. In that case we check if thirdparty
-                            // is a valid first factor
-                            if (!(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))) {
-                                throw new SessionError({
-                                    type: SessionError.UNAUTHORISED,
-                                    message: "Session is required for secondary factors",
-                                    payload: {
-                                        clearTokens: false,
-                                    },
-                                });
-                            }
-                        }
-
-                        let existingUser = existingUsers[0];
-
-                        emailInfo = await assertThatEmailChangeIsAllowedAndUpdateEmailInfo(
-                            emailInfo,
-                            existingUser,
-                            provider,
-                            userInfo,
-                            userContext
-                        );
-
-                        let signInUpResponse = await options.recipeImplementation.signInUp({
-                            thirdPartyId: provider.id,
-                            thirdPartyUserId: userInfo.thirdPartyUserId,
-                            email: emailInfo.id,
-
-                            isVerified: emailInfo.isVerified,
-                            oAuthTokens: oAuthTokensToUse,
-                            rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
-                            tenantId,
-
-                            shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
-                            userContext,
-                        });
-
-                        if (signInUpResponse.status === "SIGN_IN_UP_NOT_ALLOWED") {
-                            throw new SignInUpError(signInUpResponse);
-                        }
-
                         if (overwriteSessionDuringSignInUp) {
+                            if (mfaInstance !== undefined) {
+                                // Again, everything is a normal operation here except when MFA is enabled and
+                                // overwriteSessionDuringSignInUp is set to true. In that case we check if thirdparty
+                                // is a valid first factor
+                                if (
+                                    !(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))
+                                ) {
+                                    throw new SessionError({
+                                        type: SessionError.UNAUTHORISED,
+                                        message: "Session is required for secondary factors",
+                                        payload: {
+                                            clearTokens: false,
+                                        },
+                                    });
+                                }
+                            }
+
+                            let existingUser = existingUsers[0];
+
+                            emailInfo = await assertThatEmailChangeIsAllowedAndUpdateEmailInfo(
+                                emailInfo,
+                                existingUser,
+                                provider,
+                                userInfo,
+                                userContext
+                            );
+
+                            let signInUpResponse = await options.recipeImplementation.signInUp({
+                                thirdPartyId: provider.id,
+                                thirdPartyUserId: userInfo.thirdPartyUserId,
+                                email: emailInfo.id,
+
+                                isVerified: emailInfo.isVerified,
+                                oAuthTokens: oAuthTokensToUse,
+                                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                                tenantId,
+
+                                userContext,
+                            });
+
+                            if (signInUpResponse.status === "SIGN_IN_UP_NOT_ALLOWED") {
+                                throw new SignInUpError(signInUpResponse);
+                            }
+
                             await assertThatSignInIsAllowed(tenantId, signInUpResponse.user, userContext);
 
                             signInUpResponse.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts(
@@ -474,55 +471,103 @@ export default function getAPIInterface(): APIInterface {
                                     userContext
                                 );
                             }
-                        }
 
-                        return {
-                            status: "OK",
-                            createdNewRecipeUser: signInUpResponse.createdNewRecipeUser,
-                            user: signInUpResponse.user,
-                            session,
-                            oAuthTokens: oAuthTokensToUse,
-                            rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
-                        };
+                            return {
+                                status: "OK",
+                                createdNewRecipeUser: signInUpResponse.createdNewRecipeUser,
+                                user: signInUpResponse.user,
+                                session,
+                                oAuthTokens: oAuthTokensToUse,
+                                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                            };
+                        } else {
+                            // Not overwriting session
+
+                            let existingUser = existingUsers[0];
+
+                            emailInfo = await assertThatEmailChangeIsAllowedAndUpdateEmailInfo(
+                                emailInfo,
+                                existingUser,
+                                provider,
+                                userInfo,
+                                userContext
+                            );
+
+                            let signInUpResponse = await options.recipeImplementation.manuallyCreateOrUpdateUser({
+                                thirdPartyId: provider.id,
+                                thirdPartyUserId: userInfo.thirdPartyUserId,
+                                email: emailInfo.id,
+
+                                isVerified: emailInfo.isVerified,
+                                tenantId,
+
+                                shouldAttemptAccountLinkingIfAllowed: false,
+
+                                userContext,
+                            });
+
+                            if (signInUpResponse.status === "SIGN_IN_UP_NOT_ALLOWED") {
+                                throw new SignInUpError(signInUpResponse);
+                            } else if (signInUpResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+                                // TODO MFA this is a code duplicate from signInUp recipe implementation, need to find a better way to do this
+                                throw new SignInUpError({
+                                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                                    reason:
+                                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
+                                });
+                            }
+
+                            await assertThatSignInIsAllowed(tenantId, signInUpResponse.user, userContext);
+
+                            return {
+                                status: "OK",
+                                createdNewRecipeUser: signInUpResponse.createdNewRecipeUser,
+                                user: signInUpResponse.user,
+                                session,
+                                oAuthTokens: oAuthTokensToUse,
+                                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                            };
+                        }
                     } else {
                         // This branch - MFA is disabled / Active session / Sign up
 
-                        if (overwriteSessionDuringSignInUp && mfaInstance !== undefined) {
-                            // Again, everything is a normal operation here except when MFA is enabled and
-                            // overwriteSessionDuringSignInUp is set to true. In that case we check if thirdparty
-                            // is a valid first factor
-                            if (!(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))) {
-                                throw new SessionError({
-                                    type: SessionError.UNAUTHORISED,
-                                    message: "Session is required for secondary factors",
-                                    payload: {
-                                        clearTokens: false,
-                                    },
-                                });
-                            }
-                        }
-
-                        await assertThatSignUpIsAllowed(tenantId, emailInfo, provider, userInfo, userContext);
-
-                        let signInUpResponse = await options.recipeImplementation.signInUp({
-                            thirdPartyId: provider.id,
-                            thirdPartyUserId: userInfo.thirdPartyUserId,
-                            email: emailInfo.id,
-
-                            isVerified: emailInfo.isVerified,
-                            oAuthTokens: oAuthTokensToUse,
-                            rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
-                            tenantId,
-
-                            shouldAttemptAccountLinkingIfAllowed: overwriteSessionDuringSignInUp,
-                            userContext,
-                        });
-
-                        if (signInUpResponse.status === "SIGN_IN_UP_NOT_ALLOWED") {
-                            throw new SignInUpError(signInUpResponse);
-                        }
-
                         if (overwriteSessionDuringSignInUp) {
+                            if (mfaInstance !== undefined) {
+                                // Again, everything is a normal operation here except when MFA is enabled and
+                                // overwriteSessionDuringSignInUp is set to true. In that case we check if thirdparty
+                                // is a valid first factor
+                                if (
+                                    !(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))
+                                ) {
+                                    throw new SessionError({
+                                        type: SessionError.UNAUTHORISED,
+                                        message: "Session is required for secondary factors",
+                                        payload: {
+                                            clearTokens: false,
+                                        },
+                                    });
+                                }
+                            }
+
+                            await assertThatSignUpIsAllowed(tenantId, emailInfo, provider, userInfo, userContext);
+
+                            let signInUpResponse = await options.recipeImplementation.signInUp({
+                                thirdPartyId: provider.id,
+                                thirdPartyUserId: userInfo.thirdPartyUserId,
+                                email: emailInfo.id,
+
+                                isVerified: emailInfo.isVerified,
+                                oAuthTokens: oAuthTokensToUse,
+                                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                                tenantId,
+
+                                userContext,
+                            });
+
+                            if (signInUpResponse.status === "SIGN_IN_UP_NOT_ALLOWED") {
+                                throw new SignInUpError(signInUpResponse);
+                            }
+
                             session = await Session.createNewSession(
                                 options.req,
                                 options.res,
@@ -540,16 +585,53 @@ export default function getAPIInterface(): APIInterface {
                                     userContext
                                 );
                             }
-                        }
 
-                        return {
-                            status: "OK",
-                            createdNewRecipeUser: signInUpResponse.createdNewRecipeUser,
-                            user: signInUpResponse.user,
-                            session,
-                            oAuthTokens: oAuthTokensToUse,
-                            rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
-                        };
+                            return {
+                                status: "OK",
+                                createdNewRecipeUser: signInUpResponse.createdNewRecipeUser,
+                                user: signInUpResponse.user,
+                                session,
+                                oAuthTokens: oAuthTokensToUse,
+                                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                            };
+                        } else {
+                            // Not overwriting session
+
+                            await assertThatSignUpIsAllowed(tenantId, emailInfo, provider, userInfo, userContext);
+
+                            let signInUpResponse = await options.recipeImplementation.manuallyCreateOrUpdateUser({
+                                thirdPartyId: provider.id,
+                                thirdPartyUserId: userInfo.thirdPartyUserId,
+                                email: emailInfo.id,
+
+                                isVerified: emailInfo.isVerified,
+                                tenantId,
+
+                                shouldAttemptAccountLinkingIfAllowed: false,
+
+                                userContext,
+                            });
+
+                            if (signInUpResponse.status === "SIGN_IN_UP_NOT_ALLOWED") {
+                                throw new SignInUpError(signInUpResponse);
+                            } else if (signInUpResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+                                // TODO MFA this is a code duplicate from signInUp recipe implementation, need to find a better way to do this
+                                throw new SignInUpError({
+                                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                                    reason:
+                                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
+                                });
+                            }
+
+                            return {
+                                status: "OK",
+                                createdNewRecipeUser: signInUpResponse.createdNewRecipeUser,
+                                user: signInUpResponse.user,
+                                session,
+                                oAuthTokens: oAuthTokensToUse,
+                                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                            };
+                        }
                     }
                 }
             } catch (err) {
