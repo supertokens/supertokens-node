@@ -104,17 +104,10 @@ export default class Recipe extends RecipeModule {
                 });
                 mfaInstance.addFuncToGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                     for (const loginMethod of user.loginMethods) {
-                        // Here we check for matching tenantId because if we don't then
-                        // things can go wrong in the following scenario:
-                        // - tenant1 -> emailpassword with email e1
-                        // - tenant2 -> thirdparty with email e2 (e2 can be equal to e1, doesn't matter)
-                        // now if the user has logged into tenant2, and is adding
-                        // a password to that, we do return ["emailpassword"]
-                        // cause it's there in tenant1 (i.e. we do not check
-                        // for tenant below), then the frontend will end up
-                        // calling the signIn API instead of signUp, and since
-                        // these APIs are tenant specific, then it will return
-                        // wrong credentials error even if the password is correct.
+                        // We don't check for tenantId here because if we find the user
+                        // with emailpassword loginMethod from different tenant, then
+                        // we assume the factor is setup for this user. And as part of factor
+                        // completion, we associate that loginMethod with the session's tenantId
 
                         // Notice that we also check for if the email is fake or not,
                         // cause if it is fake, then we should not consider it as setup
