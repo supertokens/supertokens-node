@@ -3,7 +3,7 @@ import { Querier } from "../../querier";
 import AccountLinking from "../accountlinking/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { logDebugMessage } from "../../logger";
-import { LoginMethod, User } from "../../user";
+import { User } from "../../user";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 
@@ -73,13 +73,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             logDebugMessage("Passwordless.consumeCode code consumed OK");
             response.user = new User(response.user);
             response.recipeUserId = new RecipeUserId(response.recipeUserId);
-
-            const loginMethod = response.user.loginMethods.find(
-                (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
-            )!;
-            if (loginMethod === undefined) {
-                throw new Error("This should never happen: login method not found after signin");
-            }
 
             return {
                 status: "OK",
