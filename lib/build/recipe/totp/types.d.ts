@@ -57,6 +57,9 @@ export declare type RecipeInterface = {
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
           }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
     >;
     updateDevice: (input: {
         userId: string;
@@ -148,7 +151,7 @@ export declare type APIInterface = {
               userContext: UserContext;
           }) => Promise<
               | {
-                    status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR";
+                    status: "OK";
                     deviceName: string;
                     secret: string;
                     qrCodeString: string;

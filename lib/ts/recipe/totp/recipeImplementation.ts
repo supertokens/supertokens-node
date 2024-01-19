@@ -78,6 +78,10 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 });
                 if (emailOrPhoneInfo.status === "OK") {
                     input.userIdentifierInfo = emailOrPhoneInfo.info;
+                } else if (emailOrPhoneInfo.status === "UNKNOWN_USER_ID_ERROR") {
+                    return {
+                        status: "UNKNOWN_USER_ID_ERROR",
+                    };
                 } else {
                     // Ignore since UserIdentifierInfo is optional
                 }

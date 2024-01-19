@@ -16,6 +16,7 @@
 import { APIInterface } from "../";
 import MultiFactorAuth from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -30,11 +31,20 @@ export default function getAPIInterface(): APIInterface {
 
             await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(session, "totp", userContext);
 
-            return await options.recipeImplementation.createDevice({
+            const createDeviceRes = await options.recipeImplementation.createDevice({
                 userId,
                 deviceName: deviceName,
                 userContext: userContext,
             });
+
+            if (createDeviceRes.status === "UNKNOWN_USER_ID_ERROR") {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
+            } else {
+                return createDeviceRes;
+            }
         },
 
         listDevicesGET: async function ({ options, session, userContext }) {

@@ -20,6 +20,9 @@ export default class Wrapper {
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
           }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
     >;
     static updateDevice(
         userId: string,
