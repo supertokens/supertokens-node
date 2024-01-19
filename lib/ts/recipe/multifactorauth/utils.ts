@@ -31,7 +31,7 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { TenantConfig } from "../multitenancy/types";
 import Session from "../session";
 import SessionError from "../session/error";
-import { FactorIds } from ".";
+import { FactorIds } from "./types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     if (config?.firstFactors !== undefined && config?.firstFactors.length === 0) {

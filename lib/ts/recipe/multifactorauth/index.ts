@@ -20,6 +20,7 @@ import { SessionContainerInterface } from "../session/types";
 import { getUser } from "../..";
 import { getUserContext } from "../../utils";
 import { getMFARelatedInfoFromSession } from "./utils";
+import { FactorIds } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -127,15 +128,6 @@ export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFact
 export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
 export const removeFromRequiredSecondaryFactorsForUser = Wrapper.removeFromRequiredSecondaryFactorsForUser;
 
-export const FactorIds = {
-    EMAILPASSWORD: "emailpassword",
-    OTP_EMAIL: "otp-email",
-    OTP_PHONE: "otp-phone",
-    LINK_EMAIL: "link-email",
-    LINK_PHONE: "link-phone",
-    THIRDPARTY: "thirdparty",
-    TOTP: "totp",
-};
-
 export { MultiFactorAuthClaim };
+export { FactorIds };
 export type { RecipeInterface, APIOptions, APIInterface };

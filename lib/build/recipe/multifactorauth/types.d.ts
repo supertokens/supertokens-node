@@ -134,3 +134,12 @@ export declare type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
     | {
           status: "UNKNOWN_SESSION_RECIPE_USER_ID";
       };
+export declare const FactorIds: {
+    EMAILPASSWORD: string;
+    OTP_EMAIL: string;
+    OTP_PHONE: string;
+    LINK_EMAIL: string;
+    LINK_PHONE: string;
+    THIRDPARTY: string;
+    TOTP: string;
+};
