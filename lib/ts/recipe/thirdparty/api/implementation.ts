@@ -11,7 +11,7 @@ import { UserContext } from "../../../types";
 import { UserInfo } from "../types";
 import SessionRecipe from "../../session/recipe";
 import { isValidFirstFactor } from "../../multifactorauth/utils";
-import { FactorIds } from "../../multifactorauth";
+import MultiFactorAuth, { FactorIds } from "../../multifactorauth";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -247,6 +247,7 @@ export default function getAPIInterface(): APIInterface {
                 // Currently we do not support ThirdParty as a second factor. So we will be treating this as if this
                 // is a first factor login always.
                 // Additionally we do isValidFirstFactor check whenever MFA is enabled and a session is going to be created
+                // and also mark the factor as complete in the session.
 
                 let { session } = input;
                 const mfaInstance = MultiFactorAuthRecipe.getInstance();
@@ -316,6 +317,14 @@ export default function getAPIInterface(): APIInterface {
                             userContext
                         );
 
+                        if (mfaInstance !== undefined) {
+                            await MultiFactorAuth.markFactorAsCompleteInSession(
+                                session,
+                                FactorIds.THIRDPARTY,
+                                userContext
+                            );
+                        }
+
                         return {
                             status: "OK",
                             createdNewRecipeUser: signInUpResponse.createdNewRecipeUser,
@@ -369,6 +378,14 @@ export default function getAPIInterface(): APIInterface {
                             {},
                             userContext
                         );
+
+                        if (mfaInstance !== undefined) {
+                            await MultiFactorAuth.markFactorAsCompleteInSession(
+                                session,
+                                FactorIds.THIRDPARTY,
+                                userContext
+                            );
+                        }
 
                         return {
                             status: "OK",
@@ -449,6 +466,14 @@ export default function getAPIInterface(): APIInterface {
                                 {},
                                 userContext
                             );
+
+                            if (mfaInstance !== undefined) {
+                                await MultiFactorAuth.markFactorAsCompleteInSession(
+                                    session,
+                                    FactorIds.THIRDPARTY,
+                                    userContext
+                                );
+                            }
                         }
 
                         return {
@@ -507,6 +532,14 @@ export default function getAPIInterface(): APIInterface {
                                 {},
                                 userContext
                             );
+
+                            if (mfaInstance !== undefined) {
+                                await MultiFactorAuth.markFactorAsCompleteInSession(
+                                    session,
+                                    FactorIds.THIRDPARTY,
+                                    userContext
+                                );
+                            }
                         }
 
                         return {
