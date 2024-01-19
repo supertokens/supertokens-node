@@ -15,7 +15,7 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import Session from "../../session";
+import { getSessionFromRequest } from "../sessionRequestFunctions";
 import { UserContext } from "../../../types";
 
 export default async function signOutAPI(
@@ -29,15 +29,21 @@ export default async function signOutAPI(
         return false;
     }
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
+    const session = await getSessionFromRequest({
+        req: options.req,
+        res: options.res,
+        config: options.config,
+        recipeInterfaceImpl: options.recipeImplementation,
+        options: {
             sessionRequired: true,
             overrideGlobalClaimValidators: () => [],
         },
-        userContext
-    );
+        userContext,
+    });
+
+    if (session === undefined) {
+        throw new Error("should never come here"); // Session required is true
+    }
 
     let result = await apiImplementation.signOutPOST({
         options,
