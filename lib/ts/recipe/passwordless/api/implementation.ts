@@ -6,7 +6,7 @@ import { RecipeUserId, User, getUser } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { isValidFirstFactor } from "../../multifactorauth/utils";
 import SessionError from "../../session/error";
-import MultiFactorAuth from "../../multifactorauth";
+import MultiFactorAuth, { FactorIds } from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import { UserContext } from "../../../types";
 import SessionRecipe from "../../session/recipe";
@@ -184,6 +184,18 @@ export default function getAPIImplementation(): APIInterface {
                     const factorId = `${"userInputCode" in input ? "otp" : "link"}-${
                         deviceInfo.email ? "email" : "phone"
                     }`;
+
+                    if (
+                        ![
+                            FactorIds.OTP_EMAIL,
+                            FactorIds.LINK_EMAIL,
+                            FactorIds.OTP_PHONE,
+                            FactorIds.LINK_PHONE,
+                        ].includes(factorId)
+                    ) {
+                        // Ensuring that the factorId match up with the constants
+                        throw new Error("should never come here");
+                    }
 
                     let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                         tenantId: input.tenantId,

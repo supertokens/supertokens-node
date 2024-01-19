@@ -99,31 +99,31 @@ export default class Recipe extends RecipeModule {
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
 
-        let otpOrLink: string[] = [];
-        let emailOrPhone: string[] = [];
+        let allFactors: string[];
 
         if (this.config.flowType === "MAGIC_LINK") {
-            otpOrLink.push("link");
+            if (this.config.contactMethod === "EMAIL") {
+                allFactors = [FactorIds.LINK_EMAIL];
+            } else if (this.config.contactMethod === "PHONE") {
+                allFactors = [FactorIds.LINK_PHONE];
+            } else {
+                allFactors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
+            }
         } else if (this.config.flowType === "USER_INPUT_CODE") {
-            otpOrLink.push("otp");
+            if (this.config.contactMethod === "EMAIL") {
+                allFactors = [FactorIds.OTP_EMAIL];
+            } else if (this.config.contactMethod === "PHONE") {
+                allFactors = [FactorIds.OTP_PHONE];
+            } else {
+                allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE];
+            }
         } else {
-            otpOrLink.push("otp");
-            otpOrLink.push("link");
-        }
-
-        if (this.config.contactMethod === "EMAIL") {
-            emailOrPhone.push("email");
-        } else if (this.config.contactMethod === "PHONE") {
-            emailOrPhone.push("phone");
-        } else {
-            emailOrPhone.push("email");
-            emailOrPhone.push("phone");
-        }
-
-        const allFactors: string[] = [];
-        for (const ol of otpOrLink) {
-            for (const ep of emailOrPhone) {
-                allFactors.push(`${ol}-${ep}`);
+            if (this.config.contactMethod === "EMAIL") {
+                allFactors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL];
+            } else if (this.config.contactMethod === "PHONE") {
+                allFactors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE];
+            } else {
+                allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE, FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
             }
         }
 

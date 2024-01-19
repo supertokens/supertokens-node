@@ -10,7 +10,7 @@ import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import SessionError from "../../session/error";
-import MultiFactorAuth from "../../multifactorauth";
+import MultiFactorAuth, { FactorIds } from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import SessionRecipe from "../../session/recipe";
 import { isValidFirstFactor } from "../../multifactorauth/utils";
@@ -740,7 +740,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (session === undefined) {
                         // This branch - MFA is enabled / No active session (First Factor) / Sign in
 
-                        if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
+                        if (!(await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, userContext))) {
                             throw new SessionError({
                                 type: SessionError.UNAUTHORISED,
                                 message: "Session is required for secondary factors",
@@ -779,7 +779,11 @@ export default function getAPIImplementation(): APIInterface {
                             userContext
                         );
 
-                        await MultiFactorAuth.markFactorAsCompleteInSession(session, "emailpassword", userContext);
+                        await MultiFactorAuth.markFactorAsCompleteInSession(
+                            session,
+                            FactorIds.EMAILPASSWORD,
+                            userContext
+                        );
 
                         return {
                             status: "OK",
@@ -822,7 +826,11 @@ export default function getAPIImplementation(): APIInterface {
                         // We are keeping this check just in case the implementation of it changes in future.
                         await assertThatSignInIsAllowed(tenantId, signInResponse.user, userContext);
 
-                        await MultiFactorAuth.markFactorAsCompleteInSession(session, "emailpassword", userContext);
+                        await MultiFactorAuth.markFactorAsCompleteInSession(
+                            session,
+                            FactorIds.EMAILPASSWORD,
+                            userContext
+                        );
 
                         return {
                             status: "OK",
@@ -1185,7 +1193,7 @@ export default function getAPIImplementation(): APIInterface {
                     } else {
                         // This branch - MFA is enabled / No active session (First Factor) / Sign up
                         if (session === undefined) {
-                            if (!(await isValidFirstFactor(tenantId, "emailpassword", userContext))) {
+                            if (!(await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, userContext))) {
                                 throw new SessionError({
                                     type: SessionError.UNAUTHORISED,
                                     message: "Session is required for secondary factors",
@@ -1217,7 +1225,11 @@ export default function getAPIImplementation(): APIInterface {
                                 userContext
                             );
 
-                            await MultiFactorAuth.markFactorAsCompleteInSession(session, "emailpassword", userContext);
+                            await MultiFactorAuth.markFactorAsCompleteInSession(
+                                session,
+                                FactorIds.EMAILPASSWORD,
+                                userContext
+                            );
 
                             return {
                                 status: "OK",
@@ -1239,7 +1251,7 @@ export default function getAPIImplementation(): APIInterface {
 
                             await MultiFactorAuth.assertAllowedToSetupFactorElseThrowInvalidClaimError(
                                 session,
-                                "emailpassword",
+                                FactorIds.EMAILPASSWORD,
                                 userContext
                             );
 
@@ -1266,7 +1278,11 @@ export default function getAPIImplementation(): APIInterface {
                                 userContext
                             );
 
-                            await MultiFactorAuth.markFactorAsCompleteInSession(session, "emailpassword", userContext);
+                            await MultiFactorAuth.markFactorAsCompleteInSession(
+                                session,
+                                FactorIds.EMAILPASSWORD,
+                                userContext
+                            );
 
                             return {
                                 status: "OK",

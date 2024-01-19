@@ -11,6 +11,7 @@ import { UserContext } from "../../../types";
 import { UserInfo } from "../types";
 import SessionRecipe from "../../session/recipe";
 import { isValidFirstFactor } from "../../multifactorauth/utils";
+import { FactorIds } from "../../multifactorauth";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -257,7 +258,7 @@ export default function getAPIInterface(): APIInterface {
 
                         if (mfaInstance !== undefined) {
                             // Everything is a normal operation here except we check for valid first factor if MFA is enabled
-                            if (!(await isValidFirstFactor(input.tenantId, "thirdparty", input.userContext))) {
+                            if (!(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))) {
                                 throw new SessionError({
                                     type: SessionError.UNAUTHORISED,
                                     message: "Session is required for secondary factors",
@@ -328,7 +329,7 @@ export default function getAPIInterface(): APIInterface {
 
                         if (mfaInstance !== undefined) {
                             // Everything is a normal operation here except we check for valid first factor if MFA is enabled
-                            if (!(await isValidFirstFactor(input.tenantId, "thirdparty", input.userContext))) {
+                            if (!(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))) {
                                 throw new SessionError({
                                     type: SessionError.UNAUTHORISED,
                                     message: "Session is required for secondary factors",
@@ -389,7 +390,7 @@ export default function getAPIInterface(): APIInterface {
                             // Again, everything is a normal operation here except when MFA is enabled and
                             // overwriteSessionDuringSignInUp is set to true. In that case we check if thirdparty
                             // is a valid first factor
-                            if (!(await isValidFirstFactor(input.tenantId, "thirdparty", input.userContext))) {
+                            if (!(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))) {
                                 throw new SessionError({
                                     type: SessionError.UNAUTHORISED,
                                     message: "Session is required for secondary factors",
@@ -465,7 +466,7 @@ export default function getAPIInterface(): APIInterface {
                             // Again, everything is a normal operation here except when MFA is enabled and
                             // overwriteSessionDuringSignInUp is set to true. In that case we check if thirdparty
                             // is a valid first factor
-                            if (!(await isValidFirstFactor(input.tenantId, "thirdparty", input.userContext))) {
+                            if (!(await isValidFirstFactor(input.tenantId, FactorIds.THIRDPARTY, input.userContext))) {
                                 throw new SessionError({
                                     type: SessionError.UNAUTHORISED,
                                     message: "Session is required for secondary factors",
