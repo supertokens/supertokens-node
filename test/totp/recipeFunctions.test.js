@@ -176,7 +176,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId", "TOTP Device 0", 1, 5);
+        const deviceRes = await Totp.createDevice("testUserId", undefined, "TOTP Device 0", 1, 5);
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -226,7 +226,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId", "TOTP Device 0", 1, 5);
+        const deviceRes = await Totp.createDevice("testUserId", undefined, "TOTP Device 0", 1, 5);
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");

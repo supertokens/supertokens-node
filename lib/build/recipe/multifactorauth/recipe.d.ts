@@ -6,7 +6,7 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import {
     APIInterface,
-    GetAllFactorsFromOtherRecipesFunc,
+    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
     GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
     GetPhoneNumbersForFactorsFromOtherRecipesFunc,
@@ -22,7 +22,7 @@ export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[];
-    getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[];
+    getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc[];
     getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[];
     getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[];
     config: TypeNormalisedInput;
@@ -48,12 +48,33 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    addGetAllFactorsFromOtherRecipesFunc: (f: GetAllFactorsFromOtherRecipesFunc) => void;
-    getAllAvailableFactorIds: (tenantConfig: TenantConfig) => string[];
-    getAllAvailableFirstFactorIds: (tenantConfig: TenantConfig) => string[];
-    addGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
-    addGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
-    getEmailsForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
-    addGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
-    getPhoneNumbersForFactors: (user: User, sessionRecipeUserId: RecipeUserId) => Record<string, string[] | undefined>;
+    addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes: (
+        f: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc
+    ) => void;
+    getAllAvailableSecondaryFactorIds: (tenantConfig: TenantConfig) => string[];
+    addFuncToGetFactorsSetupForUserFromOtherRecipes: (func: GetFactorsSetupForUserFromOtherRecipesFunc) => void;
+    addFuncToGetEmailsForFactorFromOtherRecipes: (func: GetEmailsForFactorFromOtherRecipesFunc) => void;
+    getEmailsForFactors: (
+        user: User,
+        sessionRecipeUserId: RecipeUserId
+    ) =>
+        | {
+              status: "OK";
+              factorIdToEmailsMap: Record<string, string[]>;
+          }
+        | {
+              status: "UNKNOWN_SESSION_RECIPE_USER_ID";
+          };
+    addFuncToGetPhoneNumbersForFactorsFromOtherRecipes: (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => void;
+    getPhoneNumbersForFactors: (
+        user: User,
+        sessionRecipeUserId: RecipeUserId
+    ) =>
+        | {
+              status: "OK";
+              factorIdToPhoneNumberMap: Record<string, string[]>;
+          }
+        | {
+              status: "UNKNOWN_SESSION_RECIPE_USER_ID";
+          };
 }

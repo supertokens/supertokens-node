@@ -227,7 +227,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         assert.strictEqual(response.statusCode, 404);
     });
 
-    it("test that calling the API without a session should return OK", async function () {
+    it("test that calling the API without a session should return 401", async function () {
         const connectionURI = await startST();
 
         STExpress.init({
@@ -256,7 +256,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
-                .expect(200)
+                .expect(401)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -265,8 +265,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                     }
                 })
         );
-        assert.strictEqual(response.body.status, "OK");
-        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.status, 401);
         assert.strictEqual(response.header["set-cookie"], undefined);
     });
 

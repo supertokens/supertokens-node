@@ -46,6 +46,14 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                   reason: string;
               }
         > {
+            // we have kept this input `shouldAttemptAccountLinkingIfAllowed` in this recipe function
+            // as opposed to having separate createRecipeUser. This is to avoid adding more functions
+            // that does the same thing, and we use this flag internally. We do not expose this parameter
+            // in the index file.
+            // This flag is true in most cases. It's false only when we encounter signInUp with active session
+            // and overwriteSessionDuringSignInUp is false. This is because we don't do automatic account linking
+            // when we are not going to create a new session
+
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/signinup`),
                 {
@@ -120,7 +128,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext,
                 oAuthTokens,
                 rawUserInfoFromProvider,
-                shouldAttemptAccountLinkingIfAllowed,
             }: {
                 thirdPartyId: string;
                 thirdPartyUserId: string;
@@ -133,7 +140,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     fromIdTokenPayload?: { [key: string]: any };
                     fromUserInfoAPI?: { [key: string]: any };
                 };
-                shouldAttemptAccountLinkingIfAllowed: boolean;
             }
         ): Promise<
             | {
@@ -158,7 +164,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email,
                 tenantId,
                 isVerified,
-                shouldAttemptAccountLinkingIfAllowed,
+                shouldAttemptAccountLinkingIfAllowed: true,
                 userContext,
             });
 

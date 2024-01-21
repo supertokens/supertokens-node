@@ -190,7 +190,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.equal("OK", res.body.status);
         assert.deepEqual(res.body.emails.emailpassword, ["test@example.com"]);
         assert.deepEqual([], res.body.factors.next);
-        assert.deepEqual(["emailpassword", "otp-email", "thirdparty", "totp"], res.body.factors.isAllowedToSetup);
+        assert.deepEqual(["emailpassword", "otp-email", "totp"], res.body.factors.allowedToSetup);
 
         res = await plessEmailSignInUp(app, "test@example.com", accessToken);
         assert.equal("OK", res.body.status);
@@ -204,7 +204,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.deepEqual(res.body.emails["otp-email"], ["test@example.com"]);
 
         assert.deepEqual([], res.body.factors.next);
-        assert.deepEqual(["emailpassword", "otp-email", "thirdparty", "totp"], res.body.factors.isAllowedToSetup);
+        assert.deepEqual(["emailpassword", "otp-email", "totp"], res.body.factors.allowedToSetup);
     });
 
     it("test that only a valid first factor is allowed to login", async function () {

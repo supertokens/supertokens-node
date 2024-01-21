@@ -13,17 +13,13 @@
  * under the License.
  */
 
-import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
-import Multitenancy from "../multitenancy";
-import MultiFactorAuthRecipe from "./recipe";
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { checkFactorRequirement } from "./utils";
 import { UserContext } from "../../types";
+import { getMFARelatedInfoFromSession } from "./utils";
 
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
@@ -33,9 +29,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         super(key ?? "st-mfa");
 
         this.validators = {
-            hasCompletedMFARequirementForAuth: (id?: string) => ({
+            hasCompletedMFARequirementsForAuth: (claimKey?: string) => ({
                 claim: this,
-                id: id ?? this.key,
+                id: claimKey ?? this.key,
 
                 shouldRefetch: (payload) => {
                     const value = this.getValueFromPayload(payload);
@@ -61,16 +57,16 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                 },
             }),
 
-            hasCompletedFactors: (requirements: MFARequirementList, id?: string) => ({
+            hasCompletedRequirementList: (requirementList: MFARequirementList, claimKey?: string) => ({
                 claim: this,
-                id: id ?? this.key,
+                id: claimKey ?? this.key,
 
                 shouldRefetch: (payload) => {
                     const value = this.getValueFromPayload(payload);
                     return value === undefined;
                 },
                 validate: async (payload) => {
-                    if (requirements.length === 0) {
+                    if (requirementList.length === 0) {
                         return {
                             isValid: true, // No requirements to satisfy
                         };
@@ -81,154 +77,135 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
                         throw new Error("This should never happen, claim value not present in payload");
                     }
 
-                    const { c } = claimVal;
+                    const { c: completedFactors } = claimVal;
 
-                    for (const req of requirements) {
-                        if (typeof req === "object" && "oneOf" in req) {
-                            const res = req.oneOf
-                                .map((r) => checkFactorRequirement(r, c))
-                                .filter((v) => v.isValid === false);
-                            if (res.length === req.oneOf.length) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: "All factor checkers failed in the list",
-                                        oneOf: req.oneOf,
-                                        failures: res,
-                                    },
-                                };
-                            }
-                        } else if (typeof req === "object" && "allOfInAnyOrder" in req) {
-                            const res = req.allOfInAnyOrder
-                                .map((r) => checkFactorRequirement(r, c))
-                                .filter((v) => v.isValid === false);
-                            if (res.length !== 0) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: "Some factor checkers failed in the list",
-                                        allOfInAnyOrder: req.allOfInAnyOrder,
-                                        failures: res,
-                                    },
-                                };
-                            }
-                        } else {
-                            const res = checkFactorRequirement(req, c);
-                            if (res.isValid !== true) {
-                                return {
-                                    isValid: false,
-                                    reason: {
-                                        message: "Factor validation failed: " + res.message,
-                                        factorId: res.id,
-                                    },
-                                };
-                            }
-                        }
+                    const nextSetOfUnsatisfiedFactors = this.getNextSetOfUnsatisfiedFactors(
+                        completedFactors,
+                        requirementList
+                    );
+
+                    if (nextSetOfUnsatisfiedFactors.factorIds.length === 0) {
+                        // No item in the requirementList is left unsatisfied, hence is Valid
+                        return {
+                            isValid: true,
+                        };
                     }
 
-                    return {
-                        isValid: true,
-                    };
+                    if (nextSetOfUnsatisfiedFactors.type === "string") {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message:
+                                    "Factor validation failed: " +
+                                    nextSetOfUnsatisfiedFactors.factorIds[0] +
+                                    " not completed",
+                                factorId: nextSetOfUnsatisfiedFactors.factorIds[0],
+                            },
+                        };
+                    } else if (nextSetOfUnsatisfiedFactors.type === "oneOf") {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message:
+                                    "None of these factors are complete in the session: " +
+                                    nextSetOfUnsatisfiedFactors.factorIds.join(", "),
+                                oneOf: nextSetOfUnsatisfiedFactors.factorIds,
+                            },
+                        };
+                    } else {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message:
+                                    "Some of the factors are not complete in the session: " +
+                                    nextSetOfUnsatisfiedFactors.factorIds.join(", "),
+                                allOfInAnyOrder: nextSetOfUnsatisfiedFactors.factorIds,
+                            },
+                        };
+                    }
                 },
             }),
         };
     }
 
     public validators: {
-        hasCompletedMFARequirementForAuth: (id?: string) => SessionClaimValidator;
-        hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
+        hasCompletedMFARequirementsForAuth: (id?: string) => SessionClaimValidator;
+        hasCompletedRequirementList(requirementList: MFARequirementList, id?: string): SessionClaimValidator;
     };
 
-    public isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean {
-        return this.getNextSetOfUnsatisfiedFactors(completedClaims, requirements).length === 0;
-    }
-
     public getNextSetOfUnsatisfiedFactors(
-        completedClaims: MFAClaimValue["c"],
-        requirements: MFARequirementList
-    ): string[] {
-        for (const req of requirements) {
+        completedFactors: MFAClaimValue["c"],
+        requirementList: MFARequirementList
+    ): { factorIds: string[]; type: "string" | "oneOf" | "allOfInAnyOrder" } {
+        // This function checks each of the requrement one by one and returns the list of unsatisfied factors
+        // from the item which is not satisfied.
+        // For example:
+        //   1. if requirementList is ["f1", { oneOf: ["f2", "f3"] }, "f4"] and user has completed f1, this functions returns ["f2", "f3"]
+        //   2. if requirementList is ["f1", { allOfInAnyOrder: ["f2", "f3"] }, "f4"] and user has completed f1, f2, this functions returns the group ["f2", "f3"]
+        //   3. if requirementList is [ oneOf: ["f1", "f2"], allofInAnyOrder: ["f3", "f4"], "f5" ] and user has completed f1, f3, this functions returns the group ["f3", "f4"] since that's the first group of factors which is not satisfied
+
+        for (const req of requirementList) {
             const nextFactors: Set<string> = new Set();
+            let type: "string" | "oneOf" | "allOfInAnyOrder" = "string";
 
             if (typeof req === "string") {
-                if (completedClaims[req] === undefined) {
+                if (completedFactors[req] === undefined) {
+                    type = "string";
                     nextFactors.add(req);
                 }
             } else if ("oneOf" in req) {
                 let satisfied = false;
                 for (const factorId of req.oneOf) {
-                    if (completedClaims[factorId] !== undefined) {
+                    if (completedFactors[factorId] !== undefined) {
                         satisfied = true;
                     }
                 }
                 if (!satisfied) {
+                    type = "oneOf";
                     for (const factorId of req.oneOf) {
                         nextFactors.add(factorId);
                     }
                 }
             } else if ("allOfInAnyOrder" in req) {
                 for (const factorId of req.allOfInAnyOrder) {
-                    if (completedClaims[factorId] === undefined) {
+                    type = "allOfInAnyOrder";
+                    if (completedFactors[factorId] === undefined) {
                         nextFactors.add(factorId);
                     }
                 }
             }
             if (nextFactors.size > 0) {
-                return Array.from(nextFactors);
+                return {
+                    factorIds: Array.from(nextFactors),
+                    type: type,
+                };
             }
         }
-        return [];
+
+        return {
+            factorIds: [],
+            type: "string",
+        };
     }
 
     public fetchValue = async (
-        userId: string,
-        _recipeUserId: RecipeUserId,
-        tenantId: string | undefined,
+        _userId: string,
+        recipeUserId: RecipeUserId,
+        tenantId: string,
         currentPayload: JSONObject | undefined,
         userContext: UserContext
     ) => {
-        const user = await getUser(userId, userContext);
-
-        if (user === undefined) {
-            throw new Error("Unknown User ID provided");
-        }
-        const tenantInfo = await Multitenancy.getTenant(tenantId ?? DEFAULT_TENANT_ID, userContext);
-
-        if (tenantInfo === undefined) {
-            throw new Error("should never happen");
-        }
-
-        const recipeInstance = MultiFactorAuthRecipe.getInstanceOrThrowError();
-        const isAlreadySetup = await recipeInstance.recipeInterfaceImpl.getFactorsSetupForUser({
-            user,
+        const mfaInfo = await getMFARelatedInfoFromSession({
+            sessionRecipeUserId: recipeUserId,
+            tenantId,
+            accessTokenPayload: currentPayload,
             userContext,
         });
 
-        // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-        const requiredSecondaryFactorsForUser = await recipeInstance.recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
-            {
-                userId,
-                userContext,
-            }
-        );
-        const completedFactorsClaimValue =
-            currentPayload === undefined ? undefined : (currentPayload[this.key] as JSONObject);
-        const completedFactors: Record<string, number> =
-            (completedFactorsClaimValue?.c as Record<string, number>) ?? {};
-        const mfaRequirementsForAuth = await recipeInstance.recipeInterfaceImpl.getMFARequirementsForAuth({
-            user,
-            accessTokenPayload: currentPayload !== undefined ? currentPayload : {},
-            tenantId: tenantId ?? DEFAULT_TENANT_ID,
-            factorsSetUpForUser: isAlreadySetup,
-            requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
-            requiredSecondaryFactorsForUser,
-            completedFactors: completedFactors,
-            userContext,
-        });
-
+        let { completedFactors, mfaRequirementsForAuth } = mfaInfo;
         return {
             c: completedFactors,
-            v: MultiFactorAuthClaim.isRequirementListSatisfied(completedFactors, mfaRequirementsForAuth),
+            v: this.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds.length === 0,
         };
     };
 

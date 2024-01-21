@@ -21,11 +21,11 @@ import STError from "../../error";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { UPDATE_SESSION_AND_FETCH_MFA_INFO } from "./constants";
+import { RESYNC_SESSION_AND_FETCH_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
-    GetAllFactorsFromOtherRecipesFunc,
+    GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
     GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
     GetPhoneNumbersForFactorsFromOtherRecipesFunc,
@@ -34,7 +34,7 @@ import {
     TypeNormalisedInput,
 } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import mfaInfoAPI from "./api/mfaInfo";
+import resyncSessionAndFetchMFAInfoAPI from "./api/resyncSessionAndFetchMFAInfo";
 import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { User } from "../../user";
@@ -48,7 +48,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID = "multifactorauth";
 
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
-    getAllFactorsFromOtherRecipesFunc: GetAllFactorsFromOtherRecipesFunc[] = [];
+    getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc[] = [];
 
     getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[] = [];
     getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[] = [];
@@ -83,6 +83,14 @@ export default class Recipe extends RecipeModule {
             if (mtRecipe !== undefined) {
                 mtRecipe.staticFirstFactors = this.config.firstFactors;
             }
+
+            // We don't add MultiFactorAuthClaim as a global claim because the values are populated
+            // on factor setup / completion any way (in the sign in / up APIs).
+            // SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(MultiFactorAuthClaim);
+
+            SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
+                MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()
+            );
         });
 
         this.querier = Querier.getNewInstanceOrThrowError(recipeId);
@@ -92,7 +100,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the MultiFactorAuth.init function?");
     }
 
     static getInstance(): Recipe | undefined {
@@ -103,15 +111,6 @@ export default class Recipe extends RecipeModule {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
-
-                // We do not want to add the MFA claim as a global claim (which would make createNewSession set it up)
-                // because we want to add it in the sign-in APIs manually.
-
-                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
-                        MultiFactorAuthClaim.validators.hasCompletedMFARequirementForAuth()
-                    );
-                });
                 return Recipe.instance;
             } else {
                 throw new Error(
@@ -134,8 +133,8 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "put",
-                pathWithoutApiBasePath: new NormalisedURLPath(UPDATE_SESSION_AND_FETCH_MFA_INFO),
-                id: UPDATE_SESSION_AND_FETCH_MFA_INFO,
+                pathWithoutApiBasePath: new NormalisedURLPath(RESYNC_SESSION_AND_FETCH_MFA_INFO),
+                id: RESYNC_SESSION_AND_FETCH_MFA_INFO,
                 disabled: this.apiImpl.resyncSessionAndFetchMFAInfoPUT === undefined,
             },
         ];
@@ -159,8 +158,8 @@ export default class Recipe extends RecipeModule {
             req,
             res,
         };
-        if (id === UPDATE_SESSION_AND_FETCH_MFA_INFO) {
-            return await mfaInfoAPI(this.apiImpl, options, userContext);
+        if (id === RESYNC_SESSION_AND_FETCH_MFA_INFO) {
+            return await resyncSessionAndFetchMFAInfoAPI(this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");
     };
@@ -177,15 +176,17 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    addGetAllFactorsFromOtherRecipesFunc = (f: GetAllFactorsFromOtherRecipesFunc) => {
-        this.getAllFactorsFromOtherRecipesFunc.push(f);
+    addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes = (
+        f: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc
+    ) => {
+        this.getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs.push(f);
     };
 
-    getAllAvailableFactorIds = (tenantConfig: TenantConfig) => {
+    getAllAvailableSecondaryFactorIds = (tenantConfig: TenantConfig) => {
         let factorIds: string[] = [];
-        for (const func of this.getAllFactorsFromOtherRecipesFunc) {
+        for (const func of this.getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs) {
             const factorIdsRes = func(tenantConfig);
-            for (const factorId of factorIdsRes.factorIds) {
+            for (const factorId of factorIdsRes) {
                 if (!factorIds.includes(factorId)) {
                     factorIds.push(factorId);
                 }
@@ -194,56 +195,67 @@ export default class Recipe extends RecipeModule {
         return factorIds;
     };
 
-    getAllAvailableFirstFactorIds = (tenantConfig: TenantConfig) => {
-        let factorIds: string[] = [];
-        for (const func of this.getAllFactorsFromOtherRecipesFunc) {
-            const factorIdsRes = func(tenantConfig);
-            for (const factorId of factorIdsRes.firstFactorIds) {
-                if (!factorIds.includes(factorId)) {
-                    factorIds.push(factorId);
-                }
-            }
-        }
-        return factorIds;
-    };
-
-    addGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {
+    addFuncToGetFactorsSetupForUserFromOtherRecipes = (func: GetFactorsSetupForUserFromOtherRecipesFunc) => {
         this.getFactorsSetupForUserFromOtherRecipesFuncs.push(func);
     };
 
-    addGetEmailsForFactorFromOtherRecipes = (func: GetEmailsForFactorFromOtherRecipesFunc) => {
+    addFuncToGetEmailsForFactorFromOtherRecipes = (func: GetEmailsForFactorFromOtherRecipesFunc) => {
         this.getEmailsForFactorFromOtherRecipesFunc.push(func);
     };
 
-    getEmailsForFactors = (user: User, sessionRecipeUserId: RecipeUserId): Record<string, string[] | undefined> => {
-        let result = {};
+    getEmailsForFactors = (
+        user: User,
+        sessionRecipeUserId: RecipeUserId
+    ):
+        | { status: "OK"; factorIdToEmailsMap: Record<string, string[]> }
+        | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" } => {
+        let result: { status: "OK"; factorIdToEmailsMap: Record<string, string[]> } = {
+            status: "OK",
+            factorIdToEmailsMap: {},
+        };
 
         for (const func of this.getEmailsForFactorFromOtherRecipesFunc) {
-            result = {
-                ...result,
-                ...func(user, sessionRecipeUserId),
+            let funcResult = func(user, sessionRecipeUserId);
+            if (funcResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID") {
+                return {
+                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
+                };
+            }
+            result.factorIdToEmailsMap = {
+                ...result.factorIdToEmailsMap,
+                ...funcResult.factorIdToEmailsMap,
             };
         }
         return result;
     };
 
-    addGetPhoneNumbersForFactorsFromOtherRecipes = (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => {
+    addFuncToGetPhoneNumbersForFactorsFromOtherRecipes = (func: GetPhoneNumbersForFactorsFromOtherRecipesFunc) => {
         this.getPhoneNumbersForFactorFromOtherRecipesFunc.push(func);
     };
 
     getPhoneNumbersForFactors = (
         user: User,
         sessionRecipeUserId: RecipeUserId
-    ): Record<string, string[] | undefined> => {
-        let result = {};
+    ):
+        | { status: "OK"; factorIdToPhoneNumberMap: Record<string, string[]> }
+        | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" } => {
+        let result: { status: "OK"; factorIdToPhoneNumberMap: Record<string, string[]> } = {
+            status: "OK",
+            factorIdToPhoneNumberMap: {},
+        };
 
         for (const func of this.getPhoneNumbersForFactorFromOtherRecipesFunc) {
-            result = {
-                ...result,
-                ...func(user, sessionRecipeUserId),
+            let funcResult = func(user, sessionRecipeUserId);
+            if (funcResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID") {
+                return {
+                    status: "UNKNOWN_SESSION_RECIPE_USER_ID",
+                };
+            }
+            result.factorIdToPhoneNumberMap = {
+                ...result.factorIdToPhoneNumberMap,
+                ...funcResult.factorIdToPhoneNumberMap,
             };
         }
-
         return result;
     };
 }

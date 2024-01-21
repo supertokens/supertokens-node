@@ -34,7 +34,7 @@ export type MFARequirementList = (
 )[];
 
 export type MFAClaimValue = {
-    c: Record<string, number>;
+    c: Record<string, number | undefined>;
     v: boolean;
 };
 
@@ -68,9 +68,6 @@ export type RecipeInterface = {
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpForUser: string[];
-        requiredSecondaryFactorsForUser: string[];
-        requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
         userContext: UserContext;
     }) => Promise<void>;
 
@@ -81,7 +78,7 @@ export type RecipeInterface = {
         factorsSetUpForUser: string[];
         requiredSecondaryFactorsForUser: string[];
         requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
+        completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
 
@@ -119,36 +116,48 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    resyncSessionAndFetchMFAInfoPUT: (input: {
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              factors: {
-                  next: string[];
-                  isAlreadySetup: string[];
-                  isAllowedToSetup: string[];
-              };
-              emails: Record<string, string[] | undefined>;
-              phoneNumbers: Record<string, string[] | undefined>;
-          }
-        | GeneralErrorResponse
-    >;
+    resyncSessionAndFetchMFAInfoPUT:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    factors: {
+                        next: string[];
+                        alreadySetup: string[];
+                        allowedToSetup: string[];
+                    };
+                    emails: Record<string, string[] | undefined>;
+                    phoneNumbers: Record<string, string[] | undefined>;
+                }
+              | GeneralErrorResponse
+          >);
 };
 
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
 
-export type GetAllFactorsFromOtherRecipesFunc = (
-    tenantConfig: TenantConfig
-) => { factorIds: string[]; firstFactorIds: string[] };
+export type GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
 
 export type GetEmailsForFactorFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
-) => Record<string, string[] | undefined>;
+) => { status: "OK"; factorIdToEmailsMap: Record<string, string[]> } | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" };
 export type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
-) => Record<string, string[] | undefined>;
+) =>
+    | { status: "OK"; factorIdToPhoneNumberMap: Record<string, string[]> }
+    | { status: "UNKNOWN_SESSION_RECIPE_USER_ID" };
+
+export const FactorIds = {
+    EMAILPASSWORD: "emailpassword",
+    OTP_EMAIL: "otp-email",
+    OTP_PHONE: "otp-phone",
+    LINK_EMAIL: "link-email",
+    LINK_PHONE: "link-phone",
+    THIRDPARTY: "thirdparty",
+    TOTP: "totp",
+};

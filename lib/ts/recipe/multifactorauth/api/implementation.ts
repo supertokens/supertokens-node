@@ -13,99 +13,85 @@
  * under the License.
  */
 
-import Multitenancy from "../../multitenancy";
 import { APIInterface } from "../";
 import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
-import { getUser } from "../../..";
 import SessionError from "../../session/error";
+import { getMFARelatedInfoFromSession } from "../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
         resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
-            const userId = session.getUserId();
-            const tenantId = session.getTenantId();
-            const user = await getUser(userId, userContext);
+            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // ensure claim value is present
 
-            if (user === undefined) {
-                throw new SessionError({
-                    type: SessionError.UNAUTHORISED,
-                    message: "Session user not found",
-                });
-            }
-            const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-
-            if (tenantInfo === undefined) {
-                throw new Error("Tenant not found");
-            }
-
-            const isAlreadySetup = await options.recipeImplementation.getFactorsSetupForUser({
-                user,
+            const mfaInfo = await getMFARelatedInfoFromSession({
+                session,
                 userContext,
             });
 
-            const { status: _, ...tenantConfig } = tenantInfo;
-
-            const availableFactors = await options.recipeInstance.getAllAvailableFactorIds(tenantConfig);
-
-            // session is active and a new user is going to be created, so we need to check if the factor setup is allowed
-            const requiredSecondaryFactorsForUser = await options.recipeImplementation.getRequiredSecondaryFactorsForUser(
-                {
-                    userId,
-                    userContext,
-                }
+            const factorsAlreadySetup = mfaInfo.factorsSetUpForUser;
+            const allAvailableSecondaryFactors = await options.recipeInstance.getAllAvailableSecondaryFactorIds(
+                mfaInfo.tenantConfig
             );
-            const completedFactorsClaimValue = await session.getClaimValue(MultiFactorAuthClaim, userContext);
-            const completedFactors = completedFactorsClaimValue?.c ?? {};
-            const mfaRequirementsForAuth = await options.recipeImplementation.getMFARequirementsForAuth({
-                user: user,
-                accessTokenPayload: session.getAccessTokenPayload(),
-                tenantId,
-                factorsSetUpForUser: isAlreadySetup,
-                requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
-                requiredSecondaryFactorsForUser,
-                completedFactors: completedFactors,
-                userContext,
-            });
 
-            const isAllowedToSetup: string[] = [];
-            for (const id of availableFactors) {
+            const factorsAllowedToSetup: string[] = [];
+            for (const id of allAvailableSecondaryFactors) {
                 try {
                     await options.recipeImplementation.assertAllowedToSetupFactorElseThrowInvalidClaimError({
                         session,
                         factorId: id,
-                        completedFactors: completedFactors,
-                        requiredSecondaryFactorsForTenant: tenantInfo?.requiredSecondaryFactors ?? [],
-                        requiredSecondaryFactorsForUser,
-                        factorsSetUpForUser: isAlreadySetup,
-                        mfaRequirementsForAuth,
+                        factorsSetUpForUser: factorsAlreadySetup,
+                        mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
                         userContext,
                     });
-                    isAllowedToSetup.push(id);
+                    factorsAllowedToSetup.push(id);
                 } catch (err) {
                     // ignore
                 }
             }
 
-            const c = (await session.getClaimValue(MultiFactorAuthClaim, userContext))?.c ?? {};
-
             const nextSetOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
-                c,
-                mfaRequirementsForAuth
+                mfaInfo.completedFactors,
+                mfaInfo.mfaRequirementsForAuth
             );
 
-            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext);
+            let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(
+                mfaInfo.sessionUser,
+                session.getRecipeUserId()
+            );
+            let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(
+                mfaInfo.sessionUser,
+                session.getRecipeUserId()
+            );
+            if (
+                getEmailsForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID" ||
+                getPhoneNumbersForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID"
+            ) {
+                throw new SessionError({
+                    type: "UNAUTHORISED",
+                    message: "User no longer associated with the session",
+                    payload: {
+                        clearTokens: true,
+                    },
+                });
+            }
 
             return {
                 status: "OK",
                 factors: {
-                    next: nextSetOfUnsatisfiedFactors.filter(
-                        (factorId) => isAllowedToSetup.includes(factorId) || isAlreadySetup.includes(factorId)
+                    // next array is filtered to only include factors that are allowed to be setup or are already setup
+                    // we do this because the factor chooser in the frontend will be based on the next array only
+                    // we do not simply filter out the factors that are not allowed to be setup because in the case
+                    // where user has already setup a factor and not completed it, none of the factors will be allowed to
+                    // be setup, and that that will result in an empty next array. However, we want to show the factor
+                    // that the user has already setup in that case.
+                    next: nextSetOfUnsatisfiedFactors.factorIds.filter(
+                        (factorId) => factorsAllowedToSetup.includes(factorId) || factorsAlreadySetup.includes(factorId)
                     ),
-                    isAlreadySetup,
-                    isAllowedToSetup,
+                    alreadySetup: factorsAlreadySetup,
+                    allowedToSetup: factorsAllowedToSetup,
                 },
-                emails: options.recipeInstance.getEmailsForFactors(user, session.getRecipeUserId()),
-                phoneNumbers: options.recipeInstance.getPhoneNumbersForFactors(user, session.getRecipeUserId()),
+                emails: getEmailsForFactorsResult.factorIdToEmailsMap,
+                phoneNumbers: getPhoneNumbersForFactorsResult.factorIdToPhoneNumberMap,
             };
         },
     };

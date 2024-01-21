@@ -57,15 +57,13 @@ export default function getAPIInterface(): APIInterface {
 
                 // Filter based on enabled recipes
                 if (tenantConfigRes.emailPassword.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => factor !== "emailpassword");
+                    firstFactors = firstFactors.filter((factor) => !options.emailpasswordFactors.includes(factor));
                 }
                 if (tenantConfigRes.thirdParty.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => factor !== "thirdparty");
+                    firstFactors = firstFactors.filter((factor) => !options.thirdPartyFactors.includes(factor));
                 }
                 if (tenantConfigRes.passwordless.enabled === false) {
-                    firstFactors = firstFactors.filter(
-                        (factor) => !["otp-email", "otp-phone", "link-email", "link-phone"].includes(factor)
-                    );
+                    firstFactors = firstFactors.filter((factor) => !options.passwordlessFactors.includes(factor));
                 }
             }
 

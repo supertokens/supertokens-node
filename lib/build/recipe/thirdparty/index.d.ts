@@ -17,7 +17,6 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
         userContext?: Record<string, any>
     ): Promise<
         | {

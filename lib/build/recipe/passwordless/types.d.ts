@@ -131,14 +131,12 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
     ) => Promise<
@@ -155,6 +153,40 @@ export declare type RecipeInterface = {
           }
         | {
               status: "RESTART_FLOW_ERROR";
+          }
+    >;
+    createRecipeUser: (
+        input:
+            | {
+                  userInputCode: string;
+                  deviceId: string;
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+            | {
+                  linkCode: string;
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+    ) => Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "USER_ALREADY_EXISTS_ERROR";
           }
     >;
     updateUser: (input: {
@@ -247,6 +279,7 @@ export declare type APIInterface = {
               }
         ) & {
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -291,6 +324,7 @@ export declare type APIInterface = {
               }
         ) & {
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
             userContext: UserContext;
         }

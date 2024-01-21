@@ -18,23 +18,10 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 
-export type GetUserIdentifierInfoForUserIdFunc = (
-    userId: string,
-    userContext: UserContext
-) => Promise<
-    | {
-          status: "OK";
-          info: string;
-      }
-    | { status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
->;
-
 export type TypeInput = {
     issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
-
-    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
 
     override?: {
         functions?: (
@@ -50,8 +37,6 @@ export type TypeNormalisedInput = {
     defaultSkew: number;
     defaultPeriod: number;
 
-    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
-
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -62,6 +47,14 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
+    getUserIdentifierInfoForUserId: (input: {
+        userId: string;
+        userContext: UserContext;
+    }) => Promise<
+        | { status: "OK"; info: string }
+        | { status: "UNKNOWN_USER_ID_ERROR" | "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR" }
+    >;
+
     createDevice: (input: {
         userId: string;
         userIdentifierInfo?: string;
@@ -78,6 +71,9 @@ export type RecipeInterface = {
           }
         | {
               status: "DEVICE_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     updateDevice: (input: {
@@ -163,98 +159,108 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    createDevicePOST: (input: {
-        deviceName?: string;
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR";
+    createDevicePOST:
+        | undefined
+        | ((input: {
+              deviceName?: string;
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    deviceName: string;
+                    secret: string;
+                    qrCodeString: string;
+                }
+              | {
+                    status: "DEVICE_ALREADY_EXISTS_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
+
+    listDevicesGET:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    devices: {
+                        name: string;
+                        period: number;
+                        skew: number;
+                        verified: boolean;
+                    }[];
+                }
+              | GeneralErrorResponse
+          >);
+
+    removeDevicePOST:
+        | undefined
+        | ((input: {
               deviceName: string;
-              secret: string;
-              qrCodeString: string;
-          }
-        | {
-              status: "DEVICE_ALREADY_EXISTS_ERROR";
-          }
-        | GeneralErrorResponse
-    >;
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    didDeviceExist: boolean;
+                }
+              | GeneralErrorResponse
+          >);
 
-    listDevicesGET: (input: {
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              devices: {
-                  name: string;
-                  period: number;
-                  skew: number;
-                  verified: boolean;
-              }[];
-          }
-        | GeneralErrorResponse
-    >;
+    verifyDevicePOST:
+        | undefined
+        | ((input: {
+              deviceName: string;
+              totp: string;
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    wasAlreadyVerified: boolean;
+                }
+              | {
+                    status: "UNKNOWN_DEVICE_ERROR";
+                }
+              | {
+                    status: "INVALID_TOTP_ERROR";
+                    currentNumberOfFailedAttempts: number;
+                    maxNumberOfFailedAttempts: number;
+                }
+              | {
+                    status: "LIMIT_REACHED_ERROR";
+                    retryAfterMs: number;
+                }
+              | GeneralErrorResponse
+          >);
 
-    removeDevicePOST: (input: {
-        deviceName: string;
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              didDeviceExist: boolean;
-          }
-        | GeneralErrorResponse
-    >;
-
-    verifyDevicePOST: (input: {
-        deviceName: string;
-        totp: string;
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              wasAlreadyVerified: boolean;
-          }
-        | {
-              status: "UNKNOWN_DEVICE_ERROR";
-          }
-        | {
-              status: "INVALID_TOTP_ERROR";
-              currentNumberOfFailedAttempts: number;
-              maxNumberOfFailedAttempts: number;
-          }
-        | {
-              status: "LIMIT_REACHED_ERROR";
-              retryAfterMs: number;
-          }
-        | GeneralErrorResponse
-    >;
-
-    verifyTOTPPOST: (input: {
-        totp: string;
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR";
-          }
-        | {
-              status: "INVALID_TOTP_ERROR";
-              currentNumberOfFailedAttempts: number;
-              maxNumberOfFailedAttempts: number;
-          }
-        | {
-              status: "LIMIT_REACHED_ERROR";
-              retryAfterMs: number;
-          }
-        | GeneralErrorResponse
-    >;
+    verifyTOTPPOST:
+        | undefined
+        | ((input: {
+              totp: string;
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK" | "UNKNOWN_USER_ID_ERROR";
+                }
+              | {
+                    status: "INVALID_TOTP_ERROR";
+                    currentNumberOfFailedAttempts: number;
+                    maxNumberOfFailedAttempts: number;
+                }
+              | {
+                    status: "LIMIT_REACHED_ERROR";
+                    retryAfterMs: number;
+                }
+              | GeneralErrorResponse
+          >);
 };

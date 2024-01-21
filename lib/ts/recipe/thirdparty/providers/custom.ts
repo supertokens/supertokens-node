@@ -146,7 +146,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
 
     if (input.config.generateFakeEmail === undefined) {
         input.config.generateFakeEmail = async function ({ thirdPartyUserId }) {
-            return `${thirdPartyUserId}@${input.config.thirdPartyId}.fakeemail.com`;
+            return `${thirdPartyUserId}.${input.config.thirdPartyId}@stfakeemail.supertokens.com`;
         };
     }
 

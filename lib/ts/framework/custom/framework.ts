@@ -218,6 +218,7 @@ export const errorHandler = () => {
 
         try {
             await supertokens.errorHandler(err, request, response, userContext);
+            return next();
         } catch (err) {
             return next(err);
         }

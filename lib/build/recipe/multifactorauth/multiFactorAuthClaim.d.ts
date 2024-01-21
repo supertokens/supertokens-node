@@ -11,19 +11,24 @@ import { UserContext } from "../../types";
 export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
     constructor(key?: string);
     validators: {
-        hasCompletedMFARequirementForAuth: (id?: string) => SessionClaimValidator;
-        hasCompletedFactors(requirements: MFARequirementList, id?: string): SessionClaimValidator;
+        hasCompletedMFARequirementsForAuth: (id?: string) => SessionClaimValidator;
+        hasCompletedRequirementList(requirementList: MFARequirementList, id?: string): SessionClaimValidator;
     };
-    isRequirementListSatisfied(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): boolean;
-    getNextSetOfUnsatisfiedFactors(completedClaims: MFAClaimValue["c"], requirements: MFARequirementList): string[];
+    getNextSetOfUnsatisfiedFactors(
+        completedFactors: MFAClaimValue["c"],
+        requirementList: MFARequirementList
+    ): {
+        factorIds: string[];
+        type: "string" | "oneOf" | "allOfInAnyOrder";
+    };
     fetchValue: (
-        userId: string,
-        _recipeUserId: RecipeUserId,
-        tenantId: string | undefined,
+        _userId: string,
+        recipeUserId: RecipeUserId,
+        tenantId: string,
         currentPayload: JSONObject | undefined,
         userContext: UserContext
     ) => Promise<{
-        c: Record<string, number>;
+        c: Record<string, number | undefined>;
         v: boolean;
     }>;
     addToPayload_internal: (
@@ -38,7 +43,7 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
             | import("../../types").JSONArray
             | {
                   c: {
-                      [x: string]: number;
+                      [x: string]: number | undefined;
                   };
                   v: boolean;
               }

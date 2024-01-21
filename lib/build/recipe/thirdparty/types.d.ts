@@ -174,7 +174,6 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -257,6 +256,7 @@ export declare type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   options: APIOptions;
                   userContext: UserContext;
               } & (

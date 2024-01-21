@@ -173,7 +173,6 @@ export type RecipeInterface = {
             fromUserInfoAPI?: { [key: string]: any };
         };
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {
@@ -254,6 +253,7 @@ export type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   options: APIOptions;
                   userContext: UserContext;
               } & (

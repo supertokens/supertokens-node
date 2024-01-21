@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,30 +12,34 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod };
-    };
-Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("../../../utils");
-const session_1 = __importDefault(require("../../session"));
-async function mfaInfo(apiImplementation, options, userContext) {
+
+import { send200Response } from "../../../utils";
+import { APIInterface, APIOptions } from "..";
+import Session from "../../session";
+import { UserContext } from "../../../types";
+
+export default async function resyncSessionAndFetchMFAInfo(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: UserContext
+): Promise<boolean> {
     if (apiImplementation.resyncSessionAndFetchMFAInfoPUT === undefined) {
         return false;
     }
-    const session = await session_1.default.getSession(
+
+    const session = await Session.getSession(
         options.req,
         options.res,
         { overrideGlobalClaimValidators: () => [], sessionRequired: true },
         userContext
     );
+
     let response = await apiImplementation.resyncSessionAndFetchMFAInfoPUT({
         options,
         session,
         userContext,
     });
-    utils_1.send200Response(options.res, response);
+
+    send200Response(options.res, response);
     return true;
 }
-exports.default = mfaInfo;

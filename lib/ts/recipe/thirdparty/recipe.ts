@@ -16,7 +16,7 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
-import { isFakeEmail, validateAndNormaliseUserInput } from "./utils";
+import { validateAndNormaliseUserInput } from "./utils";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import STError from "./error";
 
@@ -31,8 +31,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import MultiFactorAuthRecipe from "../multifactorauth/recipe";
-import { User } from "../../user";
+import { FactorIds } from "../multifactorauth";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -77,6 +76,7 @@ export default class Recipe extends RecipeModule {
             const mtRecipe = MultitenancyRecipe.getInstance();
             if (mtRecipe !== undefined) {
                 mtRecipe.staticThirdPartyProviders = this.config.signInAndUpFeature.providers;
+                mtRecipe.thirdPartyFactors = [FactorIds.THIRDPARTY];
             }
         });
     }
@@ -95,68 +95,6 @@ export default class Recipe extends RecipeModule {
                     }
                 );
 
-                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
-                    if (mfaInstance !== undefined) {
-                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
-                            if (tenantConfig.thirdParty.enabled === false) {
-                                return {
-                                    factorIds: [],
-                                    firstFactorIds: [],
-                                };
-                            }
-                            return {
-                                factorIds: ["thirdparty"],
-                                firstFactorIds: ["thirdparty"],
-                            };
-                        });
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
-                            for (const loginMethod of user.loginMethods) {
-                                // We deliberately do not check for matching tenantId because we assume
-                                // MFA is app-wide by default. User can always override MFA function
-                                // to make it tenant specific.
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                    return ["thirdparty"];
-                                }
-                            }
-                            return [];
-                        });
-                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
-                            // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
-                            let sessionEmail = user.loginMethods.find(
-                                (lm) => lm.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()
-                            )!.email;
-                            if (sessionEmail !== undefined && isFakeEmail(sessionEmail)) {
-                                sessionEmail = undefined;
-                            }
-
-                            const recipeLoginMethods = user.loginMethods.filter(
-                                (lm) =>
-                                    lm.recipeId === Recipe.RECIPE_ID && lm.email !== undefined && !isFakeEmail(lm.email)
-                            );
-
-                            // We order by join date ASC (so oldest first)
-                            let emails = recipeLoginMethods
-                                .sort((lma, lmb) => lma.timeJoined - lmb.timeJoined)
-                                .map((lm) => lm.email!);
-
-                            if (sessionEmail !== undefined) {
-                                if (emails.includes(sessionEmail)) {
-                                    // if the email address associated with the current session can be used here
-                                    // it should be the first one we recommend regardless of timeJoined
-                                    emails = [sessionEmail, ...emails.filter((email) => email !== sessionEmail)];
-                                } else if (emails.length === 0) {
-                                    emails = [sessionEmail];
-                                }
-                            }
-
-                            let res: Record<string, string[] | undefined> = {};
-                            res["thirdparty"] = emails;
-                            return res;
-                        });
-                    }
-                });
-
                 return Recipe.instance;
             } else {
                 throw new Error("ThirdParty recipe has already been initialised. Please check your code for bugs.");
@@ -168,7 +106,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the ThirdParty.init function?");
     }
 
     static reset() {

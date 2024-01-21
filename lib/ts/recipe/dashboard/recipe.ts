@@ -42,6 +42,9 @@ import {
     USERROLES_REMOVE_PERMISSIONS_API,
     USERROLES_PERMISSIONS_API,
     USERROLES_USER_API,
+    CREATE_EMAIL_PASSWORD_USER,
+    CREATE_PASSWORDLESS_USER,
+    LIST_TENANT_LOGIN_METHODS,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -76,6 +79,9 @@ import addRoleToUser from "./api/userroles/addRoleToUser";
 import getRolesForUser from "./api/userroles/getRolesForUser";
 import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
+import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
+import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
+import getTenantLoginMethodsInfo from "./api/getTenantLoginMethodsInfo";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -109,7 +115,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the Dashboard.init function?");
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -328,6 +334,24 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "delete",
             },
+            {
+                id: CREATE_EMAIL_PASSWORD_USER,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(CREATE_EMAIL_PASSWORD_USER)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: CREATE_PASSWORDLESS_USER,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(CREATE_PASSWORDLESS_USER)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: LIST_TENANT_LOGIN_METHODS,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(LIST_TENANT_LOGIN_METHODS)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -444,6 +468,18 @@ export default class Recipe extends RecipeModule {
             }
             if (req.getMethod() === "delete") {
                 apiFunction = removeUserRole;
+            }
+        } else if (id === CREATE_EMAIL_PASSWORD_USER) {
+            if (req.getMethod() === "post") {
+                apiFunction = createEmailPasswordUser;
+            }
+        } else if (id === CREATE_PASSWORDLESS_USER) {
+            if (req.getMethod() === "post") {
+                apiFunction = createPasswordlessUser;
+            }
+        } else if (id === LIST_TENANT_LOGIN_METHODS) {
+            if (req.getMethod() === "get") {
+                apiFunction = getTenantLoginMethodsInfo;
             }
         }
 

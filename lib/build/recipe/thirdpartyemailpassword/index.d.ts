@@ -42,7 +42,6 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -90,14 +89,7 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ): Promise<
         | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-        | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-        | {
-              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-              reason: string;
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
         | {
               status: "PASSWORD_POLICY_VIOLATED_ERROR";

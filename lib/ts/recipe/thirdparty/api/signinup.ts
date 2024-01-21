@@ -17,6 +17,7 @@ import STError from "../error";
 import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function signInUpAPI(
     apiImplementation: APIInterface,
@@ -81,11 +82,26 @@ export default async function signInUpAPI(
 
     const provider = providerResponse;
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signInUpPOST({
         provider,
         redirectURIInfo,
         oAuthTokens,
         tenantId,
+        session,
         options,
         userContext,
     });

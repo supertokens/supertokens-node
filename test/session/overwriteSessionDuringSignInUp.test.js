@@ -25,8 +25,8 @@ const EmailPassword = require("../../recipe/emailpassword");
 const { middleware, errorHandler } = require("../../framework/express");
 const { json } = require("body-parser");
 
-describe(`overwriteSessionDuringSignIn config: ${printPath(
-    "[test/session/overwriteSessionDuringSignIn.test.js]"
+describe(`overwriteSessionDuringSignInUp config: ${printPath(
+    "[test/session/overwriteSessionDuringSignInUp.test.js]"
 )}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -132,7 +132,7 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init({ overwriteSessionDuringSignIn: false })],
+                recipeList: [EmailPassword.init(), Session.init({ overwriteSessionDuringSignInUp: false })],
             });
 
             const app = getTestExpressApp();
@@ -213,7 +213,7 @@ describe(`overwriteSessionDuringSignIn config: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init({ overwriteSessionDuringSignIn: true })],
+                recipeList: [EmailPassword.init(), Session.init({ overwriteSessionDuringSignInUp: true })],
             });
 
             const app = getTestExpressApp();

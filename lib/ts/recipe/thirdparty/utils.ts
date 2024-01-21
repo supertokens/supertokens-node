@@ -57,5 +57,5 @@ function validateAndNormaliseSignInAndUpConfig(
 }
 
 export function isFakeEmail(email: string): boolean {
-    return email.endsWith(".fakeemail.com");
+    return email.endsWith("@stfakeemail.supertokens.com") || email.endsWith(".fakeemail.com"); // .fakeemail.com for existing users
 }

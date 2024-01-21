@@ -35,11 +35,15 @@ export default async function signOutAPI(
         config: options.config,
         recipeInterfaceImpl: options.recipeImplementation,
         options: {
-            sessionRequired: false,
+            sessionRequired: true,
             overrideGlobalClaimValidators: () => [],
         },
         userContext,
     });
+
+    if (session === undefined) {
+        throw new Error("should never come here"); // Session required is true
+    }
 
     let result = await apiImplementation.signOutPOST({
         options,

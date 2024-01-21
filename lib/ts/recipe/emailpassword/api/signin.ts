@@ -17,6 +17,7 @@ import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils"
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function signInAPI(
     apiImplementation: APIInterface,
@@ -40,9 +41,24 @@ export default async function signInAPI(
         userContext
     );
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signInPOST({
         formFields,
         tenantId,
+        session,
         options,
         userContext,
     });

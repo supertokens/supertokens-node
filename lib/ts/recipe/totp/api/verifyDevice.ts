@@ -23,7 +23,7 @@ export default async function verifyDeviceAPI(
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (apiImplementation.createDevicePOST === undefined) {
+    if (apiImplementation.verifyDevicePOST === undefined) {
         return false;
     }
 

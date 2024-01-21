@@ -6,6 +6,9 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
         consumeCode: async function (input) {
             return await recipeInterface.consumeCode(input);
         },
+        createRecipeUser: async function (input) {
+            return await recipeInterface.createRecipeUser(input);
+        },
         createCode: async function (input) {
             return await recipeInterface.createCode(input);
         },

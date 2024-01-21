@@ -22,6 +22,7 @@ export default class Wrapper {
 
     static async createDevice(
         userId: string,
+        userIdentifierInfo?: string,
         deviceName?: string,
         skew?: number,
         period?: number,
@@ -29,16 +30,10 @@ export default class Wrapper {
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
             userId,
+            userIdentifierInfo,
             deviceName,
             skew,
             period,
-            userContext: getUserContext(userContext),
-        });
-    }
-
-    static async listDevices(userId: string, userContext?: Record<string, any>) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
-            userId,
             userContext: getUserContext(userContext),
         });
     }
@@ -53,6 +48,13 @@ export default class Wrapper {
             userId,
             existingDeviceName,
             newDeviceName,
+            userContext: getUserContext(userContext),
+        });
+    }
+
+    static async listDevices(userId: string, userContext?: Record<string, any>) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
+            userId,
             userContext: getUserContext(userContext),
         });
     }

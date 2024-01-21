@@ -18,7 +18,7 @@ export declare type MFARequirementList = (
     | string
 )[];
 export declare type MFAClaimValue = {
-    c: Record<string, number>;
+    c: Record<string, number | undefined>;
     v: boolean;
 };
 export declare type TypeInput = {
@@ -47,9 +47,6 @@ export declare type RecipeInterface = {
         factorId: string;
         mfaRequirementsForAuth: MFARequirementList;
         factorsSetUpForUser: string[];
-        requiredSecondaryFactorsForUser: string[];
-        requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
         userContext: UserContext;
     }) => Promise<void>;
     getMFARequirementsForAuth: (input: {
@@ -59,7 +56,7 @@ export declare type RecipeInterface = {
         factorsSetUpForUser: string[];
         requiredSecondaryFactorsForUser: string[];
         requiredSecondaryFactorsForTenant: string[];
-        completedFactors: Record<string, number>;
+        completedFactors: MFAClaimValue["c"];
         userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
     markFactorAsCompleteInSession: (input: {
@@ -90,39 +87,59 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    resyncSessionAndFetchMFAInfoPUT: (input: {
-        options: APIOptions;
-        session: SessionContainerInterface;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              factors: {
-                  next: string[];
-                  isAlreadySetup: string[];
-                  isAllowedToSetup: string[];
-              };
-              emails: Record<string, string[] | undefined>;
-              phoneNumbers: Record<string, string[] | undefined>;
-          }
-        | GeneralErrorResponse
-    >;
+    resyncSessionAndFetchMFAInfoPUT:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              session: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    factors: {
+                        next: string[];
+                        alreadySetup: string[];
+                        allowedToSetup: string[];
+                    };
+                    emails: Record<string, string[] | undefined>;
+                    phoneNumbers: Record<string, string[] | undefined>;
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type GetFactorsSetupForUserFromOtherRecipesFunc = (
     user: User,
     userContext: UserContext
 ) => Promise<string[]>;
-export declare type GetAllFactorsFromOtherRecipesFunc = (
-    tenantConfig: TenantConfig
-) => {
-    factorIds: string[];
-    firstFactorIds: string[];
-};
+export declare type GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc = (tenantConfig: TenantConfig) => string[];
 export declare type GetEmailsForFactorFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
-) => Record<string, string[] | undefined>;
+) =>
+    | {
+          status: "OK";
+          factorIdToEmailsMap: Record<string, string[]>;
+      }
+    | {
+          status: "UNKNOWN_SESSION_RECIPE_USER_ID";
+      };
 export declare type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
     user: User,
     sessionRecipeUserId: RecipeUserId
-) => Record<string, string[] | undefined>;
+) =>
+    | {
+          status: "OK";
+          factorIdToPhoneNumberMap: Record<string, string[]>;
+      }
+    | {
+          status: "UNKNOWN_SESSION_RECIPE_USER_ID";
+      };
+export declare const FactorIds: {
+    EMAILPASSWORD: string;
+    OTP_EMAIL: string;
+    OTP_PHONE: string;
+    LINK_EMAIL: string;
+    LINK_PHONE: string;
+    THIRDPARTY: string;
+    TOTP: string;
+};

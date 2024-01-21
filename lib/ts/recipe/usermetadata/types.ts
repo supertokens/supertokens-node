@@ -64,16 +64,6 @@ export type RecipeInterface = {
         metadata: JSONObject;
     }>;
 
-    // same as updateUserMetadata, but used internally. As of now for multifactorauth.
-    updateUserMetadataInternal: (input: {
-        userId: string;
-        metadataUpdate: JSONObject;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        metadata: JSONObject;
-    }>;
-
     clearUserMetadata: (input: {
         userId: string;
         userContext: UserContext;

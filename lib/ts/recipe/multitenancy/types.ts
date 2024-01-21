@@ -161,6 +161,9 @@ export type APIOptions = {
     res: BaseResponse;
     staticThirdPartyProviders: ProviderInput[];
     staticFirstFactors: string[] | undefined;
+    emailpasswordFactors: string[];
+    passwordlessFactors: string[];
+    thirdPartyFactors: string[];
 };
 
 export type APIInterface = {

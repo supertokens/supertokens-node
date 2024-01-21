@@ -66,7 +66,7 @@ export default function getAPIInterface(): APIInterface {
             userContext,
         }: {
             options: APIOptions;
-            session: SessionContainerInterface | undefined;
+            session: SessionContainerInterface;
             userContext: UserContext;
         }): Promise<
             | {

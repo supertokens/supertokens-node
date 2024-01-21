@@ -27,18 +27,11 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(
-        tenantId: string,
-        email: string,
-        password: string,
-        shouldAttemptAccountLinkingIfAllowed?: boolean,
-        userContext?: Record<string, any>
-    ) {
+    static signUp(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            shouldAttemptAccountLinkingIfAllowed: shouldAttemptAccountLinkingIfAllowed ?? true,
             userContext: getUserContext(userContext),
         });
     }
@@ -82,20 +75,38 @@ export default class Wrapper {
         token: string,
         newPassword: string,
         userContext?: Record<string, any>
-    ) {
+    ): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+        | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+    > {
         const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
 
         if (consumeResp.status !== "OK") {
             return consumeResp;
         }
 
-        return await Wrapper.updateEmailOrPassword({
+        let result = await Wrapper.updateEmailOrPassword({
             recipeUserId: new RecipeUserId(consumeResp.userId),
             email: consumeResp.email,
             password: newPassword,
             tenantIdForPasswordPolicy: tenantId,
             userContext,
         });
+
+        if (result.status === "EMAIL_ALREADY_EXISTS_ERROR" || result.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            throw new global.Error("Should never come here cause we are not updating email");
+        }
+        if (result.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+            return {
+                status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                failureReason: result.failureReason,
+            };
+        }
+        return {
+            status: result.status,
+        };
     }
 
     static consumePasswordResetToken(tenantId: string, token: string, userContext?: Record<string, any>) {

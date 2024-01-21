@@ -44,14 +44,6 @@ export declare type RecipeInterface = {
         status: "OK";
         metadata: JSONObject;
     }>;
-    updateUserMetadataInternal: (input: {
-        userId: string;
-        metadataUpdate: JSONObject;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        metadata: JSONObject;
-    }>;
     clearUserMetadata: (input: {
         userId: string;
         userContext: UserContext;

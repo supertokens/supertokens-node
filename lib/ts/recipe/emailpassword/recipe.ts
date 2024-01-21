@@ -41,8 +41,10 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import MultiFactorAuthRecipe from "../multifactorauth/recipe";
+import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
+import { FactorIds } from "../multifactorauth";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -90,13 +92,173 @@ export default class Recipe extends RecipeModule {
             ingredients.emailDelivery === undefined
                 ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig(this.isInServerlessEnv))
                 : ingredients.emailDelivery;
+
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+            if (mfaInstance !== undefined) {
+                mfaInstance.addFuncToGetAllAvailableSecondaryFactorIdsFromOtherRecipes((tenantConfig) => {
+                    if (tenantConfig.emailPassword.enabled === false) {
+                        return [];
+                    }
+                    return ["emailpassword"];
+                });
+                mfaInstance.addFuncToGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
+                    for (const loginMethod of user.loginMethods) {
+                        // We don't check for tenantId here because if we find the user
+                        // with emailpassword loginMethod from different tenant, then
+                        // we assume the factor is setup for this user. And as part of factor
+                        // completion, we associate that loginMethod with the session's tenantId
+
+                        // Notice that we also check for if the email is fake or not,
+                        // cause if it is fake, then we should not consider it as setup
+                        // so that the frontend asks the user to enter an email,
+                        // or uses the email of another login method.
+                        if (loginMethod.recipeId === Recipe.RECIPE_ID && !isFakeEmail(loginMethod.email!)) {
+                            return ["emailpassword"];
+                        }
+                    }
+                    return [];
+                });
+
+                mfaInstance.addFuncToGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
+                    // This function is called in the MFA info endpoint API.
+                    // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
+
+                    // preparing some reusable variables for the logic below...
+                    let sessionLoginMethod = user.loginMethods.find((lM) => {
+                        return lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString();
+                    });
+                    if (sessionLoginMethod === undefined) {
+                        // this can happen maybe cause this login method
+                        // was unlinked from the user or deleted entirely...
+                        return {
+                            status: "UNKNOWN_SESSION_RECIPE_USER_ID",
+                        };
+                    }
+
+                    const orderedLoginMethodsByTimeJoinedOldestFirst = user.loginMethods.sort((a, b) => {
+                        return a.timeJoined - b.timeJoined;
+                    });
+
+                    // MAIN LOGIC FOR THE FUNCTION STARTS HERE
+                    let nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined: string[] = [];
+                    for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
+                        // in the if statement below, we also check for if the email
+                        // is fake or not cause if it is fake, then we consider that
+                        // that login method is not setup for emailpassword, and instead
+                        // we want to ask the user to enter their email, or to use
+                        // another login method that has no fake email.
+                        if (
+                            orderedLoginMethodsByTimeJoinedOldestFirst[i].recipeId === Recipe.RECIPE_ID &&
+                            !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                        ) {
+                            // each emailpassword loginMethod for a user
+                            // is guaranteed to have an email field and
+                            // that is unique across other emailpassword loginMethods
+                            // for this user.
+                            nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.push(
+                                orderedLoginMethodsByTimeJoinedOldestFirst[i].email!
+                            );
+                        }
+                    }
+
+                    if (nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.length === 0) {
+                        // this means that this factor is not setup.
+                        // However, we still check if there is an email for this user
+                        // from other loginMethods, and return those. The frontend
+                        // will then call the signUp API eventually.
+
+                        // first we check if the session loginMethod has an email
+                        // and return that. Cause if it does, then the UX will be good
+                        // in that the user will set a password for the the email
+                        // they used to login into the current session.
+
+                        // when constructing the emails array, we prioritize
+                        // the session user's email cause it's a better UX
+                        // for setting or asking for the password for the same email
+                        // that the user used to login.
+                        let emailsResult: string[] = [];
+                        if (sessionLoginMethod.email !== undefined && !isFakeEmail(sessionLoginMethod.email)) {
+                            emailsResult = [sessionLoginMethod.email];
+                        }
+
+                        for (let i = 0; i < orderedLoginMethodsByTimeJoinedOldestFirst.length; i++) {
+                            if (
+                                orderedLoginMethodsByTimeJoinedOldestFirst[i].email !== undefined &&
+                                !isFakeEmail(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)
+                            ) {
+                                // we have the if check below cause different loginMethods
+                                // across different recipes can have the same email.
+                                if (!emailsResult.includes(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!)) {
+                                    emailsResult.push(orderedLoginMethodsByTimeJoinedOldestFirst[i].email!);
+                                }
+                            }
+                        }
+                        return {
+                            status: "OK",
+                            factorIdToEmailsMap: {
+                                emailpassword: emailsResult,
+                            },
+                        };
+                    } else if (nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.length === 1) {
+                        // we return just this email cause if this emailpassword
+                        // user is from the same tenant that the user is logging into,
+                        // then they have to use this since new factor setup won't
+                        // be allowed. Even if this emailpassword user is not from
+                        // the same tenant as the user's session, we still return just
+                        // this cause that way we still just have one emailpassword
+                        // loginMethod for this user, just across different tenants.
+                        return {
+                            status: "OK",
+                            factorIdToEmailsMap: {
+                                emailpassword: nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined,
+                            },
+                        };
+                    }
+
+                    // Finally, we return all emails that have emailpassword login
+                    // method for this user, but keep the session's email first
+                    // if the session's email is in the list of
+                    // nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined (for better UX)
+                    let emailsResult: string[] = [];
+                    if (
+                        sessionLoginMethod.email !== undefined &&
+                        nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.includes(
+                            sessionLoginMethod.email
+                        )
+                    ) {
+                        emailsResult = [sessionLoginMethod.email];
+                    }
+
+                    for (let i = 0; i < nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined.length; i++) {
+                        if (
+                            !emailsResult.includes(nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined[i])
+                        ) {
+                            emailsResult.push(nonFakeEmailsThatHaveEmailPasswordLoginMethodOrderedByTimeJoined[i]);
+                        }
+                    }
+
+                    return {
+                        status: "OK",
+                        factorIdToEmailsMap: {
+                            emailpassword: emailsResult,
+                        },
+                    };
+                });
+            }
+
+            const mtRecipe = MultitenancyRecipe.getInstance();
+            if (mtRecipe !== undefined) {
+                mtRecipe.emailpasswordFactors = [FactorIds.EMAILPASSWORD];
+            }
+        });
     }
 
     static getInstanceOrThrowError(): Recipe {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the Emailpassword.init function?");
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -104,68 +266,6 @@ export default class Recipe extends RecipeModule {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
                     emailDelivery: undefined,
-                });
-
-                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-                    const mfaInstance = MultiFactorAuthRecipe.getInstance();
-                    if (mfaInstance !== undefined) {
-                        mfaInstance.addGetAllFactorsFromOtherRecipesFunc((tenantConfig) => {
-                            if (tenantConfig.emailPassword.enabled === false) {
-                                return {
-                                    factorIds: [],
-                                    firstFactorIds: [],
-                                };
-                            }
-                            return {
-                                factorIds: ["emailpassword"],
-                                firstFactorIds: ["emailpassword"],
-                            };
-                        });
-                        mfaInstance.addGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
-                            for (const loginMethod of user.loginMethods) {
-                                // We deliberately do not check for matching tenantId because we assume
-                                // MFA is app-wide by default. User can always override MFA function
-                                // to make it tenant specific.
-                                if (loginMethod.recipeId === Recipe.RECIPE_ID) {
-                                    return ["emailpassword"];
-                                }
-                            }
-                            return [];
-                        });
-                        mfaInstance.addGetEmailsForFactorFromOtherRecipes((user: User, sessionRecipeUserId) => {
-                            // Based on https://github.com/supertokens/supertokens-node/pull/741#discussion_r1432749346
-                            let sessionEmail = user.loginMethods.find(
-                                (lm) => lm.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()
-                            )!.email;
-                            if (sessionEmail !== undefined && isFakeEmail(sessionEmail)) {
-                                sessionEmail = undefined;
-                            }
-
-                            const recipeLoginMethods = user.loginMethods.filter(
-                                (lm) =>
-                                    lm.recipeId === Recipe.RECIPE_ID && lm.email !== undefined && !isFakeEmail(lm.email)
-                            );
-
-                            // We order by join date ASC (so oldest first)
-                            let emails = recipeLoginMethods
-                                .sort((lma, lmb) => lma.timeJoined - lmb.timeJoined)
-                                .map((lm) => lm.email!);
-
-                            if (sessionEmail !== undefined) {
-                                if (emails.includes(sessionEmail)) {
-                                    // if the email address associated with the current session can be used here
-                                    // it should be the first one we recommend regardless of timeJoined
-                                    emails = [sessionEmail, ...emails.filter((email) => email !== sessionEmail)];
-                                } else if (emails.length === 0) {
-                                    emails = [sessionEmail];
-                                }
-                            }
-
-                            let res: Record<string, string[] | undefined> = {};
-                            res["emailpassword"] = emails;
-                            return res;
-                        });
-                    }
                 });
 
                 return Recipe.instance;

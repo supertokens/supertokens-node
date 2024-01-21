@@ -41,6 +41,10 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (
+              phoneNumber: string,
+              tenantId: string
+          ) => Promise<string | undefined> | string | undefined;
       }
 ) & {
     /**
@@ -220,14 +224,12 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed: boolean;
                   userContext: UserContext;
               }
     ) => Promise<
@@ -244,6 +246,40 @@ export declare type RecipeInterface = {
           }
         | {
               status: "RESTART_FLOW_ERROR";
+          }
+    >;
+    createRecipeUser: (
+        input:
+            | {
+                  userInputCode: string;
+                  deviceId: string;
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+            | {
+                  linkCode: string;
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+    ) => Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "USER_ALREADY_EXISTS_ERROR";
           }
     >;
     updatePasswordlessUser: (input: {

@@ -62,14 +62,12 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
     ): Promise<
@@ -166,13 +164,11 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  shouldAttemptAccountLinkingIfAllowed?: boolean;
                   userContext?: Record<string, any>;
               }
     ): Promise<{

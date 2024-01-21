@@ -13,13 +13,25 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, MFAClaimValue } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    MFAClaimValue,
+    MFARequirementList,
+} from "./types";
 import MultiFactorAuthRecipe from "./recipe";
-import Session from "../session";
-import SessionRecipe from "../session/recipe";
 import Multitenancy from "../multitenancy";
 import { UserContext } from "../../types";
+import { SessionContainerInterface } from "../session/types";
+import { RecipeUserId, User, getUser } from "../..";
+import Recipe from "./recipe";
+import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
+import { TenantConfig } from "../multitenancy/types";
+import Session from "../session";
+import SessionError from "../session/error";
+import { FactorIds } from "./types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     if (config?.firstFactors !== undefined && config?.firstFactors.length === 0) {
@@ -38,87 +50,6 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 }
 
-export function checkFactorRequirement(req: string, completedFactors: MFAClaimValue["c"]) {
-    return {
-        id: req,
-        isValid: completedFactors[req] !== undefined,
-        message: "Not completed",
-    };
-}
-
-export async function getFactorFlowControlFlags(req: BaseRequest, res: BaseResponse, userContext: UserContext) {
-    // Factor Login flow is described here -> https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1857915021
-
-    // - no session -> normal operation
-    // - with session:
-    //   - mfa disabled ->
-    //     - if session overwrite is not allowed -> we don’t do auto account linking and no manual account linking (even if user has switched on automatic account linking)
-    //       - the 2nd account already exists -> no op (do not change the db)
-    //       - the 2nd account does not exist -> isSignUpAllowed -> create a recipe user
-    //     - if session overwrite is allowed -> we ignore the input session and just do normal operation as if there was no input session.
-    //   - mfa enabled -> we don’t do auto account linking (even if user has switched on automatic account linking)
-    //     - the 2nd account already exists:
-    //       - if user is already linked to first account -> modify session’s completed and next array
-    //       - if user is not already linked to first account -> Contact support case (cause we can’t do account linking here cause the other account may have some info already in it, and we do not call shouldDoAutomaticAccountLinking function)
-    //     - the 2nd account does not exist -> creating and linking (if linking is allowed, if not, we aren’t creating either + isAllowedToSetupFactor + (2nd factor is verification || login method with same email and its verified))
-    //       - If linking is not allowed, we return a support status code
-    //       - The code path should never use the session overwrite boolean in this case!
-
-    // This function returns flags based on all the above flows and in each of the sign in/up API
-    // implementation, we perform the actions based on these flags.
-
-    let session = await Session.getSession(
-        req,
-        res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
-    const mfaInstance = MultiFactorAuthRecipe.getInstance();
-    let overwriteSessionDuringSignIn = SessionRecipe.getInstanceOrThrowError().config.overwriteSessionDuringSignIn;
-    let shouldCheckIfSignInIsAllowed: boolean;
-    let shouldCheckIfSignUpIsAllowed: boolean;
-    let shouldAttemptAccountLinking: boolean;
-    let shouldCreateSession: boolean;
-
-    if (session === undefined) {
-        shouldCheckIfSignInIsAllowed = true;
-        shouldCheckIfSignUpIsAllowed = true;
-        shouldAttemptAccountLinking = true;
-        shouldCreateSession = true;
-    } else {
-        if (mfaInstance === undefined) {
-            shouldCheckIfSignUpIsAllowed = true;
-            if (overwriteSessionDuringSignIn === false) {
-                shouldCheckIfSignInIsAllowed = false;
-                shouldAttemptAccountLinking = false;
-                shouldCreateSession = false;
-            } else {
-                shouldCheckIfSignInIsAllowed = true;
-                shouldAttemptAccountLinking = true;
-                shouldCreateSession = true;
-            }
-        } else {
-            shouldCheckIfSignInIsAllowed = false;
-            shouldCheckIfSignUpIsAllowed = false;
-            shouldAttemptAccountLinking = false;
-            shouldCreateSession = false;
-        }
-    }
-
-    return {
-        shouldCheckIfSignInIsAllowed,
-        shouldCheckIfSignUpIsAllowed,
-        shouldAttemptAccountLinking,
-        shouldCreateSession,
-
-        session,
-        mfaInstance,
-    };
-}
-
 export const isValidFirstFactor = async function (
     tenantId: string,
     factorId: string,
@@ -131,20 +62,194 @@ export const isValidFirstFactor = async function (
     const { status: _, ...tenantConfig } = tenantInfo;
 
     // we prioritise the firstFactors configured in tenant. If not present, we fallback to the recipe config
-
-    // if validFirstFactors is undefined, we assume it's valid. We assume it's valid because we will still get errors
-    // if the loginMethod is disabled in core, or not initialised in the recipeList
-
     // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
     // so we don't need to do additional checks here
+
     let validFirstFactors =
         tenantConfig.firstFactors !== undefined
             ? tenantConfig.firstFactors
             : MultiFactorAuthRecipe.getInstanceOrThrowError().config.firstFactors;
 
-    if (validFirstFactors !== undefined && !validFirstFactors.includes(factorId)) {
-        return false;
+    if (validFirstFactors === undefined) {
+        // if validFirstFactors is undefined, we can safely assume it to be true because we would then
+        // have other points of failure:
+        // - if login method is disabled in core for the tenant
+        // - if appropriate recipe is not initialized, will result in a 404
+        // In all other cases, we just want to allow all available login methods to be used as first factor
+
+        return true;
     }
 
-    return true;
+    return validFirstFactors.includes(factorId);
+};
+
+// This function is to reuse a piece of code that is needed in multiple places
+export const getMFARelatedInfoFromSession = async function (
+    input: (
+        | {
+              sessionRecipeUserId: RecipeUserId;
+              tenantId: string;
+              accessTokenPayload: any;
+          }
+        | {
+              session: SessionContainerInterface;
+          }
+    ) & {
+        userContext: UserContext;
+    }
+): Promise<{
+    sessionUser: User;
+    factorsSetUpForUser: string[];
+    completedFactors: MFAClaimValue["c"];
+    requiredSecondaryFactorsForUser: string[];
+    requiredSecondaryFactorsForTenant: string[];
+    mfaRequirementsForAuth: MFARequirementList;
+    tenantConfig: TenantConfig;
+}> {
+    let sessionRecipeUserId: RecipeUserId;
+    let tenantId: string;
+    let accessTokenPayload: any;
+    let sessionHandle: string;
+
+    if ("session" in input) {
+        sessionRecipeUserId = input.session.getRecipeUserId();
+        tenantId = input.session.getTenantId();
+        accessTokenPayload = input.session.getAccessTokenPayload();
+        sessionHandle = input.session.getHandle(input.userContext);
+    } else {
+        sessionRecipeUserId = input.sessionRecipeUserId;
+        tenantId = input.tenantId;
+        accessTokenPayload = input.accessTokenPayload;
+        sessionHandle = accessTokenPayload.sessionhandle;
+    }
+
+    const sessionUser = await getUser(sessionRecipeUserId.getAsString(), input.userContext);
+    if (sessionUser === undefined) {
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "Session user not found",
+        });
+    }
+
+    const factorsSetUpForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getFactorsSetupForUser({
+        user: sessionUser,
+        userContext: input.userContext,
+    });
+
+    let mfaClaimValue = MultiFactorAuthClaim.getValueFromPayload(accessTokenPayload);
+
+    if (mfaClaimValue === undefined) {
+        // This can happen with older session, because we did not add MFA claims previously.
+        // We try to determine best possible factorId based on the session's recipe user id.
+
+        const sessionInfo = await Session.getSessionInformation(sessionHandle);
+
+        if (sessionInfo === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Session not found",
+            });
+        }
+
+        const firstFactorTime = sessionInfo.timeCreated;
+        let computedFirstFactorIdForSession: string | undefined = undefined;
+        for (const lM of sessionUser.loginMethods) {
+            if (lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()) {
+                if (lM.recipeId === "emailpassword") {
+                    if (await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, input.userContext)) {
+                        computedFirstFactorIdForSession = FactorIds.EMAILPASSWORD;
+                        break;
+                    }
+                } else if (lM.recipeId === "thirdparty") {
+                    if (await isValidFirstFactor(tenantId, FactorIds.THIRDPARTY, input.userContext)) {
+                        computedFirstFactorIdForSession = FactorIds.THIRDPARTY;
+                        break;
+                    }
+                } else {
+                    if (lM.email !== undefined) {
+                        if (await isValidFirstFactor(tenantId, FactorIds.LINK_EMAIL, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                        if (await isValidFirstFactor(tenantId, FactorIds.OTP_EMAIL, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                    }
+
+                    if (lM.phoneNumber !== undefined) {
+                        if (await isValidFirstFactor(tenantId, FactorIds.LINK_PHONE, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                        if (await isValidFirstFactor(tenantId, FactorIds.OTP_PHONE, input.userContext)) {
+                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (computedFirstFactorIdForSession === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Incorrect login method used",
+                payload: {
+                    clearTokens: true,
+                },
+            });
+        }
+
+        mfaClaimValue = {
+            c: {
+                [computedFirstFactorIdForSession]: firstFactorTime,
+            },
+            v: true, // True assuming one login method was enough to login in older sessions. It will be recomputed based on MFA requirements later on.
+        };
+    }
+
+    const completedFactors = mfaClaimValue.c;
+
+    const requiredSecondaryFactorsForUser = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRequiredSecondaryFactorsForUser(
+        {
+            userId: sessionUser.id,
+            userContext: input.userContext,
+        }
+    );
+
+    const tenantInfo = await Multitenancy.getTenant(tenantId, input.userContext);
+
+    if (tenantInfo === undefined) {
+        throw new SessionError({
+            type: SessionError.UNAUTHORISED,
+            message: "Tenant not found",
+        });
+    }
+
+    const { status: _, ...tenantConfig } = tenantInfo;
+
+    const requiredSecondaryFactorsForTenant: string[] = tenantInfo.requiredSecondaryFactors ?? [];
+    const mfaRequirementsForAuth = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getMFARequirementsForAuth(
+        {
+            user: sessionUser,
+            accessTokenPayload,
+            tenantId,
+            factorsSetUpForUser,
+            requiredSecondaryFactorsForUser,
+            requiredSecondaryFactorsForTenant,
+            completedFactors,
+            userContext: input.userContext,
+        }
+    );
+
+    return {
+        sessionUser,
+        factorsSetUpForUser,
+        completedFactors,
+        requiredSecondaryFactorsForUser,
+        requiredSecondaryFactorsForTenant,
+        mfaRequirementsForAuth,
+        tenantConfig,
+    };
 };
