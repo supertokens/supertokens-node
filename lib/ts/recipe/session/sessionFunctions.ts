@@ -332,7 +332,7 @@ export async function refreshSession(
         refreshToken,
         antiCsrfToken,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN",
-        useStaticKey: !useDynamicAccessTokenSigningKey,
+        useDynamicSigningKey: useDynamicAccessTokenSigningKey,
     };
 
     if (
