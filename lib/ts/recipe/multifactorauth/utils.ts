@@ -235,9 +235,6 @@ export const getMFARelatedInfoFromSession = async function (
             throw new SessionError({
                 type: SessionError.UNAUTHORISED,
                 message: "Incorrect login method used",
-                payload: {
-                    clearTokens: true,
-                },
             });
         }
 

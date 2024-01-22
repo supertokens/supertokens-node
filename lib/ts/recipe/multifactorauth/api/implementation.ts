@@ -71,9 +71,6 @@ export default function getAPIInterface(): APIInterface {
                 throw new SessionError({
                     type: "UNAUTHORISED",
                     message: "User no longer associated with the session",
-                    payload: {
-                        clearTokens: true,
-                    },
                 });
             }
 
