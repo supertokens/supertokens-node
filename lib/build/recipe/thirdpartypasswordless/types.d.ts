@@ -265,7 +265,6 @@ export declare type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
           }

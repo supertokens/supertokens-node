@@ -62,7 +62,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             response.user = updatedUser;
 
-            return response;
+            return {
+                ...response,
+                createdNewRecipeUser: true,
+            };
         },
 
         createRecipeUser: async function (this: RecipeInterface, input) {
