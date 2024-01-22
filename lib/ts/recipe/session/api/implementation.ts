@@ -74,9 +74,7 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            if (session !== undefined) {
-                await session.revokeSession(userContext);
-            }
+            await session.revokeSession(userContext);
 
             return {
                 status: "OK",
