@@ -21,8 +21,6 @@ import { getMFARelatedInfoFromSession } from "../utils";
 export default function getAPIInterface(): APIInterface {
     return {
         resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
-            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // ensure claim value is present
-
             const mfaInfo = await getMFARelatedInfoFromSession({
                 session,
                 userContext,

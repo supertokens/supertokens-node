@@ -127,6 +127,7 @@ export const getMFARelatedInfoFromSession = async function (
     requiredSecondaryFactorsForTenant: string[];
     mfaRequirementsForAuth: MFARequirementList;
     tenantConfig: TenantConfig;
+    isMFARequirementsForAuthSatisfied: boolean;
 }> {
     let sessionRecipeUserId: RecipeUserId;
     let tenantId: string;
@@ -244,7 +245,7 @@ export const getMFARelatedInfoFromSession = async function (
             c: {
                 [computedFirstFactorIdForSession]: firstFactorTime,
             },
-            v: true, // True assuming one login method was enough to login in older sessions. It will be recomputed based on MFA requirements later on.
+            v: true, // updated later in this function
         };
     }
 
@@ -282,6 +283,14 @@ export const getMFARelatedInfoFromSession = async function (
         }
     );
 
+    mfaClaimValue.v =
+        MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds
+            .length === 0;
+
+    if ("session" in input) {
+        await input.session.setClaimValue(MultiFactorAuthClaim, mfaClaimValue, input.userContext);
+    }
+
     return {
         sessionUser,
         factorsSetUpForUser,
@@ -290,5 +299,6 @@ export const getMFARelatedInfoFromSession = async function (
         requiredSecondaryFactorsForTenant,
         mfaRequirementsForAuth,
         tenantConfig,
+        isMFARequirementsForAuthSatisfied: mfaClaimValue.v,
     };
 };

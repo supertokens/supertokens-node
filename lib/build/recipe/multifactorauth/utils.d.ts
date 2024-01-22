@@ -41,4 +41,5 @@ export declare const getMFARelatedInfoFromSession: (
     requiredSecondaryFactorsForTenant: string[];
     mfaRequirementsForAuth: MFARequirementList;
     tenantConfig: TenantConfig;
+    isMFARequirementsForAuthSatisfied: boolean;
 }>;

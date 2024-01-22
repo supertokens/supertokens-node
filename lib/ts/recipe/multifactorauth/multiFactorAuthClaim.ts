@@ -202,10 +202,10 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
             userContext,
         });
 
-        let { completedFactors, mfaRequirementsForAuth } = mfaInfo;
+        let { completedFactors, isMFARequirementsForAuthSatisfied } = mfaInfo;
         return {
             c: completedFactors,
-            v: this.getNextSetOfUnsatisfiedFactors(completedFactors, mfaRequirementsForAuth).factorIds.length === 0,
+            v: isMFARequirementsForAuthSatisfied,
         };
     };
 
