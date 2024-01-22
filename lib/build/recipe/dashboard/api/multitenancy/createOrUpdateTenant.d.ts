@@ -7,6 +7,11 @@ export declare type Response =
       }
     | {
           status: "INVALID_TENANT_ID";
+          message: string;
+      }
+    | {
+          status: "UNKNOWN_TENANT_ERROR";
+          message: string;
       };
 export default function createOrUpdateTenant(
     _: APIInterface,

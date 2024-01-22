@@ -23,6 +23,11 @@ export type Response =
       }
     | {
           status: "INVALID_TENANT_ID";
+          message: string;
+      }
+    | {
+          status: "UNKNOWN_TENANT_ERROR";
+          message: string;
       };
 
 export default async function createOrUpdateTenant(
@@ -45,9 +50,22 @@ export default async function createOrUpdateTenant(
 
     try {
         tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
-    } catch (_) {
+    } catch (err) {
+        const errMessage = (err as any).message as string;
+        if (
+            errMessage.includes("tenantId can only contain letters, numbers and hyphens") ||
+            errMessage.includes("tenantId must not start with 'appid-'") ||
+            errMessage.includes(`Cannot use '${tenantId}' as a tenantId`)
+        ) {
+            return {
+                status: "INVALID_TENANT_ID",
+                message: errMessage,
+            };
+        }
+
         return {
-            status: "INVALID_TENANT_ID",
+            status: "UNKNOWN_TENANT_ERROR",
+            message: errMessage,
         };
     }
 
