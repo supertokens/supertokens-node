@@ -93,4 +93,99 @@ describe(`User Dashboard associateUserToTenant: ${printPath("[test/dashboard/ass
         const updatedUser1 = await STExpress.getUser(user1.recipeUserId.getAsString());
         assert(updatedUser1.loginMethods[0].tenantIds.includes(tenantName));
     });
+
+    it("Test that API throws an error if the tenant id or user id is not provided", async () => {
+        const connectionURI = await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                }),
+                EmailPassword.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const associateTenantToUserURL = "/auth/dashboard/api/tenants/user/associate";
+
+        let responseStatus = 200;
+        let tenantInfoResponse = await new Promise((res) => {
+            request(app)
+                .put(associateTenantToUserURL)
+                .set("Authorization", "Bearer testapikey")
+                .set("Content-Type", "application/json")
+                .send(JSON.stringify({}))
+                .end((err, response) => {
+                    responseStatus = response.statusCode;
+                    if (err) {
+                        res(undefined);
+                    } else {
+                        res(JSON.parse(response.text));
+                    }
+                });
+        });
+
+        assert.strictEqual(responseStatus, 400);
+        assert.strictEqual(tenantInfoResponse.message, "Missing required parameter 'tenantId' or 'userId'");
+    });
+
+    it("Test that API returns error when userId is unknown", async () => {
+        const connectionURI = await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                }),
+                EmailPassword.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const associateTenantToUserURL = "/auth/dashboard/api/tenants/user/associate";
+
+        let tenantInfoResponse = await new Promise((res) => {
+            request(app)
+                .put(associateTenantToUserURL)
+                .set("Authorization", "Bearer testapikey")
+                .set("Content-Type", "application/json")
+                .send(JSON.stringify({ tenantId: "public", userId: "test" }))
+                .end((err, response) => {
+                    if (err) {
+                        res(undefined);
+                    } else {
+                        res(JSON.parse(response.text));
+                    }
+                });
+        });
+
+        assert.strictEqual(tenantInfoResponse.status, "UNKNOWN_USER_ID_ERROR");
+    });
 });
