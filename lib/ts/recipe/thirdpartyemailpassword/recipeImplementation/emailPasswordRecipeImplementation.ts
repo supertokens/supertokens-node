@@ -9,7 +9,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             password: string;
             tenantId: string;
-            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }

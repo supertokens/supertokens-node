@@ -119,7 +119,6 @@ export declare type RecipeInterface = {
             };
         };
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {

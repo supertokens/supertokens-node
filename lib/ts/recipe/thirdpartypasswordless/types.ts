@@ -136,7 +136,6 @@ export type RecipeInterface = {
             fromUserInfoAPI?: { [key: string]: any };
         };
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {
