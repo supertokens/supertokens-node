@@ -45,7 +45,11 @@ export default function getAPIInterface(): APIInterface {
                     });
                     factorsAllowedToSetup.push(id);
                 } catch (err) {
-                    // ignore
+                    if (!(err instanceof SessionError && err.type === SessionError.INVALID_CLAIMS)) {
+                        throw err;
+                    }
+
+                    // ignore claims error and not add to the list of factors allowed to be set up
                 }
             }
 
