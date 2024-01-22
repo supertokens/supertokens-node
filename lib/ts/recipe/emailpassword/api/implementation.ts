@@ -740,7 +740,14 @@ export default function getAPIImplementation(): APIInterface {
                     if (session === undefined) {
                         // This branch - MFA is enabled / No active session (First Factor) / Sign in
 
-                        if (!(await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, userContext))) {
+                        let validRes = await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, userContext);
+
+                        if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Tenant not found",
+                            });
+                        } else if (validRes.status === "INVALID_FIRST_FACTOR_ERROR") {
                             throw new SessionError({
                                 type: SessionError.UNAUTHORISED,
                                 message: "Session is required for secondary factors",
@@ -1193,7 +1200,14 @@ export default function getAPIImplementation(): APIInterface {
                     } else {
                         // This branch - MFA is enabled / No active session (First Factor) / Sign up
                         if (session === undefined) {
-                            if (!(await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, userContext))) {
+                            let validRes = await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, userContext);
+
+                            if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Tenant not found",
+                                });
+                            } else if (validRes.status === "INVALID_FIRST_FACTOR_ERROR") {
                                 throw new SessionError({
                                     type: SessionError.UNAUTHORISED,
                                     message: "Session is required for secondary factors",

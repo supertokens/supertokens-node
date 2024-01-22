@@ -54,10 +54,22 @@ export const isValidFirstFactor = async function (
     tenantId: string,
     factorId: string,
     userContext: UserContext
-): Promise<boolean> {
+): Promise<
+    | {
+          status: "OK";
+      }
+    | {
+          status: "INVALID_FIRST_FACTOR_ERROR";
+      }
+    | {
+          status: "TENANT_NOT_FOUND_ERROR";
+      }
+> {
     const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
     if (tenantInfo === undefined) {
-        throw new Error("tenant not found");
+        return {
+            status: "TENANT_NOT_FOUND_ERROR",
+        };
     }
     const { status: _, ...tenantConfig } = tenantInfo;
 
@@ -77,10 +89,20 @@ export const isValidFirstFactor = async function (
         // - if appropriate recipe is not initialized, will result in a 404
         // In all other cases, we just want to allow all available login methods to be used as first factor
 
-        return true;
+        return {
+            status: "OK",
+        };
     }
 
-    return validFirstFactors.includes(factorId);
+    if (validFirstFactors.includes(factorId)) {
+        return {
+            status: "OK",
+        };
+    }
+
+    return {
+        status: "INVALID_FIRST_FACTOR_ERROR",
+    };
 };
 
 // This function is to reuse a piece of code that is needed in multiple places
@@ -156,36 +178,53 @@ export const getMFARelatedInfoFromSession = async function (
         for (const lM of sessionUser.loginMethods) {
             if (lM.recipeUserId.getAsString() === sessionRecipeUserId.getAsString()) {
                 if (lM.recipeId === "emailpassword") {
-                    if (await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, input.userContext)) {
+                    let validRes = await isValidFirstFactor(tenantId, FactorIds.EMAILPASSWORD, input.userContext);
+                    if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Tenant not found",
+                        });
+                    } else if (validRes.status === "OK") {
                         computedFirstFactorIdForSession = FactorIds.EMAILPASSWORD;
                         break;
                     }
                 } else if (lM.recipeId === "thirdparty") {
-                    if (await isValidFirstFactor(tenantId, FactorIds.THIRDPARTY, input.userContext)) {
+                    let validRes = await isValidFirstFactor(tenantId, FactorIds.THIRDPARTY, input.userContext);
+                    if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Tenant not found",
+                        });
+                    } else if (validRes.status === "OK") {
                         computedFirstFactorIdForSession = FactorIds.THIRDPARTY;
                         break;
                     }
                 } else {
+                    let factorsToCheck: string[] = [];
                     if (lM.email !== undefined) {
-                        if (await isValidFirstFactor(tenantId, FactorIds.LINK_EMAIL, input.userContext)) {
-                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
-                            break;
-                        }
-                        if (await isValidFirstFactor(tenantId, FactorIds.OTP_EMAIL, input.userContext)) {
-                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
+                        factorsToCheck.push(FactorIds.LINK_EMAIL);
+                        factorsToCheck.push(FactorIds.OTP_EMAIL);
+                    }
+                    if (lM.phoneNumber !== undefined) {
+                        factorsToCheck.push(FactorIds.LINK_PHONE);
+                        factorsToCheck.push(FactorIds.OTP_PHONE);
+                    }
+
+                    for (const factorId of factorsToCheck) {
+                        let validRes = await isValidFirstFactor(tenantId, factorId, input.userContext);
+                        if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Tenant not found",
+                            });
+                        } else if (validRes.status === "OK") {
+                            computedFirstFactorIdForSession = factorId;
                             break;
                         }
                     }
 
-                    if (lM.phoneNumber !== undefined) {
-                        if (await isValidFirstFactor(tenantId, FactorIds.LINK_PHONE, input.userContext)) {
-                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
-                            break;
-                        }
-                        if (await isValidFirstFactor(tenantId, FactorIds.OTP_PHONE, input.userContext)) {
-                            computedFirstFactorIdForSession = FactorIds.LINK_EMAIL;
-                            break;
-                        }
+                    if (computedFirstFactorIdForSession !== undefined) {
+                        break;
                     }
                 }
             }
