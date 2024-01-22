@@ -23,6 +23,7 @@ export type Response =
       }
     | {
           status: "INVALID_PROVIDER_CONFIG";
+          message: string;
       };
 
 export default async function createOrUpdateThirdPartyConfig(
@@ -41,6 +42,17 @@ export default async function createOrUpdateThirdPartyConfig(
         });
     }
 
+    if (
+        typeof providerConfig !== "object" ||
+        providerConfig === null ||
+        typeof providerConfig?.thirdPartyId !== "string"
+    ) {
+        throw new SuperTokensError({
+            message: "Missing required parameter 'providerConfig' or 'providerConfig.thirdPartyId'",
+            type: SuperTokensError.BAD_INPUT_ERROR,
+        });
+    }
+
     let thirdPartyRes;
 
     try {
@@ -50,9 +62,10 @@ export default async function createOrUpdateThirdPartyConfig(
             undefined,
             userContext
         );
-    } catch (_) {
+    } catch (err) {
         return {
             status: "INVALID_PROVIDER_CONFIG",
+            message: (err as Error).message,
         };
     }
 

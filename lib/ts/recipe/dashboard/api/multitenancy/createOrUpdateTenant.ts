@@ -51,7 +51,7 @@ export default async function createOrUpdateTenant(
     try {
         tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
     } catch (err) {
-        const errMessage = (err as any).message as string;
+        const errMessage = (err as Error).message;
         if (
             errMessage.includes("tenantId can only contain letters, numbers and hyphens") ||
             errMessage.includes("tenantId must not start with 'appid-'") ||

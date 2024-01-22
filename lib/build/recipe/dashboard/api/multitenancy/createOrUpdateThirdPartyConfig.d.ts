@@ -7,6 +7,7 @@ export declare type Response =
       }
     | {
           status: "INVALID_PROVIDER_CONFIG";
+          message: string;
       };
 export default function createOrUpdateThirdPartyConfig(
     _: APIInterface,

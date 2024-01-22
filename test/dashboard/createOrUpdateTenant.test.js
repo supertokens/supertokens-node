@@ -146,7 +146,7 @@ describe(`User Dashboard createOrUpdateTenant: ${printPath("[test/dashboard/crea
         assert.strictEqual(tenant.emailPassword.enabled, false);
     });
 
-    it("Test that API returns an error if the tenant id is not provided", async () => {
+    it("Test that API throws an error if the tenant id is not provided", async () => {
         const connectionURI = await startSTWithMultitenancy();
         STExpress.init({
             supertokens: {
