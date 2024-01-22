@@ -256,7 +256,7 @@ export type RecipeInterface = {
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
-    createRecipeUser: (
+    createPasswordlessRecipeUser: (
         input:
             | {
                   userInputCode: string;
@@ -284,7 +284,7 @@ export type RecipeInterface = {
               maximumCodeInputAttempts: number;
           }
         | { status: "RESTART_FLOW_ERROR" }
-        | { status: "USER_ALREADY_EXISTS_ERROR" }
+        | { status: "USER_ALREADY_EXISTS_ERROR"; user: User; recipeUserId: RecipeUserId }
     >;
 
     updatePasswordlessUser: (input: {
@@ -425,6 +425,7 @@ export type APIInterface = {
         | ((
               input: ({ email: string } | { phoneNumber: string }) & {
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }
@@ -447,6 +448,7 @@ export type APIInterface = {
         | ((
               input: { deviceId: string; preAuthSessionId: string } & {
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }

@@ -203,7 +203,11 @@ export type RecipeInterface = {
               maximumCodeInputAttempts: number;
           }
         | { status: "RESTART_FLOW_ERROR" }
-        | { status: "USER_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "USER_ALREADY_EXISTS_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
     >;
 
     updateUser: (input: {
@@ -322,6 +326,7 @@ export type APIInterface = {
     resendCodePOST?: (
         input: { deviceId: string; preAuthSessionId: string } & {
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
             userContext: UserContext;
         }

@@ -22,43 +22,45 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
     return {
         consumeCode: async function (this: RecipeInterface, input) {
-            let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
-                copyAndRemoveUserContextAndTenantId(input),
-                input.userContext
-            );
+            let response = await this.createRecipeUser(input);
+
+            if (response.status === "USER_ALREADY_EXISTS_ERROR") {
+                // Unlike in the sign up scenario, we do not do account linking here
+                // cause we do not want sign in to change the potentially user ID of a user
+                // due to linking when this function is called by the dev in their API.
+                // If we did account linking
+                // then we would have to ask the dev to also change the session
+                // in such API calls.
+                // In the case of sign up, since we are creating a new user, it's fine
+                // to link there since there is no user id change really from the dev's
+                // point of view who is calling the sign up recipe function.
+
+                return {
+                    status: "OK",
+                    createdNewRecipeUser: false,
+                    recipeUserId: response.recipeUserId,
+                    user: response.user,
+                };
+            }
 
             if (response.status !== "OK") {
                 return response;
             }
 
-            if (response.createdNewRecipeUser) {
-                // Attempt account linking only on sign up
-                let updatedUser = response.user;
+            // Attempt account linking only on sign up
+            let updatedUser = response.user;
 
-                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    tenantId: input.tenantId,
-                    user: response.user,
-                    userContext: input.userContext,
-                });
+            updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                tenantId: input.tenantId,
+                user: response.user,
+                userContext: input.userContext,
+            });
 
-                if (updatedUser === undefined) {
-                    throw new Error("Should never come here.");
-                }
-
-                response.user = updatedUser;
+            if (updatedUser === undefined) {
+                throw new Error("Should never come here.");
             }
 
-            // else ...
-            // Unlike in the sign up scenario, we do not do account linking here
-            // cause we do not want sign in to change the potentially user ID of a user
-            // due to linking when this function is called by the dev in their API.
-            // If we did account linking
-            // then we would have to ask the dev to also change the session
-            // in such API calls.
-            // In the case of sign up, since we are creating a new user, it's fine
-            // to link there since there is no user id change really from the dev's
-            // point of view who is calling the sign up recipe function.
+            response.user = updatedUser;
 
             return response;
         },
@@ -81,6 +83,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             if (!response.createdNewUser) {
                 return {
                     status: "USER_ALREADY_EXISTS_ERROR",
+                    recipeUserId: response.recipeUserId,
+                    user: response.user,
                 };
             }
 

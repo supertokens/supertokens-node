@@ -187,6 +187,8 @@ export declare type RecipeInterface = {
           }
         | {
               status: "USER_ALREADY_EXISTS_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
           }
     >;
     updateUser: (input: {
@@ -302,6 +304,7 @@ export declare type APIInterface = {
             preAuthSessionId: string;
         } & {
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
             userContext: UserContext;
         }

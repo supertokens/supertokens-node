@@ -17,6 +17,7 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function resendCode(
     apiImplementation: APIInterface,
@@ -46,10 +47,25 @@ export default async function resendCode(
         });
     }
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.resendCodePOST({
         deviceId,
         preAuthSessionId,
         tenantId,
+        session,
         options,
         userContext,
     });

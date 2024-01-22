@@ -247,7 +247,7 @@ export declare type RecipeInterface = {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    createRecipeUser: (
+    createPasswordlessRecipeUser: (
         input:
             | {
                   userInputCode: string;
@@ -279,6 +279,8 @@ export declare type RecipeInterface = {
           }
         | {
               status: "USER_ALREADY_EXISTS_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
           }
     >;
     updatePasswordlessUser: (input: {
@@ -425,6 +427,7 @@ export declare type APIInterface = {
                     }
               ) & {
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }
@@ -449,6 +452,7 @@ export declare type APIInterface = {
                   preAuthSessionId: string;
               } & {
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }
