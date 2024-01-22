@@ -85,9 +85,57 @@ describe(`User Dashboard deleteTenant: ${printPath("[test/dashboard/deleteTenant
         });
 
         assert.strictEqual(tenantInfoResponse.status, "OK");
+        assert.strictEqual(tenantInfoResponse.didExist, true);
 
         const tenantsRes = await Multitenancy.listAllTenants();
         assert.strictEqual(tenantsRes.tenants.length, 1);
         assert.strictEqual(tenantsRes.tenants[0].tenantId, "public");
+    });
+
+    it("Test that API throws error when tenantId is missing", async () => {
+        const connectionURI = await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                }),
+                EmailPassword.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const deleteTenantURL = `/auth/dashboard/api/tenant`;
+
+        let responseStatus = 200;
+        let tenantInfoResponse = await new Promise((res) => {
+            request(app)
+                .delete(deleteTenantURL)
+                .set("Authorization", "Bearer testapikey")
+                .end((err, response) => {
+                    responseStatus = response.statusCode;
+                    if (err) {
+                        res(undefined);
+                    } else {
+                        res(JSON.parse(response.text));
+                    }
+                });
+        });
+
+        assert.strictEqual(responseStatus, 400);
+        assert.strictEqual(tenantInfoResponse.message, "Missing required parameter 'tenantId'");
     });
 });

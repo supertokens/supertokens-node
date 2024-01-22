@@ -102,4 +102,97 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers.length, 1);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers[0].thirdPartyId, "google");
     });
+
+    it("Test that API returns error if tenant does not exist", async () => {
+        const connectionURI = await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                }),
+                EmailPassword.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const tenantName = "tenant1";
+
+        const getTenantInfoURL = `/auth/dashboard/api/tenant?tenantId=${tenantName}`;
+
+        let tenantInfoResponse = await new Promise((res) => {
+            request(app)
+                .get(getTenantInfoURL)
+                .set("Authorization", "Bearer testapikey")
+                .end((err, response) => {
+                    if (err) {
+                        res(undefined);
+                    } else {
+                        res(JSON.parse(response.text));
+                    }
+                });
+        });
+
+        assert.strictEqual(tenantInfoResponse.status, "UNKNOWN_TENANT_ERROR");
+    });
+
+    it("Test that API throws error if tenant id is not provided", async () => {
+        const connectionURI = await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                }),
+                EmailPassword.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const getTenantInfoURL = `/auth/dashboard/api/tenant`;
+
+        let responseStatus = 200;
+        let tenantInfoResponse = await new Promise((res) => {
+            request(app)
+                .get(getTenantInfoURL)
+                .set("Authorization", "Bearer testapikey")
+                .end((err, response) => {
+                    responseStatus = response.statusCode;
+                    if (err) {
+                        res(undefined);
+                    } else {
+                        res(JSON.parse(response.text));
+                    }
+                });
+        });
+
+        assert.strictEqual(responseStatus, 400);
+        assert.strictEqual(tenantInfoResponse.message, "Missing required parameter 'tenantId'");
+    });
 });

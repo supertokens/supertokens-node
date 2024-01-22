@@ -73,7 +73,7 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
 
         const createThirdPartyConfigURL = "/auth/dashboard/api/tenants/third-party";
 
-        let tenantInfoResponse = await new Promise((res) => {
+        let thirdPartyConfigResponse = await new Promise((res) => {
             request(app)
                 .post(createThirdPartyConfigURL)
                 .set("Authorization", "Bearer testapikey")
@@ -102,76 +102,12 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
                 });
         });
 
-        assert.strictEqual(tenantInfoResponse.status, "OK");
-        assert.strictEqual(tenantInfoResponse.createdNew, true);
+        assert.strictEqual(thirdPartyConfigResponse.status, "OK");
+        assert.strictEqual(thirdPartyConfigResponse.createdNew, true);
 
         const tenant = await Multitenancy.getTenant(tenantName);
         assert.strictEqual(tenant.thirdParty.providers.length, 1);
         assert.strictEqual(tenant.thirdParty.providers[0].thirdPartyId, "google");
-    });
-
-    it("Test that API throws error when tenantId or providerConfig is missing", async () => {
-        const connectionURI = await startSTWithMultitenancy();
-        STExpress.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Dashboard.init({
-                    apiKey: "testapikey",
-                }),
-                EmailPassword.init(),
-                Session.init(),
-            ],
-        });
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        const createThirdPartyConfigURL = "/auth/dashboard/api/tenants/third-party";
-
-        let tenantInfoResponse = await new Promise((res) => {
-            request(app)
-                .post(createThirdPartyConfigURL)
-                .set("Authorization", "Bearer testapikey")
-                .set("Content-Type", "application/json")
-                .send(
-                    JSON.stringify({
-                        tenantId: "public",
-                        providerConfig: {
-                            thirdPartyId: "apple",
-                            name: "Apple",
-                            clients: [
-                                {
-                                    clientId: "APPLE_CLIENT_ID",
-                                },
-                            ],
-                        },
-                    })
-                )
-                .end((err, response) => {
-                    if (err) {
-                        res(undefined);
-                    } else {
-                        res(JSON.parse(response.text));
-                    }
-                });
-        });
-
-        assert.strictEqual(tenantInfoResponse.status, "INVALID_PROVIDER_CONFIG");
-        assert(
-            tenantInfoResponse.message.includes(
-                "a non empty string value must be specified for keyId, teamId and privateKey in the additionalConfig for Apple provider"
-            )
-        );
     });
 
     it("Test that API returns an error when provider config is invalid", async () => {
@@ -202,8 +138,72 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
 
         const createThirdPartyConfigURL = "/auth/dashboard/api/tenants/third-party";
 
+        let thirdPartyConfigResponse = await new Promise((res) => {
+            request(app)
+                .post(createThirdPartyConfigURL)
+                .set("Authorization", "Bearer testapikey")
+                .set("Content-Type", "application/json")
+                .send(
+                    JSON.stringify({
+                        tenantId: "public",
+                        providerConfig: {
+                            thirdPartyId: "apple",
+                            name: "Apple",
+                            clients: [
+                                {
+                                    clientId: "APPLE_CLIENT_ID",
+                                },
+                            ],
+                        },
+                    })
+                )
+                .end((err, response) => {
+                    if (err) {
+                        res(undefined);
+                    } else {
+                        res(JSON.parse(response.text));
+                    }
+                });
+        });
+
+        assert.strictEqual(thirdPartyConfigResponse.status, "INVALID_PROVIDER_CONFIG");
+        assert(
+            thirdPartyConfigResponse.message.includes(
+                "a non empty string value must be specified for keyId, teamId and privateKey in the additionalConfig for Apple provider"
+            )
+        );
+    });
+
+    it("Test that API throws error when tenantId or providerConfig is missing", async () => {
+        const connectionURI = await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                }),
+                EmailPassword.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const createThirdPartyConfigURL = "/auth/dashboard/api/tenants/third-party";
+
         let responseStatus = 200;
-        let tenantInfoResponse = await new Promise((res) => {
+        let thirdPartyConfigResponse = await new Promise((res) => {
             request(app)
                 .post(createThirdPartyConfigURL)
                 .set("Authorization", "Bearer testapikey")
@@ -224,10 +224,10 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
         });
 
         assert.strictEqual(responseStatus, 400);
-        assert.strictEqual(tenantInfoResponse.message, "Missing required parameter 'tenantId'");
+        assert.strictEqual(thirdPartyConfigResponse.message, "Missing required parameter 'tenantId'");
 
         responseStatus = 200;
-        let tenantInfoResponse2 = await new Promise((res) => {
+        let thirdPartyConfigResponse2 = await new Promise((res) => {
             request(app)
                 .post(createThirdPartyConfigURL)
                 .set("Authorization", "Bearer testapikey")
@@ -249,7 +249,7 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
 
         assert.strictEqual(responseStatus, 400);
         assert.strictEqual(
-            tenantInfoResponse2.message,
+            thirdPartyConfigResponse2.message,
             "Missing required parameter 'providerConfig' or 'providerConfig.thirdPartyId'"
         );
     });

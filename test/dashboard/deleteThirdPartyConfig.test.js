@@ -102,4 +102,54 @@ describe(`User Dashboard deleteThirdPartyConfig: ${printPath(
         const tenantsRes = await Multitenancy.getTenant(tenantName);
         assert.strictEqual(tenantsRes.thirdParty.providers.length, 0);
     });
+
+    it("Test that API throws error when tenantId or thirdPartyId is missing", async () => {
+        const connectionURI = await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                }),
+                EmailPassword.init(),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const deleteThirdPartyConfigURL = `/auth/dashboard/api/tenants/third-party`;
+
+        let responseStatus = 200;
+        let deleteThirdPartyConfigResponse = await new Promise((res) => {
+            request(app)
+                .delete(deleteThirdPartyConfigURL)
+                .set("Authorization", "Bearer testapikey")
+                .end((err, response) => {
+                    responseStatus = response.statusCode;
+                    if (err) {
+                        res(undefined);
+                    } else {
+                        res(JSON.parse(response.text));
+                    }
+                });
+        });
+
+        assert.strictEqual(responseStatus, 400);
+        assert.strictEqual(
+            deleteThirdPartyConfigResponse.message,
+            "Missing required parameter 'tenantId' or 'thirdPartyId'"
+        );
+    });
 });
