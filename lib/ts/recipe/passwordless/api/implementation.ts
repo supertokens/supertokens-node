@@ -2,8 +2,8 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
+import { listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
-import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -20,15 +20,15 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: {
+            let existingUsers = await listUsersByAccountInfo(
+                input.tenantId,
+                {
                     phoneNumber: deviceInfo.phoneNumber,
                     email: deviceInfo.email,
                 },
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
+                false,
+                input.userContext
+            );
             existingUsers = existingUsers.filter((u) =>
                 u.loginMethods.some(
                     (m) =>
@@ -143,22 +143,15 @@ export default function getAPIImplementation(): APIInterface {
                 session,
             };
         },
-
         createCodePOST: async function (input) {
             const accountInfo: { phoneNumber?: string; email?: string } = {};
             if ("email" in input) {
                 accountInfo.email = input.email;
             }
             if ("phoneNumber" in input) {
-                accountInfo.phoneNumber = input.phoneNumber;
+                accountInfo.email = input.phoneNumber;
             }
-
-            let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo,
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
+            let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
             existingUsers = existingUsers.filter((u) =>
                 u.loginMethods.some(
                     (m) =>
@@ -167,39 +160,25 @@ export default function getAPIImplementation(): APIInterface {
                 )
             );
 
-            let session = await Session.getSession(
-                input.options.req,
-                input.options.res,
-                {
-                    sessionRequired: false,
-                    overrideGlobalClaimValidators: () => [],
-                },
-                input.userContext
-            );
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
-
             if (existingUsers.length === 0) {
-                if (session === undefined || mfaInstance === undefined) {
-                    // We don't need to check if sign up is allowed if MFA is enabled and there is an active session
-                    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                        newUser: {
-                            recipeId: "passwordless",
-                            ...accountInfo,
-                        },
-                        isVerified: true,
-                        tenantId: input.tenantId,
-                        userContext: input.userContext,
-                    });
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                    newUser: {
+                        recipeId: "passwordless",
+                        ...accountInfo,
+                    },
+                    isVerified: true,
+                    tenantId: input.tenantId,
+                    userContext: input.userContext,
+                });
 
-                    if (!isSignUpAllowed) {
-                        // On the frontend, this should show a UI of asking the user
-                        // to login using a different method.
-                        return {
-                            status: "SIGN_IN_UP_NOT_ALLOWED",
-                            reason:
-                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                        };
-                    }
+                if (!isSignUpAllowed) {
+                    // On the frontend, this should show a UI of asking the user
+                    // to login using a different method.
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                    };
                 }
             } else if (existingUsers.length === 1) {
                 let loginMethod: RecipeLevelUser | undefined = existingUsers[0].loginMethods.find(
@@ -211,7 +190,6 @@ export default function getAPIImplementation(): APIInterface {
                 if (loginMethod === undefined) {
                     throw new Error("Should never come here");
                 }
-
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     user: existingUsers[0],
                     tenantId: input.tenantId,
@@ -229,13 +207,6 @@ export default function getAPIImplementation(): APIInterface {
                     "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
                 );
             }
-
-            // if (mfaInstance !== undefined && session !== undefined && existingUsers.length === 0) {
-            // Ideally we want to check if the user is allowed to setup a factor, but
-            // we can't distinguish between otp- or link- factors at this point. So we simply allow
-            // and then check during consume code
-            // }
-
             let response = await input.options.recipeImplementation.createCode(
                 "email" in input
                     ? {
@@ -330,16 +301,16 @@ export default function getAPIImplementation(): APIInterface {
                 preAuthSessionId: response.preAuthSessionId,
             };
         },
-
         emailExistsGET: async function (input) {
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: {
+            let users = await listUsersByAccountInfo(
+                input.tenantId,
+                {
                     email: input.email,
+                    // tenantId: input.tenantId,
                 },
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
+                false,
+                input.userContext
+            );
 
             return {
                 exists: users.length > 0,
@@ -347,14 +318,15 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         phoneNumberExistsGET: async function (input) {
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: {
+            let users = await listUsersByAccountInfo(
+                input.tenantId,
+                {
                     phoneNumber: input.phoneNumber,
+                    // tenantId: input.tenantId,
                 },
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
+                false,
+                input.userContext
+            );
 
             return {
                 exists: users.length > 0,
