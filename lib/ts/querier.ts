@@ -239,18 +239,6 @@ export class Querier {
         params: Record<string, boolean | number | string | undefined>,
         userContext: UserContext
     ): Promise<any> => {
-        const sortedKeys = Object.keys(params).sort();
-        let uniqueKey = path.getAsStringDangerous();
-
-        for (const key of sortedKeys) {
-            const value = params[key];
-            uniqueKey += `;${key}=${value}`;
-        }
-
-        if (uniqueKey in (userContext._default?.coreCallCache ?? {})) {
-            return userContext._default.coreCallCache[uniqueKey];
-        }
-
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "GET",
@@ -269,6 +257,29 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
+
+                /* CACHE CHECK BEGIN */
+                const sortedKeys = Object.keys(params).sort();
+                const sortedHeaderKeys = Object.keys(headers).sort();
+                let uniqueKey = path.getAsStringDangerous();
+
+                for (const key of sortedKeys) {
+                    const value = params[key];
+                    uniqueKey += `;${key}=${value}`;
+                }
+
+                uniqueKey += ";hdrs";
+
+                for (const key of sortedHeaderKeys) {
+                    const value = headers[key];
+                    uniqueKey += `;${key}=${value}`;
+                }
+
+                if (uniqueKey in (userContext._default?.coreCallCache ?? {})) {
+                    return userContext._default.coreCallCache[uniqueKey];
+                }
+                /* CACHE CHECK END */
+
                 if (Querier.networkInterceptor !== undefined) {
                     let request = Querier.networkInterceptor(
                         {
@@ -290,21 +301,27 @@ export class Querier {
                     Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
                 );
                 finalURL.search = searchParams.toString();
-                return doFetch(finalURL.toString(), {
+
+                // Update cache and return
+
+                let response = await doFetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
+
+                userContext._default = {
+                    ...userContext._default,
+                    coreCallCache: {
+                        ...userContext._default?.coreCallCache,
+                        [uniqueKey]: response,
+                    },
+                };
+
+                return response;
             },
             this.__hosts?.length || 0
         );
 
-        userContext._default = {
-            ...userContext._default,
-            coreCallCache: {
-                ...userContext._default?.coreCallCache,
-                [uniqueKey]: respBody,
-            },
-        };
         return respBody;
     };
 
