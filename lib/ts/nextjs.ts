@@ -20,7 +20,7 @@ import {
     middleware,
     errorHandler as customErrorHandler,
 } from "./framework/custom";
-import { HTTPMethod } from "./types";
+import { HTTPMethod, SSRSessionContextType } from "./types";
 import Session, { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import SessionRecipe from "./recipe/session/recipe";
 import { getToken } from "./recipe/session/cookieAndHeaders";
@@ -230,6 +230,28 @@ export default class NextJS {
         return result;
     }
 
+    static async getInitialSessionAuthContext(session: SessionContainer | undefined): Promise<SSRSessionContextType> {
+        if (session) {
+            return {
+                isContextFromSSR: true,
+                loading: false,
+                doesSessionExist: true,
+                accessTokenPayload: await session.getAccessTokenPayload(),
+                invalidClaims: [],
+                userId: await session.getUserId(),
+            }
+        }
+
+        return {
+            isContextFromSSR: true,
+            loading: false,
+            doesSessionExist: false,
+            accessTokenPayload: {},
+            invalidClaims: [],
+            userId: '',
+        }
+    }
+
     static async withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
         req: NextRequest,
         handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<NextResponse>,
@@ -405,5 +427,6 @@ export default class NextJS {
 export let superTokensNextWrapper = NextJS.superTokensNextWrapper;
 export let getAppDirRequestHandler = NextJS.getAppDirRequestHandler;
 export let getSSRSession = NextJS.getSSRSession;
+export let getInitialSessionAuthContext = NextJS.getInitialSessionAuthContext;
 export let withSession = NextJS.withSession;
 export let withPreParsedRequestResponse = NextJS.withPreParsedRequestResponse;
