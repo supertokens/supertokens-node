@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { CollectingResponse, PreParsedRequest } from "./framework/custom";
+import { SSRSessionContextType } from "./types";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 declare type PartialNextRequest = {
     method: string;
@@ -37,6 +38,7 @@ export default class NextJS {
         hasToken: boolean;
         hasInvalidClaims: boolean;
     }>;
+    static getInitialSessionAuthContext(session: SessionContainer | undefined): Promise<SSRSessionContextType>;
     static withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
         req: NextRequest,
         handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<NextResponse>,
@@ -51,6 +53,7 @@ export default class NextJS {
 export declare let superTokensNextWrapper: typeof NextJS.superTokensNextWrapper;
 export declare let getAppDirRequestHandler: typeof NextJS.getAppDirRequestHandler;
 export declare let getSSRSession: typeof NextJS.getSSRSession;
+export declare let getInitialSessionAuthContext: typeof NextJS.getInitialSessionAuthContext;
 export declare let withSession: typeof NextJS.withSession;
 export declare let withPreParsedRequestResponse: typeof NextJS.withPreParsedRequestResponse;
 export {};

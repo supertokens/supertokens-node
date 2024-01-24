@@ -237,13 +237,13 @@ export default class NextJS {
             doesSessionExist: false,
             accessTokenPayload: {},
             invalidClaims: [],
-            userId: '',
-        } as SSRSessionContextType
+            userId: "",
+        } as SSRSessionContextType;
 
         if (session) {
-            initialContext.doesSessionExist = true
-            initialContext.accessTokenPayload = await session.getAccessTokenPayload()
-            initialContext.userId = await session.getUserId()
+            initialContext.doesSessionExist = true;
+            initialContext.accessTokenPayload = await session.getAccessTokenPayload();
+            initialContext.userId = await session.getUserId();
         }
 
         return initialContext;

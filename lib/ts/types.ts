@@ -123,4 +123,4 @@ export type SSRSessionContextType = {
     invalidClaims: ClaimValidationError[]; // TODO: Find if it's possible to compute invalidClaims on BE
     userId?: string;
     accessDeniedValidatorError?: ClaimValidationError;
-}
+};
