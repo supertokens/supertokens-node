@@ -231,25 +231,22 @@ export default class NextJS {
     }
 
     static async getInitialSessionAuthContext(session: SessionContainer | undefined): Promise<SSRSessionContextType> {
-        if (session) {
-            return {
-                isContextFromSSR: true,
-                loading: false,
-                doesSessionExist: true,
-                accessTokenPayload: await session.getAccessTokenPayload(),
-                invalidClaims: [],
-                userId: await session.getUserId(),
-            }
-        }
-
-        return {
+        const initialContext = {
             isContextFromSSR: true,
             loading: false,
             doesSessionExist: false,
             accessTokenPayload: {},
             invalidClaims: [],
             userId: '',
+        } as SSRSessionContextType
+
+        if (session) {
+            initialContext.doesSessionExist = true
+            initialContext.accessTokenPayload = await session.getAccessTokenPayload()
+            initialContext.userId = await session.getUserId()
         }
+
+        return initialContext;
     }
 
     static async withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
