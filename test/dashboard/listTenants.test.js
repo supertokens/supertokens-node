@@ -36,7 +36,7 @@ describe(`User Dashboard listTenants: ${printPath("[test/dashboard/listTenants.t
         await cleanST();
     });
 
-    it("Test that API returns just the tenants without their corresponding user counts when includeUserCount query param is not provided", async () => {
+    it("Test that API returns all the tenants", async () => {
         const connectionURI = await startSTWithMultitenancy();
         STExpress.init({
             supertokens: {
@@ -88,68 +88,5 @@ describe(`User Dashboard listTenants: ${printPath("[test/dashboard/listTenants.t
         assert.strictEqual(tenantInfoResponse.tenants.length, 2);
 
         const tenant1 = tenantInfoResponse.tenants.find((tenant) => tenant.tenantId === tenantName);
-        assert.strictEqual(tenant1.userCount, undefined);
-    });
-
-    it("Test that API returns all the tenants with their corresponding user counts when includeUserCount query param is provided", async () => {
-        const connectionURI = await startSTWithMultitenancy();
-        STExpress.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Dashboard.init({
-                    apiKey: "testapikey",
-                }),
-                EmailPassword.init(),
-                Session.init(),
-            ],
-        });
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        const tenantName = "tenant1";
-
-        await Multitenancy.createOrUpdateTenant(tenantName, {
-            emailPasswordEnabled: true,
-            thirdPartyEnabled: true,
-        });
-
-        await EmailPassword.signUp("public", "test@supertokens.com", "abcd1234");
-        await EmailPassword.signUp("public", "test2@supertokens.com", "abcd1234");
-        await EmailPassword.signUp(tenantName, "test@supertokens.com", "abcd1235");
-
-        const listAllTenantsURL = "/auth/dashboard/api/tenants/list?includeUserCount=true";
-
-        let tenantInfoResponse = await new Promise((res) => {
-            request(app)
-                .get(listAllTenantsURL)
-                .set("Authorization", "Bearer testapikey")
-                .end((err, response) => {
-                    if (err) {
-                        res(undefined);
-                    } else {
-                        res(JSON.parse(response.text));
-                    }
-                });
-        });
-
-        assert.strictEqual(tenantInfoResponse.status, "OK");
-        assert.strictEqual(tenantInfoResponse.tenants.length, 2);
-
-        const publicTenant = tenantInfoResponse.tenants.find((tenant) => tenant.tenantId === "public");
-        assert.strictEqual(publicTenant.userCount, 2);
-
-        const tenant1 = tenantInfoResponse.tenants.find((tenant) => tenant.tenantId === tenantName);
-        assert.strictEqual(tenant1.userCount, 1);
     });
 });

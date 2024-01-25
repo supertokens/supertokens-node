@@ -17,6 +17,7 @@ export declare type Response =
                   enabled: boolean;
               };
               coreConfig: Record<string, unknown>;
+              userCount: number;
           };
       }
     | {

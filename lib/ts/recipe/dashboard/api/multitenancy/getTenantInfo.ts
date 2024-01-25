@@ -16,6 +16,7 @@ import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
 import { ProviderConfig } from "../../../thirdparty/types";
+import SuperTokens from "../../../../supertokens";
 
 export type Response =
     | {
@@ -33,6 +34,7 @@ export type Response =
                   enabled: boolean;
               };
               coreConfig: Record<string, unknown>;
+              userCount: number;
           };
       }
     | {
@@ -66,12 +68,15 @@ export default async function getTenantInfo(
         };
     }
 
+    const userCount = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
+
     const tenant = {
         tenantId,
         emailPassword: tenantRes.emailPassword,
         passwordless: tenantRes.passwordless,
         thirdParty: tenantRes.thirdParty,
         coreConfig: tenantRes.coreConfig,
+        userCount,
     };
 
     return {

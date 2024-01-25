@@ -80,6 +80,8 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
             ],
         });
 
+        await EmailPassword.signUp(tenantName, "test@supertokens.com", "abcd1235");
+
         const getTenantInfoURL = `/auth/dashboard/api/tenant?tenantId=${tenantName}`;
 
         let tenantInfoResponse = await new Promise((res) => {
@@ -101,6 +103,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.enabled, true);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers.length, 1);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers[0].thirdPartyId, "google");
+        assert.strictEqual(tenantInfoResponse.tenant.userCount, 1);
     });
 
     it("Test that API returns error if tenant does not exist", async () => {

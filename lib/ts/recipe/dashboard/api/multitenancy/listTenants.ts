@@ -15,7 +15,6 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import { ProviderConfig } from "../../../thirdparty/types";
-import SuperTokens from "../../../../supertokens";
 
 type TenantListTenantType = {
     tenantId: string;
@@ -40,25 +39,14 @@ export type Response = {
 export default async function listTenants(
     _: APIInterface,
     __: string,
-    options: APIOptions,
+    ___: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const shouldIncludeUserCount = options.req.getKeyValueFromQuery("includeUserCount");
     let tenantsRes = await Multitenancy.listAllTenants(userContext);
     let finalTenants: TenantListTenantType[] = [];
 
     if (tenantsRes.status !== "OK") {
         return tenantsRes;
-    }
-
-    // TODO: Add an API to core to get user count for all tenants in one go
-    let tenantsUserCount: Array<number> | undefined;
-    if (shouldIncludeUserCount) {
-        tenantsUserCount = await Promise.all(
-            tenantsRes.tenants.map((tenant) => {
-                return SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenant.tenantId);
-            })
-        );
     }
 
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
@@ -69,9 +57,6 @@ export default async function listTenants(
             passwordless: currentTenant.passwordless,
             thirdParty: currentTenant.thirdParty,
         };
-        if (shouldIncludeUserCount && Array.isArray(tenantsUserCount)) {
-            modifiedTenant.userCount = tenantsUserCount[i];
-        }
         finalTenants.push(modifiedTenant);
     }
 
