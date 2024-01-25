@@ -18,7 +18,6 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
-import { ClaimValidationError } from "./recipe/session/types";
 import { BaseRequest } from "./framework";
 
 export type AppInfo = {
@@ -120,7 +119,5 @@ export type SSRSessionContextType = {
     loading: false;
     doesSessionExist: boolean;
     accessTokenPayload: any;
-    invalidClaims: ClaimValidationError[]; // TODO: Find if it's possible to compute invalidClaims on BE
     userId?: string;
-    accessDeniedValidatorError?: ClaimValidationError;
 };

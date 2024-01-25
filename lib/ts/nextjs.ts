@@ -236,7 +236,6 @@ export default class NextJS {
             loading: false,
             doesSessionExist: false,
             accessTokenPayload: {},
-            invalidClaims: [],
             userId: "",
         };
 
