@@ -26,6 +26,7 @@ const {
     superTokensNextWrapper,
     withSession,
     getSSRSession,
+    getInitialSessionAuthContext,
     getAppDirRequestHandler,
     withPreParsedRequestResponse,
 } = require("../lib/build/nextjs");
@@ -772,6 +773,38 @@ describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function (
         );
         assert.equal(sessionContainer.session, undefined);
         assert.equal(sessionContainer.hasToken, true);
+    });
+
+    it("getInitialSessionAuthContext", async function () {
+        const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
+
+        const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+            },
+        });
+
+        let sessionContainer = await getSSRSession(authenticatedRequest.cookies.getAll(), authenticatedRequest.headers);
+
+        let initialSessionAuthContext = await getInitialSessionAuthContext(sessionContainer.session);
+
+        assert.equal(initialSessionAuthContext.loading, false);
+        assert.equal(initialSessionAuthContext.isContextFromSSR, true);
+        assert.equal(initialSessionAuthContext.doesSessionExist, true);
+        assert.equal(initialSessionAuthContext.userId, process.env.user);
+        assert.notEqual(initialSessionAuthContext.accessTokenPayload, {});
+
+        const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
+
+        sessionContainer = await getSSRSession(unAuthenticatedRequest.cookies.getAll(), unAuthenticatedRequest.headers);
+
+        initialSessionAuthContext = await getInitialSessionAuthContext(sessionContainer.session);
+
+        assert.equal(initialSessionAuthContext.loading, false);
+        assert.equal(initialSessionAuthContext.isContextFromSSR, true);
+        assert.equal(initialSessionAuthContext.doesSessionExist, false);
+        assert.equal(initialSessionAuthContext.userId, "");
+        assert.deepEqual(initialSessionAuthContext.accessTokenPayload, {});
     });
 
     it("withSession", async function () {
