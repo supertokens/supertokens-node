@@ -49,6 +49,7 @@ import {
     DISASSOCIATE_USER_FROM_TENANT,
     ASSOCIATE_USER_TO_TENANT,
     TENANT_THIRD_PARTY,
+    BOXY_SAML_UPLOAD,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -93,6 +94,7 @@ import associateUserToTenant from "./api/multitenancy/associateUserToTenant";
 import disassociateUserFromTenant from "./api/multitenancy/disassociateUserFromTenant";
 import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
 import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
+import boxySamlUpload from "./api/multitenancy/boxySamlUpload";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -407,6 +409,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "delete",
             },
+            {
+                id: BOXY_SAML_UPLOAD,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(BOXY_SAML_UPLOAD)),
+                disabled: false,
+                method: "put",
+            },
         ];
     };
 
@@ -557,6 +565,8 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "post") {
                 apiFunction = createOrUpdateThirdPartyConfig;
             }
+        } else if (id === BOXY_SAML_UPLOAD) {
+            apiFunction = boxySamlUpload;
         }
 
         // If the id doesnt match any APIs return false
