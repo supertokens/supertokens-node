@@ -231,14 +231,14 @@ export default class NextJS {
     }
 
     static async getInitialSessionAuthContext(session: SessionContainer | undefined): Promise<SSRSessionContextType> {
-        const initialContext = {
+        const initialContext: SSRSessionContextType = {
             isContextFromSSR: true,
             loading: false,
             doesSessionExist: false,
             accessTokenPayload: {},
             invalidClaims: [],
             userId: "",
-        } as SSRSessionContextType;
+        };
 
         if (session) {
             initialContext.doesSessionExist = true;
