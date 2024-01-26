@@ -119,5 +119,5 @@ export type SSRSessionContextType = {
     loading: false;
     doesSessionExist: boolean;
     accessTokenPayload: any;
-    userId?: string;
+    userId: string;
 };
