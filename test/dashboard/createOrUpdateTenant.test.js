@@ -68,7 +68,7 @@ describe(`User Dashboard createOrUpdateTenant: ${printPath("[test/dashboard/crea
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)
-                .post(createTenantURL)
+                .put(createTenantURL)
                 .set("Authorization", "Bearer testapikey")
                 .set("Content-Type", "application/json")
                 .send(JSON.stringify({ tenantId: tenantName }))
@@ -125,7 +125,7 @@ describe(`User Dashboard createOrUpdateTenant: ${printPath("[test/dashboard/crea
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)
-                .post(createTenantURL)
+                .put(createTenantURL)
                 .set("Authorization", "Bearer testapikey")
                 .set("Content-Type", "application/json")
                 .send(JSON.stringify({ tenantId: tenantName, emailPasswordEnabled: false }))
@@ -178,7 +178,7 @@ describe(`User Dashboard createOrUpdateTenant: ${printPath("[test/dashboard/crea
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)
-                .post(createTenantURL)
+                .put(createTenantURL)
                 .set("Authorization", "Bearer testapikey")
                 .set("Content-Type", "application/json")
                 .send(JSON.stringify({}))
@@ -194,85 +194,5 @@ describe(`User Dashboard createOrUpdateTenant: ${printPath("[test/dashboard/crea
 
         assert.strictEqual(responseStatus, 400);
         assert.strictEqual(tenantInfoResponse.message, "Missing required parameter 'tenantId'");
-    });
-
-    it("Test that API returns an error if the tenant id is invalid", async () => {
-        const connectionURI = await startSTWithMultitenancy();
-        STExpress.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Dashboard.init({
-                    apiKey: "testapikey",
-                }),
-                EmailPassword.init(),
-                Session.init(),
-            ],
-        });
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        const createTenantURL = "/auth/dashboard/api/tenant";
-
-        let tenantInfoResponse = await new Promise((res) => {
-            request(app)
-                .post(createTenantURL)
-                .set("Authorization", "Bearer testapikey")
-                .set("Content-Type", "application/json")
-                .send(JSON.stringify({ tenantId: "tenant 1" }))
-                .end((err, response) => {
-                    if (err) {
-                        res(undefined);
-                    } else {
-                        res(JSON.parse(response.text));
-                    }
-                });
-        });
-
-        assert.strictEqual(tenantInfoResponse.status, "INVALID_TENANT_ID");
-
-        let tenantInfoResponse2 = await new Promise((res) => {
-            request(app)
-                .post(createTenantURL)
-                .set("Authorization", "Bearer testapikey")
-                .set("Content-Type", "application/json")
-                .send(JSON.stringify({ tenantId: "appid-tenant" }))
-                .end((err, response) => {
-                    if (err) {
-                        res(undefined);
-                    } else {
-                        res(JSON.parse(response.text));
-                    }
-                });
-        });
-
-        assert.strictEqual(tenantInfoResponse2.status, "INVALID_TENANT_ID");
-
-        let tenantInfoResponse3 = await new Promise((res) => {
-            request(app)
-                .post(createTenantURL)
-                .set("Authorization", "Bearer testapikey")
-                .set("Content-Type", "application/json")
-                .send(JSON.stringify({ tenantId: "recipe" }))
-                .end((err, response) => {
-                    if (err) {
-                        res(undefined);
-                    } else {
-                        res(JSON.parse(response.text));
-                    }
-                });
-        });
-
-        assert.strictEqual(tenantInfoResponse3.status, "INVALID_TENANT_ID");
     });
 });

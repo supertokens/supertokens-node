@@ -381,7 +381,7 @@ export default class Recipe extends RecipeModule {
                 id: TENANT_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
                 disabled: false,
-                method: "post",
+                method: "put",
             },
             {
                 id: ASSOCIATE_USER_TO_TENANT,
@@ -401,7 +401,7 @@ export default class Recipe extends RecipeModule {
                 id: TENANT_THIRD_PARTY,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
                 disabled: false,
-                method: "post",
+                method: "put",
             },
             {
                 id: TENANT_THIRD_PARTY,
@@ -545,7 +545,7 @@ export default class Recipe extends RecipeModule {
                 apiFunction = getTenantLoginMethodsInfo;
             }
         } else if (id === TENANT_API) {
-            if (req.getMethod() === "post") {
+            if (req.getMethod() === "put") {
                 apiFunction = createOrUpdateTenant;
             }
             if (req.getMethod() === "get") {
@@ -562,7 +562,7 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteThirdPartyConfig;
             }
-            if (req.getMethod() === "post") {
+            if (req.getMethod() === "put") {
                 apiFunction = createOrUpdateThirdPartyConfig;
             }
         } else if (id === BOXY_SAML_UPLOAD) {

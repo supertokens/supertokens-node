@@ -53,21 +53,12 @@ export default async function createOrUpdateThirdPartyConfig(
         });
     }
 
-    let thirdPartyRes;
-
-    try {
-        thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
-            tenantId,
-            providerConfig,
-            undefined,
-            userContext
-        );
-    } catch (err) {
-        return {
-            status: "INVALID_PROVIDER_CONFIG",
-            message: (err as Error).message,
-        };
-    }
+    const thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
+        tenantId,
+        providerConfig,
+        undefined,
+        userContext
+    );
 
     return thirdPartyRes;
 }

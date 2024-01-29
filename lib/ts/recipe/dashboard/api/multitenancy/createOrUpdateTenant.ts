@@ -46,28 +46,7 @@ export default async function createOrUpdateTenant(
         });
     }
 
-    let tenantRes;
-
-    try {
-        tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
-    } catch (err) {
-        const errMessage = (err as Error).message;
-        if (
-            errMessage.includes("tenantId can only contain letters, numbers and hyphens") ||
-            errMessage.includes("tenantId must not start with 'appid-'") ||
-            errMessage.includes(`Cannot use '${tenantId}' as a tenantId`)
-        ) {
-            return {
-                status: "INVALID_TENANT_ID",
-                message: errMessage,
-            };
-        }
-
-        return {
-            status: "UNKNOWN_TENANT_ERROR",
-            message: errMessage,
-        };
-    }
+    const tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
 
     return tenantRes;
 }
