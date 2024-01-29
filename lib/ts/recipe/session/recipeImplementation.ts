@@ -325,6 +325,7 @@ export default function getRecipeInterface(
                 refreshToken,
                 antiCsrfToken,
                 disableAntiCsrf,
+                config.useDynamicAccessTokenSigningKey,
                 userContext
             );
 
