@@ -26,5 +26,4 @@ export declare const TENANT_API = "/api/tenant";
 export declare const ASSOCIATE_USER_TO_TENANT = "/api/tenants/user/associate";
 export declare const DISASSOCIATE_USER_FROM_TENANT = "/api/tenants/user/disassociate";
 export declare const TENANT_THIRD_PARTY = "/api/tenants/third-party";
-export declare const BOXY_SAML_UPLOAD = "/api/tenants/third-party/boxy-saml/clients-with-saml-metadata";
 export declare const UNLINK_USER = "/api/user/unlink";
