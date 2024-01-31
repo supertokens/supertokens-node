@@ -13,7 +13,6 @@ declare type TenantListTenantType = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
-    userCount?: number;
 };
 export declare type Response = {
     status: "OK";

@@ -28,7 +28,6 @@ type TenantListTenantType = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
-    userCount?: number;
 };
 
 export type Response = {
