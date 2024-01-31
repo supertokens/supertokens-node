@@ -22,12 +22,7 @@ export type Response =
           createdNew: boolean;
       }
     | {
-          status: "INVALID_TENANT_ID";
-          message: string;
-      }
-    | {
-          status: "UNKNOWN_TENANT_ERROR";
-          message: string;
+          status: "MULTITENANCY_NOT_ENABLED_ERROR";
       };
 
 export default async function createOrUpdateTenant(
@@ -46,7 +41,19 @@ export default async function createOrUpdateTenant(
         });
     }
 
-    const tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
+    let tenantRes;
+    try {
+        tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
+    } catch (err) {
+        // If the error message contains status 402,
+        // it means that multitenancy is not enabled
+        if ((err as Error).message.includes("402")) {
+            return {
+                status: "MULTITENANCY_NOT_ENABLED_ERROR",
+            };
+        }
+        throw err;
+    }
 
     return tenantRes;
 }

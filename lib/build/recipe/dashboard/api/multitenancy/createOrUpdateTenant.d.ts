@@ -6,12 +6,7 @@ export declare type Response =
           createdNew: boolean;
       }
     | {
-          status: "INVALID_TENANT_ID";
-          message: string;
-      }
-    | {
-          status: "UNKNOWN_TENANT_ERROR";
-          message: string;
+          status: "MULTITENANCY_NOT_ENABLED_ERROR";
       };
 export default function createOrUpdateTenant(
     _: APIInterface,
