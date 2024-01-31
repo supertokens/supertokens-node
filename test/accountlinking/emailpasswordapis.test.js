@@ -249,7 +249,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -274,7 +274,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test@example.com",
                 true,
-                undefined,
                 {
                     doNotLink: true,
                 }
@@ -353,7 +352,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -448,7 +447,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -610,7 +609,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(didAsserts);
         });
 
-        it("calling signUpPOST succeeds, and not linked account, but is a primary user, if email exists in some non email password, non primary user - account linking enabled, and email verification not required", async function () {
+        it("calling signUpPOST succeeds, and links to older account, if email exists in some non email password, non primary user - account linking enabled, and email verification not required", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -642,7 +641,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -667,13 +666,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test@example.com",
                 false,
-                undefined,
                 {
                     doNotLink: true,
                 }
             );
             assert(tpUser.user.isPrimaryUser === false);
-
             let res = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signup")
@@ -702,12 +699,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.status === "OK");
             let epUser = await supertokens.getUser(res.body.user.id);
             assert(epUser.isPrimaryUser === true);
-            assert(epUser.loginMethods.length === 1);
+            assert(epUser.loginMethods.length === 2);
 
             let sessionTokens = extractInfoFromResponse(res);
             let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
-            assert(session.getUserId() !== tpUser.user.id);
-            assert(session.getUserId() === session.getRecipeUserId().getAsString());
+            assert(session.getUserId() === tpUser.user.id);
+            assert(
+                epUser.loginMethods.find((lm) => lm.recipeId === "emailpassword").recipeUserId.getAsString() ===
+                    session.getRecipeUserId().getAsString()
+            );
         });
 
         it("calling signUpPOST succeeds if email exists in some non email password primary user - account linking disabled", async function () {
@@ -1170,7 +1170,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1432,7 +1432,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1537,7 +1537,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doLink) {
                                 return {
                                     shouldAutomaticallyLink: true,
@@ -1641,7 +1641,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1744,7 +1744,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1853,7 +1853,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,

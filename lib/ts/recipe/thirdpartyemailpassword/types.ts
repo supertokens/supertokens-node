@@ -257,6 +257,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              session: SessionContainerInterface | undefined;
               tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;

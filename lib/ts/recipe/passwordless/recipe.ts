@@ -17,7 +17,7 @@ import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
-import { validateAndNormaliseUserInput } from "./utils";
+import { getEnabledPwlessFactors, validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -99,33 +99,7 @@ export default class Recipe extends RecipeModule {
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
 
-        let allFactors: string[];
-
-        if (this.config.flowType === "MAGIC_LINK") {
-            if (this.config.contactMethod === "EMAIL") {
-                allFactors = [FactorIds.LINK_EMAIL];
-            } else if (this.config.contactMethod === "PHONE") {
-                allFactors = [FactorIds.LINK_PHONE];
-            } else {
-                allFactors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
-            }
-        } else if (this.config.flowType === "USER_INPUT_CODE") {
-            if (this.config.contactMethod === "EMAIL") {
-                allFactors = [FactorIds.OTP_EMAIL];
-            } else if (this.config.contactMethod === "PHONE") {
-                allFactors = [FactorIds.OTP_PHONE];
-            } else {
-                allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE];
-            }
-        } else {
-            if (this.config.contactMethod === "EMAIL") {
-                allFactors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL];
-            } else if (this.config.contactMethod === "PHONE") {
-                allFactors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE];
-            } else {
-                allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE, FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
-            }
-        }
+        let allFactors = getEnabledPwlessFactors(this.config);
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();

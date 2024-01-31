@@ -19,6 +19,7 @@ import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
 import { UserContext } from "../../../types";
 import Session from "../../session";
+import { getEnabledPwlessFactors } from "../utils";
 
 export default async function createCode(
     apiImplementation: APIInterface,
@@ -33,6 +34,7 @@ export default async function createCode(
     const body = await options.req.getJSONBody();
     let email: string | undefined = body.email;
     let phoneNumber: string | undefined = body.phoneNumber;
+    let factorIds: string[] | undefined = body.factorIds;
 
     if ((email !== undefined && phoneNumber !== undefined) || (email === undefined && phoneNumber === undefined)) {
         throw new STError({
@@ -52,6 +54,13 @@ export default async function createCode(
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
             message: 'Please provide a phoneNumber since you have set the contactMethod to "PHONE"',
+        });
+    }
+
+    if (factorIds !== undefined && !(factorIds instanceof Array)) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide a string array as factorIds",
         });
     }
 
@@ -92,6 +101,19 @@ export default async function createCode(
             phoneNumber = parsedPhoneNumber.format("E.164");
         }
     }
+    const enabledFactors = getEnabledPwlessFactors(options.config);
+    if (factorIds) {
+        if (factorIds.some((id) => !enabledFactors.includes(id))) {
+            throw new Error("Requested unknown factor id");
+        }
+
+        if (
+            (factorIds.some((id) => id.endsWith("phone")) && phoneNumber === undefined) ||
+            (factorIds.some((id) => id.endsWith("email")) && email === undefined)
+        ) {
+            throw new Error("Requested factorid with wrong contact method");
+        }
+    }
 
     let session = await Session.getSession(
         options.req,
@@ -109,8 +131,8 @@ export default async function createCode(
 
     let result = await apiImplementation.createCodePOST(
         email !== undefined
-            ? { email, tenantId, session, options, userContext }
-            : { phoneNumber: phoneNumber!, tenantId, session, options, userContext }
+            ? { email, factorIds, session, tenantId, options, userContext }
+            : { phoneNumber: phoneNumber!, factorIds, session, tenantId, options, userContext }
     );
 
     send200Response(options.res, result);

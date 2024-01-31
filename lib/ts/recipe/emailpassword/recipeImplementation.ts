@@ -50,6 +50,7 @@ export default function getRecipeInterface(
             updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
                 user: response.user,
+                session: undefined, // TODO: we may want to add this to the interface
                 userContext,
             });
 

@@ -2,6 +2,7 @@
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
+import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     /**
@@ -16,6 +17,7 @@ export default class Wrapper {
     static createPrimaryUserIdOrLinkAccounts(
         tenantId: string,
         recipeUserId: RecipeUserId,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<import("../../types").User>;
     /**
@@ -126,17 +128,20 @@ export default class Wrapper {
         tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
+        session: SessionContainerInterface | undefined,
         userContext?: Record<string, any>
     ): Promise<boolean>;
     static isSignInAllowed(
         tenantId: string,
         recipeUserId: RecipeUserId,
+        session: SessionContainerInterface | undefined,
         userContext?: Record<string, any>
     ): Promise<boolean>;
     static isEmailChangeAllowed(
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
+        session: SessionContainerInterface | undefined,
         userContext?: Record<string, any>
     ): Promise<boolean>;
 }

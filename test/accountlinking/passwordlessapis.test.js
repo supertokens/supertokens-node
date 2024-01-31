@@ -346,7 +346,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,

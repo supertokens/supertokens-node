@@ -7,6 +7,7 @@ import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, Use
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { LoginMethod } from "../../user";
+import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -37,10 +38,12 @@ export default class Recipe extends RecipeModule {
     createPrimaryUserIdOrLinkAccounts: ({
         tenantId,
         user,
+        session,
         userContext,
     }: {
         tenantId: string;
         user: User;
+        session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }) => Promise<User>;
     getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
@@ -55,32 +58,38 @@ export default class Recipe extends RecipeModule {
     isSignInAllowed: ({
         user,
         tenantId,
+        session,
         userContext,
     }: {
         user: User;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }) => Promise<boolean>;
     isSignUpAllowed: ({
         newUser,
         isVerified,
+        session,
         tenantId,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }) => Promise<boolean>;
     isSignInUpAllowedHelper: ({
         accountInfo,
         isVerified,
+        session,
         tenantId,
         isSignIn,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         isSignIn: boolean;
         userContext: UserContext;
@@ -89,6 +98,7 @@ export default class Recipe extends RecipeModule {
         user?: User;
         newEmail: string;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
@@ -96,4 +106,21 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<void>;
+    private shouldBecomePrimaryUser;
+    tryLinkAccounts(
+        user1: User,
+        user2: User,
+        session: SessionContainerInterface | undefined,
+        tenantId: string,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "RETRY" | "NO_LINK";
+          }
+    >;
+    isLinked(primaryUser: User, otherUser: User): boolean;
 }

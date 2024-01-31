@@ -105,6 +105,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId,
                     user: response.user,
+                    session: undefined, // TODO: we may want to add this to the interface
                     userContext,
                 });
             }

@@ -80,7 +80,7 @@ export const isValidFirstFactor = async function (
     let validFirstFactors =
         tenantConfig.firstFactors !== undefined
             ? tenantConfig.firstFactors
-            : MultiFactorAuthRecipe.getInstanceOrThrowError().config.firstFactors;
+            : MultiFactorAuthRecipe.getInstance()?.config.firstFactors;
 
     if (validFirstFactors === undefined) {
         // if validFirstFactors is undefined, we can safely assume it to be true because we would then

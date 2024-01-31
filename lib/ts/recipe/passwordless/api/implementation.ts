@@ -45,6 +45,7 @@ export default function getAPIImplementation(): APIInterface {
                         phoneNumber: deviceInfo.phoneNumber,
                     },
                     isVerified: true,
+                    session: input.session,
                     tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
@@ -106,6 +107,7 @@ export default function getAPIImplementation(): APIInterface {
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     user: response.user,
                     tenantId: input.tenantId,
+                    session: input.session,
                     userContext: input.userContext,
                 });
 
@@ -122,6 +124,7 @@ export default function getAPIImplementation(): APIInterface {
                 response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId: input.tenantId,
                     user: response.user,
+                    session: input.session,
                     userContext: input.userContext,
                 });
             }
@@ -187,6 +190,7 @@ export default function getAPIImplementation(): APIInterface {
                             ...accountInfo,
                         },
                         isVerified: true,
+                        session,
                         tenantId: input.tenantId,
                         userContext: input.userContext,
                     });
@@ -215,6 +219,7 @@ export default function getAPIImplementation(): APIInterface {
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     user: existingUsers[0],
                     tenantId: input.tenantId,
+                    session,
                     userContext: input.userContext,
                 });
                 if (!isSignInAllowed) {
@@ -267,7 +272,17 @@ export default function getAPIImplementation(): APIInterface {
             // now we send the email / text message.
             let magicLink: string | undefined = undefined;
             let userInputCode: string | undefined = undefined;
-            const flowType = input.options.config.flowType;
+
+            let flowType = input.options.config.flowType;
+            if (input.factorIds) {
+                if (input.factorIds.every((id) => id.startsWith("link"))) {
+                    flowType = "MAGIC_LINK";
+                } else if (input.factorIds.every((id) => id.startsWith("otp"))) {
+                    flowType = "MAGIC_LINK";
+                } else {
+                    flowType = "USER_INPUT_CODE_AND_MAGIC_LINK";
+                }
+            }
             if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                 magicLink =
                     input.options.appInfo
@@ -300,7 +315,7 @@ export default function getAPIImplementation(): APIInterface {
             ) {
                 logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                 await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
-                    type: "PASSWORDLESS_LOGIN",
+                    type: input.factorIds ? "PWLESS_MFA" : "PASSWORDLESS_LOGIN",
                     codeLifetime: response.codeLifetime,
                     phoneNumber: (input as any).phoneNumber!,
                     preAuthSessionId: response.preAuthSessionId,
@@ -312,7 +327,7 @@ export default function getAPIImplementation(): APIInterface {
             } else {
                 logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                 await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                    type: "PASSWORDLESS_LOGIN",
+                    type: input.factorIds ? "PWLESS_MFA" : "PASSWORDLESS_LOGIN",
                     email: (input as any).email!,
                     codeLifetime: response.codeLifetime,
                     preAuthSessionId: response.preAuthSessionId,

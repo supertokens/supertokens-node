@@ -6,6 +6,7 @@ import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
 import type AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { UserContext } from "../../types";
+import { SessionContainerInterface } from "../session/types";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -52,12 +53,14 @@ export default function getRecipeInterface(
         verifyEmailUsingToken: async function ({
             token,
             attemptAccountLinking,
+            session,
             tenantId,
             userContext,
         }: {
             token: string;
             attemptAccountLinking: boolean;
             tenantId: string;
+            session: SessionContainerInterface;
             userContext: UserContext;
         }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
@@ -87,6 +90,7 @@ export default function getRecipeInterface(
                             await AccountLinking.createPrimaryUserIdOrLinkAccounts({
                                 tenantId,
                                 user: updatedUser,
+                                session,
                                 userContext,
                             });
                         }

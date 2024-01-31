@@ -151,12 +151,14 @@ export type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
+                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -306,6 +308,7 @@ export type APIInterface = {
             tenantId: string;
             session?: SessionContainerInterface;
             options: APIOptions;
+            factorIds: string[] | undefined;
             userContext: UserContext;
         }
     ) => Promise<
@@ -396,7 +399,7 @@ export type APIInterface = {
 };
 
 export type TypePasswordlessEmailDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN";
+    type: "PASSWORDLESS_LOGIN" | "PWLESS_MFA";
     email: string;
     userInputCode?: string;
     urlWithLinkCode?: string;
@@ -406,7 +409,7 @@ export type TypePasswordlessEmailDeliveryInput = {
 };
 
 export type TypePasswordlessSmsDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN";
+    type: "PASSWORDLESS_LOGIN" | "PWLESS_MFA";
     phoneNumber: string;
     userInputCode?: string;
     urlWithLinkCode?: string;

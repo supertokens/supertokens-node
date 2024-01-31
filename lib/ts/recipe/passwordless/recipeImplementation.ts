@@ -53,6 +53,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId: input.tenantId,
                 user: response.user,
+                session: input.session,
                 userContext: input.userContext,
             });
 

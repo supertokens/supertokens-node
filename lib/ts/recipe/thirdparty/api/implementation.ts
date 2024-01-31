@@ -20,7 +20,8 @@ export default function getAPIInterface(): APIInterface {
         },
 
         signInUpPOST: async function (input) {
-            const { provider, tenantId, options, userContext } = input;
+            const { provider, tenantId, options, session, userContext } = input;
+
             let oAuthTokensToUse: any = {};
 
             if ("redirectURIInfo" in input && input.redirectURIInfo !== undefined) {
@@ -76,6 +77,7 @@ export default function getAPIInterface(): APIInterface {
                         },
                     },
                     isVerified: emailInfo.isVerified,
+                    session,
                     tenantId,
                     userContext,
                 });
@@ -184,6 +186,7 @@ export default function getAPIInterface(): APIInterface {
                     user: existingUsers[0],
                     isVerified: emailInfo.isVerified,
                     newEmail: emailInfo.id,
+                    session,
                     userContext,
                 });
 
@@ -242,6 +245,7 @@ export default function getAPIInterface(): APIInterface {
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     user: response.user,
                     tenantId,
+                    session,
                     userContext,
                 });
 
@@ -258,11 +262,12 @@ export default function getAPIInterface(): APIInterface {
                 response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId,
                     user: response.user,
+                    session,
                     userContext,
                 });
             }
 
-            let session = await Session.createNewSession(
+            let respSession = await Session.createNewSession(
                 options.req,
                 options.res,
                 tenantId,
@@ -276,7 +281,7 @@ export default function getAPIInterface(): APIInterface {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
                 user: response.user,
-                session,
+                session: respSession,
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
             };
