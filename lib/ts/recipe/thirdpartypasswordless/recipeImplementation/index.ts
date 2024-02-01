@@ -9,6 +9,7 @@ import DerivedTP from "./thirdPartyRecipeImplementation";
 import { User, UserContext } from "../../../types";
 import { RecipeUserId, getUser } from "../../../";
 import { ProviderInput } from "../../thirdparty/types";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getRecipeInterface(
     passwordlessQuerier: Querier,
@@ -87,6 +88,7 @@ export default function getRecipeInterface(
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
             };
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }): Promise<

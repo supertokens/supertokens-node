@@ -6,6 +6,16 @@ import RecipeUserId from "./recipeUserId";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 export declare const AuthUtils: {
+    getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(
+        resp: {
+            status: string;
+        },
+        errorCodeMap: Record<string, string | undefined>,
+        errorStatus: T
+    ): {
+        status: T;
+        reason: string;
+    };
     preAuthChecks: ({
         accountInfo,
         tenantId,
@@ -29,7 +39,10 @@ export declare const AuthUtils: {
               isFirstFactor: boolean;
           }
         | {
-              status: "SIGN_IN_UP_NOT_ALLOWED";
+              status: "SIGN_UP_NOT_ALLOWED";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
           }
     >;
     postAuthChecks: ({
@@ -60,6 +73,9 @@ export declare const AuthUtils: {
           }
         | {
               status: "SIGN_IN_NOT_ALLOWED";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
           }
     >;
 };

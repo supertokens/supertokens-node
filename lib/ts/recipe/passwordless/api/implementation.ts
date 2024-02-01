@@ -1,13 +1,23 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
-import Session from "../../session";
 import { RecipeLevelUser } from "../../accountlinking/types";
-import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
+import { AuthUtils } from "../../../authUtils";
+import { FactorIds } from "../../multifactorauth";
+import { getEnabledPwlessFactors } from "../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         consumeCodePOST: async function (input) {
+            const errorCodeMap = {
+                SIGN_UP_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                SIGN_IN_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
+                LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+            };
+
             const deviceInfo = await input.options.recipeImplementation.listCodesByPreAuthSessionId({
                 tenantId: input.tenantId,
                 preAuthSessionId: input.preAuthSessionId,
@@ -36,32 +46,48 @@ export default function getAPIImplementation(): APIInterface {
                         (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
                 )
             );
-
-            if (existingUsers.length === 0) {
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: {
-                        recipeId: "passwordless",
-                        email: deviceInfo.email,
-                        phoneNumber: deviceInfo.phoneNumber,
-                    },
-                    isVerified: true,
-                    session: input.session,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
-
-                if (!isSignUpAllowed) {
-                    // On the frontend, this should show a UI of asking the user
-                    // to login using a different method.
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                    };
-                }
-            } else if (existingUsers.length > 1) {
+            if (existingUsers.length > 1) {
                 throw new Error(
                     "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
+                );
+            }
+            const isSignUp = existingUsers.length === 0;
+            let factorId;
+            if (deviceInfo.email !== undefined) {
+                if ("userInputCode" in input) {
+                    factorId = FactorIds.OTP_EMAIL;
+                } else {
+                    factorId = FactorIds.LINK_EMAIL;
+                }
+            } else {
+                if ("userInputCode" in input) {
+                    factorId = FactorIds.OTP_PHONE;
+                } else {
+                    factorId = FactorIds.LINK_PHONE;
+                }
+            }
+
+            const preAuthChecks = await AuthUtils.preAuthChecks({
+                accountInfo: {
+                    recipeId: "passwordless",
+                    email: deviceInfo.email,
+                    phoneNumber: deviceInfo.phoneNumber,
+                },
+                factorIds: [factorId],
+                isSignUp,
+                isVerified: true,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+            });
+
+            if (preAuthChecks.status !== "OK") {
+                // On the frontend, this should show a UI of asking the user
+                // to login using a different method.
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
                 );
             }
 
@@ -71,79 +97,54 @@ export default function getAPIImplementation(): APIInterface {
                           preAuthSessionId: input.preAuthSessionId,
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
+                          session: input.session,
                           tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
                     : {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
+                          session: input.session,
                           tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
             );
 
             if (response.status !== "OK") {
-                return response;
+                return AuthUtils.getErrorStatusResponseWithReason(response, errorCodeMap, "SIGN_IN_UP_NOT_ALLOWED");
             }
 
-            let loginMethod: RecipeLevelUser | undefined = response.user.loginMethods.find(
-                (m) =>
-                    m.recipeId === "passwordless" &&
-                    (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
-            );
+            // Here we do these checks after sign in is done cause:
+            // - We first want to check if the credentials are correct first or not
+            // - The above recipe function marks the email as verified
+            // - Even though the above call to signInUp is state changing (it changes the email
+            // of the user), it's OK to do this check here cause the isSignInAllowed checks
+            // conditions related to account linking
+            const postAuthChecks = await AuthUtils.postAuthChecks({
+                factorId,
+                isSignUp,
+                responseUser: response.user,
+                recipeUserId: response.recipeUserId,
+                req: input.options.req,
+                res: input.options.res,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+            });
 
-            if (loginMethod === undefined) {
-                throw new Error("Should never come here");
+            if (postAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
+                );
             }
-
-            if (existingUsers.length > 0) {
-                // Here we do this check after sign in is done cause:
-                // - We first want to check if the credentials are correct first or not
-                // - The above recipe function marks the email as verified
-                // - Even though the above call to signInUp is state changing (it changes the email
-                // of the user), it's OK to do this check here cause the isSignInAllowed checks
-                // conditions related to account linking
-
-                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    user: response.user,
-                    tenantId: input.tenantId,
-                    session: input.session,
-                    userContext: input.userContext,
-                });
-
-                if (!isSignInAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-                    };
-                }
-
-                // we do account linking only during sign in here cause during sign up,
-                // the recipe function above does account linking for us.
-                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    tenantId: input.tenantId,
-                    user: response.user,
-                    session: input.session,
-                    userContext: input.userContext,
-                });
-            }
-
-            const session = await Session.createNewSession(
-                input.options.req,
-                input.options.res,
-                input.tenantId,
-                loginMethod.recipeUserId,
-                {},
-                {},
-                input.userContext
-            );
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
-                user: response.user,
-                session,
+                user: postAuthChecks.user,
+                session: postAuthChecks.session,
             };
         },
 
@@ -169,43 +170,32 @@ export default function getAPIImplementation(): APIInterface {
                         (m.hasSameEmailAs(accountInfo.email) || m.hasSamePhoneNumberAs(accountInfo.phoneNumber))
                 )
             );
+            const isSignUp = existingUsers.length === 0;
 
-            let session = await Session.getSession(
-                input.options.req,
-                input.options.res,
-                {
-                    sessionRequired: false,
-                    overrideGlobalClaimValidators: () => [],
+            const preAuthChecks = await AuthUtils.preAuthChecks({
+                accountInfo: {
+                    ...accountInfo,
+                    recipeId: "passwordless",
                 },
-                input.userContext
-            );
-            const mfaInstance = MultiFactorAuthRecipe.getInstance();
+                isSignUp,
+                isVerified: true,
+                tenantId: input.tenantId,
+                factorIds: input.factorIds ?? getEnabledPwlessFactors(input.options.config),
+                userContext: input.userContext,
+                session: input.session,
+            });
 
-            if (existingUsers.length === 0) {
-                if (session === undefined || mfaInstance === undefined) {
-                    // We don't need to check if sign up is allowed if MFA is enabled and there is an active session
-                    let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                        newUser: {
-                            recipeId: "passwordless",
-                            ...accountInfo,
-                        },
-                        isVerified: true,
-                        session,
-                        tenantId: input.tenantId,
-                        userContext: input.userContext,
-                    });
+            if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
+                // On the frontend, this should show a UI of asking the user
+                // to login using a different method.
+                return {
+                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                    reason:
+                        "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                };
+            }
 
-                    if (!isSignUpAllowed) {
-                        // On the frontend, this should show a UI of asking the user
-                        // to login using a different method.
-                        return {
-                            status: "SIGN_IN_UP_NOT_ALLOWED",
-                            reason:
-                                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                        };
-                    }
-                }
-            } else if (existingUsers.length === 1) {
+            if (existingUsers.length === 1) {
                 let loginMethod: RecipeLevelUser | undefined = existingUsers[0].loginMethods.find(
                     (m) =>
                         m.recipeId === "passwordless" &&
@@ -219,7 +209,7 @@ export default function getAPIImplementation(): APIInterface {
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     user: existingUsers[0],
                     tenantId: input.tenantId,
-                    session,
+                    session: input.session,
                     userContext: input.userContext,
                 });
                 if (!isSignInAllowed) {
@@ -229,17 +219,7 @@ export default function getAPIImplementation(): APIInterface {
                             "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
                     };
                 }
-            } else {
-                throw new Error(
-                    "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
-                );
             }
-
-            // if (mfaInstance !== undefined && session !== undefined && existingUsers.length === 0) {
-            // Ideally we want to check if the user is allowed to setup a factor, but
-            // we can't distinguish between otp- or link- factors at this point. So we simply allow
-            // and then check during consume code
-            // }
 
             let response = await input.options.recipeImplementation.createCode(
                 "email" in input
@@ -253,6 +233,7 @@ export default function getAPIImplementation(): APIInterface {
                                         input.tenantId,
                                         input.userContext
                                     ),
+                          session: input.session,
                           tenantId: input.tenantId,
                       }
                     : {
@@ -265,9 +246,14 @@ export default function getAPIImplementation(): APIInterface {
                                         input.tenantId,
                                         input.userContext
                                     ),
+                          session: input.session,
                           tenantId: input.tenantId,
                       }
             );
+
+            if (response.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(response, {}, "SIGN_IN_UP_NOT_ALLOWED");
+            }
 
             // now we send the email / text message.
             let magicLink: string | undefined = undefined;

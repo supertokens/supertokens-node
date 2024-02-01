@@ -8,6 +8,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -48,12 +49,14 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
                   userContext: UserContext;
               }
@@ -63,11 +66,13 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext: UserContext;
               }
     ) => Promise<{

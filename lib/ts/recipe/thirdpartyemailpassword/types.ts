@@ -146,6 +146,7 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
     >;
 
     createNewEmailPasswordRecipeUser(input: {
@@ -173,6 +174,7 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
     >;
 
     createResetPasswordToken(input: {
@@ -280,6 +282,7 @@ export type APIInterface = {
                   value: string;
               }[];
               token: string;
+              session: SessionContainerInterface | undefined;
               tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;

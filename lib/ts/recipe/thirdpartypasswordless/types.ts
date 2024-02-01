@@ -195,17 +195,25 @@ export type RecipeInterface = {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; tenantId: string; userContext: UserContext }
-    ) => Promise<{
-        status: "OK";
-        preAuthSessionId: string;
-        codeId: string;
-        deviceId: string;
-        userInputCode: string;
-        linkCode: string;
-        codeLifetime: number;
-        timeCreated: number;
-    }>;
+        ) & {
+            userInputCode?: string;
+            session: SessionContainerInterface | undefined;
+            tenantId: string;
+            userContext: UserContext;
+        }
+    ) => Promise<
+        | {
+              status: "OK";
+              preAuthSessionId: string;
+              codeId: string;
+              deviceId: string;
+              userInputCode: string;
+              linkCode: string;
+              codeLifetime: number;
+              timeCreated: number;
+          }
+        | { status: "NON_PRIMARY_SESSION_USER" }
+    >;
 
     createNewCodeForDevice: (input: {
         deviceId: string;
@@ -233,12 +241,14 @@ export type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   userContext: UserContext;
               }
     ) => Promise<
@@ -254,6 +264,7 @@ export type RecipeInterface = {
               maximumCodeInputAttempts: number;
           }
         | { status: "RESTART_FLOW_ERROR" }
+        | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
     >;
 
     createPasswordlessRecipeUser: (

@@ -66,6 +66,7 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -76,6 +77,9 @@ export declare type RecipeInterface = {
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
           }
     >;
     createNewRecipeUser(input: {
@@ -96,6 +100,7 @@ export declare type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -106,6 +111,9 @@ export declare type RecipeInterface = {
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
           }
     >;
     /**
@@ -129,6 +137,7 @@ export declare type RecipeInterface = {
     >;
     consumePasswordResetToken(input: {
         token: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -217,6 +226,7 @@ export declare type APIInterface = {
               }[];
               token: string;
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

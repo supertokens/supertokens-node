@@ -45,6 +45,7 @@ import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -546,12 +547,14 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
                   userContext: UserContext;
               }
@@ -566,16 +569,22 @@ export default class Recipe extends RecipeModule {
                 ? {
                       email: input.email,
                       userInputCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
                       userInputCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
         );
+
+        if (codeInfo.status !== "OK") {
+            throw new Error("Failed to create user. Please retry");
+        }
 
         const appInfo = this.getAppInfo();
 
@@ -605,11 +614,13 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext: UserContext;
               }
     ) => {
@@ -618,20 +629,27 @@ export default class Recipe extends RecipeModule {
                 ? {
                       email: input.email,
                       tenantId: input.tenantId,
+                      session: input.session,
                       userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
                       tenantId: input.tenantId,
+                      session: input.session,
                       userContext: input.userContext,
                   }
         );
+
+        if (codeInfo.status !== "OK") {
+            throw new Error("Failed to create user. Please retry");
+        }
 
         let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
             this.config.flowType === "MAGIC_LINK"
                 ? {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -639,6 +657,7 @@ export default class Recipe extends RecipeModule {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }

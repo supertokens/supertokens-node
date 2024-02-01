@@ -50,12 +50,18 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             // Attempt account linking only on sign up
             let updatedUser = response.user;
 
-            updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
                 tenantId: input.tenantId,
                 user: response.user,
+                recipeUserId: response.recipeUserId,
                 session: input.session,
                 userContext: input.userContext,
             });
+
+            if (linkResult.status !== "OK") {
+                return linkResult;
+            }
+            updatedUser = linkResult.user;
 
             if (updatedUser === undefined) {
                 throw new Error("Should never come here.");

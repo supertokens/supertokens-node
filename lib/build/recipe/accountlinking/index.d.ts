@@ -19,7 +19,15 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
-    ): Promise<import("../../types").User>;
+    ): Promise<
+        | {
+              status: "OK";
+              user: import("../../types").User;
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+          }
+    >;
     /**
      * This function returns the primary user that the input recipe ID can be
      * linked to. It can be used to determine which primary account the linking
@@ -33,7 +41,10 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         userContext?: Record<string, any>
-    ): Promise<import("../../types").User | undefined>;
+    ): Promise<{
+        primaryUser: import("../../types").User | undefined;
+        oldestUser: import("../../types").User | undefined;
+    }>;
     static canCreatePrimaryUser(
         recipeUserId: RecipeUserId,
         userContext?: Record<string, any>
@@ -128,20 +139,20 @@ export default class Wrapper {
         tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
-        session: SessionContainerInterface | undefined,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<boolean>;
     static isSignInAllowed(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        session: SessionContainerInterface | undefined,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<boolean>;
     static isEmailChangeAllowed(
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
-        session: SessionContainerInterface | undefined,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<boolean>;
 }

@@ -12,6 +12,7 @@ import RecipeUserId from "../../../recipeUserId";
 
 import { TypeNormalisedInput } from "../../emailpassword/types";
 import { ProviderInput } from "../../thirdparty/types";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
@@ -39,10 +40,13 @@ export default function getRecipeInterface(
         emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }): Promise<
-            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
         > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
@@ -50,9 +54,14 @@ export default function getRecipeInterface(
         emailPasswordSignIn: async function (input: {
             email: string;
             password: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
-        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<
+            | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+            | { status: "WRONG_CREDENTIALS_ERROR" }
+            | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
+        > {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
 
@@ -66,6 +75,7 @@ export default function getRecipeInterface(
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
             };
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }): Promise<
@@ -136,6 +146,7 @@ export default function getRecipeInterface(
         consumePasswordResetToken: async function (input: {
             token: string;
             tenantId: string;
+            session: SessionContainerInterface | undefined;
             userContext: UserContext;
         }) {
             return originalEmailPasswordImplementation.consumePasswordResetToken.bind(DerivedEP(this))(input);

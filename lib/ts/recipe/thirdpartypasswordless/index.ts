@@ -27,6 +27,7 @@ import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
 import RecipeUserId from "../../recipeUserId";
 import { getRequestFromUserContext } from "../..";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -74,10 +75,16 @@ export default class Wrapper {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; tenantId: string; userContext?: Record<string, any> }
+        ) & {
+            userInputCode?: string;
+            session?: SessionContainerInterface;
+            tenantId: string;
+            userContext?: Record<string, any>;
+        }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             ...input,
+            session: input.session,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -101,17 +108,20 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
+            session: input.session,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -212,11 +222,13 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
     ) {

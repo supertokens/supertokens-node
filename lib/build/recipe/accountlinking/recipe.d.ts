@@ -35,18 +35,28 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
     static reset(): void;
-    createPrimaryUserIdOrLinkAccounts: ({
+    createPrimaryUserIdOrLinkByAccountInfo: ({
         tenantId,
-        user,
+        user: inputUser,
+        recipeUserId,
         session,
         userContext,
     }: {
         tenantId: string;
         user: User;
+        recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }) => Promise<User>;
-    getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
+    }) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+          }
+    >;
+    getUsersThatCanBeLinkedToRecipeUser: ({
         tenantId,
         user,
         userContext,
@@ -54,7 +64,10 @@ export default class Recipe extends RecipeModule {
         tenantId: string;
         user: User;
         userContext: UserContext;
-    }) => Promise<User | undefined>;
+    }) => Promise<{
+        primaryUser: User | undefined;
+        oldestUser: User | undefined;
+    }>;
     isSignInAllowed: ({
         user,
         tenantId,
@@ -106,7 +119,14 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<void>;
-    private shouldBecomePrimaryUser;
+    private tryLinkingBySession;
+    private tryLinkingByAccountInfo;
+    shouldBecomePrimaryUser(
+        user: User,
+        tenantId: string,
+        session: SessionContainerInterface | undefined,
+        userContext: UserContext
+    ): Promise<boolean>;
     tryLinkAccounts(
         user1: User,
         user2: User,
@@ -119,7 +139,20 @@ export default class Recipe extends RecipeModule {
               user: User;
           }
         | {
-              status: "RETRY" | "NO_LINK";
+              status: "BOTH_USERS_PRIMARY" | "NO_LINK" | "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              user: User;
           }
     >;
     isLinked(primaryUser: User, otherUser: User): boolean;

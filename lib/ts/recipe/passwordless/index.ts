@@ -25,6 +25,7 @@ import {
 import RecipeUserId from "../../recipeUserId";
 import { getRequestFromUserContext } from "../..";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -39,10 +40,16 @@ export default class Wrapper {
             | {
                   phoneNumber: string;
               }
-        ) & { tenantId: string; userInputCode?: string; userContext?: Record<string, any> }
+        ) & {
+            tenantId: string;
+            userInputCode?: string;
+            session?: SessionContainerInterface;
+            userContext?: Record<string, any>;
+        }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             ...input,
+            session: input.session,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -65,18 +72,21 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
+                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
+            session: input.session,
             userContext: getUserContext(input.userContext),
         });
     }

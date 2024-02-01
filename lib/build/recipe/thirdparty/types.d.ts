@@ -173,6 +173,7 @@ export declare type RecipeInterface = {
                 [key: string]: any;
             };
         };
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<

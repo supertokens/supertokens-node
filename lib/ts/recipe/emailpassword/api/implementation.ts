@@ -335,6 +335,7 @@ export default function getAPIImplementation(): APIInterface {
         passwordResetPOST: async function ({
             formFields,
             token,
+            session,
             tenantId,
             options,
             userContext,
@@ -344,6 +345,7 @@ export default function getAPIImplementation(): APIInterface {
                 value: string;
             }[];
             token: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;
@@ -432,6 +434,7 @@ export default function getAPIImplementation(): APIInterface {
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
+                session,
                 tenantId,
                 userContext,
             });
@@ -529,13 +532,20 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        let linkedToUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                        const linkRes = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
                             tenantId,
                             user: createUserResponse.user,
+                            recipeUserId: createUserResponse.recipeUserId,
                             session: undefined, // TODO: we may want to add this to the interface
                             userContext,
                         });
-                        if (linkedToUser.id !== existingUser.id) {
+                        if (linkRes.status !== "OK") {
+                            return {
+                                status: "GENERAL_ERROR",
+                                message: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                            };
+                        }
+                        if (linkRes.user.id !== existingUser.id) {
                             // this means that the account we just linked to
                             // was not the one we had expected to link it to. This can happen
                             // due to some race condition or the other.. Either way, this
@@ -544,7 +554,7 @@ export default function getAPIImplementation(): APIInterface {
                         return {
                             status: "OK",
                             email: tokenConsumptionResponse.email,
-                            user: linkedToUser,
+                            user: linkRes.user,
                         };
                     }
                 }
@@ -587,6 +597,12 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
+            const errorCodeMap = {
+                SIGN_IN_NOT_ALLOWED:
+                    "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
+                LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+            };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
@@ -605,19 +621,26 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
                 session,
             });
-            if (preAuthChecks.status === "SIGN_IN_UP_NOT_ALLOWED") {
-                throw new Error("This should never happen: post-auth sign in/up checks should not fail for sign up");
+            if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
+                throw new Error("This should never happen: post-auth sign up checks should not fail for sign in");
+            }
+            if (preAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(preAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
             let signInResponse = await options.recipeImplementation.signIn({
                 email,
                 password,
+                session,
                 tenantId,
                 userContext,
             });
 
             if (signInResponse.status === "WRONG_CREDENTIALS_ERROR") {
                 return signInResponse;
+            }
+            if (signInResponse.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(signInResponse, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
@@ -631,12 +654,9 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
             });
-            if (postAuthChecks.status === "SIGN_IN_NOT_ALLOWED") {
-                return {
-                    status: "SIGN_IN_NOT_ALLOWED",
-                    reason:
-                        "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
-                };
+
+            if (postAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
             return {
@@ -676,6 +696,12 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
+            const errorCodeMap = {
+                SIGN_UP_NOT_ALLOWED:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+            };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
@@ -692,7 +718,7 @@ export default function getAPIImplementation(): APIInterface {
                 session,
             });
 
-            if (res.status === "SIGN_IN_UP_NOT_ALLOWED") {
+            if (res.status === "SIGN_UP_NOT_ALLOWED") {
                 const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                     tenantId,
                     accountInfo: {
@@ -710,12 +736,9 @@ export default function getAPIImplementation(): APIInterface {
                         status: "EMAIL_ALREADY_EXISTS_ERROR",
                     };
                 }
-
-                return {
-                    status: "SIGN_UP_NOT_ALLOWED",
-                    reason:
-                        "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                };
+            }
+            if (res.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(res, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
             }
 
             const overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
@@ -727,6 +750,7 @@ export default function getAPIImplementation(): APIInterface {
                     tenantId,
                     email,
                     password,
+                    session,
                     userContext,
                 });
             } else {
@@ -740,6 +764,9 @@ export default function getAPIImplementation(): APIInterface {
 
             if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
                 return signUpResponse;
+            }
+            if (signUpResponse.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(signUpResponse, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
@@ -756,6 +783,10 @@ export default function getAPIImplementation(): APIInterface {
 
             if (postAuthChecks.status === "SIGN_IN_NOT_ALLOWED") {
                 throw new Error("This should never happen: post-auth sign in/up checks should not fail for sign up");
+            }
+
+            if (postAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
             }
 
             return {

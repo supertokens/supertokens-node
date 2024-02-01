@@ -134,141 +134,84 @@ export default class Recipe extends RecipeModule {
     }
 
     // this function returns the user ID for which the session will be created.
-    createPrimaryUserIdOrLinkAccounts = async ({
+    createPrimaryUserIdOrLinkByAccountInfo = async ({
         tenantId,
-        user,
+        user: inputUser,
+        recipeUserId,
         session,
         userContext,
     }: {
         tenantId: string;
         user: User;
+        recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<User> => {
+    }): Promise<
+        { status: "OK"; user: User } | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
+    > => {
         logDebugMessage("createPrimaryUserIdOrLinkAccounts called");
+        const retry = () =>
+            this.createPrimaryUserIdOrLinkByAccountInfo({
+                tenantId,
+                user: inputUser,
+                session,
+                recipeUserId,
+                userContext,
+            });
+
         // TODO: fix this
-        if (user === undefined) {
+        if (inputUser === undefined) {
             // This can come here if the user is using session + email verification
             // recipe with a user ID that is not known to supertokens. In this case,
             // we do not allow linking for such users.
-            return user;
+            return inputUser;
         }
 
-        let responseUserOldestNonPrimaryLinkingCandidate = undefined;
-        let responseUserPrimaryLinkingCandidate;
-        if (user.isPrimaryUser) {
+        let oldestUserThatCanBeLinkedToInputUser = undefined;
+        let primaryUserThatCanBeLinkedToInputUser = undefined;
+        if (inputUser.isPrimaryUser) {
             // In this case we have no session so we can only link to another user based on matching account infos
             if (session === undefined) {
-                // if the user in the sign in/up response is
-                // already primary and there is no active session
+                // if the inputUser is already primary and there is no active session
                 // then we don't have anything to link it to so we return early
-                return user;
-            } else if (user.id === session.getUserId(userContext)) {
-                // if the user in the sign in/up response is
-                // already primary and the session user is already linked to it (or they are the same)
-                // then we don't have anything to link it to so we return early
-                return user;
+                return { status: "OK", user: inputUser };
+            } else if (inputUser.id === session.getUserId(userContext)) {
+                // if the inputUser is already primary and the session user is already linked to it (or they are the same)
+                // then we don't have anything to do so we return early
+                return { status: "OK", user: inputUser };
             }
-            // Otherwise we need to check if we can link the session user to the primary user from the sign in/up response
-            responseUserPrimaryLinkingCandidate = user;
         } else {
-            // We try and get a linking candidate based on accountinfo in all cases, since if it exists, it's the only thing we can link to
-            const linkingCandidatesByAccountInfo = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            // We try and list all users that can be linked to the input user based on the account info
+            // later we can use these when trying to link or when checking if linking to the session user is possible.
+            const usersToLink = await this.getUsersThatCanBeLinkedToRecipeUser({
                 tenantId,
-                accountInfo: user.loginMethods[0],
-                doUnionOfAccountInfo: true,
+                user: inputUser,
                 userContext,
             });
-            const primaryCandidatesByAccountInfo = linkingCandidatesByAccountInfo.filter((u) => u.isPrimaryUser);
-            if (primaryCandidatesByAccountInfo.length > 1) {
-                throw new Error(
-                    "You have found a bug (multiple primary users for the same account info). Please report to https://github.com/supertokens/supertokens-node/issues"
-                );
-            }
-            responseUserPrimaryLinkingCandidate = primaryCandidatesByAccountInfo[0];
-            responseUserOldestNonPrimaryLinkingCandidate = linkingCandidatesByAccountInfo.reduce((min, curr) =>
-                min.timeJoined < curr.timeJoined ? min : curr
-            );
+            primaryUserThatCanBeLinkedToInputUser = usersToLink.primaryUser;
+            oldestUserThatCanBeLinkedToInputUser = usersToLink.oldestUser;
         }
 
         if (session === undefined) {
-            if (responseUserPrimaryLinkingCandidate !== undefined) {
-                if (!this.isLinked(responseUserPrimaryLinkingCandidate, user)) {
-                    // If we got a candidate primary user and the user from the sign in/up response is not linked to it, we try to link them.
-                    // The response user in this case cannot be linked to anything else, otherwise multiple primary users would have the same email
-                    const linkRes = await this.tryLinkAccounts(
-                        responseUserPrimaryLinkingCandidate,
-                        user,
-                        session,
-                        tenantId,
-                        userContext
-                    );
-                    if (linkRes.status === "RETRY") {
-                        return this.createPrimaryUserIdOrLinkAccounts({ tenantId, user, session, userContext });
-                    } else if (linkRes.status === "OK") {
-                        return linkRes.user;
-                    }
-                }
-                // We get here if the user is already linked to the primary candidate
-                // or the app choose not to link
-                return user;
+            const linkRes = await this.tryLinkingByAccountInfo({
+                inputUser: inputUser,
+                oldestUser: oldestUserThatCanBeLinkedToInputUser,
+                primaryUser: primaryUserThatCanBeLinkedToInputUser,
+                session,
+                tenantId,
+                userContext,
+            });
+            if (linkRes.status === "OK") {
+                return { status: "OK", user: linkRes.user };
             }
-
-            // If there is no primary candidate, but we there is another account we can link this to
-            // then we try and link it (respecting shouldDoAutomaticAccountLinking)
-            if (responseUserOldestNonPrimaryLinkingCandidate !== undefined) {
-                // This function will try and make one of the accounts primary if neither of them are
-                const linkRes = await this.tryLinkAccounts(
-                    responseUserOldestNonPrimaryLinkingCandidate,
-                    user,
-                    session,
-                    tenantId,
-                    userContext
-                );
-
-                if (linkRes.status === "OK") {
-                    return linkRes.user;
-                }
-                if (linkRes.status === "NO_LINK") {
-                    return user;
-                } else {
-                    return this.createPrimaryUserIdOrLinkAccounts({ tenantId, user, session, userContext });
-                }
+            if (linkRes.status === "NO_LINK") {
+                return { status: "OK", user: inputUser };
             }
-            // In this case we have no other account we can link to, so we check if the current user should become a primary user
-            if (await this.shouldBecomePrimaryUser(user, tenantId, session, userContext)) {
-                let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
-                    recipeUserId: user.loginMethods[0].recipeUserId,
-                    userContext,
-                });
-
-                if (createPrimaryUserResult.status === "OK") {
-                    logDebugMessage("createPrimaryUserIdOrLinkAccounts created primary user");
-                    return createPrimaryUserResult.user;
-                }
-
-                // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" or "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-
-                // if it comes here, it means that the recipe
-                // user ID is already linked to another primary
-                // user id (race condition), or that some other
-                // primary user ID exists with the same email / phone number (again, race condition).
-                // So we do recursion here to try again.
-                return await this.createPrimaryUserIdOrLinkAccounts({
-                    tenantId,
-                    user,
-                    session,
-                    userContext,
-                });
-            } else {
-                // If not we return it unchanged
-                return user;
-            }
+            return retry();
         }
 
-        // If we got here, we have a session and the response user is available for is a primary user or can become a primary user
-        // We load the session user info (we know that they were not linked at the time of the sign in/up call)
-        const sessionUser = await getUser(session.getUserId(), userContext);
+        // If we got here, we have a session, so we load the session user info.
+        let sessionUser = await getUser(session.getUserId(), userContext);
         if (sessionUser === undefined) {
             throw new SessionError({
                 type: SessionError.UNAUTHORISED,
@@ -276,203 +219,102 @@ export default class Recipe extends RecipeModule {
             });
         }
 
-        // we are checking these early, to have less core calls (we can skip finding a linking candidate for the session user)
+        // If the session user is already primary we re-check if it still isn't linked to the input user
         if (sessionUser.isPrimaryUser) {
-            // We check here, since maybe they've become linked in some race condition
-            if (this.isLinked(sessionUser, user)) {
-                return sessionUser;
+            // They could become linked in some race conditions
+            if (this.isLinked(sessionUser, inputUser)) {
+                return { status: "OK", user: sessionUser };
             }
-
-            // if both of them are primary, they cannot be linked together.
-            // since the authenticating user is already primary we can just return it.
-            if (user.isPrimaryUser) {
-                return user;
-            }
-        }
-        let sessionUserLinkingCandidate;
-        // we check if the session user is a primary user or can be linked to any other primary user because it limits our linking options
-        if (sessionUser.isPrimaryUser) {
-            sessionUserLinkingCandidate = sessionUser;
         } else {
-            sessionUserLinkingCandidate = await this.getPrimaryUserThatCanBeLinkedToRecipeUserId({
-                tenantId,
-                user: sessionUser,
-                userContext,
-            });
-        }
+            // If the session user isn't primary we try and make it one.
 
-        // TODO: what if the response user obj has become stale meanwhile?
-        if (user.isPrimaryUser) {
-            if (sessionUserLinkingCandidate === undefined || user.id === sessionUserLinkingCandidate.id) {
-                // if the response user is a primary user and the session user can be linked to it, we try to link the session user to the primary one.
-                const linkRes = await this.tryLinkAccounts(user, sessionUser, session, tenantId, userContext);
-                if (linkRes.status === "RETRY") {
-                    return this.createPrimaryUserIdOrLinkAccounts({ tenantId, user, session, userContext });
-                }
-                if (linkRes.status === "OK") {
-                    return linkRes.user;
-                }
-                return user;
-            } else {
-                // If we can't link it and it's a primary user we can just return it
-                return user;
-            }
-        } else if (sessionUser.isPrimaryUser) {
-            // if the session user is a primary user and the response user can be linked to it, we try to link the response user to the primary one.
-            if (
-                responseUserPrimaryLinkingCandidate === undefined ||
-                sessionUser.id === responseUserPrimaryLinkingCandidate.id
-            ) {
-                const linkRes = await this.tryLinkAccounts(sessionUser, user, session, tenantId, userContext);
-                if (linkRes.status === "RETRY") {
-                    return this.createPrimaryUserIdOrLinkAccounts({ tenantId, user, session, userContext });
-                }
-                if (linkRes.status === "OK") {
-                    return linkRes.user;
-                }
-                return user;
-            } else {
-                // if we can't link the sessionUser
-                if (await this.shouldBecomePrimaryUser(user, tenantId, session, userContext)) {
-                    // If the user from the sign in/up resp should become primary
-                    const createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
-                        recipeUserId: user.loginMethods[0].recipeUserId,
-                        userContext,
-                    });
-                    if (createPrimaryUserResult.status === "OK") {
-                        return createPrimaryUserResult.user;
-                    } else {
-                        // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" or "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+            // We could check if the session user can become a primary user before calling shouldBecomePrimaryUser,
+            // but that'd only mean one extra core call without any added benefits, since the core already checks all pre-conditions
+            if (await this.shouldBecomePrimaryUser(sessionUser, tenantId, session, userContext)) {
+                const makeSessionUserPrimaryRes = await this.recipeInterfaceImpl.createPrimaryUser({
+                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
+                    userContext,
+                });
+                if (makeSessionUserPrimaryRes.status === "OK") {
+                    sessionUser = makeSessionUserPrimaryRes.user;
+                } else if (
+                    makeSessionUserPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+                ) {
+                    // If the session user got linked to another primary user since we fetched the user info
+                    // we just update the sessionUser object
+                    sessionUser = await getUser(makeSessionUserPrimaryRes.primaryUserId, userContext);
 
-                        // if it comes here, it means that the recipe
-                        // user ID is already linked to another primary
-                        // user id (race condition), or that some other
-                        // primary user ID exists with the same email / phone number (again, race condition).
-                        // So we do recursion here to try again.
-                        return this.createPrimaryUserIdOrLinkAccounts({
-                            tenantId,
-                            user,
-                            session,
-                            userContext,
+                    if (sessionUser === undefined) {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Session user not found",
                         });
                     }
                 } else {
-                    return user;
-                }
-            }
-        } else if (!sessionUser.isPrimaryUser && !user.isPrimaryUser) {
-            // if neither of them are primary, we check if either should become primary
-            let createPrimaryUserResult;
-            // We first check if the session user should become primary:
-            if (
-                sessionUserLinkingCandidate === undefined &&
-                (await this.shouldBecomePrimaryUser(sessionUser, tenantId, session, userContext))
-            ) {
-                createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
-                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
-                    userContext,
-                });
-                if (createPrimaryUserResult.status === "OK") {
-                    const linkRes = await this.tryLinkAccounts(
-                        createPrimaryUserResult.user,
-                        user,
-                        session,
-                        tenantId,
-                        userContext
-                    );
-                    if (linkRes.status === "RETRY") {
-                        return this.createPrimaryUserIdOrLinkAccounts({ tenantId, user, session, userContext });
-                    }
-                    if (linkRes.status === "OK") {
-                        return linkRes.user;
-                    }
-                    return user;
-                } else {
-                    // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" or "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-
-                    // if it comes here, it means that the recipe
-                    // user ID is already linked to another primary
-                    // user id (race condition), or that some other
-                    // primary user ID exists with the same email / phone number (again, race condition).
-                    // So we do recursion here to try again.
-                    return this.createPrimaryUserIdOrLinkAccounts({
-                        tenantId,
-                        user,
-                        session,
-                        userContext,
-                    });
-                }
-            } else if (await this.shouldBecomePrimaryUser(user, tenantId, session, userContext)) {
-                // If the user from the sign in/up resp should become primary
-                createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
-                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
-                    userContext,
-                });
-                if (createPrimaryUserResult.status === "OK") {
-                    const linkRes = await this.tryLinkAccounts(
-                        createPrimaryUserResult.user,
-                        sessionUser,
-                        session,
-                        tenantId,
-                        userContext
-                    );
-                    if (linkRes.status === "RETRY") {
-                        return this.createPrimaryUserIdOrLinkAccounts({ tenantId, user, session, userContext });
-                    }
-                    if (linkRes.status === "OK") {
-                        return linkRes.user;
-                    }
-                    return user;
-                } else {
-                    // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" or "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-
-                    // if it comes here, it means that the recipe
-                    // user ID is already linked to another primary
-                    // user id (race condition), or that some other
-                    // primary user ID exists with the same email / phone number (again, race condition).
-                    // So we do recursion here to try again.
-                    return this.createPrimaryUserIdOrLinkAccounts({
-                        tenantId,
-                        user,
-                        session,
-                        userContext,
-                    });
+                    // This case means that the session user can not become a primary user, we can't continue
+                    return { status: "NON_PRIMARY_SESSION_USER" };
                 }
             } else {
-                // If nether should become a primary user, we can't link them together, so we can return the response user.
-                return user;
-            }
-        } else {
-            if (await this.shouldBecomePrimaryUser(user, tenantId, session, userContext)) {
-                // If the user from the sign in/up resp should become primary
-                const createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
-                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
-                    userContext,
-                });
-                if (createPrimaryUserResult.status === "OK") {
-                    return createPrimaryUserResult.user;
-                } else {
-                    // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" or "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-
-                    // if it comes here, it means that the recipe
-                    // user ID is already linked to another primary
-                    // user id (race condition), or that some other
-                    // primary user ID exists with the same email / phone number (again, race condition).
-                    // So we do recursion here to try again.
-                    return this.createPrimaryUserIdOrLinkAccounts({
-                        tenantId,
-                        user,
-                        session,
-                        userContext,
-                    });
-                }
-            } else {
-                return user;
+                // If the app doesn't want to make the session user primary, we can't continue
+                return { status: "NON_PRIMARY_SESSION_USER" };
             }
         }
+
+        const authLoginMethod = inputUser.loginMethods.find(
+            (lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString()
+        );
+        if (!authLoginMethod) {
+            throw new Error(
+                "This should never happen: the recipeUserId and user is inconsistent in createPrimaryUserIdOrLinkByAccountInfo params"
+            );
+        }
+
+        // We check if the app intends to link these two accounts
+        // Note that this will be called even for already linked account info - user pairs
+        const shouldLinkResForSessionUser = await this.config.shouldDoAutomaticAccountLinking(
+            authLoginMethod,
+            sessionUser,
+            session,
+            tenantId,
+            userContext
+        );
+
+        if (!shouldLinkResForSessionUser.shouldAutomaticallyLink) {
+            const linkRes = await this.tryLinkingByAccountInfo({
+                inputUser: inputUser,
+                oldestUser: oldestUserThatCanBeLinkedToInputUser,
+                primaryUser: primaryUserThatCanBeLinkedToInputUser,
+                session,
+                tenantId,
+                userContext,
+            });
+            if (linkRes.status === "OK") {
+                return { status: "OK", user: linkRes.user };
+            }
+            if (linkRes.status === "NO_LINK") {
+                return { status: "OK", user: inputUser };
+            }
+            // This means that the linking/creating
+            return retry();
+        }
+
+        const sessionLinkingRes = await this.tryLinkingBySession({
+            sessionUser,
+            inputUser,
+            primaryUserThatCanBeLinkedToInputUser,
+            authLoginMethod,
+            sessionUserLinkingRequiresVerification: shouldLinkResForSessionUser.shouldRequireVerification,
+            userContext,
+        });
+        // This means that although we made the session user primary above, some race condition undid that (e.g.: calling unlink concurrently with this func)
+        // We can retry in this case, since we start by trying to make it into a primary user and throwing if we can't
+        if (sessionLinkingRes.status === "NON_PRIMARY_SESSION_USER") {
+            return retry();
+        }
+        return sessionLinkingRes;
     };
 
-    getPrimaryUserThatCanBeLinkedToRecipeUserId = async ({
+    getUsersThatCanBeLinkedToRecipeUser = async ({
         tenantId,
         user,
         userContext,
@@ -480,11 +322,11 @@ export default class Recipe extends RecipeModule {
         tenantId: string;
         user: User;
         userContext: UserContext;
-    }): Promise<User | undefined> => {
+    }): Promise<{ primaryUser: User | undefined; oldestUser: User | undefined }> => {
         // first we check if this user itself is a
         // primary user or not. If it is, we return that.
         if (user.isPrimaryUser) {
-            return user;
+            return { primaryUser: user, oldestUser: undefined };
         }
 
         // finally, we try and find a primary user based on
@@ -495,9 +337,9 @@ export default class Recipe extends RecipeModule {
             doUnionOfAccountInfo: true,
             userContext,
         });
-        logDebugMessage(`getPrimaryUserThatCanBeLinkedToRecipeUserId found ${users.length} matching users`);
+        logDebugMessage(`getUsersThatCanBeLinkedToRecipeUser found ${users.length} matching users`);
         let pUsers = users.filter((u) => u.isPrimaryUser);
-        logDebugMessage(`getPrimaryUserThatCanBeLinkedToRecipeUserId found ${pUsers.length} matching primary users`);
+        logDebugMessage(`getUsersThatCanBeLinkedToRecipeUser found ${pUsers.length} matching primary users`);
         if (pUsers.length > 1) {
             // this means that the new user has account info such that it's
             // spread across multiple primary user IDs. In this case, even
@@ -524,7 +366,12 @@ export default class Recipe extends RecipeModule {
              */
             throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
         }
-        return pUsers.length === 0 ? undefined : pUsers[0];
+        const primaryUser = pUsers.length === 0 ? undefined : pUsers[0];
+        const oldestUser =
+            users.length === 0
+                ? undefined
+                : users.reduce((min, curr) => (min.timeJoined < curr.timeJoined ? min : curr));
+        return { primaryUser, oldestUser };
     };
 
     isSignInAllowed = async ({
@@ -988,7 +835,167 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    private async shouldBecomePrimaryUser(
+    private async tryLinkingBySession({
+        sessionUserLinkingRequiresVerification,
+        authLoginMethod,
+        inputUser,
+        sessionUser,
+        primaryUserThatCanBeLinkedToInputUser,
+        userContext,
+    }: {
+        inputUser: User;
+        sessionUserLinkingRequiresVerification: boolean;
+        sessionUser: User;
+        primaryUserThatCanBeLinkedToInputUser: User | undefined;
+        authLoginMethod: LoginMethod;
+        userContext: UserContext;
+    }): Promise<
+        { status: "OK"; user: User } | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
+    > {
+        // If the session user has already verified the current email address/phone number and wants to add another account with it
+        // then we don't want to ask them to verify it again.
+        // This is different from linking based on account info, but the presence of a session shows that the user has access to both accounts,
+        // and intends to link these two accounts.
+        const sessionUserHasVerifiedAccountInfo = sessionUser.loginMethods.some(
+            (lm) =>
+                lm.hasSameEmailAs(authLoginMethod.email) &&
+                lm.hasSamePhoneNumberAs(authLoginMethod.phoneNumber) &&
+                lm.verified
+        );
+
+        const canLinkBasedOnVerification =
+            !sessionUserLinkingRequiresVerification || authLoginMethod.verified || sessionUserHasVerifiedAccountInfo;
+
+        if (!canLinkBasedOnVerification) {
+            return { status: "OK", user: inputUser };
+        }
+
+        // If we get here, we know that the session user is primary.
+        // if both of them are primary, they cannot be linked together.
+        if (inputUser.isPrimaryUser) {
+            return { status: "LINKING_TO_SESSION_USER_FAILED" };
+        }
+
+        // If the input user has another user (an it's not the session user) it could be linked to based on account info
+        // then we can't link it to the session user.
+        if (
+            primaryUserThatCanBeLinkedToInputUser !== undefined &&
+            sessionUser.id !== primaryUserThatCanBeLinkedToInputUser.id
+        ) {
+            return { status: "LINKING_TO_SESSION_USER_FAILED" };
+        }
+
+        // If we get here, it means that the sesion and the input user can be linked, so we try it.
+        // Note that this function will call shouldDoAutomaticAccountLinking and check the verification status before linking
+        let linkAccountsResult = await this.recipeInterfaceImpl.linkAccounts({
+            recipeUserId: inputUser.loginMethods[0].recipeUserId,
+            primaryUserId: sessionUser.id,
+            userContext,
+        });
+
+        if (linkAccountsResult.status === "OK") {
+            logDebugMessage("createPrimaryUserIdOrLinkAccounts successfully linked input user to session user");
+            return { status: "OK", user: linkAccountsResult.user };
+        } else if (linkAccountsResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            // this can happen because of a race condition wherein the recipe user ID get's linked to
+            // some other primary user whilst this function is running.
+            logDebugMessage(
+                "createPrimaryUserIdOrLinkAccounts linking to session user failed because of a race condition - input user linked to another user"
+            );
+            return { status: "LINKING_TO_SESSION_USER_FAILED" };
+        } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+            logDebugMessage(
+                "createPrimaryUserIdOrLinkAccounts linking to session user failed because of a race condition - retrying"
+            );
+            // This can be possible during a race condition wherein the primary user we created above
+            // is somehow no more a primary user. This can happen if  the unlink function was called in parallel
+            // on that user. We can just retry, as that will try and make it a primary user again.
+            return { status: "NON_PRIMARY_SESSION_USER" };
+        } else {
+            logDebugMessage(
+                "createPrimaryUserIdOrLinkAccounts linking to session user failed because of a race condition - input user has another primary user it can be linked to"
+            );
+            // Status can only be "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+            // It can come here if the recipe user ID can't be linked to the primary user ID because the email / phone number is associated with
+            // some other primary user ID.
+            // This can happen due to a race condition in which the email has changed from one primary user to another during this function call,
+            // or if another primary user was created with the same email as the input user while this function is running
+            return { status: "LINKING_TO_SESSION_USER_FAILED" };
+        }
+    }
+
+    private async tryLinkingByAccountInfo({
+        inputUser,
+        primaryUser,
+        oldestUser,
+        session,
+        tenantId,
+        userContext,
+    }: {
+        tenantId: string;
+        inputUser: User;
+        primaryUser: User | undefined;
+        oldestUser: User | undefined;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
+    }): Promise<
+        | { status: "OK"; user: User }
+        | { status: "BOTH_USERS_PRIMARY" | "NO_LINK" | "INPUT_USER_IS_NOT_A_PRIMARY_USER" }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              user: User;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+    > {
+        if (primaryUser !== undefined) {
+            if (!this.isLinked(primaryUser, inputUser)) {
+                // If we got a primary user that can be linked to the input user and they are is not linked, we try to link them.
+                // The response user in this case cannot be linked to anything else, otherwise multiple primary users would have the same email
+                return await this.tryLinkAccounts(primaryUser, inputUser, session, tenantId, userContext);
+            }
+            // If they are already linked, this is a no-op
+            return { status: "OK", user: inputUser };
+        }
+
+        // If there is no primary candidate, but we there is another account we can link this to
+        // then we try and link it (respecting shouldDoAutomaticAccountLinking)
+        if (oldestUser !== undefined) {
+            // This function will try and make one of the accounts primary if neither of them are
+            const linkRes = await this.tryLinkAccounts(oldestUser, inputUser, session, tenantId, userContext);
+
+            // If the user choose not to link it to the oldest user, we can fall back to trying to make the current user primary
+            if (linkRes.status !== "NO_LINK") {
+                return linkRes;
+            }
+        }
+        // In this case we have no other account we can link to, so we check if the current user should become a primary user
+        if (await this.shouldBecomePrimaryUser(inputUser, tenantId, session, userContext)) {
+            let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
+                recipeUserId: inputUser.loginMethods[0].recipeUserId,
+                userContext,
+            });
+
+            // If the status is "OK", we can return it directly (it contains the updated user)
+            // if the status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" or "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+            // meaning that the recipe user ID is already linked to another primary  user id (race condition), or that some other
+            // primary user ID exists with the same email / phone number (again, race condition).
+            // In this case we call a retry in createPrimaryUserIdOrLinkByAccountInfo
+            return createPrimaryUserResult;
+        } else {
+            // If not we return it unchanged
+            return { status: "OK", user: inputUser };
+        }
+    }
+
+    async shouldBecomePrimaryUser(
         user: User,
         tenantId: string,
         session: SessionContainerInterface | undefined,
@@ -1025,7 +1032,23 @@ export default class Recipe extends RecipeModule {
         session: SessionContainerInterface | undefined,
         tenantId: string,
         userContext: UserContext
-    ): Promise<{ status: "OK"; user: User } | { status: "RETRY" | "NO_LINK" }> {
+    ): Promise<
+        | { status: "OK"; user: User }
+        | { status: "BOTH_USERS_PRIMARY" | "NO_LINK" | "INPUT_USER_IS_NOT_A_PRIMARY_USER" }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              user: User;
+          }
+    > {
         let primaryUser: User;
         let targetUser: User;
         // We first try and check which one is a primary user
@@ -1033,7 +1056,7 @@ export default class Recipe extends RecipeModule {
             // If both of the are primary, then they cannot be linked
             // This is a condition that should be checked before calling this helper, but it could be some kind of race-condition
             if (user2.isPrimaryUser) {
-                return { status: "RETRY" };
+                return { status: "BOTH_USERS_PRIMARY" };
             }
             primaryUser = user1;
             targetUser = user2;
@@ -1059,7 +1082,7 @@ export default class Recipe extends RecipeModule {
                     userContext,
                 });
                 if (createPrimaryUserResult.status !== "OK") {
-                    return { status: "RETRY" };
+                    return createPrimaryUserResult;
                 }
                 primaryUser = createPrimaryUserResult.user;
                 targetUser = newerUser;
@@ -1077,7 +1100,7 @@ export default class Recipe extends RecipeModule {
                         userContext,
                     });
                     if (createPrimaryUserResult.status !== "OK") {
-                        return { status: "RETRY" };
+                        return createPrimaryUserResult;
                     }
                     primaryUser = createPrimaryUserResult.user;
                     targetUser = olderUser;
@@ -1138,15 +1161,17 @@ export default class Recipe extends RecipeModule {
             // this can happen cause of a race condition
             // wherein the recipe user ID get's linked to
             // some other primary user whilst this function is running.
-            // But this is OK, we can just return the primary user it is linked to
             logDebugMessage("createPrimaryUserIdOrLinkAccounts already linked to another user");
-            return { status: "OK", user: linkAccountsResult.user };
+            return {
+                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                user: linkAccountsResult.user,
+            };
         } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
             logDebugMessage("createPrimaryUserIdOrLinkAccounts linking failed because of a race condition");
             // this can be possible during a race condition wherein the primary user
             // that we fetched somehow is no more a primary user. This can happen if
             // the unlink function was called in parallel on that user. So we can just retry
-            return { status: "RETRY" };
+            return linkAccountsResult;
         } else {
             logDebugMessage("createPrimaryUserIdOrLinkAccounts linking failed because of a race condition");
             // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
@@ -1162,7 +1187,7 @@ export default class Recipe extends RecipeModule {
 
             // So we try again, but without caring about
             // the accounts to link table (cause they we will end up in an infinite recursion).
-            return { status: "RETRY" };
+            return linkAccountsResult;
         }
     }
 

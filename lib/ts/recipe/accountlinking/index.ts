@@ -44,9 +44,10 @@ export default class Wrapper {
             throw new Error("Unknown recipeUserId");
         }
 
-        return await Recipe.getInstance().createPrimaryUserIdOrLinkAccounts({
+        return await Recipe.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
             tenantId,
             user,
+            recipeUserId,
             session,
             userContext: getUserContext(userContext),
         });
@@ -71,7 +72,7 @@ export default class Wrapper {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
         }
-        return await Recipe.getInstance().getPrimaryUserThatCanBeLinkedToRecipeUserId({
+        return await Recipe.getInstance().getUsersThatCanBeLinkedToRecipeUser({
             tenantId,
             user,
             userContext: getUserContext(userContext),
@@ -119,7 +120,7 @@ export default class Wrapper {
         tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
-        session: SessionContainerInterface | undefined,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         return await Recipe.getInstance().isSignUpAllowed({
@@ -134,7 +135,7 @@ export default class Wrapper {
     static async isSignInAllowed(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        session: SessionContainerInterface | undefined,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
@@ -155,7 +156,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
-        session: SessionContainerInterface | undefined,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);

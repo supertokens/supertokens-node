@@ -11,6 +11,7 @@ import {
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
 import RecipeUserId from "../../recipeUserId";
+import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -53,19 +54,25 @@ export default class Wrapper {
               }
         ) & {
             userInputCode?: string;
+            session?: SessionContainerInterface;
             tenantId: string;
             userContext?: Record<string, any>;
         }
-    ): Promise<{
-        status: "OK";
-        preAuthSessionId: string;
-        codeId: string;
-        deviceId: string;
-        userInputCode: string;
-        linkCode: string;
-        codeLifetime: number;
-        timeCreated: number;
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              preAuthSessionId: string;
+              codeId: string;
+              deviceId: string;
+              userInputCode: string;
+              linkCode: string;
+              codeLifetime: number;
+              timeCreated: number;
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+          }
+    >;
     static createNewCodeForDevice(input: {
         deviceId: string;
         userInputCode?: string;
@@ -93,12 +100,14 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
     ): Promise<
@@ -115,6 +124,9 @@ export default class Wrapper {
           }
         | {
               status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
           }
     >;
     static updatePasswordlessUser(input: {
@@ -195,11 +207,13 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
     ): Promise<{

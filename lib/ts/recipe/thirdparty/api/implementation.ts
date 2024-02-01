@@ -207,6 +207,7 @@ export default function getAPIInterface(): APIInterface {
                 isVerified: emailInfo.isVerified,
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                session: input.session,
                 tenantId,
                 userContext,
             });
@@ -259,12 +260,28 @@ export default function getAPIInterface(): APIInterface {
 
                 // we do account linking only during sign in here cause during sign up,
                 // the recipe function above does account linking for us.
-                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                const linkRes = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
                     tenantId,
                     user: response.user,
+                    recipeUserId: response.recipeUserId,
                     session,
                     userContext,
                 });
+                if (linkRes.status === "LINKING_TO_SESSION_USER_FAILED") {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    };
+                }
+                if (linkRes.status === "NON_PRIMARY_SESSION_USER") {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                    };
+                }
+                if (linkRes.status === "OK") {
+                    response.user = linkRes.user;
+                }
             }
 
             let respSession = await Session.createNewSession(

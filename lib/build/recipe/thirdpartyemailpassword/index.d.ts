@@ -51,6 +51,9 @@ export default class Wrapper {
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+          }
     >;
     static emailPasswordSignIn(
         tenantId: string,
@@ -65,6 +68,9 @@ export default class Wrapper {
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
           }
     >;
     static createResetPasswordToken(

@@ -91,19 +91,25 @@ export declare type RecipeInterface = {
               }
         ) & {
             userInputCode?: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }
-    ) => Promise<{
-        status: "OK";
-        preAuthSessionId: string;
-        codeId: string;
-        deviceId: string;
-        userInputCode: string;
-        linkCode: string;
-        codeLifetime: number;
-        timeCreated: number;
-    }>;
+    ) => Promise<
+        | {
+              status: "OK";
+              preAuthSessionId: string;
+              codeId: string;
+              deviceId: string;
+              userInputCode: string;
+              linkCode: string;
+              codeLifetime: number;
+              timeCreated: number;
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+          }
+    >;
     createNewCodeForDevice: (input: {
         deviceId: string;
         userInputCode?: string;
@@ -130,14 +136,14 @@ export declare type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
-                  session?: SessionContainerInterface;
+                  session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
-                  session?: SessionContainerInterface;
+                  session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -155,6 +161,9 @@ export declare type RecipeInterface = {
           }
         | {
               status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
           }
     >;
     createRecipeUser: (

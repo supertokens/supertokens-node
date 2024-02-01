@@ -795,7 +795,7 @@ EmailPassword.init({
                     if (input.type === "PASSWORD_RESET") {
                     }
                     await oI.sendEmail(input);
-                    EmailPassword.signUp("public", "test@example.com", "password123", input.userContext);
+                    EmailPassword.signUp("public", "test@example.com", "password123", undefined, input.userContext);
                 },
             };
         },
@@ -1326,10 +1326,14 @@ EmailPassword.init({
                         email,
                         password,
                         tenantId: input.tenantId,
+                        session: input.session,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {
                         return response;
+                    }
+                    if (response.status !== "OK") {
+                        return { status: "SIGN_IN_NOT_ALLOWED", reason: response.status };
                     }
                     let user = response.user;
 

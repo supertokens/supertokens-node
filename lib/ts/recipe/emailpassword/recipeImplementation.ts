@@ -34,6 +34,7 @@ export default function getRecipeInterface(
                   recipeUserId: RecipeUserId;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
         > {
             const response = await this.createNewRecipeUser({
                 email,
@@ -47,12 +48,18 @@ export default function getRecipeInterface(
 
             let updatedUser = response.user;
 
-            updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 user: response.user,
+                recipeUserId: response.recipeUserId,
                 session: undefined, // TODO: we may want to add this to the interface
                 userContext,
             });
+
+            if (linkResult.status != "OK") {
+                return linkResult;
+            }
+            updatedUser = linkResult.user;
 
             return {
                 status: "OK",

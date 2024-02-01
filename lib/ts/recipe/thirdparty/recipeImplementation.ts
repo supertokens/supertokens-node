@@ -102,12 +102,19 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             let updatedUser = response.user;
 
             if (shouldAttemptAccountLinkingIfAllowed) {
-                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
                     tenantId,
                     user: response.user,
+                    recipeUserId: response.recipeUserId,
                     session: undefined, // TODO: we may want to add this to the interface
                     userContext,
                 });
+                if (linkResult.status !== "OK") {
+                    throw new Error(
+                        "This should never happen: createPrimaryUserIdOrLinkByAccountInfo failed with session-user related error without a passed session"
+                    );
+                }
+                updatedUser = linkResult.user;
             }
 
             return {
