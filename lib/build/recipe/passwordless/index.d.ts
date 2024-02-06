@@ -10,6 +10,7 @@ import {
 } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { SessionContainerInterface } from "../session/types";
+import { User } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -69,6 +70,94 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   session?: SessionContainerInterface;
+                  createNewRecipeUserIfNotExists?: true;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  session?: SessionContainerInterface;
+                  createNewRecipeUserIfNotExists?: true;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+          }
+    >;
+    static consumeCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  createNewRecipeUserIfNotExists?: false;
+                  session?: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  createNewRecipeUserIfNotExists?: boolean;
+                  session?: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser?: boolean;
+              user?: User;
+              recipeUserId?: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+          }
+    >;
+    static consumeCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }
@@ -82,8 +171,14 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
               createdNewRecipeUser: boolean;
-              user: import("../../types").User;
+              user: User;
               recipeUserId: RecipeUserId;
           }
         | {
@@ -187,7 +282,7 @@ export default class Wrapper {
         status: string;
         createdNewRecipeUser: boolean;
         recipeUserId: RecipeUserId;
-        user: import("../../types").User;
+        user: User;
     }>;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {

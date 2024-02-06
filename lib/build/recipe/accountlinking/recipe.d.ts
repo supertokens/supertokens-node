@@ -119,41 +119,14 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<void>;
-    private tryLinkingBySession;
-    private tryLinkingByAccountInfo;
     shouldBecomePrimaryUser(
         user: User,
         tenantId: string,
         session: SessionContainerInterface | undefined,
         userContext: UserContext
     ): Promise<boolean>;
-    tryLinkAccounts(
-        user1: User,
-        user2: User,
-        session: SessionContainerInterface | undefined,
-        tenantId: string,
-        userContext: UserContext
-    ): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "BOTH_USERS_PRIMARY" | "NO_LINK" | "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              user: User;
-          }
-    >;
+    private tryLinkingBySession;
+    private tryLinkingByAccountInfo;
+    private tryLinkAccounts;
     isLinked(primaryUser: User, otherUser: User): boolean;
 }

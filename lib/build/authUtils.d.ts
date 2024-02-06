@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { SessionContainerInterface } from "./recipe/session/types";
 import { UserContext } from "./types";
-import { User } from "./user";
+import { LoginMethod, User } from "./user";
 import RecipeUserId from "./recipeUserId";
-import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
+import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 export declare const AuthUtils: {
     getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(
@@ -77,5 +77,26 @@ export declare const AuthUtils: {
         | {
               status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
           }
+    >;
+    getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({
+        recipeId,
+        accountInfo,
+        tenantId: currentTenantId,
+        checkCredentialsOnTenant,
+        session,
+        userContext,
+    }: {
+        recipeId: string;
+        accountInfo: AccountInfo;
+        tenantId: string;
+        session: SessionContainerInterface | undefined;
+        checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              user: User;
+              loginMethod: LoginMethod;
+          }
+        | undefined
     >;
 };

@@ -30,28 +30,53 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: {
-                    phoneNumber: deviceInfo.phoneNumber,
-                    email: deviceInfo.email,
-                },
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
-            existingUsers = existingUsers.filter((u) =>
-                u.loginMethods.some(
-                    (m) =>
-                        m.recipeId === "passwordless" &&
-                        (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
-                )
-            );
-            if (existingUsers.length > 1) {
-                throw new Error(
-                    "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
+            const recipeId = "passwordless";
+            const accountInfo = {
+                phoneNumber: deviceInfo.phoneNumber,
+                email: deviceInfo.email,
+            };
+
+            let checkCredentialsResponse:
+                | ReturnType<typeof input.options.recipeImplementation.verifyAndDeleteCode>
+                | undefined = undefined;
+
+            let checkCredentialsOnTenant = async () => {
+                // In normal operation this should only ever be called once (if succesful) but in some edge cases
+                // (e.g.: the user is deleted between consuming the code and associating it with the current tenant)
+                // Even so, we can only consume the code once, so we we save the value for this request.
+                if (checkCredentialsResponse !== undefined) {
+                    return (await checkCredentialsResponse).status === "OK";
+                }
+                checkCredentialsResponse = input.options.recipeImplementation.verifyAndDeleteCode(
+                    "deviceId" in input
+                        ? {
+                              preAuthSessionId: input.preAuthSessionId,
+                              deviceId: input.deviceId,
+                              userInputCode: input.userInputCode,
+                              createRecipeUserIfNotExists: false,
+                              tenantId: input.tenantId,
+                              userContext: input.userContext,
+                          }
+                        : {
+                              preAuthSessionId: input.preAuthSessionId,
+                              linkCode: input.linkCode,
+                              createRecipeUserIfNotExists: false,
+                              tenantId: input.tenantId,
+                              userContext: input.userContext,
+                          }
                 );
-            }
-            const isSignUp = existingUsers.length === 0;
+                return (await checkCredentialsResponse).status === "OK";
+            };
+
+            const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                accountInfo,
+                recipeId,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+                checkCredentialsOnTenant,
+            });
+
             let factorId;
             if (deviceInfo.email !== undefined) {
                 if ("userInputCode" in input) {
@@ -67,6 +92,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
+            const isSignUp = authenticatingUser !== undefined;
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 accountInfo: {
                     recipeId: "passwordless",
@@ -91,24 +117,49 @@ export default function getAPIImplementation(): APIInterface {
                 );
             }
 
-            let response = await input.options.recipeImplementation.consumeCode(
-                "deviceId" in input
-                    ? {
-                          preAuthSessionId: input.preAuthSessionId,
-                          deviceId: input.deviceId,
-                          userInputCode: input.userInputCode,
-                          session: input.session,
-                          tenantId: input.tenantId,
-                          userContext: input.userContext,
-                      }
-                    : {
-                          preAuthSessionId: input.preAuthSessionId,
-                          linkCode: input.linkCode,
-                          session: input.session,
-                          tenantId: input.tenantId,
-                          userContext: input.userContext,
-                      }
-            );
+            if (authenticatingUser === undefined && checkCredentialsResponse !== undefined) {
+                /*
+                This can occur in the following race-condition:
+                1. there is a primary user with:
+                    a./ emailA pwless recipe user on tenantA (NOT associated on tenantB)
+                    b./ emailB emaipassword recipe user on tenantA&tenantB
+                2. the above user has an active session on tenant B
+                3. the user sends valid a consumeCode request for emailA on tenantB (with the an active session)
+                4. we check that emailA doesn't exist on tenantB
+                5. so, we check that the primary user has a login method on tenantA
+                6. we call verifyAndDeleteCode
+                7. we try to associate the emailA recipeUser with tenantB, *but it is deleted concurrently*
+
+                In this case we have no way to create the new recipe user we'd need. While we could work around this,
+                it is rare enough that returning an error that'll require the user to redo the auth is fine.
+                */
+                return {
+                    status: "RESTART_FLOW_ERROR",
+                };
+            }
+
+            let response =
+                checkCredentialsResponse ??
+                (await input.options.recipeImplementation.consumeCode(
+                    "deviceId" in input
+                        ? {
+                              preAuthSessionId: input.preAuthSessionId,
+                              deviceId: input.deviceId,
+                              userInputCode: input.userInputCode,
+                              session: input.session,
+                              createRecipeUserIfNotExists: true,
+                              tenantId: input.tenantId,
+                              userContext: input.userContext,
+                          }
+                        : {
+                              preAuthSessionId: input.preAuthSessionId,
+                              linkCode: input.linkCode,
+                              session: input.session,
+                              createRecipeUserIfNotExists: true,
+                              tenantId: input.tenantId,
+                              userContext: input.userContext,
+                          }
+                ));
 
             if (response.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(response, errorCodeMap, "SIGN_IN_UP_NOT_ALLOWED");
@@ -123,8 +174,8 @@ export default function getAPIImplementation(): APIInterface {
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId,
                 isSignUp,
-                responseUser: response.user,
-                recipeUserId: response.recipeUserId,
+                responseUser: response.user ?? authenticatingUser!.user,
+                recipeUserId: response.recipeUserId ?? authenticatingUser!.loginMethod!.recipeUserId,
                 req: input.options.req,
                 res: input.options.res,
                 tenantId: input.tenantId,
@@ -142,7 +193,9 @@ export default function getAPIImplementation(): APIInterface {
 
             return {
                 status: "OK",
-                createdNewRecipeUser: response.createdNewRecipeUser,
+                // this is only undefined if we signed in by associating an existing recipe user with the current tenant
+                // so we can default to false
+                createdNewRecipeUser: response.createdNewRecipeUser ?? false,
                 user: postAuthChecks.user,
                 session: postAuthChecks.session,
             };

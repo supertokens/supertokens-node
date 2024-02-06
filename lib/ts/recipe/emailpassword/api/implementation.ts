@@ -5,7 +5,7 @@ import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
-import { RecipeLevelUser } from "../../accountlinking/types";
+import { AccountInfoWithRecipeId, RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import SessionRecipe from "../../session/recipe";
@@ -536,7 +536,7 @@ export default function getAPIImplementation(): APIInterface {
                             tenantId,
                             user: createUserResponse.user,
                             recipeUserId: createUserResponse.recipeUserId,
-                            session: undefined, // TODO: we may want to add this to the interface
+                            session,
                             userContext,
                         });
                         if (linkRes.status !== "OK") {
@@ -606,29 +606,46 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
+            const recipeId = "emailpassword";
+
+            const accountInfo: AccountInfoWithRecipeId = {
+                recipeId,
+                email,
+            };
+            const checkCredentialsOnTenant = async (tenantId: string) => {
+                return (
+                    (await options.recipeImplementation.signIn({ email, password, session, tenantId, userContext }))
+                        .status === "OK"
+                );
+            };
+
+            const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                tenantId,
+                accountInfo,
+                userContext,
+                recipeId,
+                session,
+                checkCredentialsOnTenant,
+            });
+
+            const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
             const preAuthChecks = await AuthUtils.preAuthChecks({
-                accountInfo: {
-                    recipeId: "emailpassword",
-                    email,
-                },
+                accountInfo,
                 factorIds: ["emailpassword"],
                 isSignUp: false,
-                // TODO: We do not have this info, but considering this false should be OK.
-                // Also, this part will change, since we'll be checking the existence of the EP user anyway
-                // Plus the fake email things.
-                isVerified: false,
+                isVerified,
                 tenantId,
                 userContext,
                 session,
             });
             if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
-                throw new Error("This should never happen: post-auth sign up checks should not fail for sign in");
+                throw new Error("This should never happen: pre-auth checks should not fail for sign in");
             }
             if (preAuthChecks.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(preAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
-            let signInResponse = await options.recipeImplementation.signIn({
+            const signInResponse = await options.recipeImplementation.signIn({
                 email,
                 password,
                 session,
@@ -712,7 +729,7 @@ export default function getAPIImplementation(): APIInterface {
                 },
                 factorIds: ["emailpassword"],
                 isSignUp: true,
-                isVerified: isFakeEmail(email), // TODO: maybe we need to throw if this is called with a fake email?
+                isVerified: isFakeEmail(email),
                 tenantId,
                 userContext,
                 session,
@@ -746,6 +763,8 @@ export default function getAPIImplementation(): APIInterface {
 
             let signUpResponse;
             if (session === undefined || overwriteSessionDuringSignInUp) {
+                // We call signUp whenever possible, since people overriding functions will expect this to be called for normal sign up flows
+                // and use this to execute post sign up hooks
                 signUpResponse = await options.recipeImplementation.signUp({
                     tenantId,
                     email,
@@ -782,7 +801,7 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (postAuthChecks.status === "SIGN_IN_NOT_ALLOWED") {
-                throw new Error("This should never happen: post-auth sign in/up checks should not fail for sign up");
+                throw new Error("This should never happen: post-auth checks should not fail for sign up");
             }
 
             if (postAuthChecks.status !== "OK") {

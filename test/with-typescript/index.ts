@@ -1611,6 +1611,10 @@ Passwordless.init({
                             });
                             return {
                                 status: "OK",
+                                consumedDevice: {
+                                    failedCodeInputAttemptCount: 0,
+                                    preAuthSessionId: input.preAuthSessionId,
+                                },
                                 createdNewRecipeUser: user.createdNewRecipeUser,
                                 recipeUserId: user.recipeUserId,
                                 user: user.user,
@@ -1623,6 +1627,52 @@ Passwordless.init({
         },
     },
 });
+
+async function pwlessSignInResp() {
+    const input = { deviceId: "123", userInputCode: "12345", preAuthSessionId: "asdf", tenantId: "public" };
+    const notSettingCreateRecipeUser = await Passwordless.consumeCode(input);
+    if (notSettingCreateRecipeUser.status === "OK") {
+        console.log(notSettingCreateRecipeUser.user.id);
+    }
+    const settingCreateRecipeUserToTrue = await Passwordless.consumeCode({
+        ...input,
+        createNewRecipeUserIfNotExists: true,
+    });
+    if (notSettingCreateRecipeUser.status === "OK") {
+        console.log(notSettingCreateRecipeUser.user.id);
+    }
+    const settingCreateRecipeUserToFalse = await Passwordless.consumeCode({
+        ...input,
+        createNewRecipeUserIfNotExists: false,
+    });
+    if (settingCreateRecipeUserToFalse.status === "OK") {
+        // @ts-expect-error
+        console.log(settingCreateRecipeUserToFalse.user.id);
+    }
+}
+
+async function tpPwlessSignInResp() {
+    const input = { deviceId: "123", userInputCode: "12345", preAuthSessionId: "asdf", tenantId: "public" };
+    const notSettingCreateRecipeUser = await ThirdPartyPasswordless.consumeCode(input);
+    if (notSettingCreateRecipeUser.status === "OK") {
+        console.log(notSettingCreateRecipeUser.user.id);
+    }
+    const settingCreateRecipeUserToTrue = await ThirdPartyPasswordless.consumeCode({
+        ...input,
+        createNewRecipeUserIfNotExists: true,
+    });
+    if (settingCreateRecipeUserToTrue.status === "OK") {
+        console.log(settingCreateRecipeUserToTrue.user.id);
+    }
+    const settingCreateRecipeUserToFalse = await ThirdPartyPasswordless.consumeCode({
+        ...input,
+        createNewRecipeUserIfNotExists: false,
+    });
+    if (settingCreateRecipeUserToFalse.status === "OK") {
+        // @ts-expect-error
+        console.log(settingCreateRecipeUserToFalse.user.id);
+    }
+}
 
 async function getSessionWithErrorHandlerMiddleware(req: express.Request, resp: express.Response) {
     const session = await Session.getSession(req, resp, {

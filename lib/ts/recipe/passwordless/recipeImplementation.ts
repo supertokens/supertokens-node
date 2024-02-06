@@ -22,9 +22,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
     return {
         consumeCode: async function (this: RecipeInterface, input) {
-            let response = await this.createRecipeUser(input);
+            let response = await this.verifyAndDeleteCode(input);
 
-            if (response.status === "USER_ALREADY_EXISTS_ERROR") {
+            if (response.status !== "OK") {
+                return response;
+            }
+
+            if (response.createdNewRecipeUser !== true) {
                 // Unlike in the sign up scenario, we do not do account linking here
                 // cause we do not want sign in to change the potentially user ID of a user
                 // due to linking when this function is called by the dev in their API.
@@ -40,6 +44,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     createdNewRecipeUser: false,
                     recipeUserId: response.recipeUserId,
                     user: response.user,
+                    consumedDevice: response.consumedDevice,
                 };
             }
 
@@ -47,7 +52,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            // Attempt account linking only on sign up
+            // This is just to make TS happy, the createdNewRecipeUser check should cover this already
+            if (response.recipeUserId === undefined || response.user === undefined) {
+                return response;
+            }
+
+            // Attempt account linking (this is a sign up)
             let updatedUser = response.user;
 
             const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
@@ -72,10 +82,36 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return {
                 ...response,
                 createdNewRecipeUser: true,
+                consumedDevice: response.consumedDevice,
             };
         },
 
         createRecipeUser: async function (this: RecipeInterface, input) {
+            const response = await this.verifyAndDeleteCode({ ...input, createRecipeUserIfNotExists: true });
+
+            if (response.status !== "OK") {
+                return response;
+            }
+
+            if (response.createdNewRecipeUser === true) {
+                return {
+                    status: "USER_ALREADY_EXISTS_ERROR",
+                    recipeUserId: response.recipeUserId!,
+                    user: response.user!,
+                    consumedDevice: response.consumedDevice,
+                };
+            }
+
+            return {
+                status: "OK",
+                createdNewRecipeUser: response.createdNewRecipeUser!,
+                user: response.user!,
+                recipeUserId: response.recipeUserId!,
+                consumedDevice: response.consumedDevice,
+            };
+        },
+
+        verifyAndDeleteCode: async function (this: RecipeInterface, input) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
                 copyAndRemoveUserContextAndTenantId(input),
@@ -86,23 +122,16 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            logDebugMessage("Passwordless.createRecipeUser code consumed OK");
+            logDebugMessage("Passwordless.verifyAndDeleteCode code consumed OK");
             response.user = new User(response.user);
             response.recipeUserId = new RecipeUserId(response.recipeUserId);
-
-            if (!response.createdNewUser) {
-                return {
-                    status: "USER_ALREADY_EXISTS_ERROR",
-                    recipeUserId: response.recipeUserId,
-                    user: response.user,
-                };
-            }
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewUser,
                 user: response.user,
                 recipeUserId: response.recipeUserId,
+                consumedDevice: response.consumedDevice,
             };
         },
 

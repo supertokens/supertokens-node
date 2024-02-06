@@ -1,10 +1,8 @@
 import { APIInterface } from "../";
-import Session from "../../session";
 import AccountLinking from "../../accountlinking/recipe";
-import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
-import { RecipeLevelUser } from "../../accountlinking/types";
+import { AuthUtils } from "../../../authUtils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -20,6 +18,14 @@ export default function getAPIInterface(): APIInterface {
         },
 
         signInUpPOST: async function (input) {
+            const errorCodeMap = {
+                SIGN_UP_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
+                SIGN_IN_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
+                LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+            };
             const { provider, tenantId, options, session, userContext } = input;
 
             let oAuthTokensToUse: any = {};
@@ -54,44 +60,57 @@ export default function getAPIInterface(): APIInterface {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER",
                 };
             }
-            let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId,
+
+            const recipeId = "thirdparty";
+
+            let checkCredentialsOnTenant = async () => {
+                // We essentially did this above when calling exchangeAuthCodeForOAuthTokens
+                return true;
+            };
+
+            const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
                 accountInfo: {
+                    email: emailInfo.id,
                     thirdParty: {
-                        id: provider.id,
                         userId: userInfo.thirdPartyUserId,
+                        id: provider.id,
                     },
                 },
-                doUnionOfAccountInfo: false,
-                userContext,
+                recipeId,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+                checkCredentialsOnTenant,
             });
 
-            if (existingUsers.length === 0) {
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: {
-                        recipeId: "thirdparty",
-                        email: emailInfo.id,
-                        thirdParty: {
-                            id: provider.id,
-                            userId: userInfo.thirdPartyUserId,
-                        },
+            const isSignUp = authenticatingUser !== undefined;
+            const preAuthChecks = await AuthUtils.preAuthChecks({
+                accountInfo: {
+                    recipeId,
+                    thirdParty: {
+                        userId: userInfo.thirdPartyUserId,
+                        id: provider.id,
                     },
-                    isVerified: emailInfo.isVerified,
-                    session,
-                    tenantId,
-                    userContext,
-                });
+                },
+                factorIds: ["thirdparty"],
+                isSignUp,
+                isVerified: emailInfo.isVerified,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+            });
 
-                if (!isSignUpAllowed) {
-                    // On the frontend, this should show a UI of asking the user
-                    // to login using a different method.
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
-                    };
-                }
-            } else {
+            if (preAuthChecks.status !== "OK") {
+                // On the frontend, this should show a UI of asking the user
+                // to login using a different method.
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
+                );
+            }
+
+            if (authenticatingUser !== undefined) {
                 // this is a sign in. So before we proceed, we need to check if an email change
                 // is allowed since the email could have changed from the social provider's side.
                 // We do this check here and not in the recipe function cause we want to keep the
@@ -104,23 +123,7 @@ export default function getAPIInterface(): APIInterface {
                 // is verified on the user's account via supertokens on a previous sign in / up.
                 // So we just check that as well before calling isEmailChangeAllowed
 
-                if (existingUsers.length > 1) {
-                    throw new Error(
-                        "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
-                    );
-                }
-
-                let recipeUserId: RecipeUserId | undefined = undefined;
-                existingUsers[0].loginMethods.forEach((lM) => {
-                    if (
-                        lM.hasSameThirdPartyInfoAs({
-                            id: provider.id,
-                            userId: userInfo.thirdPartyUserId,
-                        })
-                    ) {
-                        recipeUserId = lM.recipeUserId;
-                    }
-                });
+                const recipeUserId = authenticatingUser.loginMethod.recipeUserId;
 
                 if (!emailInfo.isVerified && EmailVerificationRecipe.getInstance() !== undefined) {
                     emailInfo.isVerified = await EmailVerification.isEmailVerified(
@@ -183,7 +186,7 @@ export default function getAPIInterface(): APIInterface {
                  */
 
                 let isEmailChangeAllowed = await AccountLinking.getInstance().isEmailChangeAllowed({
-                    user: existingUsers[0],
+                    user: authenticatingUser.user,
                     isVerified: emailInfo.isVerified,
                     newEmail: emailInfo.id,
                     session,
@@ -216,89 +219,37 @@ export default function getAPIInterface(): APIInterface {
                 return response;
             }
 
-            let loginMethod: RecipeLevelUser | undefined = undefined;
-            for (let i = 0; i < response.user.loginMethods.length; i++) {
-                if (
-                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
-                        id: provider.id,
-                        userId: userInfo.thirdPartyUserId,
-                    })
-                ) {
-                    loginMethod = response.user.loginMethods[i];
-                }
+            // Here we do these checks after sign in is done cause:
+            // - We first want to check if the credentials are correct first or not
+            // - The above recipe function marks the email as verified
+            // - Even though the above call to signInUp is state changing (it changes the email
+            // of the user), it's OK to do this check here cause the isSignInAllowed checks
+            // conditions related to account linking
+            const postAuthChecks = await AuthUtils.postAuthChecks({
+                factorId: "thirdparty",
+                isSignUp,
+                responseUser: response.user,
+                recipeUserId: response.recipeUserId,
+                req: input.options.req,
+                res: input.options.res,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+            });
+
+            if (postAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
+                );
             }
-
-            if (loginMethod === undefined) {
-                throw new Error("Should never come here");
-            }
-
-            if (existingUsers.length > 0) {
-                // Here we do this check after sign in is done cause:
-                // - We first want to check if the credentials are correct first or not
-                // - The above recipe function marks the email as verified if other linked users
-                // with the same email are verified. The function below checks for the email verification
-                // so we want to call it only once this is up to date,
-                // - Even though the above call to signInUp is state changing (it changes the email
-                // of the user), it's OK to do this check here cause the isSignInAllowed checks
-                // conditions related to account linking and not related to email change. Email change
-                // condition checking happens before calling the recipe function anyway.
-
-                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    user: response.user,
-                    tenantId,
-                    session,
-                    userContext,
-                });
-
-                if (!isSignInAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
-                    };
-                }
-
-                // we do account linking only during sign in here cause during sign up,
-                // the recipe function above does account linking for us.
-                const linkRes = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
-                    tenantId,
-                    user: response.user,
-                    recipeUserId: response.recipeUserId,
-                    session,
-                    userContext,
-                });
-                if (linkRes.status === "LINKING_TO_SESSION_USER_FAILED") {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                    };
-                }
-                if (linkRes.status === "NON_PRIMARY_SESSION_USER") {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "User linking failed. Please contact support. (ERR_CODE_0XY)",
-                    };
-                }
-                if (linkRes.status === "OK") {
-                    response.user = linkRes.user;
-                }
-            }
-
-            let respSession = await Session.createNewSession(
-                options.req,
-                options.res,
-                tenantId,
-                loginMethod.recipeUserId,
-                {},
-                {},
-                userContext
-            );
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
-                user: response.user,
-                session: respSession,
+                user: postAuthChecks.user,
+                session: postAuthChecks.session,
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
             };

@@ -136,6 +136,7 @@ export declare type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  createRecipeUserIfNotExists: boolean;
                   session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
@@ -143,6 +144,7 @@ export declare type RecipeInterface = {
             | {
                   linkCode: string;
                   preAuthSessionId: string;
+                  createRecipeUserIfNotExists: boolean;
                   session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
@@ -150,9 +152,15 @@ export declare type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewRecipeUser: boolean;
-              user: User;
-              recipeUserId: RecipeUserId;
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser?: boolean;
+              user?: User;
+              recipeUserId?: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -184,6 +192,13 @@ export declare type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
           }
@@ -199,6 +214,45 @@ export declare type RecipeInterface = {
               status: "USER_ALREADY_EXISTS_ERROR";
               user: User;
               recipeUserId: RecipeUserId;
+          }
+    >;
+    verifyAndDeleteCode: (
+        input:
+            | {
+                  userInputCode: string;
+                  deviceId: string;
+                  preAuthSessionId: string;
+                  createRecipeUserIfNotExists: boolean;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+            | {
+                  linkCode: string;
+                  preAuthSessionId: string;
+                  createRecipeUserIfNotExists: boolean;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+    ) => Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser?: boolean;
+              user?: User;
+              recipeUserId?: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
           }
     >;
     updateUser: (input: {

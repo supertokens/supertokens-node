@@ -1,15 +1,16 @@
 import AccountLinking from "./recipe/accountlinking/recipe";
 import Session from "./recipe/session";
+import MultiTenancy from "./recipe/multitenancy";
 import MultiFactorAuth from "./recipe/multifactorauth";
 import MultiFactorAuthRecipe from "./recipe/multifactorauth/recipe";
 import { SessionContainerInterface } from "./recipe/session/types";
 import { UserContext } from "./types";
-import { User } from "./user";
+import { LoginMethod, User } from "./user";
 import RecipeUserId from "./recipeUserId";
 import { isValidFirstFactor } from "./recipe/multifactorauth/utils";
 import SessionError from "./recipe/session/error";
 import { getUser } from ".";
-import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
+import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 import SessionRecipe from "./recipe/session/recipe";
 
@@ -85,6 +86,7 @@ export const AuthUtils = {
                     if (
                         makeSessionUserPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
                     ) {
+                        // This means that the session user got primary since we loaded the session user info above
                         sessionUser = await getUser(makeSessionUserPrimaryRes.primaryUserId, userContext);
 
                         if (sessionUser === undefined) {
@@ -96,9 +98,12 @@ export const AuthUtils = {
                     } else if (makeSessionUserPrimaryRes.status === "OK") {
                         sessionUser = makeSessionUserPrimaryRes.user;
                     } else {
+                        // All other statuses signify that we can't make the session user primary
+                        // Which means we can't continue
                         return { status: "NON_PRIMARY_SESSION_USER" };
                     }
                 } else {
+                    // This means that the app doesn't want to make the session user primary
                     return { status: "NON_PRIMARY_SESSION_USER" };
                 }
             }
@@ -131,7 +136,14 @@ export const AuthUtils = {
                 let validRes = await isValidFirstFactor(tenantId, id, userContext);
 
                 if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
-                    throw new Error("Tenant not found");
+                    if (session !== undefined) {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Tenant not found",
+                        });
+                    } else {
+                        throw new Error("Tenant not found");
+                    }
                 } else if (validRes.status === "OK") {
                     validFactorIds.push(id);
                 }
@@ -231,14 +243,6 @@ export const AuthUtils = {
         const mfaInstance = MultiFactorAuthRecipe.getInstance();
         const accountLinkingInstance = AccountLinking.getInstance();
 
-        // We check if sign in is allowed
-        if (
-            !isSignUp &&
-            !(await accountLinkingInstance.isSignInAllowed({ user: responseUser, tenantId, session, userContext }))
-        ) {
-            return { status: "SIGN_IN_NOT_ALLOWED" };
-        }
-
         // Then run linking if necessary/possible.
         // Note, that we are not re-using any information queried before the user signed in
         // This functions calls shouldDoAutomaticAccountLinking again (we check if the app wants to link to the session user or not),
@@ -258,6 +262,14 @@ export const AuthUtils = {
             return linkingResult;
         }
 
+        // We check if sign in is allowed
+        if (
+            !isSignUp &&
+            !(await accountLinkingInstance.isSignInAllowed({ user: responseUser, tenantId, session, userContext }))
+        ) {
+            return { status: "SIGN_IN_NOT_ALLOWED" };
+        }
+
         let respSession = session;
         if (session !== undefined) {
             const postLinkUserLinkedToSessionUser = linkingResult.user.loginMethods.some(
@@ -265,7 +277,7 @@ export const AuthUtils = {
             );
             if (postLinkUserLinkedToSessionUser && mfaInstance !== undefined) {
                 // if the authenticating user is linked to the current user (it means that the factor got set up or completed),
-                // so we mark it as completed in the session.
+                // we mark it as completed in the session.
                 await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
             } else {
                 // If the new user wasn't linked to the current one, we check the config and overwrite the session if required
@@ -290,5 +302,125 @@ export const AuthUtils = {
             }
         }
         return { status: "OK", session: respSession!, user: linkingResult.user };
+    },
+
+    getAuthenticatingUserAndAddToCurrentTenantIfRequired: async ({
+        recipeId,
+        accountInfo,
+        tenantId: currentTenantId,
+        checkCredentialsOnTenant,
+        session,
+        userContext,
+    }: {
+        recipeId: string;
+        accountInfo: AccountInfo;
+        tenantId: string;
+        session: SessionContainerInterface | undefined;
+        checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
+        userContext: UserContext;
+    }): Promise<{ user: User; loginMethod: LoginMethod } | undefined> => {
+        let i = 0;
+        while (i++ < 300) {
+            const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: currentTenantId,
+                accountInfo,
+                doUnionOfAccountInfo: false,
+                userContext: userContext,
+            });
+            const usersWithMatchingLoginMethods = existingUsers
+                .map((user) => ({
+                    user,
+                    loginMethod: user.loginMethods.find(
+                        (lm) =>
+                            lm.recipeId === recipeId &&
+                            lm.hasSameEmailAs(accountInfo.email) &&
+                            lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) &&
+                            lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty)
+                    )!,
+                }))
+                .filter(({ loginMethod }) => loginMethod !== undefined);
+            if (usersWithMatchingLoginMethods.length > 1) {
+                throw new Error(
+                    "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
+                );
+            }
+            let authenticatingUser: { user: User; loginMethod: LoginMethod } = usersWithMatchingLoginMethods[0];
+
+            if (authenticatingUser === undefined && session !== undefined) {
+                const sessionUser = await getUser(session.getUserId(userContext), userContext);
+                if (sessionUser === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                // Since the session user is undefined, we can't
+                if (!sessionUser.isPrimaryUser) {
+                    return undefined;
+                }
+
+                const matchingLoginMethods = sessionUser.loginMethods.filter(
+                    (lm) =>
+                        lm.recipeId === recipeId &&
+                        lm.hasSameEmailAs(accountInfo.email) &&
+                        lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) &&
+                        lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty)
+                );
+
+                if (!matchingLoginMethods.some((lm) => lm.tenantIds.includes(currentTenantId))) {
+                    let goToRetry = false;
+                    for (const lm of matchingLoginMethods) {
+                        if (await checkCredentialsOnTenant(lm.tenantIds[0])) {
+                            const associateRes = await MultiTenancy.associateUserToTenant(
+                                currentTenantId,
+                                lm.recipeUserId,
+                                userContext
+                            );
+                            if (associateRes.status === "OK") {
+                                return { user: sessionUser, loginMethod: lm };
+                            }
+                            if (
+                                associateRes.status === "UNKNOWN_USER_ID_ERROR" || // This means that the recipe user was deleted
+                                // All below conditions mean that both the account list and the session user we loaded is outdated
+                                associateRes.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
+                                associateRes.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR" ||
+                                associateRes.status === "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
+                            ) {
+                                // In these cases we retry, because we know some info we are using is outdated
+                                // while some of these cases we could handle locally, it's cleaner to restart the process.
+                                goToRetry = true;
+                                break;
+                            }
+                            if (associateRes.status === "ASSOCIATION_NOT_ALLOWED_ERROR") {
+                                // Since we were trying to share the recipe user linked to a primary user already associated with the tenant,
+                                // this can only happen if the session user was disassociated from the tenant of the session,
+                                // plus another user was created holding the account info we are trying to share with the tenant.
+                                // Which basically means that the session is no longer valid.
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Session user not associated with the session tenant",
+                                });
+                            }
+                        }
+                    }
+                    if (goToRetry) {
+                        continue;
+                    }
+                } else {
+                    // This can happen in a race condition where a user was created and linked with the session user
+                    // between listing the existing users and loading the session user
+                    // We can continue, this doesn't cause any issues.
+                    authenticatingUser = {
+                        user: sessionUser,
+                        loginMethod: matchingLoginMethods.find((lm) => lm.tenantIds.includes(currentTenantId))!,
+                    };
+                }
+            }
+            return authenticatingUser;
+        }
+        throw new Error(
+            "This should never happen: ran out of retries for getAuthenticatingUserAndAddToCurrentTenantIfRequired"
+        );
     },
 };

@@ -650,6 +650,7 @@ export default class Recipe extends RecipeModule {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
                       session: input.session,
+                      createRecipeUserIfNotExists: true,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -658,6 +659,7 @@ export default class Recipe extends RecipeModule {
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
                       session: input.session,
+                      createRecipeUserIfNotExists: true,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -666,9 +668,10 @@ export default class Recipe extends RecipeModule {
         if (consumeCodeResponse.status === "OK") {
             return {
                 status: "OK",
-                createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser,
-                recipeUserId: consumeCodeResponse.recipeUserId,
-                user: consumeCodeResponse.user,
+                // We know these are defined since we passed `createRecipeUserIfNotExists: true`
+                createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser!,
+                recipeUserId: consumeCodeResponse.recipeUserId!,
+                user: consumeCodeResponse.user!,
             };
         } else {
             throw new Error("Failed to create user. Please retry");
