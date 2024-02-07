@@ -1,10 +1,9 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
-import AccountLinking from "../../accountlinking/recipe";
-import { RecipeLevelUser } from "../../accountlinking/types";
 import { AuthUtils } from "../../../authUtils";
 import { FactorIds } from "../../multifactorauth";
 import { getEnabledPwlessFactors } from "../utils";
+import { listUsersByAccountInfo } from "../../..";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -200,37 +199,21 @@ export default function getAPIImplementation(): APIInterface {
                 session: postAuthChecks.session,
             };
         },
-
         createCodePOST: async function (input) {
             const accountInfo: { phoneNumber?: string; email?: string } = {};
             if ("email" in input) {
                 accountInfo.email = input.email;
             }
             if ("phoneNumber" in input) {
-                accountInfo.phoneNumber = input.phoneNumber;
+                accountInfo.email = input.phoneNumber;
             }
-
-            let existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo,
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
-            existingUsers = existingUsers.filter((u) =>
-                u.loginMethods.some(
-                    (m) =>
-                        m.recipeId === "passwordless" &&
-                        (m.hasSameEmailAs(accountInfo.email) || m.hasSamePhoneNumberAs(accountInfo.phoneNumber))
-                )
-            );
-            const isSignUp = existingUsers.length === 0;
 
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 accountInfo: {
                     ...accountInfo,
                     recipeId: "passwordless",
                 },
-                isSignUp,
+                isSignUp: false, // TODO
                 isVerified: true,
                 tenantId: input.tenantId,
                 factorIds: input.factorIds ?? getEnabledPwlessFactors(input.options.config),
@@ -246,32 +229,6 @@ export default function getAPIImplementation(): APIInterface {
                     reason:
                         "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
                 };
-            }
-
-            if (existingUsers.length === 1) {
-                let loginMethod: RecipeLevelUser | undefined = existingUsers[0].loginMethods.find(
-                    (m) =>
-                        m.recipeId === "passwordless" &&
-                        (m.hasSameEmailAs(accountInfo.email) || m.hasSamePhoneNumberAs(accountInfo.phoneNumber))
-                );
-
-                if (loginMethod === undefined) {
-                    throw new Error("Should never come here");
-                }
-
-                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    user: existingUsers[0],
-                    tenantId: input.tenantId,
-                    session: input.session,
-                    userContext: input.userContext,
-                });
-                if (!isSignInAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-                    };
-                }
             }
 
             let response = await input.options.recipeImplementation.createCode(
@@ -384,16 +341,16 @@ export default function getAPIImplementation(): APIInterface {
                 preAuthSessionId: response.preAuthSessionId,
             };
         },
-
         emailExistsGET: async function (input) {
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: {
+            let users = await listUsersByAccountInfo(
+                input.tenantId,
+                {
                     email: input.email,
+                    // tenantId: input.tenantId,
                 },
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
+                false,
+                input.userContext
+            );
 
             return {
                 exists: users.length > 0,
@@ -401,14 +358,15 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         phoneNumberExistsGET: async function (input) {
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo: {
+            let users = await listUsersByAccountInfo(
+                input.tenantId,
+                {
                     phoneNumber: input.phoneNumber,
+                    // tenantId: input.tenantId,
                 },
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
+                false,
+                input.userContext
+            );
 
             return {
                 exists: users.length > 0,
