@@ -533,7 +533,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(resp.user.phoneNumbers[0] === undefined);
             assert(typeof resp.user.timeJoined === "number");
             assert(resp.isValidFirstFactorForTenant === undefined);
-            assert(Object.keys(resp).length === 4);
+            assert(Object.keys(resp).length === 5);
             assert(Object.keys(resp.user).length === 8);
         }
 

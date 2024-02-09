@@ -216,7 +216,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
     });
 
     it("user structure FDI 1.17 is correctly returned even if session does not match logged in user", async function () {
-        let sessionReused = false;
         const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
@@ -228,51 +227,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    override: {
-                        apis: (oI) => {
-                            return {
-                                ...oI,
-                                signInPOST: async (input) => {
-                                    let session = await Session.getSession(input.options.req, input.options.res, {
-                                        sessionRequired: false,
-                                    });
-                                    if (session !== undefined) {
-                                        input.userContext.session = session;
-                                    }
-                                    let response = await oI.signInPOST(input);
-                                    return response;
-                                },
-                                signUpPOST: async (input) => {
-                                    let session = await Session.getSession(input.options.req, input.options.res, {
-                                        sessionRequired: false,
-                                    });
-                                    if (session !== undefined) {
-                                        input.userContext.session = session;
-                                    }
-                                    let response = await oI.signUpPOST(input);
-                                    return response;
-                                },
-                            };
-                        },
-                    },
-                }),
+                EmailPassword.init(),
                 Session.init({
-                    overwriteSessionDuringSignInUp: true,
-                    override: {
-                        functions: (oI) => {
-                            return {
-                                ...oI,
-                                createNewSession: async (input) => {
-                                    if (input.userContext.session !== undefined) {
-                                        sessionReused = true;
-                                        return input.userContext.session;
-                                    }
-                                    return oI.createNewSession(input);
-                                },
-                            };
-                        },
-                    },
+                    overwriteSessionDuringSignInUp: false,
                 }),
             ],
         });
@@ -310,7 +267,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
                 })
         );
 
-        assert(!sessionReused);
         let tokens = extractInfoFromResponse(res);
         assert(tokens.accessTokenFromAny !== undefined);
 
@@ -325,39 +281,32 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
         linkingResult = await AccountLinking.linkAccounts(signUp3.user.loginMethods[0].recipeUserId, signUp2.user.id);
         assert(linkingResult.status === "OK");
 
-        res = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signin")
-                .set("fdi-version", "1.17")
-                .set("Authorization", `Bearer ${tokens.accessTokenFromAny}`)
-                .send({
-                    formFields: [
-                        {
-                            id: "email",
-                            value: "test3@example.com",
-                        },
-                        {
-                            id: "password",
-                            value: "password123",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        res = await request(app)
+            .post("/auth/signin")
+            .set("fdi-version", "1.17")
+            .set("Authorization", `Bearer ${tokens.accessTokenFromAny}`)
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test3@example.com",
+                    },
+                    {
+                        id: "password",
+                        value: "password123",
+                    },
+                ],
+            })
+            .expect(200);
 
-        assert(sessionReused);
-        assert(res.body.status === "OK");
-        assert(res.body.user.email === "test2@example.com");
-        assert(res.body.user.id === signUp2.user.id);
-        assert(res.body.user.timeJoined === signUp2.user.timeJoined);
-        assert(Object.keys(res.body.user).length === 3);
+        assert.strictEqual(res.body.status, "OK");
+        assert.strictEqual(res.body.user.email, "test2@example.com");
+        assert.strictEqual(res.body.user.id, signUp2.user.id);
+        assert.strictEqual(res.body.user.timeJoined, signUp2.user.timeJoined);
+        assert.strictEqual(Object.keys(res.body.user).length, 3);
+
+        let tokens2 = extractInfoFromResponse(res);
+        assert.strictEqual(tokens2.accessTokenFromAny, undefined);
     });
 
     it("user structure FDI 1.17 is correctly returned based on session user ID", async function () {

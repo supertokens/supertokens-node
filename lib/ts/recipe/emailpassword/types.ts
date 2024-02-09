@@ -97,9 +97,10 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-        | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+          }
     >;
-
     // this function is meant only for creating the recipe in the core and nothing else.
     // we added this even though signUp exists cause devs may override signup expecting it
     // to be called just during sign up. But we also need a version of signing up which can be
@@ -127,7 +128,9 @@ export type RecipeInterface = {
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+          }
     >;
 
     /**

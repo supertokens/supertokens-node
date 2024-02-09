@@ -532,13 +532,15 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        const linkRes = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
-                            tenantId,
-                            user: createUserResponse.user,
-                            recipeUserId: createUserResponse.recipeUserId,
-                            session,
-                            userContext,
-                        });
+                        const linkRes = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
+                            {
+                                tenantId,
+                                user: createUserResponse.user,
+                                recipeUserId: createUserResponse.recipeUserId,
+                                session,
+                                userContext,
+                            }
+                        );
                         if (linkRes.status !== "OK") {
                             return {
                                 status: "GENERAL_ERROR",
@@ -601,7 +603,8 @@ export default function getAPIImplementation(): APIInterface {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
                 LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
+                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
             };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
@@ -619,6 +622,13 @@ export default function getAPIImplementation(): APIInterface {
                 );
             };
 
+            if (isFakeEmail(email) && session === undefined) {
+                // Fake emails cannot be used as a first factor
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
+            }
+
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
                 tenantId,
                 accountInfo,
@@ -628,11 +638,19 @@ export default function getAPIImplementation(): APIInterface {
                 checkCredentialsOnTenant,
             });
 
+            // If we couldn't find a matching user, the current
+            if (authenticatingUser === undefined) {
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
+            }
+
             const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 accountInfo,
                 factorIds: ["emailpassword"],
                 isSignUp: false,
+                inputUser: authenticatingUser?.user,
                 isVerified,
                 tenantId,
                 userContext,
@@ -717,10 +735,18 @@ export default function getAPIImplementation(): APIInterface {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
                 LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
+                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
             };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
+
+            if (isFakeEmail(email) && session === undefined) {
+                // Fake emails cannot be used as a first factor
+                return {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR",
+                };
+            }
 
             const res = await AuthUtils.preAuthChecks({
                 accountInfo: {
@@ -730,6 +756,7 @@ export default function getAPIImplementation(): APIInterface {
                 factorIds: ["emailpassword"],
                 isSignUp: true,
                 isVerified: isFakeEmail(email),
+                inputUser: undefined, // since this a sign up, this is undefined
                 tenantId,
                 userContext,
                 session,

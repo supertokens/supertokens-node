@@ -36,6 +36,7 @@ let Passwordless = require("../../lib/build/recipe/passwordless");
 let ThirdParty = require("../../lib/build/recipe/thirdparty");
 let Multitenancy = require("../../lib/build/recipe/multitenancy");
 let AccountLinking = require("../../lib/build/recipe/accountlinking");
+let EmailVerification = require("../../lib/build/recipe/emailverification");
 const OTPAuth = require("otpauth");
 const { json } = require("body-parser");
 const request = require("supertest");
@@ -47,6 +48,7 @@ const {
     tpSignInUp,
     getMfaInfo,
     getTestExpressApp,
+    validateUserEmail,
 } = require("./utils");
 
 describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinking.test.js]")}`, function () {
@@ -64,6 +66,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
     it("test that thirdparty user sign up is rejected when another user with same email unverified exists", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
+            debug: true,
             supertokens: {
                 connectionURI,
             },
@@ -118,25 +121,20 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                 Totp.init(),
                 MultiFactorAuth.init(),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await epSignUp(app, "test1@example.com", "password1", undefined);
-        assert.equal("OK", res.body.status);
-
-        let cookies = extractInfoFromResponse(res);
-        let accessToken = cookies.accessTokenFromAny;
-
-        res = await plessPhoneSigninUp(app, "+919876543210", accessToken);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         res = await tpSignInUp(app, "custom", "test1@example.com", undefined);
-        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
     });
 
-    it("test factor setup with same email as another existing user when automatic account linking is turned off", async function () {
+    it("should not link when signing-up when automatic account linking is turned off", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
@@ -187,26 +185,28 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                 Totp.init(),
                 MultiFactorAuth.init(),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await tpSignInUp(app, "custom", "test1@example.com", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         res = await epSignUp(app, "test2@example.com", "password1", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
+        await validateUserEmail(res.body.user.id);
 
         let cookies = extractInfoFromResponse(res);
         let accessToken = cookies.accessTokenFromAny;
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
-        assert.equal("OK", res.body.status);
-        assert.equal(true, res.body.user.isPrimaryUser);
-        assert.equal(2, res.body.user.loginMethods.length);
-        assert.equal("emailpassword", res.body.user.loginMethods[0].recipeId);
-        assert.equal("passwordless", res.body.user.loginMethods[1].recipeId);
+        cookies = extractInfoFromResponse(res);
+        assert.strictEqual("OK", res.body.status);
+        assert.strictEqual(false, res.body.user.isPrimaryUser);
+        assert.strictEqual(1, res.body.user.loginMethods.length);
+        assert.strictEqual(undefined, cookies.accessTokenFromAny);
     });
 
     it("test factor setup with same email as another existing user when automatic account linking is turned on but verification not required", async function () {
@@ -268,33 +268,33 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                 Totp.init(),
                 MultiFactorAuth.init(),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await tpSignInUp(app, "custom", "test1@example.com", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         res = await epSignUp(app, "test2@example.com", "password1", undefined);
-        assert.equal("OK", res.body.status);
+        await validateUserEmail(res.body.user.id);
+        assert.strictEqual("OK", res.body.status);
 
         let cookies = extractInfoFromResponse(res);
         let accessToken = cookies.accessTokenFromAny;
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
-        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal(
-            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_015)",
-            res.body.reason
-        );
+        assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
         });
 
-        // we expect only 2 users because we should not have the user created by the factor setup, since the factor setup is expected to fail
-        assert.equal(2, usersRes.users.length);
+        // While the linking doesn't succeed we do not check all conditions (in this case listing other users) to have less core calls
+        // The extra recipe user shouldn't cause any issues, since account linking (incl. factor setup) works the same when signing in with an existing user
+        assert.strictEqual(3, usersRes.users.length);
     });
 
     it("test factor setup with same email as another existing user when automatic account linking is turned on and verification is required", async function () {
@@ -356,38 +356,39 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                 Totp.init(),
                 MultiFactorAuth.init(),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await tpSignInUp(app, "custom", "test1@example.com", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         res = await epSignUp(app, "test2@example.com", "password1", undefined);
-        assert.equal("OK", res.body.status);
+        await validateUserEmail(res.body.user.id);
+        assert.strictEqual("OK", res.body.status);
 
         let cookies = extractInfoFromResponse(res);
         let accessToken = cookies.accessTokenFromAny;
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
-        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal(
-            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_015)",
-            res.body.reason
-        );
+        assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
         });
 
-        // we expect only 2 users because we should not have the user created by the factor setup, since the factor setup is expected to fail
-        assert.equal(2, usersRes.users.length);
+        // While the linking doesn't succeed we do not check all conditions (in this case listing other users) to have less core calls
+        // The extra recipe user shouldn't cause any issues, since account linking (incl. factor setup) works the same when signing in with an existing user
+        assert.strictEqual(3, usersRes.users.length);
     });
 
     it("test factor setup with thirdparty same email as another existing user when automatic account linking is turned on and verification is required", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
+            debug: true,
             supertokens: {
                 connectionURI,
             },
@@ -469,41 +470,42 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                 Totp.init(),
                 MultiFactorAuth.init(),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await tpSignInUp(app, "custom", "test1@example.com", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         res = await epSignUp(app, "test2@example.com", "password1", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
+        await validateUserEmail(res.body.user.id);
+        res = await epSignIn(app, "test2@example.com", "password1", undefined);
 
         let cookies = extractInfoFromResponse(res);
         let accessToken = cookies.accessTokenFromAny;
 
         res = await tpSignInUp(app, "custom", "test2@example.com", accessToken);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
-        assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal(
-            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_019)",
-            res.body.reason
-        );
+        assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
         });
 
         // we expect only 2 users because we should not have the user created by the factor setup, since the factor setup is expected to fail
-        assert.equal(2, usersRes.users.length);
+        assert.strictEqual(2, usersRes.users.length);
     });
 
     it("test that unverified sign up is not allowed as a factor setup", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
+            debug: true,
             supertokens: {
                 connectionURI,
             },
@@ -558,23 +560,21 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                 Totp.init(),
                 MultiFactorAuth.init(),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await tpSignInUp(app, "custom", "test@example.com", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         let cookies = extractInfoFromResponse(res);
         let accessToken = cookies.accessTokenFromAny;
 
         res = await epSignUp(app, "test2@example.com", "password1", accessToken);
-        assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal(
-            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
-            res.body.reason
-        );
+        assert.strictEqual("SIGN_UP_NOT_ALLOWED", res.body.status);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
     });
 
     it("test with account linking case 1", async function () {
@@ -646,34 +646,32 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                     firstFactors: ["emailpassword", "thirdparty"],
                 }),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await tpSignInUp(app, "custom", "test2@example.com");
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         shouldAutomaticallyLink = true;
         shouldRequireVerification = true;
 
         res = await tpSignInUp(app, "custom", "test1@example.com");
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         let cookies = extractInfoFromResponse(res);
         let accessToken = cookies.accessTokenFromAny;
 
         res = await epSignUp(app, "test2@example.com", "password2", accessToken);
-        assert.equal("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal(
-            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_010)",
-            res.body.reason
-        );
+        assert.strictEqual("SIGN_UP_NOT_ALLOWED", res.body.status);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
 
         res = await tpSignInUp(app, "custom", "test2@example.com", undefined);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
-        assert.equal(true, res.body.user.isPrimaryUser);
+        assert.strictEqual(true, res.body.user.isPrimaryUser);
     });
 
     it("test with account linking case 2", async function () {
@@ -745,29 +743,30 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                     firstFactors: ["emailpassword", "thirdparty"],
                 }),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
         const app = getTestExpressApp();
 
         let res = await tpSignInUp(app, "custom", "test2@example.com");
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         shouldAutomaticallyLink = true;
         shouldRequireVerification = true;
 
         res = await tpSignInUp(app, "custom", "test1@example.com");
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         let cookies = extractInfoFromResponse(res);
         let accessToken = cookies.accessTokenFromAny;
 
         res = await plessEmailSignInUp(app, "test2@example.com", accessToken);
-        assert.equal("OK", res.body.status);
+        assert.strictEqual("OK", res.body.status);
 
         res = await tpSignInUp(app, "custom", "test2@example.com", undefined);
-        assert.equal("OK", res.body.status);
-        assert.equal(true, res.body.user.isPrimaryUser);
-        assert.equal(3, res.body.user.loginMethods.length);
+        assert.strictEqual("OK", res.body.status);
+        assert.strictEqual(true, res.body.user.isPrimaryUser);
+        assert.strictEqual(3, res.body.user.loginMethods.length);
     });
 });

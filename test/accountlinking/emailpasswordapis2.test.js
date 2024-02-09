@@ -1338,7 +1338,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1444,7 +1444,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(tpUser.isPrimaryUser);
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1550,7 +1550,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(tpUser.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1658,13 +1658,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(tpUser.isPrimaryUser);
 
-            let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234", {
+            let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser2.user.isPrimaryUser === false);
             await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1773,7 +1773,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(tpUser.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234", {
+            let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser2.user.isPrimaryUser === false);
@@ -1784,7 +1784,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             await EmailVerification.verifyEmailUsingToken("public", token.token);
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1907,7 +1907,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(tpUser2.user.isPrimaryUser === false);
             await AccountLinking.linkAccounts(supertokens.convertToRecipeUserId(tpUser2.user.id), tpUser.id);
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -2660,7 +2660,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.status === "OK");
             assert(sendEmailToUserId === tpUser.id);
 
-            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", undefined, {
                 doNotLink: true,
             });
 

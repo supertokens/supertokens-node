@@ -362,7 +362,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     })
             );
 
-            assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
+            assert.strictEqual(response.body.status, "SIGN_IN_UP_NOT_ALLOWED");
             assert.strictEqual(
                 response.body.reason,
                 "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)"
@@ -534,17 +534,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let tpUser2 = (
-                await ThirdParty.manuallyCreateOrUpdateUser(
-                    "public",
-                    "custom-ev",
-                    "user",
-                    "email@test.com",
-                    true,
-                    undefined,
-                    {
-                        doNotLink: true,
-                    }
-                )
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email@test.com", true, {
+                    doNotLink: true,
+                })
             ).user;
             assert(tpUser2.isPrimaryUser === false);
 
@@ -951,17 +943,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
             let tpUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser(
-                    "public",
-                    "custom-no-ev",
-                    "user",
-                    "email2@test.com",
-                    true,
-                    undefined,
-                    {
-                        doNotLink: true,
-                    }
-                )
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email2@test.com", true, {
+                    doNotLink: true,
+                })
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
@@ -1069,7 +1053,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             ).user;
             assert(tpUser2.isPrimaryUser === true);
 
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
@@ -1084,7 +1068,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }
@@ -1160,17 +1144,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
             let tpUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser(
-                    "public",
-                    "custom-no-ev",
-                    "user",
-                    "email@test.com",
-                    true,
-                    undefined,
-                    {
-                        doNotLink: true,
-                    }
-                )
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email@test.com", true, {
+                    doNotLink: true,
+                })
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
@@ -1275,7 +1251,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             ).user;
             assert(tpUser2.isPrimaryUser === false);
 
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
@@ -1290,7 +1266,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }

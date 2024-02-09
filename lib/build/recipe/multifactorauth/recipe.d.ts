@@ -18,6 +18,8 @@ import { User } from "../../user";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
+import { AccountInfo } from "../accountlinking/types";
+import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -77,4 +79,11 @@ export default class Recipe extends RecipeModule {
         | {
               status: "UNKNOWN_SESSION_RECIPE_USER_ID";
           };
+    checkIfLinkingAllowed(
+        session: SessionContainerInterface,
+        user: User,
+        factorIds: string[],
+        accountInfo: AccountInfo,
+        userContext: UserContext
+    ): Promise<string[]>;
 }

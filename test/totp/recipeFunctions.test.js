@@ -262,7 +262,6 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
         }).generate();
 
         let verifyTotpRes = await Totp.verifyTOTP("public", "testUserId", "123456");
-        console.log(verifyTotpRes);
         assert.equal(verifyTotpRes.status, "INVALID_TOTP_ERROR");
         assert.equal(verifyTotpRes.currentNumberOfFailedAttempts, 1);
         assert.equal(verifyTotpRes.maxNumberOfFailedAttempts, 5);

@@ -79,7 +79,7 @@ export declare type RecipeInterface = {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     createNewRecipeUser(input: {
@@ -113,7 +113,7 @@ export declare type RecipeInterface = {
               status: "WRONG_CREDENTIALS_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     /**

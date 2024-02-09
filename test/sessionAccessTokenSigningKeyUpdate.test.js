@@ -151,6 +151,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             response.refreshToken.token,
             response.antiCsrfToken,
             false,
+            true,
             {}
         );
         // Calling refresh doesn't refresh the key cache

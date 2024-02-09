@@ -2,6 +2,7 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import { AuthUtils } from "../../../authUtils";
 import { FactorIds } from "../../multifactorauth";
+import AccountLinking from "../../accountlinking/recipe";
 import { getEnabledPwlessFactors } from "../utils";
 import { listUsersByAccountInfo } from "../../..";
 
@@ -14,7 +15,8 @@ export default function getAPIImplementation(): APIInterface {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
                 LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
+                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
             };
 
             const deviceInfo = await input.options.recipeImplementation.listCodesByPreAuthSessionId({
@@ -91,7 +93,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            const isSignUp = authenticatingUser !== undefined;
+            const isSignUp = authenticatingUser === undefined;
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 accountInfo: {
                     recipeId: "passwordless",
@@ -99,6 +101,7 @@ export default function getAPIImplementation(): APIInterface {
                     phoneNumber: deviceInfo.phoneNumber,
                 },
                 factorIds: [factorId],
+                inputUser: authenticatingUser?.user,
                 isSignUp,
                 isVerified: true,
                 tenantId: input.tenantId,
@@ -160,6 +163,13 @@ export default function getAPIImplementation(): APIInterface {
                           }
                 ));
 
+            if (
+                response.status === "RESTART_FLOW_ERROR" ||
+                response.status === "INCORRECT_USER_INPUT_CODE_ERROR" ||
+                response.status === "EXPIRED_USER_INPUT_CODE_ERROR"
+            ) {
+                return response;
+            }
             if (response.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(response, errorCodeMap, "SIGN_IN_UP_NOT_ALLOWED");
             }
@@ -184,7 +194,7 @@ export default function getAPIImplementation(): APIInterface {
 
             if (postAuthChecks.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(
-                    preAuthChecks,
+                    postAuthChecks,
                     errorCodeMap,
                     "SIGN_IN_UP_NOT_ALLOWED"
                 );
@@ -200,6 +210,12 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         createCodePOST: async function (input) {
+            const errorCodeMap = {
+                SIGN_UP_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
+                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+            };
             const accountInfo: { phoneNumber?: string; email?: string } = {};
             if ("email" in input) {
                 accountInfo.email = input.email;
@@ -208,12 +224,40 @@ export default function getAPIImplementation(): APIInterface {
                 accountInfo.email = input.phoneNumber;
             }
 
+            // Here we use the listUsersByAccountInfo method to check if this is going to be a sign in or up instead of the
+            // function in AuthUtils because:
+            // 1. At this point we have no way to check credentials
+            // 2. We do not want to share the relevant recipe user (yet)
+            const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: input.tenantId,
+                accountInfo,
+                doUnionOfAccountInfo: false,
+                userContext: input.userContext,
+            });
+            const usersWithMatchingLoginMethods = existingUsers
+                .map((user) => ({
+                    user,
+                    loginMethod: user.loginMethods.find(
+                        (lm) =>
+                            lm.recipeId === "passwordless" &&
+                            (lm.hasSameEmailAs(accountInfo.email) || lm.hasSamePhoneNumberAs(accountInfo.phoneNumber))
+                    )!,
+                }))
+                .filter(({ loginMethod }) => loginMethod !== undefined);
+
+            if (usersWithMatchingLoginMethods.length > 1) {
+                throw new Error(
+                    "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
+                );
+            }
+
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 accountInfo: {
                     ...accountInfo,
                     recipeId: "passwordless",
                 },
-                isSignUp: false, // TODO
+                isSignUp: usersWithMatchingLoginMethods.length === 0,
+                inputUser: undefined,
                 isVerified: true,
                 tenantId: input.tenantId,
                 factorIds: input.factorIds ?? getEnabledPwlessFactors(input.options.config),
@@ -221,14 +265,14 @@ export default function getAPIImplementation(): APIInterface {
                 session: input.session,
             });
 
-            if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
+            if (preAuthChecks.status !== "OK") {
                 // On the frontend, this should show a UI of asking the user
                 // to login using a different method.
-                return {
-                    status: "SIGN_IN_UP_NOT_ALLOWED",
-                    reason:
-                        "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                };
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
+                );
             }
 
             let response = await input.options.recipeImplementation.createCode(
@@ -270,14 +314,12 @@ export default function getAPIImplementation(): APIInterface {
             let userInputCode: string | undefined = undefined;
 
             let flowType = input.options.config.flowType;
-            if (input.factorIds) {
-                if (input.factorIds.every((id) => id.startsWith("link"))) {
-                    flowType = "MAGIC_LINK";
-                } else if (input.factorIds.every((id) => id.startsWith("otp"))) {
-                    flowType = "MAGIC_LINK";
-                } else {
-                    flowType = "USER_INPUT_CODE_AND_MAGIC_LINK";
-                }
+            if (preAuthChecks.validFactorIds.every((id) => id.startsWith("link"))) {
+                flowType = "MAGIC_LINK";
+            } else if (preAuthChecks.validFactorIds.every((id) => id.startsWith("otp"))) {
+                flowType = "USER_INPUT_CODE";
+            } else {
+                flowType = "USER_INPUT_CODE_AND_MAGIC_LINK";
             }
             if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                 magicLink =

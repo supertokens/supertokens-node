@@ -14,6 +14,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         };
         delete result.userContext;
         delete result.tenantId;
+        delete result.session;
         if (result.recipeUserId !== undefined && result.recipeUserId.getAsString !== undefined) {
             result.recipeUserId = result.recipeUserId.getAsString();
         }
@@ -60,13 +61,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             // Attempt account linking (this is a sign up)
             let updatedUser = response.user;
 
-            const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfo({
-                tenantId: input.tenantId,
-                user: response.user,
-                recipeUserId: response.recipeUserId,
-                session: input.session,
-                userContext: input.userContext,
-            });
+            const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
+                {
+                    tenantId: input.tenantId,
+                    user: response.user,
+                    recipeUserId: response.recipeUserId,
+                    session: input.session,
+                    userContext: input.userContext,
+                }
+            );
 
             if (linkResult.status !== "OK") {
                 return linkResult;

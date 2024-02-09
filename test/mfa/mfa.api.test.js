@@ -32,6 +32,7 @@ let UserMetadata = require("../../lib/build/recipe/usermetadata");
 let Session = require("../../lib/build/recipe/session");
 let Totp = require("../../lib/build/recipe/totp");
 let EmailPassword = require("../../lib/build/recipe/emailpassword");
+let EmailVerification = require("../../lib/build/recipe/emailverification");
 let Passwordless = require("../../lib/build/recipe/passwordless");
 let ThirdParty = require("../../lib/build/recipe/thirdparty");
 let Multitenancy = require("../../lib/build/recipe/multitenancy");
@@ -47,7 +48,9 @@ const {
     tpSignInUp,
     getMfaInfo,
     getTestExpressApp,
+    validateUserEmail,
 } = require("./utils");
+const { parseJWTWithoutSignatureVerification } = require("../../lib/build/recipe/session/jwt");
 
 describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
     beforeEach(async function () {
@@ -135,8 +138,15 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
                     },
                 }),
                 Totp.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => ({
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    }),
+                }),
                 MultiFactorAuth.init(),
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
@@ -144,6 +154,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
 
         let res = await epSignUp(app, "test@example.com", "password1");
         assert.equal("OK", res.body.status);
+        await validateUserEmail(res.body.user.id);
 
         res = await tpSignInUp(app, "custom", "test@example.com");
         assert.equal("OK", res.body.status);
@@ -171,6 +182,13 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
                 }),
                 ThirdParty.init(),
                 Totp.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => ({
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    }),
+                }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 MultiFactorAuth.init(),
                 Session.init(),
             ],
@@ -178,7 +196,8 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
 
         const app = getTestExpressApp();
 
-        await EmailPassword.signUp("public", "test@example.com", "password");
+        const signUpUser = await EmailPassword.signUp("public", "test@example.com", "password");
+        await validateUserEmail(signUpUser.recipeUserId.getAsString());
 
         let res = await epSignIn(app, "test@example.com", "password");
         assert.equal("OK", res.body.status);
@@ -304,6 +323,13 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
                 }),
                 ThirdParty.init(),
                 Totp.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => ({
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    }),
+                }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 MultiFactorAuth.init(),
                 Session.init(),
             ],
@@ -315,7 +341,8 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
             requiredSecondaryFactors: ["otp-email", "otp-phone"],
         });
 
-        await EmailPassword.signUp("public", "test@example.com", "password");
+        const signUpUser = await EmailPassword.signUp("public", "test@example.com", "password");
+        await validateUserEmail(signUpUser.recipeUserId.getAsString());
 
         let res = await epSignIn(app, "test@example.com", "password");
         assert.equal("OK", res.body.status);
@@ -339,7 +366,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.equal(403, res.status);
     });
 
-    it("test that existing user sign in results in factor setup not allowed error", async function () {
+    it("test that existing user sign in links the user to the current one if allowed", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
@@ -358,6 +385,13 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
                 }),
                 ThirdParty.init(),
                 Totp.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => ({
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    }),
+                }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 MultiFactorAuth.init({
                     firstFactors: ["emailpassword"],
                 }),
@@ -371,8 +405,10 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
             firstFactors: ["emailpassword", "otp-email"],
         });
 
-        await EmailPassword.signUp("public", "test1@example.com", "password");
-        await EmailPassword.signUp("public", "test2@example.com", "password");
+        const signUpUser1 = await EmailPassword.signUp("public", "test1@example.com", "password");
+        await validateUserEmail(signUpUser1.recipeUserId.getAsString());
+        const signUpUser2 = await EmailPassword.signUp("public", "test2@example.com", "password");
+        await validateUserEmail(signUpUser2.recipeUserId.getAsString());
 
         let res = await epSignIn(app, "test1@example.com", "password");
         assert.equal("OK", res.body.status);
@@ -381,17 +417,13 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         let accessToken = cookies.accessTokenFromAny;
 
         res = await epSignIn(app, "test2@example.com", "password", accessToken);
-        assert.equal("SIGN_IN_NOT_ALLOWED", res.body.status);
-        assert.equal(
-            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_009)",
-            res.body.reason
-        );
 
-        cookies = extractInfoFromResponse(res);
-        assert.equal(undefined, cookies.accessTokenFromAny);
+        assert.equal("OK", res.body.status);
+        assert.equal(true, res.body.user.isPrimaryUser);
+        assert.equal(2, res.body.user.loginMethods.length);
     });
 
-    it("test that a different primary user login throws factor setup not allowed error", async function () {
+    it("test that the factor doesn't get completed if signing in with another primary user", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
@@ -410,6 +442,12 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
                 }),
                 ThirdParty.init(),
                 Totp.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => ({
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    }),
+                }),
                 MultiFactorAuth.init({
                     firstFactors: ["emailpassword"],
                 }),
@@ -420,34 +458,38 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         const app = getTestExpressApp();
 
         const user1 = await EmailPassword.signUp("public", "test1@example.com", "password");
+        await AccountLinking.createPrimaryUser(user1.recipeUserId);
         const user2 = await Passwordless.signInUp({
             tenantId: "public",
             email: "test1@example.com",
         });
-        await AccountLinking.createPrimaryUser(user1.recipeUserId);
-        await AccountLinking.linkAccounts(user2.recipeUserId, user1.user.id);
+        const linkingRes1 = await AccountLinking.linkAccounts(user2.recipeUserId, user1.user.id);
+        const primUser1 = linkingRes1.user;
 
         const user3 = await EmailPassword.signUp("public", "test2@example.com", "password");
+        await AccountLinking.createPrimaryUser(user3.recipeUserId);
         const user4 = await Passwordless.signInUp({
             tenantId: "public",
             email: "test2@example.com",
         });
-        await AccountLinking.createPrimaryUser(user3.recipeUserId);
-        await AccountLinking.linkAccounts(user4.recipeUserId, user3.user.id);
+        const linkingRes2 = await AccountLinking.linkAccounts(user4.recipeUserId, user3.user.id);
+        const primUser2 = linkingRes2.user;
 
         res = await epSignIn(app, "test2@example.com", "password");
         assert.equal("OK", res.body.status);
 
         let cookies = extractInfoFromResponse(res);
+        const parsedTokenAfterSignIn = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
         const accessToken = cookies.accessTokenFromAny;
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.equal(
-            "Cannot complete MFA because of security reasons. Please contact support. (ERR_CODE_013)",
-            res.body.reason
-        );
+        assert.strictEqual(res.body.reason, "User linking failed. Please contact support. (ERR_CODE_0XX)");
         cookies = extractInfoFromResponse(res);
-        assert.equal(undefined, cookies.accessTokenFromAny);
+        const parsedTokenAfterSecondSignIn = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+        assert.deepStrictEqual(
+            parsedTokenAfterSignIn.payload["st-mfa"],
+            parsedTokenAfterSecondSignIn.payload["st-mfa"]
+        );
     });
 });

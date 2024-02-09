@@ -117,8 +117,7 @@ export default class Recipe extends RecipeModule {
                     // even if the user is logging into a tenant does not have
                     // passwordless loginMethod, the frontend will call the
                     // same consumeCode API as if there was a passwordless user.
-                    // the only diff is that a new recipe user will be created,
-                    // which is OK.
+                    // the only diff is that a new recipe user will be associated with the session tenant
                     function isFactorSetupForUser(user: User, factorId: string) {
                         for (const loginMethod of user.loginMethods) {
                             if (loginMethod.recipeId !== Recipe.RECIPE_ID) {

@@ -21,11 +21,13 @@ export declare const AuthUtils: {
         tenantId,
         isSignUp,
         isVerified,
+        inputUser,
         factorIds,
         session,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId;
+        inputUser: User | undefined;
         tenantId: string;
         factorIds: string[];
         isSignUp: boolean;
@@ -36,13 +38,15 @@ export declare const AuthUtils: {
         | {
               status: "OK";
               validFactorIds: string[];
-              isFirstFactor: boolean;
           }
         | {
               status: "SIGN_UP_NOT_ALLOWED";
           }
         | {
-              status: "NON_PRIMARY_SESSION_USER";
+              status:
+                  | "LINKING_TO_SESSION_USER_FAILED"
+                  | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER"
+                  | "NOT_LINKING_NON_FIRST_FACTOR";
           }
     >;
     postAuthChecks: ({
@@ -75,7 +79,7 @@ export declare const AuthUtils: {
               status: "SIGN_IN_NOT_ALLOWED";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({

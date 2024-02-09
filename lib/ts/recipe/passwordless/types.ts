@@ -133,7 +133,7 @@ export type RecipeInterface = {
               codeLifetime: number;
               timeCreated: number;
           }
-        | { status: "NON_PRIMARY_SESSION_USER" }
+        | { status: "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER" }
     >;
 
     createNewCodeForDevice: (input: {
@@ -192,7 +192,9 @@ export type RecipeInterface = {
               maximumCodeInputAttempts: number;
           }
         | { status: "RESTART_FLOW_ERROR" }
-        | { status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+          }
     >;
 
     createRecipeUser: (

@@ -292,7 +292,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
         });
     });
 
-    describe("getPrimaryUserThatCanBeLinkedToRecipeUserId", () => {
+    describe("getUsersThatCanBeLinkedToRecipeUser", () => {
         it("should not suggest linking users on separate tenants", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
@@ -334,11 +334,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 userContext: { doNotLink: true },
             });
 
-            const toLink = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
+            const toLink = await AccountLinking.getUsersThatCanBeLinkedToRecipeUser(
                 "tenant1",
                 pwlessSignUpResp.recipeUserId
             );
-            assert.strictEqual(toLink, undefined);
+            assert.strictEqual(toLink.primaryUser, undefined);
+            assert.deepStrictEqual(toLink.oldestUser.toJson(), pwlessSignUpResp.user.toJson());
         });
 
         it("should not check if recipeUser is associated with tenant", async function () {
@@ -382,11 +383,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 userContext: { doNotLink: true },
             });
 
-            const toLink = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
+            const toLink = await AccountLinking.getUsersThatCanBeLinkedToRecipeUser(
                 "public",
                 pwlessSignUpResp.recipeUserId
             );
-            assert.deepStrictEqual(toLink.toJson(), primUser.toJson());
+            assert.deepStrictEqual(toLink.primaryUser.toJson(), primUser.toJson());
         });
     });
 

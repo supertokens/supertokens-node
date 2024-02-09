@@ -1118,32 +1118,20 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             res.status(500).send(err.message);
         });
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
-                        redirectURIQueryParams: {
-                            code: "abcdefghj",
-                        },
+        let response = await request(app)
+            .post("/auth/signinup")
+            .send({
+                thirdPartyId: "custom",
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        code: "abcdefghj",
                     },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve({
-                            status: res.status,
-                            message: res.text,
-                        });
-                    }
-                })
-        );
+                },
+            });
 
         assert.strictEqual(response.status, 500);
-        assert.strictEqual(response.message, "Invalid access token");
+        assert.strictEqual(response.text, "Invalid access token");
     });
 
     it("Test that sign in up works if validateAccessToken does not throw", async function () {
@@ -1230,31 +1218,17 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         const server = app.listen(8083);
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
-                        redirectURIQueryParams: {
-                            code: "abcdefghj",
-                        },
+        let response = await request(app)
+            .post("/auth/signinup")
+            .send({
+                thirdPartyId: "custom",
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        code: "abcdefghj",
                     },
-                })
-                .end((err, res) => {
-                    console.log(err);
-                    console.log(res);
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve({
-                            status: res.status,
-                            body: res.body,
-                        });
-                    }
-                })
-        );
+                },
+            });
 
         assert.equal(overridenValidateCalled, true);
         assert.strictEqual(response.status, 200);

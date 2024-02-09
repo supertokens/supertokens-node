@@ -25,6 +25,7 @@ import { RESYNC_SESSION_AND_FETCH_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
+    FactorIds,
     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
     GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
@@ -33,7 +34,7 @@ import {
     TypeInput,
     TypeNormalisedInput,
 } from "./types";
-import { validateAndNormaliseUserInput } from "./utils";
+import { getMFARelatedInfoFromSession, validateAndNormaliseUserInput } from "./utils";
 import resyncSessionAndFetchMFAInfoAPI from "./api/resyncSessionAndFetchMFAInfo";
 import SessionRecipe from "../session/recipe";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
@@ -42,6 +43,9 @@ import RecipeUserId from "../../recipeUserId";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
+import { AccountInfo } from "../accountlinking/types";
+import { SessionContainerInterface } from "../session/types";
+import { logDebugMessage } from "../../logger";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -258,4 +262,72 @@ export default class Recipe extends RecipeModule {
         }
         return result;
     };
+
+    async checkIfLinkingAllowed(
+        session: SessionContainerInterface,
+        user: User,
+        factorIds: string[],
+        accountInfo: AccountInfo,
+        userContext: UserContext
+    ) {
+        logDebugMessage("checkIfLinkingAllowed called");
+        let caughtSetupFactorError;
+        const mfaInfo = await getMFARelatedInfoFromSession({
+            session,
+            userContext,
+        });
+        const validFactorIds = [];
+        // In all apis besides passwordless createCode, we know exactly which factor we are signing into, so in those cases,
+        // this is basically just checking if the single factor is allowed to be setup or not.
+        // For createCode (if the FE didn't pass the factor id exactly, which it should for MFA),
+        // we filter whatever is allowed. If any of them are allowed, createCode can happen.
+        // The filtered list can be used to select email templates. As an example:
+        // If the flowType for passwordless is USER_INPUT_CODE_AND_MAGIC_LINK and but only the otp-email factor is allowed to be set up
+        // then we do not want to include a link in the email.
+        for (const id of factorIds) {
+            // TODO: move this into PWLess
+            if ([FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(id)) {
+                if (
+                    user.loginMethods.some(
+                        (lm) => lm.hasSameEmailAs(accountInfo.email) || lm.hasSamePhoneNumberAs(accountInfo.phoneNumber)
+                    )
+                ) {
+                    logDebugMessage(
+                        `checkIfLinkingAllowed ${id} valid because of this is a passwordless factor and the session user already has this email/phone`
+                    );
+                    validFactorIds.push(id);
+                    continue;
+                }
+            }
+            logDebugMessage(`checkIfLinkingAllowed checking assertAllowedToSetupFactorElseThrowInvalidClaimError`);
+            try {
+                await this.recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError({
+                    session,
+                    factorId: id,
+                    mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
+                    factorsSetUpForUser: mfaInfo.factorsSetUpForUser,
+                    userContext,
+                });
+                logDebugMessage(
+                    `checkIfLinkingAllowed ${id} valid because assertAllowedToSetupFactorElseThrowInvalidClaimError passed`
+                );
+                // we add it to the valid factor ids list since it is either already set up or allowed to be set up
+                validFactorIds.push(id);
+            } catch (err) {
+                logDebugMessage(
+                    `checkIfLinkingAllowed assertAllowedToSetupFactorElseThrowInvalidClaimError failed for ${id}`
+                );
+                caughtSetupFactorError = err;
+            }
+        }
+        if (validFactorIds.length === 0) {
+            logDebugMessage(
+                `checkIfLinkingAllowed rethrowing error from assertAllowedToSetupFactorElseThrowInvalidClaimError because we found no valid factors`
+            );
+            // we can safely re-throw this since this should be an InvalidClaimError
+            // if it's anything else, we do not really have a way of handling it anyway.
+            throw caughtSetupFactorError;
+        }
+        return validFactorIds;
+    }
 }

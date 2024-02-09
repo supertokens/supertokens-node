@@ -71,7 +71,7 @@ export default class Wrapper {
               timeCreated: number;
           }
         | {
-              status: "NON_PRIMARY_SESSION_USER";
+              status: "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     static createNewCodeForDevice(input: {
@@ -135,7 +135,7 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     static consumeCode(
@@ -179,7 +179,7 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     static consumeCode(
@@ -221,7 +221,7 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     static updatePasswordlessUser(input: {

@@ -35,7 +35,7 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
     static reset(): void;
-    createPrimaryUserIdOrLinkByAccountInfo: ({
+    createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided: ({
         tenantId,
         user: inputUser,
         recipeUserId,
@@ -53,7 +53,7 @@ export default class Recipe extends RecipeModule {
               user: User;
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     getUsersThatCanBeLinkedToRecipeUser: ({
@@ -119,12 +119,7 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<void>;
-    shouldBecomePrimaryUser(
-        user: User,
-        tenantId: string,
-        session: SessionContainerInterface | undefined,
-        userContext: UserContext
-    ): Promise<boolean>;
+    private shouldBecomePrimaryUser;
     private tryLinkingBySession;
     private tryLinkingByAccountInfo;
     private tryLinkAccounts;

@@ -25,7 +25,7 @@ export default class Wrapper {
               user: import("../../types").User;
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
           }
     >;
     /**
@@ -37,7 +37,7 @@ export default class Wrapper {
      * that the input recipe ID can be linked to, and therefore it can be made
      * into a primary user itself.
      */
-    static getPrimaryUserThatCanBeLinkedToRecipeUserId(
+    static getUsersThatCanBeLinkedToRecipeUser(
         tenantId: string,
         recipeUserId: RecipeUserId,
         userContext?: Record<string, any>
@@ -163,7 +163,7 @@ export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
 export declare const unlinkAccount: typeof Wrapper.unlinkAccount;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
-export declare const getPrimaryUserThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserThatCanBeLinkedToRecipeUserId;
+export declare const getUsersThatCanBeLinkedToRecipeUser: typeof Wrapper.getUsersThatCanBeLinkedToRecipeUser;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export declare const isSignInAllowed: typeof Wrapper.isSignInAllowed;
 export declare const isEmailChangeAllowed: typeof Wrapper.isEmailChangeAllowed;

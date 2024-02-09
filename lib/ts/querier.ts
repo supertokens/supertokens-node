@@ -309,13 +309,15 @@ export class Querier {
                     headers,
                 });
 
-                userContext._default = {
-                    ...userContext._default,
-                    coreCallCache: {
-                        ...userContext._default?.coreCallCache,
-                        [uniqueKey]: response,
-                    },
-                };
+                if (response.status === 200) {
+                    userContext._default = {
+                        ...userContext._default,
+                        coreCallCache: {
+                            ...userContext._default?.coreCallCache,
+                            [uniqueKey]: response,
+                        },
+                    };
+                }
 
                 return response;
             },
@@ -492,9 +494,9 @@ export class Querier {
                 throw response;
             }
             if (response.headers.get("content-type")?.startsWith("text")) {
-                return { body: await response.text(), headers: response.headers };
+                return { body: await response.clone().text(), headers: response.headers };
             }
-            return { body: await response.json(), headers: response.headers };
+            return { body: await response.clone().json(), headers: response.headers };
         } catch (err) {
             if (
                 err.message !== undefined &&

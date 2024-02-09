@@ -807,46 +807,28 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // send an invalid linkCode
-            let letInvalidLinkCodeResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: codeInfo.preAuthSessionId,
-                        linkCode: "invalidLinkCode",
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
+            let letInvalidLinkCodeResponse = await request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    linkCode: "invalidLinkCode",
+                })
+                .expect(200);
 
-            assert(letInvalidLinkCodeResponse.status === "RESTART_FLOW_ERROR");
+            assert.strictEqual(letInvalidLinkCodeResponse.body.status, "RESTART_FLOW_ERROR");
         }
 
         {
             // send a valid linkCode
-            let validLinkCodeResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: codeInfo.preAuthSessionId,
-                        linkCode: codeInfo.linkCode,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
+            let validLinkCodeResponse = await request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    linkCode: codeInfo.linkCode,
+                })
+                .expect(200);
 
-            checkConsumeResponse(validLinkCodeResponse, {
+            checkConsumeResponse(validLinkCodeResponse.body, {
                 email,
                 phoneNumber: undefined,
                 isNew: true,
@@ -902,52 +884,34 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // send an incorrect userInputCode
-            let incorrectUserInputCodeResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: codeInfo.preAuthSessionId,
-                        userInputCode: "invalidLinkCode",
-                        deviceId: codeInfo.deviceId,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
+            let incorrectUserInputCodeResponse = await request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    userInputCode: "invalidLinkCode",
+                    deviceId: codeInfo.deviceId,
+                })
+                .expect(200);
 
-            assert(incorrectUserInputCodeResponse.status === "INCORRECT_USER_INPUT_CODE_ERROR");
-            assert(incorrectUserInputCodeResponse.failedCodeInputAttemptCount === 1);
+            assert(incorrectUserInputCodeResponse.body.status === "INCORRECT_USER_INPUT_CODE_ERROR");
+            assert(incorrectUserInputCodeResponse.body.failedCodeInputAttemptCount === 1);
             //checking default value for maximumCodeInputAttempts is 5
-            assert(incorrectUserInputCodeResponse.maximumCodeInputAttempts === 5);
-            assert(Object.keys(incorrectUserInputCodeResponse).length === 3);
+            assert(incorrectUserInputCodeResponse.body.maximumCodeInputAttempts === 5);
+            assert(Object.keys(incorrectUserInputCodeResponse.body).length === 3);
         }
 
         {
             // send a valid userInputCode
-            let validUserInputCodeResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: codeInfo.preAuthSessionId,
-                        userInputCode: codeInfo.userInputCode,
-                        deviceId: codeInfo.deviceId,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
+            let validUserInputCodeResponse = await request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    userInputCode: codeInfo.userInputCode,
+                    deviceId: codeInfo.deviceId,
+                })
+                .expect(200);
 
-            checkConsumeResponse(validUserInputCodeResponse, {
+            checkConsumeResponse(validUserInputCodeResponse.body, {
                 email,
                 phoneNumber: undefined,
                 isNew: true,
@@ -957,24 +921,15 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             // send a used userInputCode
-            let usedUserInputCodeResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: codeInfo.preAuthSessionId,
-                        userInputCode: codeInfo.userInputCode,
-                        deviceId: codeInfo.deviceId,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-            assert(usedUserInputCodeResponse.status === "RESTART_FLOW_ERROR");
+            let usedUserInputCodeResponse = await request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    userInputCode: codeInfo.userInputCode,
+                    deviceId: codeInfo.deviceId,
+                })
+                .expect(200);
+            assert(usedUserInputCodeResponse.body.status === "RESTART_FLOW_ERROR");
         }
     });
 

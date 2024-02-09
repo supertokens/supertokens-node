@@ -3,6 +3,7 @@ import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
+import { logDebugMessage } from "../../../logger";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -24,7 +25,8 @@ export default function getAPIInterface(): APIInterface {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
                 LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                NON_PRIMARY_SESSION_USER: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
+                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
             };
             const { provider, tenantId, options, session, userContext } = input;
 
@@ -70,7 +72,7 @@ export default function getAPIInterface(): APIInterface {
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
                 accountInfo: {
-                    email: emailInfo.id,
+                    // Here we intentionally do not add
                     thirdParty: {
                         userId: userInfo.thirdPartyUserId,
                         id: provider.id,
@@ -83,15 +85,17 @@ export default function getAPIInterface(): APIInterface {
                 checkCredentialsOnTenant,
             });
 
-            const isSignUp = authenticatingUser !== undefined;
+            const isSignUp = authenticatingUser === undefined;
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 accountInfo: {
                     recipeId,
+                    email: emailInfo.id,
                     thirdParty: {
                         userId: userInfo.thirdPartyUserId,
                         id: provider.id,
                     },
                 },
+                inputUser: authenticatingUser?.user,
                 factorIds: ["thirdparty"],
                 isSignUp,
                 isVerified: emailInfo.isVerified,
@@ -101,6 +105,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (preAuthChecks.status !== "OK") {
+                logDebugMessage("signInUpPOST: erroring out because preAuthChecks returned " + preAuthChecks.status);
                 // On the frontend, this should show a UI of asking the user
                 // to login using a different method.
                 return AuthUtils.getErrorStatusResponseWithReason(
@@ -111,7 +116,7 @@ export default function getAPIInterface(): APIInterface {
             }
 
             if (authenticatingUser !== undefined) {
-                // this is a sign in. So before we proceed, we need to check if an email change
+                // This is a sign in. So before we proceed, we need to check if an email change
                 // is allowed since the email could have changed from the social provider's side.
                 // We do this check here and not in the recipe function cause we want to keep the
                 // recipe function checks to a minimum so that the dev has complete control of
@@ -216,6 +221,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (response.status === "SIGN_IN_UP_NOT_ALLOWED") {
+                logDebugMessage("signInUpPOST: erroring out because signInUp returned " + response.status);
                 return response;
             }
 
@@ -238,8 +244,9 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (postAuthChecks.status !== "OK") {
+                logDebugMessage("signInUpPOST: erroring out because postAuthChecks returned " + postAuthChecks.status);
                 return AuthUtils.getErrorStatusResponseWithReason(
-                    preAuthChecks,
+                    postAuthChecks,
                     errorCodeMap,
                     "SIGN_IN_UP_NOT_ALLOWED"
                 );

@@ -324,6 +324,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response.refreshToken.token,
             response.antiCsrfToken,
             false,
+            true,
             {}
         );
 
@@ -342,6 +343,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 response.refreshToken.token,
                 response.antiCsrfToken,
                 false,
+                true,
                 {}
             );
             throw new Error("should not have come here");
@@ -382,6 +384,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response.refreshToken.token,
             response.antiCsrfToken,
             false,
+            true,
             {}
         );
 
@@ -400,6 +403,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 response.refreshToken.token,
                 response.antiCsrfToken,
                 false,
+                true,
                 {}
             );
             throw new Error("should not have come here");
@@ -485,6 +489,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response.refreshToken.token,
             response.antiCsrfToken,
             false,
+            true,
             {}
         );
         assert(response2.session !== undefined);
