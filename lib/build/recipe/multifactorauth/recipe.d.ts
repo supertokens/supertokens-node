@@ -18,7 +18,6 @@ import { User } from "../../user";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
-import { AccountInfo } from "../accountlinking/types";
 import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
@@ -81,9 +80,7 @@ export default class Recipe extends RecipeModule {
           };
     checkIfLinkingAllowed(
         session: SessionContainerInterface,
-        user: User,
         factorIds: string[],
-        accountInfo: AccountInfo,
         userContext: UserContext
     ): Promise<string[]>;
 }

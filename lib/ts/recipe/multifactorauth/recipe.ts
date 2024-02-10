@@ -25,7 +25,6 @@ import { RESYNC_SESSION_AND_FETCH_MFA_INFO } from "./constants";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import {
     APIInterface,
-    FactorIds,
     GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc,
     GetEmailsForFactorFromOtherRecipesFunc,
     GetFactorsSetupForUserFromOtherRecipesFunc,
@@ -43,7 +42,6 @@ import RecipeUserId from "../../recipeUserId";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
-import { AccountInfo } from "../accountlinking/types";
 import { SessionContainerInterface } from "../session/types";
 import { logDebugMessage } from "../../logger";
 
@@ -263,13 +261,7 @@ export default class Recipe extends RecipeModule {
         return result;
     };
 
-    async checkIfLinkingAllowed(
-        session: SessionContainerInterface,
-        user: User,
-        factorIds: string[],
-        accountInfo: AccountInfo,
-        userContext: UserContext
-    ) {
+    async checkIfLinkingAllowed(session: SessionContainerInterface, factorIds: string[], userContext: UserContext) {
         logDebugMessage("checkIfLinkingAllowed called");
         let caughtSetupFactorError;
         const mfaInfo = await getMFARelatedInfoFromSession({
@@ -285,20 +277,6 @@ export default class Recipe extends RecipeModule {
         // If the flowType for passwordless is USER_INPUT_CODE_AND_MAGIC_LINK and but only the otp-email factor is allowed to be set up
         // then we do not want to include a link in the email.
         for (const id of factorIds) {
-            // TODO: move this into PWLess
-            if ([FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(id)) {
-                if (
-                    user.loginMethods.some(
-                        (lm) => lm.hasSameEmailAs(accountInfo.email) || lm.hasSamePhoneNumberAs(accountInfo.phoneNumber)
-                    )
-                ) {
-                    logDebugMessage(
-                        `checkIfLinkingAllowed ${id} valid because of this is a passwordless factor and the session user already has this email/phone`
-                    );
-                    validFactorIds.push(id);
-                    continue;
-                }
-            }
             logDebugMessage(`checkIfLinkingAllowed checking assertAllowedToSetupFactorElseThrowInvalidClaimError`);
             try {
                 await this.recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError({
