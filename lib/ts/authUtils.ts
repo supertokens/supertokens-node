@@ -438,7 +438,7 @@ async function getValidFirstFactors(
         let validRes = await isValidFirstFactor(tenantId, id, userContext);
 
         if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
-            if (hasSession !== undefined) {
+            if (hasSession) {
                 throw new SessionError({
                     type: SessionError.UNAUTHORISED,
                     message: "Tenant not found",
@@ -452,7 +452,7 @@ async function getValidFirstFactors(
     }
 
     if (validFactorIds.length === 0) {
-        if (hasSession === undefined) {
+        if (!hasSession) {
             throw new SessionError({
                 type: SessionError.UNAUTHORISED,
                 message: "A valid session is required to authenticate with secondary factors",

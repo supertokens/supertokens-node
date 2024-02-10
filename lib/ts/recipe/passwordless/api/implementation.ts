@@ -15,6 +15,7 @@ export default function getAPIImplementation(): APIInterface {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
                 LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                NOT_LINKING_NON_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
                 NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
                     "User linking failed. Please contact support. (ERR_CODE_0XZ)",
             };
