@@ -1161,21 +1161,7 @@ export default class Recipe extends RecipeModule {
             return { status: "NO_LINK" };
         }
 
-        let sessionUserHasVerifiedAccountInfo =
-            session !== undefined &&
-            primaryUser.id == session.getUserId(userContext) &&
-            primaryUser.loginMethods.some(
-                (lm) =>
-                    targetUser.loginMethods[0].hasSameEmailAs(lm.email) &&
-                    targetUser.loginMethods[0].hasSamePhoneNumberAs(lm.phoneNumber) &&
-                    lm.verified
-            );
-
-        if (
-            shouldDoAccountLinking.shouldRequireVerification &&
-            !targetUser.loginMethods[0].verified &&
-            !sessionUserHasVerifiedAccountInfo
-        ) {
+        if (shouldDoAccountLinking.shouldRequireVerification && !targetUser.loginMethods[0].verified) {
             logDebugMessage(
                 "tryLinkAccounts: not linking because shouldRequireVerification is true but the login method is not verified"
             );
