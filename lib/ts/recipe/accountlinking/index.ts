@@ -38,27 +38,21 @@ export default class Wrapper {
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
-        let i = 0;
-        while (i++ < 100) {
-            const user = await getUser(recipeUserId.getAsString(), userContext);
-            if (user === undefined) {
-                // Should never really come here unless a programming error happened in the app
-                throw new Error("Unknown recipeUserId");
-            }
-            const linkRes = await Recipe.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-                tenantId,
-                inputUser: user,
-                session,
-                userContext: getUserContext(userContext),
-            });
-            if (linkRes.status === "OK") {
-                return { status: "OK", user: linkRes.user };
-            }
-            if (linkRes.status === "NO_LINK") {
-                return { status: "OK", user };
-            }
+        const user = await getUser(recipeUserId.getAsString(), userContext);
+        if (user === undefined) {
+            // Should never really come here unless a programming error happened in the app
+            throw new Error("Unknown recipeUserId");
         }
-        throw new Error("This should never happen: ran out of retries createPrimaryUserIdOrLinkAccounts");
+        const linkRes = await Recipe.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+            tenantId,
+            inputUser: user,
+            session,
+            userContext: getUserContext(userContext),
+        });
+        if (linkRes.status === "NO_LINK") {
+            return { status: "OK", user };
+        }
+        return { status: "OK", user: linkRes.user };
     }
 
     /**

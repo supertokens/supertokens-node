@@ -6,6 +6,7 @@ import { logDebugMessage } from "../../logger";
 import { User } from "../../user";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
+import { AuthUtils } from "../../authUtils";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContextAndTenantId(input: any): any {
@@ -61,15 +62,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             // Attempt account linking (this is a sign up)
             let updatedUser = response.user;
 
-            const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
-                {
-                    tenantId: input.tenantId,
-                    inputUser: response.user,
-                    recipeUserId: response.recipeUserId,
-                    session: input.session,
-                    userContext: input.userContext,
-                }
-            );
+            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                tenantId: input.tenantId,
+                inputUser: response.user,
+                recipeUserId: response.recipeUserId,
+                session: input.session,
+                userContext: input.userContext,
+            });
 
             if (linkResult.status !== "OK") {
                 return linkResult;

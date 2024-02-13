@@ -7,15 +7,31 @@ import { SessionContainerInterface } from "./recipe/session/types";
 import { UserContext } from "./types";
 import { LoginMethod, User } from "./user";
 import RecipeUserId from "./recipeUserId";
-import { isValidFirstFactor } from "./recipe/multifactorauth/utils";
+import { getMFARelatedInfoFromSession, isValidFirstFactor } from "./recipe/multifactorauth/utils";
 import SessionError from "./recipe/session/error";
 import { getUser } from ".";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 import SessionRecipe from "./recipe/session/recipe";
 import { logDebugMessage } from "./logger";
+import { EmailVerificationClaim } from "./recipe/emailverification";
+import SuperTokensError from "./error";
 
 export const AuthUtils = {
+    /**
+     * This helper function can be used to map error statuses (w/ an optional reason) to error responses with human readable reasons.
+     * This maps to a response in the format of `{ status: "3rd param", reason: "human readable string from second param" }`
+     *
+     * The errorCodeMap is expected to be something like:
+     * ```
+     * {
+     *      EMAIL_VERIFICATION_REQUIRED: "This is returned as reason if the resp(1st param) has the status code EMAIL_VERIFICATION_REQUIRED and an undefined reason",
+     *      STATUS: {
+     *          REASON: "This is returned as reason if the resp(1st param) has STATUS in the status prop and REASON in the reason prop"
+     *      }
+     * }
+     * ```
+     */
     getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(
         resp: { status: string; reason?: string },
         errorCodeMap: Record<string, Record<string, string | undefined> | string | undefined>,
@@ -41,18 +57,31 @@ export const AuthUtils = {
         throw new Error("Should never come here: unmapped error status");
     },
 
+    /**
+     * Runs all checks we need to do before trying to authenticate a user:
+     * - if this is a first factor auth or not
+     * - if the session user is required to be primary (and tries to make it primary if necessary)
+     * - if any of the factorids are valid (as first or secondary factors), taking into account mfa factor setup rules
+     * - if sign up is allowed (if isSignUp === true)
+     *
+     * It returns the following statuses:
+     * - OK: the auth flow can proceed
+     * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
+     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     */
     preAuthChecks: async function ({
         accountInfo,
         tenantId,
         isSignUp,
         isVerified,
-        inputUser,
+        authenticatingUser,
         factorIds,
         session,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId;
-        inputUser: User | undefined;
+        authenticatingUser: User | undefined;
         tenantId: string;
         factorIds: string[];
         isSignUp: boolean;
@@ -66,9 +95,6 @@ export const AuthUtils = {
               status: "NON_PRIMARY_SESSION_USER";
               reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
-        | {
-              status: "INVALID_FIRST_FACTOR";
-          }
     > {
         let validFactorIds: string[];
 
@@ -81,10 +107,10 @@ export const AuthUtils = {
         // First we check if the app intends to link the inputUser or not,
         // to decide if this is a first factor auth or not and if it'll link to the session user
         // We also load the session user here if it is available.
-        const authTypeInfo = await this.checkAuthTypeAndLinkingStatus(
+        const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
             session,
             accountInfo,
-            inputUser,
+            authenticatingUser,
             tenantId,
             userContext
         );
@@ -103,23 +129,18 @@ export const AuthUtils = {
             // The filtered list can be used to select email templates. As an example:
             // If the flowType for passwordless is USER_INPUT_CODE_AND_MAGIC_LINK and firstFactors for the tenant we only have otp-email
             // then we do not want to include a link in the email.
-            const validFirstFactorsRes = await getValidFirstFactors(
+            const validFirstFactors = await filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
                 factorIds,
                 tenantId,
                 session !== undefined,
                 userContext
             );
-            if (validFirstFactorsRes.status === "OK") {
-                validFactorIds = validFirstFactorsRes.validFactorIds;
-            } else {
-                logDebugMessage("preAuthChecks error: NO_VALID_FIRST_FACTOR");
-                return validFirstFactorsRes;
-            }
+            return { status: "OK", validFactorIds: validFirstFactors };
         } else {
             logDebugMessage("preAuthChecks getting valid secondary factors");
             // In this case the app will try to link the session user and the authenticating user after auth,
             // so we need to check if this is allowed by the MFA recipe (if initialized).
-            validFactorIds = await getValidSecondaryFactors(
+            validFactorIds = await filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
                 factorIds,
                 authTypeInfo.inputUserAlreadyLinkedToSessionUser,
                 authTypeInfo.sessionUser,
@@ -152,8 +173,26 @@ export const AuthUtils = {
         };
     },
 
+    /**
+     * Runs the linking process and all check we need to before creating a session + creates the new session if necessary:
+     * - runs the linking process which will: try to link to the session user, or link by account info or try to make the authenticated user primary
+     * - checks if sign in is allowed (if isSignUp === false)
+     * - creates a session if necessary
+     * - marks the factor as completed if necessary
+     *
+     * It returns the following statuses:
+     * - OK: the auth flow went as expected
+     * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
+     * - LINKING_TO_SESSION_USER_FAILED(EMAIL_VERIFICATION_REQUIRED): if we couldn't link to the session user because linking requires email verification
+     * - LINKING_TO_SESSION_USER_FAILED(RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
+     * - LINKING_TO_SESSION_USER_FAILED(ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because of a conflicting primary user that has the same account info as authenticatedUser
+     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     */
     postAuthChecks: async function ({
-        responseUser,
+        authenticatedUser,
         recipeUserId,
         isSignUp,
         factorId,
@@ -163,7 +202,7 @@ export const AuthUtils = {
         tenantId,
         userContext,
     }: {
-        responseUser: User;
+        authenticatedUser: User;
         recipeUserId: RecipeUserId;
         tenantId: string;
         factorId: string;
@@ -203,15 +242,13 @@ export const AuthUtils = {
         // It should not happen in general, but it is possible that we end up with an unlinked user after this even though originally we considered this
         // an MFA sign in.
         // There are a couple of race-conditions associated with this functions, but it handles retries internally.
-        const linkingResult = await accountLinkingInstance.createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
-            {
-                tenantId,
-                inputUser: responseUser,
-                recipeUserId,
-                session,
-                userContext,
-            }
-        );
+        const linkingResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+            tenantId,
+            inputUser: authenticatedUser,
+            recipeUserId,
+            session,
+            userContext,
+        });
 
         if (linkingResult.status !== "OK") {
             logDebugMessage(`postAuthChecks returning early because createPrimaryUserIdOrLinkByAccountInfo failed`);
@@ -221,7 +258,7 @@ export const AuthUtils = {
         // We check if sign in is allowed
         if (
             !isSignUp &&
-            !(await accountLinkingInstance.isSignInAllowed({ user: responseUser, tenantId, session, userContext }))
+            !(await accountLinkingInstance.isSignInAllowed({ user: authenticatedUser, tenantId, session, userContext }))
         ) {
             logDebugMessage(`postAuthChecks returning SIGN_IN_NOT_ALLOWED`);
             return { status: "SIGN_IN_NOT_ALLOWED" };
@@ -229,10 +266,10 @@ export const AuthUtils = {
 
         let respSession = session;
         if (session !== undefined) {
-            const postLinkUserLinkedToSessionUser = linkingResult.user.loginMethods.some(
+            const authenticatedUserLinkedToSessionUser = linkingResult.user.loginMethods.some(
                 (lm) => lm.recipeUserId === session.getRecipeUserId()
             );
-            if (postLinkUserLinkedToSessionUser) {
+            if (authenticatedUserLinkedToSessionUser) {
                 logDebugMessage(`postAuthChecks session and input user got linked`);
                 if (mfaInstance !== undefined) {
                     logDebugMessage(`postAuthChecks marking factor as completed`);
@@ -436,7 +473,7 @@ export const AuthUtils = {
               isFirstFactor: false;
               inputUserAlreadyLinkedToSessionUser: false;
               sessionUser: User;
-              sessionUserLinkingRequiresVerification: boolean;
+              linkingToSessionUserRequiresVerification: boolean;
           }
         | {
               status: "NON_PRIMARY_SESSION_USER";
@@ -467,10 +504,7 @@ export const AuthUtils = {
             }
             logDebugMessage(`checkAuthTypeAndLinkingStatus loading session user`);
             // We have to load the session user in order to get the account linking info
-            const sessionUserResult = await AccountLinking.getInstance().tryAndMakeSessionUserIntoAPrimaryUser(
-                session,
-                userContext
-            );
+            const sessionUserResult = await AuthUtils.tryAndMakeSessionUserIntoAPrimaryUser(session, userContext);
             if (sessionUserResult.status === "SHOULD_AUTOMATICALLY_LINK_FALSE") {
                 return {
                     status: "OK",
@@ -506,14 +540,309 @@ export const AuthUtils = {
                     isFirstFactor: false,
                     inputUserAlreadyLinkedToSessionUser: false,
                     sessionUser,
-                    sessionUserLinkingRequiresVerification: shouldLink.shouldRequireVerification,
+                    linkingToSessionUserRequiresVerification: shouldLink.shouldRequireVerification,
                 };
             }
         }
     },
+
+    // this function returns the user ID for which the session will be created.
+    async linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+        tenantId,
+        inputUser,
+        recipeUserId,
+        session,
+        userContext,
+    }: {
+        tenantId: string;
+        inputUser: User;
+        recipeUserId: RecipeUserId;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
+    }): Promise<
+        | { status: "OK"; user: User }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    > {
+        logDebugMessage("createPrimaryUserIdOrLinkAccounts called");
+        const retry = () => {
+            logDebugMessage("createPrimaryUserIdOrLinkAccounts retrying....");
+            return AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                tenantId,
+                inputUser: inputUser,
+                session,
+                recipeUserId,
+                userContext,
+            });
+        };
+
+        // If we got here, we have a session and a primary session user
+        // We can not assume the inputUser is non-primary, since we'll only check that seeing if the app wants to link to the session user or not.
+        const authLoginMethod = inputUser.loginMethods.find(
+            (lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString()
+        );
+        if (!authLoginMethod) {
+            throw new Error(
+                "This should never happen: the recipeUserId and user is inconsistent in createPrimaryUserIdOrLinkByAccountInfo params"
+            );
+        }
+
+        const authTypeRes = await AuthUtils.checkAuthTypeAndLinkingStatus(
+            session,
+            authLoginMethod,
+            inputUser,
+            tenantId,
+            userContext
+        );
+
+        if (authTypeRes.status !== "OK") {
+            return authTypeRes;
+        }
+
+        if (authTypeRes.isFirstFactor) {
+            logDebugMessage(
+                "createPrimaryUserIdOrLinkAccounts trying to link by account info because this is a first factor auth"
+            );
+            // We try and list all users that can be linked to the input user based on the account info
+            // later we can use these when trying to link or when checking if linking to the session user is possible.
+            const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                inputUser: inputUser,
+                session,
+                tenantId,
+                userContext,
+            });
+            if (linkRes.status === "OK") {
+                return { status: "OK", user: linkRes.user };
+            }
+            if (linkRes.status === "NO_LINK") {
+                return { status: "OK", user: inputUser };
+            }
+            return retry();
+        }
+
+        if (authTypeRes.inputUserAlreadyLinkedToSessionUser) {
+            return {
+                status: "OK",
+                user: authTypeRes.sessionUser,
+            };
+        }
+
+        logDebugMessage("createPrimaryUserIdOrLinkAccounts trying to link by session info");
+        const sessionLinkingRes = await AuthUtils.tryLinkingBySession({
+            sessionUser: authTypeRes.sessionUser,
+            authenticatedUser: inputUser,
+            authLoginMethod,
+            linkingToSessionUserRequiresVerification: authTypeRes.linkingToSessionUserRequiresVerification,
+            userContext,
+        });
+        if (sessionLinkingRes.status === "SESSION_USER_NOT_PRIMARY") {
+            // This means that although we made the session user primary above, some race condition undid that (e.g.: calling unlink concurrently with this func)
+            // We can retry in this case, since we start by trying to make it into a primary user and throwing if we can't
+            return retry();
+        } else if (sessionLinkingRes.status === "LINKING_TO_SESSION_USER_FAILED") {
+            return sessionLinkingRes;
+        } else {
+            // If we get here the status is OK, so we can just return it
+            return sessionLinkingRes;
+        }
+    },
+
+    /**
+     * This function loads the session user and tries to make it primary.
+     * It returns:
+     * - OK: if the session user was a primary user or we made it into one
+     * - SHOULD_AUTOMATICALLY_LINK_FALSE: if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }`
+     * - ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+     * If we tried to make it into a primary user but it didn't succeed because of a conflicting primary user
+     *
+     * It throws INVALID_CLAIM_ERROR if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }` but the email verification status was wrong
+     */
+    async tryAndMakeSessionUserIntoAPrimaryUser(
+        session: SessionContainerInterface,
+        userContext: UserContext
+    ): Promise<
+        | { status: "OK"; sessionUser: User }
+        | { status: "SHOULD_AUTOMATICALLY_LINK_FALSE" }
+        | { status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" }
+    > {
+        logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser called`);
+        const sessionUser = await getUser(session.getUserId(), userContext);
+        if (sessionUser === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Session user not found",
+            });
+        }
+
+        if (sessionUser.isPrimaryUser) {
+            logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser session user already primary`);
+            // if the session user was already primary we can just return it
+            return { status: "OK", sessionUser };
+        } else {
+            // if the session user is not primary we try and make it one
+            logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser not session user yet`);
+            // We could check here if the session user can even become a primary user, but that'd only mean one extra core call
+            // without any added benefits, since the core already checks all pre-conditions
+
+            // We do this check here instead of using the shouldBecomePrimaryUser util, because
+            // here we handle the shouldRequireVerification case differently
+            const shouldDoAccountLinking = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+                sessionUser.loginMethods[0],
+                undefined,
+                session,
+                session.getTenantId(userContext),
+                userContext
+            );
+            logDebugMessage(
+                `tryAndMakeSessionUserIntoAPrimaryUser shouldDoAccountLinking: ${JSON.stringify(
+                    shouldDoAccountLinking
+                )}`
+            );
+
+            if (shouldDoAccountLinking.shouldAutomaticallyLink) {
+                if (shouldDoAccountLinking.shouldRequireVerification && !sessionUser.loginMethods[0].verified) {
+                    // We force-update the claim value if it is not set or different from what we just fetched from the DB
+                    if ((await session.getClaimValue(EmailVerificationClaim, userContext)) !== false) {
+                        logDebugMessage(
+                            `tryAndMakeSessionUserIntoAPrimaryUser updating emailverification status in session`
+                        );
+                        // This will let the frontend know if the value has been updated in the background
+                        await session.setClaimValue(EmailVerificationClaim, false, userContext);
+                    }
+                    logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser throwing validation error`);
+                    // Then run the validation expecting it to fail. We run assertClaims instead of throwing the error locally
+                    // to make sure the error shape in the response will match what we'd return normally
+                    await session.assertClaims([EmailVerificationClaim.validators.isVerified()], userContext);
+                    throw new Error(
+                        "This should never happen: email verification claim validator passed after setting value to false"
+                    );
+                }
+                const createPrimaryUserRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
+                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
+                    userContext,
+                });
+                logDebugMessage(
+                    `tryAndMakeSessionUserIntoAPrimaryUser createPrimaryUser returned ${createPrimaryUserRes.status}`
+                );
+                if (createPrimaryUserRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                    // This means that the session user got primary since we loaded the session user info above
+                    // but this status means that the user id has also changed, so the session should be invalid
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                } else if (createPrimaryUserRes.status === "OK") {
+                    return { status: "OK", sessionUser: createPrimaryUserRes.user };
+                } else {
+                    // All other statuses signify that we can't make the session user primary
+                    // Which means we can't continue
+                    return createPrimaryUserRes;
+                }
+            } else {
+                // This means that the app doesn't want to make the session user primary
+                return { status: "SHOULD_AUTOMATICALLY_LINK_FALSE" };
+            }
+        }
+    },
+
+    async tryLinkingBySession({
+        linkingToSessionUserRequiresVerification,
+        authLoginMethod,
+        authenticatedUser,
+        sessionUser,
+        userContext,
+    }: {
+        authenticatedUser: User;
+        linkingToSessionUserRequiresVerification: boolean;
+        sessionUser: User;
+        authLoginMethod: LoginMethod;
+        userContext: UserContext;
+    }): Promise<
+        | { status: "OK"; user: User }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "SESSION_USER_NOT_PRIMARY";
+              reason: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
+    > {
+        logDebugMessage("tryLinkingBySession called");
+        // If the input user has another user (and it's not the session user) it could be linked to based on account info then we can't link it to the session user.
+        // However, we do not need to check this as the linkAccounts check will fail anyway and we do not want the extra core call in case it succeeds
+
+        // If the session user has already verified the current email address/phone number and wants to add another account with it
+        // then we don't want to ask them to verify it again.
+        // This is different from linking based on account info, but the presence of a session shows that the user has access to both accounts,
+        // and intends to link these two accounts.
+        const sessionUserHasVerifiedAccountInfo = sessionUser.loginMethods.some(
+            (lm) =>
+                (lm.hasSameEmailAs(authLoginMethod.email) || lm.hasSamePhoneNumberAs(authLoginMethod.phoneNumber)) &&
+                lm.verified
+        );
+
+        const canLinkBasedOnVerification =
+            !linkingToSessionUserRequiresVerification || authLoginMethod.verified || sessionUserHasVerifiedAccountInfo;
+
+        if (!canLinkBasedOnVerification) {
+            return { status: "LINKING_TO_SESSION_USER_FAILED", reason: "EMAIL_VERIFICATION_REQUIRED" };
+        }
+
+        // If we get here, it means that the session and the input user can be linked, so we try it.
+        // Note that this function will not call shouldDoAutomaticAccountLinking and check the verification status before linking
+        // it'll mark the freshly linked recipe user as verified if the email address was verified in the session user.
+        let linkAccountsResult = await AccountLinking.getInstance().recipeInterfaceImpl.linkAccounts({
+            recipeUserId: authenticatedUser.loginMethods[0].recipeUserId,
+            primaryUserId: sessionUser.id,
+            userContext,
+        });
+
+        if (linkAccountsResult.status === "OK") {
+            logDebugMessage("tryLinkingBySession successfully linked input user to session user");
+            return { status: "OK", user: linkAccountsResult.user };
+        } else if (linkAccountsResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            // this can happen because of a race condition wherein the recipe user ID get's linked to
+            // some other primary user whilst the linking is going on.
+            logDebugMessage(
+                "tryLinkingBySession linking to session user failed because of a race condition - input user linked to another user"
+            );
+            return { status: "LINKING_TO_SESSION_USER_FAILED", reason: linkAccountsResult.status };
+        } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+            logDebugMessage(
+                "tryLinkingBySession linking to session user failed because of a race condition - INPUT_USER_IS_NOT_A_PRIMARY_USER, retrying"
+            );
+            // This can be possible during a race condition wherein the primary user we created above
+            // is somehow no more a primary user. This can happen if  the unlink function was called in parallel
+            // on that user. We can just retry, as that will try and make it a primary user again.
+            return { status: "SESSION_USER_NOT_PRIMARY", reason: linkAccountsResult.status };
+        } else {
+            logDebugMessage(
+                "tryLinkingBySession linking to session user failed because of a race condition - input user has another primary user it can be linked to"
+            );
+            // Status can only be "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+            // It can come here if the recipe user ID can't be linked to the primary user ID because the email / phone number is associated with
+            // some other primary user ID.
+            // This can happen due to a race condition in which the email has changed from one primary user to another during this function call,
+            // or if another primary user was created with the same email as the input user while this function is running
+            return { status: "LINKING_TO_SESSION_USER_FAILED", reason: linkAccountsResult.status };
+        }
+    },
 };
 
-async function getValidSecondaryFactors(
+async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
     factorIds: string[],
     inputUserAlreadyLinkedToSessionUser: boolean,
     sessionUser: User,
@@ -521,38 +850,93 @@ async function getValidSecondaryFactors(
     userContext: UserContext
 ) {
     if (session === undefined) {
-        throw new Error("This should never happen: getValidSecondaryFactors called without a session");
+        throw new Error(
+            "This should never happen: filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid called without a session"
+        );
     }
     if (sessionUser === undefined) {
-        throw new Error("This should never happen: getValidSecondaryFactors called without a sessionUser");
+        throw new Error(
+            "This should never happen: filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid called without a sessionUser"
+        );
     }
-    logDebugMessage(`getValidSecondaryFactors called for ${factorIds.join(", ")}`);
+    logDebugMessage(`filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid called for ${factorIds.join(", ")}`);
 
     const mfaInstance = MultiFactorAuthRecipe.getInstance();
     if (mfaInstance !== undefined) {
         if (!inputUserAlreadyLinkedToSessionUser) {
             // If we are linking the input user to the session user, then we need to check if MFA allows it
             // From an MFA perspective this is a factor setup
-            logDebugMessage(`getValidSecondaryFactors checking if linking is allowed by the mfa recipe`);
-            return mfaInstance.checkIfLinkingAllowed(session, factorIds, userContext);
+            logDebugMessage(
+                `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid checking if linking is allowed by the mfa recipe`
+            );
+            let caughtSetupFactorError;
+            const mfaInfo = await getMFARelatedInfoFromSession({
+                session,
+                userContext,
+            });
+            const validFactorIds = [];
+            // In all apis besides passwordless createCode, we know exactly which factor we are signing into, so in those cases,
+            // this is basically just checking if the single factor is allowed to be setup or not.
+            // For createCode (if the FE didn't pass the factor id exactly, which it should for MFA),
+            // we filter whatever is allowed. If any of them are allowed, createCode can happen.
+            // The filtered list can be used to select email templates. As an example:
+            // If the flowType for passwordless is USER_INPUT_CODE_AND_MAGIC_LINK and but only the otp-email factor is allowed to be set up
+            // then we do not want to include a link in the email.
+            for (const id of factorIds) {
+                logDebugMessage(
+                    `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid checking assertAllowedToSetupFactorElseThrowInvalidClaimError`
+                );
+                try {
+                    await this.recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError({
+                        session,
+                        factorId: id,
+                        mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
+                        factorsSetUpForUser: mfaInfo.factorsSetUpForUser,
+                        userContext,
+                    });
+                    logDebugMessage(
+                        `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid ${id} valid because assertAllowedToSetupFactorElseThrowInvalidClaimError passed`
+                    );
+                    // we add it to the valid factor ids list since it is either already set up or allowed to be set up
+                    validFactorIds.push(id);
+                } catch (err) {
+                    logDebugMessage(
+                        `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid assertAllowedToSetupFactorElseThrowInvalidClaimError failed for ${id}`
+                    );
+                    caughtSetupFactorError = err;
+                }
+            }
+            if (validFactorIds.length === 0) {
+                logDebugMessage(
+                    `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid rethrowing error from assertAllowedToSetupFactorElseThrowInvalidClaimError because we found no valid factors`
+                );
+                // we can safely re-throw this since this should be an InvalidClaimError
+                // if it's anything else, we do not really have a way of handling it anyway.
+                throw caughtSetupFactorError;
+            }
+            return validFactorIds;
         } else {
             // If signing in will not change the user (no linking), then we can let the sign-in/up happen (if allowed by account linking checks)
-            logDebugMessage(`getValidSecondaryFactors allowing all factors because it'll not create new link`);
+            logDebugMessage(
+                `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid allowing all factors because it'll not create new link`
+            );
             return factorIds;
         }
     } else {
-        logDebugMessage(`getValidSecondaryFactors allowing all factors because MFA is not enabled`);
+        logDebugMessage(
+            `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid allowing all factors because MFA is not enabled`
+        );
         // If MFA is not enabled, we allow the user to connect any secondary account to the session user.
         return factorIds;
     }
 }
 
-async function getValidFirstFactors(
+async function filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
     factorIds: string[],
     tenantId: string,
     hasSession: boolean,
     userContext: UserContext
-): Promise<{ status: "OK"; validFactorIds: string[] } | { status: "INVALID_FIRST_FACTOR" }> {
+): Promise<string[]> {
     let validFactorIds = [];
     for (const id of factorIds) {
         // This util takes the tenant config into account (if it exists), then the MFA (static) config if it was initialized and set.
@@ -579,8 +963,11 @@ async function getValidFirstFactors(
                 message: "A valid session is required to authenticate with secondary factors",
             });
         } else {
-            return { status: "INVALID_FIRST_FACTOR" };
+            throw new SuperTokensError({
+                type: SuperTokensError.BAD_INPUT_ERROR,
+                message: "First factor sign in/up called for a non-first factor with an active session.",
+            });
         }
     }
-    return { status: "OK", validFactorIds };
+    return validFactorIds;
 }

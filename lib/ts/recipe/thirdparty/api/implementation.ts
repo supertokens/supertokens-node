@@ -31,7 +31,6 @@ export default function getAPIInterface(): APIInterface {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                 },
-                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
                 NON_PRIMARY_SESSION_USER: {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
@@ -102,7 +101,7 @@ export default function getAPIInterface(): APIInterface {
                         id: provider.id,
                     },
                 },
-                inputUser: authenticatingUser?.user,
+                authenticatingUser: authenticatingUser?.user,
                 factorIds: ["thirdparty"],
                 isSignUp,
                 isVerified: emailInfo.isVerified,
@@ -241,7 +240,7 @@ export default function getAPIInterface(): APIInterface {
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId: "thirdparty",
                 isSignUp,
-                responseUser: response.user,
+                authenticatedUser: response.user,
                 recipeUserId: response.recipeUserId,
                 req: input.options.req,
                 res: input.options.res,

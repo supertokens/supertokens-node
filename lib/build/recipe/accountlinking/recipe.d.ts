@@ -35,35 +35,6 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
     static reset(): void;
-    createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided: ({
-        tenantId,
-        inputUser,
-        recipeUserId,
-        session,
-        userContext,
-    }: {
-        tenantId: string;
-        inputUser: User;
-        recipeUserId: RecipeUserId;
-        session: SessionContainerInterface | undefined;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
     getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
         tenantId,
         user,
@@ -82,24 +53,6 @@ export default class Recipe extends RecipeModule {
         user: User;
         userContext: UserContext;
     }) => Promise<User | undefined>;
-    /**
-     * This function loads the session user and tries to make it primary.
-     */
-    tryAndMakeSessionUserIntoAPrimaryUser: (
-        session: SessionContainerInterface,
-        userContext: UserContext
-    ) => Promise<
-        | {
-              status: "OK";
-              sessionUser: User;
-          }
-        | {
-              status: "SHOULD_AUTOMATICALLY_LINK_FALSE";
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
     isSignInAllowed: ({
         user,
         tenantId,
@@ -152,7 +105,6 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }) => Promise<void>;
     private shouldBecomePrimaryUser;
-    private tryLinkingBySession;
     tryLinkingByAccountInfoOrCreatePrimaryUser({
         inputUser,
         session,

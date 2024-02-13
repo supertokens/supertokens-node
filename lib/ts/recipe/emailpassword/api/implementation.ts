@@ -532,7 +532,7 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        const linkRes = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
+                        const linkRes = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo(
                             {
                                 tenantId,
                                 inputUser: createUserResponse.user,
@@ -609,7 +609,6 @@ export default function getAPIImplementation(): APIInterface {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                 },
-                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
                 NON_PRIMARY_SESSION_USER: {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
@@ -657,7 +656,7 @@ export default function getAPIImplementation(): APIInterface {
                 },
                 factorIds: ["emailpassword"],
                 isSignUp: false,
-                inputUser: authenticatingUser?.user,
+                authenticatingUser: authenticatingUser?.user,
                 isVerified,
                 tenantId,
                 userContext,
@@ -686,7 +685,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
-                responseUser: signInResponse.user,
+                authenticatedUser: signInResponse.user,
                 recipeUserId: signInResponse.recipeUserId,
                 isSignUp: false,
                 factorId: "emailpassword",
@@ -748,7 +747,6 @@ export default function getAPIImplementation(): APIInterface {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                 },
-                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
                 NON_PRIMARY_SESSION_USER: {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
@@ -772,7 +770,7 @@ export default function getAPIImplementation(): APIInterface {
                 factorIds: ["emailpassword"],
                 isSignUp: true,
                 isVerified: isFakeEmail(email),
-                inputUser: undefined, // since this a sign up, this is undefined
+                authenticatingUser: undefined, // since this a sign up, this is undefined
                 tenantId,
                 userContext,
                 session,
@@ -832,7 +830,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const postAuthChecks = await AuthUtils.postAuthChecks({
-                responseUser: signUpResponse.user,
+                authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
                 isSignUp: true,
                 factorId: "emailpassword",

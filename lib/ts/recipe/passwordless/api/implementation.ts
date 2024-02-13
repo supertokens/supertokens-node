@@ -21,7 +21,6 @@ export default function getAPIImplementation(): APIInterface {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                 },
-                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
                 NON_PRIMARY_SESSION_USER: {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
@@ -113,7 +112,7 @@ export default function getAPIImplementation(): APIInterface {
                     phoneNumber: deviceInfo.phoneNumber,
                 },
                 factorIds: [factorId],
-                inputUser: authenticatingUser?.user,
+                authenticatingUser: authenticatingUser?.user,
                 isSignUp,
                 isVerified: true,
                 tenantId: input.tenantId,
@@ -195,7 +194,7 @@ export default function getAPIImplementation(): APIInterface {
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId,
                 isSignUp,
-                responseUser: response.user ?? authenticatingUser!.user,
+                authenticatedUser: response.user ?? authenticatingUser!.user,
                 recipeUserId: response.recipeUserId ?? authenticatingUser!.loginMethod!.recipeUserId,
                 req: input.options.req,
                 res: input.options.res,
@@ -225,7 +224,6 @@ export default function getAPIImplementation(): APIInterface {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
                 NON_PRIMARY_SESSION_USER: {
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
@@ -272,7 +270,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "passwordless",
                 },
                 isSignUp: usersWithMatchingLoginMethods.length === 0,
-                inputUser: undefined,
+                authenticatingUser: undefined,
                 isVerified: true,
                 tenantId: input.tenantId,
                 factorIds: input.factorIds ?? getEnabledPwlessFactors(input.options.config),

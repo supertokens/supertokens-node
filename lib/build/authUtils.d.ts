@@ -6,6 +6,20 @@ import RecipeUserId from "./recipeUserId";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 export declare const AuthUtils: {
+    /**
+     * This helper function can be used to map error statuses (w/ an optional reason) to error responses with human readable reasons.
+     * This maps to a response in the format of `{ status: "3rd param", reason: "human readable string from second param" }`
+     *
+     * The errorCodeMap is expected to be something like:
+     * ```
+     * {
+     *      EMAIL_VERIFICATION_REQUIRED: "This is returned as reason if the resp(1st param) has the status code EMAIL_VERIFICATION_REQUIRED and an undefined reason",
+     *      STATUS: {
+     *          REASON: "This is returned as reason if the resp(1st param) has STATUS in the status prop and REASON in the reason prop"
+     *      }
+     * }
+     * ```
+     */
     getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(
         resp: {
             status: string;
@@ -17,18 +31,31 @@ export declare const AuthUtils: {
         status: T;
         reason: string;
     };
+    /**
+     * Runs all checks we need to do before trying to authenticate a user:
+     * - if this is a first factor auth or not
+     * - if the session user is required to be primary (and tries to make it primary if necessary)
+     * - if any of the factorids are valid (as first or secondary factors), taking into account mfa factor setup rules
+     * - if sign up is allowed (if isSignUp === true)
+     *
+     * It returns the following statuses:
+     * - OK: the auth flow can proceed
+     * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
+     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     */
     preAuthChecks: ({
         accountInfo,
         tenantId,
         isSignUp,
         isVerified,
-        inputUser,
+        authenticatingUser,
         factorIds,
         session,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId;
-        inputUser: User | undefined;
+        authenticatingUser: User | undefined;
         tenantId: string;
         factorIds: string[];
         isSignUp: boolean;
@@ -47,12 +74,27 @@ export declare const AuthUtils: {
               status: "NON_PRIMARY_SESSION_USER";
               reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
-        | {
-              status: "INVALID_FIRST_FACTOR";
-          }
     >;
+    /**
+     * Runs the linking process and all check we need to before creating a session + creates the new session if necessary:
+     * - runs the linking process which will: try to link to the session user, or link by account info or try to make the authenticated user primary
+     * - checks if sign in is allowed (if isSignUp === false)
+     * - creates a session if necessary
+     * - marks the factor as completed if necessary
+     *
+     * It returns the following statuses:
+     * - OK: the auth flow went as expected
+     * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
+     * - LINKING_TO_SESSION_USER_FAILED(EMAIL_VERIFICATION_REQUIRED): if we couldn't link to the session user because linking requires email verification
+     * - LINKING_TO_SESSION_USER_FAILED(RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
+     * - LINKING_TO_SESSION_USER_FAILED(ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because of a conflicting primary user that has the same account info as authenticatedUser
+     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     */
     postAuthChecks: ({
-        responseUser,
+        authenticatedUser,
         recipeUserId,
         isSignUp,
         factorId,
@@ -62,7 +104,7 @@ export declare const AuthUtils: {
         tenantId,
         userContext,
     }: {
-        responseUser: User;
+        authenticatedUser: User;
         recipeUserId: RecipeUserId;
         tenantId: string;
         factorId: string;
@@ -151,11 +193,94 @@ export declare const AuthUtils: {
               isFirstFactor: false;
               inputUserAlreadyLinkedToSessionUser: false;
               sessionUser: User;
-              sessionUserLinkingRequiresVerification: boolean;
+              linkingToSessionUserRequiresVerification: boolean;
           }
         | {
               status: "NON_PRIMARY_SESSION_USER";
               reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+        tenantId,
+        inputUser,
+        recipeUserId,
+        session,
+        userContext,
+    }: {
+        tenantId: string;
+        inputUser: User;
+        recipeUserId: RecipeUserId;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    /**
+     * This function loads the session user and tries to make it primary.
+     * It returns:
+     * - OK: if the session user was a primary user or we made it into one
+     * - SHOULD_AUTOMATICALLY_LINK_FALSE: if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }`
+     * - ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+     * If we tried to make it into a primary user but it didn't succeed because of a conflicting primary user
+     *
+     * It throws INVALID_CLAIM_ERROR if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }` but the email verification status was wrong
+     */
+    tryAndMakeSessionUserIntoAPrimaryUser(
+        session: SessionContainerInterface,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              sessionUser: User;
+          }
+        | {
+              status: "SHOULD_AUTOMATICALLY_LINK_FALSE";
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    tryLinkingBySession({
+        linkingToSessionUserRequiresVerification,
+        authLoginMethod,
+        authenticatedUser,
+        sessionUser,
+        userContext,
+    }: {
+        authenticatedUser: User;
+        linkingToSessionUserRequiresVerification: boolean;
+        sessionUser: User;
+        authLoginMethod: LoginMethod;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "SESSION_USER_NOT_PRIMARY";
+              reason: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
 };

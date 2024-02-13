@@ -8,6 +8,7 @@ import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { UserContext, User as UserType } from "../../types";
 import { LoginMethod, User } from "../../user";
+import { AuthUtils } from "../../authUtils";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -58,15 +59,13 @@ export default function getRecipeInterface(
 
             let updatedUser = response.user;
 
-            const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
-                {
-                    tenantId,
-                    inputUser: response.user,
-                    recipeUserId: response.recipeUserId,
-                    session: undefined, // TODO: we may want to add this to the interface
-                    userContext,
-                }
-            );
+            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                tenantId,
+                inputUser: response.user,
+                recipeUserId: response.recipeUserId,
+                session: undefined, // TODO: we may want to add this to the interface
+                userContext,
+            });
 
             if (linkResult.status != "OK") {
                 return linkResult;
