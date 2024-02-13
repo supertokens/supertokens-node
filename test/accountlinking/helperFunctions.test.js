@@ -499,8 +499,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
         });
     });
 
-    describe("getUsersThatCanBeLinkedToRecipeUser tests", function () {
-        it("calling getUsersThatCanBeLinkedToRecipeUser returns undefined if nothing can be linked", async function () {
+    describe("getPrimaryUserThatCanBeLinkedToRecipeUserId tests", function () {
+        it("calling getPrimaryUserThatCanBeLinkedToRecipeUserId returns undefined if nothing can be linked", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -549,16 +549,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.getUsersThatCanBeLinkedToRecipeUser(
+            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
                 "public",
                 user.loginMethods[0].recipeUserId
             );
 
-            assert.strictEqual(response.primaryUser, undefined);
-            assert.deepStrictEqual(response.oldestUser.toJson(), user.toJson());
+            assert.strictEqual(response, undefined);
         });
 
-        it("calling getUsersThatCanBeLinkedToRecipeUser returns the right primary user if it can be linked", async function () {
+        it("calling getPrimaryUserThatCanBeLinkedToRecipeUserId returns the right primary user if it can be linked", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -608,12 +607,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.getUsersThatCanBeLinkedToRecipeUser(
+            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
                 "public",
                 user.loginMethods[0].recipeUserId
             );
 
-            assert(response.primaryUser.id === primaryUser.id);
+            assert(response.id === primaryUser.id);
         });
     });
 

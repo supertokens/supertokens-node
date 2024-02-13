@@ -1943,7 +1943,7 @@ async function accountLinkingFuncsTest() {
     const canLink = await AccountLinking.canLinkAccounts(tpSignUp.recipeUserId, user.id);
 
     // This should be the same as the primary user above
-    const toLink = await AccountLinking.getUsersThatCanBeLinkedToRecipeUser("public", tpSignUp.recipeUserId);
+    const toLink = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId("public", tpSignUp.recipeUserId);
 
     // This should be the same primary user as toLink updated with the new link
     const linkResult = await AccountLinking.createPrimaryUserIdOrLinkAccounts("public", tpSignUp.recipeUserId);

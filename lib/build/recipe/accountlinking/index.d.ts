@@ -32,14 +32,11 @@ export default class Wrapper {
      * that the input recipe ID can be linked to, and therefore it can be made
      * into a primary user itself.
      */
-    static getUsersThatCanBeLinkedToRecipeUser(
+    static getPrimaryUserThatCanBeLinkedToRecipeUserId(
         tenantId: string,
         recipeUserId: RecipeUserId,
         userContext?: Record<string, any>
-    ): Promise<{
-        primaryUser: import("../../types").User | undefined;
-        oldestUser: import("../../types").User | undefined;
-    }>;
+    ): Promise<import("../../types").User | undefined>;
     static canCreatePrimaryUser(
         recipeUserId: RecipeUserId,
         userContext?: Record<string, any>
@@ -158,7 +155,7 @@ export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
 export declare const unlinkAccount: typeof Wrapper.unlinkAccount;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
-export declare const getUsersThatCanBeLinkedToRecipeUser: typeof Wrapper.getUsersThatCanBeLinkedToRecipeUser;
+export declare const getPrimaryUserThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserThatCanBeLinkedToRecipeUserId;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export declare const isSignInAllowed: typeof Wrapper.isSignInAllowed;
 export declare const isEmailChangeAllowed: typeof Wrapper.isEmailChangeAllowed;

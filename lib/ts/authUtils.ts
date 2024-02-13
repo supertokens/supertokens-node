@@ -467,9 +467,8 @@ export const AuthUtils = {
             }
             logDebugMessage(`checkAuthTypeAndLinkingStatus loading session user`);
             // We have to load the session user in order to get the account linking info
-            const sessionUserResult = await AccountLinking.getInstance().getPrimarySessionUser(
+            const sessionUserResult = await AccountLinking.getInstance().tryAndMakeSessionUserIntoAPrimaryUser(
                 session,
-                tenantId,
                 userContext
             );
             if (sessionUserResult.status === "SHOULD_AUTOMATICALLY_LINK_FALSE") {

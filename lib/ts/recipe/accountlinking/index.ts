@@ -45,7 +45,7 @@ export default class Wrapper {
                 // Should never really come here unless a programming error happened in the app
                 throw new Error("Unknown recipeUserId");
             }
-            const linkRes = await Recipe.getInstance().tryLinkingByAccountInfo({
+            const linkRes = await Recipe.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
                 tenantId,
                 inputUser: user,
                 session,
@@ -70,7 +70,7 @@ export default class Wrapper {
      * that the input recipe ID can be linked to, and therefore it can be made
      * into a primary user itself.
      */
-    static async getUsersThatCanBeLinkedToRecipeUser(
+    static async getPrimaryUserThatCanBeLinkedToRecipeUserId(
         tenantId: string,
         recipeUserId: RecipeUserId,
         userContext?: Record<string, any>
@@ -80,7 +80,7 @@ export default class Wrapper {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
         }
-        return await Recipe.getInstance().getUsersThatCanBeLinkedToRecipeUser({
+        return await Recipe.getInstance().getPrimaryUserThatCanBeLinkedToRecipeUserId({
             tenantId,
             user,
             userContext: getUserContext(userContext),
@@ -186,7 +186,7 @@ export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccount = Wrapper.unlinkAccount;
 export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
-export const getUsersThatCanBeLinkedToRecipeUser = Wrapper.getUsersThatCanBeLinkedToRecipeUser;
+export const getPrimaryUserThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserThatCanBeLinkedToRecipeUserId;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 export const isSignInAllowed = Wrapper.isSignInAllowed;
 export const isEmailChangeAllowed = Wrapper.isEmailChangeAllowed;
