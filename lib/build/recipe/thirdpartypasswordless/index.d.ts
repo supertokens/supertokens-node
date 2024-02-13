@@ -59,21 +59,16 @@ export default class Wrapper {
             tenantId: string;
             userContext?: Record<string, any>;
         }
-    ): Promise<
-        | {
-              status: "OK";
-              preAuthSessionId: string;
-              codeId: string;
-              deviceId: string;
-              userInputCode: string;
-              linkCode: string;
-              codeLifetime: number;
-              timeCreated: number;
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        preAuthSessionId: string;
+        codeId: string;
+        deviceId: string;
+        userInputCode: string;
+        linkCode: string;
+        codeLifetime: number;
+        timeCreated: number;
+    }>;
     static createNewCodeForDevice(input: {
         deviceId: string;
         userInputCode?: string;
@@ -135,7 +130,15 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     static consumeCode(
@@ -179,7 +182,15 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     static consumeCode(
@@ -221,7 +232,15 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     static updatePasswordlessUser(input: {

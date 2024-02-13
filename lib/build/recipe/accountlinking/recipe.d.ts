@@ -37,13 +37,13 @@ export default class Recipe extends RecipeModule {
     static reset(): void;
     createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided: ({
         tenantId,
-        user: inputUser,
+        inputUser,
         recipeUserId,
         session,
         userContext,
     }: {
         tenantId: string;
-        user: User;
+        inputUser: User;
         recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
@@ -53,7 +53,15 @@ export default class Recipe extends RecipeModule {
               user: User;
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     getUsersThatCanBeLinkedToRecipeUser: ({
@@ -68,6 +76,22 @@ export default class Recipe extends RecipeModule {
         primaryUser: User | undefined;
         oldestUser: User | undefined;
     }>;
+    getPrimarySessionUser: (
+        session: SessionContainerInterface,
+        tenantId: string,
+        userContext: UserContext
+    ) => Promise<
+        | {
+              status: "OK";
+              sessionUser: User;
+          }
+        | {
+              status: "SHOULD_AUTOMATICALLY_LINK_FALSE";
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
     isSignInAllowed: ({
         user,
         tenantId,
@@ -121,7 +145,38 @@ export default class Recipe extends RecipeModule {
     }) => Promise<void>;
     private shouldBecomePrimaryUser;
     private tryLinkingBySession;
-    private tryLinkingByAccountInfo;
+    tryLinkingByAccountInfo({
+        inputUser,
+        session,
+        tenantId,
+        userContext,
+    }: {
+        tenantId: string;
+        inputUser: User;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "BOTH_USERS_PRIMARY" | "NO_LINK" | "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              user: User;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+    >;
     private tryLinkAccounts;
     isLinked(primaryUser: User, otherUser: User): boolean;
 }

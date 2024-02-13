@@ -25,7 +25,20 @@ export default class Wrapper {
               user: import("../../types").User;
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER" | "BOTH_USERS_PRIMARY" | "NO_LINK";
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              user: import("../../types").User;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
           }
     >;
     /**

@@ -78,6 +78,11 @@ export default class Recipe extends RecipeModule {
         | {
               status: "UNKNOWN_SESSION_RECIPE_USER_ID";
           };
+    /**
+     * This function checks if creating a new link with the following factorIds is allowed or not
+     * From the MFA point of view, this maps to factor setup, so this is essentially checking if
+     * any of the factorIds are allowed to be set up for the session.
+     */
     checkIfLinkingAllowed(
         session: SessionContainerInterface,
         factorIds: string[],

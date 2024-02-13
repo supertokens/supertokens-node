@@ -33,6 +33,8 @@ import { LoginMethod } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 import { getUser } from "../..";
 import SessionError from "../session/error";
+import { EmailVerificationClaim } from "../emailverification";
+import { AuthUtils } from "../../authUtils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -136,20 +138,28 @@ export default class Recipe extends RecipeModule {
     // this function returns the user ID for which the session will be created.
     createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided = async ({
         tenantId,
-        user: inputUser,
+        inputUser,
         recipeUserId,
         session,
         userContext,
     }: {
         tenantId: string;
-        user: User;
+        inputUser: User;
         recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     > => {
         logDebugMessage("createPrimaryUserIdOrLinkAccounts called");
@@ -157,24 +167,39 @@ export default class Recipe extends RecipeModule {
             logDebugMessage("createPrimaryUserIdOrLinkAccounts retrying....");
             return this.createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided({
                 tenantId,
-                user: inputUser,
+                inputUser: inputUser,
                 session,
                 recipeUserId,
                 userContext,
             });
         };
 
-        // TODO: fix this
-        if (inputUser === undefined) {
-            // This can come here if the user is using session + email verification
-            // recipe with a user ID that is not known to supertokens. In this case,
-            // we do not allow linking for such users.
-            return inputUser;
+        // If we got here, we have a session and a primary session user
+        // We can not assume the inputUser is non-primary, since we'll only check that seeing if the app wants to link to the session user or not.
+        const authLoginMethod = inputUser.loginMethods.find(
+            (lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString()
+        );
+        if (!authLoginMethod) {
+            throw new Error(
+                "This should never happen: the recipeUserId and user is inconsistent in createPrimaryUserIdOrLinkByAccountInfo params"
+            );
         }
 
-        if (session === undefined) {
+        const authTypeRes = await AuthUtils.checkAuthTypeAndLinkingStatus(
+            session,
+            authLoginMethod,
+            inputUser,
+            tenantId,
+            userContext
+        );
+
+        if (authTypeRes.status !== "OK") {
+            return authTypeRes;
+        }
+
+        if (authTypeRes.isFirstFactor) {
             logDebugMessage(
-                "createPrimaryUserIdOrLinkAccounts trying to link by account info because we have no session"
+                "createPrimaryUserIdOrLinkAccounts trying to link by account info because this is a first factor auth"
             );
             // We try and list all users that can be linked to the input user based on the account info
             // later we can use these when trying to link or when checking if linking to the session user is possible.
@@ -193,86 +218,17 @@ export default class Recipe extends RecipeModule {
             return retry();
         }
 
-        logDebugMessage("createPrimaryUserIdOrLinkAccounts got session");
-
-        // If we got here, we have a session, so we load the session user info.
-        let sessionUser = await getUser(session.getUserId(), userContext);
-        if (sessionUser === undefined) {
-            throw new SessionError({
-                type: SessionError.UNAUTHORISED,
-                message: "Session user not found",
-            });
-        }
-
-        // If the session user is already primary we re-check if it still isn't linked to the input user
-        if (sessionUser.isPrimaryUser) {
-            logDebugMessage("createPrimaryUserIdOrLinkAccounts session user already primary");
-            // They could become linked in some race conditions
-            if (this.isLinked(sessionUser, inputUser)) {
-                return { status: "OK", user: sessionUser };
-            }
-        } else {
-            // If the session user isn't primary we try and make it one.
-            logDebugMessage("createPrimaryUserIdOrLinkAccounts trying to make session user primary");
-
-            // We could check here if the session user can even become a primary user, but that'd only mean one extra core call
-            // without any added benefits, since the core already checks all pre-conditions
-            if (await this.shouldBecomePrimaryUser(sessionUser, tenantId, session, userContext)) {
-                const makeSessionUserPrimaryRes = await this.recipeInterfaceImpl.createPrimaryUser({
-                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
-                    userContext,
-                });
-                if (makeSessionUserPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-                    // This means that the session user was linked to another primary user since we loaded the info
-                    // which implies that the current session was invalidated
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "Session user not found",
-                    });
-                } else if (makeSessionUserPrimaryRes.status === "OK") {
-                    sessionUser = makeSessionUserPrimaryRes.user;
-                } else {
-                    // All other statuses signify that we can't make the session user primary
-                    // Which means we can't continue
-                    return { status: "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER" };
-                }
-            } else {
-                logDebugMessage(
-                    "createPrimaryUserIdOrLinkAccounts trying to link by account info because the app doesn't want to make the session user primary"
-                );
-                // This means that the app doesn't want to make the session user primary
-                // so we fall back to linking by account info
-                const linkRes = await this.tryLinkingByAccountInfo({
-                    inputUser: inputUser,
-                    session,
-                    tenantId,
-                    userContext,
-                });
-                if (linkRes.status === "OK") {
-                    return { status: "OK", user: linkRes.user };
-                }
-                if (linkRes.status === "NO_LINK") {
-                    return { status: "OK", user: inputUser };
-                }
-                return retry();
-            }
-        }
-
-        // If we got here, we have a session and a primary session user
-        // We can not assume the inputUser is non-primary, since we'll only check that seeing if the app wants to link to the session user or not.
-        const authLoginMethod = inputUser.loginMethods.find(
-            (lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString()
-        );
-        if (!authLoginMethod) {
-            throw new Error(
-                "This should never happen: the recipeUserId and user is inconsistent in createPrimaryUserIdOrLinkByAccountInfo params"
-            );
+        if (authTypeRes.inputUserAlreadyLinkedToSessionUser) {
+            return {
+                status: "OK",
+                user: authTypeRes.sessionUser,
+            };
         }
 
         // We check if the app intends to link the inputUser to the sessionUser
         const shouldLinkResForSessionUser = await this.config.shouldDoAutomaticAccountLinking(
             authLoginMethod,
-            sessionUser,
+            authTypeRes.sessionUser,
             session,
             tenantId,
             userContext
@@ -305,17 +261,18 @@ export default class Recipe extends RecipeModule {
 
         logDebugMessage("createPrimaryUserIdOrLinkAccounts trying to link by session info");
         const sessionLinkingRes = await this.tryLinkingBySession({
-            sessionUser,
+            sessionUser: authTypeRes.sessionUser,
             inputUser,
             authLoginMethod,
             sessionUserLinkingRequiresVerification: shouldLinkResForSessionUser.shouldRequireVerification,
-            tenantId,
             userContext,
         });
-        if (sessionLinkingRes.status === "NON_PRIMARY_SESSION_USER") {
+        if (sessionLinkingRes.status === "SESSION_USER_NOT_PRIMARY") {
             // This means that although we made the session user primary above, some race condition undid that (e.g.: calling unlink concurrently with this func)
             // We can retry in this case, since we start by trying to make it into a primary user and throwing if we can't
             return retry();
+        } else if (sessionLinkingRes.status === "LINKING_TO_SESSION_USER_FAILED") {
+            return sessionLinkingRes;
         } else {
             // If we get here the status is either OK or LINKING_TO_SESSION_USER_FAILED in which case we return an error response LINKING_TO_SESSION_USER_FAILED
             // means that although the app wants to link to the session user but something, is blocking the link (i.e.: other primary users existing),
@@ -382,6 +339,89 @@ export default class Recipe extends RecipeModule {
                 ? undefined
                 : users.reduce((min, curr) => (min.timeJoined < curr.timeJoined ? min : curr));
         return { primaryUser, oldestUser };
+    };
+
+    getPrimarySessionUser = async function (
+        session: SessionContainerInterface,
+        tenantId: string,
+        userContext: UserContext
+    ): Promise<
+        | { status: "OK"; sessionUser: User }
+        | { status: "SHOULD_AUTOMATICALLY_LINK_FALSE" }
+        | { status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" }
+    > {
+        logDebugMessage(`getPrimarySessionUser called`);
+        const sessionUser = await getUser(session.getUserId(), userContext);
+        if (sessionUser === undefined) {
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Session user not found",
+            });
+        }
+
+        if (sessionUser.isPrimaryUser) {
+            logDebugMessage(`getPrimarySessionUser session user already primary`);
+            // if the session user was already primary we can just return it
+            return { status: "OK", sessionUser };
+        } else {
+            // if the session user is not primary we try and make it one
+            logDebugMessage(`getPrimarySessionUser not session user yet`);
+            // We could check here if the session user can even become a primary user, but that'd only mean one extra core call
+            // without any added benefits, since the core already checks all pre-conditions
+
+            // We do this check here instead of using the shouldBecomePrimaryUser util, because
+            // here we handle the shouldRequireVerification case differently
+            const shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                sessionUser.loginMethods[0],
+                undefined,
+                session,
+                tenantId,
+                userContext
+            );
+            logDebugMessage(`getPrimarySessionUser shouldDoAccountLinking: ${JSON.stringify(shouldDoAccountLinking)}`);
+
+            if (shouldDoAccountLinking.shouldAutomaticallyLink) {
+                if (shouldDoAccountLinking.shouldRequireVerification && !sessionUser.loginMethods[0].verified) {
+                    // We force-update the claim value if it is not set or different from what we just fetched from the DB
+                    if ((await session.getClaimValue(EmailVerificationClaim, userContext)) !== false) {
+                        logDebugMessage(`getPrimarySessionUser updating emailverification status in session`);
+                        // This will let the frontend know if the value has been updated in the background
+                        await session.setClaimValue(EmailVerificationClaim, false, userContext);
+                    }
+                    logDebugMessage(`getPrimarySessionUser throwing validation error`);
+                    // Then run the validation expecting it to fail. We run assertClaims instead of throwing the error locally
+                    // to make sure the error shape in the response will match what we'd return normally
+                    await session.assertClaims([EmailVerificationClaim.validators.isVerified()], userContext);
+                    throw new Error(
+                        "This should never happen: email verification claim validator passed after setting value to false"
+                    );
+                }
+                const makeSessionUserPrimaryRes = await this.recipeInterfaceImpl.createPrimaryUser({
+                    recipeUserId: sessionUser.loginMethods[0].recipeUserId,
+                    userContext,
+                });
+                logDebugMessage(
+                    `getPrimarySessionUser makeSessionUserPrimaryRes returned ${makeSessionUserPrimaryRes.status}`
+                );
+                if (makeSessionUserPrimaryRes.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                    // This means that the session user got primary since we loaded the session user info above
+                    // but this status means that the user id has also changed, so the session should be invalid
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                } else if (makeSessionUserPrimaryRes.status === "OK") {
+                    return { status: "OK", sessionUser: makeSessionUserPrimaryRes.user };
+                } else {
+                    // All other statuses signify that we can't make the session user primary
+                    // Which means we can't continue
+                    return makeSessionUserPrimaryRes;
+                }
+            } else {
+                // This means that the app doesn't want to make the session user primary
+                return { status: "SHOULD_AUTOMATICALLY_LINK_FALSE" };
+            }
+        }
     };
 
     isSignInAllowed = async ({
@@ -881,43 +921,31 @@ export default class Recipe extends RecipeModule {
         authLoginMethod,
         inputUser,
         sessionUser,
-        tenantId,
         userContext,
     }: {
         inputUser: User;
         sessionUserLinkingRequiresVerification: boolean;
         sessionUser: User;
         authLoginMethod: LoginMethod;
-        tenantId: string;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User }
-        | { status: "LINKING_TO_SESSION_USER_FAILED" }
-        | { status: "NON_PRIMARY_SESSION_USER" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "SESSION_USER_NOT_PRIMARY";
+              reason: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
     > {
         logDebugMessage("tryLinkingBySession called");
-        const usersToLink = await this.getUsersThatCanBeLinkedToRecipeUser({
-            tenantId,
-            user: inputUser,
-            userContext,
-        });
-        const primaryUserThatCanBeLinkedToTheInputUser = usersToLink.primaryUser;
+        // If the input user has another user (and it's not the session user) it could be linked to based on account info then we can't link it to the session user.
+        // However, we do not need to check this as the linkAccounts check will fail anyway and we do not want the extra core call in case it succeeds
 
-        // If we get here, we know that the session user is primary.
-        // if both of them are primary, they cannot be linked together.
-        // we also check this outside of this function.
-        if (inputUser.isPrimaryUser) {
-            return { status: "LINKING_TO_SESSION_USER_FAILED" };
-        }
-
-        // If the input user has another user (an it's not the session user) it could be linked to based on account info
-        // then we can't link it to the session user.
-        if (
-            primaryUserThatCanBeLinkedToTheInputUser !== undefined &&
-            sessionUser.id !== primaryUserThatCanBeLinkedToTheInputUser.id
-        ) {
-            return { status: "LINKING_TO_SESSION_USER_FAILED" };
-        }
         // If the session user has already verified the current email address/phone number and wants to add another account with it
         // then we don't want to ask them to verify it again.
         // This is different from linking based on account info, but the presence of a session shows that the user has access to both accounts,
@@ -932,7 +960,7 @@ export default class Recipe extends RecipeModule {
             !sessionUserLinkingRequiresVerification || authLoginMethod.verified || sessionUserHasVerifiedAccountInfo;
 
         if (!canLinkBasedOnVerification) {
-            return { status: "LINKING_TO_SESSION_USER_FAILED" };
+            return { status: "LINKING_TO_SESSION_USER_FAILED", reason: "EMAIL_VERIFICATION_REQUIRED" };
         }
 
         // If we get here, it means that the session and the input user can be linked, so we try it.
@@ -953,7 +981,7 @@ export default class Recipe extends RecipeModule {
             logDebugMessage(
                 "tryLinkingBySession linking to session user failed because of a race condition - input user linked to another user"
             );
-            return { status: "LINKING_TO_SESSION_USER_FAILED" };
+            return { status: "LINKING_TO_SESSION_USER_FAILED", reason: linkAccountsResult.status };
         } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
             logDebugMessage(
                 "tryLinkingBySession linking to session user failed because of a race condition - INPUT_USER_IS_NOT_A_PRIMARY_USER, retrying"
@@ -961,7 +989,7 @@ export default class Recipe extends RecipeModule {
             // This can be possible during a race condition wherein the primary user we created above
             // is somehow no more a primary user. This can happen if  the unlink function was called in parallel
             // on that user. We can just retry, as that will try and make it a primary user again.
-            return { status: "NON_PRIMARY_SESSION_USER" };
+            return { status: "SESSION_USER_NOT_PRIMARY", reason: linkAccountsResult.status };
         } else {
             logDebugMessage(
                 "tryLinkingBySession linking to session user failed because of a race condition - input user has another primary user it can be linked to"
@@ -971,11 +999,11 @@ export default class Recipe extends RecipeModule {
             // some other primary user ID.
             // This can happen due to a race condition in which the email has changed from one primary user to another during this function call,
             // or if another primary user was created with the same email as the input user while this function is running
-            return { status: "LINKING_TO_SESSION_USER_FAILED" };
+            return { status: "LINKING_TO_SESSION_USER_FAILED", reason: linkAccountsResult.status };
         }
     }
 
-    private async tryLinkingByAccountInfo({
+    async tryLinkingByAccountInfo({
         inputUser,
         session,
         tenantId,
@@ -1145,7 +1173,9 @@ export default class Recipe extends RecipeModule {
                     primaryUser = createPrimaryUserResult.user;
                     targetUser = olderUser;
                 } else {
-                    // If this also return false, we cannot link
+                    // At this point we can't link these users together because,
+                    // neither of them are primary, and we can't make any of them primary.
+                    // This can be because of shoulDoAutomaticAccountLinking/email verification status.
                     return { status: "NO_LINK" };
                 }
             }

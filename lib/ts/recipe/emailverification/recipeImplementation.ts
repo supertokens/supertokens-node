@@ -89,7 +89,7 @@ export default function getRecipeInterface(
                             let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
                             await AccountLinking.createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided({
                                 tenantId,
-                                user: updatedUser,
+                                inputUser: updatedUser,
                                 recipeUserId,
                                 session,
                                 userContext,

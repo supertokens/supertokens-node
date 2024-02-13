@@ -105,7 +105,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
                     {
                         tenantId,
-                        user: response.user,
+                        inputUser: response.user,
                         recipeUserId: response.recipeUserId,
                         session: undefined, // TODO: we may want to add this to the interface
                         userContext,

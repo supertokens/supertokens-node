@@ -535,7 +535,7 @@ export default function getAPIImplementation(): APIInterface {
                         const linkRes = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
                             {
                                 tenantId,
-                                user: createUserResponse.user,
+                                inputUser: createUserResponse.user,
                                 recipeUserId: createUserResponse.recipeUserId,
                                 session,
                                 userContext,
@@ -602,10 +602,18 @@ export default function getAPIImplementation(): APIInterface {
             const errorCodeMap = {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
-                LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                NOT_LINKING_NON_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
-                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
-                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                },
+                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                NON_PRIMARY_SESSION_USER: {
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                },
             };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
@@ -735,10 +743,18 @@ export default function getAPIImplementation(): APIInterface {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                NOT_LINKING_NON_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
-                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
-                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                },
+                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                NON_PRIMARY_SESSION_USER: {
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                },
             };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;

@@ -24,10 +24,18 @@ export default function getAPIInterface(): APIInterface {
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
-                LINKING_TO_SESSION_USER_FAILED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                NOT_LINKING_NON_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
-                NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER:
-                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                },
+                INVALID_FIRST_FACTOR: "User linking failed. Please contact support. (ERR_CODE_0XY)",
+                NON_PRIMARY_SESSION_USER: {
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                },
             };
             const { provider, tenantId, options, session, userContext } = input;
 

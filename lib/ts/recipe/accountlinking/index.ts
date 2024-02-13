@@ -44,10 +44,9 @@ export default class Wrapper {
             throw new Error("Unknown recipeUserId");
         }
 
-        return await Recipe.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided({
+        return await Recipe.getInstance().tryLinkingByAccountInfo({
             tenantId,
-            user,
-            recipeUserId,
+            inputUser: user,
             session,
             userContext: getUserContext(userContext),
         });

@@ -9,8 +9,9 @@ export declare const AuthUtils: {
     getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(
         resp: {
             status: string;
+            reason?: string;
         },
-        errorCodeMap: Record<string, string | undefined>,
+        errorCodeMap: Record<string, Record<string, string | undefined> | string | undefined>,
         errorStatus: T
     ): {
         status: T;
@@ -43,10 +44,11 @@ export declare const AuthUtils: {
               status: "SIGN_UP_NOT_ALLOWED";
           }
         | {
-              status:
-                  | "LINKING_TO_SESSION_USER_FAILED"
-                  | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER"
-                  | "NOT_LINKING_NON_FIRST_FACTOR";
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "INVALID_FIRST_FACTOR";
           }
     >;
     postAuthChecks: ({
@@ -79,7 +81,15 @@ export declare const AuthUtils: {
               status: "SIGN_IN_NOT_ALLOWED";
           }
         | {
-              status: "LINKING_TO_SESSION_USER_FAILED" | "NON_PRIMARY_SESSION_USER_OTHER_PRIMARY_USER";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({
@@ -102,5 +112,27 @@ export declare const AuthUtils: {
               loginMethod: LoginMethod;
           }
         | undefined
+    >;
+    checkAuthTypeAndLinkingStatus: (
+        session: SessionContainerInterface | undefined,
+        accountInfo: AccountInfoWithRecipeId,
+        inputUser: User | undefined,
+        tenantId: string,
+        userContext: UserContext
+    ) => Promise<
+        | {
+              status: "OK";
+              isFirstFactor: true;
+          }
+        | {
+              status: "OK";
+              isFirstFactor: false;
+              inputUserAlreadyLinkedToSessionUser: boolean;
+              sessionUser: User;
+          }
+        | {
+              status: "NON_PRIMARY_SESSION_USER";
+              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 };

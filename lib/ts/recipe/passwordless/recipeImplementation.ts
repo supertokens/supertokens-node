@@ -64,7 +64,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             const linkResult = await AccountLinking.getInstance().createPrimaryUserIdOrLinkByAccountInfoOrLinkToSessionIfProvided(
                 {
                     tenantId: input.tenantId,
-                    user: response.user,
+                    inputUser: response.user,
                     recipeUserId: response.recipeUserId,
                     session: input.session,
                     userContext: input.userContext,
