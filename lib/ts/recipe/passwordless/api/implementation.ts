@@ -41,10 +41,14 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const recipeId = "passwordless";
-            const accountInfo = {
-                phoneNumber: deviceInfo.phoneNumber,
-                email: deviceInfo.email,
-            };
+            const accountInfo =
+                deviceInfo.phoneNumber !== undefined
+                    ? {
+                          phoneNumber: deviceInfo.phoneNumber!,
+                      }
+                    : {
+                          email: deviceInfo.email!,
+                      };
 
             let checkCredentialsResponse:
                 | ReturnType<typeof input.options.recipeImplementation.verifyAndDeleteCode>
@@ -81,7 +85,6 @@ export default function getAPIImplementation(): APIInterface {
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
                 accountInfo,
                 recipeId,
-                tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
                 checkCredentialsOnTenant,

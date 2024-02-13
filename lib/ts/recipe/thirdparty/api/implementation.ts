@@ -81,14 +81,12 @@ export default function getAPIInterface(): APIInterface {
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
                 accountInfo: {
-                    // Here we intentionally do not add
                     thirdParty: {
                         userId: userInfo.thirdPartyUserId,
                         id: provider.id,
                     },
                 },
                 recipeId,
-                tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
                 checkCredentialsOnTenant,

@@ -10,7 +10,7 @@ import RecipeUserId from "./recipeUserId";
 import { isValidFirstFactor } from "./recipe/multifactorauth/utils";
 import SessionError from "./recipe/session/error";
 import { getUser } from ".";
-import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
+import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 import SessionRecipe from "./recipe/session/recipe";
 import { logDebugMessage } from "./logger";
@@ -270,14 +270,15 @@ export const AuthUtils = {
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: async ({
         recipeId,
         accountInfo,
-        tenantId: currentTenantId,
         checkCredentialsOnTenant,
         session,
         userContext,
     }: {
         recipeId: string;
-        accountInfo: AccountInfo;
-        tenantId: string;
+        accountInfo:
+            | { email: string; thirdParty?: undefined; phoneNumber?: undefined }
+            | { email?: undefined; thirdParty?: undefined; phoneNumber: string }
+            | { email?: undefined; thirdParty: { id: string; userId: string }; phoneNumber?: undefined };
         session: SessionContainerInterface | undefined;
         checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
         userContext: UserContext;
@@ -287,6 +288,7 @@ export const AuthUtils = {
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired called with ${JSON.stringify(accountInfo)}`
             );
+            const currentTenantId = session?.getTenantId(userContext) ?? "public";
             const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId: currentTenantId,
                 accountInfo,
@@ -302,7 +304,7 @@ export const AuthUtils = {
                     loginMethod: user.loginMethods.find(
                         (lm) =>
                             lm.recipeId === recipeId &&
-                            (lm.hasSameEmailAs(accountInfo.email) ||
+                            ((accountInfo.email !== undefined && lm.hasSameEmailAs(accountInfo.email)) ||
                                 lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) ||
                                 lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty))
                     )!,
@@ -328,7 +330,9 @@ export const AuthUtils = {
                     });
                 }
 
-                // Since the session user is undefined, we can't
+                // Since the session user is not primary, they only have a single login method
+                // and we know that that login method is associated with the current tenant.
+                // This means that the user has no loginMethods we need to check (that only belong to other tenantIds)
                 if (!sessionUser.isPrimaryUser) {
                     logDebugMessage(
                         `getAuthenticatingUserAndAddToCurrentTenantIfRequired session user is non-primary so returning early without checking other tenants`
@@ -336,7 +340,7 @@ export const AuthUtils = {
                     return undefined;
                 }
 
-                const matchingLoginMethods = sessionUser.loginMethods.filter(
+                const matchingLoginMethodsFromSessionUser = sessionUser.loginMethods.filter(
                     (lm) =>
                         lm.recipeId === recipeId &&
                         (lm.hasSameEmailAs(accountInfo.email) ||
@@ -344,23 +348,26 @@ export const AuthUtils = {
                             lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty))
                 );
                 logDebugMessage(
-                    `getAuthenticatingUserAndAddToCurrentTenantIfRequired session has ${matchingLoginMethods.length} matching login methods`
+                    `getAuthenticatingUserAndAddToCurrentTenantIfRequired session has ${matchingLoginMethodsFromSessionUser.length} matching login methods`
                 );
 
-                if (matchingLoginMethods.some((lm) => lm.tenantIds.includes(currentTenantId))) {
+                if (matchingLoginMethodsFromSessionUser.some((lm) => lm.tenantIds.includes(currentTenantId))) {
                     logDebugMessage(
-                        `getAuthenticatingUserAndAddToCurrentTenantIfRequired session has ${matchingLoginMethods.length} matching login methods`
+                        `getAuthenticatingUserAndAddToCurrentTenantIfRequired session has ${matchingLoginMethodsFromSessionUser.length} matching login methods`
                     );
                     // This can happen in a race condition where a user was created and linked with the session user
                     // between listing the existing users and loading the session user
-                    // We can continue, this doesn't cause any issues.
-                    authenticatingUser = {
+                    // We can return early, this only means that someone did the same sharing this function was aiming to do
+                    // concurrently.
+                    return {
                         user: sessionUser,
-                        loginMethod: matchingLoginMethods.find((lm) => lm.tenantIds.includes(currentTenantId))!,
+                        loginMethod: matchingLoginMethodsFromSessionUser.find((lm) =>
+                            lm.tenantIds.includes(currentTenantId)
+                        )!,
                     };
                 }
                 let goToRetry = false;
-                for (const lm of matchingLoginMethods) {
+                for (const lm of matchingLoginMethodsFromSessionUser) {
                     logDebugMessage(
                         `getAuthenticatingUserAndAddToCurrentTenantIfRequired session checking credentials on ${lm.tenantIds[0]}`
                     );

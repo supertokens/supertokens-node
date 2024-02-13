@@ -5,7 +5,7 @@ import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
-import { AccountInfoWithRecipeId, RecipeLevelUser } from "../../accountlinking/types";
+import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import SessionRecipe from "../../session/recipe";
@@ -620,10 +620,6 @@ export default function getAPIImplementation(): APIInterface {
 
             const recipeId = "emailpassword";
 
-            const accountInfo: AccountInfoWithRecipeId = {
-                recipeId,
-                email,
-            };
             const checkCredentialsOnTenant = async (tenantId: string) => {
                 return (
                     (await options.recipeImplementation.signIn({ email, password, session, tenantId, userContext }))
@@ -639,8 +635,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
-                tenantId,
-                accountInfo,
+                accountInfo: { email },
                 userContext,
                 recipeId,
                 session,
@@ -656,7 +651,10 @@ export default function getAPIImplementation(): APIInterface {
 
             const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
             const preAuthChecks = await AuthUtils.preAuthChecks({
-                accountInfo,
+                accountInfo: {
+                    recipeId,
+                    email,
+                },
                 factorIds: ["emailpassword"],
                 isSignUp: false,
                 inputUser: authenticatingUser?.user,

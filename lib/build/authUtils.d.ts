@@ -3,7 +3,7 @@ import { SessionContainerInterface } from "./recipe/session/types";
 import { UserContext } from "./types";
 import { LoginMethod, User } from "./user";
 import RecipeUserId from "./recipeUserId";
-import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
+import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 export declare const AuthUtils: {
     getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(
@@ -95,14 +95,30 @@ export declare const AuthUtils: {
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({
         recipeId,
         accountInfo,
-        tenantId: currentTenantId,
         checkCredentialsOnTenant,
         session,
         userContext,
     }: {
         recipeId: string;
-        accountInfo: AccountInfo;
-        tenantId: string;
+        accountInfo:
+            | {
+                  email: string;
+                  thirdParty?: undefined;
+                  phoneNumber?: undefined;
+              }
+            | {
+                  email?: undefined;
+                  thirdParty?: undefined;
+                  phoneNumber: string;
+              }
+            | {
+                  email?: undefined;
+                  thirdParty: {
+                      id: string;
+                      userId: string;
+                  };
+                  phoneNumber?: undefined;
+              };
         session: SessionContainerInterface | undefined;
         checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
         userContext: UserContext;
