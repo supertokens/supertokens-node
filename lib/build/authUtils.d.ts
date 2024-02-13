@@ -200,7 +200,7 @@ export declare const AuthUtils: {
               reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
-    linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+    linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo: ({
         tenantId,
         inputUser,
         recipeUserId,
@@ -212,7 +212,7 @@ export declare const AuthUtils: {
         recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<
+    }) => Promise<
         | {
               status: "OK";
               user: User;
@@ -239,10 +239,10 @@ export declare const AuthUtils: {
      *
      * It throws INVALID_CLAIM_ERROR if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }` but the email verification status was wrong
      */
-    tryAndMakeSessionUserIntoAPrimaryUser(
+    tryAndMakeSessionUserIntoAPrimaryUser: (
         session: SessionContainerInterface,
         userContext: UserContext
-    ): Promise<
+    ) => Promise<
         | {
               status: "OK";
               sessionUser: User;
@@ -254,7 +254,7 @@ export declare const AuthUtils: {
               status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
-    tryLinkingBySession({
+    tryLinkingBySession: ({
         linkingToSessionUserRequiresVerification,
         authLoginMethod,
         authenticatedUser,
@@ -266,7 +266,7 @@ export declare const AuthUtils: {
         sessionUser: User;
         authLoginMethod: LoginMethod;
         userContext: UserContext;
-    }): Promise<
+    }) => Promise<
         | {
               status: "OK";
               user: User;

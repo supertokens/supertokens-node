@@ -728,9 +728,9 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
             if (primaryUserThatCanBeLinkedToTheInputUser !== undefined) {
-                // we check this based on the recipeId because the inputUser could be outdated
+                // we check if the inputUser and primaryUserThatCanBeLinkedToTheInputUser are linked based on recipeIds because the inputUser obj could be outdated
                 if (
-                    primaryUserThatCanBeLinkedToTheInputUser.loginMethods.some(
+                    !primaryUserThatCanBeLinkedToTheInputUser.loginMethods.some(
                         (lm) => lm.recipeUserId.getAsString() === inputUser.loginMethods[0].recipeUserId.getAsString()
                     )
                 ) {

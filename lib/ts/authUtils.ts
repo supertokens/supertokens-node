@@ -547,7 +547,7 @@ export const AuthUtils = {
     },
 
     // this function returns the user ID for which the session will be created.
-    async linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+    linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo: async function ({
         tenantId,
         inputUser,
         recipeUserId,
@@ -666,7 +666,7 @@ export const AuthUtils = {
      *
      * It throws INVALID_CLAIM_ERROR if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }` but the email verification status was wrong
      */
-    async tryAndMakeSessionUserIntoAPrimaryUser(
+    tryAndMakeSessionUserIntoAPrimaryUser: async function (
         session: SessionContainerInterface,
         userContext: UserContext
     ): Promise<
@@ -754,7 +754,7 @@ export const AuthUtils = {
         }
     },
 
-    async tryLinkingBySession({
+    tryLinkingBySession: async function ({
         linkingToSessionUserRequiresVerification,
         authLoginMethod,
         authenticatedUser,
