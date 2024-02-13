@@ -732,7 +732,7 @@ export default class Recipe extends RecipeModule {
                     continue;
                 }
 
-                if (user.loginMethods[0].email === input.newEmail) {
+                if (user.loginMethods[0].hasSameEmailAs(input.newEmail)) {
                     logDebugMessage(
                         `isEmailChangeAllowed: can change on ${tenantId} cause input user is not a primary and new email is same as the older one`
                     );
@@ -1166,8 +1166,8 @@ export default class Recipe extends RecipeModule {
             primaryUser.id == session.getUserId(userContext) &&
             primaryUser.loginMethods.some(
                 (lm) =>
-                    targetUser.loginMethods[0].email === lm.email &&
-                    targetUser.loginMethods[0].phoneNumber === lm.phoneNumber &&
+                    targetUser.loginMethods[0].hasSameEmailAs(lm.email) &&
+                    targetUser.loginMethods[0].hasSamePhoneNumberAs(lm.phoneNumber) &&
                     lm.verified
             );
 
