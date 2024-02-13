@@ -225,46 +225,12 @@ export default class Recipe extends RecipeModule {
             };
         }
 
-        // We check if the app intends to link the inputUser to the sessionUser
-        const shouldLinkResForSessionUser = await this.config.shouldDoAutomaticAccountLinking(
-            authLoginMethod,
-            authTypeRes.sessionUser,
-            session,
-            tenantId,
-            userContext
-        );
-        logDebugMessage(
-            `createPrimaryUserIdOrLinkAccounts shouldDoAutomaticAccountLinking returned ${JSON.stringify(
-                shouldLinkResForSessionUser
-            )}`
-        );
-
-        // If the app doesn't want to link to the session user, we fall back to linking by account info
-        if (!shouldLinkResForSessionUser.shouldAutomaticallyLink) {
-            logDebugMessage(
-                "createPrimaryUserIdOrLinkAccounts trying to link by account info because the app doesn't want to link to the session user"
-            );
-            const linkRes = await this.tryLinkingByAccountInfo({
-                inputUser: inputUser,
-                session,
-                tenantId,
-                userContext,
-            });
-            if (linkRes.status === "OK") {
-                return { status: "OK", user: linkRes.user };
-            }
-            if (linkRes.status === "NO_LINK") {
-                return { status: "OK", user: inputUser };
-            }
-            return retry();
-        }
-
         logDebugMessage("createPrimaryUserIdOrLinkAccounts trying to link by session info");
         const sessionLinkingRes = await this.tryLinkingBySession({
             sessionUser: authTypeRes.sessionUser,
             inputUser,
             authLoginMethod,
-            sessionUserLinkingRequiresVerification: shouldLinkResForSessionUser.shouldRequireVerification,
+            sessionUserLinkingRequiresVerification: authTypeRes.sessionUserLinkingRequiresVerification,
             userContext,
         });
         if (sessionLinkingRes.status === "SESSION_USER_NOT_PRIMARY") {

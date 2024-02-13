@@ -423,7 +423,14 @@ export const AuthUtils = {
         userContext: UserContext
     ): Promise<
         | { status: "OK"; isFirstFactor: true }
-        | { status: "OK"; isFirstFactor: false; inputUserAlreadyLinkedToSessionUser: boolean; sessionUser: User }
+        | { status: "OK"; isFirstFactor: false; inputUserAlreadyLinkedToSessionUser: true; sessionUser: User }
+        | {
+              status: "OK";
+              isFirstFactor: false;
+              inputUserAlreadyLinkedToSessionUser: false;
+              sessionUser: User;
+              sessionUserLinkingRequiresVerification: boolean;
+          }
         | {
               status: "NON_PRIMARY_SESSION_USER";
               reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -488,7 +495,13 @@ export const AuthUtils = {
             if (shouldLink.shouldAutomaticallyLink === false) {
                 return { status: "OK", isFirstFactor: true };
             } else {
-                return { status: "OK", isFirstFactor: false, inputUserAlreadyLinkedToSessionUser: false, sessionUser };
+                return {
+                    status: "OK",
+                    isFirstFactor: false,
+                    inputUserAlreadyLinkedToSessionUser: false,
+                    sessionUser,
+                    sessionUserLinkingRequiresVerification: shouldLink.shouldRequireVerification,
+                };
             }
         }
     },

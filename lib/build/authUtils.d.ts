@@ -127,8 +127,15 @@ export declare const AuthUtils: {
         | {
               status: "OK";
               isFirstFactor: false;
-              inputUserAlreadyLinkedToSessionUser: boolean;
+              inputUserAlreadyLinkedToSessionUser: true;
               sessionUser: User;
+          }
+        | {
+              status: "OK";
+              isFirstFactor: false;
+              inputUserAlreadyLinkedToSessionUser: false;
+              sessionUser: User;
+              sessionUserLinkingRequiresVerification: boolean;
           }
         | {
               status: "NON_PRIMARY_SESSION_USER";
