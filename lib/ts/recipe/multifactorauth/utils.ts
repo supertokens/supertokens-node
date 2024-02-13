@@ -80,8 +80,8 @@ export const isValidFirstFactor = async function (
 
     const firstFactorsFromMFA = MultiFactorAuthRecipe.getInstance()?.config.firstFactors;
 
-    logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config}`);
-    logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from tenant config}`);
+    logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config`);
+    logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from tenant config`);
 
     let validFirstFactors = tenantConfig.firstFactors !== undefined ? tenantConfig.firstFactors : firstFactorsFromMFA;
 

@@ -135,7 +135,7 @@ export const AuthUtils = {
                 session !== undefined,
                 userContext
             );
-            return { status: "OK", validFactorIds: validFirstFactors };
+            validFactorIds = validFirstFactors;
         } else {
             logDebugMessage("preAuthChecks getting valid secondary factors");
             // In this case the app will try to link the session user and the authenticating user after auth,
