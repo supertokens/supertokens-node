@@ -33,6 +33,8 @@ export type Response =
               passwordless: {
                   enabled: boolean;
               };
+              firstFactors?: string[];
+              requiredSecondaryFactors?: string[];
               coreConfig: Record<string, unknown>;
               userCount: number;
           };
