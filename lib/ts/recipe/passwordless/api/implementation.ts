@@ -17,13 +17,12 @@ export default function getAPIImplementation(): APIInterface {
                 LINKING_TO_SESSION_USER_FAILED: {
                     // We should never get an email verification error here, since pwless automatically marks the user
                     // email as verified
-                    // EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
                     RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                        "User linking failed. Please contact support. (ERR_CODE_017)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                        "User linking failed. Please contact support. (ERR_CODE_018)",
                     SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                        "User linking failed. Please contact support. (ERR_CODE_019)",
                 },
             };
 
@@ -50,7 +49,7 @@ export default function getAPIImplementation(): APIInterface {
                       };
 
             let checkCredentialsResponse:
-                | ReturnType<typeof input.options.recipeImplementation.verifyAndDeleteCode>
+                | ReturnType<typeof input.options.recipeImplementation.verifyCode>
                 | undefined = undefined;
 
             let checkCredentialsOnTenant = async () => {
@@ -60,20 +59,20 @@ export default function getAPIImplementation(): APIInterface {
                 if (checkCredentialsResponse !== undefined) {
                     return (await checkCredentialsResponse).status === "OK";
                 }
-                checkCredentialsResponse = input.options.recipeImplementation.verifyAndDeleteCode(
+                checkCredentialsResponse = input.options.recipeImplementation.verifyCode(
                     "deviceId" in input
                         ? {
                               preAuthSessionId: input.preAuthSessionId,
                               deviceId: input.deviceId,
                               userInputCode: input.userInputCode,
-                              createRecipeUserIfNotExists: false,
+                              deleteCode: false,
                               tenantId: input.tenantId,
                               userContext: input.userContext,
                           }
                         : {
                               preAuthSessionId: input.preAuthSessionId,
                               linkCode: input.linkCode,
-                              createRecipeUserIfNotExists: false,
+                              deleteCode: false,
                               tenantId: input.tenantId,
                               userContext: input.userContext,
                           }
@@ -106,7 +105,7 @@ export default function getAPIImplementation(): APIInterface {
 
             const isSignUp = authenticatingUser === undefined;
             const preAuthChecks = await AuthUtils.preAuthChecks({
-                accountInfo: {
+                authenticatingAccountInfo: {
                     recipeId: "passwordless",
                     email: deviceInfo.email,
                     phoneNumber: deviceInfo.phoneNumber,
@@ -130,50 +129,24 @@ export default function getAPIImplementation(): APIInterface {
                 );
             }
 
-            if (authenticatingUser === undefined && checkCredentialsResponse !== undefined) {
-                /*
-                This can occur in the following race-condition:
-                1. there is a primary user with:
-                    a./ emailA pwless recipe user on tenantA (NOT associated on tenantB)
-                    b./ emailB emaipassword recipe user on tenantA&tenantB
-                2. the above user has an active session on tenant B
-                3. the user sends valid a consumeCode request for emailA on tenantB (with the an active session)
-                4. we check that emailA doesn't exist on tenantB
-                5. so, we check that the primary user has a login method on tenantA
-                6. we call verifyAndDeleteCode
-                7. we try to associate the emailA recipeUser with tenantB, *but it is deleted concurrently*
-
-                In this case we have no way to create the new recipe user we'd need. While we could work around this,
-                it is rare enough that returning an error that'll require the user to redo the auth is fine.
-                */
-                return {
-                    status: "RESTART_FLOW_ERROR",
-                };
-            }
-
-            let response =
-                checkCredentialsResponse !== undefined
-                    ? await checkCredentialsResponse
-                    : await input.options.recipeImplementation.consumeCode(
-                          "deviceId" in input
-                              ? {
-                                    preAuthSessionId: input.preAuthSessionId,
-                                    deviceId: input.deviceId,
-                                    userInputCode: input.userInputCode,
-                                    session: input.session,
-                                    createRecipeUserIfNotExists: true,
-                                    tenantId: input.tenantId,
-                                    userContext: input.userContext,
-                                }
-                              : {
-                                    preAuthSessionId: input.preAuthSessionId,
-                                    linkCode: input.linkCode,
-                                    session: input.session,
-                                    createRecipeUserIfNotExists: true,
-                                    tenantId: input.tenantId,
-                                    userContext: input.userContext,
-                                }
-                      );
+            let response = await input.options.recipeImplementation.consumeCode(
+                "deviceId" in input
+                    ? {
+                          preAuthSessionId: input.preAuthSessionId,
+                          deviceId: input.deviceId,
+                          userInputCode: input.userInputCode,
+                          session: input.session,
+                          tenantId: input.tenantId,
+                          userContext: input.userContext,
+                      }
+                    : {
+                          preAuthSessionId: input.preAuthSessionId,
+                          linkCode: input.linkCode,
+                          session: input.session,
+                          tenantId: input.tenantId,
+                          userContext: input.userContext,
+                      }
+            );
 
             if (
                 response.status === "RESTART_FLOW_ERROR" ||
@@ -225,8 +198,10 @@ export default function getAPIImplementation(): APIInterface {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "User linking failed. Please contact support. (ERR_CODE_019)",
+                },
             };
             const accountInfo: { phoneNumber?: string; email?: string } = {};
             if ("email" in input) {
@@ -264,7 +239,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const preAuthChecks = await AuthUtils.preAuthChecks({
-                accountInfo: {
+                authenticatingAccountInfo: {
                     ...accountInfo,
                     recipeId: "passwordless",
                 },

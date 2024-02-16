@@ -68,10 +68,10 @@ export const AuthUtils = {
      * - OK: the auth flow can proceed
      * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
-     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     * if the session user should become primary but we couldn't make it primary because of a conflicting primary user.
      */
     preAuthChecks: async function ({
-        accountInfo,
+        authenticatingAccountInfo,
         tenantId,
         isSignUp,
         isVerified,
@@ -80,7 +80,7 @@ export const AuthUtils = {
         session,
         userContext,
     }: {
-        accountInfo: AccountInfoWithRecipeId;
+        authenticatingAccountInfo: AccountInfoWithRecipeId;
         authenticatingUser: User | undefined;
         tenantId: string;
         factorIds: string[];
@@ -111,9 +111,8 @@ export const AuthUtils = {
         // We also load the session user here if it is available.
         const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
             session,
-            accountInfo,
+            authenticatingAccountInfo,
             authenticatingUser,
-            tenantId,
             userContext
         );
         if (authTypeInfo.status !== "OK") {
@@ -156,7 +155,7 @@ export const AuthUtils = {
             logDebugMessage("preAuthChecks checking if the user is allowed to sign up");
             if (
                 !(await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: accountInfo,
+                    newUser: authenticatingAccountInfo,
                     isVerified,
                     tenantId,
                     session,
@@ -464,7 +463,6 @@ export const AuthUtils = {
         session: SessionContainerInterface | undefined,
         accountInfo: AccountInfoWithRecipeId,
         inputUser: User | undefined,
-        tenantId: string,
         userContext: UserContext
     ): Promise<
         | { status: "OK"; isFirstFactor: true }
@@ -528,7 +526,7 @@ export const AuthUtils = {
                 accountInfo,
                 sessionUser,
                 session,
-                tenantId,
+                session.getTenantId(),
                 userContext
             );
             logDebugMessage(
@@ -602,7 +600,6 @@ export const AuthUtils = {
             session,
             authLoginMethod,
             inputUser,
-            tenantId,
             userContext
         );
 

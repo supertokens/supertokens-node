@@ -42,10 +42,10 @@ export declare const AuthUtils: {
      * - OK: the auth flow can proceed
      * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
-     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     * if the session user should become primary but we couldn't make it primary because of a conflicting primary user.
      */
     preAuthChecks: ({
-        accountInfo,
+        authenticatingAccountInfo,
         tenantId,
         isSignUp,
         isVerified,
@@ -54,7 +54,7 @@ export declare const AuthUtils: {
         session,
         userContext,
     }: {
-        accountInfo: AccountInfoWithRecipeId;
+        authenticatingAccountInfo: AccountInfoWithRecipeId;
         authenticatingUser: User | undefined;
         tenantId: string;
         factorIds: string[];
@@ -172,7 +172,6 @@ export declare const AuthUtils: {
         session: SessionContainerInterface | undefined,
         accountInfo: AccountInfoWithRecipeId,
         inputUser: User | undefined,
-        tenantId: string,
         userContext: UserContext
     ) => Promise<
         | {

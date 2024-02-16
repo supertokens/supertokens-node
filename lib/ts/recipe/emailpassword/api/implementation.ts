@@ -531,22 +531,15 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        const linkRes = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo(
-                            {
-                                tenantId,
-                                inputUser: createUserResponse.user,
-                                recipeUserId: createUserResponse.recipeUserId,
-                                session,
-                                userContext,
-                            }
-                        );
-                        if (linkRes.status !== "OK") {
-                            return {
-                                status: "GENERAL_ERROR",
-                                message: "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                            };
-                        }
-                        if (linkRes.user.id !== existingUser.id) {
+                        // We do not take session into account here, since this is supposed to be called without a session
+                        const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                            tenantId,
+                            inputUser: createUserResponse.user,
+                            session,
+                            userContext,
+                        });
+                        const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
+                        if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
                             // this means that the account we just linked to
                             // was not the one we had expected to link it to. This can happen
                             // due to some race condition or the other.. Either way, this
@@ -555,7 +548,7 @@ export default function getAPIImplementation(): APIInterface {
                         return {
                             status: "OK",
                             email: tokenConsumptionResponse.email,
-                            user: linkRes.user,
+                            user: userAfterLinking,
                         };
                     }
                 }
@@ -602,13 +595,13 @@ export default function getAPIImplementation(): APIInterface {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
                 LINKING_TO_SESSION_USER_FAILED: {
-                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_009)",
                     RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                        "User linking failed. Please contact support. (ERR_CODE_010)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                        "User linking failed. Please contact support. (ERR_CODE_011)",
                     SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                        "User linking failed. Please contact support. (ERR_CODE_012)",
                 },
             };
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -647,7 +640,7 @@ export default function getAPIImplementation(): APIInterface {
 
             const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
             const preAuthChecks = await AuthUtils.preAuthChecks({
-                accountInfo: {
+                authenticatingAccountInfo: {
                     recipeId,
                     email,
                 },
@@ -737,13 +730,13 @@ export default function getAPIImplementation(): APIInterface {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
                 LINKING_TO_SESSION_USER_FAILED: {
-                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_013)",
                     RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                        "User linking failed. Please contact support. (ERR_CODE_014)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                        "User linking failed. Please contact support. (ERR_CODE_015)",
                     SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XZ)",
+                        "User linking failed. Please contact support. (ERR_CODE_016)",
                 },
             };
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -757,7 +750,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const res = await AuthUtils.preAuthChecks({
-                accountInfo: {
+                authenticatingAccountInfo: {
                     recipeId: "emailpassword",
                     email,
                 },

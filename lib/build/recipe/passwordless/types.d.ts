@@ -131,7 +131,6 @@ export declare type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
-                  createRecipeUserIfNotExists: boolean;
                   session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
@@ -139,53 +138,7 @@ export declare type RecipeInterface = {
             | {
                   linkCode: string;
                   preAuthSessionId: string;
-                  createRecipeUserIfNotExists: boolean;
                   session: SessionContainerInterface | undefined;
-                  tenantId: string;
-                  userContext: UserContext;
-              }
-    ) => Promise<
-        | {
-              status: "OK";
-              consumedDevice: {
-                  preAuthSessionId: string;
-                  failedCodeInputAttemptCount: number;
-                  email?: string;
-                  phoneNumber?: string;
-              };
-              createdNewRecipeUser?: boolean;
-              user?: User;
-              recipeUserId?: RecipeUserId;
-          }
-        | {
-              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
-              failedCodeInputAttemptCount: number;
-              maximumCodeInputAttempts: number;
-          }
-        | {
-              status: "RESTART_FLOW_ERROR";
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
-    createRecipeUser: (
-        input:
-            | {
-                  userInputCode: string;
-                  deviceId: string;
-                  preAuthSessionId: string;
-                  tenantId: string;
-                  userContext: UserContext;
-              }
-            | {
-                  linkCode: string;
-                  preAuthSessionId: string;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -211,25 +164,28 @@ export declare type RecipeInterface = {
               status: "RESTART_FLOW_ERROR";
           }
         | {
-              status: "USER_ALREADY_EXISTS_ERROR";
-              user: User;
-              recipeUserId: RecipeUserId;
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
-    verifyAndDeleteCode: (
+    verifyCode: (
         input:
             | {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
-                  createRecipeUserIfNotExists: boolean;
+                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
-                  createRecipeUserIfNotExists: boolean;
+                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -242,9 +198,6 @@ export declare type RecipeInterface = {
                   email?: string;
                   phoneNumber?: string;
               };
-              createdNewRecipeUser?: boolean;
-              user?: User;
-              recipeUserId?: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
