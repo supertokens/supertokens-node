@@ -17,17 +17,7 @@ export default function getRecipeInterface(
     return {
         signUp: async function (
             this: RecipeInterface,
-            {
-                email,
-                password,
-                tenantId,
-                userContext,
-            }: {
-                email: string;
-                password: string;
-                tenantId: string;
-                userContext: UserContext;
-            }
+            { email, password, tenantId, session, userContext }
         ): Promise<
             | {
                   status: "OK";
@@ -40,11 +30,8 @@ export default function getRecipeInterface(
                   reason:
                       | "EMAIL_VERIFICATION_REQUIRED"
                       | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              }
-            | {
-                  status: "NON_PRIMARY_SESSION_USER";
-                  reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               }
         > {
             const response = await this.createNewRecipeUser({
@@ -63,7 +50,7 @@ export default function getRecipeInterface(
                 tenantId,
                 inputUser: response.user,
                 recipeUserId: response.recipeUserId,
-                session: undefined, // TODO: we may want to add this to the interface
+                session,
                 userContext,
             });
 
@@ -120,11 +107,6 @@ export default function getRecipeInterface(
             password,
             tenantId,
             userContext,
-        }: {
-            email: string;
-            password: string;
-            tenantId: string;
-            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";

@@ -274,6 +274,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test@example.com",
                 true,
+                undefined,
                 {
                     doNotLink: true,
                 }
@@ -666,6 +667,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test@example.com",
                 false,
+                undefined,
                 {
                     doNotLink: true,
                 }
@@ -1562,6 +1564,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test@example.com",
                 false,
+                undefined,
                 {
                     doLink: true,
                 }

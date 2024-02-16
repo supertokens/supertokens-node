@@ -1326,14 +1326,10 @@ EmailPassword.init({
                         email,
                         password,
                         tenantId: input.tenantId,
-                        session: input.session,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {
                         return response;
-                    }
-                    if (response.status !== "OK") {
-                        return { status: "SIGN_IN_NOT_ALLOWED", reason: response.status };
                     }
                     let user = response.user;
 

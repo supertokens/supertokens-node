@@ -54,7 +54,7 @@ export const AuthUtils = {
             }
         }
         logDebugMessage(`unmapped error status ${resp.status} (${resp.reason})`);
-        throw new Error("Should never come here: unmapped error status");
+        throw new Error("Should never come here: unmapped error status " + resp.status);
     },
 
     /**
@@ -67,7 +67,7 @@ export const AuthUtils = {
      * It returns the following statuses:
      * - OK: the auth flow can proceed
      * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
-     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     preAuthChecks: async function ({
@@ -92,8 +92,10 @@ export const AuthUtils = {
         | { status: "OK"; validFactorIds: string[] }
         | { status: "SIGN_UP_NOT_ALLOWED" }
         | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              // While we don't actually attempt linking in this function, we return this status to match
+              // the return type of other functions
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     > {
         let validFactorIds: string[];
@@ -188,7 +190,7 @@ export const AuthUtils = {
      * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
      * - LINKING_TO_SESSION_USER_FAILED(ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if we couldn't link to the session user because of a conflicting primary user that has the same account info as authenticatedUser
-     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     postAuthChecks: async function ({
@@ -219,11 +221,8 @@ export const AuthUtils = {
               reason:
                   | "EMAIL_VERIFICATION_REQUIRED"
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     > {
         logDebugMessage(
@@ -421,6 +420,8 @@ export const AuthUtils = {
                             `getAuthenticatingUserAndAddToCurrentTenantIfRequired associating returned ${associateRes.status}`
                         );
                         if (associateRes.status === "OK") {
+                            // We know that this is what happens
+                            lm.tenantIds.push(currentTenantId);
                             return { user: sessionUser, loginMethod: lm };
                         }
                         if (
@@ -476,14 +477,15 @@ export const AuthUtils = {
               linkingToSessionUserRequiresVerification: boolean;
           }
         | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              // While we don't attempt linking in this function, we return it like this to match the other return types
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     > {
         logDebugMessage(`checkAuthTypeAndLinkingStatus called`);
         let sessionUser: User | undefined = undefined;
         if (session === undefined) {
-            logDebugMessage(`checkAuthTypeAndLinkingStatus returning first factor`);
+            logDebugMessage(`checkAuthTypeAndLinkingStatus returning first factor because there is no session`);
             // If there is no active session we have nothing to link to - so this has to be a first factor sign in
             return { status: "OK", isFirstFactor: true };
         } else {
@@ -513,7 +515,10 @@ export const AuthUtils = {
             } else if (
                 sessionUserResult.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
             ) {
-                return { status: "NON_PRIMARY_SESSION_USER", reason: sessionUserResult.status };
+                return {
+                    status: "LINKING_TO_SESSION_USER_FAILED",
+                    reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                };
             }
             sessionUser = sessionUserResult.sessionUser;
 
@@ -566,11 +571,8 @@ export const AuthUtils = {
               reason:
                   | "EMAIL_VERIFICATION_REQUIRED"
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     > {
         logDebugMessage("createPrimaryUserIdOrLinkAccounts called");
@@ -689,7 +691,7 @@ export const AuthUtils = {
             return { status: "OK", sessionUser };
         } else {
             // if the session user is not primary we try and make it one
-            logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser not session user yet`);
+            logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser not primary user yet`);
             // We could check here if the session user can even become a primary user, but that'd only mean one extra core call
             // without any added benefits, since the core already checks all pre-conditions
 

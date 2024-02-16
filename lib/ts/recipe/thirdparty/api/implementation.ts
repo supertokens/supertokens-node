@@ -30,9 +30,7 @@ export default function getAPIInterface(): APIInterface {
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                },
-                NON_PRIMARY_SESSION_USER: {
-                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
                 },
             };
@@ -226,9 +224,9 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            if (response.status === "SIGN_IN_UP_NOT_ALLOWED") {
+            if (response.status !== "OK") {
                 logDebugMessage("signInUpPOST: erroring out because signInUp returned " + response.status);
-                return response;
+                return AuthUtils.getErrorStatusResponseWithReason(response, errorCodeMap, "SIGN_IN_UP_NOT_ALLOWED");
             }
 
             // Here we do these checks after sign in is done cause:

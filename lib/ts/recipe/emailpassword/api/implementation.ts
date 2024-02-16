@@ -8,7 +8,6 @@ import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
-import SessionRecipe from "../../session/recipe";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
 
@@ -608,9 +607,7 @@ export default function getAPIImplementation(): APIInterface {
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                },
-                NON_PRIMARY_SESSION_USER: {
-                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
                 },
             };
@@ -621,8 +618,8 @@ export default function getAPIImplementation(): APIInterface {
 
             const checkCredentialsOnTenant = async (tenantId: string) => {
                 return (
-                    (await options.recipeImplementation.signIn({ email, password, session, tenantId, userContext }))
-                        .status === "OK"
+                    (await options.recipeImplementation.signIn({ email, password, tenantId, userContext })).status ===
+                    "OK"
                 );
             };
 
@@ -672,7 +669,6 @@ export default function getAPIImplementation(): APIInterface {
             const signInResponse = await options.recipeImplementation.signIn({
                 email,
                 password,
-                session,
                 tenantId,
                 userContext,
             });
@@ -746,9 +742,7 @@ export default function getAPIImplementation(): APIInterface {
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                },
-                NON_PRIMARY_SESSION_USER: {
-                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
                 },
             };
@@ -799,28 +793,13 @@ export default function getAPIImplementation(): APIInterface {
                 return AuthUtils.getErrorStatusResponseWithReason(res, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
             }
 
-            const overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
-                .overwriteSessionDuringSignInUp;
-
-            let signUpResponse;
-            if (session === undefined || overwriteSessionDuringSignInUp) {
-                // We call signUp whenever possible, since people overriding functions will expect this to be called for normal sign up flows
-                // and use this to execute post sign up hooks
-                signUpResponse = await options.recipeImplementation.signUp({
-                    tenantId,
-                    email,
-                    password,
-                    session,
-                    userContext,
-                });
-            } else {
-                signUpResponse = await options.recipeImplementation.createNewRecipeUser({
-                    tenantId,
-                    email,
-                    password,
-                    userContext,
-                });
-            }
+            const signUpResponse = await options.recipeImplementation.signUp({
+                tenantId,
+                email,
+                password,
+                session,
+                userContext,
+            });
 
             if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
                 return signUpResponse;

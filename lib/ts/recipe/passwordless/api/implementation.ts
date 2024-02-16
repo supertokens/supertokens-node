@@ -15,14 +15,14 @@ export default function getAPIImplementation(): APIInterface {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
                 LINKING_TO_SESSION_USER_FAILED: {
-                    EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
+                    // We should never get an email verification error here, since pwless automatically marks the user
+                    // email as verified
+                    // EMAIL_VERIFICATION_REQUIRED: "User linking failed. Please contact support. (ERR_CODE_0XX)",
                     RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XX)",
-                },
-                NON_PRIMARY_SESSION_USER: {
-                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
                         "User linking failed. Please contact support. (ERR_CODE_0XZ)",
                 },
             };
@@ -152,27 +152,28 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let response =
-                checkCredentialsResponse ??
-                (await input.options.recipeImplementation.consumeCode(
-                    "deviceId" in input
-                        ? {
-                              preAuthSessionId: input.preAuthSessionId,
-                              deviceId: input.deviceId,
-                              userInputCode: input.userInputCode,
-                              session: input.session,
-                              createRecipeUserIfNotExists: true,
-                              tenantId: input.tenantId,
-                              userContext: input.userContext,
-                          }
-                        : {
-                              preAuthSessionId: input.preAuthSessionId,
-                              linkCode: input.linkCode,
-                              session: input.session,
-                              createRecipeUserIfNotExists: true,
-                              tenantId: input.tenantId,
-                              userContext: input.userContext,
-                          }
-                ));
+                checkCredentialsResponse !== undefined
+                    ? await checkCredentialsResponse
+                    : await input.options.recipeImplementation.consumeCode(
+                          "deviceId" in input
+                              ? {
+                                    preAuthSessionId: input.preAuthSessionId,
+                                    deviceId: input.deviceId,
+                                    userInputCode: input.userInputCode,
+                                    session: input.session,
+                                    createRecipeUserIfNotExists: true,
+                                    tenantId: input.tenantId,
+                                    userContext: input.userContext,
+                                }
+                              : {
+                                    preAuthSessionId: input.preAuthSessionId,
+                                    linkCode: input.linkCode,
+                                    session: input.session,
+                                    createRecipeUserIfNotExists: true,
+                                    tenantId: input.tenantId,
+                                    userContext: input.userContext,
+                                }
+                      );
 
             if (
                 response.status === "RESTART_FLOW_ERROR" ||
@@ -224,10 +225,8 @@ export default function getAPIImplementation(): APIInterface {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                NON_PRIMARY_SESSION_USER: {
-                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_0XZ)",
-                },
+                SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                    "User linking failed. Please contact support. (ERR_CODE_0XZ)",
             };
             const accountInfo: { phoneNumber?: string; email?: string } = {};
             if ("email" in input) {

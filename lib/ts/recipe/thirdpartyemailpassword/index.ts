@@ -23,6 +23,7 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "../emailpassword/utils";
 import { getRequestFromUserContext, getUser } from "../..";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -49,6 +50,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
@@ -57,15 +59,23 @@ export default class Wrapper {
             email,
             isVerified,
             tenantId,
+            session,
             shouldAttemptAccountLinkingIfAllowed: true,
             userContext: getUserContext(userContext),
         });
     }
 
-    static emailPasswordSignUp(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
+    static emailPasswordSignUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
             email,
             password,
+            session,
             tenantId,
             userContext: getUserContext(userContext),
         });

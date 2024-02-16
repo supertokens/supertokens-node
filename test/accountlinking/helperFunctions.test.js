@@ -304,9 +304,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc",
+                    "test@example.com",
+                    false,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
 
             assert(primaryUser.isPrimaryUser === false);
@@ -385,9 +393,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc",
+                    "test@example.com",
+                    false,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
 
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
@@ -469,9 +485,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc",
+                    "test@example.com",
+                    false,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
 
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
@@ -535,9 +559,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test2@example.com", false, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc",
+                    "test2@example.com",
+                    false,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
 
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
@@ -592,9 +624,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc",
+                    "test@example.com",
+                    false,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
 
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
@@ -920,6 +960,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "abc",
                 "test@example.com",
                 false,
+                undefined,
                 {
                     doNotLink: true,
                 }
@@ -2534,6 +2575,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "abc",
                 "test@example.com",
                 false,
+                undefined,
                 {
                     doNotLink: true,
                 }
@@ -2733,9 +2775,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await EmailVerification.verifyEmailUsingToken("public", token.token);
 
             let tpUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "abcd", "abcd", "test@example.com", true, {
-                    doNotLink: true,
-                })
+                await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "abcd",
+                    "abcd",
+                    "test@example.com",
+                    true,
+                    undefined,
+                    {
+                        doNotLink: true,
+                    }
+                )
             ).user;
             assert(tpUser.isPrimaryUser === false);
             assert(tpUser.loginMethods[0].verified);

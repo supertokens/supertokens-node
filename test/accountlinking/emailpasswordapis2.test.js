@@ -1230,6 +1230,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 "abc",
                 "test2@example.com",
                 false,
+                undefined,
                 {
                     doNotLink: true,
                 }

@@ -51,11 +51,8 @@ export default function getRecipeInterface(
                   reason:
                       | "EMAIL_VERIFICATION_REQUIRED"
                       | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              }
-            | {
-                  status: "NON_PRIMARY_SESSION_USER";
-                  reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               }
         > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
@@ -67,21 +64,7 @@ export default function getRecipeInterface(
             session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
-        }): Promise<
-            | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
-            | {
-                  status: "LINKING_TO_SESSION_USER_FAILED";
-                  reason:
-                      | "EMAIL_VERIFICATION_REQUIRED"
-                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              }
-            | {
-                  status: "NON_PRIMARY_SESSION_USER";
-                  reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              }
-        > {
+        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
 
@@ -114,6 +97,14 @@ export default function getRecipeInterface(
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
@@ -123,6 +114,7 @@ export default function getRecipeInterface(
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
@@ -140,6 +132,14 @@ export default function getRecipeInterface(
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
+              }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               }
         > {
             return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);

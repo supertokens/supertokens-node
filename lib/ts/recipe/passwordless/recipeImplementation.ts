@@ -125,8 +125,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
 
             logDebugMessage("Passwordless.verifyAndDeleteCode code consumed OK");
-            response.user = new User(response.user);
-            response.recipeUserId = new RecipeUserId(response.recipeUserId);
+
+            if (response.user !== undefined) {
+                response.user = new User(response.user);
+                response.recipeUserId = new RecipeUserId(response.recipeUserId);
+            }
 
             return {
                 status: "OK",

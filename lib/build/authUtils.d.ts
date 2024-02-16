@@ -41,7 +41,7 @@ export declare const AuthUtils: {
      * It returns the following statuses:
      * - OK: the auth flow can proceed
      * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
-     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     preAuthChecks: ({
@@ -71,8 +71,8 @@ export declare const AuthUtils: {
               status: "SIGN_UP_NOT_ALLOWED";
           }
         | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     /**
@@ -90,7 +90,7 @@ export declare const AuthUtils: {
      * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
      * - LINKING_TO_SESSION_USER_FAILED(ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if we couldn't link to the session user because of a conflicting primary user that has the same account info as authenticatedUser
-     * - NON_PRIMARY_SESSION_USER (reason: ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
     postAuthChecks: ({
@@ -127,11 +127,8 @@ export declare const AuthUtils: {
               reason:
                   | "EMAIL_VERIFICATION_REQUIRED"
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({
@@ -196,8 +193,8 @@ export declare const AuthUtils: {
               linkingToSessionUserRequiresVerification: boolean;
           }
         | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo: ({
@@ -222,11 +219,8 @@ export declare const AuthUtils: {
               reason:
                   | "EMAIL_VERIFICATION_REQUIRED"
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     /**

@@ -5,6 +5,7 @@ import { RecipeInterface, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOp
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 import RecipeUserId from "../../recipeUserId";
+import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -20,6 +21,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -36,11 +38,20 @@ export default class Wrapper {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
     static emailPasswordSignUp(
         tenantId: string,
         email: string,
         password: string,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -56,11 +67,8 @@ export default class Wrapper {
               reason:
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "EMAIL_VERIFICATION_REQUIRED";
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     static emailPasswordSignIn(
@@ -76,17 +84,6 @@ export default class Wrapper {
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "EMAIL_VERIFICATION_REQUIRED";
-          }
-        | {
-              status: "NON_PRIMARY_SESSION_USER";
-              reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     static createResetPasswordToken(

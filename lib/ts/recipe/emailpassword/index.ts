@@ -44,17 +44,10 @@ export default class Wrapper {
         });
     }
 
-    static signIn(
-        tenantId: string,
-        email: string,
-        password: string,
-        session?: SessionContainerInterface,
-        userContext?: Record<string, any>
-    ) {
+    static signIn(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
-            session,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: getUserContext(userContext),
         });

@@ -366,9 +366,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             app.use(errorHandler());
 
             const email = "test@example.com";
-            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, true, {
-                doNotLink: true,
-            });
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                email,
+                true,
+                undefined,
+                {
+                    doNotLink: true,
+                }
+            );
 
             // createCodeAPI with email
             let createCodeResponse = await new Promise((resolve) =>
@@ -701,6 +709,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     "abc" + Date.now(),
                     email,
                     false,
+                    undefined,
                     {
                         doNotLink: true,
                     }
@@ -793,6 +802,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     "abc" + Date.now(),
                     email,
                     false,
+                    undefined,
                     {
                         doNotLink: true,
                     }
@@ -895,6 +905,7 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
             "abc",
             email,
             otherRecipeUser.verified,
+            undefined,
             {
                 doNotLink: !otherRecipeUser.primary,
             }
@@ -1024,6 +1035,7 @@ async function getConsumeCodeTestCase({ pwlessUser, otherRecipeUser, accountLink
             "abc" + Date.now(),
             email,
             otherRecipeUser.verified,
+            undefined,
             {
                 doNotLink: !otherRecipeUser.primary,
             }
