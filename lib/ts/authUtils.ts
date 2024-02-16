@@ -573,9 +573,9 @@ export const AuthUtils = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     > {
-        logDebugMessage("createPrimaryUserIdOrLinkAccounts called");
+        logDebugMessage("linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo called");
         const retry = () => {
-            logDebugMessage("createPrimaryUserIdOrLinkAccounts retrying....");
+            logDebugMessage("linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo retrying....");
             return AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 inputUser: inputUser,
@@ -590,7 +590,7 @@ export const AuthUtils = {
         const authLoginMethod = inputUser.loginMethods.find(
             (lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString()
         );
-        if (!authLoginMethod) {
+        if (authLoginMethod === undefined) {
             throw new Error(
                 "This should never happen: the recipeUserId and user is inconsistent in createPrimaryUserIdOrLinkByAccountInfo params"
             );
@@ -609,7 +609,7 @@ export const AuthUtils = {
 
         if (authTypeRes.isFirstFactor) {
             logDebugMessage(
-                "createPrimaryUserIdOrLinkAccounts trying to link by account info because this is a first factor auth"
+                "linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by account info because this is a first factor auth"
             );
             // We try and list all users that can be linked to the input user based on the account info
             // later we can use these when trying to link or when checking if linking to the session user is possible.
@@ -635,7 +635,9 @@ export const AuthUtils = {
             };
         }
 
-        logDebugMessage("createPrimaryUserIdOrLinkAccounts trying to link by session info");
+        logDebugMessage(
+            "linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by session info"
+        );
         const sessionLinkingRes = await AuthUtils.tryLinkingBySession({
             sessionUser: authTypeRes.sessionUser,
             authenticatedUser: inputUser,

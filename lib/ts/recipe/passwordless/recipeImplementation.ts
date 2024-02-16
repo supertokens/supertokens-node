@@ -4,9 +4,10 @@ import AccountLinking from "../accountlinking/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { logDebugMessage } from "../../logger";
 import { User } from "../../user";
-import { getUser } from "../..";
+import { getUser, listUsersByAccountInfo } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { AuthUtils } from "../../authUtils";
+import { JSONObject } from "../usermetadata";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContextAndTenantId(input: any): any {
@@ -24,11 +25,44 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
     return {
         consumeCode: async function (this: RecipeInterface, input) {
-            let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
-                copyAndRemoveUserContextAndTenantId(input),
-                input.userContext
-            );
+            let response;
+            if (
+                mockVerifyCode &&
+                verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))] !== undefined
+            ) {
+                response = verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))]!;
+
+                const email = response.consumedDevice.email;
+                const phoneNumber = response.consumedDevice.phoneNumber;
+                const users = await listUsersByAccountInfo(input.tenantId, {
+                    email,
+                    phoneNumber,
+                });
+                const user = users.find((u) =>
+                    u.loginMethods.some(
+                        (lm) =>
+                            lm.recipeId === "passwordless" &&
+                            (lm.hasSameEmailAs(email) || lm.hasSamePhoneNumberAs(phoneNumber))
+                    )
+                );
+                if (user !== undefined) {
+                    response.user = user.toJson();
+                    response.recipeUserId = user.loginMethods
+                        .find(
+                            (lm) =>
+                                lm.recipeId === "passwordless" &&
+                                (lm.hasSameEmailAs(email) || lm.hasSamePhoneNumberAs(phoneNumber))
+                        )
+                        ?.recipeUserId.getAsString()!;
+                    response.createdNewRecipeUser = false;
+                }
+            } else {
+                response = await querier.sendPostRequest(
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
+                    copyAndRemoveUserContextAndTenantId(input),
+                    input.userContext
+                );
+            }
 
             if (response.status !== "OK") {
                 return response;
@@ -104,6 +138,24 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
 
         verifyCode: async function (this: RecipeInterface, input) {
+            if (mockVerifyCode) {
+                delete (input as any).deleteCode;
+                const response = await querier.sendPostRequest(
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
+                    copyAndRemoveUserContextAndTenantId({
+                        ...input,
+                        createRecipeUserIfNotExists: false,
+                    }),
+                    input.userContext
+                );
+
+                if (response.status === "OK") {
+                    verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))] = response;
+                }
+
+                return response;
+            }
+
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/verify`),
                 copyAndRemoveUserContextAndTenantId(input),
@@ -210,3 +262,16 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
     };
 }
+
+const mockVerifyCode = true;
+const verifyResponseCache: Record<
+    string,
+    | {
+          status: "OK";
+          createdNewRecipeUser?: boolean;
+          user?: JSONObject;
+          recipeUserId: string;
+          consumedDevice: { email?: string; phoneNumber?: string };
+      }
+    | undefined
+> = {};
