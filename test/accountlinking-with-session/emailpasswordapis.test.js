@@ -115,7 +115,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
 
                     const body = resp.body;
                     assert.strictEqual(body.status, "SIGN_UP_NOT_ALLOWED");
-                    assert.strictEqual(body.reason, "User linking failed. Please contact support. (ERR_CODE_0XZ)");
+                    assert.strictEqual(body.reason, "User linking failed. Please contact support. (ERR_CODE_016)");
                 });
 
                 it("should error if sign up is not allowed", async () => {
@@ -165,7 +165,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
                         },
                     });
 
-                    const otherUser = await createEmailPasswordUser(email2, true);
+                    const otherUser = await createThirdPartyUser(email2, true);
 
                     let sessionUser = await createThirdPartyUser(email1, true);
 
@@ -226,7 +226,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
                         },
                     });
 
-                    const otherUser = await createEmailPasswordUser(email2, true);
+                    const otherUser = await createThirdPartyUser(email2, true);
 
                     let sessionUser = await createThirdPartyUser(email1, true);
                     sessionUser = await makeUserPrimary(sessionUser);
@@ -292,7 +292,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
                         },
                     });
 
-                    const otherUser = await createEmailPasswordUser(email2, true);
+                    const otherUser = await createThirdPartyUser(email2, true);
 
                     let sessionUser = await createThirdPartyUser(email1, true);
 
@@ -475,7 +475,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
     //                     },
     //                 });
 
-    //                 const otherUser = await createEmailPasswordUser(email2, true);
+    //                 const otherUser = await createThirdPartyUser(email2, true);
 
     //                 let sessionUser = await createThirdPartyUser(email1, true);
     //                 await createEmailPasswordUser(email2, true);
@@ -538,7 +538,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
     //                     },
     //                 });
 
-    //                 const otherUser = await createEmailPasswordUser(email2, true);
+    //                 const otherUser = await createThirdPartyUser(email2, true);
     //                 await createEmailPasswordUser(email2, true);
 
     //                 let sessionUser = await createThirdPartyUser(email1, true);
@@ -607,7 +607,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
     //                     },
     //                 });
 
-    //                 const otherUser = await createEmailPasswordUser(email2, true);
+    //                 const otherUser = await createThirdPartyUser(email2, true);
     //                 await createEmailPasswordUser(email2, true);
 
     //                 let sessionUser = await createThirdPartyUser(email1, true);

@@ -24,22 +24,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 shouldAttemptAccountLinkingIfAllowed,
                 userContext,
             }
-        ): Promise<
-            | {
-                  status: "OK";
-                  createdNewRecipeUser: boolean;
-                  user: UserType;
-                  recipeUserId: RecipeUserId;
-              }
-            | {
-                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-                  reason: string;
-              }
-            | {
-                  status: "SIGN_IN_UP_NOT_ALLOWED";
-                  reason: string;
-              }
-        > {
+        ) {
             // we have kept this input `shouldAttemptAccountLinkingIfAllowed` in this recipe function
             // as opposed to having separate createRecipeUser. This is to avoid adding more functions
             // that does the same thing, and we use this flag internally. We do not expose this parameter
@@ -104,9 +89,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     userContext,
                 });
                 if (linkResult.status !== "OK") {
-                    throw new Error(
-                        "This should never happen: createPrimaryUserIdOrLinkByAccountInfo failed with session-user related error without a passed session"
-                    );
+                    return linkResult;
                 }
                 updatedUser = linkResult.user;
             }

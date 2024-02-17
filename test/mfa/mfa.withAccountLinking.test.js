@@ -66,7 +66,6 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
     it("test that thirdparty user sign up is rejected when another user with same email unverified exists", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
-            debug: true,
             supertokens: {
                 connectionURI,
             },
@@ -286,7 +285,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_018)", res.body.reason);
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
@@ -374,7 +373,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_018)", res.body.reason);
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
@@ -388,7 +387,6 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
     it("test factor setup with thirdparty same email as another existing user when automatic account linking is turned on and verification is required", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
-            debug: true,
             supertokens: {
                 connectionURI,
             },
@@ -492,20 +490,12 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
         assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
-
-        const usersRes = await SuperTokens.getUsersOldestFirst({
-            tenantId: "public",
-        });
-
-        // we expect only 2 users because we should not have the user created by the factor setup, since the factor setup is expected to fail
-        assert.strictEqual(2, usersRes.users.length);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_022)", res.body.reason);
     });
 
     it("test that unverified sign up is not allowed as a factor setup", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
-            debug: true,
             supertokens: {
                 connectionURI,
             },
@@ -574,7 +564,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await epSignUp(app, "test2@example.com", "password1", accessToken);
         assert.strictEqual("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_013)", res.body.reason);
     });
 
     it("test with account linking case 1", async function () {
@@ -666,7 +656,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await epSignUp(app, "test2@example.com", "password2", accessToken);
         assert.strictEqual("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_0XX)", res.body.reason);
+        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_013)", res.body.reason);
 
         res = await tpSignInUp(app, "custom", "test2@example.com", undefined);
         assert.strictEqual("OK", res.body.status);

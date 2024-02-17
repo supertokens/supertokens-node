@@ -48,18 +48,8 @@ export default function getAPIImplementation(): APIInterface {
                           email: deviceInfo.email!,
                       };
 
-            let checkCredentialsResponse:
-                | ReturnType<typeof input.options.recipeImplementation.verifyCode>
-                | undefined = undefined;
-
             let checkCredentialsOnTenant = async () => {
-                // In normal operation this should only ever be called once (if succesful) but in some edge cases
-                // (e.g.: the user is deleted between consuming the code and associating it with the current tenant)
-                // Even so, we can only consume the code once, so we we save the value for this request.
-                if (checkCredentialsResponse !== undefined) {
-                    return (await checkCredentialsResponse).status === "OK";
-                }
-                checkCredentialsResponse = input.options.recipeImplementation.verifyCode(
+                const checkCredentialsResponse = await input.options.recipeImplementation.verifyCode(
                     "deviceId" in input
                         ? {
                               preAuthSessionId: input.preAuthSessionId,
@@ -77,7 +67,7 @@ export default function getAPIImplementation(): APIInterface {
                               userContext: input.userContext,
                           }
                 );
-                return (await checkCredentialsResponse).status === "OK";
+                return checkCredentialsResponse.status === "OK";
             };
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({

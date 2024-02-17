@@ -484,7 +484,7 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.equal("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual(res.body.reason, "User linking failed. Please contact support. (ERR_CODE_0XX)");
+        assert.strictEqual(res.body.reason, "User linking failed. Please contact support. (ERR_CODE_017)");
         cookies = extractInfoFromResponse(res);
         const parsedTokenAfterSecondSignIn = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
         assert.deepStrictEqual(

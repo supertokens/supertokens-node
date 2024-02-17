@@ -54,7 +54,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                                 (lm.hasSameEmailAs(email) || lm.hasSamePhoneNumberAs(phoneNumber))
                         )
                         ?.recipeUserId.getAsString()!;
-                    response.createdNewRecipeUser = false;
+                    response.createdNewUser = false;
                 }
             } else {
                 response = await querier.sendPostRequest(
@@ -77,7 +77,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            if (response.createdNewRecipeUser !== true) {
+            if (response.createdNewUser !== true) {
                 // Unlike in the sign up scenario, we do not do account linking here
                 // cause we do not want sign in to change the potentially user ID of a user
                 // due to linking when this function is called by the dev in their API.
@@ -101,7 +101,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            // This is just to make TS happy, the createdNewRecipeUser check should cover this already
+            // This is just to make TS happy, the createdNewUser check should cover this already
             if (response.recipeUserId === undefined || response.user === undefined) {
                 throw new Error("This should never happen: no user in consumeCode response with deleteCode=true");
             }
@@ -140,6 +140,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         verifyCode: async function (this: RecipeInterface, input) {
             if (mockVerifyCode) {
                 delete (input as any).deleteCode;
+                if (verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))] !== undefined) {
+                    return verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))];
+                }
+
                 const response = await querier.sendPostRequest(
                     new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
                     copyAndRemoveUserContextAndTenantId({
@@ -268,7 +272,7 @@ const verifyResponseCache: Record<
     string,
     | {
           status: "OK";
-          createdNewRecipeUser?: boolean;
+          createdNewUser?: boolean;
           user?: JSONObject;
           recipeUserId: string;
           consumedDevice: { email?: string; phoneNumber?: string };

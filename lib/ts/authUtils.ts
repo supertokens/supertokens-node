@@ -302,6 +302,16 @@ export const AuthUtils = {
         return { status: "OK", session: respSession!, user: linkingResult.user };
     },
 
+    /**
+     * This function tries to find the authenticating user (we use this information to see if the current auth is sign in or up)
+     * if a session was passed and the authenticating user was not found on the current tenant, it checks if the session user
+     * has a matching login method on other tenants. If it does and the credentials check out on the other tenant, it associates
+     * the recipe user for the login method (matching account info, recipeId and credentials) with the current tenant.
+     *
+     * While this initially complicates the auth logic, we want to avoid creating a new recipe user if a tenant association will do,
+     * because it'll make managing MFA factors (i.e.: secondary passwords) a lot easier for the app, and,
+     * most importantly, this way all secondary factors are app-wide instead of mixing app-wide (totp) and tenant-wide (password) factors.
+     */
     getAuthenticatingUserAndAddToCurrentTenantIfRequired: async ({
         recipeId,
         accountInfo,
@@ -459,6 +469,19 @@ export const AuthUtils = {
         );
     },
 
+    /**
+     * This function checks if the current authentication attempt should be considered a first factor or not.
+     * To do this it'll also need to (if a session was passed):
+     * - load the session user (and possibly make it primary)
+     * - check the linking status of the input and session user
+     * - call and check the results of shouldDoAutomaticAccountLinking
+     * So in the non-first factor case it also returns the results of those checks/operations.
+     *
+     * It returns the following statuses:
+     * - OK: if everything went well
+     * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     */
     checkAuthTypeAndLinkingStatus: async function (
         session: SessionContainerInterface | undefined,
         accountInfo: AccountInfoWithRecipeId,
@@ -549,7 +572,20 @@ export const AuthUtils = {
         }
     },
 
-    // this function returns the user ID for which the session will be created.
+    /**
+     * This function checks the auth type (first factor or not), links by account info for first factor auths otherwise
+     * it tries to link the input user to the session user
+     *
+     * It returns the following statuses:
+     * - OK: the linking went as expected
+     * - LINKING_TO_SESSION_USER_FAILED(EMAIL_VERIFICATION_REQUIRED): if we couldn't link to the session user because linking requires email verification
+     * - LINKING_TO_SESSION_USER_FAILED(RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
+     * - LINKING_TO_SESSION_USER_FAILED(ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because of a conflicting primary user that has the same account info as authenticatedUser
+     * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
+     */
     linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo: async function ({
         tenantId,
         inputUser,
@@ -645,12 +681,14 @@ export const AuthUtils = {
             linkingToSessionUserRequiresVerification: authTypeRes.linkingToSessionUserRequiresVerification,
             userContext,
         });
-        if (sessionLinkingRes.status === "SESSION_USER_NOT_PRIMARY") {
-            // This means that although we made the session user primary above, some race condition undid that (e.g.: calling unlink concurrently with this func)
-            // We can retry in this case, since we start by trying to make it into a primary user and throwing if we can't
-            return retry();
-        } else if (sessionLinkingRes.status === "LINKING_TO_SESSION_USER_FAILED") {
-            return sessionLinkingRes;
+        if (sessionLinkingRes.status === "LINKING_TO_SESSION_USER_FAILED") {
+            if (sessionLinkingRes.reason === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+                // This means that although we made the session user primary above, some race condition undid that (e.g.: calling unlink concurrently with this func)
+                // We can retry in this case, since we start by trying to make it into a primary user and throwing if we can't
+                return retry();
+            } else {
+                return sessionLinkingRes;
+            }
         } else {
             // If we get here the status is OK, so we can just return it
             return sessionLinkingRes;
@@ -755,6 +793,19 @@ export const AuthUtils = {
         }
     },
 
+    /**
+     * This function tries linking by session, and doesn't attempt to make the authenticated user a primary or link it by account info
+     *
+     * It returns the following statuses:
+     * - OK: the linking went as expected
+     * - LINKING_TO_SESSION_USER_FAILED(EMAIL_VERIFICATION_REQUIRED): if we couldn't link to the session user because linking requires email verification
+     * - LINKING_TO_SESSION_USER_FAILED(RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
+     * - LINKING_TO_SESSION_USER_FAILED(ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
+     * if we couldn't link to the session user because of a conflicting primary user that has the same account info as authenticatedUser
+     * - LINKING_TO_SESSION_USER_FAILED (INPUT_USER_IS_NOT_A_PRIMARY_USER):
+     * if the session user is not primary. This can be resolved by making it primary and retrying the call.
+     */
     tryLinkingBySession: async function ({
         linkingToSessionUserRequiresVerification,
         authLoginMethod,
@@ -777,7 +828,7 @@ export const AuthUtils = {
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
         | {
-              status: "SESSION_USER_NOT_PRIMARY";
+              status: "LINKING_TO_SESSION_USER_FAILED";
               reason: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     > {
@@ -823,12 +874,12 @@ export const AuthUtils = {
             return { status: "LINKING_TO_SESSION_USER_FAILED", reason: linkAccountsResult.status };
         } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
             logDebugMessage(
-                "tryLinkingBySession linking to session user failed because of a race condition - INPUT_USER_IS_NOT_A_PRIMARY_USER, retrying"
+                "tryLinkingBySession linking to session user failed because of a race condition - INPUT_USER_IS_NOT_A_PRIMARY_USER, should retry"
             );
             // This can be possible during a race condition wherein the primary user we created above
             // is somehow no more a primary user. This can happen if  the unlink function was called in parallel
             // on that user. We can just retry, as that will try and make it a primary user again.
-            return { status: "SESSION_USER_NOT_PRIMARY", reason: linkAccountsResult.status };
+            return { status: "LINKING_TO_SESSION_USER_FAILED", reason: linkAccountsResult.status };
         } else {
             logDebugMessage(
                 "tryLinkingBySession linking to session user failed because of a race condition - input user has another primary user it can be linked to"

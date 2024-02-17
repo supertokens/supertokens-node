@@ -380,7 +380,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert.strictEqual(resp.user.phoneNumbers[0], undefined);
             assert.strictEqual(typeof resp.user.timeJoined, "number");
             assert.strictEqual(resp.isValidFirstFactorForTenant, undefined);
-            assert.strictEqual(Object.keys(resp).length, 5);
+            assert.strictEqual(Object.keys(resp).length, 6);
             assert.strictEqual(Object.keys(resp.user).length, 8);
 
             const emailVerified = await EmailVerification.isEmailVerified(
