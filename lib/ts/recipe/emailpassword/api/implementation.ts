@@ -9,6 +9,7 @@ import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
+import AnomalyDetection from "../../anomalydetection";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -605,6 +606,23 @@ export default function getAPIImplementation(): APIInterface {
             // - The above recipe function marks the email as verified if other linked users
             // with the same email are verified. The function below checks for the email verification
             // so we want to call it only once this is up to date,
+
+            // List down the edge cases for IP address based anomaly detection
+            // Implement IP address based AnomalyDetection
+
+            if (AnomalyDetection.getInstance() !== undefined) {
+                const anomalyDetected = await AnomalyDetection.checkForAnomaly(
+                    options.req,
+                    response.user.id,
+                    userContext
+                );
+                if (anomalyDetected.status !== "OK") {
+                    return {
+                        status: "SIGN_IN_NOT_ALLOWED",
+                        reason: anomalyDetected.message,
+                    };
+                }
+            }
 
             let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                 user: response.user,
