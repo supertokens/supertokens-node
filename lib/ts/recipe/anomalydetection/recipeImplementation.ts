@@ -49,82 +49,40 @@ export default function getRecipeInterface(): RecipeInterface {
     return {
         checkForAnomaly: async function ({ request, userId, userContext }) {
             const newIpAddress =
-                request.getHeaderValue("x-forwarded-for") ||
-                request.getHeaderValue("x-real-ip") ||
-                request.original.socket.remoteAddress ||
-                "";
+                request.getHeaderValue("x-forwarded-for") || request.original.socket.remoteAddress || "";
 
             console.log("BEFORE: ", newIpAddress, userId, userContext);
             const post_data = {
                 userId: userId,
                 newIpAddress: newIpAddress,
             };
-            await httpsPost({
-                body: post_data,
-                options: {
-                    host: "localhost",
-                    port: 3000,
-                    path: "/check-for-anomaly",
-                    headers: {
-                        "Content-Type": "application/json",
-                        // 'Content-Length': Buffer.byteLength(JSON.stringify(post_data))
+            return new Promise(async (resolve) => {
+                await httpsPost({
+                    body: post_data,
+                    options: {
+                        host: "localhost",
+                        port: 3000,
+                        path: "/check-for-anomaly",
+                        headers: {
+                            "Content-Type": "application/json",
+                            // 'Content-Length': Buffer.byteLength(JSON.stringify(post_data))
+                        },
                     },
-                },
-            })
-                .then((data) => {
-                    console.log(data);
                 })
-                .catch((err) => {
-                    console.log("Error: ", err);
-                });
-            // http.get('http://localhost:3000', (resp) => {
-            //     let data = '';
-
-            //     // A chunk of data has been received.
-            //     resp.on('data', (chunk) => {
-            //         data += chunk;
-            //     });
-
-            //     // The whole response has been received. Print out the result.
-            //     resp.on('end', () => {
-            //         console.log(JSON.parse(data).explanation);
-            //     });
-
-            // }).on("error", (err) => {
-            //     console.log("Error: " + err.message);
-            // });
-
-            const lastIpAddress = "";
-            console.log("After ", lastIpAddress);
-
-            return new Promise((resolve) => {
-                if (lastIpAddress === "") {
-                    resolve({
-                        status: "OK",
-                        anomalyDetected: false,
-                        message: "No anomaly detected",
+                    .then((data: any) => {
+                        resolve({
+                            status: data.status === "ANOMALY_DETECTED" ? "ANOMALY_DETECTED" : "NO_ANOMALY_DETECTED",
+                            anomalyDetected: data.status === "ANOMALY_DETECTED" ? true : false,
+                            message: data.message,
+                        });
+                    })
+                    .catch((err) => {
+                        resolve({
+                            status: "ANOMALY_SERVICE_ERROR",
+                            anomalyDetected: false,
+                            message: err.message,
+                        });
                     });
-                } else {
-                    resolve({
-                        status: "ANOMALY_DETECTED_ERROR",
-                        anomalyDetected: true,
-                        message: "Anomaly detected",
-                    });
-                }
-            });
-
-            // let response = await options.recipeImplementation.signIn({ email, password, tenantId, userContext });
-            // if (response.status === "WRONG_CREDENTIALS_ERROR") {
-            //     return response;
-            // }
-
-            debugger;
-            return new Promise((resolve) => {
-                resolve({
-                    status: "OK",
-                    anomalyDetected: false,
-                    message: "No anomaly detected",
-                });
             });
         },
     };

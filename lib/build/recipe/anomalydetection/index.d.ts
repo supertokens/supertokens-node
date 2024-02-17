@@ -8,7 +8,7 @@ export default class Wrapper {
         userId: string,
         userContext?: any
     ): Promise<{
-        status: "OK" | "ANOMALY_DETECTED_ERROR";
+        status: "ANOMALY_DETECTED" | "NO_ANOMALY_DETECTED" | "ANOMALY_SERVICE_ERROR";
         anomalyDetected: boolean;
         message: string;
     }>;

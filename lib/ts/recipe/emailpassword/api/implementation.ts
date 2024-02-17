@@ -616,7 +616,7 @@ export default function getAPIImplementation(): APIInterface {
                     response.user.id,
                     userContext
                 );
-                if (anomalyDetected.status !== "OK") {
+                if (anomalyDetected.status === "ANOMALY_DETECTED") {
                     return {
                         status: "SIGN_IN_NOT_ALLOWED",
                         reason: anomalyDetected.message,
