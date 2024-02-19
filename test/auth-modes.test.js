@@ -156,7 +156,31 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
             });
 
             describe("with user provided getTokenTransferMethod", () => {
-                it("should use headers if getTokenTransferMethod returns any", async function () {
+                it("should use headers if getTokenTransferMethod returns any and there is no st-auth-mode header", async function () {
+                    const connectionURI = await startST();
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI,
+                        },
+                        appInfo: {
+                            apiDomain: "api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "supertokens.io",
+                        },
+                        recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "any" })],
+                    });
+
+                    const app = getTestApp();
+
+                    const resp = await createSession(app, undefined);
+                    assert.strictEqual(resp.accessToken, undefined);
+                    assert.strictEqual(resp.refreshToken, undefined);
+                    assert.strictEqual(resp.antiCsrf, undefined);
+                    assert.notStrictEqual(resp.accessTokenFromHeader, undefined);
+                    assert.notStrictEqual(resp.refreshTokenFromHeader, undefined);
+                });
+
+                it("should use cookies if getTokenTransferMethod returns any and st-auth-mode is set to cookie", async function () {
                     const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
@@ -173,6 +197,30 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     const app = getTestApp();
 
                     const resp = await createSession(app, "cookie");
+                    assert.notStrictEqual(resp.accessToken, undefined);
+                    assert.notStrictEqual(resp.refreshToken, undefined);
+                    assert.notStrictEqual(resp.antiCsrf, undefined);
+                    assert.strictEqual(resp.accessTokenFromHeader, undefined);
+                    assert.strictEqual(resp.refreshTokenFromHeader, undefined);
+                });
+
+                it("should use headers if getTokenTransferMethod returns any and st-auth-mode is set to header", async function () {
+                    const connectionURI = await startST();
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI,
+                        },
+                        appInfo: {
+                            apiDomain: "api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "supertokens.io",
+                        },
+                        recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "any" })],
+                    });
+
+                    const app = getTestApp();
+
+                    const resp = await createSession(app, "header");
                     assert.strictEqual(resp.accessToken, undefined);
                     assert.strictEqual(resp.refreshToken, undefined);
                     assert.strictEqual(resp.antiCsrf, undefined);
