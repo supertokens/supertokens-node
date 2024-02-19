@@ -467,7 +467,6 @@ export type APIInterface = {
               input: ({ email: string } | { phoneNumber: string }) & {
                   tenantId: string;
                   session?: SessionContainerInterface;
-                  factorIds: string[] | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }

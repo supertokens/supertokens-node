@@ -66,6 +66,7 @@ export declare const AuthUtils: {
         | {
               status: "OK";
               validFactorIds: string[];
+              isFirstFactor: boolean;
           }
         | {
               status: "SIGN_UP_NOT_ALLOWED";

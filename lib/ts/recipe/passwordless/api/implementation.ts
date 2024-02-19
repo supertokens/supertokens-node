@@ -5,6 +5,8 @@ import { FactorIds } from "../../multifactorauth";
 import AccountLinking from "../../accountlinking/recipe";
 import { getEnabledPwlessFactors } from "../utils";
 import { listUsersByAccountInfo } from "../../..";
+import { SessionContainerInterface } from "../../session/types";
+import { UserContext } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -205,27 +207,17 @@ export default function getAPIImplementation(): APIInterface {
             // function in AuthUtils because:
             // 1. At this point we have no way to check credentials
             // 2. We do not want to share the relevant recipe user (yet)
-            const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: input.tenantId,
-                accountInfo,
-                doUnionOfAccountInfo: false,
-                userContext: input.userContext,
-            });
-            const usersWithMatchingLoginMethods = existingUsers
-                .map((user) => ({
-                    user,
-                    loginMethod: user.loginMethods.find(
-                        (lm) =>
-                            lm.recipeId === "passwordless" &&
-                            (lm.hasSameEmailAs(accountInfo.email) || lm.hasSamePhoneNumberAs(accountInfo.phoneNumber))
-                    )!,
-                }))
-                .filter(({ loginMethod }) => loginMethod !== undefined);
+            const userWithMatchingLoginMethod = await getUserByAccountInfo({ ...input, accountInfo });
 
-            if (usersWithMatchingLoginMethods.length > 1) {
-                throw new Error(
-                    "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
-                );
+            let factorIds;
+            if (input.session !== undefined) {
+                if (accountInfo.email !== undefined) {
+                    factorIds = [FactorIds.OTP_EMAIL];
+                } else {
+                    factorIds = [FactorIds.OTP_PHONE];
+                }
+            } else {
+                factorIds = getEnabledPwlessFactors(input.options.config);
             }
 
             const preAuthChecks = await AuthUtils.preAuthChecks({
@@ -233,11 +225,11 @@ export default function getAPIImplementation(): APIInterface {
                     ...accountInfo,
                     recipeId: "passwordless",
                 },
-                isSignUp: usersWithMatchingLoginMethods.length === 0,
+                isSignUp: userWithMatchingLoginMethod === undefined,
                 authenticatingUser: undefined,
                 isVerified: true,
                 tenantId: input.tenantId,
-                factorIds: input.factorIds ?? getEnabledPwlessFactors(input.options.config),
+                factorIds,
                 userContext: input.userContext,
                 session: input.session,
             });
@@ -330,7 +322,7 @@ export default function getAPIImplementation(): APIInterface {
             ) {
                 logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                 await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
-                    type: input.factorIds ? "PWLESS_MFA" : "PASSWORDLESS_LOGIN",
+                    smsType: preAuthChecks.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
                     codeLifetime: response.codeLifetime,
                     phoneNumber: (input as any).phoneNumber!,
                     preAuthSessionId: response.preAuthSessionId,
@@ -342,7 +334,7 @@ export default function getAPIImplementation(): APIInterface {
             } else {
                 logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                 await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                    type: input.factorIds ? "PWLESS_MFA" : "PASSWORDLESS_LOGIN",
+                    emailType: preAuthChecks.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
                     email: (input as any).email!,
                     codeLifetime: response.codeLifetime,
                     preAuthSessionId: response.preAuthSessionId,
@@ -413,6 +405,30 @@ export default function getAPIImplementation(): APIInterface {
                     status: "RESTART_FLOW_ERROR",
                 };
             }
+            const userWithMatchingLoginMethod = await getUserByAccountInfo({ ...input, accountInfo: deviceInfo });
+            const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
+                input.session,
+                {
+                    recipeId: "passwordless",
+                    email: deviceInfo.email,
+                    phoneNumber: deviceInfo.phoneNumber,
+                },
+                userWithMatchingLoginMethod?.user,
+                input.userContext
+            );
+
+            if (authTypeInfo.status === "LINKING_TO_SESSION_USER_FAILED") {
+                // This can happen in the following edge-cases:
+                // 1. Either the session didn't exist during createCode or the app didn't want to link to the session user
+                //  and now linking should happen (in consumeCode), but we can't make the session user primary.
+                // 2. The session user was a primary after createCode, but then before resend happens, it was unlinked and
+                //  another primary user was created with the same account info
+                // Both of these should be rare enough that we can ask the FE to start over with createCode that does more
+                // checks than we need to right here.
+                return {
+                    status: "RESTART_FLOW_ERROR",
+                };
+            }
 
             let numberOfTriesToCreateNewCode = 0;
             while (true) {
@@ -475,7 +491,7 @@ export default function getAPIImplementation(): APIInterface {
                     ) {
                         logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                         await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
-                            type: "PASSWORDLESS_LOGIN",
+                            smsType: authTypeInfo.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
                             codeLifetime: response.codeLifetime,
                             phoneNumber: deviceInfo.phoneNumber!,
                             preAuthSessionId: response.preAuthSessionId,
@@ -487,7 +503,7 @@ export default function getAPIImplementation(): APIInterface {
                     } else {
                         logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                         await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                            type: "PASSWORDLESS_LOGIN",
+                            emailType: authTypeInfo.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
                             email: deviceInfo.email!,
                             codeLifetime: response.codeLifetime,
                             preAuthSessionId: response.preAuthSessionId,
@@ -505,4 +521,36 @@ export default function getAPIImplementation(): APIInterface {
             }
         },
     };
+}
+
+async function getUserByAccountInfo(input: {
+    tenantId: string;
+    session?: SessionContainerInterface;
+    userContext: UserContext;
+    accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
+}) {
+    const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+        tenantId: input.tenantId,
+        accountInfo: input.accountInfo,
+        doUnionOfAccountInfo: false,
+        userContext: input.userContext,
+    });
+    const usersWithMatchingLoginMethods = existingUsers
+        .map((user) => ({
+            user,
+            loginMethod: user.loginMethods.find(
+                (lm) =>
+                    lm.recipeId === "passwordless" &&
+                    (lm.hasSameEmailAs(input.accountInfo.email) ||
+                        lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
+            )!,
+        }))
+        .filter(({ loginMethod }) => loginMethod !== undefined);
+
+    if (usersWithMatchingLoginMethods.length > 1) {
+        throw new Error(
+            "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
+        );
+    }
+    return usersWithMatchingLoginMethods[0];
 }

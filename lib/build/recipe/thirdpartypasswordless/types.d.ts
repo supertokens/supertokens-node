@@ -461,7 +461,6 @@ export declare type APIInterface = {
               ) & {
                   tenantId: string;
                   session?: SessionContainerInterface;
-                  factorIds: string[] | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }

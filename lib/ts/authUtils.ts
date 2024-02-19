@@ -89,7 +89,7 @@ export const AuthUtils = {
         session?: SessionContainerInterface;
         userContext: UserContext;
     }): Promise<
-        | { status: "OK"; validFactorIds: string[] }
+        | { status: "OK"; validFactorIds: string[]; isFirstFactor: boolean }
         | { status: "SIGN_UP_NOT_ALLOWED" }
         | {
               // While we don't actually attempt linking in this function, we return this status to match
@@ -171,6 +171,7 @@ export const AuthUtils = {
         return {
             status: "OK",
             validFactorIds,
+            isFirstFactor: authTypeInfo.isFirstFactor,
         };
     },
 

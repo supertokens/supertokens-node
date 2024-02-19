@@ -329,7 +329,6 @@ export type APIInterface = {
             tenantId: string;
             session?: SessionContainerInterface;
             options: APIOptions;
-            factorIds: string[] | undefined;
             userContext: UserContext;
         }
     ) => Promise<
@@ -420,7 +419,7 @@ export type APIInterface = {
 };
 
 export type TypePasswordlessEmailDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN" | "PWLESS_MFA";
+    emailType: "FOR_FIRST_FACTOR" | "FOR_SECONDARY_FACTOR";
     email: string;
     userInputCode?: string;
     urlWithLinkCode?: string;
@@ -430,7 +429,7 @@ export type TypePasswordlessEmailDeliveryInput = {
 };
 
 export type TypePasswordlessSmsDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN" | "PWLESS_MFA";
+    smsType: "FOR_FIRST_FACTOR" | "FOR_SECONDARY_FACTOR";
     phoneNumber: string;
     userInputCode?: string;
     urlWithLinkCode?: string;

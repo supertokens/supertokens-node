@@ -354,7 +354,8 @@ ThirdPartyPasswordless.init({
                         await oI.sendRawSms(input);
                     },
                     getContent: async (input) => {
-                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        if (input.smsType === "FOR_FIRST_FACTOR") {
+                        } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
                         }
                         return await oI.getContent(input);
                     },
@@ -365,7 +366,8 @@ ThirdPartyPasswordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    if (input.smsType === "FOR_FIRST_FACTOR") {
+                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
                     }
                     return await oI.sendSms(input);
                 },
@@ -412,7 +414,8 @@ ThirdPartyPasswordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    if (input.smsType === "FOR_FIRST_FACTOR") {
+                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
                     }
                     return await oI.sendSms(input);
                 },
@@ -465,7 +468,8 @@ ThirdPartyPasswordless.init({
                         await oI.sendRawEmail(input);
                     },
                     getContent: async (input) => {
-                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        if (input.emailType === "FOR_FIRST_FACTOR") {
+                        } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
                         }
                         return await oI.getContent(input);
                     },
@@ -476,7 +480,8 @@ ThirdPartyPasswordless.init({
             return {
                 ...oI,
                 sendEmail: async (input) => {
-                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    if (input.emailType === "FOR_FIRST_FACTOR") {
+                    } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -571,7 +576,8 @@ Passwordless.init({
                         await oI.sendRawSms(input);
                     },
                     getContent: async (input) => {
-                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        if (input.smsType === "FOR_FIRST_FACTOR") {
+                        } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
                         }
                         return await oI.getContent(input);
                     },
@@ -582,7 +588,8 @@ Passwordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    if (input.smsType === "FOR_FIRST_FACTOR") {
+                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendSms(input);
                 },
@@ -621,7 +628,8 @@ Passwordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    if (input.smsType === "FOR_FIRST_FACTOR") {
+                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendSms(input);
                 },
@@ -672,7 +680,8 @@ Passwordless.init({
                         await oI.sendRawEmail(input);
                     },
                     getContent: async (input) => {
-                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        if (input.emailType === "FOR_FIRST_FACTOR") {
+                        } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
                         }
                         return await oI.getContent(input);
                     },
@@ -683,7 +692,8 @@ Passwordless.init({
             return {
                 ...oI,
                 sendEmail: async (input) => {
-                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    if (input.emailType === "FOR_FIRST_FACTOR") {
+                    } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -1451,7 +1461,7 @@ ThirdPartyPasswordless.sendEmail({
     tenantId: "public",
     codeLifetime: 234,
     email: "",
-    type: "PASSWORDLESS_LOGIN",
+    emailType: "FOR_FIRST_FACTOR",
     preAuthSessionId: "",
     userInputCode: "",
     urlWithLinkCode: "",
@@ -1460,7 +1470,7 @@ ThirdPartyPasswordless.sendEmail({
     tenantId: "public",
     codeLifetime: 234,
     email: "",
-    type: "PASSWORDLESS_LOGIN",
+    emailType: "FOR_FIRST_FACTOR",
     preAuthSessionId: "",
     userContext: {} as UserContext,
 });
@@ -1469,7 +1479,7 @@ ThirdPartyPasswordless.sendSms({
     tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
-    type: "PASSWORDLESS_LOGIN",
+    smsType: "FOR_FIRST_FACTOR",
     preAuthSessionId: "",
     userInputCode: "",
     urlWithLinkCode: "",
@@ -1478,7 +1488,7 @@ ThirdPartyPasswordless.sendSms({
     tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
-    type: "PASSWORDLESS_LOGIN",
+    smsType: "FOR_FIRST_FACTOR",
     preAuthSessionId: "",
     userContext: {} as UserContext,
 });

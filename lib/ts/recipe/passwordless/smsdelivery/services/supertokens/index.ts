@@ -37,7 +37,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypePass
             {
                 apiKey: this.apiKey,
                 smsInput: {
-                    type: input.type,
+                    type: input.smsType,
                     phoneNumber: input.phoneNumber,
                     userInputCode: input.userInputCode,
                     urlWithLinkCode: input.urlWithLinkCode,
