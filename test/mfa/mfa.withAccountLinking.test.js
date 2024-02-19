@@ -285,7 +285,10 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_018)", res.body.reason);
+        assert.strictEqual(
+            "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_018)",
+            res.body.reason
+        );
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
@@ -373,7 +376,10 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await plessEmailSignInUp(app, "test1@example.com", accessToken);
         assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_018)", res.body.reason);
+        assert.strictEqual(
+            "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_018)",
+            res.body.reason
+        );
 
         const usersRes = await SuperTokens.getUsersOldestFirst({
             tenantId: "public",
@@ -490,7 +496,10 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await tpSignInUp(app, "custom2", "test1@example.com", accessToken);
         assert.strictEqual("SIGN_IN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_022)", res.body.reason);
+        assert.strictEqual(
+            "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_022)",
+            res.body.reason
+        );
     });
 
     it("test that unverified sign up is not allowed as a factor setup", async function () {
@@ -564,7 +573,10 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await epSignUp(app, "test2@example.com", "password1", accessToken);
         assert.strictEqual("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_013)", res.body.reason);
+        assert.strictEqual(
+            "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_013)",
+            res.body.reason
+        );
     });
 
     it("test with account linking case 1", async function () {
@@ -656,7 +668,10 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
 
         res = await epSignUp(app, "test2@example.com", "password2", accessToken);
         assert.strictEqual("SIGN_UP_NOT_ALLOWED", res.body.status);
-        assert.strictEqual("User linking failed. Please contact support. (ERR_CODE_013)", res.body.reason);
+        assert.strictEqual(
+            "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_013)",
+            res.body.reason
+        );
 
         res = await tpSignInUp(app, "custom", "test2@example.com", undefined);
         assert.strictEqual("OK", res.body.status);

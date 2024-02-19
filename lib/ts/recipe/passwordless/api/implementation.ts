@@ -18,11 +18,11 @@ export default function getAPIImplementation(): APIInterface {
                     // We should never get an email verification error here, since pwless automatically marks the user
                     // email as verified
                     RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_017)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_017)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_018)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_018)",
                     SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_019)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_019)",
                 },
             };
 
@@ -190,7 +190,7 @@ export default function getAPIImplementation(): APIInterface {
                     "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
                 LINKING_TO_SESSION_USER_FAILED: {
                     SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "User linking failed. Please contact support. (ERR_CODE_019)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_019)",
                 },
             };
             const accountInfo: { phoneNumber?: string; email?: string } = {};

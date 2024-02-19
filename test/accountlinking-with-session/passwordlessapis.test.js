@@ -101,7 +101,10 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
 
                     const body = resp.body;
                     assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
-                    assert.strictEqual(body.reason, "User linking failed. Please contact support. (ERR_CODE_019)");
+                    assert.strictEqual(
+                        body.reason,
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_019)"
+                    );
                 });
 
                 it("should error if the session user cannot be made primary - email verification", async () => {
@@ -152,7 +155,7 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
                     const body = resp.body;
                     assert.deepStrictEqual(body, {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "User linking failed. Please contact support. (ERR_CODE_018)",
+                        reason: "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_018)",
                     });
                 });
 
@@ -419,7 +422,10 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
 
                     const body = resp.body;
                     assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
-                    assert.strictEqual(body.reason, "User linking failed. Please contact support. (ERR_CODE_019)");
+                    assert.strictEqual(
+                        body.reason,
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_019)"
+                    );
                 });
 
                 it("should error if the session user cannot be made primary - email verification", async () => {
@@ -471,7 +477,7 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
                     const body = resp.body;
                     assert.deepStrictEqual(body, {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "User linking failed. Please contact support. (ERR_CODE_017)",
+                        reason: "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_017)",
                     });
                 });
 
@@ -824,7 +830,10 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
 
             const body = resp.body;
             assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
-            assert.strictEqual(body.reason, "User linking failed. Please contact support. (ERR_CODE_019)");
+            assert.strictEqual(
+                body.reason,
+                "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_019)"
+            );
         });
 
         it("should error if the session user cannot be made primary - email verification", async () => {
