@@ -21,16 +21,24 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "./utils";
 import { getRequestFromUserContext, getUser } from "../..";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static signUp(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
+    static signUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
+            session,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: getUserContext(userContext),
         });
@@ -74,6 +82,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -81,7 +90,7 @@ export default class Wrapper {
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
     > {
-        const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
+        const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, session, userContext);
 
         if (consumeResp.status !== "OK") {
             return consumeResp;
@@ -109,10 +118,16 @@ export default class Wrapper {
         };
     }
 
-    static consumePasswordResetToken(tenantId: string, token: string, userContext?: Record<string, any>) {
+    static consumePasswordResetToken(
+        tenantId: string,
+        token: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            session,
             userContext: getUserContext(userContext),
         });
     }

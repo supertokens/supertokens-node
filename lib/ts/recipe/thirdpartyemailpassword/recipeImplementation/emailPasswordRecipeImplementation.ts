@@ -2,16 +2,27 @@ import { RecipeInterface } from "../../emailpassword/types";
 import { User, UserContext } from "../../../types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 import RecipeUserId from "../../../recipeUserId";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPasswordRecipeInterface): RecipeInterface {
     return {
         signUp: async function (input: {
             email: string;
             password: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }): Promise<
-            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             return await recipeInterface.emailPasswordSignUp(input);
         },

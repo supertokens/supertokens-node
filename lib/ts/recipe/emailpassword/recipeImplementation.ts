@@ -8,6 +8,7 @@ import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { UserContext, User as UserType } from "../../types";
 import { LoginMethod, User } from "../../user";
+import { AuthUtils } from "../../authUtils";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -16,17 +17,7 @@ export default function getRecipeInterface(
     return {
         signUp: async function (
             this: RecipeInterface,
-            {
-                email,
-                password,
-                tenantId,
-                userContext,
-            }: {
-                email: string;
-                password: string;
-                tenantId: string;
-                userContext: UserContext;
-            }
+            { email, password, tenantId, session, userContext }
         ): Promise<
             | {
                   status: "OK";
@@ -34,6 +25,14 @@ export default function getRecipeInterface(
                   recipeUserId: RecipeUserId;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             const response = await this.createNewRecipeUser({
                 email,
@@ -47,11 +46,18 @@ export default function getRecipeInterface(
 
             let updatedUser = response.user;
 
-            updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
-                user: response.user,
+                inputUser: response.user,
+                recipeUserId: response.recipeUserId,
+                session,
                 userContext,
             });
+
+            if (linkResult.status != "OK") {
+                return linkResult;
+            }
+            updatedUser = linkResult.user;
 
             return {
                 status: "OK",
@@ -101,11 +107,6 @@ export default function getRecipeInterface(
             password,
             tenantId,
             userContext,
-        }: {
-            email: string;
-            password: string;
-            tenantId: string;
-            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";

@@ -66,6 +66,7 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -76,6 +77,14 @@ export declare type RecipeInterface = {
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
     createNewRecipeUser(input: {
@@ -129,6 +138,7 @@ export declare type RecipeInterface = {
     >;
     consumePasswordResetToken(input: {
         token: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -194,6 +204,7 @@ export declare type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              session: SessionContainerInterface | undefined;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
@@ -216,6 +227,7 @@ export declare type APIInterface = {
               }[];
               token: string;
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

@@ -25,6 +25,8 @@ import {
 import RecipeUserId from "../../recipeUserId";
 import { getRequestFromUserContext } from "../..";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
+import { User } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -39,10 +41,16 @@ export default class Wrapper {
             | {
                   phoneNumber: string;
               }
-        ) & { tenantId: string; userInputCode?: string; userContext?: Record<string, any> }
+        ) & {
+            tenantId: string;
+            userInputCode?: string;
+            session?: SessionContainerInterface;
+            userContext?: Record<string, any>;
+        }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             ...input,
+            session: input.session,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -65,18 +73,89 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
+                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }
-    ) {
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
+            session: input.session,
+            userContext: getUserContext(input.userContext),
+        });
+    }
+
+    static verifyCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  session?: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  session?: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+    > {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCode({
+            ...input,
+            deleteCode: true,
             userContext: getUserContext(input.userContext),
         });
     }

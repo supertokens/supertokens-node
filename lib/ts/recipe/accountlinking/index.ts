@@ -18,6 +18,7 @@ import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -34,6 +35,7 @@ export default class Wrapper {
     static async createPrimaryUserIdOrLinkAccounts(
         tenantId: string,
         recipeUserId: RecipeUserId,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
@@ -41,12 +43,16 @@ export default class Wrapper {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
         }
-
-        return await Recipe.getInstance().createPrimaryUserIdOrLinkAccounts({
+        const linkRes = await Recipe.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
             tenantId,
-            user,
+            inputUser: user,
+            session,
             userContext: getUserContext(userContext),
         });
+        if (linkRes.status === "NO_LINK") {
+            return { status: "OK", user };
+        }
+        return { status: "OK", user: linkRes.user };
     }
 
     /**
@@ -116,17 +122,24 @@ export default class Wrapper {
         tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         return await Recipe.getInstance().isSignUpAllowed({
             newUser,
             isVerified,
+            session,
             tenantId,
             userContext: getUserContext(userContext),
         });
     }
 
-    static async isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext?: Record<string, any>) {
+    static async isSignInAllowed(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
@@ -135,6 +148,7 @@ export default class Wrapper {
 
         return await Recipe.getInstance().isSignInAllowed({
             user,
+            session,
             tenantId,
             userContext: getUserContext(userContext),
         });
@@ -144,6 +158,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
@@ -152,6 +167,7 @@ export default class Wrapper {
             user,
             newEmail,
             isVerified,
+            session,
             userContext: getUserContext(userContext),
         });
     }

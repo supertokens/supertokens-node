@@ -107,6 +107,14 @@ export type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     thirdPartyManuallyCreateOrUpdateUser(input: {
@@ -114,6 +122,7 @@ export type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
@@ -132,12 +141,21 @@ export type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     emailPasswordSignUp(input: {
         email: string;
         password: string;
         tenantId: string;
+        session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }): Promise<
         | {
@@ -146,6 +164,14 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     createNewEmailPasswordRecipeUser(input: {
@@ -257,6 +283,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              session: SessionContainerInterface | undefined;
               tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;
@@ -279,6 +306,7 @@ export type APIInterface = {
                   value: string;
               }[];
               token: string;
+              session: SessionContainerInterface | undefined;
               tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;

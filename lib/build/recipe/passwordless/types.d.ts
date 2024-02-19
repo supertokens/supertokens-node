@@ -91,6 +91,7 @@ export declare type RecipeInterface = {
               }
         ) & {
             userInputCode?: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }
@@ -130,18 +131,26 @@ export declare type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
+                  session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
     ) => Promise<
         | {
               status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
@@ -154,27 +163,41 @@ export declare type RecipeInterface = {
         | {
               status: "RESTART_FLOW_ERROR";
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
-    createRecipeUser: (
+    verifyCode: (
         input:
             | {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
+                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
     ) => Promise<
         | {
               status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -183,11 +206,6 @@ export declare type RecipeInterface = {
           }
         | {
               status: "RESTART_FLOW_ERROR";
-          }
-        | {
-              status: "USER_ALREADY_EXISTS_ERROR";
-              user: User;
-              recipeUserId: RecipeUserId;
           }
     >;
     updateUser: (input: {
@@ -282,6 +300,7 @@ export declare type APIInterface = {
             tenantId: string;
             session?: SessionContainerInterface;
             options: APIOptions;
+            factorIds: string[] | undefined;
             userContext: UserContext;
         }
     ) => Promise<
@@ -377,7 +396,7 @@ export declare type APIInterface = {
     >;
 };
 export declare type TypePasswordlessEmailDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN";
+    type: "PASSWORDLESS_LOGIN" | "PWLESS_MFA";
     email: string;
     userInputCode?: string;
     urlWithLinkCode?: string;
@@ -386,7 +405,7 @@ export declare type TypePasswordlessEmailDeliveryInput = {
     tenantId: string;
 };
 export declare type TypePasswordlessSmsDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN";
+    type: "PASSWORDLESS_LOGIN" | "PWLESS_MFA";
     phoneNumber: string;
     userInputCode?: string;
     urlWithLinkCode?: string;

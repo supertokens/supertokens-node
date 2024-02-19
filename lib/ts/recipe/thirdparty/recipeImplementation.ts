@@ -6,8 +6,9 @@ import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
-import { UserContext, User as UserType } from "../../types";
+import { User as UserType } from "../../types";
 import { User } from "../../user";
+import { AuthUtils } from "../../authUtils";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
@@ -19,33 +20,11 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email,
                 isVerified,
                 tenantId,
+                session,
                 shouldAttemptAccountLinkingIfAllowed,
                 userContext,
-            }: {
-                thirdPartyId: string;
-                thirdPartyUserId: string;
-                email: string;
-                isVerified: boolean;
-                tenantId: string;
-                shouldAttemptAccountLinkingIfAllowed: boolean;
-                userContext: UserContext;
             }
-        ): Promise<
-            | {
-                  status: "OK";
-                  createdNewRecipeUser: boolean;
-                  user: UserType;
-                  recipeUserId: RecipeUserId;
-              }
-            | {
-                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-                  reason: string;
-              }
-            | {
-                  status: "SIGN_IN_UP_NOT_ALLOWED";
-                  reason: string;
-              }
-        > {
+        ) {
             // we have kept this input `shouldAttemptAccountLinkingIfAllowed` in this recipe function
             // as opposed to having separate createRecipeUser. This is to avoid adding more functions
             // that does the same thing, and we use this flag internally. We do not expose this parameter
@@ -102,11 +81,17 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             let updatedUser = response.user;
 
             if (shouldAttemptAccountLinkingIfAllowed) {
-                updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
                     tenantId,
-                    user: response.user,
+                    inputUser: response.user,
+                    recipeUserId: response.recipeUserId,
+                    session,
                     userContext,
                 });
+                if (linkResult.status !== "OK") {
+                    return linkResult;
+                }
+                updatedUser = linkResult.user;
             }
 
             return {
@@ -127,19 +112,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 tenantId,
                 userContext,
                 oAuthTokens,
+                session,
                 rawUserInfoFromProvider,
-            }: {
-                thirdPartyId: string;
-                thirdPartyUserId: string;
-                email: string;
-                isVerified: boolean;
-                tenantId: string;
-                userContext: UserContext;
-                oAuthTokens: { [key: string]: any };
-                rawUserInfoFromProvider: {
-                    fromIdTokenPayload?: { [key: string]: any };
-                    fromUserInfoAPI?: { [key: string]: any };
-                };
             }
         ): Promise<
             | {
@@ -157,6 +131,14 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             let response = await this.manuallyCreateOrUpdateUser({
                 thirdPartyId,
@@ -164,6 +146,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 email,
                 tenantId,
                 isVerified,
+                session,
                 shouldAttemptAccountLinkingIfAllowed: true,
                 userContext,
             });

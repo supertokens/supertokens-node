@@ -32,6 +32,7 @@ import { TenantConfig } from "../multitenancy/types";
 import Session from "../session";
 import SessionError from "../session/error";
 import { FactorIds } from "./types";
+import { logDebugMessage } from "../../logger";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     if (config?.firstFactors !== undefined && config?.firstFactors.length === 0) {
@@ -77,10 +78,12 @@ export const isValidFirstFactor = async function (
     // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
     // so we don't need to do additional checks here
 
-    let validFirstFactors =
-        tenantConfig.firstFactors !== undefined
-            ? tenantConfig.firstFactors
-            : MultiFactorAuthRecipe.getInstanceOrThrowError().config.firstFactors;
+    const firstFactorsFromMFA = MultiFactorAuthRecipe.getInstance()?.config.firstFactors;
+
+    logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config`);
+    logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from tenant config`);
+
+    let validFirstFactors = tenantConfig.firstFactors !== undefined ? tenantConfig.firstFactors : firstFactorsFromMFA;
 
     if (validFirstFactors === undefined) {
         // if validFirstFactors is undefined, we can safely assume it to be true because we would then

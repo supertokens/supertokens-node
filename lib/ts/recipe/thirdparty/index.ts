@@ -18,6 +18,7 @@ import SuperTokensError from "./error";
 import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -44,6 +45,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
@@ -52,6 +54,7 @@ export default class Wrapper {
             email,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             isVerified,
+            session,
             shouldAttemptAccountLinkingIfAllowed: true,
             userContext: getUserContext(userContext),
         });

@@ -3,9 +3,9 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
-import type AccountLinkingRecipe from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { UserContext } from "../../types";
+import { SessionContainerInterface } from "../session/types";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -52,12 +52,14 @@ export default function getRecipeInterface(
         verifyEmailUsingToken: async function ({
             token,
             attemptAccountLinking,
+            session,
             tenantId,
             userContext,
         }: {
             token: string;
             attemptAccountLinking: boolean;
             tenantId: string;
+            session: SessionContainerInterface;
             userContext: UserContext;
         }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
@@ -83,10 +85,12 @@ export default function getRecipeInterface(
                         if (emailInfo.status === "OK" && emailInfo.email === response.email) {
                             // we do this here to prevent cyclic dependencies.
                             // TODO: Fix this.
-                            let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
-                            await AccountLinking.createPrimaryUserIdOrLinkAccounts({
+                            let AuthUtils = require("../../authUtils").AuthUtils;
+                            await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
                                 tenantId,
-                                user: updatedUser,
+                                inputUser: updatedUser,
+                                recipeUserId,
+                                session,
                                 userContext,
                             });
                         }

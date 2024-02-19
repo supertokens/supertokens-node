@@ -17,7 +17,7 @@ import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
-import { validateAndNormaliseUserInput } from "./utils";
+import { getEnabledPwlessFactors, validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -45,6 +45,7 @@ import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -99,33 +100,7 @@ export default class Recipe extends RecipeModule {
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
 
-        let allFactors: string[];
-
-        if (this.config.flowType === "MAGIC_LINK") {
-            if (this.config.contactMethod === "EMAIL") {
-                allFactors = [FactorIds.LINK_EMAIL];
-            } else if (this.config.contactMethod === "PHONE") {
-                allFactors = [FactorIds.LINK_PHONE];
-            } else {
-                allFactors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
-            }
-        } else if (this.config.flowType === "USER_INPUT_CODE") {
-            if (this.config.contactMethod === "EMAIL") {
-                allFactors = [FactorIds.OTP_EMAIL];
-            } else if (this.config.contactMethod === "PHONE") {
-                allFactors = [FactorIds.OTP_PHONE];
-            } else {
-                allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE];
-            }
-        } else {
-            if (this.config.contactMethod === "EMAIL") {
-                allFactors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL];
-            } else if (this.config.contactMethod === "PHONE") {
-                allFactors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE];
-            } else {
-                allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE, FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
-            }
-        }
+        let allFactors = getEnabledPwlessFactors(this.config);
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
@@ -142,8 +117,7 @@ export default class Recipe extends RecipeModule {
                     // even if the user is logging into a tenant does not have
                     // passwordless loginMethod, the frontend will call the
                     // same consumeCode API as if there was a passwordless user.
-                    // the only diff is that a new recipe user will be created,
-                    // which is OK.
+                    // the only diff is that a new recipe user will be associated with the session tenant
                     function isFactorSetupForUser(user: User, factorId: string) {
                         for (const loginMethod of user.loginMethods) {
                             if (loginMethod.recipeId !== Recipe.RECIPE_ID) {
@@ -572,12 +546,14 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
                   userContext: UserContext;
               }
@@ -592,16 +568,22 @@ export default class Recipe extends RecipeModule {
                 ? {
                       email: input.email,
                       userInputCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
                       userInputCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
         );
+
+        if (codeInfo.status !== "OK") {
+            throw new Error("Failed to create user. Please retry");
+        }
 
         const appInfo = this.getAppInfo();
 
@@ -631,11 +613,13 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext: UserContext;
               }
     ) => {
@@ -644,20 +628,27 @@ export default class Recipe extends RecipeModule {
                 ? {
                       email: input.email,
                       tenantId: input.tenantId,
+                      session: input.session,
                       userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
                       tenantId: input.tenantId,
+                      session: input.session,
                       userContext: input.userContext,
                   }
         );
+
+        if (codeInfo.status !== "OK") {
+            throw new Error("Failed to create user. Please retry");
+        }
 
         let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
             this.config.flowType === "MAGIC_LINK"
                 ? {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -665,6 +656,7 @@ export default class Recipe extends RecipeModule {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
+                      session: input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -673,9 +665,10 @@ export default class Recipe extends RecipeModule {
         if (consumeCodeResponse.status === "OK") {
             return {
                 status: "OK",
-                createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser,
-                recipeUserId: consumeCodeResponse.recipeUserId,
-                user: consumeCodeResponse.user,
+                // We know these are defined since we passed `deleteCode: true`
+                createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser!,
+                recipeUserId: consumeCodeResponse.recipeUserId!,
+                user: consumeCodeResponse.user!,
             };
         } else {
             throw new Error("Failed to create user. Please retry");

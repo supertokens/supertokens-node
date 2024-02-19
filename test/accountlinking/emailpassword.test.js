@@ -378,7 +378,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 recipeList: [
                     EmailPassword.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -394,7 +394,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             });
 
             let user = (
-                await EmailPassword.signUp("public", "test@example.com", "password123", {
+                await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
                     doNotLink: true,
                 })
             ).user;
@@ -480,7 +480,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 recipeList: [
                     EmailPassword.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -498,7 +498,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             const email1 = `test+${Date.now()}@example.com`;
             let user = (await EmailPassword.signUp("public", email1, "password123")).user;
             const email2 = `test+${Date.now()}@example.com`;
-            let user2 = (await EmailPassword.signUp("public", email2, "password123", { doNotLink: true })).user;
+            let user2 = (await EmailPassword.signUp("public", email2, "password123", undefined, { doNotLink: true }))
+                .user;
 
             const linkResp = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
             assert.strictEqual(linkResp.status, "OK");

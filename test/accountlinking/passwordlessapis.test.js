@@ -153,13 +153,13 @@ const consumeCodeBehaviours = [
         pwlessUser: undefined,
         otherRecipeUser: { verified: true, primary: false },
         accountLinking: { enabled: true, requiresVerification: true },
-        expect: { status: "OK", isPrimary: true, userId: "self" },
+        expect: { status: "OK", isPrimary: true, userId: "other" },
     },
     {
         pwlessUser: { exists: true, linked: false },
         otherRecipeUser: { verified: true, primary: false },
         accountLinking: { enabled: true, requiresVerification: true },
-        expect: { status: "OK", isPrimary: true, userId: "self" },
+        expect: { status: "OK", isPrimary: true, userId: "other" },
     },
     {
         pwlessUser: { exists: true, linked: true },
@@ -346,7 +346,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -366,9 +366,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             app.use(errorHandler());
 
             const email = "test@example.com";
-            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, true, {
-                doNotLink: true,
-            });
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                email,
+                true,
+                undefined,
+                {
+                    doNotLink: true,
+                }
+            );
 
             // createCodeAPI with email
             let createCodeResponse = await new Promise((resolve) =>
@@ -590,7 +598,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
         });
     });
 
-    describe("createCodePOST tests", function () {
+    describe("consumeCodePOST tests", function () {
         describe("signup", () => {
             for (const b of consumeCodeBehaviours.filter((b) => b.pwlessUser === undefined)) {
                 const otherUserSegment =
@@ -670,7 +678,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                             mode: "REQUIRED",
                         }),
                         AccountLinking.init({
-                            shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
+                            shouldDoAutomaticAccountLinking: async (userInfo, __, _session, _tenantId, userContext) => {
                                 if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                                     return {
                                         shouldAutomaticallyLink: false,
@@ -701,6 +709,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     "abc" + Date.now(),
                     email,
                     false,
+                    undefined,
                     {
                         doNotLink: true,
                     }
@@ -762,7 +771,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                             mode: "REQUIRED",
                         }),
                         AccountLinking.init({
-                            shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
+                            shouldDoAutomaticAccountLinking: async (userInfo, __, _session, _tenantId, userContext) => {
                                 if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                                     return {
                                         shouldAutomaticallyLink: false,
@@ -793,6 +802,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     "abc" + Date.now(),
                     email,
                     false,
+                    undefined,
                     {
                         doNotLink: true,
                     }
@@ -866,7 +876,7 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
                 mode: "REQUIRED",
             }),
             AccountLinking.init({
-                shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
+                shouldDoAutomaticAccountLinking: async (userInfo, __, _session, _tenantId, userContext) => {
                     if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                         return {
                             shouldAutomaticallyLink: false,
@@ -895,6 +905,7 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
             "abc",
             email,
             otherRecipeUser.verified,
+            undefined,
             {
                 doNotLink: !otherRecipeUser.primary,
             }
@@ -995,7 +1006,7 @@ async function getConsumeCodeTestCase({ pwlessUser, otherRecipeUser, accountLink
                 mode: "REQUIRED",
             }),
             AccountLinking.init({
-                shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
+                shouldDoAutomaticAccountLinking: async (userInfo, __, _session, _tenantId, userContext) => {
                     if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                         return {
                             shouldAutomaticallyLink: false,
@@ -1024,6 +1035,7 @@ async function getConsumeCodeTestCase({ pwlessUser, otherRecipeUser, accountLink
             "abc" + Date.now(),
             email,
             otherRecipeUser.verified,
+            undefined,
             {
                 doNotLink: !otherRecipeUser.primary,
             }

@@ -795,7 +795,7 @@ EmailPassword.init({
                     if (input.type === "PASSWORD_RESET") {
                     }
                     await oI.sendEmail(input);
-                    EmailPassword.signUp("public", "test@example.com", "password123", input.userContext);
+                    EmailPassword.signUp("public", "test@example.com", "password123", undefined, input.userContext);
                 },
             };
         },
@@ -1607,6 +1607,10 @@ Passwordless.init({
                             });
                             return {
                                 status: "OK",
+                                consumedDevice: {
+                                    failedCodeInputAttemptCount: 0,
+                                    preAuthSessionId: input.preAuthSessionId,
+                                },
                                 createdNewRecipeUser: user.createdNewRecipeUser,
                                 recipeUserId: user.recipeUserId,
                                 user: user.user,
@@ -1894,16 +1898,26 @@ async function accountLinkingFuncsTest() {
     // This should be the same primary user as toLink updated with the new link
     const linkResult = await AccountLinking.createPrimaryUserIdOrLinkAccounts("public", tpSignUp.recipeUserId);
 
+    const session = await Session.createNewSessionWithoutRequestResponse(
+        "public",
+        Supertokens.convertToRecipeUserId("asdf")
+    );
     return {
-        canChangeEmail: await AccountLinking.isEmailChangeAllowed(tpSignUp.recipeUserId, "asfd@asfd.asfd", true),
-        canSignIn: await AccountLinking.isSignInAllowed("public", tpSignUp.recipeUserId),
+        canChangeEmail: await AccountLinking.isEmailChangeAllowed(
+            tpSignUp.recipeUserId,
+            "asfd@asfd.asfd",
+            true,
+            session
+        ),
+        canSignIn: await AccountLinking.isSignInAllowed("public", tpSignUp.recipeUserId, session),
         canSignUp: await AccountLinking.isSignUpAllowed(
             "public",
             {
                 recipeId: "passwordless",
                 email: "asdf@asdf.asdf",
             },
-            true
+            true,
+            session
         ),
     };
 }

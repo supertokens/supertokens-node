@@ -14,8 +14,10 @@
  */
 
 const express = require("express");
-let { middleware, errorHandler } = require("../../framework/express");
-let Passwordless = require("../../lib/build/recipe/passwordless");
+const { middleware, errorHandler } = require("../../framework/express");
+const SuperTokens = require("../../");
+const Passwordless = require("../../lib/build/recipe/passwordless");
+const EmailVerification = require("../../lib/build/recipe/emailverification");
 const { json } = require("body-parser");
 const request = require("supertest");
 
@@ -31,109 +33,81 @@ module.exports.getTestExpressApp = function () {
 
 module.exports.epSignUp = async function (app, email, password, accessToken) {
     if (accessToken === undefined) {
-        return await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: password,
-                        },
-                        {
-                            id: "email",
-                            value: email,
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app)
+            .post("/auth/signup")
+            .send({
+                formFields: [
+                    {
+                        id: "password",
+                        value: password,
+                    },
+                    {
+                        id: "email",
+                        value: email,
+                    },
+                ],
+            })
+            .expect(200);
     } else {
-        return await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .set("Authorization", `Bearer ${accessToken}`)
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: password,
-                        },
-                        {
-                            id: "email",
-                            value: email,
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app)
+            .post("/auth/signup")
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({
+                formFields: [
+                    {
+                        id: "password",
+                        value: password,
+                    },
+                    {
+                        id: "email",
+                        value: email,
+                    },
+                ],
+            })
+            .expect(200);
     }
+};
+
+module.exports.validateUserEmail = async (id) => {
+    return EmailVerification.verifyEmailUsingToken(
+        "public",
+        (await EmailVerification.createEmailVerificationToken("public", SuperTokens.convertToRecipeUserId(id))).token,
+        false
+    );
 };
 
 module.exports.epSignIn = async function (app, email, password, accessToken) {
     if (accessToken === undefined) {
-        return await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signin")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: password,
-                        },
-                        {
-                            id: "email",
-                            value: email,
-                        },
-                    ],
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app)
+            .post("/auth/signin")
+            .send({
+                formFields: [
+                    {
+                        id: "password",
+                        value: password,
+                    },
+                    {
+                        id: "email",
+                        value: email,
+                    },
+                ],
+            });
     } else {
-        return await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signin")
-                .set("Authorization", `Bearer ${accessToken}`)
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: password,
-                        },
-                        {
-                            id: "email",
-                            value: email,
-                        },
-                    ],
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app)
+            .post("/auth/signin")
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({
+                formFields: [
+                    {
+                        id: "password",
+                        value: password,
+                    },
+                    {
+                        id: "email",
+                        value: email,
+                    },
+                ],
+            });
     }
 };
 
@@ -144,41 +118,21 @@ module.exports.plessEmailSignInUp = async function (app, email, accessToken) {
     });
 
     if (accessToken === undefined) {
-        return await new Promise((resolve, reject) =>
-            request(app)
-                .post("/auth/signinup/code/consume")
-                .send({
-                    preAuthSessionId: code.preAuthSessionId,
-                    userInputCode: code.userInputCode,
-                    deviceId: code.deviceId,
-                })
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app).post("/auth/signinup/code/consume").send({
+            preAuthSessionId: code.preAuthSessionId,
+            userInputCode: code.userInputCode,
+            deviceId: code.deviceId,
+        });
     } else {
-        return await new Promise((resolve, reject) =>
-            request(app)
-                .post("/auth/signinup/code/consume")
-                .set("Authorization", `Bearer ${accessToken}`)
-                .send({
-                    preAuthSessionId: code.preAuthSessionId,
-                    userInputCode: code.userInputCode,
-                    deviceId: code.deviceId,
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app)
+            .post("/auth/signinup/code/consume")
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({
+                preAuthSessionId: code.preAuthSessionId,
+                userInputCode: code.userInputCode,
+                deviceId: code.deviceId,
+            })
+            .expect(200);
     }
 };
 
@@ -189,102 +143,49 @@ module.exports.plessPhoneSigninUp = async function (app, phoneNumber, accessToke
     });
 
     if (accessToken === undefined) {
-        return await new Promise((resolve, reject) =>
-            request(app)
-                .post("/auth/signinup/code/consume")
-                .send({
-                    preAuthSessionId: code.preAuthSessionId,
-                    userInputCode: code.userInputCode,
-                    deviceId: code.deviceId,
-                })
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app).post("/auth/signinup/code/consume").send({
+            preAuthSessionId: code.preAuthSessionId,
+            userInputCode: code.userInputCode,
+            deviceId: code.deviceId,
+        });
     } else {
-        return await new Promise((resolve, reject) =>
-            request(app)
-                .post("/auth/signinup/code/consume")
-                .set("Authorization", `Bearer ${accessToken}`)
-                .send({
-                    preAuthSessionId: code.preAuthSessionId,
-                    userInputCode: code.userInputCode,
-                    deviceId: code.deviceId,
-                })
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        return request(app).post("/auth/signinup/code/consume").set("Authorization", `Bearer ${accessToken}`).send({
+            preAuthSessionId: code.preAuthSessionId,
+            userInputCode: code.userInputCode,
+            deviceId: code.deviceId,
+        });
     }
 };
 
 module.exports.tpSignInUp = async function (app, thirdPartyId, email, accessToken) {
     if (accessToken === undefined) {
-        return await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: thirdPartyId,
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
-                        redirectURIQueryParams: {
-                            email: email,
-                        },
+        return request(app)
+            .post("/auth/signinup")
+            .send({
+                thirdPartyId: thirdPartyId,
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        email: email,
                     },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+                },
+            });
     } else {
-        return await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .set("Authorization", `Bearer ${accessToken}`)
-                .send({
-                    thirdPartyId: thirdPartyId,
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
-                        redirectURIQueryParams: {
-                            email: email,
-                        },
+        return request(app)
+            .post("/auth/signinup")
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({
+                thirdPartyId: thirdPartyId,
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        email: email,
                     },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+                },
+            });
     }
 };
 
 module.exports.getMfaInfo = async function (app, accessToken) {
-    return await new Promise((resolve) =>
-        request(app)
-            .put("/auth/mfa/info")
-            .set("Authorization", `Bearer ${accessToken}`)
-            .expect(200)
-            .end((err, res) => {
-                if (err) {
-                    resolve(undefined);
-                } else {
-                    resolve(res);
-                }
-            })
-    );
+    return request(app).put("/auth/mfa/info").set("Authorization", `Bearer ${accessToken}`).expect(200);
 };

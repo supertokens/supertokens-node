@@ -109,11 +109,25 @@ export const createEmailPasswordUser = async (
 
     if (emailPasswordOrThirdpartyEmailPassword.getRecipeId() === "emailpassword") {
         const response = await EmailPassword.signUp(tenantId, email, password);
-        return response;
+        // For some reason TS complains if I check the other status codes then throw...
+        if (response.status === "OK" || response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            return response;
+        } else {
+            throw new Error(
+                "This should never happen: EmailPassword.signUp threw a session user related error without passing a session"
+            );
+        }
     } else {
         // not checking explicitly if the recipeId is thirdpartyemailpassword or not because at this point of time it should be thirdpartyemailpassword.
 
         const response = await ThirPartyEmailPassword.emailPasswordSignUp(tenantId, email, password);
-        return response;
+        // For some reason TS complains if I check the other status codes then throw...
+        if (response.status === "OK" || response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            return response;
+        } else {
+            throw new Error(
+                "This should never happen: EmailPassword.signUp threw a session user related error without passing a session"
+            );
+        }
     }
 };

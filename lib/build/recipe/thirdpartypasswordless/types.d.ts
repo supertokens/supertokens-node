@@ -142,6 +142,14 @@ export declare type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
     thirdPartyManuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
@@ -166,6 +174,14 @@ export declare type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
@@ -183,6 +199,7 @@ export declare type RecipeInterface = {
               }
         ) & {
             userInputCode?: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }
@@ -223,17 +240,25 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   userContext: UserContext;
               }
     ) => Promise<
         | {
               status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
@@ -246,27 +271,41 @@ export declare type RecipeInterface = {
         | {
               status: "RESTART_FLOW_ERROR";
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
-    createPasswordlessRecipeUser: (
+    verifyCode: (
         input:
             | {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
+                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
     ) => Promise<
         | {
               status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -275,11 +314,6 @@ export declare type RecipeInterface = {
           }
         | {
               status: "RESTART_FLOW_ERROR";
-          }
-        | {
-              status: "USER_ALREADY_EXISTS_ERROR";
-              user: User;
-              recipeUserId: RecipeUserId;
           }
     >;
     updatePasswordlessUser: (input: {
@@ -427,6 +461,7 @@ export declare type APIInterface = {
               ) & {
                   tenantId: string;
                   session?: SessionContainerInterface;
+                  factorIds: string[] | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }

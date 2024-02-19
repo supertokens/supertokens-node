@@ -87,6 +87,7 @@ export type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -96,8 +97,15 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
-
     // this function is meant only for creating the recipe in the core and nothing else.
     // we added this even though signUp exists cause devs may override signup expecting it
     // to be called just during sign up. But we also need a version of signing up which can be
@@ -137,6 +145,7 @@ export type RecipeInterface = {
 
     consumePasswordResetToken(input: {
         token: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -203,6 +212,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              session: SessionContainerInterface | undefined;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
@@ -226,6 +236,7 @@ export type APIInterface = {
               }[];
               token: string;
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

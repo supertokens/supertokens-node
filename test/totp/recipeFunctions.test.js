@@ -51,7 +51,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId");
+        const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -75,7 +75,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId");
+        const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -107,7 +107,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId");
+        const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -138,7 +138,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId");
+        const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -176,7 +176,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId", undefined, "TOTP Device 0", 1, 5);
+        const deviceRes = await Totp.createDevice("testUserId", "test@email.com", "TOTP Device 0", 1, 5);
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -226,7 +226,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
         });
 
-        const deviceRes = await Totp.createDevice("testUserId", undefined, "TOTP Device 0", 1, 5);
+        const deviceRes = await Totp.createDevice("testUserId", "test@email.com", "TOTP Device 0", 1, 5);
 
         assert.equal(Object.keys(deviceRes).length, 4);
         assert.equal(deviceRes.status, "OK");
@@ -262,7 +262,6 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
         }).generate();
 
         let verifyTotpRes = await Totp.verifyTOTP("public", "testUserId", "123456");
-        console.log(verifyTotpRes);
         assert.equal(verifyTotpRes.status, "INVALID_TOTP_ERROR");
         assert.equal(verifyTotpRes.currentNumberOfFailedAttempts, 1);
         assert.equal(verifyTotpRes.maxNumberOfFailedAttempts, 5);
