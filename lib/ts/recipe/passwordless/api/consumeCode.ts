@@ -100,7 +100,7 @@ export default async function consumeCode(
     if (result.status === "OK") {
         result = {
             ...result,
-            ...getBackwardsCompatibleUserInfo(options.req, result),
+            ...getBackwardsCompatibleUserInfo(options.req, result, userContext),
         };
         delete (result as any).session;
     }

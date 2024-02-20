@@ -69,7 +69,7 @@ export default async function signUpAPI(
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            ...getBackwardsCompatibleUserInfo(options.req, result),
+            ...getBackwardsCompatibleUserInfo(options.req, result, userContext),
         });
     } else if (result.status === "GENERAL_ERROR") {
         send200Response(options.res, result);

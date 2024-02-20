@@ -58,11 +58,11 @@ export default function getAPIInterface(): APIInterface {
 
             let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(
                 mfaInfo.sessionUser,
-                session.getRecipeUserId()
+                session.getRecipeUserId(userContext)
             );
             let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(
                 mfaInfo.sessionUser,
-                session.getRecipeUserId()
+                session.getRecipeUserId(userContext)
             );
             if (
                 getEmailsForFactorsResult.status === "UNKNOWN_SESSION_RECIPE_USER_ID" ||

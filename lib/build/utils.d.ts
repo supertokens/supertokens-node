@@ -18,7 +18,8 @@ export declare function getBackwardsCompatibleUserInfo(
         user: User;
         session: SessionContainer;
         createdNewRecipeUser?: boolean;
-    }
+    },
+    userContext: UserContext
 ): JSONObject;
 export declare function doesRequestSupportFDI(req: BaseRequest, version: string): boolean;
 export declare function getRidFromHeader(req: BaseRequest): string | undefined;

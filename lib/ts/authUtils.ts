@@ -266,7 +266,7 @@ export const AuthUtils = {
         let respSession = session;
         if (session !== undefined) {
             const authenticatedUserLinkedToSessionUser = linkingResult.user.loginMethods.some(
-                (lm) => lm.recipeUserId === session.getRecipeUserId()
+                (lm) => lm.recipeUserId.getAsString() === session.getRecipeUserId(userContext).getAsString()
             );
             if (authenticatedUserLinkedToSessionUser) {
                 logDebugMessage(`postAuthChecks session and input user got linked`);

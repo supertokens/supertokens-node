@@ -284,7 +284,8 @@ export default class Recipe extends RecipeModule {
             // we should ignore this since it will result in the user's session changing.)
 
             if (
-                input.session.getRecipeUserId().getAsString() === input.recipeUserIdWhoseEmailGotVerified.getAsString()
+                input.session.getRecipeUserId(input.userContext).getAsString() ===
+                input.recipeUserIdWhoseEmailGotVerified.getAsString()
             ) {
                 logDebugMessage(
                     "updateSessionIfRequiredPostEmailVerification the session belongs to the verified user"
@@ -346,7 +347,7 @@ export default class Recipe extends RecipeModule {
                         input.req,
                         input.res,
                         input.session.getTenantId(),
-                        input.session.getRecipeUserId(),
+                        input.session.getRecipeUserId(input.userContext),
                         {},
                         {},
                         input.userContext

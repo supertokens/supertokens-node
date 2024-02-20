@@ -169,7 +169,8 @@ export function getBackwardsCompatibleUserInfo(
         user: User;
         session: SessionContainer;
         createdNewRecipeUser?: boolean;
-    }
+    },
+    userContext: UserContext
 ) {
     let resp: JSONObject;
     if (doesRequestSupportFDI(req, "1.18")) {
@@ -183,7 +184,7 @@ export function getBackwardsCompatibleUserInfo(
         return resp;
     } else {
         let loginMethod: undefined | LoginMethod = result.user.loginMethods.find(
-            (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId().getAsString()
+            (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId(userContext).getAsString()
         );
 
         if (loginMethod === undefined) {

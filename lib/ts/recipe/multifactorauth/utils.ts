@@ -138,9 +138,9 @@ export const getMFARelatedInfoFromSession = async function (
     let sessionHandle: string;
 
     if ("session" in input) {
-        sessionRecipeUserId = input.session.getRecipeUserId();
-        tenantId = input.session.getTenantId();
-        accessTokenPayload = input.session.getAccessTokenPayload();
+        sessionRecipeUserId = input.session.getRecipeUserId(input.userContext);
+        tenantId = input.session.getTenantId(input.userContext);
+        accessTokenPayload = input.session.getAccessTokenPayload(input.userContext);
         sessionHandle = input.session.getHandle(input.userContext);
     } else {
         sessionRecipeUserId = input.sessionRecipeUserId;
