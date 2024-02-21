@@ -183,16 +183,16 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
 
             const app = express();
 
-            app.use(middleware());
-
             app.use(function (_, res, next) {
-                // setting up dummy headers
+                // setting dummy headers to make sure that api overrides the original set csp value.
                 res.setHeader(
                     "Content-Security-Policy",
                     "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com"
                 );
                 return next();
             });
+
+            app.use(middleware());
 
             app.use(errorHandler());
 
@@ -204,13 +204,13 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
                         if (err) {
                             res(undefined);
                         } else {
-                            res(response.text);
+                            res(response);
                         }
                     });
             });
 
             assert(
-                response.header["Content-Security-Policy"],
+                response.header["content-security-policy"],
                 "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/gh/supertokens/ ; img-src 'self' https://cdn.jsdelivr.net/gh/supertokens/"
             );
         });
