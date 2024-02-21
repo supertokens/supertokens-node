@@ -159,4 +159,60 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
             assert(!response.includes(`window.connectionURI = "${secondConnectionURI}"`));
         });
     });
+
+    describe("Test CSP headers", function () {
+        it("should allow https://cdn.jsdelvr.net/gh/supertokens/ ", async () => {
+            const connectionURI = await startST();
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        apiKey: "testapikey",
+                    }),
+                    EmailPassword.init(),
+                ],
+            });
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(function (_, res, next) {
+                // setting up dummy headers
+                res.setHeader(
+                    "Content-Security-Policy",
+                    "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com"
+                );
+                return next();
+            });
+
+            app.use(errorHandler());
+
+            let response = await new Promise((res) => {
+                request(app)
+                    .get(dashboardURL)
+                    .set("Authorization", "Bearer testapikey")
+                    .end((err, response) => {
+                        if (err) {
+                            res(undefined);
+                        } else {
+                            res(response.text);
+                        }
+                    });
+            });
+
+            assert(
+                response.header["Content-Security-Policy"],
+                "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/gh/supertokens/ ; img-src 'self' https://cdn.jsdelivr.net/gh/supertokens/"
+            );
+        });
+    });
 });
