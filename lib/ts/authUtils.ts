@@ -75,6 +75,7 @@ export const AuthUtils = {
         tenantId,
         isSignUp,
         isVerified,
+        signInVerifiesLoginMethod,
         authenticatingUser,
         factorIds,
         session,
@@ -86,11 +87,13 @@ export const AuthUtils = {
         factorIds: string[];
         isSignUp: boolean;
         isVerified: boolean;
+        signInVerifiesLoginMethod: boolean;
         session?: SessionContainerInterface;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; validFactorIds: string[]; isFirstFactor: boolean }
         | { status: "SIGN_UP_NOT_ALLOWED" }
+        | { status: "SIGN_IN_NOT_ALLOWED" }
         | {
               // While we don't actually attempt linking in this function, we return this status to match
               // the return type of other functions
@@ -149,20 +152,44 @@ export const AuthUtils = {
                 userContext
             );
         }
-        // If this is a sign up we  check that the sign up is allowed
-        // for sign ins, this is checked after the credentials have been verified
+
+        // If this is a sign up we check that the sign up is allowed
         if (isSignUp) {
+            // We need this check in case the session user has verified an email address and now tries to add a password for it.
+            let verifiedInSessionUser =
+                !authTypeInfo.isFirstFactor &&
+                authTypeInfo.sessionUser.loginMethods.some(
+                    (lm) =>
+                        lm.verified &&
+                        (lm.hasSameEmailAs(authenticatingAccountInfo.email) ||
+                            lm.hasSamePhoneNumberAs(authenticatingAccountInfo.phoneNumber))
+                );
+
             logDebugMessage("preAuthChecks checking if the user is allowed to sign up");
             if (
                 !(await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: authenticatingAccountInfo,
-                    isVerified,
+                    isVerified: isVerified || signInVerifiesLoginMethod || verifiedInSessionUser,
                     tenantId,
                     session,
                     userContext,
                 }))
             ) {
                 return { status: "SIGN_UP_NOT_ALLOWED" };
+            }
+        } else if (authenticatingUser !== undefined) {
+            // for sign ins, this is checked after the credentials have been verified
+            logDebugMessage("preAuthChecks checking if the user is allowed to sign in");
+            if (
+                !(await AccountLinking.getInstance().isSignInAllowed({
+                    user: authenticatingUser,
+                    signInVerifiesLoginMethod,
+                    tenantId,
+                    session,
+                    userContext,
+                }))
+            ) {
+                return { status: "SIGN_IN_NOT_ALLOWED" };
             }
         }
 
@@ -197,6 +224,7 @@ export const AuthUtils = {
         authenticatedUser,
         recipeUserId,
         isSignUp,
+        signInVerifiesLoginMethod,
         factorId,
         session,
         req,
@@ -209,6 +237,7 @@ export const AuthUtils = {
         tenantId: string;
         factorId: string;
         isSignUp: boolean;
+        signInVerifiesLoginMethod: boolean;
         session?: SessionContainerInterface;
         userContext: UserContext;
         req: BaseRequest;
@@ -234,30 +263,40 @@ export const AuthUtils = {
         const mfaInstance = MultiFactorAuthRecipe.getInstance();
         const accountLinkingInstance = AccountLinking.getInstance();
 
-        // Then run linking if necessary/possible.
-        // Note, that we are not re-using any information queried before the user signed in
-        // This functions calls shouldDoAutomaticAccountLinking again (we check if the app wants to link to the session user or not),
-        // which might return a different result. We could throw in this case, but it is an app code issue that that is fairly unlikely to go wrong.
-        // It should not happen in general, but it is possible that we end up with an unlinked user after this even though originally we considered this
-        // an MFA sign in.
-        // There are a couple of race-conditions associated with this functions, but it handles retries internally.
-        const linkingResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
-            tenantId,
-            inputUser: authenticatedUser,
-            recipeUserId,
-            session,
-            userContext,
-        });
+        let updatedUser = authenticatedUser;
+        if (!isSignUp) {
+            // Then run linking if necessary/possible.
+            // Note, that we are not re-using any information queried before the user signed in
+            // This functions calls shouldDoAutomaticAccountLinking again (we check if the app wants to link to the session user or not),
+            // which might return a different result. We could throw in this case, but it is an app code issue that that is fairly unlikely to go wrong.
+            // It should not happen in general, but it is possible that we end up with an unlinked user after this even though originally we considered this
+            // an MFA sign in.
+            // There are a couple of race-conditions associated with this functions, but it handles retries internally.
+            const linkingResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                tenantId,
+                inputUser: authenticatedUser,
+                recipeUserId,
+                session,
+                userContext,
+            });
 
-        if (linkingResult.status !== "OK") {
-            logDebugMessage(`postAuthChecks returning early because createPrimaryUserIdOrLinkByAccountInfo failed`);
-            return linkingResult;
+            if (linkingResult.status !== "OK") {
+                logDebugMessage(`postAuthChecks returning early because createPrimaryUserIdOrLinkByAccountInfo failed`);
+                return linkingResult;
+            }
+            updatedUser = linkingResult.user;
         }
 
         // We check if sign in is allowed
         if (
             !isSignUp &&
-            !(await accountLinkingInstance.isSignInAllowed({ user: authenticatedUser, tenantId, session, userContext }))
+            !(await accountLinkingInstance.isSignInAllowed({
+                user: authenticatedUser,
+                signInVerifiesLoginMethod,
+                tenantId,
+                session,
+                userContext,
+            }))
         ) {
             logDebugMessage(`postAuthChecks returning SIGN_IN_NOT_ALLOWED`);
             return { status: "SIGN_IN_NOT_ALLOWED" };
@@ -265,7 +304,7 @@ export const AuthUtils = {
 
         let respSession = session;
         if (session !== undefined) {
-            const authenticatedUserLinkedToSessionUser = linkingResult.user.loginMethods.some(
+            const authenticatedUserLinkedToSessionUser = updatedUser.loginMethods.some(
                 (lm) => lm.recipeUserId.getAsString() === session.getRecipeUserId(userContext).getAsString()
             );
             if (authenticatedUserLinkedToSessionUser) {
@@ -300,7 +339,7 @@ export const AuthUtils = {
                 await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
             }
         }
-        return { status: "OK", session: respSession!, user: linkingResult.user };
+        return { status: "OK", session: respSession!, user: updatedUser };
     },
 
     /**
@@ -526,7 +565,9 @@ export const AuthUtils = {
                     sessionUser: inputUser,
                 };
             }
-            logDebugMessage(`checkAuthTypeAndLinkingStatus loading session user`);
+            logDebugMessage(
+                `checkAuthTypeAndLinkingStatus loading session user, ${inputUser?.id} === ${session.getUserId()}`
+            );
             // We have to load the session user in order to get the account linking info
             const sessionUserResult = await AuthUtils.tryAndMakeSessionUserIntoAPrimaryUser(session, userContext);
             if (sessionUserResult.status === "SHOULD_AUTOMATICALLY_LINK_FALSE") {

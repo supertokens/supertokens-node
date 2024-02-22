@@ -150,6 +150,7 @@ export default class Wrapper {
             user,
             session,
             tenantId,
+            signInVerifiesLoginMethod: false,
             userContext: getUserContext(userContext),
         });
     }

@@ -129,13 +129,13 @@ export default class Recipe extends RecipeModule {
                             // so that the frontend asks the user to enter an email,
                             // or uses the email of another login method.
                             if (loginMethod.email !== undefined && !isFakeEmail(loginMethod.email)) {
-                                if (factorId == FactorIds.OTP_EMAIL || factorId == FactorIds.LINK_EMAIL) {
+                                if (factorId === FactorIds.OTP_EMAIL || factorId === FactorIds.LINK_EMAIL) {
                                     return true;
                                 }
                             }
 
                             if (loginMethod.phoneNumber !== undefined) {
-                                if (factorId == FactorIds.OTP_PHONE || factorId == FactorIds.LINK_PHONE) {
+                                if (factorId === FactorIds.OTP_PHONE || factorId === FactorIds.LINK_PHONE) {
                                     return true;
                                 }
                             }

@@ -57,10 +57,12 @@ export default class Recipe extends RecipeModule {
         user,
         tenantId,
         session,
+        signInVerifiesLoginMethod,
         userContext,
     }: {
         user: User;
         session: SessionContainerInterface | undefined;
+        signInVerifiesLoginMethod: boolean;
         tenantId: string;
         userContext: UserContext;
     }) => Promise<boolean>;

@@ -104,6 +104,7 @@ export default function getAPIInterface(): APIInterface {
                 factorIds: ["thirdparty"],
                 isSignUp,
                 isVerified: emailInfo.isVerified,
+                signInVerifiesLoginMethod: false,
                 tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
@@ -239,6 +240,7 @@ export default function getAPIInterface(): APIInterface {
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId: "thirdparty",
                 isSignUp,
+                signInVerifiesLoginMethod: false,
                 authenticatedUser: response.user,
                 recipeUserId: response.recipeUserId,
                 req: input.options.req,

@@ -632,13 +632,6 @@ export default function getAPIImplementation(): APIInterface {
                 checkCredentialsOnTenant,
             });
 
-            // If we couldn't find a matching user, the current
-            if (authenticatingUser === undefined) {
-                return {
-                    status: "WRONG_CREDENTIALS_ERROR",
-                };
-            }
-
             const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
@@ -649,6 +642,7 @@ export default function getAPIImplementation(): APIInterface {
                 isSignUp: false,
                 authenticatingUser: authenticatingUser?.user,
                 isVerified,
+                signInVerifiesLoginMethod: false,
                 tenantId,
                 userContext,
                 session,
@@ -658,6 +652,13 @@ export default function getAPIImplementation(): APIInterface {
             }
             if (preAuthChecks.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(preAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
+            }
+
+            if (isFakeEmail(email) && preAuthChecks.isFirstFactor) {
+                // Fake emails cannot be used as a first factor
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
             }
 
             const signInResponse = await options.recipeImplementation.signIn({
@@ -678,6 +679,7 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatedUser: signInResponse.user,
                 recipeUserId: signInResponse.recipeUserId,
                 isSignUp: false,
+                signInVerifiesLoginMethod: false,
                 factorId: "emailpassword",
                 session,
                 req: options.req,
@@ -759,6 +761,7 @@ export default function getAPIImplementation(): APIInterface {
                 factorIds: ["emailpassword"],
                 isSignUp: true,
                 isVerified: isFakeEmail(email),
+                signInVerifiesLoginMethod: false,
                 authenticatingUser: undefined, // since this a sign up, this is undefined
                 tenantId,
                 userContext,
@@ -807,6 +810,7 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
                 isSignUp: true,
+                signInVerifiesLoginMethod: false,
                 factorId: "emailpassword",
                 session,
                 req: options.req,

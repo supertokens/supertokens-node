@@ -7,6 +7,7 @@ import { getEnabledPwlessFactors } from "../utils";
 import { listUsersByAccountInfo } from "../../..";
 import { SessionContainerInterface } from "../../session/types";
 import { UserContext } from "../../../types";
+import { LoginMethod, User } from "../../../user";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -105,7 +106,8 @@ export default function getAPIImplementation(): APIInterface {
                 factorIds: [factorId],
                 authenticatingUser: authenticatingUser?.user,
                 isSignUp,
-                isVerified: true,
+                isVerified: authenticatingUser?.loginMethod.verified ?? true,
+                signInVerifiesLoginMethod: true,
                 tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
@@ -160,6 +162,7 @@ export default function getAPIImplementation(): APIInterface {
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId,
                 isSignUp,
+                signInVerifiesLoginMethod: true,
                 authenticatedUser: response.user ?? authenticatingUser!.user,
                 recipeUserId: response.recipeUserId ?? authenticatingUser!.loginMethod!.recipeUserId,
                 req: input.options.req,
@@ -200,7 +203,7 @@ export default function getAPIImplementation(): APIInterface {
                 accountInfo.email = input.email;
             }
             if ("phoneNumber" in input) {
-                accountInfo.email = input.phoneNumber;
+                accountInfo.phoneNumber = input.phoneNumber;
             }
 
             // Here we use the listUsersByAccountInfo method to check if this is going to be a sign in or up instead of the
@@ -226,8 +229,9 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "passwordless",
                 },
                 isSignUp: userWithMatchingLoginMethod === undefined,
-                authenticatingUser: undefined,
-                isVerified: true,
+                authenticatingUser: userWithMatchingLoginMethod?.user,
+                isVerified: userWithMatchingLoginMethod?.loginMethod.verified ?? true,
+                signInVerifiesLoginMethod: true,
                 tenantId: input.tenantId,
                 factorIds,
                 userContext: input.userContext,
@@ -528,13 +532,16 @@ async function getUserByAccountInfo(input: {
     session?: SessionContainerInterface;
     userContext: UserContext;
     accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
-}) {
+}): Promise<{ user: User; loginMethod: LoginMethod } | undefined> {
     const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
         tenantId: input.tenantId,
         accountInfo: input.accountInfo,
         doUnionOfAccountInfo: false,
         userContext: input.userContext,
     });
+    logDebugMessage(
+        `getUserByAccountInfo got ${existingUsers.length} from core resp ${JSON.stringify(input.accountInfo)}`
+    );
     const usersWithMatchingLoginMethods = existingUsers
         .map((user) => ({
             user,
@@ -547,6 +554,7 @@ async function getUserByAccountInfo(input: {
         }))
         .filter(({ loginMethod }) => loginMethod !== undefined);
 
+    logDebugMessage(`getUserByAccountInfo ${usersWithMatchingLoginMethods.length} has matching login methods`);
     if (usersWithMatchingLoginMethods.length > 1) {
         throw new Error(
             "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"

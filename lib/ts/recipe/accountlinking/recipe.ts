@@ -221,16 +221,18 @@ export default class Recipe extends RecipeModule {
         user,
         tenantId,
         session,
+        signInVerifiesLoginMethod,
         userContext,
     }: {
         user: User;
         session: SessionContainerInterface | undefined;
+        signInVerifiesLoginMethod: boolean;
         tenantId: string;
         userContext: UserContext;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED);
 
-        if (user.isPrimaryUser || user.loginMethods[0].verified) {
+        if (user.isPrimaryUser || user.loginMethods[0].verified || signInVerifiesLoginMethod) {
             return true;
         }
 
@@ -728,6 +730,7 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
             if (primaryUserThatCanBeLinkedToTheInputUser !== undefined) {
+                logDebugMessage("tryLinkingByAccountInfoOrCreatePrimaryUser: got primary user we can try linking");
                 // we check if the inputUser and primaryUserThatCanBeLinkedToTheInputUser are linked based on recipeIds because the inputUser obj could be outdated
                 if (
                     !primaryUserThatCanBeLinkedToTheInputUser.loginMethods.some(
@@ -821,6 +824,8 @@ export default class Recipe extends RecipeModule {
                 oldestUserThatCanBeLinkedToTheInputUser !== undefined &&
                 oldestUserThatCanBeLinkedToTheInputUser.id !== inputUser.id
             ) {
+                logDebugMessage("tryLinkingByAccountInfoOrCreatePrimaryUser: got an older user we can try linking");
+                // We know that the older user isn't primary, otherwise we'd hit the branch above.
                 let shouldMakeOlderUserPrimary = await this.shouldBecomePrimaryUser(
                     oldestUserThatCanBeLinkedToTheInputUser,
                     tenantId,
@@ -839,6 +844,10 @@ export default class Recipe extends RecipeModule {
                             "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
                         createPrimaryUserResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
                     ) {
+                        logDebugMessage(
+                            "tryLinkingByAccountInfoOrCreatePrimaryUser: retrying because createPrimaryUser returned " +
+                                createPrimaryUserResult.status
+                        );
                         continue;
                     }
                     // If we got a primary user that can be linked to the input user and they are is not linked, we try to link them.
@@ -914,6 +923,8 @@ export default class Recipe extends RecipeModule {
                     }
                 }
             }
+
+            logDebugMessage("tryLinkingByAccountInfoOrCreatePrimaryUser: trying to make the current user primary");
             // In this case we have no other account we can link to, so we check if the current user should become a primary user
             if (await this.shouldBecomePrimaryUser(inputUser, tenantId, session, userContext)) {
                 let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({

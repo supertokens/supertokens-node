@@ -49,6 +49,7 @@ export declare const AuthUtils: {
         tenantId,
         isSignUp,
         isVerified,
+        signInVerifiesLoginMethod,
         authenticatingUser,
         factorIds,
         session,
@@ -60,6 +61,7 @@ export declare const AuthUtils: {
         factorIds: string[];
         isSignUp: boolean;
         isVerified: boolean;
+        signInVerifiesLoginMethod: boolean;
         session?: SessionContainerInterface | undefined;
         userContext: UserContext;
     }) => Promise<
@@ -70,6 +72,9 @@ export declare const AuthUtils: {
           }
         | {
               status: "SIGN_UP_NOT_ALLOWED";
+          }
+        | {
+              status: "SIGN_IN_NOT_ALLOWED";
           }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
@@ -98,6 +103,7 @@ export declare const AuthUtils: {
         authenticatedUser,
         recipeUserId,
         isSignUp,
+        signInVerifiesLoginMethod,
         factorId,
         session,
         req,
@@ -110,6 +116,7 @@ export declare const AuthUtils: {
         tenantId: string;
         factorId: string;
         isSignUp: boolean;
+        signInVerifiesLoginMethod: boolean;
         session?: SessionContainerInterface | undefined;
         userContext: UserContext;
         req: BaseRequest;
