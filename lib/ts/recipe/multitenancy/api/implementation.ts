@@ -49,12 +49,14 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let firstFactors: string[] = options.allAvailableFactors;
+            let firstFactors: string[];
 
             if (tenantConfigRes.firstFactors !== undefined) {
-                firstFactors = tenantConfigRes.firstFactors;
+                firstFactors = tenantConfigRes.firstFactors; // highest priority, config from core
             } else if (options.staticFirstFactors !== undefined) {
-                firstFactors = options.staticFirstFactors;
+                firstFactors = options.staticFirstFactors; // next priority, static config
+            } else {
+                firstFactors = options.allAvailableFactors; // fallback, all available factors
             }
 
             let validFirstFactors: string[] = [];
