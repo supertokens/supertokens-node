@@ -1,4 +1,5 @@
 import { APIInterface } from "../";
+import { isValidFirstFactor } from "../../multitenancy/utils";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
 
 export default function getAPIInterface(): APIInterface {
@@ -48,22 +49,18 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let firstFactors: string[] | undefined = undefined;
+            let firstFactors: string[] = options.allAvailableFactors;
 
             if (tenantConfigRes.firstFactors !== undefined) {
                 firstFactors = tenantConfigRes.firstFactors;
             } else if (options.staticFirstFactors !== undefined) {
                 firstFactors = options.staticFirstFactors;
+            }
 
-                // Filter based on enabled recipes
-                if (tenantConfigRes.emailPassword.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => !options.emailpasswordFactors.includes(factor));
-                }
-                if (tenantConfigRes.thirdParty.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => !options.thirdPartyFactors.includes(factor));
-                }
-                if (tenantConfigRes.passwordless.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => !options.passwordlessFactors.includes(factor));
+            let validFirstFactors: string[] = [];
+            for (const factorId of firstFactors) {
+                if ((await isValidFirstFactor(tenantId, factorId, userContext)).status === "OK") {
+                    validFirstFactors.push(factorId);
                 }
             }
 
@@ -79,7 +76,7 @@ export default function getAPIInterface(): APIInterface {
                     enabled: tenantConfigRes.thirdParty.enabled,
                     providers: finalProviderList,
                 },
-                firstFactors,
+                firstFactors: validFirstFactors,
             };
         },
     };

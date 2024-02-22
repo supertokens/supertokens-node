@@ -418,12 +418,9 @@ export default class Recipe extends RecipeModule {
 
             const mtRecipe = MultitenancyRecipe.getInstance();
             if (mtRecipe !== undefined) {
-                mtRecipe.passwordlessFactors = [
-                    FactorIds.OTP_EMAIL,
-                    FactorIds.OTP_PHONE,
-                    FactorIds.LINK_EMAIL,
-                    FactorIds.LINK_PHONE,
-                ];
+                for (const factorId of allFactors) {
+                    mtRecipe.allAvailableFirstFactors.push(factorId);
+                }
             }
         });
     }

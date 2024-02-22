@@ -899,6 +899,7 @@ Multitenancy.init({
                             enabled: true,
                             providers: [],
                         },
+                        firstFactors: [],
                     };
                 },
             };

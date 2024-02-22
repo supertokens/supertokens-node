@@ -219,7 +219,7 @@ export default class Recipe extends RecipeModule {
 
             const mtRecipe = MultitenancyRecipe.getInstance();
             if (mtRecipe !== undefined) {
-                mtRecipe.emailpasswordFactors = [FactorIds.EMAILPASSWORD];
+                mtRecipe.allAvailableFirstFactors.push(FactorIds.EMAILPASSWORD);
             }
         });
     }
