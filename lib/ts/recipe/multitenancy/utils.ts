@@ -59,10 +59,6 @@ export const isValidFirstFactor = async function (
     }
     const { status: _, ...tenantConfig } = tenantInfo;
 
-    // we prioritise the firstFactors configured in tenant. If not present, we fallback to the recipe config
-    // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
-    // so we don't need to do additional checks here
-
     const MultiFactorAuthRecipe = require("../multifactorauth/recipe").default;
     const { FactorIds } = require("../multifactorauth");
 
@@ -71,6 +67,7 @@ export const isValidFirstFactor = async function (
     logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config`);
     logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from tenant config`);
 
+    // first factors configured in core is prioritised over the ones configured statically
     let configuredFirstFactors: string[] | undefined =
         tenantConfig.firstFactors !== undefined ? tenantConfig.firstFactors : firstFactorsFromMFA;
 
