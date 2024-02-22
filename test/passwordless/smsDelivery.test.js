@@ -199,7 +199,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                     urlWithLinkCode = input.urlWithLinkCode;
                                     userInputCode = input.userInputCode;
                                     codeLifetime = input.codeLifetime;
-                                    type = input.type;
+                                    type = input.smsType;
                                     await oI.sendSms(input);
                                 },
                             };
@@ -243,7 +243,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         await delay(2);
         assert.strictEqual(phoneNumber, "+919909909998");
         assert.strictEqual(appName, "SuperTokens");
-        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert.strictEqual(type, "FOR_FIRST_FACTOR");
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -290,7 +290,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                     },
                                     getContent: async (input) => {
                                         getContentCalled = true;
-                                        assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert.strictEqual(input.smsType, "FOR_FIRST_FACTOR");
                                         userInputCode = input.userInputCode;
                                         codeLifetime = input.codeLifetime;
                                         return {
@@ -497,7 +497,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
 
         await delay(2);
         assert.strictEqual(phoneNumber, "+919909909998");
-        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert.strictEqual(type, "FOR_FIRST_FACTOR");
         assert(outerOverrideCalled);
         assert(supertokensAPICalled);
         assert.notStrictEqual(userInputCode, undefined);
@@ -779,7 +779,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                         urlWithLinkCode = input.urlWithLinkCode;
                                         userInputCode = input.userInputCode;
                                         codeLifetime = input.codeLifetime;
-                                        type = input.type;
+                                        type = input.smsType;
                                     }
                                     overrideCalled = true;
                                     await oI.sendSms(input);
@@ -843,7 +843,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         await delay(2);
         assert.strictEqual(phoneNumber, "+919909909998");
         assert.strictEqual(appName, "SuperTokens");
-        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert.strictEqual(type, "FOR_FIRST_FACTOR");
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -906,7 +906,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                             urlWithLinkCode = input.urlWithLinkCode;
                                             codeLifetime = input.codeLifetime;
                                         }
-                                        assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert.strictEqual(input.smsType, "FOR_FIRST_FACTOR");
                                         getContentCalled = true;
                                         return {
                                             body: input.userInputCode,
@@ -1182,7 +1182,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         await delay(2);
 
         assert.strictEqual(phoneNumber, "+919909909998");
-        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert.strictEqual(type, "FOR_FIRST_FACTOR");
         assert(outerOverrideCalled);
         assert(supertokensAPICalled);
         assert.notStrictEqual(userInputCode, undefined);

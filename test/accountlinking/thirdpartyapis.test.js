@@ -888,7 +888,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
             );
             assert(
-                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) === undefined
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
             );
         });
 

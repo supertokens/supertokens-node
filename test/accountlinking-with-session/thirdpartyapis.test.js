@@ -43,7 +43,7 @@ describe(`thirdparty accountlinkingTests w/ session: ${printPath(
 
     describe("signInUpPOST", function () {
         describe("during sign up", () => {
-            describe("linking", () => {
+            describe("linking with verified user", () => {
                 it("should link to session user if the session user is already primary", async () => {
                     const email1 = getTestEmail("1");
                     const email2 = getTestEmail("2");
@@ -348,9 +348,308 @@ describe(`thirdparty accountlinkingTests w/ session: ${printPath(
                     assert(sessionUser.isPrimaryUser);
                 });
             });
+            describe("linking with unverified user", () => {
+                it("should not allow sign up even if the session user is already primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    sessionUser = await makeUserPrimary(sessionUser);
+                    const session = await getSessionForUser(sessionUser);
+
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
+                });
+
+                it("should not allow sign up even if the session user can be made primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
+                });
+
+                it("should error if the session user cannot be made primary - conflicting primary user", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+
+                    const conflictingUser = await createThirdPartyUser(email1, false);
+                    await makeUserPrimary(conflictingUser);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
+                    assert.strictEqual(
+                        body.reason,
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_023)"
+                    );
+                });
+
+                it("should error if the session user cannot be made primary - email verification", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+
+                    let sessionUser = await createEmailPasswordUser(email1, false);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 403);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.deepStrictEqual(body, {
+                        message: "invalid claim",
+                        claimValidationErrors: [
+                            {
+                                id: "st-ev",
+                                reason: {
+                                    actualValue: false,
+                                    expectedValue: true,
+                                    message: "wrong value",
+                                },
+                            },
+                        ],
+                    });
+                });
+
+                it("should error if sign up is not allowed", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+
+                    const conflictingUser = await createThirdPartyUser(email2, true);
+                    await makeUserPrimary(conflictingUser);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.deepStrictEqual(body, {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_021)",
+                    });
+                });
+
+                it("should link by account info if shouldDoAutomaticAccountLinking returns false while making the session user primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user) => {
+                            if (accountInfo.email === email1 && user === undefined) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    const otherUser = await createThirdPartyUser(email2, true);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, otherUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(otherUser));
+                });
+
+                it("should not make the authenticating user primary even if shouldDoAutomaticAccountLinking returns false while making the session user primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user) => {
+                            if (accountInfo.email === email1 && user === undefined) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.notStrictEqual(body.user.id, sessionUser.id);
+                    assert(!body.user.isPrimaryUser);
+                    assert.strictEqual(body.user.loginMethods.length, 1);
+                });
+
+                it("should link by account info and make the session user primary if shouldDoAutomaticAccountLinking returns false while linking to the session user and the session user is primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    const otherUser = await createThirdPartyUser(email2, true);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    sessionUser = await makeUserPrimary(sessionUser);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, otherUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(otherUser));
+
+                    sessionUser = await supertokens.getUser(sessionUser.id);
+                    assert(sessionUser.isPrimaryUser);
+                });
+
+                it("should not make the authenticating primary if shouldDoAutomaticAccountLinking returns false while linking to the session user and the session user is primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    sessionUser = await makeUserPrimary(sessionUser);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.notStrictEqual(body.user.id, sessionUser.id);
+                    assert(!body.user.isPrimaryUser);
+                    assert.strictEqual(body.user.loginMethods.length, 1);
+                });
+
+                it("should link by account info and make the session user primary if shouldDoAutomaticAccountLinking returns false while linking to the session user", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    const otherUser = await createThirdPartyUser(email2, true);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, otherUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(otherUser));
+
+                    sessionUser = await supertokens.getUser(sessionUser.id);
+                    assert(sessionUser.isPrimaryUser);
+                });
+
+                it("should not make the authenticating user primary only the session user if shouldDoAutomaticAccountLinking returns false while linking to the session user", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, false, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.notStrictEqual(body.user.id, sessionUser.id);
+                    assert(!body.user.isPrimaryUser);
+                    assert.strictEqual(body.user.loginMethods.length, 1);
+
+                    sessionUser = await supertokens.getUser(sessionUser.id);
+                    assert(sessionUser.isPrimaryUser);
+                });
+            });
         });
         describe("during sign in", () => {
-            describe("linking", () => {
+            describe("linking with verified user", () => {
                 it("should link to session user if the session user is already primary", async () => {
                     const email1 = getTestEmail("1");
                     const email2 = getTestEmail("2");
@@ -649,6 +948,323 @@ describe(`thirdparty accountlinkingTests w/ session: ${printPath(
 
                     let sessionUser = await createEmailPasswordUser(email1, true);
                     await createThirdPartyUser(email2, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.notStrictEqual(body.user.id, sessionUser.id);
+                    assert(body.user.isPrimaryUser);
+                    assert.strictEqual(body.user.loginMethods.length, 1);
+
+                    sessionUser = await supertokens.getUser(sessionUser.id);
+                    assert(sessionUser.isPrimaryUser);
+                });
+            });
+
+            describe("linking with unverified user", () => {
+                it("should link to session user if the session user is already primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    sessionUser = await makeUserPrimary(sessionUser);
+                    await createThirdPartyUser(email2, false);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, sessionUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(sessionUser));
+                });
+
+                it("should link to session user if the session user can be made primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    await createThirdPartyUser(email2, false);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, sessionUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(sessionUser));
+                });
+
+                it("should error if the session user cannot be made primary - conflicting primary user", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+
+                    const conflictingUser = await createThirdPartyUser(email1, false);
+                    await makeUserPrimary(conflictingUser);
+                    await createThirdPartyUser(email2, false);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
+                    assert.strictEqual(
+                        body.reason,
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_023)"
+                    );
+                });
+
+                it("should error if the session user cannot be made primary - email verification", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+
+                    let sessionUser = await createEmailPasswordUser(email1, false);
+                    await createThirdPartyUser(email2, false);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 403);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.deepStrictEqual(body, {
+                        message: "invalid claim",
+                        claimValidationErrors: [
+                            {
+                                id: "st-ev",
+                                reason: {
+                                    actualValue: false,
+                                    expectedValue: true,
+                                    message: "wrong value",
+                                },
+                            },
+                        ],
+                    });
+                });
+
+                it("should error if the authenticating user is already primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+
+                    let user = await createThirdPartyUser(email2, false);
+                    user = await makeUserPrimary(user);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.deepStrictEqual(body, {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason: "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_021)",
+                    });
+                });
+
+                it("should link by account info if shouldDoAutomaticAccountLinking returns false while making the session user primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user) => {
+                            if (accountInfo.email === email1 && user === undefined) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    const otherUser = await createThirdPartyUser(email2, true);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    await createThirdPartyUser(email2, false);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, otherUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(otherUser));
+                });
+
+                it("should make the authenticating user primary if shouldDoAutomaticAccountLinking returns false while making the session user primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user) => {
+                            if (accountInfo.email === email1 && user === undefined) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    await createThirdPartyUser(email2, false);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.notStrictEqual(body.user.id, sessionUser.id);
+                    assert(body.user.isPrimaryUser);
+                    assert.strictEqual(body.user.loginMethods.length, 1);
+                });
+
+                it("should link by account info and make the session user primary if shouldDoAutomaticAccountLinking returns false while linking to the session user and the session user is primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    const otherUser = await createThirdPartyUser(email2, true);
+                    await createThirdPartyUser(email2, false);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    sessionUser = await makeUserPrimary(sessionUser);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, otherUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(otherUser));
+
+                    sessionUser = await supertokens.getUser(sessionUser.id);
+                    assert(sessionUser.isPrimaryUser);
+                });
+
+                it("should make the authenticating user primary if shouldDoAutomaticAccountLinking returns false while linking to the session user and the session user is primary", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    sessionUser = await makeUserPrimary(sessionUser);
+
+                    await createThirdPartyUser(email2, false);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.notStrictEqual(body.user.id, sessionUser.id);
+                    assert(body.user.isPrimaryUser);
+                    assert.strictEqual(body.user.loginMethods.length, 1);
+                });
+
+                it("should link by account info and make the session user primary if shouldDoAutomaticAccountLinking returns false while linking to the session user", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    const otherUser = await createThirdPartyUser(email2, true);
+                    await createThirdPartyUser(email2, false);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const resp = await signInUpPOST(app, email2, true, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.strictEqual(body.status, "OK");
+
+                    assert.strictEqual(body.user.id, otherUser.id);
+                    assert.deepStrictEqual(body.user, await getUpdatedUserFromDBForRespCompare(otherUser));
+
+                    sessionUser = await supertokens.getUser(sessionUser.id);
+                    assert(sessionUser.isPrimaryUser);
+                });
+
+                it("should make the authenticating and session user primary if shouldDoAutomaticAccountLinking returns false while linking to the session user", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup({
+                        shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                            if (user !== undefined && user.id === session.getUserId()) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    });
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+                    await createThirdPartyUser(email2, false);
 
                     const session = await getSessionForUser(sessionUser);
                     const resp = await signInUpPOST(app, email2, true, session);

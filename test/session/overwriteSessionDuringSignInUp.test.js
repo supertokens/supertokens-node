@@ -57,6 +57,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
             const app = getTestExpressApp();
 
             await EmailPassword.signUp("public", "test@example.com", "password");
+            await EmailPassword.signUp("public", "test2@example.com", "password");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -103,7 +104,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
                             },
                             {
                                 id: "email",
-                                value: "test@example.com",
+                                value: "test2@example.com",
                             },
                         ],
                     })
@@ -138,6 +139,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
             const app = getTestExpressApp();
 
             await EmailPassword.signUp("public", "test@example.com", "password");
+            await EmailPassword.signUp("public", "test2@example.com", "password");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -184,7 +186,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
                             },
                             {
                                 id: "email",
-                                value: "test@example.com",
+                                value: "test2@example.com",
                             },
                         ],
                     })
@@ -219,6 +221,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
             const app = getTestExpressApp();
 
             await EmailPassword.signUp("public", "test@example.com", "password");
+            await EmailPassword.signUp("public", "test2@example.com", "password");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -265,7 +268,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
                             },
                             {
                                 id: "email",
-                                value: "test@example.com",
+                                value: "test2@example.com",
                             },
                         ],
                     })
@@ -280,7 +283,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
             );
 
             cookies = extractInfoFromResponse(res);
-            assert(cookies.accessTokenFromAny !== undefined);
+            assert.notStrictEqual(cookies.accessTokenFromAny, undefined);
         });
     });
 });
