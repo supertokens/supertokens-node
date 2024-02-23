@@ -21,7 +21,6 @@ import {
     MFAClaimValue,
     MFARequirementList,
 } from "./types";
-import MultiFactorAuthRecipe from "./recipe";
 import Multitenancy from "../multitenancy";
 import { UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
@@ -32,7 +31,7 @@ import { TenantConfig } from "../multitenancy/types";
 import Session from "../session";
 import SessionError from "../session/error";
 import { FactorIds } from "./types";
-import { logDebugMessage } from "../../logger";
+import { isValidFirstFactor } from "../multitenancy/utils";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     if (config?.firstFactors !== undefined && config?.firstFactors.length === 0) {
@@ -50,63 +49,6 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
         override,
     };
 }
-
-export const isValidFirstFactor = async function (
-    tenantId: string,
-    factorId: string,
-    userContext: UserContext
-): Promise<
-    | {
-          status: "OK";
-      }
-    | {
-          status: "INVALID_FIRST_FACTOR_ERROR";
-      }
-    | {
-          status: "TENANT_NOT_FOUND_ERROR";
-      }
-> {
-    const tenantInfo = await Multitenancy.getTenant(tenantId, userContext);
-    if (tenantInfo === undefined) {
-        return {
-            status: "TENANT_NOT_FOUND_ERROR",
-        };
-    }
-    const { status: _, ...tenantConfig } = tenantInfo;
-
-    // we prioritise the firstFactors configured in tenant. If not present, we fallback to the recipe config
-    // Core already validates that the firstFactors are valid as per the logn methods enabled for that tenant,
-    // so we don't need to do additional checks here
-
-    const firstFactorsFromMFA = MultiFactorAuthRecipe.getInstance()?.config.firstFactors;
-
-    logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config`);
-    logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from tenant config`);
-
-    let validFirstFactors = tenantConfig.firstFactors !== undefined ? tenantConfig.firstFactors : firstFactorsFromMFA;
-
-    if (validFirstFactors === undefined) {
-        // if validFirstFactors is undefined, we can safely assume it to be true because we would then
-        // have other points of failure:
-        // - if login method is disabled in core for the tenant
-        // - if appropriate recipe is not initialized, will result in a 404
-        // In all other cases, we just want to allow all available login methods to be used as first factor
-
-        return {
-            status: "OK",
-        };
-    }
-
-    if (validFirstFactors.includes(factorId)) {
-        return {
-            status: "OK",
-        };
-    }
-
-    return {
-        status: "INVALID_FIRST_FACTOR_ERROR",
-    };
-};
 
 // This function is to reuse a piece of code that is needed in multiple places
 export const getMFARelatedInfoFromSession = async function (

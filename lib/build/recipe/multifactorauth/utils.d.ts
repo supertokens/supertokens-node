@@ -5,21 +5,6 @@ import { SessionContainerInterface } from "../session/types";
 import { RecipeUserId, User } from "../..";
 import { TenantConfig } from "../multitenancy/types";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
-export declare const isValidFirstFactor: (
-    tenantId: string,
-    factorId: string,
-    userContext: UserContext
-) => Promise<
-    | {
-          status: "OK";
-      }
-    | {
-          status: "INVALID_FIRST_FACTOR_ERROR";
-      }
-    | {
-          status: "TENANT_NOT_FOUND_ERROR";
-      }
->;
 export declare const getMFARelatedInfoFromSession: (
     input: (
         | {

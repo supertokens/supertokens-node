@@ -160,10 +160,8 @@ export type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     staticThirdPartyProviders: ProviderInput[];
+    allAvailableFirstFactors: string[];
     staticFirstFactors: string[] | undefined;
-    emailpasswordFactors: string[];
-    passwordlessFactors: string[];
-    thirdPartyFactors: string[];
 };
 
 export type APIInterface = {
@@ -185,7 +183,7 @@ export type APIInterface = {
                   enabled: boolean;
                   providers: { id: string; name?: string }[];
               };
-              firstFactors?: string[];
+              firstFactors: string[];
           }
         | GeneralErrorResponse
     >;

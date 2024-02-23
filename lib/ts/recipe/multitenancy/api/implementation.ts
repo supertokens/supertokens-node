@@ -1,4 +1,5 @@
 import { APIInterface } from "../";
+import { isValidFirstFactor } from "../../multitenancy/utils";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
 
 export default function getAPIInterface(): APIInterface {
@@ -48,22 +49,26 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let firstFactors: string[] | undefined = undefined;
+            let firstFactors: string[];
 
             if (tenantConfigRes.firstFactors !== undefined) {
-                firstFactors = tenantConfigRes.firstFactors;
+                firstFactors = tenantConfigRes.firstFactors; // highest priority, config from core
             } else if (options.staticFirstFactors !== undefined) {
-                firstFactors = options.staticFirstFactors;
+                firstFactors = options.staticFirstFactors; // next priority, static config
+            } else {
+                firstFactors = options.allAvailableFirstFactors; // fallback, all available factors
+            }
 
-                // Filter based on enabled recipes
-                if (tenantConfigRes.emailPassword.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => !options.emailpasswordFactors.includes(factor));
-                }
-                if (tenantConfigRes.thirdParty.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => !options.thirdPartyFactors.includes(factor));
-                }
-                if (tenantConfigRes.passwordless.enabled === false) {
-                    firstFactors = firstFactors.filter((factor) => !options.passwordlessFactors.includes(factor));
+            // we now filter out all available first factors by checking if they are valid because
+            // we want to return the ones that can work. this would be based on what recipes are enabled
+            // on the core and also firstFactors configured in the core and supertokens.init
+            // Also, this way, in the front end, the developer can just check for firstFactors for
+            // enabled recipes in all cases irrespective of whether they are using MFA or not
+            let validFirstFactors: string[] = [];
+            for (const factorId of firstFactors) {
+                let validRes = await isValidFirstFactor(tenantId, factorId, userContext);
+                if (validRes.status === "OK") {
+                    validFirstFactors.push(factorId);
                 }
             }
 
@@ -79,7 +84,7 @@ export default function getAPIInterface(): APIInterface {
                     enabled: tenantConfigRes.thirdParty.enabled,
                     providers: finalProviderList,
                 },
-                firstFactors,
+                firstFactors: validFirstFactors,
             };
         },
     };

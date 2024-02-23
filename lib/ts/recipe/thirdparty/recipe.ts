@@ -76,7 +76,7 @@ export default class Recipe extends RecipeModule {
             const mtRecipe = MultitenancyRecipe.getInstance();
             if (mtRecipe !== undefined) {
                 mtRecipe.staticThirdPartyProviders = this.config.signInAndUpFeature.providers;
-                mtRecipe.thirdPartyFactors = [FactorIds.THIRDPARTY];
+                mtRecipe.allAvailableFirstFactors.push(FactorIds.THIRDPARTY);
             }
         });
     }
