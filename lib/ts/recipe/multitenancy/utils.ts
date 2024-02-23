@@ -17,6 +17,7 @@ import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from ".
 import MultitenancyRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
 import { UserContext } from "../../types";
+import { FactorIds } from "../multifactorauth/types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
@@ -59,10 +60,7 @@ export const isValidFirstFactor = async function (
     }
     const { status: _, ...tenantConfig } = tenantInfo;
 
-    const MultiFactorAuthRecipe = require("../multifactorauth/recipe").default;
-    const { FactorIds } = require("../multifactorauth");
-
-    const firstFactorsFromMFA = MultiFactorAuthRecipe.getInstance()?.config.firstFactors;
+    const firstFactorsFromMFA = mtRecipe.staticFirstFactors;
 
     logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config`);
     logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from tenant config`);
