@@ -27,22 +27,6 @@ const MultifactorAuth = require("../../recipe/multifactorauth");
 const Session = require("../../recipe/session");
 let { middleware, errorHandler } = require("../../framework/express");
 
-function compareWithoutOrdering(arr1, arr2) {
-    let set1 = new Set(arr1);
-    let set2 = new Set(arr2);
-
-    if (arr1.size !== arr2.size) {
-        return false;
-    }
-
-    for (let item of set1) {
-        if (!set2.has(item)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -84,7 +68,10 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
             let response = await request(app).get("/auth/loginmethods").send();
 
-            assert(compareWithoutOrdering(response.body.firstFactors, ["emailpassword", "otp-email", "link-email"]));
+            assert.deepEqual(
+                new Set(response.body.firstFactors),
+                new Set(["emailpassword", "otp-email", "link-email"])
+            );
         });
 
         it("should return firstFactors based on enabled combination recipes if no other configuration is available", async function () {
@@ -115,13 +102,9 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
             let response = await request(app).get("/auth/loginmethods").send();
 
-            assert(
-                compareWithoutOrdering(response.body.firstFactors, [
-                    "emailpassword",
-                    "thirdparty",
-                    "otp-email",
-                    "link-email",
-                ])
+            assert.deepEqual(
+                new Set(response.body.firstFactors),
+                new Set(["emailpassword", "thirdparty", "otp-email", "link-email"])
             );
         });
 
@@ -157,7 +140,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
             let response = await request(app).get("/auth/loginmethods").send();
 
-            assert(compareWithoutOrdering(response.body.firstFactors, ["emailpassword"]));
+            assert.deepEqual(new Set(response.body.firstFactors), new Set(["emailpassword"]));
         });
     });
 
@@ -193,7 +176,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
             let response = await request(app).get("/auth/loginmethods").send();
 
-            assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email"]));
+            assert.deepEqual(new Set(response.body.firstFactors), new Set(["otp-email"]));
         });
 
         it("core config is prioritised over static config and is filtered with enabled recipes in SDK", async function () {
@@ -231,7 +214,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
             let response = await request(app).get("/auth/loginmethods").send();
 
-            assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
+            assert.deepEqual(new Set(response.body.firstFactors), new Set(["link-email"]));
         });
 
         it("static config is filtered with enabled recipes in core", async function () {
@@ -270,7 +253,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
             let response = await request(app).get("/auth/loginmethods").send();
 
-            assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
+            assert.deepEqual(new Set(response.body.firstFactors), new Set(["link-email"]));
         });
 
         it("static config is filtered with enabled recipes, but custom is allowed", async function () {
@@ -304,7 +287,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
 
             let response = await request(app).get("/auth/loginmethods").send();
 
-            assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email", "custom"]));
+            assert.deepEqual(new Set(response.body.firstFactors), new Set(["otp-email", "custom"]));
         });
     });
 });
