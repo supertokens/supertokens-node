@@ -29,12 +29,6 @@ export default async function dashboard(
         userContext,
     });
 
-    options.res.setHeader(
-        "Content-Security-Policy",
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/gh/supertokens/ ; img-src 'self' https://cdn.jsdelivr.net/gh/supertokens/",
-        false
-    );
-
     options.res.sendHTMLResponse(htmlString);
 
     return true;

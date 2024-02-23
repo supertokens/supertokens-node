@@ -21,6 +21,7 @@ export declare function setHeaderForExpressLikeResponse(
     value: string,
     allowDuplicateKey: boolean
 ): void;
+export declare function getHeaderForExpressLikeResponse(res: Response, key: string): string | undefined;
 /**
  *
  * @param res

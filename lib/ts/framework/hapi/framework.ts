@@ -110,6 +110,10 @@ export class HapiResponse extends BaseResponse {
         }
     };
 
+    getHeader = (key: string) => {
+        return normalizeHeaderValue(((this.response as any) as ResponseObject).headers[key]);
+    };
+
     removeHeader = (key: string) => {
         this.response.lazyHeaderBindings(this.response, key, undefined, false);
     };

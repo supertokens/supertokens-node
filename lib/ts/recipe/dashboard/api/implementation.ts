@@ -50,9 +50,18 @@ export default function getAPIImplementation(): APIInterface {
                 isSearchEnabled = true;
             }
 
+            const doesCspHeaderExists =
+                input.options.res.getHeader("Content-Security-Policy") ||
+                input.options.req.getHeaderValue("Content-Security-Policy");
+
             return `
             <html>
                 <head>
+                    ${
+                        doesCspHeaderExists
+                            ? `<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' ${bundleDomain} ; img-src 'self' ${bundleDomain}">`
+                            : ""
+                    }
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
                         window.staticBasePath = "${bundleDomain}/static"

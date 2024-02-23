@@ -258,6 +258,11 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
     }
 }
 
+export function getHeaderForExpressLikeResponse(res: Response, key: string): string | undefined {
+    const existingHeaders = res.getHeaders();
+    return existingHeaders[key.toLowerCase()]?.toString();
+}
+
 /**
  *
  * @param res

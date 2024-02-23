@@ -182,6 +182,12 @@ export class AWSResponse extends BaseResponse {
         });
     };
 
+    getHeader = (key: string) => {
+        return this.event.supertokens.response.headers
+            .find((header) => header.key.toLocaleLowerCase() === key.toLocaleLowerCase())
+            ?.value.toString();
+    };
+
     removeHeader = (key: string) => {
         this.event.supertokens.response.headers = this.event.supertokens.response.headers.filter(
             (header) => header.key.toLowerCase() !== key.toLowerCase()

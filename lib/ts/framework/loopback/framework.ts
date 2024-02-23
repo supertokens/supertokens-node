@@ -27,6 +27,7 @@ import {
     setHeaderForExpressLikeResponse,
     setCookieForServerResponse,
     assertFormDataBodyParserHasBeenUsedForExpressLikeRequest,
+    getHeaderForExpressLikeResponse,
 } from "../utils";
 import SuperTokens from "../../supertokens";
 import type { Framework } from "../types";
@@ -98,6 +99,10 @@ export class LoopbackResponse extends BaseResponse {
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         setHeaderForExpressLikeResponse(this.response, key, value, allowDuplicateKey);
+    };
+
+    getHeader = (key: string) => {
+        return getHeaderForExpressLikeResponse(this.response, key);
     };
 
     removeHeader = (key: string) => {
