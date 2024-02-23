@@ -28,9 +28,19 @@ const Session = require("../../recipe/session");
 let { middleware, errorHandler } = require("../../framework/express");
 
 function compareWithoutOrdering(arr1, arr2) {
-    arr1.sort();
-    arr2.sort();
-    return JSON.stringify(arr1) === JSON.stringify(arr2);
+    let set1 = new Set(arr1);
+    let set2 = new Set(arr2);
+
+    if (arr1.size !== arr2.size) {
+        return false;
+    }
+
+    for (let item of set1) {
+        if (!set2.has(item)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}`, function () {
@@ -45,8 +55,8 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         await cleanST();
     });
 
-    describe("should return firstFactors based on enabled recipes if no other configuration is available", function () {
-        it("with basic recipes", async function () {
+    describe("with mfa not enabled", function () {
+        it("should return firstFactors based on enabled recipes if no other configuration is available", async function () {
             const connectionURI = await startSTWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
@@ -72,23 +82,12 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
             app.use(middleware());
             app.use(errorHandler());
 
-            let response = await new Promise((resolve) =>
-                request(app)
-                    .get("/auth/loginmethods")
-                    .send()
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res);
-                        }
-                    })
-            );
+            let response = await request(app).get("/auth/loginmethods").send();
 
             assert(compareWithoutOrdering(response.body.firstFactors, ["emailpassword", "otp-email", "link-email"]));
         });
 
-        it("with combination recipes", async function () {
+        it("should return firstFactors based on enabled combination recipes if no other configuration is available", async function () {
             const connectionURI = await startSTWithMultitenancy();
             SuperTokens.init({
                 supertokens: {
@@ -125,150 +124,187 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
                 ])
             );
         });
+
+        it("should return from core config when configured in core", async function () {
+            const connectionURI = await startSTWithMultitenancy();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    ThirdPartyEmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    Multitenancy.init(),
+                ],
+            });
+
+            await Multitenancy.createOrUpdateTenant("public", {
+                firstFactors: ["emailpassword"],
+            });
+
+            const app = express();
+
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let response = await request(app).get("/auth/loginmethods").send();
+
+            assert(compareWithoutOrdering(response.body.firstFactors, ["emailpassword"]));
+        });
     });
 
-    it("test with mfa - static config is filtered with enabled recipes", async function () {
-        const connectionURI = await startSTWithMultitenancy();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Passwordless.init({
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Multitenancy.init(),
-                MultifactorAuth.init({
-                    firstFactors: ["emailpassword", "thirdparty", "otp-email", "otp-phone"],
-                }),
-                Session.init(),
-            ],
+    describe("with mfa enabled", function () {
+        it("static config is filtered with enabled recipes", async function () {
+            const connectionURI = await startSTWithMultitenancy();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    Multitenancy.init(),
+                    MultifactorAuth.init({
+                        firstFactors: ["emailpassword", "thirdparty", "otp-email", "otp-phone"],
+                    }),
+                    Session.init(),
+                ],
+            });
+
+            const app = express();
+
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let response = await request(app).get("/auth/loginmethods").send();
+
+            assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email"]));
         });
 
-        const app = express();
+        it("core config is prioritised over static config and is filtered with enabled recipes in SDK", async function () {
+            const connectionURI = await startSTWithMultitenancy();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    Multitenancy.init(),
+                    MultifactorAuth.init({
+                        firstFactors: ["emailpassword", "otp-email", "otp-phone"],
+                    }),
+                    Session.init(),
+                ],
+            });
 
-        app.use(middleware());
-        app.use(errorHandler());
+            const app = express();
 
-        let response = await request(app).get("/auth/loginmethods").send();
+            app.use(middleware());
+            app.use(errorHandler());
 
-        assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email"]));
-    });
+            await Multitenancy.createOrUpdateTenant("public", {
+                firstFactors: ["emailpassword", "link-email", "link-phone"],
+            });
 
-    it("test with mfa - core config is prioritised over static config and is filtered with enabled recipes", async function () {
-        const connectionURI = await startSTWithMultitenancy();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Passwordless.init({
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Multitenancy.init(),
-                MultifactorAuth.init({
-                    firstFactors: ["emailpassword", "otp-email", "otp-phone"],
-                }),
-                Session.init(),
-            ],
+            let response = await request(app).get("/auth/loginmethods").send();
+
+            assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
         });
 
-        const app = express();
+        it("static config is filtered with enabled recipes in core", async function () {
+            const connectionURI = await startSTWithMultitenancy();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    Multitenancy.init(),
+                    MultifactorAuth.init({
+                        firstFactors: ["emailpassword", "link-email", "link-phone"],
+                    }),
+                    Session.init(),
+                ],
+            });
 
-        app.use(middleware());
-        app.use(errorHandler());
+            const app = express();
 
-        await Multitenancy.createOrUpdateTenant("public", {
-            firstFactors: ["emailpassword", "link-email", "link-phone"],
+            app.use(middleware());
+            app.use(errorHandler());
+
+            await Multitenancy.createOrUpdateTenant("public", {
+                emailPasswordEnabled: false,
+            });
+
+            let response = await request(app).get("/auth/loginmethods").send();
+
+            assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
         });
 
-        let response = await request(app).get("/auth/loginmethods").send();
+        it("static config is filtered with enabled recipes, but custom is allowed", async function () {
+            const connectionURI = await startSTWithMultitenancy();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    Multitenancy.init(),
+                    MultifactorAuth.init({
+                        firstFactors: ["emailpassword", "thirdparty", "otp-email", "otp-phone", "custom"],
+                    }),
+                    Session.init(),
+                ],
+            });
 
-        assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
-    });
+            const app = express();
 
-    it("test with mfa - static config is filtered with enabled recipes in core", async function () {
-        const connectionURI = await startSTWithMultitenancy();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init(),
-                Passwordless.init({
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Multitenancy.init(),
-                MultifactorAuth.init({
-                    firstFactors: ["emailpassword", "link-email", "link-phone"],
-                }),
-                Session.init(),
-            ],
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let response = await request(app).get("/auth/loginmethods").send();
+
+            assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email", "custom"]));
         });
-
-        const app = express();
-
-        app.use(middleware());
-        app.use(errorHandler());
-
-        await Multitenancy.createOrUpdateTenant("public", {
-            emailPasswordEnabled: false,
-        });
-
-        let response = await request(app).get("/auth/loginmethods").send();
-
-        assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
-    });
-
-    it("test with mfa - static config is filtered with enabled recipes, but custom is allowed", async function () {
-        const connectionURI = await startSTWithMultitenancy();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Passwordless.init({
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Multitenancy.init(),
-                MultifactorAuth.init({
-                    firstFactors: ["emailpassword", "thirdparty", "otp-email", "otp-phone", "custom"],
-                }),
-                Session.init(),
-            ],
-        });
-
-        const app = express();
-
-        app.use(middleware());
-        app.use(errorHandler());
-
-        let response = await request(app).get("/auth/loginmethods").send();
-
-        assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email", "custom"]));
     });
 });
