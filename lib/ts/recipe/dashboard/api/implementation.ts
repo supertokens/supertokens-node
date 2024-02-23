@@ -50,18 +50,27 @@ export default function getAPIImplementation(): APIInterface {
                 isSearchEnabled = true;
             }
 
-            const doesCspHeaderExists =
-                input.options.res.getHeader("Content-Security-Policy") ||
-                input.options.req.getHeaderValue("Content-Security-Policy");
+            let cspHeaderValue = input.options.res.getHeader("Content-Security-Policy");
+
+            if (cspHeaderValue && cspHeaderValue.includes(bundleDomain) === false) {
+                if (cspHeaderValue.includes("script-src")) {
+                    cspHeaderValue = cspHeaderValue.replace("script-src", `script-src ${bundleDomain}`);
+                } else {
+                    cspHeaderValue += `script-src ${bundleDomain}`;
+                }
+
+                if (cspHeaderValue.includes("img-src")) {
+                    cspHeaderValue = cspHeaderValue.replace("img-src", `script-src ${bundleDomain}`);
+                } else {
+                    cspHeaderValue += `img-src ${bundleDomain}`;
+                }
+
+                input.options.res.setHeader("Content-Security-Policy", cspHeaderValue, false);
+            }
 
             return `
             <html>
                 <head>
-                    ${
-                        doesCspHeaderExists
-                            ? `<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' ${bundleDomain} ; img-src 'self' ${bundleDomain}">`
-                            : ""
-                    }
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
                         window.staticBasePath = "${bundleDomain}/static"
