@@ -138,7 +138,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             staticThirdPartyProviders: this.staticThirdPartyProviders,
-            allAvailableFactors: this.allAvailableFirstFactors,
+            allAvailableFirstFactors: this.allAvailableFirstFactors,
             staticFirstFactors: this.staticFirstFactors,
         };
         if (id === LOGIN_METHODS_API) {

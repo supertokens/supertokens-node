@@ -160,7 +160,7 @@ export type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     staticThirdPartyProviders: ProviderInput[];
-    allAvailableFactors: string[];
+    allAvailableFirstFactors: string[];
     staticFirstFactors: string[] | undefined;
 };
 

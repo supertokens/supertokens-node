@@ -18,14 +18,20 @@ const express = require("express");
 const request = require("supertest");
 let { Querier } = require("../../lib/build/querier");
 let { ProcessState } = require("../../lib/build/processState");
-let SuperTokens = require("../../");
-let Multitenancy = require("../../recipe/multitenancy");
-let EmailPassword = require("../../recipe/emailpassword");
-let ThirdPartyEmaillPassword = require("../../recipe/thirdpartyemailpassword");
-let Passwordless = require("../../recipe/passwordless");
-let MultifactorAuth = require("../../recipe/multifactorauth");
-let Session = require("../../recipe/session");
+const SuperTokens = require("../../");
+const Multitenancy = require("../../recipe/multitenancy");
+const EmailPassword = require("../../recipe/emailpassword");
+const ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+const Passwordless = require("../../recipe/passwordless");
+const MultifactorAuth = require("../../recipe/multifactorauth");
+const Session = require("../../recipe/session");
 let { middleware, errorHandler } = require("../../framework/express");
+
+function compareWithoutOrdering(arr1, arr2) {
+    arr1.sort();
+    arr2.sort();
+    return JSON.stringify(arr1) === JSON.stringify(arr2);
+}
 
 describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}`, function () {
     beforeEach(async function () {
@@ -39,88 +45,86 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         await cleanST();
     });
 
-    it("test without mfa - case 1", async function () {
-        const connectionURI = await startSTWithMultitenancy();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init(),
-                Passwordless.init({
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Multitenancy.init(),
-            ],
+    describe("should return firstFactors based on enabled recipes if no other configuration is available", function () {
+        it("with basic recipes", async function () {
+            const connectionURI = await startSTWithMultitenancy();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    Multitenancy.init(),
+                ],
+            });
+
+            const app = express();
+
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/loginmethods")
+                    .send()
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(compareWithoutOrdering(response.body.firstFactors, ["emailpassword", "otp-email", "link-email"]));
         });
 
-        const app = express();
+        it("with combination recipes", async function () {
+            const connectionURI = await startSTWithMultitenancy();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    ThirdPartyEmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    Multitenancy.init(),
+                ],
+            });
 
-        app.use(middleware());
-        app.use(errorHandler());
+            const app = express();
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/loginmethods")
-                .send()
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+            app.use(middleware());
+            app.use(errorHandler());
 
-        assert.deepEqual(response.body.firstFactors, ["emailpassword", "otp-email", "link-email"]);
-    });
+            let response = await request(app).get("/auth/loginmethods").send();
 
-    it("test without mfa - case 2", async function () {
-        const connectionURI = await startSTWithMultitenancy();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                ThirdPartyEmaillPassword.init(),
-                Passwordless.init({
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Multitenancy.init(),
-            ],
+            assert(
+                compareWithoutOrdering(response.body.firstFactors, [
+                    "emailpassword",
+                    "thirdparty",
+                    "otp-email",
+                    "link-email",
+                ])
+            );
         });
-
-        const app = express();
-
-        app.use(middleware());
-        app.use(errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/loginmethods")
-                .send()
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-
-        assert.deepEqual(response.body.firstFactors, ["emailpassword", "thirdparty", "otp-email", "link-email"]);
     });
 
     it("test with mfa - static config is filtered with enabled recipes", async function () {
@@ -152,20 +156,9 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/loginmethods")
-                .send()
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        let response = await request(app).get("/auth/loginmethods").send();
 
-        assert.deepEqual(response.body.firstFactors, ["otp-email"]);
+        assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email"]));
     });
 
     it("test with mfa - core config is prioritised over static config and is filtered with enabled recipes", async function () {
@@ -201,20 +194,9 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
             firstFactors: ["emailpassword", "link-email", "link-phone"],
         });
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/loginmethods")
-                .send()
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        let response = await request(app).get("/auth/loginmethods").send();
 
-        assert.deepEqual(response.body.firstFactors, ["link-email"]);
+        assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
     });
 
     it("test with mfa - static config is filtered with enabled recipes in core", async function () {
@@ -251,20 +233,9 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
             emailPasswordEnabled: false,
         });
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/loginmethods")
-                .send()
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        let response = await request(app).get("/auth/loginmethods").send();
 
-        assert.deepEqual(response.body.firstFactors, ["link-email"]);
+        assert(compareWithoutOrdering(response.body.firstFactors, ["link-email"]));
     });
 
     it("test with mfa - static config is filtered with enabled recipes, but custom is allowed", async function () {
@@ -296,19 +267,8 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/loginmethods")
-                .send()
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        let response = await request(app).get("/auth/loginmethods").send();
 
-        assert.deepEqual(response.body.firstFactors, ["otp-email", "custom"]);
+        assert(compareWithoutOrdering(response.body.firstFactors, ["otp-email", "custom"]));
     });
 });
