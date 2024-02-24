@@ -298,7 +298,7 @@ export declare type APIInterface = {
               }
         ) & {
             tenantId: string;
-            session?: SessionContainerInterface;
+            session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -321,7 +321,7 @@ export declare type APIInterface = {
             preAuthSessionId: string;
         } & {
             tenantId: string;
-            session?: SessionContainerInterface;
+            session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -344,7 +344,7 @@ export declare type APIInterface = {
               }
         ) & {
             tenantId: string;
-            session?: SessionContainerInterface;
+            session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
         }

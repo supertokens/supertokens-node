@@ -28,6 +28,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {

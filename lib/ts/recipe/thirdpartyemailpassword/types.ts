@@ -89,6 +89,7 @@ export type RecipeInterface = {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
         };
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -210,6 +211,7 @@ export type RecipeInterface = {
 
     consumePasswordResetToken(input: {
         token: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -329,6 +331,7 @@ export type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: ThirdPartyAPIOptions;
                   userContext: UserContext;
               } & (
@@ -371,7 +374,7 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface | undefined;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;
           }) => Promise<
@@ -398,7 +401,7 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface | undefined;
               options: EmailPasswordAPIOptions;
               userContext: UserContext;
           }) => Promise<

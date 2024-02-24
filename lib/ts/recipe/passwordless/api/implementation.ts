@@ -157,7 +157,7 @@ export default function getAPIImplementation(): APIInterface {
             // - We first want to check if the credentials are correct first or not
             // - The above recipe function marks the email as verified
             // - Even though the above call to signInUp is state changing (it changes the email
-            // of the user), it's OK to do this check here cause the isSignInAllowed checks
+            // of the user), it's OK to do this check here cause the preAuthChecks already checks
             // conditions related to account linking
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId,
@@ -182,9 +182,7 @@ export default function getAPIImplementation(): APIInterface {
 
             return {
                 status: "OK",
-                // this is only undefined if we signed in by associating an existing recipe user with the current tenant
-                // so we can default to false
-                createdNewRecipeUser: response.createdNewRecipeUser ?? false,
+                createdNewRecipeUser: response.createdNewRecipeUser,
                 user: postAuthChecks.user,
                 session: postAuthChecks.session,
             };
@@ -206,11 +204,10 @@ export default function getAPIImplementation(): APIInterface {
                 accountInfo.phoneNumber = input.phoneNumber;
             }
 
-            // Here we use the listUsersByAccountInfo method to check if this is going to be a sign in or up instead of the
-            // function in AuthUtils because:
+            // Here we use do not use the helper from AuthUtil to check if this is going to be a sign in or up, because:
             // 1. At this point we have no way to check credentials
-            // 2. We do not want to share the relevant recipe user (yet)
-            const userWithMatchingLoginMethod = await getUserByAccountInfo({ ...input, accountInfo });
+            // 2. We do not want to associate the relevant recipe user with the current tenant (yet)
+            const userWithMatchingLoginMethod = await getPasswordlessUserByAccountInfo({ ...input, accountInfo });
 
             let factorIds;
             if (input.session !== undefined) {
@@ -409,7 +406,10 @@ export default function getAPIImplementation(): APIInterface {
                     status: "RESTART_FLOW_ERROR",
                 };
             }
-            const userWithMatchingLoginMethod = await getUserByAccountInfo({ ...input, accountInfo: deviceInfo });
+            const userWithMatchingLoginMethod = await getPasswordlessUserByAccountInfo({
+                ...input,
+                accountInfo: deviceInfo,
+            });
             const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
                 input.session,
                 {
@@ -527,7 +527,7 @@ export default function getAPIImplementation(): APIInterface {
     };
 }
 
-async function getUserByAccountInfo(input: {
+async function getPasswordlessUserByAccountInfo(input: {
     tenantId: string;
     session?: SessionContainerInterface;
     userContext: UserContext;
@@ -540,7 +540,9 @@ async function getUserByAccountInfo(input: {
         userContext: input.userContext,
     });
     logDebugMessage(
-        `getUserByAccountInfo got ${existingUsers.length} from core resp ${JSON.stringify(input.accountInfo)}`
+        `getPasswordlessUserByAccountInfo got ${existingUsers.length} from core resp ${JSON.stringify(
+            input.accountInfo
+        )}`
     );
     const usersWithMatchingLoginMethods = existingUsers
         .map((user) => ({
@@ -554,7 +556,9 @@ async function getUserByAccountInfo(input: {
         }))
         .filter(({ loginMethod }) => loginMethod !== undefined);
 
-    logDebugMessage(`getUserByAccountInfo ${usersWithMatchingLoginMethods.length} has matching login methods`);
+    logDebugMessage(
+        `getPasswordlessUserByAccountInfo ${usersWithMatchingLoginMethods.length} has matching login methods`
+    );
     if (usersWithMatchingLoginMethods.length > 1) {
         throw new Error(
             "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"

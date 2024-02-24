@@ -135,6 +135,7 @@ export type RecipeInterface = {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
         };
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -169,6 +170,7 @@ export type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
+        session: SessionContainerInterface | undefined;
         shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
@@ -419,6 +421,7 @@ export type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: ThirdPartyAPIOptions;
                   userContext: UserContext;
               } & (
@@ -466,7 +469,7 @@ export type APIInterface = {
         | ((
               input: ({ email: string } | { phoneNumber: string }) & {
                   tenantId: string;
-                  session?: SessionContainerInterface;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }
@@ -489,7 +492,7 @@ export type APIInterface = {
         | ((
               input: { deviceId: string; preAuthSessionId: string } & {
                   tenantId: string;
-                  session?: SessionContainerInterface;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }
@@ -510,6 +513,7 @@ export type APIInterface = {
                     }
               ) & {
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }

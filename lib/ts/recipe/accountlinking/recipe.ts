@@ -670,6 +670,7 @@ export default class Recipe extends RecipeModule {
                                 // See comment about tenantId in the createEmailVerificationToken params
                                 tenantId: input.user.tenantIds[0],
                                 token: resp.token,
+                                session: undefined, // We can pass undefined because it'd not be used because attemptAccountLinking is false
                                 attemptAccountLinking: false,
                                 userContext: input.userContext,
                             }

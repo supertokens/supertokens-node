@@ -327,7 +327,7 @@ export type APIInterface = {
     createCodePOST?: (
         input: ({ email: string } | { phoneNumber: string }) & {
             tenantId: string;
-            session?: SessionContainerInterface;
+            session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -348,7 +348,7 @@ export type APIInterface = {
     resendCodePOST?: (
         input: { deviceId: string; preAuthSessionId: string } & {
             tenantId: string;
-            session?: SessionContainerInterface;
+            session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -367,7 +367,7 @@ export type APIInterface = {
               }
         ) & {
             tenantId: string;
-            session?: SessionContainerInterface;
+            session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
         }

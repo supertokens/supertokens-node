@@ -5,7 +5,7 @@ import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
 import { getUser } from "../..";
 import { UserContext } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+import type AccountLinkingRecipe from "../accountlinking/recipe";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -55,12 +55,6 @@ export default function getRecipeInterface(
             session,
             tenantId,
             userContext,
-        }: {
-            token: string;
-            attemptAccountLinking: boolean;
-            tenantId: string;
-            session: SessionContainerInterface;
-            userContext: UserContext;
         }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
@@ -85,11 +79,10 @@ export default function getRecipeInterface(
                         if (emailInfo.status === "OK" && emailInfo.email === response.email) {
                             // we do this here to prevent cyclic dependencies.
                             // TODO: Fix this.
-                            let AuthUtils = require("../../authUtils").AuthUtils;
-                            await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                            let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
+                            await AccountLinking.tryLinkingByAccountInfoOrCreatePrimaryUser({
                                 tenantId,
                                 inputUser: updatedUser,
-                                recipeUserId,
                                 session,
                                 userContext,
                             });

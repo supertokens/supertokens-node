@@ -118,6 +118,7 @@ export declare type RecipeInterface = {
                 [key: string]: any;
             };
         };
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -157,6 +158,7 @@ export declare type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
+        session: SessionContainerInterface | undefined;
         shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
@@ -398,6 +400,7 @@ export declare type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: ThirdPartyAPIOptions;
                   userContext: UserContext;
               } & (
@@ -460,7 +463,7 @@ export declare type APIInterface = {
                     }
               ) & {
                   tenantId: string;
-                  session?: SessionContainerInterface;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }
@@ -485,7 +488,7 @@ export declare type APIInterface = {
                   preAuthSessionId: string;
               } & {
                   tenantId: string;
-                  session?: SessionContainerInterface;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }
@@ -510,6 +513,7 @@ export declare type APIInterface = {
                     }
               ) & {
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
                   userContext: UserContext;
               }

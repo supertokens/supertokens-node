@@ -104,6 +104,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
+        session?: SessionContainerInterface | undefined,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -117,6 +118,7 @@ export default class Wrapper {
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {

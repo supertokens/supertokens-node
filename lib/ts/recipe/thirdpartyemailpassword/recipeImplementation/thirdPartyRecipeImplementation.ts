@@ -16,6 +16,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
             };
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }): Promise<

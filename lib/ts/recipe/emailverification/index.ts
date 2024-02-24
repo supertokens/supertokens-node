@@ -27,6 +27,7 @@ import RecipeUserId from "../../recipeUserId";
 import { getEmailVerifyLink } from "./utils";
 import { getRequestFromUserContext } from "../..";
 import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -164,11 +165,13 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         attemptAccountLinking: boolean = true,
+        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
             token,
             tenantId,
+            session,
             attemptAccountLinking,
             userContext: getUserContext(userContext),
         });

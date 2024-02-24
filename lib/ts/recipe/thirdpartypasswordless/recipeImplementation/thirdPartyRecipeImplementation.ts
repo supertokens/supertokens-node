@@ -2,6 +2,7 @@ import { RecipeInterface, TypeProvider } from "../../thirdparty/types";
 import { RecipeInterface as ThirdPartyPasswordlessRecipeInterface } from "../types";
 import { User, UserContext } from "../../../types";
 import RecipeUserId from "../../../recipeUserId";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordlessRecipeInterface): RecipeInterface {
     return {
@@ -15,6 +16,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
             };
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }): Promise<
@@ -50,6 +52,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
             shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;

@@ -235,7 +235,7 @@ export default function getAPIInterface(): APIInterface {
             // - We first want to check if the credentials are correct first or not
             // - The above recipe function marks the email as verified
             // - Even though the above call to signInUp is state changing (it changes the email
-            // of the user), it's OK to do this check here cause the isSignInAllowed checks
+            // of the user), it's OK to do this check here cause the preAuthChecks checks
             // conditions related to account linking
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId: "thirdparty",

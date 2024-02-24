@@ -260,7 +260,7 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<
@@ -287,7 +287,7 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

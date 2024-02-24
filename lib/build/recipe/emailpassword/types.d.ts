@@ -253,7 +253,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<
@@ -279,7 +279,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

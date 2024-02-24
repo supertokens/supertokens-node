@@ -271,7 +271,7 @@ export type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
-                  session?: SessionContainerInterface;
+                  session: SessionContainerInterface | undefined;
                   options: APIOptions;
                   userContext: UserContext;
               } & (

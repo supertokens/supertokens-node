@@ -20,6 +20,7 @@ export default function getAPIInterface(): APIInterface {
             const verifyTokenResponse = await options.recipeImplementation.verifyEmailUsingToken({
                 token,
                 tenantId,
+                session,
                 attemptAccountLinking: true,
                 userContext,
             });

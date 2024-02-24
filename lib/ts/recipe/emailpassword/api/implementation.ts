@@ -374,6 +374,7 @@ export default function getAPIImplementation(): APIInterface {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             tenantId,
                             token: tokenResponse.token,
+                            session,
                             attemptAccountLinking: false, // we pass false here cause
                             // we anyway do account linking in this API after this function is
                             // called.
@@ -531,7 +532,8 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        // We do not take session into account here, since this is supposed to be called without a session
+                        // We do not take try linking by session here, since this is supposed to be called without a session
+                        // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
                         const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
                             tenantId,
                             inputUser: createUserResponse.user,
