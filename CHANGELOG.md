@@ -10,6 +10,152 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changes
 
 -   Enable smooth switching between `useDynamicAccessTokenSigningKey` settings by allowing refresh calls to change the signing key type of a session
+-   Added a core call cache that should reduce traffic to your SuperTokens core instances
+-   Refactored sign in/up API codes to reduce code duplication
+-   Added MFA related information to dashboard APIs
+
+### Breaking changes
+
+-   Now only supporting CDI 5.0. Compatible with core version >= 8.0
+-   Fixed the typing of the `userContext`:
+    -   All functions now take `Record<string, any>` instead of `any` as `userContext`. This means that primitives (strings, numbers) are no longer allowed as `userContext`.
+    -   All functions overrides that take a `userContext` parameter now get a well typed `userContext` parameter ensuring that the right object is passed to the original implementation calls
+-   `AccountLinking` recipe:
+    -   Changed the signature of the following functions, each taking a new (optional) `session` parameter:
+        -   `createPrimaryUserIdOrLinkAccounts`
+        -   `isSignUpAllowed`
+        -   `isSignInAllowed`
+        -   `isEmailChangeAllowed`
+    -   Changed the signature of the `shouldDoAutomaticAccountLinking` callback: it now takes a new (optional) parameter.
+-   `EmailPassword`:
+    -   Changed the signature of the following overrideable functions:
+        -   `signUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `consumePasswordResetToken`
+            -   Takes a new (optional) `session` parameter
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `generatePasswordResetTokenPOST`
+        -   `passwordResetPOST`
+        -   `signInPOST`
+        -   `signUpPOST`
+    -   Changed the signature of functions:
+        -   `signUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `resetPasswordUsingToken`, `consumePasswordResetToken`: Takes a new (optional) `session` parameter
+-   `EmailVerification`:
+    -   Changed the signature of the following overrideable functions:
+        -   `verifyEmailUsingToken`: Takes a new (optional) `session` parameter
+    -   Changed the signature of functions:
+        -   `verifyEmailUsingToken`: Takes a new (optional) `session` parameter
+-   `Multitenancy`:
+    -   Changed the signature of the following functions:
+        -   `createOrUpdateTenant`: Added optional `firstFactors` and `requiredSecondaryFactors` parameters.
+        -   `getTenant`: Added `firstFactors` and `requiredSecondaryFactors` to the return type
+        -   `listAllTenants`: Added `firstFactors` and `requiredSecondaryFactors` to the returned tenants
+    -   Changed the signature of the following overrideable functions:
+        -   `createOrUpdateTenant`: Now gets optional `firstFactors` and `requiredSecondaryFactors` in the input.
+        -   `getTenant`: Added `firstFactors` and `requiredSecondaryFactors` to the return type
+        -   `listAllTenants`: Added `firstFactors` and `requiredSecondaryFactors` to the returned tenants
+    -   Changed the signature of the overrideable apis:
+        -   `loginMethodsGET`: Now returns `firstFactors`
+-   `Passwordless`:
+    -   Added new function: `verifyCode`
+    -   Added new email and sms type for MFA
+    -   Changed the signature of the following functions:
+        -   `signInUp`, `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of the following overrideable functions:
+        -   `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `createCodePOST`
+        -   `resendCodePOST`
+        -   `consumeCodePOST`
+-   `Session`:
+    -   Added new `overwriteSessionDuringSignInUp` configuration option
+-   Custom claims:
+    -   `fetchValue` now also gets the `currentPayload` as a parameter
+-   `ThirdParty`:
+    -   Changed the signature of the following functions:
+        -   `manuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of the following overrideable functions:
+        -   `signInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `manuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Takes a new `shouldAttemptAccountLinkingIfAllowed` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `signInUpPOST`
+-   `ThirdPartyEmailPassword`:
+    -   Changed the signature of the following functions:
+        -   `thirdPartyManuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `emailPasswordSignUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `consumePasswordResetToken`
+            -   Takes a new (optional) `session` parameter
+    -   Changed the signature of the following overrideable functions:
+        -   `thirdPartySignInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `thirdPartyManuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Takes a new `shouldAttemptAccountLinkingIfAllowed` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `emailPasswordSignUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `consumePasswordResetToken`
+            -   Takes a new (optional) `session` parameter
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `generatePasswordResetTokenPOST`
+        -   `passwordResetPOST`
+        -   `emailPasswordSignInPOST`
+        -   `emailPasswordSignUpPOST`
+        -   `thirdPartySignInUpPOST`
+-   `ThirdPartyPasswordless`:
+    -   Added new function: `verifyCode`
+    -   Changed the signature of the following functions:
+        -   `thirdPartyManuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `passwordlessSignInUp`, `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of the following overrideable functions:
+        -   `thirdPartySignInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `thirdPartyManuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Takes a new `shouldAttemptAccountLinkingIfAllowed` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `thirdPartySignInUpPOST`
+        -   `createCodePOST`
+        -   `resendCodePOST`
+        -   `consumeCodePOST`
 
 ## [16.7.1] - 2024-01-09
 
