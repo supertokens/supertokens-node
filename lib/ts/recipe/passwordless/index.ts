@@ -73,6 +73,88 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  session?: undefined;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  session?: undefined;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+    >;
+    static consumeCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  session: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  session: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static consumeCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
                   session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;

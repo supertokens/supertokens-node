@@ -323,7 +323,8 @@ export default function getAPIImplementation(): APIInterface {
             ) {
                 logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                 await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
-                    smsType: preAuthChecks.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
+                    type: "PASSWORDLESS_LOGIN",
+                    isFirstFactor: preAuthChecks.isFirstFactor,
                     codeLifetime: response.codeLifetime,
                     phoneNumber: (input as any).phoneNumber!,
                     preAuthSessionId: response.preAuthSessionId,
@@ -335,7 +336,8 @@ export default function getAPIImplementation(): APIInterface {
             } else {
                 logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                 await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                    emailType: preAuthChecks.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
+                    type: "PASSWORDLESS_LOGIN",
+                    isFirstFactor: preAuthChecks.isFirstFactor,
                     email: (input as any).email!,
                     codeLifetime: response.codeLifetime,
                     preAuthSessionId: response.preAuthSessionId,
@@ -495,7 +497,8 @@ export default function getAPIImplementation(): APIInterface {
                     ) {
                         logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                         await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
-                            smsType: authTypeInfo.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
+                            type: "PASSWORDLESS_LOGIN",
+                            isFirstFactor: authTypeInfo.isFirstFactor,
                             codeLifetime: response.codeLifetime,
                             phoneNumber: deviceInfo.phoneNumber!,
                             preAuthSessionId: response.preAuthSessionId,
@@ -507,7 +510,8 @@ export default function getAPIImplementation(): APIInterface {
                     } else {
                         logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                         await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                            emailType: authTypeInfo.isFirstFactor ? "FOR_FIRST_FACTOR" : "FOR_SECONDARY_FACTOR",
+                            type: "PASSWORDLESS_LOGIN",
+                            isFirstFactor: authTypeInfo.isFirstFactor,
                             email: deviceInfo.email!,
                             codeLifetime: response.codeLifetime,
                             preAuthSessionId: response.preAuthSessionId,

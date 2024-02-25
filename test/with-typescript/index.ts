@@ -354,8 +354,12 @@ ThirdPartyPasswordless.init({
                         await oI.sendRawSms(input);
                     },
                     getContent: async (input) => {
-                        if (input.smsType === "FOR_FIRST_FACTOR") {
-                        } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -366,8 +370,8 @@ ThirdPartyPasswordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.smsType === "FOR_FIRST_FACTOR") {
-                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     return await oI.sendSms(input);
                 },
@@ -414,8 +418,8 @@ ThirdPartyPasswordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.smsType === "FOR_FIRST_FACTOR") {
-                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     return await oI.sendSms(input);
                 },
@@ -468,8 +472,12 @@ ThirdPartyPasswordless.init({
                         await oI.sendRawEmail(input);
                     },
                     getContent: async (input) => {
-                        if (input.emailType === "FOR_FIRST_FACTOR") {
-                        } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -480,8 +488,8 @@ ThirdPartyPasswordless.init({
             return {
                 ...oI,
                 sendEmail: async (input) => {
-                    if (input.emailType === "FOR_FIRST_FACTOR") {
-                    } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -576,8 +584,12 @@ Passwordless.init({
                         await oI.sendRawSms(input);
                     },
                     getContent: async (input) => {
-                        if (input.smsType === "FOR_FIRST_FACTOR") {
-                        } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -588,8 +600,8 @@ Passwordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.smsType === "FOR_FIRST_FACTOR") {
-                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendSms(input);
                 },
@@ -628,8 +640,8 @@ Passwordless.init({
             return {
                 ...oI,
                 sendSms: async (input) => {
-                    if (input.smsType === "FOR_FIRST_FACTOR") {
-                    } else if (input.smsType === "FOR_SECONDARY_FACTOR") {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendSms(input);
                 },
@@ -680,8 +692,12 @@ Passwordless.init({
                         await oI.sendRawEmail(input);
                     },
                     getContent: async (input) => {
-                        if (input.emailType === "FOR_FIRST_FACTOR") {
-                        } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -692,8 +708,8 @@ Passwordless.init({
             return {
                 ...oI,
                 sendEmail: async (input) => {
-                    if (input.emailType === "FOR_FIRST_FACTOR") {
-                    } else if (input.emailType === "FOR_SECONDARY_FACTOR") {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -1462,7 +1478,8 @@ ThirdPartyPasswordless.sendEmail({
     tenantId: "public",
     codeLifetime: 234,
     email: "",
-    emailType: "FOR_FIRST_FACTOR",
+    type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
     userInputCode: "",
     urlWithLinkCode: "",
@@ -1471,7 +1488,8 @@ ThirdPartyPasswordless.sendEmail({
     tenantId: "public",
     codeLifetime: 234,
     email: "",
-    emailType: "FOR_FIRST_FACTOR",
+    type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
     userContext: {} as UserContext,
 });
@@ -1480,7 +1498,8 @@ ThirdPartyPasswordless.sendSms({
     tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
-    smsType: "FOR_FIRST_FACTOR",
+    type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
     userInputCode: "",
     urlWithLinkCode: "",
@@ -1489,7 +1508,8 @@ ThirdPartyPasswordless.sendSms({
     tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
-    smsType: "FOR_FIRST_FACTOR",
+    type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
     userContext: {} as UserContext,
 });
@@ -1849,7 +1869,29 @@ Session.init({
 });
 
 async function accountLinkingFuncsTest() {
+    const session = await Session.createNewSessionWithoutRequestResponse(
+        "public",
+        Supertokens.convertToRecipeUserId("asdf")
+    );
     const signUpResp = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (signUpResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignUpResp = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (tpepSignUpResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const signUpRespWithSession = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw", session);
+    if (signUpRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignUpRespWithSession = await ThirdPartyEmailPassword.emailPasswordSignUp(
+        "public",
+        "asdf@asdf.asfd",
+        "testpw",
+        session
+    );
+    if (tpepSignUpRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
     if (signUpResp.status !== "OK") {
         return signUpResp;
     }
@@ -1897,8 +1939,94 @@ async function accountLinkingFuncsTest() {
     }
 
     const tpSignUp = await ThirdParty.manuallyCreateOrUpdateUser("public", "mytp", "tpuser", "asfd@asfd.asdf", false);
+    // @ts-expect-error
+    if (tpSignUp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpSignUpWithSession = await ThirdParty.manuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false,
+        session
+    );
+    if (tpSignUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
     if (tpSignUp.status !== "OK") {
         return tpSignUp;
+    }
+
+    const tpEpSignInUp = await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false
+    );
+    // @ts-expect-error
+    if (tpEpSignInUp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpEpSignInUpWithSession = await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false,
+        session
+    );
+    if (tpEpSignInUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessSignInUp = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false
+    );
+    // @ts-expect-error
+    if (tpPwlessSignInUp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessSignInUpWithSession = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false,
+        session
+    );
+    if (tpPwlessSignInUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const consumeCode = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+    });
+    // @ts-expect-error
+    if (consumeCode.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const consumeCodeWithSession = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+        session,
+    });
+    if (consumeCodeWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessConsumeCode = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+    });
+    // @ts-expect-error
+    if (tpPwlessConsumeCode.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessConsumeCodeWithSession = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+        session,
+    });
+    if (tpPwlessConsumeCodeWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
     // This should be true
     const canLink = await AccountLinking.canLinkAccounts(tpSignUp.recipeUserId, user.id);
@@ -1909,10 +2037,6 @@ async function accountLinkingFuncsTest() {
     // This should be the same primary user as toLink updated with the new link
     const linkResult = await AccountLinking.createPrimaryUserIdOrLinkAccounts("public", tpSignUp.recipeUserId);
 
-    const session = await Session.createNewSessionWithoutRequestResponse(
-        "public",
-        Supertokens.convertToRecipeUserId("asdf")
-    );
     return {
         canChangeEmail: await AccountLinking.isEmailChangeAllowed(
             tpSignUp.recipeUserId,

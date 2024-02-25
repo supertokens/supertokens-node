@@ -177,6 +177,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         let urlWithLinkCode = undefined;
         let userInputCode = undefined;
         let type = undefined;
+        let isFirstFactor = undefined;
         let appName = undefined;
         STExpress.init({
             supertokens: {
@@ -199,7 +200,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                     urlWithLinkCode = input.urlWithLinkCode;
                                     userInputCode = input.userInputCode;
                                     codeLifetime = input.codeLifetime;
-                                    type = input.smsType;
+                                    type = input.type;
+                                    isFirstFactor = input.isFirstFactor;
                                     await oI.sendSms(input);
                                 },
                             };
@@ -243,7 +245,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         await delay(2);
         assert.strictEqual(phoneNumber, "+919909909998");
         assert.strictEqual(appName, "SuperTokens");
-        assert.strictEqual(type, "FOR_FIRST_FACTOR");
+        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -290,7 +293,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                     },
                                     getContent: async (input) => {
                                         getContentCalled = true;
-                                        assert.strictEqual(input.smsType, "FOR_FIRST_FACTOR");
+                                        assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert(input.isFirstFactor);
                                         userInputCode = input.userInputCode;
                                         codeLifetime = input.codeLifetime;
                                         return {
@@ -435,6 +439,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         let supertokensAPICalled = false;
         let apiKey = undefined;
         let type = undefined;
+        let isFirstFactor = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -454,6 +459,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                             return {
                                 sendSms: async (input) => {
                                     outerOverrideCalled = true;
+                                    isFirstFactor = input.isFirstFactor;
                                     await oI.sendSms(input);
                                 },
                             };
@@ -484,6 +490,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                 phoneNumber = body.smsInput.phoneNumber;
                 codeLifetime = body.smsInput.codeLifetime;
                 type = body.smsInput.type;
+                isFirstFactor = body.smsInput.isFirstFactor;
                 return {};
             });
 
@@ -497,7 +504,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
 
         await delay(2);
         assert.strictEqual(phoneNumber, "+919909909998");
-        assert.strictEqual(type, "FOR_FIRST_FACTOR");
+        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert(outerOverrideCalled);
         assert(supertokensAPICalled);
         assert.notStrictEqual(userInputCode, undefined);
@@ -750,6 +758,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         let urlWithLinkCode = undefined;
         let userInputCode = undefined;
         let type = undefined;
+        let isFirstFactor = undefined;
         let appName = undefined;
         let overrideCalled = false;
         let loginCalled = false;
@@ -779,7 +788,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                         urlWithLinkCode = input.urlWithLinkCode;
                                         userInputCode = input.userInputCode;
                                         codeLifetime = input.codeLifetime;
-                                        type = input.smsType;
+                                        type = input.type;
+                                        isFirstFactor = input.isFirstFactor;
                                     }
                                     overrideCalled = true;
                                     await oI.sendSms(input);
@@ -843,7 +853,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         await delay(2);
         assert.strictEqual(phoneNumber, "+919909909998");
         assert.strictEqual(appName, "SuperTokens");
-        assert.strictEqual(type, "FOR_FIRST_FACTOR");
+        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -906,7 +917,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                                             urlWithLinkCode = input.urlWithLinkCode;
                                             codeLifetime = input.codeLifetime;
                                         }
-                                        assert.strictEqual(input.smsType, "FOR_FIRST_FACTOR");
+                                        assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert(input.isFirstFactor);
                                         getContentCalled = true;
                                         return {
                                             body: input.userInputCode,
@@ -1099,6 +1111,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         let supertokensAPICalled = false;
         let apiKey = undefined;
         let type = undefined;
+        let isFirstFactor = undefined;
         let loginCalled = false;
         STExpress.init({
             supertokens: {
@@ -1167,6 +1180,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
                 phoneNumber = body.smsInput.phoneNumber;
                 codeLifetime = body.smsInput.codeLifetime;
                 type = body.smsInput.type;
+                isFirstFactor = body.smsInput.isFirstFactor;
+
                 return {};
             });
 
@@ -1182,7 +1197,8 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
         await delay(2);
 
         assert.strictEqual(phoneNumber, "+919909909998");
-        assert.strictEqual(type, "FOR_FIRST_FACTOR");
+        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert(outerOverrideCalled);
         assert(supertokensAPICalled);
         assert.notStrictEqual(userInputCode, undefined);

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking changes
 
 -   Now only supporting CDI 5.0. Compatible with core version >= 8.0
+-   Account linking now takes active session into account. For more information please check our updated account linking [guide](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview)
 -   Fixed the typing of the `userContext`:
     -   All functions now take `Record<string, any>` instead of `any` as `userContext`. This means that primitives (strings, numbers) are no longer allowed as `userContext`.
     -   All functions overrides that take a `userContext` parameter now get a well typed `userContext` parameter ensuring that the right object is passed to the original implementation calls

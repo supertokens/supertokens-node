@@ -395,7 +395,8 @@ export declare type APIInterface = {
     >;
 };
 export declare type TypePasswordlessEmailDeliveryInput = {
-    emailType: "FOR_FIRST_FACTOR" | "FOR_SECONDARY_FACTOR";
+    type: "PASSWORDLESS_LOGIN";
+    isFirstFactor: boolean;
     email: string;
     userInputCode?: string;
     urlWithLinkCode?: string;
@@ -404,7 +405,8 @@ export declare type TypePasswordlessEmailDeliveryInput = {
     tenantId: string;
 };
 export declare type TypePasswordlessSmsDeliveryInput = {
-    smsType: "FOR_FIRST_FACTOR" | "FOR_SECONDARY_FACTOR";
+    type: "PASSWORDLESS_LOGIN";
+    isFirstFactor: boolean;
     phoneNumber: string;
     userInputCode?: string;
     urlWithLinkCode?: string;

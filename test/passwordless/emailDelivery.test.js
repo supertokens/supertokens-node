@@ -175,6 +175,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let userInputCode = undefined;
         let type = undefined;
         let appName = undefined;
+        let isFirstFactor = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -196,7 +197,8 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                                     urlWithLinkCode = input.urlWithLinkCode;
                                     userInputCode = input.userInputCode;
                                     codeLifetime = input.codeLifetime;
-                                    type = input.emailType;
+                                    type = input.type;
+                                    isFirstFactor = input.isFirstFactor;
                                     await oI.sendEmail(input);
                                 },
                             };
@@ -240,7 +242,8 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.strictEqual(appName, "SuperTokens");
-        assert.strictEqual(type, "FOR_FIRST_FACTOR");
+        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -292,7 +295,8 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                                     },
                                     getContent: async (input) => {
                                         getContentCalled = true;
-                                        assert.strictEqual(input.emailType, "FOR_FIRST_FACTOR");
+                                        assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert(input.isFirstFactor);
                                         userInputCode = input.userInputCode;
                                         urlWithLinkCode = input.urlWithLinkCode;
                                         codeLifetime = input.codeLifetime;
@@ -594,6 +598,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         let urlWithLinkCode = undefined;
         let userInputCode = undefined;
         let type = undefined;
+        let isFirstFactor = undefined;
         let appName = undefined;
         let overrideCalled = false;
         let loginCalled = false;
@@ -623,7 +628,8 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                                         urlWithLinkCode = input.urlWithLinkCode;
                                         userInputCode = input.userInputCode;
                                         codeLifetime = input.codeLifetime;
-                                        type = input.emailType;
+                                        type = input.type;
+                                        isFirstFactor = input.isFirstFactor;
                                     }
                                     overrideCalled = true;
                                     await oI.sendEmail(input);
@@ -687,7 +693,8 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.strictEqual(appName, "SuperTokens");
-        assert.strictEqual(type, "FOR_FIRST_FACTOR");
+        assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -754,7 +761,8 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                                             codeLifetime = input.codeLifetime;
                                         }
                                         getContentCalled = true;
-                                        assert.strictEqual(input.emailType, "FOR_FIRST_FACTOR");
+                                        assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert(input.isFirstFactor);
                                         return {
                                             body: input.userInputCode,
                                             toEmail: input.email,

@@ -26,6 +26,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
     // Full url that the end-user can click to finish sign in/up
     urlWithLinkCode?: string;
     codeLifetime: number;
+    isFirstFactor: boolean;
 }): Promise<void> {
     if (process.env.TEST_MODE === "testing") {
         return;
@@ -42,6 +43,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
             codeLifetime: input.codeLifetime,
             urlWithLinkCode: input.urlWithLinkCode,
             userInputCode: input.userInputCode,
+            isFirstFactor: input.isFirstFactor,
         },
         {
             successLog: `Email sent to ${input.email}`,
@@ -79,6 +81,7 @@ export default class BackwardCompatibilityService
             userInputCode: input.userInputCode,
             urlWithLinkCode: input.urlWithLinkCode,
             codeLifetime: input.codeLifetime,
+            isFirstFactor: input.isFirstFactor,
         });
     };
 }

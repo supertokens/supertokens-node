@@ -5,6 +5,7 @@ import { RecipeInterface, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOp
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 import RecipeUserId from "../../recipeUserId";
+import { User } from "../..";
 import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
@@ -21,13 +22,37 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        session?: SessionContainerInterface,
+        session?: undefined,
         userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
-              user: import("../../types").User;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
+    static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        isVerified: boolean,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
               recipeUserId: RecipeUserId;
           }
         | {
@@ -41,9 +66,9 @@ export default class Wrapper {
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
@@ -51,12 +76,28 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        session?: SessionContainerInterface,
+        session?: undefined,
         userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
-              user: import("../../types").User;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    static emailPasswordSignUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
               recipeUserId: RecipeUserId;
           }
         | {
@@ -65,9 +106,9 @@ export default class Wrapper {
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;

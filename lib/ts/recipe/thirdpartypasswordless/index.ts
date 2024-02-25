@@ -55,9 +55,88 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        session?: undefined,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
+    static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        isVerified: boolean,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        isVerified: boolean,
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
-    ) {
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
             thirdPartyId,
             thirdPartyUserId,
@@ -104,6 +183,88 @@ export default class Wrapper {
         });
     }
 
+    static consumeCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  session?: undefined;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  session?: undefined;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+    >;
+    static consumeCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  session: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  session: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
     static consumeCode(
         input:
             | {

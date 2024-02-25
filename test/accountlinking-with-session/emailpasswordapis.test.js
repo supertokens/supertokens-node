@@ -82,7 +82,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
 
                 const session = await getSessionForUser(sessionUser);
                 const resp = await signUpPOST(app, email2, session);
-                console.log(resp.body);
+
                 assert.strictEqual(resp.status, 200);
                 assert.ok(resp.body);
 

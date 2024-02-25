@@ -27,6 +27,7 @@ async function createAndSendSmsUsingSupertokensService(input: {
     // Full url that the end-user can click to finish sign in/up
     urlWithLinkCode?: string;
     codeLifetime: number;
+    isFirstFactor: boolean;
 }): Promise<void> {
     let supertokens = Supertokens.getInstanceOrThrowError();
     let appName = supertokens.appInfo.appName;
@@ -44,6 +45,7 @@ async function createAndSendSmsUsingSupertokensService(input: {
                 userInputCode: input.userInputCode,
                 urlWithLinkCode: input.urlWithLinkCode,
                 codeLifetime: input.codeLifetime,
+                isFirstFactor: input.isFirstFactor,
             },
         },
         {
@@ -109,6 +111,7 @@ export default class BackwardCompatibilityService implements SmsDeliveryInterfac
             userInputCode: input.userInputCode,
             urlWithLinkCode: input.urlWithLinkCode,
             codeLifetime: input.codeLifetime,
+            isFirstFactor: input.isFirstFactor,
         });
     };
 }

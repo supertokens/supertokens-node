@@ -64,14 +64,53 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
-                  session?: SessionContainerInterface;
+                  session?: undefined;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
-                  session?: SessionContainerInterface;
+                  session?: undefined;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
+          }
+    >;
+    static consumeCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  session: SessionContainerInterface;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  session: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }

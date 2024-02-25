@@ -419,7 +419,8 @@ export type APIInterface = {
 };
 
 export type TypePasswordlessEmailDeliveryInput = {
-    emailType: "FOR_FIRST_FACTOR" | "FOR_SECONDARY_FACTOR";
+    type: "PASSWORDLESS_LOGIN";
+    isFirstFactor: boolean;
     email: string;
     userInputCode?: string;
     urlWithLinkCode?: string;
@@ -429,7 +430,8 @@ export type TypePasswordlessEmailDeliveryInput = {
 };
 
 export type TypePasswordlessSmsDeliveryInput = {
-    smsType: "FOR_FIRST_FACTOR" | "FOR_SECONDARY_FACTOR";
+    type: "PASSWORDLESS_LOGIN";
+    isFirstFactor: boolean;
     phoneNumber: string;
     userInputCode?: string;
     urlWithLinkCode?: string;

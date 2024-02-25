@@ -26,6 +26,10 @@ async function defaultShouldDoAutomaticAccountLinking(): Promise<{
     };
 }
 
+export function recipeInitDefinedShouldDoAutomaticAccountLinking(config: TypeNormalisedInput) {
+    return config.shouldDoAutomaticAccountLinking !== defaultShouldDoAutomaticAccountLinking;
+}
+
 export function validateAndNormaliseUserInput(_: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
     let onAccountLinked = config?.onAccountLinked || defaultOnAccountLinked;
     let shouldDoAutomaticAccountLinking =

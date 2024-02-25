@@ -17,6 +17,7 @@ import SessionRecipe from "./recipe/session/recipe";
 import { logDebugMessage } from "./logger";
 import { EmailVerificationClaim } from "./recipe/emailverification";
 import SuperTokensError from "./error";
+import { recipeInitDefinedShouldDoAutomaticAccountLinking } from "./recipe/accountlinking/utils";
 
 export const AuthUtils = {
     /**
@@ -551,6 +552,15 @@ export const AuthUtils = {
             // If there is no active session we have nothing to link to - so this has to be a first factor sign in
             return { status: "OK", isFirstFactor: true };
         } else {
+            if (
+                !recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config) &&
+                MultiFactorAuthRecipe.getInstance() !== undefined
+            ) {
+                throw new Error(
+                    "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
+                );
+            }
+
             // If the input and the session user are the same
             if (inputUser !== undefined && inputUser.id === session.getUserId()) {
                 logDebugMessage(
