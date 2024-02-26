@@ -25,7 +25,6 @@ import {
     getHeaderValueFromIncomingMessage,
     assertThatBodyParserHasBeenUsedForExpressLikeRequest,
     assertFormDataBodyParserHasBeenUsedForExpressLikeRequest,
-    getHeaderForExpressLikeResponse,
 } from "../utils";
 import type { Framework } from "../types";
 import SuperTokens from "../../supertokens";
@@ -105,10 +104,6 @@ export class ExpressResponse extends BaseResponse {
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         setHeaderForExpressLikeResponse(this.response, key, value, allowDuplicateKey);
-    };
-
-    getHeader = (key: string) => {
-        return getHeaderForExpressLikeResponse(this.response, key);
     };
 
     removeHeader = (key: string) => {

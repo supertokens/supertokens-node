@@ -20,7 +20,6 @@ export abstract class BaseResponse {
         this.wrapperUsed = true;
     }
     abstract setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    abstract getHeader: (key: string) => string | null | undefined;
     abstract removeHeader: (key: string) => void;
     abstract setCookie: (
         key: string,

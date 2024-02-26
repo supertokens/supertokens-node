@@ -137,10 +137,6 @@ export class CollectingResponse extends BaseResponse {
         }
     };
 
-    getHeader = (key: string) => {
-        return this.headers.get(key);
-    };
-
     removeHeader = (key: string) => {
         this.headers.delete(key);
     };

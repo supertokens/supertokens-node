@@ -49,23 +49,21 @@ export default function getAPIImplementation(): APIInterface {
                 isSearchEnabled = true;
             }
 
-            let cspHeaderValue = input.options.res.getHeader("Content-Security-Policy");
+            // if (cspHeaderValue && cspHeaderValue.includes(bundleDomain) === false) {
+            //     if (cspHeaderValue.includes("script-src")) {
+            //         cspHeaderValue = cspHeaderValue.replace("script-src", `script-src ${bundleDomain}`);
+            //     } else {
+            //         cspHeaderValue += `script-src ${bundleDomain}`;
+            //     }
 
-            if (cspHeaderValue && cspHeaderValue.includes(bundleDomain) === false) {
-                if (cspHeaderValue.includes("script-src")) {
-                    cspHeaderValue = cspHeaderValue.replace("script-src", `script-src ${bundleDomain}`);
-                } else {
-                    cspHeaderValue += `script-src ${bundleDomain}`;
-                }
+            //     if (cspHeaderValue.includes("img-src")) {
+            //         cspHeaderValue = cspHeaderValue.replace("img-src", `img-src ${bundleDomain}`);
+            //     } else {
+            //         cspHeaderValue += `img-src ${bundleDomain}`;
+            //     }
 
-                if (cspHeaderValue.includes("img-src")) {
-                    cspHeaderValue = cspHeaderValue.replace("img-src", `img-src ${bundleDomain}`);
-                } else {
-                    cspHeaderValue += `img-src ${bundleDomain}`;
-                }
-
-                input.options.res.setHeader("Content-Security-Policy", cspHeaderValue, false);
-            }
+            //     input.options.res.setHeader("Content-Security-Policy", cspHeaderValue, false);
+            // }
 
             return `
             <html>

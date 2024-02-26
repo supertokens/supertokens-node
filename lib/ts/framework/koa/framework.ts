@@ -18,12 +18,7 @@ import type { HTTPMethod } from "../../types";
 import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
-import {
-    getHeaderValueFromIncomingMessage,
-    normalizeHeaderValue,
-    parseJSONBodyFromRequest,
-    parseURLEncodedFormData,
-} from "../utils";
+import { getHeaderValueFromIncomingMessage, parseJSONBodyFromRequest, parseURLEncodedFormData } from "../utils";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
@@ -116,10 +111,6 @@ export class KoaResponse extends BaseResponse {
         } catch (err) {
             throw new Error("Error while setting header with key: " + key + " and value: " + value);
         }
-    };
-
-    getHeader = (key: string) => {
-        return normalizeHeaderValue(this.ctx.response.headers[key.toLowerCase()] as string);
     };
 
     removeHeader = (key: string) => {

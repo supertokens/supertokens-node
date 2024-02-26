@@ -22,7 +22,6 @@ export declare class ExpressResponse extends BaseResponse {
     constructor(response: Response);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    getHeader: (key: string) => string | undefined;
     removeHeader: (key: string) => void;
     setCookie: (
         key: string,

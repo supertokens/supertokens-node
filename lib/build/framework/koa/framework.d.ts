@@ -23,7 +23,6 @@ export declare class KoaResponse extends BaseResponse {
     constructor(ctx: Context);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    getHeader: (key: string) => string | undefined;
     removeHeader: (key: string) => void;
     setCookie: (
         key: string,

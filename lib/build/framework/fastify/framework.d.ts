@@ -22,7 +22,6 @@ export declare class FastifyResponse extends BaseResponse {
     constructor(response: FastifyReply);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    getHeader: (key: string) => string | undefined;
     removeHeader: (key: string) => void;
     setCookie: (
         key: string,

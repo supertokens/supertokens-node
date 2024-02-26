@@ -4,7 +4,6 @@ export declare abstract class BaseResponse {
     original: any;
     constructor();
     abstract setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    abstract getHeader: (key: string) => string | null | undefined;
     abstract removeHeader: (key: string) => void;
     abstract setCookie: (
         key: string,

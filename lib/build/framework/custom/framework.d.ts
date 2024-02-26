@@ -45,7 +45,6 @@ export declare class CollectingResponse extends BaseResponse {
     constructor();
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    getHeader: (key: string) => string | null;
     removeHeader: (key: string) => void;
     setCookie: (
         key: string,

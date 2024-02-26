@@ -117,10 +117,6 @@ export class FastifyResponse extends BaseResponse {
         }
     };
 
-    getHeader = (key: string) => {
-        return this.response.getHeader(key);
-    };
-
     removeHeader = (key: string) => {
         this.response.removeHeader(key);
     };
