@@ -54,7 +54,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             isVerified: boolean;
             session: SessionContainerInterface | undefined;
             tenantId: string;
-            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {

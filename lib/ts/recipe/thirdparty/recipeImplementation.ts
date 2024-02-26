@@ -14,25 +14,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
     return {
         manuallyCreateOrUpdateUser: async function (
             this: RecipeInterface,
-            {
-                thirdPartyId,
-                thirdPartyUserId,
-                email,
-                isVerified,
-                tenantId,
-                session,
-                shouldAttemptAccountLinkingIfAllowed,
-                userContext,
-            }
+            { thirdPartyId, thirdPartyUserId, email, isVerified, tenantId, session, userContext }
         ) {
-            // we have kept this input `shouldAttemptAccountLinkingIfAllowed` in this recipe function
-            // as opposed to having separate createRecipeUser. This is to avoid adding more functions
-            // that does the same thing, and we use this flag internally. We do not expose this parameter
-            // in the index file.
-            // This flag is true in most cases. It's false only when we encounter signInUp with active session
-            // and overwriteSessionDuringSignInUp is false. This is because we don't do automatic account linking
-            // when we are not going to create a new session
-
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/signinup`),
                 {
@@ -78,26 +61,21 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 };
             }
 
-            let updatedUser = response.user;
-
-            if (shouldAttemptAccountLinkingIfAllowed) {
-                const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
-                    tenantId,
-                    inputUser: response.user,
-                    recipeUserId: response.recipeUserId,
-                    session,
-                    userContext,
-                });
-                if (linkResult.status !== "OK") {
-                    return linkResult;
-                }
-                updatedUser = linkResult.user;
+            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                tenantId,
+                inputUser: response.user,
+                recipeUserId: response.recipeUserId,
+                session,
+                userContext,
+            });
+            if (linkResult.status !== "OK") {
+                return linkResult;
             }
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewUser,
-                user: updatedUser,
+                user: linkResult.user,
                 recipeUserId: response.recipeUserId,
             };
         },
@@ -147,7 +125,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 tenantId,
                 isVerified,
                 session,
-                shouldAttemptAccountLinkingIfAllowed: true,
                 userContext,
             });
 

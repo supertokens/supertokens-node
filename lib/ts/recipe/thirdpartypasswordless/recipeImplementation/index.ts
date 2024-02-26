@@ -126,7 +126,6 @@ export default function getRecipeInterface(
             isVerified: boolean;
             tenantId: string;
             session: SessionContainerInterface | undefined;
-            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {

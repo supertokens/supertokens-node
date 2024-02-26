@@ -208,7 +208,6 @@ export type RecipeInterface = {
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
         tenantId: string;
-        shouldAttemptAccountLinkingIfAllowed: boolean;
         userContext: UserContext;
     }): Promise<
         | {

@@ -95,7 +95,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
         -   `manuallyCreateOrUpdateUser`
             -   Takes a new (optional) `session` parameter
-            -   Takes a new `shouldAttemptAccountLinkingIfAllowed` parameter
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
     -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
         -   `signInUpPOST`
@@ -115,7 +114,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
         -   `thirdPartyManuallyCreateOrUpdateUser`
             -   Takes a new (optional) `session` parameter
-            -   Takes a new `shouldAttemptAccountLinkingIfAllowed` parameter
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
         -   `emailPasswordSignUp`
             -   Takes a new (optional) `session` parameter
@@ -145,7 +143,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
         -   `thirdPartyManuallyCreateOrUpdateUser`
             -   Takes a new (optional) `session` parameter
-            -   Takes a new `shouldAttemptAccountLinkingIfAllowed` parameter
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
         -   `createCode`: Takes a new (optional) `session` parameter
         -   `consumeCode`:

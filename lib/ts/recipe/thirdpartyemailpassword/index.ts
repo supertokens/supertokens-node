@@ -139,7 +139,6 @@ export default class Wrapper {
             isVerified,
             tenantId,
             session,
-            shouldAttemptAccountLinkingIfAllowed: true,
             userContext: getUserContext(userContext),
         });
     }

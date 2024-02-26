@@ -54,7 +54,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             isVerified: boolean;
             session: SessionContainerInterface | undefined;
-            shouldAttemptAccountLinkingIfAllowed: boolean;
             userContext: UserContext;
         }): Promise<
             | {
