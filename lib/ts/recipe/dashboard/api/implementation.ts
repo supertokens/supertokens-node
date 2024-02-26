@@ -28,9 +28,8 @@ export default function getAPIImplementation(): APIInterface {
                 userContext: input.userContext,
             });
 
-            const bundleDomain =
-                new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous() +
-                new NormalisedURLPath(bundleBasePathString).getAsStringDangerous();
+            const bundleDomain = new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous();
+            const bundleDomainPath = bundleDomain + new NormalisedURLPath(bundleBasePathString).getAsStringDangerous();
 
             let connectionURI: string = "";
             const superTokensInstance = SuperTokens.getInstanceOrThrowError();
@@ -60,7 +59,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 if (cspHeaderValue.includes("img-src")) {
-                    cspHeaderValue = cspHeaderValue.replace("img-src", `script-src ${bundleDomain}`);
+                    cspHeaderValue = cspHeaderValue.replace("img-src", `img-src ${bundleDomain}`);
                 } else {
                     cspHeaderValue += `img-src ${bundleDomain}`;
                 }
@@ -73,7 +72,7 @@ export default function getAPIImplementation(): APIInterface {
                 <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
-                        window.staticBasePath = "${bundleDomain}/static"
+                        window.staticBasePath = "${bundleDomainPath}/static"
                         window.dashboardAppPath = "${input.options.appInfo.apiBasePath
                             .appendPath(new NormalisedURLPath(DASHBOARD_API))
                             .getAsStringDangerous()}"
@@ -81,9 +80,9 @@ export default function getAPIImplementation(): APIInterface {
                         window.authMode = "${authMode}"
                         window.isSearchEnabled = "${isSearchEnabled}"
                     </script>
-                    <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
-                    <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
-                    <link rel="icon" type="image/x-icon" href="${bundleDomain}/static/media/favicon.ico">
+                    <script defer src="${bundleDomainPath}/static/js/bundle.js"></script></head>
+                    <link href="${bundleDomainPath}/static/css/main.css" rel="stylesheet" type="text/css">
+                    <link rel="icon" type="image/x-icon" href="${bundleDomainPath}/static/media/favicon.ico">
                 </head>
                 <body>
                     <noscript>You need to enable JavaScript to run this app.</noscript>
