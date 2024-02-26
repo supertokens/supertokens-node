@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.7.3] - 2024-02-26
+
+-   Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.
+
 ## [16.7.2] - 2024-02-19
 
 -   `createNewSession` now defaults to the value of the `st-auth-mode` header (if available) if the configured `getTokenTransferMethod` returns `any`.
