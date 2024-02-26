@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [16.7.2] - 2024-02-21
+## [16.7.4] - 2024-02-26
 
--   Adds CSP rules to response headers to allow `https://cdn.jsdelivr.net/gh/supertokens/` CDN.
+-   Adds new `overrideCSPHeaders` boolean to give users to override defined CSP config from the dashboard routes.
+
+## [16.7.3] - 2024-02-26
+
+-   Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.
 
 ## [16.7.2] - 2024-02-19
 

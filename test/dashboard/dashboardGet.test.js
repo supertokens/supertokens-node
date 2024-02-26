@@ -72,7 +72,7 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
 
         it("Test connectionURI contains https protocol", async () => {
-            const connectionURI = "https://try.supertokens.com";
+            const connectionURI = "https://try.supertokens.com/appid-public";
             // removing protocol from the original connectionURI.
             const connectionURIWithoutProtocol = connectionURI.replace("https://", "");
 
@@ -116,8 +116,8 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
 
         it("Test multiple connection URIs", async () => {
-            const firstConnectionURI = await startST();
-            const secondConnectionURI = "https://try.supertokens.com";
+            const firstConnectionURI = "https://try.supertokens.com/appid-public";
+            const secondConnectionURI = await startST();
 
             const multipleConnectionURIs = `${firstConnectionURI};${secondConnectionURI}`;
 
