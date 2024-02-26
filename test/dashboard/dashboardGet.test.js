@@ -163,8 +163,8 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
     });
 
-    describe("Test CSP headers, when the overrideCSPHeaders is true and CSP is enabled.", function () {
-        it("Should override CSP headers by allowing bundleDomain name when the overrideCSPHeader is true", async () => {
+    describe("Test CSP headers", function () {
+        it("Should override CSP headers by allowing bundleDomain when the overrideCSPHeader is true", async () => {
             const connectionURI = await startST();
 
             STExpress.init({
@@ -187,12 +187,12 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
 
             const app = express();
 
+            const defaultCSPHeaderValue =
+                "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com";
+
             app.use(function (_, res, next) {
                 // Setting dummy headers to make sure that api overrides the original set csp value.
-                res.setHeader(
-                    "Content-Security-Policy",
-                    "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com"
-                );
+                res.setHeader("Content-Security-Policy", defaultCSPHeaderValue);
                 return next();
             });
 
@@ -220,6 +220,7 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
             const cspHeaderValue = `script-src: 'self' 'unsafe-inline' ${bundleDomain} img-src: ${bundleDomain}`;
 
             assert.strictEqual(response.header["content-security-policy"], cspHeaderValue);
+            assert.notStrictEqual(response.header["content-security-policy"], defaultCSPHeaderValue);
         });
 
         it("Should not override CSP default headers when the overrideCSPHeader is false/undefined", async () => {
@@ -280,7 +281,7 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
             assert.strictEqual(response.header["content-security-policy"], defaultCSPHeaderValue);
         });
 
-        it("Should override CSP headers by allowing bundleDomain name when there is no predefined CSP header config", async () => {
+        it("Should override CSP headers by allowing bundleDomain when there is no predefined CSP header config", async () => {
             const connectionURI = await startST();
 
             STExpress.init({
