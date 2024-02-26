@@ -27,6 +27,15 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return await recipeInterface.emailPasswordSignUp(input);
         },
 
+        verifyCredentials: async function (input: {
+            email: string;
+            password: string;
+            tenantId: string;
+            userContext: UserContext;
+        }): Promise<{ status: "OK" } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            return recipeInterface.emailPasswordVerifyCredentials(input);
+        },
+
         signIn: async function (input: {
             email: string;
             password: string;

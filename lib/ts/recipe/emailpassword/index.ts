@@ -104,6 +104,15 @@ export default class Wrapper {
         });
     }
 
+    static verifyCredentials(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
+            email,
+            password,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext: getUserContext(userContext),
+        });
+    }
+
     /**
      * We do not make email optional here cause we want to
      * allow passing in primaryUserId. If we make email optional,

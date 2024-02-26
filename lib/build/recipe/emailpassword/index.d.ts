@@ -63,6 +63,19 @@ export default class Wrapper {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
+    static verifyCredentials(
+        tenantId: string,
+        email: string,
+        password: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     /**
      * We do not make email optional here cause we want to
      * allow passing in primaryUserId. If we make email optional,

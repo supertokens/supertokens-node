@@ -117,6 +117,19 @@ export declare type RecipeInterface = {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
+    verifyCredentials(input: {
+        email: string;
+        password: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     /**
      * We pass in the email as well to this function cause the input userId
      * may not be associated with an emailpassword account. In this case, we

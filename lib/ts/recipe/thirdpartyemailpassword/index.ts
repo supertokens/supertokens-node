@@ -210,6 +210,20 @@ export default class Wrapper {
         });
     }
 
+    static emailPasswordVerifyCredentials(
+        tenantId: string,
+        email: string,
+        password: string,
+        userContext?: Record<string, any>
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordVerifyCredentials({
+            email,
+            password,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext: getUserContext(userContext),
+        });
+    }
+
     static emailPasswordSignIn(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
             email,

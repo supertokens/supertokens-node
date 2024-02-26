@@ -67,6 +67,15 @@ export default function getRecipeInterface(
         }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
+        emailPasswordVerifyCredentials: async function (input: {
+            email: string;
+            password: string;
+            session: SessionContainerInterface | undefined;
+            tenantId: string;
+            userContext: UserContext;
+        }): Promise<{ status: "OK" } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            return originalEmailPasswordImplementation.verifyCredentials.bind(DerivedEP(this))(input);
+        },
 
         thirdPartySignInUp: async function (input: {
             thirdPartyId: string;

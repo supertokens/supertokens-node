@@ -112,6 +112,19 @@ export default class Wrapper {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
+    static emailPasswordVerifyCredentials(
+        tenantId: string,
+        email: string,
+        password: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     static emailPasswordSignIn(
         tenantId: string,
         email: string,

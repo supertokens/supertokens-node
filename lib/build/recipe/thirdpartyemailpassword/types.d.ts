@@ -195,6 +195,19 @@ export declare type RecipeInterface = {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
+    emailPasswordVerifyCredentials(input: {
+        email: string;
+        password: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     createResetPasswordToken(input: {
         userId: string;
         email: string;

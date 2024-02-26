@@ -158,6 +158,37 @@ export default function getRecipeInterface(
             return response;
         },
 
+        verifyCredentials: async function ({
+            email,
+            password,
+            tenantId,
+            userContext,
+        }): Promise<
+            | {
+                  status: "OK";
+              }
+            | { status: "WRONG_CREDENTIALS_ERROR" }
+        > {
+            const response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
+                {
+                    email,
+                    password,
+                },
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                };
+            }
+
+            return {
+                status: "WRONG_CREDENTIALS_ERROR",
+            };
+        },
+
         createResetPasswordToken: async function ({
             userId,
             email,

@@ -614,8 +614,8 @@ export default function getAPIImplementation(): APIInterface {
 
             const checkCredentialsOnTenant = async (tenantId: string) => {
                 return (
-                    (await options.recipeImplementation.signIn({ email, password, tenantId, userContext })).status ===
-                    "OK"
+                    (await options.recipeImplementation.verifyCredentials({ email, password, tenantId, userContext }))
+                        .status === "OK"
                 );
             };
 

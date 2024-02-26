@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `isEmailChangeAllowed`
     -   Changed the signature of the `shouldDoAutomaticAccountLinking` callback: it now takes a new (optional) parameter.
 -   `EmailPassword`:
+    -   Added new function: `verifyCredentials`
     -   Changed the signature of the following overrideable functions:
         -   `signUp`
             -   Takes a new (optional) `session` parameter
@@ -99,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
         -   `signInUpPOST`
 -   `ThirdPartyEmailPassword`:
+    -   Added new function: `emailPasswordVerifyCredentials`
     -   Changed the signature of the following functions:
         -   `thirdPartyManuallyCreateOrUpdateUser`:
             -   Takes a new (optional) `session` parameter
