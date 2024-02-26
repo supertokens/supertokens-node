@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [16.7.4] - 2024-02-26
 
--   Adds new `overrideCSPHeaders` boolean to give users to override defined CSP config from the dashboard routes.
+-   Introduces a new optional boolean parameter named `overrideCSPHeaders` to the dashboard config. This allows users to bypass the pre-defined Content Security Policy (CSP) configuration.
 
 ## [16.7.3] - 2024-02-26
 
