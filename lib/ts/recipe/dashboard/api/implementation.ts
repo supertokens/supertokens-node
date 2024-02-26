@@ -27,7 +27,6 @@ export default function getAPIImplementation(): APIInterface {
             const bundleBasePathString = await input.options.recipeImplementation.getDashboardBundleLocation({
                 userContext: input.userContext,
             });
-
             const bundleDomain = new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous();
             const bundleDomainPath = bundleDomain + new NormalisedURLPath(bundleBasePathString).getAsStringDangerous();
 
@@ -49,21 +48,10 @@ export default function getAPIImplementation(): APIInterface {
                 isSearchEnabled = true;
             }
 
-            // if (cspHeaderValue && cspHeaderValue.includes(bundleDomain) === false) {
-            //     if (cspHeaderValue.includes("script-src")) {
-            //         cspHeaderValue = cspHeaderValue.replace("script-src", `script-src ${bundleDomain}`);
-            //     } else {
-            //         cspHeaderValue += `script-src ${bundleDomain}`;
-            //     }
-
-            //     if (cspHeaderValue.includes("img-src")) {
-            //         cspHeaderValue = cspHeaderValue.replace("img-src", `img-src ${bundleDomain}`);
-            //     } else {
-            //         cspHeaderValue += `img-src ${bundleDomain}`;
-            //     }
-
-            //     input.options.res.setHeader("Content-Security-Policy", cspHeaderValue, false);
-            // }
+            if (input.options.config.overrideCSPHeaders === true) {
+                const cspHeaderValue = `script-src: 'self' 'unsafe-inline' ${bundleDomain} img-src: ${bundleDomain}`;
+                input.options.res.setHeader("Content-Security-Policy", cspHeaderValue, false);
+            }
 
             return `
             <html>

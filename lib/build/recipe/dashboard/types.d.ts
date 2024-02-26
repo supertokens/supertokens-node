@@ -5,6 +5,7 @@ import { NormalisedAppinfo, User } from "../../types";
 export declare type TypeInput = {
     apiKey?: string;
     admins?: string[];
+    overrideCSPHeaders?: boolean;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -16,6 +17,7 @@ export declare type TypeInput = {
 export declare type TypeNormalisedInput = {
     apiKey?: string;
     admins?: string[];
+    overrideCSPHeaders?: boolean;
     authMode: AuthMode;
     override: {
         functions: (

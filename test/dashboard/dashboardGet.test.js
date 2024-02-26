@@ -8,6 +8,9 @@ let { middleware, errorHandler } = require("../../framework/express");
 const request = require("supertest");
 let assert = require("assert");
 
+let DashboardRecipe = require("../../lib/build/recipe/dashboard/recipe").default;
+let NormalisedURLDomain = require("../../lib/build/normalisedURLDomain").default;
+
 describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]")}`, () => {
     beforeEach(async () => {
         await killAllST();
@@ -160,111 +163,220 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
     });
 
-    // describe("Test CSP headers", function () {
-    //     it("should allow https://cdn.jsdelvr.net/gh/supertokens/ ", async () => {
-    //         const connectionURI = await startST();
+    describe("Test CSP headers, when the overrideCSPHeaders is true and CSP is enabled.", function () {
+        it("Should override CSP headers by allowing bundleDomain name when the overrideCSPHeader is true", async () => {
+            const connectionURI = await startST();
 
-    //         STExpress.init({
-    //             supertokens: {
-    //                 connectionURI,
-    //             },
-    //             appInfo: {
-    //                 apiDomain: "api.supertokens.io",
-    //                 appName: "SuperTokens",
-    //                 websiteDomain: "supertokens.io",
-    //             },
-    //             recipeList: [
-    //                 Dashboard.init({
-    //                     apiKey: "testapikey",
-    //                 }),
-    //                 EmailPassword.init(),
-    //             ],
-    //         });
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        apiKey: "testapikey",
+                        overrideCSPHeaders: true,
+                    }),
+                    EmailPassword.init(),
+                ],
+            });
 
-    //         const app = express();
+            const app = express();
 
-    //         app.use(function (_, res, next) {
-    //             // setting dummy headers to make sure that api overrides the original set csp value.
-    //             res.setHeader(
-    //                 "Content-Security-Policy",
-    //                 "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com"
-    //             );
-    //             return next();
-    //         });
+            app.use(function (_, res, next) {
+                // Setting dummy headers to make sure that api overrides the original set csp value.
+                res.setHeader(
+                    "Content-Security-Policy",
+                    "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com"
+                );
+                return next();
+            });
 
-    //         app.use(middleware());
+            app.use(middleware());
 
-    //         app.use(errorHandler());
+            app.use(errorHandler());
 
-    //         let response = await new Promise((res) => {
-    //             request(app)
-    //                 .get(dashboardURL)
-    //                 .set("Authorization", "Bearer testapikey")
-    //                 .end((err, response) => {
-    //                     if (err) {
-    //                         res(undefined);
-    //                     } else {
-    //                         res(response);
-    //                     }
-    //                 });
-    //         });
-    //         assert.strictEqual(
-    //             response.header["content-security-policy"],
-    //             "script-src https://cdn.jsdelivr.net/gh/supertokens/dashboard@v0.10/build 'self' 'unsafe-inline' https://supertokens.com ; script-src https://cdn.jsdelivr.net/gh/supertokens/dashboard@v0.10/build 'self' https://supertokens.com"
-    //         );
-    //     });
+            let response = await new Promise((res) => {
+                request(app)
+                    .get(dashboardURL)
+                    .set("Authorization", "Bearer testapikey")
+                    .end((err, response) => {
+                        if (err) {
+                            res(undefined);
+                        } else {
+                            res(response);
+                        }
+                    });
+            });
 
-    //     it("should allow https://cdn.jsdelvr.net/gh/supertokens/ ", async () => {
-    //         const connectionURI = await startST();
+            const dashboardRecipe = DashboardRecipe.getInstanceOrThrowError();
+            const bundleBasePathString = await dashboardRecipe.recipeInterfaceImpl.getDashboardBundleLocation();
+            const bundleDomain = new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous();
 
-    //         STExpress.init({
-    //             supertokens: {
-    //                 connectionURI,
-    //             },
-    //             appInfo: {
-    //                 apiDomain: "api.supertokens.io",
-    //                 appName: "SuperTokens",
-    //                 websiteDomain: "supertokens.io",
-    //             },
-    //             recipeList: [
-    //                 Dashboard.init({
-    //                     apiKey: "testapikey",
-    //                 }),
-    //                 EmailPassword.init(),
-    //             ],
-    //         });
+            const cspHeaderValue = `script-src: 'self' 'unsafe-inline' ${bundleDomain} img-src: ${bundleDomain}`;
 
-    //         const app = express();
+            assert.strictEqual(response.header["content-security-policy"], cspHeaderValue);
+        });
 
-    //         app.use(function (_, res, next) {
-    //             // setting dummy headers to make sure that api overrides the original set csp value.
-    //             res.setHeader(
-    //                 "Content-Security-Policy",
-    //                 "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com"
-    //             );
-    //             return next();
-    //         });
+        it("Should not override CSP default headers when the overrideCSPHeader is false/undefined", async () => {
+            const connectionURI = await startST();
 
-    //         app.use(middleware());
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        apiKey: "testapikey",
+                        overrideCSPHeaders: false,
+                    }),
+                    EmailPassword.init(),
+                ],
+            });
 
-    //         app.use(errorHandler());
+            const app = express();
 
-    //         let response = await new Promise((res) => {
-    //             request(app)
-    //                 .get(dashboardURL)
-    //                 .set("Authorization", "Bearer testapikey")
-    //                 .end((err, response) => {
-    //                     if (err) {
-    //                         res(undefined);
-    //                     } else {
-    //                         res(response);
-    //                     }
-    //                 });
-    //         });
-    //         assert.strictEqual(
-    //             response.header["content-security-policy"],
-    //             "script-src https://cdn.jsdelivr.net/gh/supertokens/dashboard@v0.10/build 'self' 'unsafe-inline' https://supertokens.com ; script-src https://cdn.jsdelivr.net/gh/supertokens/dashboard@v0.10/build 'self' https://supertokens.com"
-    //         );
-    //     });
-    // });
+            const defaultCSPHeaderValue =
+                "script-src 'self' 'unsafe-inline' https://supertokens.com ; img-src 'self' https://supertokens.com";
+            app.use(function (_, res, next) {
+                // Setting dummy headers to make sure that api overrides the original set csp value.
+                res.setHeader("Content-Security-Policy", defaultCSPHeaderValue);
+                return next();
+            });
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((res) => {
+                request(app)
+                    .get(dashboardURL)
+                    .set("Authorization", "Bearer testapikey")
+                    .end((err, response) => {
+                        if (err) {
+                            res(undefined);
+                        } else {
+                            res(response);
+                        }
+                    });
+            });
+
+            const dashboardRecipe = DashboardRecipe.getInstanceOrThrowError();
+            const bundleBasePathString = await dashboardRecipe.recipeInterfaceImpl.getDashboardBundleLocation();
+            const bundleDomain = new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous();
+
+            const cspHeaderValue = `script-src: 'self' 'unsafe-inline' ${bundleDomain} img-src: ${bundleDomain}`;
+
+            assert.notStrictEqual(response.header["content-security-policy"], cspHeaderValue);
+            assert.strictEqual(response.header["content-security-policy"], defaultCSPHeaderValue);
+        });
+
+        it("Should override CSP headers by allowing bundleDomain name when there is no predefined CSP header config", async () => {
+            const connectionURI = await startST();
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        apiKey: "testapikey",
+                        overrideCSPHeaders: true,
+                    }),
+                    EmailPassword.init(),
+                ],
+            });
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((res) => {
+                request(app)
+                    .get(dashboardURL)
+                    .set("Authorization", "Bearer testapikey")
+                    .end((err, response) => {
+                        if (err) {
+                            res(undefined);
+                        } else {
+                            res(response);
+                        }
+                    });
+            });
+
+            const dashboardRecipe = DashboardRecipe.getInstanceOrThrowError();
+            const bundleBasePathString = await dashboardRecipe.recipeInterfaceImpl.getDashboardBundleLocation();
+            const bundleDomain = new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous();
+
+            const cspHeaderValue = `script-src: 'self' 'unsafe-inline' ${bundleDomain} img-src: ${bundleDomain}`;
+
+            assert.strictEqual(response.header["content-security-policy"], cspHeaderValue);
+        });
+
+        it("Should not add CSP headers when there is no predefined CSP header config and overrideCSPHeader boolean is false", async () => {
+            const connectionURI = await startST();
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        apiKey: "testapikey",
+                        overrideCSPHeaders: false,
+                    }),
+                    EmailPassword.init(),
+                ],
+            });
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((res) => {
+                request(app)
+                    .get(dashboardURL)
+                    .set("Authorization", "Bearer testapikey")
+                    .end((err, response) => {
+                        if (err) {
+                            res(undefined);
+                        } else {
+                            res(response);
+                        }
+                    });
+            });
+
+            const dashboardRecipe = DashboardRecipe.getInstanceOrThrowError();
+            const bundleBasePathString = await dashboardRecipe.recipeInterfaceImpl.getDashboardBundleLocation();
+            const bundleDomain = new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous();
+
+            const cspHeaderValue = `script-src: 'self' 'unsafe-inline' ${bundleDomain} img-src: ${bundleDomain}`;
+
+            assert.notStrictEqual(response.header["content-security-policy"], cspHeaderValue);
+            assert.strictEqual(response.header["content-security-policy"], undefined);
+        });
+    });
 });
