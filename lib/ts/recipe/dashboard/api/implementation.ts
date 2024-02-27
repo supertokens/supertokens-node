@@ -53,7 +53,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             if (input.options.config.overrideCSPHeaders === true) {
-                const cspHeaderValue = `script-src: 'self' 'unsafe-inline' ${bundleDomain} img-src: ${bundleDomain}`;
+                const cspHeaderValue = `script-src 'self' 'unsafe-inline' ${bundleDomain} ; img-src ${bundleDomain} https://purecatamphetamine.github.io`;
                 input.options.res.setHeader("Content-Security-Policy", cspHeaderValue, false);
             }
 
