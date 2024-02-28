@@ -56,7 +56,8 @@ export default function getAPIInterface(): APIInterface {
             } else if (options.staticFirstFactors !== undefined) {
                 firstFactors = options.staticFirstFactors; // next priority, static config
             } else {
-                firstFactors = options.allAvailableFirstFactors; // fallback, all available factors
+                // Fallback to all available factors (de-duplicated)
+                firstFactors = Array.from(new Set(options.allAvailableFirstFactors));
             }
 
             // we now filter out all available first factors by checking if they are valid because

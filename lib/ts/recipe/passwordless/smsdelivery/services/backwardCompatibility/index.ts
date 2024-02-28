@@ -45,7 +45,7 @@ async function createAndSendSmsUsingSupertokensService(input: {
                 userInputCode: input.userInputCode,
                 urlWithLinkCode: input.urlWithLinkCode,
                 codeLifetime: input.codeLifetime,
-                isFirstFactor: input.isFirstFactor,
+                // isFirstFactor: input.isFirstFactor,
             },
         },
         {

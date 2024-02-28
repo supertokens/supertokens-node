@@ -26,6 +26,7 @@ export default class Wrapper {
     static init = Recipe.init;
 
     static MultiFactorAuthClaim = MultiFactorAuthClaim;
+    static FactorIds = FactorIds;
 
     static async assertAllowedToSetupFactorElseThrowInvalidClaimError(
         session: SessionContainerInterface,

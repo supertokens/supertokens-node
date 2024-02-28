@@ -1353,10 +1353,17 @@ EmailPassword.init({
                         email,
                         password,
                         tenantId: input.tenantId,
+                        session: input.session,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {
                         return response;
+                    }
+                    if (response.status === "LINKING_TO_SESSION_USER_FAILED") {
+                        return {
+                            status: "SIGN_IN_NOT_ALLOWED",
+                            reason: response.status,
+                        };
                     }
                     let user = response.user;
 
@@ -1873,6 +1880,7 @@ async function accountLinkingFuncsTest() {
         "public",
         Supertokens.convertToRecipeUserId("asdf")
     );
+
     const signUpResp = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw");
     // @ts-expect-error
     if (signUpResp.status === "LINKING_TO_SESSION_USER_FAILED") {
@@ -1894,6 +1902,26 @@ async function accountLinkingFuncsTest() {
     }
     if (signUpResp.status !== "OK") {
         return signUpResp;
+    }
+
+    const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (signInResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignInResp = await ThirdPartyEmailPassword.emailPasswordSignIn("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (tpepSignInResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const signInRespWithSession = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", session);
+    if (signInRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignInRespWithSession = await ThirdPartyEmailPassword.emailPasswordSignIn(
+        "public",
+        "asdf@asdf.asfd",
+        "testpw",
+        session
+    );
+    if (tpepSignInRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
 
     let user: User;

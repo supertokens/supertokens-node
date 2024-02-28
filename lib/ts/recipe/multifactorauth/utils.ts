@@ -88,7 +88,7 @@ export const getMFARelatedInfoFromSession = async function (
         sessionRecipeUserId = input.sessionRecipeUserId;
         tenantId = input.tenantId;
         accessTokenPayload = input.accessTokenPayload;
-        sessionHandle = accessTokenPayload.sessionhandle;
+        sessionHandle = accessTokenPayload.sessionHandle;
     }
 
     const sessionUser = await getUser(sessionRecipeUserId.getAsString(), input.userContext);

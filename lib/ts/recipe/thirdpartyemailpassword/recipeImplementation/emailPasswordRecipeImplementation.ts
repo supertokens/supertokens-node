@@ -40,8 +40,9 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             password: string;
             tenantId: string;
+            session: SessionContainerInterface | undefined;
             userContext: UserContext;
-        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }) {
             return recipeInterface.emailPasswordSignIn(input);
         },
 

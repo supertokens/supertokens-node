@@ -63,52 +63,49 @@ export const isValidFirstFactor = async function (
     const firstFactorsFromMFA = mtRecipe.staticFirstFactors;
 
     logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config`);
-    logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from tenant config`);
+    logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from MFA`);
+    logDebugMessage(
+        `isValidFirstFactor tenantconfig enables: ${Object.keys(tenantConfig).filter(
+            (k) => (tenantConfig as any)[k]?.enabled
+        )}`
+    );
 
     // first factors configured in core is prioritised over the ones configured statically
     let configuredFirstFactors: string[] | undefined =
         tenantConfig.firstFactors !== undefined ? tenantConfig.firstFactors : firstFactorsFromMFA;
 
     if (configuredFirstFactors === undefined) {
-        // check if the factorId is available from the initialised recipes
-        if (mtRecipe.allAvailableFirstFactors.includes(factorId)) {
-            return {
-                status: "OK",
-            };
-        }
-    } else {
-        // Filter factors by available factors (from supertokens.init), but also allow custom factors
+        configuredFirstFactors = mtRecipe.allAvailableFirstFactors;
+    }
+    // Filter factors by available factors (from supertokens.init), but also allow custom factors
+    configuredFirstFactors = configuredFirstFactors.filter(
+        (factorId: string) =>
+            mtRecipe.allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)
+    );
+
+    // Filter based on enabled recipes in the core
+    if (tenantConfig.emailPassword.enabled === false) {
+        configuredFirstFactors = configuredFirstFactors.filter(
+            (factorId: string) => factorId !== FactorIds.EMAILPASSWORD
+        );
+    }
+
+    if (tenantConfig.passwordless.enabled === false) {
         configuredFirstFactors = configuredFirstFactors.filter(
             (factorId: string) =>
-                mtRecipe.allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)
+                ![FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(
+                    factorId
+                )
         );
+    }
+    if (tenantConfig.thirdParty.enabled === false) {
+        configuredFirstFactors = configuredFirstFactors.filter((factorId: string) => factorId !== FactorIds.THIRDPARTY);
+    }
 
-        // Filter based on enabled recipes in the core
-        if (tenantConfig.emailPassword.enabled === false) {
-            configuredFirstFactors = configuredFirstFactors.filter(
-                (factorId: string) => factorId !== FactorIds.EMAILPASSWORD
-            );
-        }
-
-        if (tenantConfig.passwordless.enabled === false) {
-            configuredFirstFactors = configuredFirstFactors.filter(
-                (factorId: string) =>
-                    ![FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(
-                        factorId
-                    )
-            );
-        }
-        if (tenantConfig.thirdParty.enabled === false) {
-            configuredFirstFactors = configuredFirstFactors.filter(
-                (factorId: string) => factorId !== FactorIds.THIRDPARTY
-            );
-        }
-
-        if (configuredFirstFactors.includes(factorId)) {
-            return {
-                status: "OK",
-            };
-        }
+    if (configuredFirstFactors.includes(factorId)) {
+        return {
+            status: "OK",
+        };
     }
 
     return {

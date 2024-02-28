@@ -102,19 +102,7 @@ export default function getRecipeInterface(
             // users are always initially unverified.
         },
 
-        signIn: async function ({
-            email,
-            password,
-            tenantId,
-            userContext,
-        }): Promise<
-            | {
-                  status: "OK";
-                  user: UserType;
-                  recipeUserId: RecipeUserId;
-              }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
-        > {
+        signIn: async function ({ email, password, tenantId, session, userContext }) {
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
                 {
@@ -153,6 +141,18 @@ export default function getRecipeInterface(
                     // function updated the verification status) and can return that
                     response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
                 }
+
+                const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                    tenantId,
+                    inputUser: response.user,
+                    recipeUserId: response.recipeUserId,
+                    session,
+                    userContext,
+                });
+                if (linkResult.status === "LINKING_TO_SESSION_USER_FAILED") {
+                    return linkResult;
+                }
+                response.user = linkResult.user;
             }
 
             return response;

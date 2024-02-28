@@ -64,7 +64,7 @@ export default function getRecipeInterface(
             session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
-        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }) {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
         emailPasswordVerifyCredentials: async function (input: {

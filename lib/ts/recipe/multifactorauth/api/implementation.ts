@@ -43,7 +43,7 @@ export default function getAPIInterface(): APIInterface {
                     });
                     factorsAllowedToSetup.push(id);
                 } catch (err) {
-                    if (!(err instanceof SessionError && err.type === SessionError.INVALID_CLAIMS)) {
+                    if (!(SessionError.isErrorFromSuperTokens(err) && err.type === SessionError.INVALID_CLAIMS)) {
                         throw err;
                     }
 

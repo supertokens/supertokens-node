@@ -43,24 +43,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             // function updated the verification status) and can return that
             response.user = (await getUser(response.recipeUserId.getAsString(), userContext))!;
 
-            if (!response.createdNewUser) {
-                // Unlike in the sign up scenario, we do not do account linking here
-                // cause we do not want sign in to change the potentially user ID of a user
-                // due to linking when this function is called by the dev in their API.
-                // If we did account linking
-                // then we would have to ask the dev to also change the session
-                // in such API calls.
-                // In the case of sign up, since we are creating a new user, it's fine
-                // to link there since there is no user id change really from the dev's
-                // point of view who is calling the sign up recipe function.
-                return {
-                    status: "OK",
-                    createdNewRecipeUser: response.createdNewUser,
-                    user: response.user,
-                    recipeUserId: response.recipeUserId,
-                };
-            }
-
             const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 inputUser: response.user,
@@ -68,6 +50,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 session,
                 userContext,
             });
+
             if (linkResult.status !== "OK") {
                 return linkResult;
             }

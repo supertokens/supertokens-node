@@ -244,18 +244,7 @@ export const AuthUtils = {
         userContext: UserContext;
         req: BaseRequest;
         res: BaseResponse;
-    }): Promise<
-        | { status: "OK"; session: SessionContainerInterface; user: User }
-        | { status: "SIGN_IN_NOT_ALLOWED" }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    > {
+    }): Promise<{ status: "OK"; session: SessionContainerInterface; user: User } | { status: "SIGN_IN_NOT_ALLOWED" }> {
         logDebugMessage(
             `postAuthChecks called ${session !== undefined ? "with" : "without"} a session to ${
                 isSignUp ? "sign in" : "sign up"
@@ -264,30 +253,6 @@ export const AuthUtils = {
 
         const mfaInstance = MultiFactorAuthRecipe.getInstance();
         const accountLinkingInstance = AccountLinking.getInstance();
-
-        let updatedUser = authenticatedUser;
-        if (!isSignUp) {
-            // Then run linking if necessary/possible.
-            // Note, that we are not re-using any information queried before the user signed in
-            // This functions calls shouldDoAutomaticAccountLinking again (we check if the app wants to link to the session user or not),
-            // which might return a different result. We could throw in this case, but it is an app code issue that that is fairly unlikely to go wrong.
-            // It should not happen in general, but it is possible that we end up with an unlinked user after this even though originally we considered this
-            // an MFA sign in.
-            // There are a couple of race-conditions associated with this functions, but it handles retries internally.
-            const linkingResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
-                tenantId,
-                inputUser: authenticatedUser,
-                recipeUserId,
-                session,
-                userContext,
-            });
-
-            if (linkingResult.status !== "OK") {
-                logDebugMessage(`postAuthChecks returning early because createPrimaryUserIdOrLinkByAccountInfo failed`);
-                return linkingResult;
-            }
-            updatedUser = linkingResult.user;
-        }
 
         // We check if sign in is allowed
         if (
@@ -306,7 +271,7 @@ export const AuthUtils = {
 
         let respSession = session;
         if (session !== undefined) {
-            const authenticatedUserLinkedToSessionUser = updatedUser.loginMethods.some(
+            const authenticatedUserLinkedToSessionUser = authenticatedUser.loginMethods.some(
                 (lm) => lm.recipeUserId.getAsString() === session.getRecipeUserId(userContext).getAsString()
             );
             if (authenticatedUserLinkedToSessionUser) {
@@ -341,7 +306,7 @@ export const AuthUtils = {
                 await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
             }
         }
-        return { status: "OK", session: respSession!, user: updatedUser };
+        return { status: "OK", session: respSession!, user: authenticatedUser };
     },
 
     /**

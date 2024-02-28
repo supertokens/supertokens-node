@@ -43,7 +43,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
             codeLifetime: input.codeLifetime,
             urlWithLinkCode: input.urlWithLinkCode,
             userInputCode: input.userInputCode,
-            isFirstFactor: input.isFirstFactor,
+            // isFirstFactor: input.isFirstFactor,
         },
         {
             successLog: `Email sent to ${input.email}`,

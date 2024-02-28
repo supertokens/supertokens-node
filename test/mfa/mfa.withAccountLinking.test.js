@@ -136,6 +136,7 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
     it("should not link when signing-up when automatic account linking is turned off", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
+            // debug: true,
             supertokens: {
                 connectionURI,
             },
@@ -184,6 +185,9 @@ describe(`mfa with account linking: ${printPath("[test/mfa/mfa.withAccountLinkin
                 Totp.init(),
                 MultiFactorAuth.init(),
                 Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: () => ({ shouldAutomaticallyLink: false }),
+                }),
                 EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });

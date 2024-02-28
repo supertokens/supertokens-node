@@ -666,6 +666,7 @@ export default function getAPIImplementation(): APIInterface {
             const signInResponse = await options.recipeImplementation.signIn({
                 email,
                 password,
+                session,
                 tenantId,
                 userContext,
             });

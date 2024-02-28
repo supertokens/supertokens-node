@@ -191,6 +191,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
+        session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }): Promise<
         | {
@@ -199,6 +200,14 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "WRONG_CREDENTIALS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     emailPasswordVerifyCredentials(input: {
