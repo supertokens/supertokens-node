@@ -1,6 +1,6 @@
 // @ts-nocheck
 import Recipe from "./recipe";
-import { RecipeInterface, APIOptions, APIInterface } from "./types";
+import { RecipeInterface, APIOptions, APIInterface, CoreConfigProperty } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
@@ -117,6 +117,12 @@ export default class Wrapper {
         status: "OK";
         wasAssociated: boolean;
     }>;
+    static listAllCoreConfigProperties(
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+        config: Array<CoreConfigProperty>;
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createOrUpdateTenant: typeof Wrapper.createOrUpdateTenant;
@@ -127,5 +133,6 @@ export declare let createOrUpdateThirdPartyConfig: typeof Wrapper.createOrUpdate
 export declare let deleteThirdPartyConfig: typeof Wrapper.deleteThirdPartyConfig;
 export declare let associateUserToTenant: typeof Wrapper.associateUserToTenant;
 export declare let disassociateUserFromTenant: typeof Wrapper.disassociateUserFromTenant;
+export declare let listAllCoreConfigProperties: typeof Wrapper.listAllCoreConfigProperties;
 export { AllowedDomainsClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

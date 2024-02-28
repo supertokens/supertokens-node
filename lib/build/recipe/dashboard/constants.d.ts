@@ -27,3 +27,4 @@ export declare const ASSOCIATE_USER_TO_TENANT = "/api/tenants/user/associate";
 export declare const DISASSOCIATE_USER_FROM_TENANT = "/api/tenants/user/disassociate";
 export declare const TENANT_THIRD_PARTY = "/api/tenants/third-party";
 export declare const UNLINK_USER = "/api/user/unlink";
+export declare const LIST_ALL_CORE_CONFIG_PROPERTIES = "/api/multitenancy/core-config/list";

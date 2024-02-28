@@ -113,5 +113,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             );
             return response;
         },
+
+        listAllCoreConfigProperties: async function ({ userContext }) {
+            let response = await querier.sendGetRequest(new NormalisedURLPath(`/core-config/list`), {}, userContext);
+            return response;
+        },
     };
 }

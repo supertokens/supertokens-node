@@ -49,6 +49,7 @@ import {
     DISASSOCIATE_USER_FROM_TENANT,
     ASSOCIATE_USER_TO_TENANT,
     TENANT_THIRD_PARTY,
+    LIST_ALL_CORE_CONFIG_PROPERTIES,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -93,6 +94,7 @@ import associateUserToTenant from "./api/multitenancy/associateUserToTenant";
 import disassociateUserFromTenant from "./api/multitenancy/disassociateUserFromTenant";
 import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
 import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
+import listAllCoreConfigProperties from "./api/multitenancy/listAllCoreConfigProperties";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -413,6 +415,14 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "delete",
             },
+            {
+                id: LIST_ALL_CORE_CONFIG_PROPERTIES,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(LIST_ALL_CORE_CONFIG_PROPERTIES)
+                ),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -563,6 +573,8 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "put") {
                 apiFunction = createOrUpdateThirdPartyConfig;
             }
+        } else if (id === LIST_ALL_CORE_CONFIG_PROPERTIES) {
+            apiFunction = listAllCoreConfigProperties;
         }
 
         // If the id doesnt match any APIs return false
