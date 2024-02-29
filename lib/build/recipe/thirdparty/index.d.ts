@@ -3,7 +3,7 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
 import { SessionContainerInterface } from "../session/types";
-import { User } from "../../user";
+import { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;

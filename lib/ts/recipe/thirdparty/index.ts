@@ -19,7 +19,7 @@ import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getUserContext } from "../../utils";
 import { SessionContainerInterface } from "../session/types";
-import { User } from "../../user";
+import { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {

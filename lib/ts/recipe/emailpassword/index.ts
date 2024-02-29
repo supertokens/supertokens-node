@@ -19,9 +19,10 @@ import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDelive
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "./utils";
-import { User, getRequestFromUserContext, getUser } from "../..";
+import { getRequestFromUserContext, getUser } from "../..";
 import { getUserContext } from "../../utils";
 import { SessionContainerInterface } from "../session/types";
+import { User } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;

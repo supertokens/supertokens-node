@@ -5,8 +5,8 @@ import { RecipeInterface, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOp
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 import RecipeUserId from "../../recipeUserId";
-import { User } from "../..";
 import { SessionContainerInterface } from "../session/types";
+import { User } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
