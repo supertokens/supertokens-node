@@ -54,6 +54,17 @@ export default function getAPIImplementation(): APIInterface {
                 isSearchEnabled = true;
             }
 
+            const htmlContent = `
+            '<div class="container">' +
+            '<div>' +
+            '<p>It looks like you have encountered a <u>Content Security Policy (CSP) </u> violation while trying to load a resource. Here is the breakdown of the details:</p>' +
+            '<span><strong>Blocked URI:</strong> ' + event.blockedURI + '<br></span>' +
+            '<span><strong>Violated Directive:</strong> ' + event.violatedDirective + '<br></span>' +
+            '<span><strong>Original Policy:</strong> ' + event.originalPolicy + '<br></span>' +
+            '<p>To resolve this issue, you will need to update your CSP configuration to allow the blocked URI.</p>' +
+            '</div>' +
+            '</div>'`;
+
             return `
             <html>
                 <head>
@@ -66,8 +77,31 @@ export default function getAPIImplementation(): APIInterface {
                         window.connectionURI = "${connectionURI}"
                         window.authMode = "${authMode}"
                         window.isSearchEnabled = "${isSearchEnabled}"
+
+                        window.addEventListener('DOMContentLoaded', function() {
+                            window.addEventListener('securitypolicyviolation', function (event) {
+                                const root = document.getElementById("root");
+                                root.innerHTML = ${htmlContent}
+                            });
+                        });
                     </script>
-                    <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
+                    
+                    <style>
+                        .container{
+                            display: flex;
+                            height: 100vh;
+                            align-items: center;
+                            justify-content: center;
+                            max-width: 480px;
+                            margin: auto;
+                        }
+                        span{
+                            display: inline-block;
+                            margin: 4px 0px;
+                        }
+                    </style>
+
+                    <script src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
                     <link rel="icon" type="image/x-icon" href="${bundleDomain}/static/media/favicon.ico">
                 </head>
