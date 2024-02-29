@@ -334,6 +334,8 @@ export let signUp = Wrapper.signUp;
 
 export let signIn = Wrapper.signIn;
 
+export let verifyCredentials = Wrapper.verifyCredentials;
+
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
 export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;

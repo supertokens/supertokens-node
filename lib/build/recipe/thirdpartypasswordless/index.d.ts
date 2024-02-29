@@ -363,6 +363,7 @@ export declare let createNewCodeForDevice: typeof Wrapper.createNewCodeForDevice
 export declare let updatePasswordlessUser: typeof Wrapper.updatePasswordlessUser;
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
+export declare let verifyCode: typeof Wrapper.verifyCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
 export type { RecipeInterface, TypeProvider, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;

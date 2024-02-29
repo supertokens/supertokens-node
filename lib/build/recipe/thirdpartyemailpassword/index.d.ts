@@ -261,6 +261,7 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let emailPasswordSignUp: typeof Wrapper.emailPasswordSignUp;
 export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
+export declare let emailPasswordVerifyCredentials: typeof Wrapper.emailPasswordVerifyCredentials;
 export declare let thirdPartyGetProvider: typeof Wrapper.thirdPartyGetProvider;
 export declare let thirdPartyManuallyCreateOrUpdateUser: typeof Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;

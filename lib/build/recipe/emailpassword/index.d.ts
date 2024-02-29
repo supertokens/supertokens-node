@@ -208,6 +208,7 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let signUp: typeof Wrapper.signUp;
 export declare let signIn: typeof Wrapper.signIn;
+export declare let verifyCredentials: typeof Wrapper.verifyCredentials;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;

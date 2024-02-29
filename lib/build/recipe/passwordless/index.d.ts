@@ -296,6 +296,7 @@ export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
 export declare let signInUp: typeof Wrapper.signInUp;
+export declare let verifyCode: typeof Wrapper.verifyCode;
 export type { RecipeInterface, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

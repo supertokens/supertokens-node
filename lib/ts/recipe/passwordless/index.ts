@@ -395,6 +395,8 @@ export let createMagicLink = Wrapper.createMagicLink;
 
 export let signInUp = Wrapper.signInUp;
 
+export let verifyCode = Wrapper.verifyCode;
+
 export type { RecipeInterface, APIOptions, APIInterface };
 
 export let sendEmail = Wrapper.sendEmail;

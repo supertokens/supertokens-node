@@ -457,6 +457,8 @@ export let emailPasswordSignUp = Wrapper.emailPasswordSignUp;
 
 export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
 
+export let emailPasswordVerifyCredentials = Wrapper.emailPasswordVerifyCredentials;
+
 export let thirdPartyGetProvider = Wrapper.thirdPartyGetProvider;
 
 export let thirdPartyManuallyCreateOrUpdateUser = Wrapper.thirdPartyManuallyCreateOrUpdateUser;

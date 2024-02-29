@@ -516,6 +516,8 @@ export let revokeAllCodes = Wrapper.revokeAllCodes;
 
 export let revokeCode = Wrapper.revokeCode;
 
+export let verifyCode = Wrapper.verifyCode;
+
 export let createMagicLink = Wrapper.createMagicLink;
 
 export type { RecipeInterface, TypeProvider, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
