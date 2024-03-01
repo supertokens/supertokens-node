@@ -98,7 +98,7 @@ export default function getAPIImplementation(): APIInterface {
                         }
                     </style>
 
-                    <script src="${bundleDomain}/static/js/bundle.js"></script>
+                    <script defer src="${bundleDomain}/static/js/bundle.js"></script>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
                     <link rel="icon" type="image/x-icon" href="${bundleDomain}/static/media/favicon.ico">
                 </head>
