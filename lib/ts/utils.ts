@@ -10,11 +10,11 @@ import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
 
-export const doFetch: typeof fetch = (...args) => {
+export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
     if (typeof fetch !== "undefined") {
-        return fetch(...args);
+        return fetch(input, init);
     }
-    return crossFetch(...args);
+    return crossFetch(input, init);
 };
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
