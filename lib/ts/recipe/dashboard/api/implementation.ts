@@ -55,12 +55,12 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             const htmlContent = `
-            '<div class="container">' +
+            '<div class="csp-screen-container">' +
             '<div>' +
             '<p>It looks like you have encountered a <u>Content Security Policy (CSP) </u> violation while trying to load a resource. Here is the breakdown of the details:</p>' +
-            '<span><strong>Blocked URI:</strong> ' + event.blockedURI + '<br></span>' +
-            '<span><strong>Violated Directive:</strong> ' + event.violatedDirective + '<br></span>' +
-            '<span><strong>Original Policy:</strong> ' + event.originalPolicy + '<br></span>' +
+            '<span class="csp-screen-point"><strong>Blocked URI:</strong> ' + event.blockedURI + '<br></span>' +
+            '<span class="csp-screen-point"><strong>Violated Directive:</strong> ' + event.violatedDirective + '<br></span>' +
+            '<span class="csp-screen-point"><strong>Original Policy:</strong> ' + event.originalPolicy + '<br></span>' +
             '<p>To resolve this issue, you will need to update your CSP configuration to allow the blocked URI.</p>' +
             '</div>' +
             '</div>'`;
@@ -70,6 +70,10 @@ export default function getAPIImplementation(): APIInterface {
                 <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
+                        window.addEventListener('securitypolicyviolation', function (event) {
+                            const root = document.getElementById("root");
+                            root.innerHTML = ${htmlContent}
+                        });
                         window.staticBasePath = "${bundleDomain}/static"
                         window.dashboardAppPath = "${input.options.appInfo.apiBasePath
                             .appendPath(new NormalisedURLPath(DASHBOARD_API))
@@ -77,17 +81,10 @@ export default function getAPIImplementation(): APIInterface {
                         window.connectionURI = "${connectionURI}"
                         window.authMode = "${authMode}"
                         window.isSearchEnabled = "${isSearchEnabled}"
-
-                        window.addEventListener('DOMContentLoaded', function() {
-                            window.addEventListener('securitypolicyviolation', function (event) {
-                                const root = document.getElementById("root");
-                                root.innerHTML = ${htmlContent}
-                            });
-                        });
                     </script>
                     
                     <style>
-                        .container{
+                        .csp-screen-container{
                             display: flex;
                             height: 100vh;
                             align-items: center;
@@ -95,13 +92,13 @@ export default function getAPIImplementation(): APIInterface {
                             max-width: 480px;
                             margin: auto;
                         }
-                        span{
+                        .csp-screen-point{
                             display: inline-block;
                             margin: 4px 0px;
                         }
                     </style>
 
-                    <script src="${bundleDomain}/static/js/bundle.js"></script></head>
+                    <script src="${bundleDomain}/static/js/bundle.js"></script>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
                     <link rel="icon" type="image/x-icon" href="${bundleDomain}/static/media/favicon.ico">
                 </head>
