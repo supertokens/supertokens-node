@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.7.4] - 2024-03-01
+
+-   Adds a user friendly error screen that provides helpful information regarding Content Security Policy (CSP) issues..
+
 ## [16.7.3] - 2024-02-26
 
 -   Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.
