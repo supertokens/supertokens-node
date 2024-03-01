@@ -91,6 +91,8 @@ export default function getAPIImplementation(): APIInterface {
                             justify-content: center;
                             max-width: 480px;
                             margin: auto;
+
+                            font-size: 16px;
                         }
                         .csp-screen-point{
                             display: inline-block;
