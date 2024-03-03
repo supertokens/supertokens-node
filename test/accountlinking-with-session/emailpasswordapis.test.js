@@ -16,7 +16,7 @@ const { printPath, setupST, killAllST, cleanST } = require("../utils");
 const {
     getTestEmail,
     setup,
-    post,
+    postAPI,
     createEmailPasswordUser,
     makeUserPrimary,
     getSessionForUser,
@@ -1368,7 +1368,7 @@ describe(`emailpassword accountlinkingTests w/ session: ${printPath(
 });
 
 async function signUpPOST(app, email, session, password = testPassword) {
-    return post(
+    return postAPI(
         app,
         "/auth/signup",
         {
@@ -1382,7 +1382,7 @@ async function signUpPOST(app, email, session, password = testPassword) {
 }
 
 async function signInPOST(app, email, session, password = testPassword) {
-    return post(
+    return postAPI(
         app,
         "/auth/signin",
         {

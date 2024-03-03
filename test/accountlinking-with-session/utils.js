@@ -13,10 +13,10 @@ const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
 const request = require("supertest");
 
-async function setup(config = {}) {
+exports.setup = async function setup(config = {}) {
     const connectionURI = await startSTWithMultitenancyAndAccountLinking();
     supertokens.init({
-        // debug: true,
+        debug: true,
         supertokens: {
             connectionURI,
         },
@@ -50,6 +50,7 @@ async function setup(config = {}) {
                                 thirdPartyId: "custom",
                                 authorizationEndpoint: "https://test.com/oauth/auth",
                                 tokenEndpoint: "https://test.com/oauth/token",
+                                requireEmail: false,
                                 clients: [
                                     {
                                         clientId: "supertokens",
@@ -65,9 +66,9 @@ async function setup(config = {}) {
                                         throw new Error("Credentials error");
                                     }
                                     return {
-                                        thirdPartyUserId: oAuthTokens.userId ?? "user",
-                                        email: {
-                                            id: oAuthTokens.email ?? "email@test.com",
+                                        thirdPartyUserId: oAuthTokens.userId ?? "userId",
+                                        email: oAuthTokens.email && {
+                                            id: oAuthTokens.email,
                                             isVerified: oAuthTokens.isVerified === true,
                                         },
                                         rawUserInfoFromProvider: {},
@@ -126,10 +127,13 @@ async function setup(config = {}) {
     app.use(middleware());
     app.use(errorHandler());
     return app;
-}
-exports.setup = setup;
+};
 
-async function createPasswordlessUser(accountInfo, isVerified = true, tenantId = "public") {
+exports.createPasswordlessUser = async function createPasswordlessUser(
+    accountInfo,
+    isVerified = true,
+    tenantId = "public"
+) {
     const res = await Passwordless.signInUp({ ...accountInfo, tenantId, userContext: { DO_NOT_LINK: true } });
     assert.strictEqual(res.status, "OK");
 
@@ -137,10 +141,13 @@ async function createPasswordlessUser(accountInfo, isVerified = true, tenantId =
         await EmailVerification.unverifyEmail(res.recipeUserId);
     }
     return res.user;
-}
-exports.createPasswordlessUser = createPasswordlessUser;
+};
 
-async function createEmailPasswordUser(email, isVerified = false, tenantId = "public") {
+exports.createEmailPasswordUser = async function createEmailPasswordUser(
+    email,
+    isVerified = false,
+    tenantId = "public"
+) {
     const res = await EmailPassword.signUp(tenantId, email, exports.testPassword, undefined, { DO_NOT_LINK: true });
     assert.strictEqual(res.status, "OK");
 
@@ -151,10 +158,14 @@ async function createEmailPasswordUser(email, isVerified = false, tenantId = "pu
     }
 
     return res.user;
-}
-exports.createEmailPasswordUser = createEmailPasswordUser;
+};
 
-async function createThirdPartyUser(email, isVerified = false, tenantId = "public", thirdPartyUserId = email) {
+exports.createThirdPartyUser = async function createThirdPartyUser(
+    email,
+    isVerified = false,
+    tenantId = "public",
+    thirdPartyUserId = email
+) {
     const res = await ThirdParty.manuallyCreateOrUpdateUser(
         tenantId,
         "custom",
@@ -169,45 +180,62 @@ async function createThirdPartyUser(email, isVerified = false, tenantId = "publi
     assert.strictEqual(res.status, "OK");
 
     return res.user;
-}
-exports.createThirdPartyUser = createThirdPartyUser;
+};
 
-async function makeUserPrimary(user) {
+exports.makeUserPrimary = async function makeUserPrimary(user) {
     const res = await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
     assert.strictEqual(res.status, "OK");
     return res.user;
-}
-exports.makeUserPrimary = makeUserPrimary;
+};
 
-async function linkUsers(primaryUser, otherUser) {
+exports.linkUsers = async function linkUsers(primaryUser, otherUser) {
     const res = await AccountLinking.linkAccounts(otherUser.loginMethods[0].recipeUserId, primaryUser.id);
     assert.strictEqual(res.status, "OK");
     return res.user;
-}
-exports.linkUsers = linkUsers;
+};
 
-async function getUpdatedUserFromDBForRespCompare(user) {
+exports.getUpdatedUserFromDBForRespCompare = async function getUpdatedUserFromDBForRespCompare(user) {
     return JSON.parse(JSON.stringify((await supertokens.getUser(user.id)).toJson()));
-}
-exports.getUpdatedUserFromDBForRespCompare = getUpdatedUserFromDBForRespCompare;
+};
 
-async function getSessionForUser(user, tenantId = "public") {
+exports.getSessionForUser = async function getSessionForUser(user, tenantId = "public") {
     return Session.createNewSessionWithoutRequestResponse(tenantId, user.loginMethods[0].recipeUserId);
-}
-exports.getSessionForUser = getSessionForUser;
+};
 
-async function post(app, path, body, session) {
+exports.postAPI = async function post(app, path, body, session) {
     const req = request(app).post(path);
     if (session) {
         const sessionTokens = session.getAllSessionTokensDangerously();
         req.set("Authorization", `Bearer ${sessionTokens.accessToken}`);
     }
     return req.send(body);
-}
-exports.post = post;
-function getTestEmail(suffix) {
+};
+
+exports.getAPI = async function getAPI(app, path, session) {
+    const req = request(app).get(path);
+    if (session) {
+        const sessionTokens = session.getAllSessionTokensDangerously();
+        req.set("Authorization", `Bearer ${sessionTokens.accessToken}`);
+    }
+    return req.send();
+};
+
+exports.putAPI = async function putAPI(app, path, body, session) {
+    const req = request(app).put(path);
+    if (session) {
+        const sessionTokens = session.getAllSessionTokensDangerously();
+        req.set("Authorization", `Bearer ${sessionTokens.accessToken}`);
+    }
+    return req.send(body);
+};
+
+exports.getTestEmail = function getTestEmail(suffix) {
     return `john.doe+${Date.now()}+${suffix ?? 1}@supertokens.io`;
-}
-exports.getTestEmail = getTestEmail;
+};
+
 exports.testPassword = "Asdf12..";
 exports.wrongPassword = "nopenope";
+
+exports.getSessionFromResponse = function getSessionFromResponse(resp) {
+    return Session.getSessionWithoutRequestResponse(resp.headers["st-access-token"], undefined);
+};

@@ -16,7 +16,7 @@ const { printPath, setupST, killAllST, cleanST } = require("../utils");
 const {
     getTestEmail,
     setup,
-    post,
+    postAPI,
     createEmailPasswordUser,
     makeUserPrimary,
     getSessionForUser,
@@ -1364,7 +1364,7 @@ describe(`thirdparty accountlinkingTests w/ session: ${printPath(
 });
 
 async function signInUpPOST(app, email, isVerified, session, userId = email, error = undefined) {
-    return post(
+    return postAPI(
         app,
         "/auth/signinup",
         {

@@ -169,17 +169,17 @@ export default class Recipe extends RecipeModule {
                     } else {
                         // This factor hasn't been set up, we list all emails belonging to the user
                         if (
-                            recipeLoginMethodsOrderedByTimeJoinedOldestFirst.some(
+                            orderedLoginMethodsByTimeJoinedOldestFirst.some(
                                 (lm) => lm.email !== undefined && !isFakeEmail(lm.email)
                             )
                         ) {
                             // If there is at least one real email address linked to the user, we only suggest real addresses
-                            result = recipeLoginMethodsOrderedByTimeJoinedOldestFirst
+                            result = orderedLoginMethodsByTimeJoinedOldestFirst
                                 .filter((lm) => lm.email !== undefined && !isFakeEmail(lm.email))
                                 .map((lm) => lm.email!);
                         } else {
                             // Else we use the fake ones
-                            result = recipeLoginMethodsOrderedByTimeJoinedOldestFirst
+                            result = orderedLoginMethodsByTimeJoinedOldestFirst
                                 .filter((lm) => lm.email !== undefined && isFakeEmail(lm.email))
                                 .map((lm) => lm.email!);
                         }

@@ -16,7 +16,7 @@ const { printPath, setupST, killAllST, cleanST } = require("../utils");
 const {
     getTestEmail,
     setup,
-    post,
+    postAPI,
     createEmailPasswordUser,
     makeUserPrimary,
     getSessionForUser,
@@ -868,7 +868,7 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
 });
 
 async function consumeCodePOST(app, code, session) {
-    return post(
+    return postAPI(
         app,
         "/auth/signinup/code/consume",
         code.userInputCode !== undefined
@@ -886,5 +886,5 @@ async function consumeCodePOST(app, code, session) {
 }
 
 async function createCodePOST(app, accountInfo, session) {
-    return post(app, "/auth/signinup/code", accountInfo, session);
+    return postAPI(app, "/auth/signinup/code", accountInfo, session);
 }
