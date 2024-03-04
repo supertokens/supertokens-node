@@ -90,7 +90,6 @@ export declare const AuthUtils: {
      *
      * It returns the following statuses:
      * - OK: the auth flow went as expected
-     * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
      * - LINKING_TO_SESSION_USER_FAILED(EMAIL_VERIFICATION_REQUIRED): if we couldn't link to the session user because linking requires email verification
      * - LINKING_TO_SESSION_USER_FAILED(RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
@@ -103,7 +102,6 @@ export declare const AuthUtils: {
         authenticatedUser,
         recipeUserId,
         isSignUp,
-        signInVerifiesLoginMethod,
         factorId,
         session,
         req,
@@ -116,7 +114,6 @@ export declare const AuthUtils: {
         tenantId: string;
         factorId: string;
         isSignUp: boolean;
-        signInVerifiesLoginMethod: boolean;
         session?: SessionContainerInterface | undefined;
         userContext: UserContext;
         req: BaseRequest;

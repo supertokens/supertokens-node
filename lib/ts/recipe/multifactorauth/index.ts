@@ -19,7 +19,7 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import { SessionContainerInterface } from "../session/types";
 import { getUser } from "../..";
 import { getUserContext } from "../../utils";
-import { getMFARelatedInfoFromSession } from "./utils";
+import { updateAndGetMFARelatedInfoInSession } from "./utils";
 import { FactorIds } from "./types";
 
 export default class Wrapper {
@@ -35,7 +35,7 @@ export default class Wrapper {
     ) {
         let ctx = getUserContext(userContext);
 
-        const mfaInfo = await getMFARelatedInfoFromSession({
+        const mfaInfo = await updateAndGetMFARelatedInfoInSession({
             session,
             userContext: ctx,
         });
@@ -54,7 +54,7 @@ export default class Wrapper {
     static async getMFARequirementsForAuth(session: SessionContainerInterface, userContext?: Record<string, any>) {
         let ctx = getUserContext(userContext);
 
-        const mfaInfo = await getMFARelatedInfoFromSession({
+        const mfaInfo = await updateAndGetMFARelatedInfoInSession({
             session,
             userContext: ctx,
         });

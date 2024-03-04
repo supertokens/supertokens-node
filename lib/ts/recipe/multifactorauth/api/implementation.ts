@@ -16,12 +16,12 @@
 import { APIInterface } from "../";
 import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
 import SessionError from "../../session/error";
-import { getMFARelatedInfoFromSession } from "../utils";
+import { updateAndGetMFARelatedInfoInSession } from "../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
         resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
-            const mfaInfo = await getMFARelatedInfoFromSession({
+            const mfaInfo = await updateAndGetMFARelatedInfoInSession({
                 session,
                 userContext,
             });

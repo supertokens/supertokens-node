@@ -16,7 +16,7 @@ const request = require("supertest");
 exports.setup = async function setup(config = {}) {
     const connectionURI = await startSTWithMultitenancyAndAccountLinking();
     supertokens.init({
-        debug: true,
+        // debug: true,
         supertokens: {
             connectionURI,
         },

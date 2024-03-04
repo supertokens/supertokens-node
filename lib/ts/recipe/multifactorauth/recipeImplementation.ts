@@ -19,6 +19,7 @@ import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import type MultiFactorAuthRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
 import { SessionClaimValidator } from "../session";
+import { updateAndGetMFARelatedInfoInSession } from "./utils";
 
 export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface {
     return {
@@ -142,17 +143,11 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
         },
 
         markFactorAsCompleteInSession: async function (this: RecipeInterface, { session, factorId, userContext }) {
-            const currentClaimValue = await session.getClaimValue(MultiFactorAuthClaim);
-            const updatedCompletedFactors = {
-                ...currentClaimValue?.c,
-                [factorId]: Math.floor(Date.now() / 1000),
-            };
-
-            await session.setClaimValue(MultiFactorAuthClaim, {
-                c: updatedCompletedFactors,
-                v: currentClaimValue?.v == undefined ? false : currentClaimValue.v,
+            await updateAndGetMFARelatedInfoInSession({
+                session,
+                updatedFactorId: factorId,
+                userContext,
             });
-            await session.fetchAndSetClaim(MultiFactorAuthClaim, userContext); // updates value for `v`
         },
 
         getRequiredSecondaryFactorsForUser: async function ({ userId, userContext }) {

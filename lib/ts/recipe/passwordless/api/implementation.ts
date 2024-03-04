@@ -162,7 +162,6 @@ export default function getAPIImplementation(): APIInterface {
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId,
                 isSignUp,
-                signInVerifiesLoginMethod: true,
                 authenticatedUser: response.user ?? authenticatingUser!.user,
                 recipeUserId: response.recipeUserId ?? authenticatingUser!.loginMethod!.recipeUserId,
                 req: input.options.req,

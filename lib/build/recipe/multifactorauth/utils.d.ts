@@ -5,7 +5,7 @@ import { SessionContainerInterface } from "../session/types";
 import { RecipeUserId, User } from "../..";
 import { TenantConfig } from "../multitenancy/types";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
-export declare const getMFARelatedInfoFromSession: (
+export declare const updateAndGetMFARelatedInfoInSession: (
     input: (
         | {
               sessionRecipeUserId: RecipeUserId;
@@ -16,6 +16,7 @@ export declare const getMFARelatedInfoFromSession: (
               session: SessionContainerInterface;
           }
     ) & {
+        updatedFactorId?: string;
         userContext: UserContext;
     }
 ) => Promise<{

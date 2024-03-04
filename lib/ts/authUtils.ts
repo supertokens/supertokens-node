@@ -7,7 +7,7 @@ import { SessionContainerInterface } from "./recipe/session/types";
 import { UserContext } from "./types";
 import { LoginMethod, User } from "./user";
 import RecipeUserId from "./recipeUserId";
-import { getMFARelatedInfoFromSession } from "./recipe/multifactorauth/utils";
+import { updateAndGetMFARelatedInfoInSession } from "./recipe/multifactorauth/utils";
 import { isValidFirstFactor } from "./recipe/multitenancy/utils";
 import SessionError from "./recipe/session/error";
 import { getUser } from ".";
@@ -213,7 +213,6 @@ export const AuthUtils = {
      *
      * It returns the following statuses:
      * - OK: the auth flow went as expected
-     * - SIGN_UP_NOT_ALLOWED: if isSignUpAllowed returned false. This is mostly because of conflicting users with the same account info
      * - LINKING_TO_SESSION_USER_FAILED(EMAIL_VERIFICATION_REQUIRED): if we couldn't link to the session user because linking requires email verification
      * - LINKING_TO_SESSION_USER_FAILED(RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if we couldn't link to the session user because the authenticated user has been linked to another primary user concurrently
@@ -226,7 +225,6 @@ export const AuthUtils = {
         authenticatedUser,
         recipeUserId,
         isSignUp,
-        signInVerifiesLoginMethod,
         factorId,
         session,
         req,
@@ -239,7 +237,6 @@ export const AuthUtils = {
         tenantId: string;
         factorId: string;
         isSignUp: boolean;
-        signInVerifiesLoginMethod: boolean;
         session?: SessionContainerInterface;
         userContext: UserContext;
         req: BaseRequest;
@@ -252,22 +249,6 @@ export const AuthUtils = {
         );
 
         const mfaInstance = MultiFactorAuthRecipe.getInstance();
-        const accountLinkingInstance = AccountLinking.getInstance();
-
-        // We check if sign in is allowed
-        if (
-            !isSignUp &&
-            !(await accountLinkingInstance.isSignInAllowed({
-                user: authenticatedUser,
-                signInVerifiesLoginMethod,
-                tenantId,
-                session,
-                userContext,
-            }))
-        ) {
-            logDebugMessage(`postAuthChecks returning SIGN_IN_NOT_ALLOWED`);
-            return { status: "SIGN_IN_NOT_ALLOWED" };
-        }
 
         let respSession = session;
         if (session !== undefined) {
@@ -940,7 +921,7 @@ async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
                 `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid checking if linking is allowed by the mfa recipe`
             );
             let caughtSetupFactorError;
-            const mfaInfo = await getMFARelatedInfoFromSession({
+            const mfaInfo = await updateAndGetMFARelatedInfoInSession({
                 session,
                 userContext,
             });

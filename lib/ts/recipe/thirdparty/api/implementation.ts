@@ -240,7 +240,6 @@ export default function getAPIInterface(): APIInterface {
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 factorId: "thirdparty",
                 isSignUp,
-                signInVerifiesLoginMethod: false,
                 authenticatedUser: response.user,
                 recipeUserId: response.recipeUserId,
                 req: input.options.req,

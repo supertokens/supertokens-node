@@ -19,7 +19,7 @@ import { SessionClaim } from "../session/claims";
 import { JSONObject } from "../usermetadata";
 import { MFAClaimValue, MFARequirementList } from "./types";
 import { UserContext } from "../../types";
-import { getMFARelatedInfoFromSession } from "./utils";
+import { updateAndGetMFARelatedInfoInSession } from "./utils";
 
 /**
  * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
@@ -195,7 +195,7 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         currentPayload: JSONObject | undefined,
         userContext: UserContext
     ) => {
-        const mfaInfo = await getMFARelatedInfoFromSession({
+        const mfaInfo = await updateAndGetMFARelatedInfoInSession({
             sessionRecipeUserId: recipeUserId,
             tenantId,
             accessTokenPayload: currentPayload,

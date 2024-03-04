@@ -51,7 +51,7 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
 }
 
 // This function is to reuse a piece of code that is needed in multiple places
-export const getMFARelatedInfoFromSession = async function (
+export const updateAndGetMFARelatedInfoInSession = async function (
     input: (
         | {
               sessionRecipeUserId: RecipeUserId;
@@ -62,6 +62,7 @@ export const getMFARelatedInfoFromSession = async function (
               session: SessionContainerInterface;
           }
     ) & {
+        updatedFactorId?: string;
         userContext: UserContext;
     }
 ): Promise<{
@@ -105,6 +106,19 @@ export const getMFARelatedInfoFromSession = async function (
     });
 
     let mfaClaimValue = MultiFactorAuthClaim.getValueFromPayload(accessTokenPayload);
+
+    if (input.updatedFactorId) {
+        if (mfaClaimValue === undefined) {
+            mfaClaimValue = {
+                c: {
+                    [input.updatedFactorId]: Math.floor(Date.now() / 1000),
+                },
+                v: true, // updated later in the function
+            };
+        } else {
+            mfaClaimValue.c[input.updatedFactorId] = Math.floor(Date.now() / 1000);
+        }
+    }
 
     if (mfaClaimValue === undefined) {
         // This can happen with older session, because we did not add MFA claims previously.

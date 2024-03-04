@@ -682,7 +682,6 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatedUser: signInResponse.user,
                 recipeUserId: signInResponse.recipeUserId,
                 isSignUp: false,
-                signInVerifiesLoginMethod: false,
                 factorId: "emailpassword",
                 session,
                 req: options.req,
@@ -749,14 +748,7 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            if (isFakeEmail(email) && session === undefined) {
-                // Fake emails cannot be used as a first factor
-                return {
-                    status: "EMAIL_ALREADY_EXISTS_ERROR",
-                };
-            }
-
-            const res = await AuthUtils.preAuthChecks({
+            const preAuthCheckRes = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
                     recipeId: "emailpassword",
                     email,
@@ -771,7 +763,7 @@ export default function getAPIImplementation(): APIInterface {
                 session,
             });
 
-            if (res.status === "SIGN_UP_NOT_ALLOWED") {
+            if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
                 const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                     tenantId,
                     accountInfo: {
@@ -790,8 +782,15 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
             }
-            if (res.status !== "OK") {
-                return AuthUtils.getErrorStatusResponseWithReason(res, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
+            if (preAuthCheckRes.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(preAuthCheckRes, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
+            }
+
+            if (isFakeEmail(email) && preAuthCheckRes.isFirstFactor) {
+                // Fake emails cannot be used as a first factor
+                return {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR",
+                };
             }
 
             const signUpResponse = await options.recipeImplementation.signUp({
@@ -813,7 +812,6 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
                 isSignUp: true,
-                signInVerifiesLoginMethod: false,
                 factorId: "emailpassword",
                 session,
                 req: options.req,
@@ -821,10 +819,6 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
             });
-
-            if (postAuthChecks.status === "SIGN_IN_NOT_ALLOWED") {
-                throw new Error("This should never happen: post-auth checks should not fail for sign up");
-            }
 
             if (postAuthChecks.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
