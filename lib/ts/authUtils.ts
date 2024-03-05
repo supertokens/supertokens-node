@@ -498,13 +498,14 @@ export const AuthUtils = {
             // If there is no active session we have nothing to link to - so this has to be a first factor sign in
             return { status: "OK", isFirstFactor: true };
         } else {
-            if (
-                !recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config) &&
-                MultiFactorAuthRecipe.getInstance() !== undefined
-            ) {
-                throw new Error(
-                    "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
-                );
+            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config)) {
+                if (MultiFactorAuthRecipe.getInstance() !== undefined) {
+                    throw new Error(
+                        "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
+                    );
+                } else {
+                    return { status: "OK", isFirstFactor: true };
+                }
             }
 
             // If the input and the session user are the same
@@ -643,6 +644,12 @@ export const AuthUtils = {
         }
 
         if (authTypeRes.isFirstFactor) {
+            if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config)) {
+                logDebugMessage(
+                    "linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo skipping link by account info because this is a first factor auth and the app hasn't defined shouldDoAutomaticAccountLinking"
+                );
+                return { status: "OK", user: inputUser };
+            }
             logDebugMessage(
                 "linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by account info because this is a first factor auth"
             );
