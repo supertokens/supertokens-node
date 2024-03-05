@@ -44,6 +44,7 @@ export const TENANT_API = "/api/tenant";
 export const ASSOCIATE_USER_TO_TENANT = "/api/tenants/user/associate";
 export const DISASSOCIATE_USER_FROM_TENANT = "/api/tenants/user/disassociate";
 export const TENANT_THIRD_PARTY = "/api/tenants/third-party";
+export const LIST_ALL_THIRD_PARTY_PROVIDERS = "/api/tenants/third-party/providers";
 
 export const UNLINK_USER = "/api/user/unlink";
 

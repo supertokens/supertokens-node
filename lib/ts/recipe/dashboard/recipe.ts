@@ -50,6 +50,7 @@ import {
     ASSOCIATE_USER_TO_TENANT,
     TENANT_THIRD_PARTY,
     LIST_ALL_CORE_CONFIG_PROPERTIES,
+    LIST_ALL_THIRD_PARTY_PROVIDERS,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -95,6 +96,7 @@ import disassociateUserFromTenant from "./api/multitenancy/disassociateUserFromT
 import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
 import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
 import listAllCoreConfigProperties from "./api/multitenancy/listAllCoreConfigProperties";
+import getAllThirdPartyProviders from "./api/multitenancy/getAllThirdPartyProviders";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -423,6 +425,14 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "get",
             },
+            {
+                id: LIST_ALL_THIRD_PARTY_PROVIDERS,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(LIST_ALL_THIRD_PARTY_PROVIDERS)
+                ),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -575,6 +585,8 @@ export default class Recipe extends RecipeModule {
             }
         } else if (id === LIST_ALL_CORE_CONFIG_PROPERTIES) {
             apiFunction = listAllCoreConfigProperties;
+        } else if (id === LIST_ALL_THIRD_PARTY_PROVIDERS) {
+            apiFunction = getAllThirdPartyProviders;
         }
 
         // If the id doesnt match any APIs return false
