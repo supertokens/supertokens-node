@@ -164,7 +164,6 @@ export type RecipeInterface = {
 
     consumePasswordResetToken(input: {
         token: string;
-        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -231,7 +230,6 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
-              session: SessionContainerInterface | undefined;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
@@ -255,7 +253,6 @@ export type APIInterface = {
               }[];
               token: string;
               tenantId: string;
-              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

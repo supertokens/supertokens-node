@@ -80,7 +80,6 @@ export declare type RecipeInterface = {
     verifyEmailUsingToken(input: {
         token: string;
         attemptAccountLinking: boolean;
-        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -127,7 +126,6 @@ export declare type APIInterface = {
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
-              session: SessionContainerInterface | undefined;
           }) => Promise<
               | {
                     status: "OK";

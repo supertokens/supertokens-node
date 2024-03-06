@@ -93,7 +93,6 @@ export type RecipeInterface = {
     verifyEmailUsingToken(input: {
         token: string;
         attemptAccountLinking: boolean;
-        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
@@ -133,7 +132,6 @@ export type APIInterface = {
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
-              session: SessionContainerInterface | undefined;
           }) => Promise<
               | { status: "OK"; user: UserEmailInfo; newSession?: SessionContainerInterface }
               | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }

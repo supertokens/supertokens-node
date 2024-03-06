@@ -19,10 +19,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         session?: SessionContainerInterface,
         userContext?: Record<string, any>
-    ): Promise<{
-        status: string;
-        user: import("../../types").User;
-    }>;
+    ): Promise<import("../../types").User>;
     /**
      * This function returns the primary user that the input recipe ID can be
      * linked to. It can be used to determine which primary account the linking

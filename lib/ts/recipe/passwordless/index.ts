@@ -207,14 +207,12 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
-                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
-                  session?: SessionContainerInterface;
                   tenantId: string;
                   userContext?: Record<string, any>;
               }

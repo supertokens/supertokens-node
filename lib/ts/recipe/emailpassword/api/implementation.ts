@@ -57,7 +57,6 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             tenantId,
             options,
-            session,
             userContext,
         }): Promise<
             | {
@@ -175,7 +174,7 @@ export default function getAPIImplementation(): APIInterface {
                           email,
                       },
                 primaryUserAssociatedWithEmail,
-                session,
+                undefined,
                 tenantId,
                 userContext
             );
@@ -208,7 +207,7 @@ export default function getAPIImplementation(): APIInterface {
                         email,
                     },
                     isVerified: true, // cause when the token is consumed, we will mark the email as verified
-                    session,
+                    session: undefined,
                     tenantId,
                     userContext,
                 });
@@ -334,7 +333,6 @@ export default function getAPIImplementation(): APIInterface {
         passwordResetPOST: async function ({
             formFields,
             token,
-            session,
             tenantId,
             options,
             userContext,
@@ -344,7 +342,6 @@ export default function getAPIImplementation(): APIInterface {
                 value: string;
             }[];
             token: string;
-            session: SessionContainerInterface | undefined;
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;
@@ -374,7 +371,6 @@ export default function getAPIImplementation(): APIInterface {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             tenantId,
                             token: tokenResponse.token,
-                            session,
                             attemptAccountLinking: false, // we pass false here cause
                             // we anyway do account linking in this API after this function is
                             // called.
@@ -434,7 +430,6 @@ export default function getAPIImplementation(): APIInterface {
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
-                session,
                 tenantId,
                 userContext,
             });
@@ -537,7 +532,7 @@ export default function getAPIImplementation(): APIInterface {
                         const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
                             tenantId,
                             inputUser: createUserResponse.user,
-                            session,
+                            session: undefined,
                             userContext,
                         });
                         const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;

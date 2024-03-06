@@ -70,7 +70,6 @@ export default function getRecipeInterface(
         emailPasswordVerifyCredentials: async function (input: {
             email: string;
             password: string;
-            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }): Promise<{ status: "OK" } | { status: "WRONG_CREDENTIALS_ERROR" }> {
@@ -174,7 +173,6 @@ export default function getRecipeInterface(
         consumePasswordResetToken: async function (input: {
             token: string;
             tenantId: string;
-            session: SessionContainerInterface | undefined;
             userContext: UserContext;
         }) {
             return originalEmailPasswordImplementation.consumePasswordResetToken.bind(DerivedEP(this))(input);

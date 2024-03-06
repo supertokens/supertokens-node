@@ -77,7 +77,10 @@ export const isValidFirstFactor = async function (
     if (configuredFirstFactors === undefined) {
         configuredFirstFactors = mtRecipe.allAvailableFirstFactors;
     }
-    // Filter factors by available factors (from supertokens.init), but also allow custom factors
+
+    // Here we filter the array so that we only have:
+    // 1. Factors that other recipes have marked as available
+    // 2. Custom factors (not in the built-in FactorIds list)
     configuredFirstFactors = configuredFirstFactors.filter(
         (factorId: string) =>
             mtRecipe.allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)

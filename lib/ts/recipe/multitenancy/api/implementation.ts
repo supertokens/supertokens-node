@@ -71,6 +71,9 @@ export default function getAPIInterface(): APIInterface {
                 if (validRes.status === "OK") {
                     validFirstFactors.push(factorId);
                 }
+                if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+                    throw new Error("Tenant not found");
+                }
             }
 
             return {

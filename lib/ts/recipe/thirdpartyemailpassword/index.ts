@@ -310,7 +310,6 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
-        session?: SessionContainerInterface | undefined,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -318,7 +317,7 @@ export default class Wrapper {
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
     > {
-        const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, session, userContext);
+        const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
 
         if (consumeResp.status !== "OK") {
             return consumeResp;
@@ -346,15 +345,9 @@ export default class Wrapper {
         };
     }
 
-    static consumePasswordResetToken(
-        tenantId: string,
-        token: string,
-        session?: SessionContainerInterface,
-        userContext?: Record<string, any>
-    ) {
+    static consumePasswordResetToken(tenantId: string, token: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
-            session,
             tenantId,
             userContext: getUserContext(userContext),
         });

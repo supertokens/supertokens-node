@@ -50,9 +50,9 @@ export default class Wrapper {
             userContext: getUserContext(userContext),
         });
         if (linkRes.status === "NO_LINK") {
-            return { status: "OK", user };
+            return user;
         }
-        return { status: "OK", user: linkRes.user };
+        return linkRes.user;
     }
 
     /**

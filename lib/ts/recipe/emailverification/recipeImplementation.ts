@@ -52,7 +52,6 @@ export default function getRecipeInterface(
         verifyEmailUsingToken: async function ({
             token,
             attemptAccountLinking,
-            session,
             tenantId,
             userContext,
         }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
@@ -83,7 +82,7 @@ export default function getRecipeInterface(
                             await AccountLinking.tryLinkingByAccountInfoOrCreatePrimaryUser({
                                 tenantId,
                                 inputUser: updatedUser,
-                                session,
+                                session: undefined,
                                 userContext,
                             });
                         }

@@ -50,7 +50,6 @@ export const userEmailVerifyPut = async (
             tenantId,
             tokenResponse.token,
             undefined,
-            undefined,
             userContext
         );
 

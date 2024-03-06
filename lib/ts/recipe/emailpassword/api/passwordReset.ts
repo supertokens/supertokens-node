@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import Session from "../../session";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
@@ -62,24 +61,9 @@ export default async function passwordReset(
         });
     }
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
-
-    if (session !== undefined) {
-        tenantId = session.getTenantId();
-    }
-
     let result = await apiImplementation.passwordResetPOST({
         formFields,
         token,
-        session,
         tenantId,
         options,
         userContext,

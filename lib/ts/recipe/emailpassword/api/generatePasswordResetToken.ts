@@ -17,7 +17,6 @@ import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
-import Session from "../../session";
 
 export default async function generatePasswordResetToken(
     apiImplementation: APIInterface,
@@ -44,24 +43,9 @@ export default async function generatePasswordResetToken(
         userContext
     );
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
-
-    if (session !== undefined) {
-        tenantId = session.getTenantId();
-    }
-
     let result = await apiImplementation.generatePasswordResetTokenPOST({
         formFields,
         tenantId,
-        session,
         options,
         userContext,
     });

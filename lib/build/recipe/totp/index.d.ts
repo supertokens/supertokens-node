@@ -30,7 +30,7 @@ export default class Wrapper {
         newDeviceName: string,
         userContext?: Record<string, any>
     ): Promise<{
-        status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR";
+        status: "OK" | "UNKNOWN_DEVICE_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR";
     }>;
     static listDevices(
         userId: string,

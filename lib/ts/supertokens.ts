@@ -129,18 +129,17 @@ export default class SuperTokens {
             this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
         }
         if (totpFound && !multiFactorAuthFound) {
-            // we want MFA to be enabled if totp is enabled
-            this.recipeModules.push(MultiFactorAuthRecipe.init()(this.appInfo, this.isInServerlessEnv));
-            multiFactorAuthFound = true;
+            throw new Error("Please initialize the MultiFactorAuth recipe to use TOTP.");
         }
-        if (multiFactorAuthFound && !userMetadataFound) {
-            // we want user metadata to be initialized if MFA is enabled
+        if (!userMetadataFound) {
+            // Initializing the user metadata recipe shouldn't cause any issues/side effects and it doesn't expose any APIs,
+            // so we can just always initialize it
             this.recipeModules.push(UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv));
-            // While for many usecases account linking recipe also has to be initialized for MFA to function well,
-            // the app doesn't have to do that if they only use TOTP (which shouldn't be that uncommon)
-            // To let those cases function without initializing account linking we do not check it here, but when
-            // the authentication endpoints are called.
         }
+        // While for many usecases account linking recipe also has to be initialized for MFA to function well,
+        // the app doesn't have to do that if they only use TOTP (which shouldn't be that uncommon)
+        // To let those cases function without initializing account linking we do not check it here, but when
+        // the authentication endpoints are called.
 
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }

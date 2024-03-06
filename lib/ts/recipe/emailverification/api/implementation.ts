@@ -11,7 +11,7 @@ export default function getAPIInterface(): APIInterface {
     return {
         verifyEmailPOST: async function (
             this: APIInterface,
-            { token, tenantId, options, session, userContext }
+            { token, tenantId, options, userContext }
         ): Promise<
             | { status: "OK"; user: UserEmailInfo; newSession?: SessionContainerInterface }
             | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
@@ -20,7 +20,6 @@ export default function getAPIInterface(): APIInterface {
             const verifyTokenResponse = await options.recipeImplementation.verifyEmailUsingToken({
                 token,
                 tenantId,
-                session,
                 attemptAccountLinking: true,
                 userContext,
             });
@@ -34,7 +33,7 @@ export default function getAPIInterface(): APIInterface {
                 {
                     req: options.req,
                     res: options.res,
-                    session,
+                    session: undefined,
                     recipeUserIdWhoseEmailGotVerified: verifyTokenResponse.user.recipeUserId,
                     userContext,
                 }

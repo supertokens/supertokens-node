@@ -9,7 +9,6 @@ import {
     TypeEmailVerificationEmailDeliveryInput,
 } from "./types";
 import RecipeUserId from "../../recipeUserId";
-import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -60,7 +59,6 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         attemptAccountLinking?: boolean,
-        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {

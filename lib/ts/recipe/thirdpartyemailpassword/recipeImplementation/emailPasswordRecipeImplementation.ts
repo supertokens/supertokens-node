@@ -57,7 +57,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
 
         consumePasswordResetToken: async function (input: {
             token: string;
-            session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
         }) {

@@ -93,14 +93,9 @@ export default class Wrapper {
         email: string,
         password: string,
         userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
-    >;
+    ): Promise<{
+        status: "OK" | "WRONG_CREDENTIALS_ERROR";
+    }>;
     /**
      * We do not make email optional here cause we want to
      * allow passing in primaryUserId. If we make email optional,
@@ -130,7 +125,6 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
-        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -144,7 +138,6 @@ export default class Wrapper {
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
-        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {

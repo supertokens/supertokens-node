@@ -27,7 +27,20 @@ export default class Wrapper {
         skew?: number,
         period?: number,
         userContext?: Record<string, any>
-    ) {
+    ): Promise<
+        | {
+              status: "OK";
+              deviceName: string;
+              secret: string;
+              qrCodeString: string;
+          }
+        | {
+              status: "DEVICE_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
             userId,
             userIdentifierInfo,
@@ -43,7 +56,9 @@ export default class Wrapper {
         existingDeviceName: string,
         newDeviceName: string,
         userContext?: Record<string, any>
-    ) {
+    ): Promise<{
+        status: "OK" | "UNKNOWN_DEVICE_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR";
+    }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
             userId,
             existingDeviceName,
@@ -52,14 +67,32 @@ export default class Wrapper {
         });
     }
 
-    static async listDevices(userId: string, userContext?: Record<string, any>) {
+    static async listDevices(
+        userId: string,
+        userContext?: Record<string, any>
+    ): Promise<{
+        status: "OK";
+        devices: {
+            name: string;
+            period: number;
+            skew: number;
+            verified: boolean;
+        }[];
+    }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
             userId,
             userContext: getUserContext(userContext),
         });
     }
 
-    static async removeDevice(userId: string, deviceName: string, userContext?: Record<string, any>) {
+    static async removeDevice(
+        userId: string,
+        deviceName: string,
+        userContext?: Record<string, any>
+    ): Promise<{
+        status: "OK";
+        didDeviceExist: boolean;
+    }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeDevice({
             userId,
             deviceName,
@@ -73,7 +106,24 @@ export default class Wrapper {
         deviceName: string,
         totp: string,
         userContext?: Record<string, any>
-    ) {
+    ): Promise<
+        | {
+              status: "OK";
+              wasAlreadyVerified: boolean;
+          }
+        | {
+              status: "UNKNOWN_DEVICE_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
+          }
+        | {
+              status: "LIMIT_REACHED_ERROR";
+              retryAfterMs: number;
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyDevice({
             tenantId,
             userId,
@@ -83,7 +133,25 @@ export default class Wrapper {
         });
     }
 
-    static async verifyTOTP(tenantId: string, userId: string, totp: string, userContext?: Record<string, any>) {
+    static async verifyTOTP(
+        tenantId: string,
+        userId: string,
+        totp: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "INVALID_TOTP_ERROR";
+              currentNumberOfFailedAttempts: number;
+              maxNumberOfFailedAttempts: number;
+          }
+        | {
+              status: "LIMIT_REACHED_ERROR";
+              retryAfterMs: number;
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyTOTP({
             tenantId,
             userId,

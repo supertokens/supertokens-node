@@ -148,7 +148,12 @@ export default class Wrapper {
         });
     }
 
-    static verifyCredentials(tenantId: string, email: string, password: string, userContext?: Record<string, any>) {
+    static verifyCredentials(
+        tenantId: string,
+        email: string,
+        password: string,
+        userContext?: Record<string, any>
+    ): Promise<{ status: "OK" | "WRONG_CREDENTIALS_ERROR" }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
             email,
             password,
@@ -173,7 +178,7 @@ export default class Wrapper {
         userId: string,
         email: string,
         userContext?: Record<string, any>
-    ) {
+    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
             email,
@@ -186,7 +191,6 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
-        session?: SessionContainerInterface,
         userContext?: Record<string, any>
     ): Promise<
         | {
@@ -194,7 +198,7 @@ export default class Wrapper {
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
     > {
-        const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, session, userContext);
+        const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
 
         if (consumeResp.status !== "OK") {
             return consumeResp;
@@ -225,13 +229,18 @@ export default class Wrapper {
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
-        session?: SessionContainerInterface,
         userContext?: Record<string, any>
-    ) {
+    ): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            session,
             userContext: getUserContext(userContext),
         });
     }
@@ -243,7 +252,16 @@ export default class Wrapper {
         userContext?: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
-    }) {
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             ...input,
             userContext: getUserContext(input.userContext),
@@ -316,7 +334,9 @@ export default class Wrapper {
         };
     }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: Record<string, any> }) {
+    static async sendEmail(
+        input: TypeEmailPasswordEmailDeliveryInput & { userContext?: Record<string, any> }
+    ): Promise<void> {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
             ...input,
