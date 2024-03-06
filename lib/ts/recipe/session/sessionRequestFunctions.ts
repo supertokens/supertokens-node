@@ -12,7 +12,13 @@ import { getRequiredClaimValidators } from "./utils";
 import { getRidFromHeader, isAnIpAddress, normaliseHttpMethod, setRequestInUserContextIfNotDefined } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods, protectedProps } from "./constants";
-import { clearSession, getAntiCsrfTokenFromHeaders, getToken, setCookie } from "./cookieAndHeaders";
+import {
+    clearSession,
+    getAntiCsrfTokenFromHeaders,
+    getAuthModeFromHeader,
+    getToken,
+    setCookie,
+} from "./cookieAndHeaders";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import { NormalisedAppinfo, UserContext } from "../../types";
@@ -410,7 +416,13 @@ export async function createNewSessionInRequest({
 
     let outputTransferMethod = config.getTokenTransferMethod({ req, forCreateNewSession: true, userContext });
     if (outputTransferMethod === "any") {
-        outputTransferMethod = "header";
+        const authModeHeader = getAuthModeFromHeader(req);
+        // We default to header if we can't "parse" it or if it's undefined
+        if (authModeHeader === "cookie") {
+            outputTransferMethod = authModeHeader;
+        } else {
+            outputTransferMethod = "header";
+        }
     }
     logDebugMessage("createNewSession: using transfer method " + outputTransferMethod);
 

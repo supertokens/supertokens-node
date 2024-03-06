@@ -157,6 +157,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `resendCodePOST`
         -   `consumeCodePOST`
 
+## [16.7.4] - 2024-03-01
+
+-   Adds a user friendly error screen that provides helpful information regarding Content Security Policy (CSP) issues..
+
+## [16.7.3] - 2024-02-26
+
+-   Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.
+
+## [16.7.2] - 2024-02-19
+
+-   `createNewSession` now defaults to the value of the `st-auth-mode` header (if available) if the configured `getTokenTransferMethod` returns `any`.
+
 ## [16.7.1] - 2024-01-09
 
 -   Fixes type output of `resetPasswordUsingToken` in emailpassword and thirdpartyemailpassword recipe to not include statuses that happen based on email change.

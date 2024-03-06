@@ -10,7 +10,7 @@ import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
 
-export const doFetch: typeof fetch = (input: string | Request | URL, init?: RequestInit | undefined) => {
+export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
     if (typeof fetch !== "undefined") {
         return fetch(input, init);
     }
