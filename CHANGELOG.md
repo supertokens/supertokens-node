@@ -7,12 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.0.0] - 2024-03-08
+
 ### Changes
 
 -   Enable smooth switching between `useDynamicAccessTokenSigningKey` settings by allowing refresh calls to change the signing key type of a session
 -   Added a core call cache that should reduce traffic to your SuperTokens core instances
 -   Refactored sign in/up API codes to reduce code duplication
 -   Added MFA related information to dashboard APIs
+-   Added the `MultiFactorAuth` and `TOTP` recipes. To start using them you'll need compatible versions:
+    -   Core>=8.0.0
+    -   supertokens-node>=17.0.0
+    -   supertokens-website>=18.0.0
+    -   supertokens-web-js>=0.10.0
+    -   supertokens-auth-react>=0.39.0
 
 ### Breaking changes
 
