@@ -32,6 +32,7 @@ export class Querier {
     private static hostsAliveForTesting: Set<string> = new Set<string>();
 
     private static networkInterceptor: NetworkInterceptor | undefined = undefined;
+    private static globalCacheTag = Date.now();
 
     private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined;
     private rIdToCore: string | undefined;
@@ -275,7 +276,15 @@ export class Querier {
                     uniqueKey += `;${key}=${value}`;
                 }
 
+                // If globalCacheTag doesn't match the current one (or if it's not defined), we invalidate the cache, because that means
+                // that there was a non-GET call that didn't have a proper userContext passed to it.
+                // However, we do not want to invalidate all global caches for a GET call even if it was made without a proper user context.
+                if (userContext._default?.globalCacheTag !== Querier.globalCacheTag) {
+                    this.invalidateCoreCallCache(userContext, false);
+                }
+
                 if (uniqueKey in (userContext._default?.coreCallCache ?? {})) {
+                    console.log("fromCache", uniqueKey);
                     return userContext._default.coreCallCache[uniqueKey];
                 }
                 /* CACHE CHECK END */
@@ -310,12 +319,15 @@ export class Querier {
                 });
 
                 if (response.status === 200) {
+                    // If the request was successful, we save the result into the cache
+                    // plus we update the cache tag
                     userContext._default = {
                         ...userContext._default,
                         coreCallCache: {
                             ...userContext._default?.coreCallCache,
                             [uniqueKey]: response,
                         },
+                        globalCacheTag: Querier.globalCacheTag,
                     };
                 }
 
@@ -430,7 +442,11 @@ export class Querier {
         return respBody;
     };
 
-    invalidateCoreCallCache = (userContext: UserContext) => {
+    invalidateCoreCallCache = (userContext: UserContext, updGlobalCacheTagIfNecessary = true) => {
+        if (updGlobalCacheTagIfNecessary && userContext._default?.keepCacheAlive !== true) {
+            Querier.globalCacheTag = Date.now();
+        }
+
         userContext._default = {
             ...userContext._default,
             coreCallCache: {},

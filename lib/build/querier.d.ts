@@ -11,6 +11,7 @@ export declare class Querier {
     private static lastTriedIndex;
     private static hostsAliveForTesting;
     private static networkInterceptor;
+    private static globalCacheTag;
     private __hosts;
     private rIdToCore;
     private constructor();
@@ -47,7 +48,7 @@ export declare class Querier {
         headers: Headers;
     }>;
     sendPutRequest: (path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<any>;
-    invalidateCoreCallCache: (userContext: UserContext) => void;
+    invalidateCoreCallCache: (userContext: UserContext, updGlobalCacheTagIfNecessary?: boolean) => void;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;
 }

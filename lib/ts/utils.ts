@@ -286,6 +286,7 @@ export function setRequestInUserContextIfNotDefined(userContext: UserContext | u
 
     if (typeof userContext._default === "object") {
         userContext._default.request = request;
+        userContext._default.keepCacheAlive = true;
     }
 
     return userContext;
