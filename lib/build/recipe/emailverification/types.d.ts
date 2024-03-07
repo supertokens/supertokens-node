@@ -126,6 +126,7 @@ export declare type APIInterface = {
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
+              session: SessionContainerInterface | undefined;
           }) => Promise<
               | {
                     status: "OK";

@@ -50,10 +50,18 @@ export default async function emailVerify(
             });
         }
 
+        const session = await Session.getSession(
+            options.req,
+            options.res,
+            { overrideGlobalClaimValidators: () => [], sessionRequired: false },
+            userContext
+        );
+
         let response = await apiImplementation.verifyEmailPOST({
             token,
             tenantId,
             options,
+            session,
             userContext,
         });
         if (response.status === "OK") {
