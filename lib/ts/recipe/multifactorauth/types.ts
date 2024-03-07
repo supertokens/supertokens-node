@@ -66,19 +66,19 @@ export type RecipeInterface = {
     assertAllowedToSetupFactorElseThrowInvalidClaimError: (input: {
         session: SessionContainer;
         factorId: string;
-        mfaRequirementsForAuth: MFARequirementList;
-        factorsSetUpForUser: string[];
+        mfaRequirementsForAuth: Promise<MFARequirementList>; // do we want to do this?
+        factorsSetUpForUser: Promise<string[]>;
         userContext: UserContext;
     }) => Promise<void>;
 
     getMFARequirementsForAuth: (input: {
-        user: User;
-        accessTokenPayload: JSONObject;
         tenantId: string;
-        factorsSetUpForUser: string[];
-        requiredSecondaryFactorsForUser: string[];
-        requiredSecondaryFactorsForTenant: string[];
+        accessTokenPayload: JSONObject;
         completedFactors: MFAClaimValue["c"];
+        user: Promise<User>;
+        factorsSetUpForUser: Promise<string[]>;
+        requiredSecondaryFactorsForUser: Promise<string[]>;
+        requiredSecondaryFactorsForTenant: Promise<string[]>;
         userContext: UserContext;
     }) => Promise<MFARequirementList> | MFARequirementList;
 

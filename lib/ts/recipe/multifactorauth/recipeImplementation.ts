@@ -53,20 +53,17 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
             // default requirements for Auth is the union of required factors for user and tenant
             // https://github.com/supertokens/supertokens-core/issues/554#issuecomment-1752852720
             const allFactors: Set<string> = new Set();
-            for (const factor of requiredSecondaryFactorsForUser) {
+            for (const factor of await requiredSecondaryFactorsForUser) {
                 allFactors.add(factor);
             }
-            for (const factor of requiredSecondaryFactorsForTenant) {
+            for (const factor of await requiredSecondaryFactorsForTenant) {
                 allFactors.add(factor);
             }
 
             return [{ oneOf: [...allFactors] }];
         },
 
-        assertAllowedToSetupFactorElseThrowInvalidClaimError: async function (
-            this: RecipeInterface,
-            { factorId, session, factorsSetUpForUser, mfaRequirementsForAuth, userContext }
-        ) {
+        assertAllowedToSetupFactorElseThrowInvalidClaimError: async function (this: RecipeInterface, input) {
             // We allow the user to set up a factor when:
             // 1. MFA requirements is completed by the user (when there are no unsatisfied factors)
             // 2. The factor is unsatisfied and the user has not set up any factors in the set of unsatisfied factors
@@ -92,14 +89,24 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                         throw new Error("should never happen");
                     }
 
+                    if (claimVal.v) {
+                        logDebugMessage(
+                            `assertAllowedToSetupFactorElseThrowInvalidClaimError ${input.factorId}: true because the session already satisfied auth reqs`
+                        );
+                        return { isValid: true };
+                    }
+
                     const setOfUnsatisfiedFactors = MultiFactorAuthClaim.getNextSetOfUnsatisfiedFactors(
                         claimVal.c,
-                        mfaRequirementsForAuth
+                        await input.mfaRequirementsForAuth
                     );
 
-                    if (setOfUnsatisfiedFactors.factorIds.some((id) => factorsSetUpForUser.includes(id))) {
+                    const factorsSetUpForUserRes = await input.factorsSetUpForUser;
+                    if (setOfUnsatisfiedFactors.factorIds.some((id) => factorsSetUpForUserRes.includes(id))) {
                         logDebugMessage(
-                            `assertAllowedToSetupFactorElseThrowInvalidClaimError ${factorId}: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
+                            `assertAllowedToSetupFactorElseThrowInvalidClaimError ${
+                                input.factorId
+                            }: false because there are items already set up in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
                                 ", "
                             )}`
                         );
@@ -111,7 +118,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
 
                     if (
                         setOfUnsatisfiedFactors.factorIds.length > 0 &&
-                        !setOfUnsatisfiedFactors.factorIds.includes(factorId)
+                        !setOfUnsatisfiedFactors.factorIds.includes(input.factorId)
                     ) {
                         // It can be a security issue if we don't do this check
                         // Consider this case:
@@ -120,7 +127,9 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                         //   During sign-in, they'd be allowed to add a new phone number, then set up TOTP and complete sign-in, completely bypassing the old phone number.
 
                         logDebugMessage(
-                            `assertAllowedToSetupFactorElseThrowInvalidClaimError ${factorId}: false because user is trying to set up factor that is not in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
+                            `assertAllowedToSetupFactorElseThrowInvalidClaimError ${
+                                input.factorId
+                            }: false because user is trying to set up factor that is not in the next set of unsatisfied factors: ${setOfUnsatisfiedFactors.factorIds.join(
                                 ", "
                             )}`
                         );
@@ -131,7 +140,9 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                     }
 
                     logDebugMessage(
-                        `assertAllowedToSetupFactorElseThrowInvalidClaimError ${factorId}: true because the next set of unsatisfied factors is ${
+                        `assertAllowedToSetupFactorElseThrowInvalidClaimError ${
+                            input.factorId
+                        }: true because the next set of unsatisfied factors is ${
                             setOfUnsatisfiedFactors.factorIds.length === 0 ? "empty" : "cannot be completed otherwise"
                         }`
                     );
@@ -139,7 +150,7 @@ export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe
                 },
             };
 
-            await session.assertClaims([validator], userContext);
+            await input.session.assertClaims([validator], input.userContext);
         },
 
         markFactorAsCompleteInSession: async function (this: RecipeInterface, { session, factorId, userContext }) {

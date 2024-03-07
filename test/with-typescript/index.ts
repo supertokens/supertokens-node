@@ -2164,7 +2164,7 @@ Supertokens.init({
                     assertAllowedToSetupFactorElseThrowInvalidClaimError: (input) => {
                         return oI.assertAllowedToSetupFactorElseThrowInvalidClaimError({
                             ...input,
-                            mfaRequirementsForAuth: ["otp-phone"],
+                            mfaRequirementsForAuth: Promise.resolve(["otp-phone"]),
                         });
                     },
                 }),

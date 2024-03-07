@@ -17,19 +17,37 @@ import { APIInterface } from "../";
 import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
 import SessionError from "../../session/error";
 import { updateAndGetMFARelatedInfoInSession } from "../utils";
+import Multitenancy from "../../multitenancy";
+import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
         resyncSessionAndFetchMFAInfoPUT: async ({ options, session, userContext }) => {
+            const sessionUser = await getUser(session.getUserId(), userContext);
+
+            if (sessionUser === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
+            }
+
             const mfaInfo = await updateAndGetMFARelatedInfoInSession({
                 session,
                 userContext,
             });
-
-            const factorsAlreadySetup = mfaInfo.factorsSetUpForUser;
-            const allAvailableSecondaryFactors = await options.recipeInstance.getAllAvailableSecondaryFactorIds(
-                mfaInfo.tenantConfig
-            );
+            const factorsSetUpForUser = await options.recipeImplementation.getFactorsSetupForUser({
+                user: sessionUser,
+                userContext,
+            });
+            const tenantInfo = await Multitenancy.getTenant(session.getTenantId(userContext), userContext);
+            if (tenantInfo === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Tenant not found",
+                });
+            }
+            const allAvailableSecondaryFactors = options.recipeInstance.getAllAvailableSecondaryFactorIds(tenantInfo);
 
             const factorsAllowedToSetup: string[] = [];
             for (const id of allAvailableSecondaryFactors) {
@@ -37,8 +55,12 @@ export default function getAPIInterface(): APIInterface {
                     await options.recipeImplementation.assertAllowedToSetupFactorElseThrowInvalidClaimError({
                         session,
                         factorId: id,
-                        factorsSetUpForUser: factorsAlreadySetup,
-                        mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
+                        get factorsSetUpForUser() {
+                            return Promise.resolve(factorsSetUpForUser);
+                        },
+                        get mfaRequirementsForAuth() {
+                            return Promise.resolve(mfaInfo.mfaRequirementsForAuth);
+                        },
                         userContext,
                     });
                     factorsAllowedToSetup.push(id);
@@ -57,11 +79,11 @@ export default function getAPIInterface(): APIInterface {
             );
 
             let getEmailsForFactorsResult = options.recipeInstance.getEmailsForFactors(
-                mfaInfo.sessionUser,
+                sessionUser,
                 session.getRecipeUserId(userContext)
             );
             let getPhoneNumbersForFactorsResult = options.recipeInstance.getPhoneNumbersForFactors(
-                mfaInfo.sessionUser,
+                sessionUser,
                 session.getRecipeUserId(userContext)
             );
             if (
@@ -84,9 +106,9 @@ export default function getAPIInterface(): APIInterface {
                     // be setup, and that that will result in an empty next array. However, we want to show the factor
                     // that the user has already setup in that case.
                     next: nextSetOfUnsatisfiedFactors.factorIds.filter(
-                        (factorId) => factorsAllowedToSetup.includes(factorId) || factorsAlreadySetup.includes(factorId)
+                        (factorId) => factorsAllowedToSetup.includes(factorId) || factorsSetUpForUser.includes(factorId)
                     ),
-                    alreadySetup: factorsAlreadySetup,
+                    alreadySetup: factorsSetUpForUser,
                     allowedToSetup: factorsAllowedToSetup,
                 },
                 emails: getEmailsForFactorsResult.factorIdToEmailsMap,

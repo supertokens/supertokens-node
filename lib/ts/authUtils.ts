@@ -922,16 +922,41 @@ async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
     const mfaInstance = MultiFactorAuthRecipe.getInstance();
     if (mfaInstance !== undefined) {
         if (!inputUserAlreadyLinkedToSessionUser) {
+            let factorsSetUpForUserProm: Promise<string[]> | undefined;
+            let mfaInfoProm: ReturnType<typeof updateAndGetMFARelatedInfoInSession> | undefined;
+            const memoizedAllowedToSetupFactorInput = {
+                factorId: "placeholder", // This is updated inside the loop
+                session,
+
+                get factorsSetUpForUser() {
+                    if (factorsSetUpForUserProm) {
+                        return factorsSetUpForUserProm;
+                    }
+                    factorsSetUpForUserProm = mfaInstance!.recipeInterfaceImpl.getFactorsSetupForUser({
+                        user: sessionUser,
+                        userContext,
+                    });
+                    return factorsSetUpForUserProm;
+                },
+                get mfaRequirementsForAuth() {
+                    if (mfaInfoProm) {
+                        return mfaInfoProm.then((res) => res.mfaRequirementsForAuth);
+                    }
+                    mfaInfoProm = updateAndGetMFARelatedInfoInSession({
+                        session,
+                        userContext,
+                    });
+                    return mfaInfoProm.then((res) => res.mfaRequirementsForAuth);
+                },
+                userContext,
+            };
+
             // If we are linking the input user to the session user, then we need to check if MFA allows it
             // From an MFA perspective this is a factor setup
             logDebugMessage(
                 `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid checking if linking is allowed by the mfa recipe`
             );
             let caughtSetupFactorError;
-            const mfaInfo = await updateAndGetMFARelatedInfoInSession({
-                session,
-                userContext,
-            });
             const validFactorIds = [];
             // In all apis besides passwordless createCode, we know exactly which factor we are signing into, so in those cases,
             // this is basically just checking if the single factor is allowed to be setup or not.
@@ -945,13 +970,10 @@ async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
                     `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid checking assertAllowedToSetupFactorElseThrowInvalidClaimError`
                 );
                 try {
-                    await mfaInstance.recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError({
-                        session,
-                        factorId: id,
-                        mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
-                        factorsSetUpForUser: mfaInfo.factorsSetUpForUser,
-                        userContext,
-                    });
+                    memoizedAllowedToSetupFactorInput.factorId = id;
+                    await mfaInstance.recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
+                        memoizedAllowedToSetupFactorInput
+                    );
                     logDebugMessage(
                         `filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid ${id} valid because assertAllowedToSetupFactorElseThrowInvalidClaimError passed`
                     );

@@ -39,13 +39,17 @@ export default class Wrapper {
             session,
             userContext: ctx,
         });
-
+        const factorsSetUpForUser = await Wrapper.getFactorsSetupForUser(session.getUserId(), ctx);
         await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.assertAllowedToSetupFactorElseThrowInvalidClaimError(
             {
                 session,
                 factorId,
-                mfaRequirementsForAuth: mfaInfo.mfaRequirementsForAuth,
-                factorsSetUpForUser: mfaInfo.factorsSetUpForUser,
+                get factorsSetUpForUser() {
+                    return Promise.resolve(factorsSetUpForUser);
+                },
+                get mfaRequirementsForAuth() {
+                    return Promise.resolve(mfaInfo.mfaRequirementsForAuth);
+                },
                 userContext: ctx,
             }
         );

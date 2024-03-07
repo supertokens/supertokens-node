@@ -2,8 +2,7 @@
 import { TypeInput, TypeNormalisedInput, MFAClaimValue, MFARequirementList } from "./types";
 import { UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
-import { RecipeUserId, User } from "../..";
-import { TenantConfig } from "../multitenancy/types";
+import { RecipeUserId } from "../..";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
 export declare const updateAndGetMFARelatedInfoInSession: (
     input: (
@@ -20,12 +19,7 @@ export declare const updateAndGetMFARelatedInfoInSession: (
         userContext: UserContext;
     }
 ) => Promise<{
-    sessionUser: User;
-    factorsSetUpForUser: string[];
     completedFactors: MFAClaimValue["c"];
-    requiredSecondaryFactorsForUser: string[];
-    requiredSecondaryFactorsForTenant: string[];
     mfaRequirementsForAuth: MFARequirementList;
-    tenantConfig: TenantConfig;
     isMFARequirementsForAuthSatisfied: boolean;
 }>;
