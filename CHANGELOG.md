@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added a core call cache that should reduce traffic to your SuperTokens core instances
 -   Refactored sign in/up API codes to reduce code duplication
 -   Added MFA related information to dashboard APIs
+-   Added a cache to reduce the number of requests made to the core. This can be disabled using the `disableCoreCallCache: true`, in the config.
 -   Added the `MultiFactorAuth` and `TOTP` recipes. To start using them you'll need compatible versions:
     -   Core>=8.0.0
     -   supertokens-node>=17.0.0
