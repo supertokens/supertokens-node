@@ -52,6 +52,7 @@ export declare const AuthUtils: {
         signInVerifiesLoginMethod,
         authenticatingUser,
         factorIds,
+        skipSessionUserUpdateInCore,
         session,
         userContext,
     }: {
@@ -62,6 +63,7 @@ export declare const AuthUtils: {
         isSignUp: boolean;
         isVerified: boolean;
         signInVerifiesLoginMethod: boolean;
+        skipSessionUserUpdateInCore: boolean;
         session?: SessionContainerInterface | undefined;
         userContext: UserContext;
     }) => Promise<
@@ -192,6 +194,7 @@ export declare const AuthUtils: {
         session: SessionContainerInterface | undefined,
         accountInfo: AccountInfoWithRecipeId,
         inputUser: User | undefined,
+        skipSessionUserUpdateInCore: boolean,
         userContext: UserContext
     ) => Promise<
         | {
@@ -259,7 +262,7 @@ export declare const AuthUtils: {
     /**
      * This function loads the session user and tries to make it primary.
      * It returns:
-     * - OK: if the session user was a primary user or we made it into one
+     * - OK: if the session user was a primary user or we made it into one or it can/should become one but `skipSessionUserUpdateInCore` is set to true
      * - SHOULD_AUTOMATICALLY_LINK_FALSE: if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }`
      * - ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
      * If we tried to make it into a primary user but it didn't succeed because of a conflicting primary user
@@ -268,6 +271,7 @@ export declare const AuthUtils: {
      */
     tryAndMakeSessionUserIntoAPrimaryUser: (
         session: SessionContainerInterface,
+        skipSessionUserUpdateInCore: boolean,
         userContext: UserContext
     ) => Promise<
         | {

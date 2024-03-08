@@ -80,6 +80,7 @@ export const AuthUtils = {
         signInVerifiesLoginMethod,
         authenticatingUser,
         factorIds,
+        skipSessionUserUpdateInCore,
         session,
         userContext,
     }: {
@@ -90,6 +91,7 @@ export const AuthUtils = {
         isSignUp: boolean;
         isVerified: boolean;
         signInVerifiesLoginMethod: boolean;
+        skipSessionUserUpdateInCore: boolean;
         session?: SessionContainerInterface;
         userContext: UserContext;
     }): Promise<
@@ -118,6 +120,7 @@ export const AuthUtils = {
             session,
             authenticatingAccountInfo,
             authenticatingUser,
+            skipSessionUserUpdateInCore,
             userContext
         );
         if (authTypeInfo.status !== "OK") {
@@ -474,6 +477,7 @@ export const AuthUtils = {
         session: SessionContainerInterface | undefined,
         accountInfo: AccountInfoWithRecipeId,
         inputUser: User | undefined,
+        skipSessionUserUpdateInCore: boolean,
         userContext: UserContext
     ): Promise<
         | { status: "OK"; isFirstFactor: true }
@@ -527,7 +531,11 @@ export const AuthUtils = {
                 `checkAuthTypeAndLinkingStatus loading session user, ${inputUser?.id} === ${session.getUserId()}`
             );
             // We have to load the session user in order to get the account linking info
-            const sessionUserResult = await AuthUtils.tryAndMakeSessionUserIntoAPrimaryUser(session, userContext);
+            const sessionUserResult = await AuthUtils.tryAndMakeSessionUserIntoAPrimaryUser(
+                session,
+                skipSessionUserUpdateInCore,
+                userContext
+            );
             if (sessionUserResult.status === "SHOULD_AUTOMATICALLY_LINK_FALSE") {
                 return {
                     status: "OK",
@@ -636,6 +644,7 @@ export const AuthUtils = {
             session,
             authLoginMethod,
             inputUser,
+            false,
             userContext
         );
 
@@ -704,7 +713,7 @@ export const AuthUtils = {
     /**
      * This function loads the session user and tries to make it primary.
      * It returns:
-     * - OK: if the session user was a primary user or we made it into one
+     * - OK: if the session user was a primary user or we made it into one or it can/should become one but `skipSessionUserUpdateInCore` is set to true
      * - SHOULD_AUTOMATICALLY_LINK_FALSE: if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }`
      * - ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
      * If we tried to make it into a primary user but it didn't succeed because of a conflicting primary user
@@ -713,6 +722,7 @@ export const AuthUtils = {
      */
     tryAndMakeSessionUserIntoAPrimaryUser: async function (
         session: SessionContainerInterface,
+        skipSessionUserUpdateInCore: boolean,
         userContext: UserContext
     ): Promise<
         | { status: "OK"; sessionUser: User }
@@ -770,6 +780,9 @@ export const AuthUtils = {
                     throw new Error(
                         "This should never happen: email verification claim validator passed after setting value to false"
                     );
+                }
+                if (skipSessionUserUpdateInCore) {
+                    return { status: "OK", sessionUser: sessionUser };
                 }
                 const createPrimaryUserRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
                     recipeUserId: sessionUser.loginMethods[0].recipeUserId,

@@ -67,6 +67,12 @@ export default class Wrapper {
         });
     }
 
+    /**
+     * 1. verifies the code
+     * 2. creates the user if it doesn't exist
+     * 3. tries to link it
+     * 4. marks the email as verified
+     */
     static consumeCode(
         input:
             | {
@@ -201,6 +207,12 @@ export default class Wrapper {
         });
     }
 
+    /**
+     * 1. verifies the code
+     * 2. doesn't create the user if it doesn't exist
+     * 3. tries to link it
+     * 4. marks the email as verified
+     */
     static verifyCode(
         input:
             | {

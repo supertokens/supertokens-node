@@ -58,6 +58,12 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR";
           }
     >;
+    /**
+     * 1. verifies the code
+     * 2. creates the user if it doesn't exist
+     * 3. tries to link it
+     * 4. marks the email as verified
+     */
     static consumeCode(
         input:
             | {
@@ -144,6 +150,12 @@ export default class Wrapper {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
+    /**
+     * 1. verifies the code
+     * 2. doesn't create the user if it doesn't exist
+     * 3. tries to link it
+     * 4. marks the email as verified
+     */
     static verifyCode(
         input:
             | {

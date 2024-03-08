@@ -640,6 +640,7 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatingUser: authenticatingUser?.user,
                 isVerified,
                 signInVerifiesLoginMethod: false,
+                skipSessionUserUpdateInCore: false,
                 tenantId,
                 userContext,
                 session,
@@ -752,6 +753,7 @@ export default function getAPIImplementation(): APIInterface {
                 isSignUp: true,
                 isVerified: isFakeEmail(email),
                 signInVerifiesLoginMethod: false,
+                skipSessionUserUpdateInCore: false,
                 authenticatingUser: undefined, // since this a sign up, this is undefined
                 tenantId,
                 userContext,

@@ -3,11 +3,13 @@ import { logDebugMessage } from "../../../logger";
 import { AuthUtils } from "../../../authUtils";
 import { FactorIds } from "../../multifactorauth";
 import AccountLinking from "../../accountlinking/recipe";
+import EmailVerification from "../../emailverification/recipe";
 import { getEnabledPwlessFactors } from "../utils";
-import { listUsersByAccountInfo } from "../../..";
+import { getUser, listUsersByAccountInfo } from "../../..";
 import { SessionContainerInterface } from "../../session/types";
 import { UserContext } from "../../../types";
 import { LoginMethod, User } from "../../../user";
+import SessionError from "../../session/error";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -51,7 +53,7 @@ export default function getAPIImplementation(): APIInterface {
                           email: deviceInfo.email!,
                       };
 
-            let checkCredentialsOnTenant = async () => {
+            let checkCredentials = async () => {
                 const checkCredentialsResponse = await input.options.recipeImplementation.verifyCode(
                     "deviceId" in input
                         ? {
@@ -78,8 +80,69 @@ export default function getAPIImplementation(): APIInterface {
                 recipeId,
                 userContext: input.userContext,
                 session: input.session,
-                checkCredentialsOnTenant,
+                checkCredentialsOnTenant: checkCredentials,
             });
+
+            const emailVerificationInstance = EmailVerification.getInstance();
+            // If we have a session and emailverification was initialized plus this code was sent to an email
+            // then we check if we can/should verify this email address for the session user.
+            // This helps in usecases like phone-password and emailverification-with-otp where we only want to allow linking
+            // and making a user primary if they are verified, but the verification process itself involves account linking.
+
+            // If a valid code was submitted, we can take that as the session (and the session user) having access to the email
+            // which means that we can verify their email address
+            if (
+                accountInfo.email !== undefined &&
+                input.session !== undefined &&
+                emailVerificationInstance !== undefined
+            ) {
+                // We first load the session user, so we can check if verification is required
+                // We do this first, it is better for caching if we group the post calls together (verifyIng the code and the email address)
+                const sessionUser = await getUser(input.session.getUserId(), input.userContext);
+                if (sessionUser === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                const loginMethod = sessionUser.loginMethods.find(
+                    (lm) => lm.recipeUserId.getAsString() === input.session!.getRecipeUserId().getAsString()
+                );
+                if (loginMethod === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user and session recipeUserId is inconsistent",
+                    });
+                }
+
+                // If the code was sent as an email and the authenticating user has the same email address as unverified,
+                // we verify it using the emailverification recipe
+                if (loginMethod.hasSameEmailAs(accountInfo.email)) {
+                    // We first check that the submitted code is actually valid
+                    if (await checkCredentials()) {
+                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                tenantId: input.tenantId,
+                                recipeUserId: loginMethod.recipeUserId,
+                                email: accountInfo.email,
+                                userContext: input.userContext,
+                            }
+                        );
+
+                        if (tokenResponse.status === "OK") {
+                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                tenantId: input.tenantId,
+                                token: tokenResponse.token,
+                                attemptAccountLinking: false, // we pass false here cause
+                                // we anyway do account linking in this API after this function is
+                                // called.
+                                userContext: input.userContext,
+                            });
+                        }
+                    }
+                }
+            }
 
             let factorId;
             if (deviceInfo.email !== undefined) {
@@ -108,6 +171,7 @@ export default function getAPIImplementation(): APIInterface {
                 isSignUp,
                 isVerified: authenticatingUser?.loginMethod.verified ?? true,
                 signInVerifiesLoginMethod: true,
+                skipSessionUserUpdateInCore: false,
                 tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
@@ -228,6 +292,7 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatingUser: userWithMatchingLoginMethod?.user,
                 isVerified: userWithMatchingLoginMethod?.loginMethod.verified ?? true,
                 signInVerifiesLoginMethod: true,
+                skipSessionUserUpdateInCore: true,
                 tenantId: input.tenantId,
                 factorIds,
                 userContext: input.userContext,
@@ -419,6 +484,7 @@ export default function getAPIImplementation(): APIInterface {
                     phoneNumber: deviceInfo.phoneNumber,
                 },
                 userWithMatchingLoginMethod?.user,
+                true,
                 input.userContext
             );
 

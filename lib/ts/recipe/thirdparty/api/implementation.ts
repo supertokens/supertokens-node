@@ -105,6 +105,7 @@ export default function getAPIInterface(): APIInterface {
                 isSignUp,
                 isVerified: emailInfo.isVerified,
                 signInVerifiesLoginMethod: false,
+                skipSessionUserUpdateInCore: false,
                 tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
