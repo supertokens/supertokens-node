@@ -102,23 +102,13 @@ export default function getRecipeInterface(
             // users are always initially unverified.
         },
 
-        signIn: async function ({ email, password, tenantId, session, userContext }) {
-            const response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
-                {
-                    email,
-                    password,
-                },
-                userContext
-            );
+        signIn: async function (this: RecipeInterface, { email, password, tenantId, session, userContext }) {
+            const response = await this.verifyCredentials({ email, password, tenantId, userContext });
 
             if (response.status === "OK") {
-                response.user = new User(response.user);
-                response.recipeUserId = new RecipeUserId(response.recipeUserId);
-
                 const loginMethod: LoginMethod = response.user.loginMethods.find(
                     (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
-                );
+                )!;
 
                 if (!loginMethod.verified) {
                     await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
@@ -166,6 +156,8 @@ export default function getRecipeInterface(
         }): Promise<
             | {
                   status: "OK";
+                  user: User;
+                  recipeUserId: RecipeUserId;
               }
             | { status: "WRONG_CREDENTIALS_ERROR" }
         > {
@@ -181,6 +173,8 @@ export default function getRecipeInterface(
             if (response.status === "OK") {
                 return {
                     status: "OK",
+                    user: new User(response.user),
+                    recipeUserId: new RecipeUserId(response.recipeUserId),
                 };
             }
 

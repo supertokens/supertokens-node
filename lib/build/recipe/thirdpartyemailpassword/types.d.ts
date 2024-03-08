@@ -212,6 +212,8 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";

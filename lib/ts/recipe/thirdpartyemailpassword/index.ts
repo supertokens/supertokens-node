@@ -211,18 +211,23 @@ export default class Wrapper {
         });
     }
 
-    static emailPasswordVerifyCredentials(
+    static async emailPasswordVerifyCredentials(
         tenantId: string,
         email: string,
         password: string,
         userContext?: Record<string, any>
-    ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordVerifyCredentials({
+    ): Promise<{ status: "OK" | "WRONG_CREDENTIALS_ERROR" }> {
+        const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordVerifyCredentials({
             email,
             password,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: getUserContext(userContext),
         });
+
+        // Here we intentionally skip the user and recipeUserId props, because we do not want apps to accidentally use this to sign in
+        return {
+            status: resp.status,
+        };
     }
 
     static emailPasswordSignIn(

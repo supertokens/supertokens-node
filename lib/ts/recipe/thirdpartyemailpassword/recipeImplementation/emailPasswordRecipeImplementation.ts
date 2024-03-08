@@ -32,7 +32,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password: string;
             tenantId: string;
             userContext: UserContext;
-        }): Promise<{ status: "OK" } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return recipeInterface.emailPasswordVerifyCredentials(input);
         },
 

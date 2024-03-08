@@ -117,14 +117,9 @@ export default class Wrapper {
         email: string,
         password: string,
         userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
-    >;
+    ): Promise<{
+        status: "OK" | "WRONG_CREDENTIALS_ERROR";
+    }>;
     static emailPasswordSignIn(
         tenantId: string,
         email: string,

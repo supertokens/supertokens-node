@@ -148,18 +148,23 @@ export default class Wrapper {
         });
     }
 
-    static verifyCredentials(
+    static async verifyCredentials(
         tenantId: string,
         email: string,
         password: string,
         userContext?: Record<string, any>
     ): Promise<{ status: "OK" | "WRONG_CREDENTIALS_ERROR" }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
+        const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
             email,
             password,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: getUserContext(userContext),
         });
+
+        // Here we intentionally skip the user and recipeUserId props, because we do not want apps to accidentally use this to sign in
+        return {
+            status: resp.status,
+        };
     }
 
     /**
