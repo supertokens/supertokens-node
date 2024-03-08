@@ -764,6 +764,9 @@ export const AuthUtils = {
             );
 
             if (shouldDoAccountLinking.shouldAutomaticallyLink) {
+                if (skipSessionUserUpdateInCore) {
+                    return { status: "OK", sessionUser: sessionUser };
+                }
                 if (shouldDoAccountLinking.shouldRequireVerification && !sessionUser.loginMethods[0].verified) {
                     // We force-update the claim value if it is not set or different from what we just fetched from the DB
                     if ((await session.getClaimValue(EmailVerificationClaim, userContext)) !== false) {
@@ -780,9 +783,6 @@ export const AuthUtils = {
                     throw new Error(
                         "This should never happen: email verification claim validator passed after setting value to false"
                     );
-                }
-                if (skipSessionUserUpdateInCore) {
-                    return { status: "OK", sessionUser: sessionUser };
                 }
                 const createPrimaryUserRes = await AccountLinking.getInstance().recipeInterfaceImpl.createPrimaryUser({
                     recipeUserId: sessionUser.loginMethods[0].recipeUserId,
