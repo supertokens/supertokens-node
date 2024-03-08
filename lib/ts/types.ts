@@ -54,6 +54,7 @@ export type SuperTokensInfo = {
     connectionURI: string;
     apiKey?: string;
     networkInterceptor?: NetworkInterceptor;
+    disableCoreCallCache?: boolean;
 };
 
 export type TypeInput = {

@@ -84,7 +84,8 @@ export default class SuperTokens {
                     };
                 }),
             config.supertokens?.apiKey,
-            config.supertokens?.networkInterceptor
+            config.supertokens?.networkInterceptor,
+            config.supertokens?.disableCoreCallCache
         );
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");

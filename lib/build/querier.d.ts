@@ -12,6 +12,7 @@ export declare class Querier {
     private static hostsAliveForTesting;
     private static networkInterceptor;
     private static globalCacheTag;
+    private static disableCache;
     private __hosts;
     private rIdToCore;
     private constructor();
@@ -25,7 +26,8 @@ export declare class Querier {
             basePath: NormalisedURLPath;
         }[],
         apiKey?: string,
-        networkInterceptor?: NetworkInterceptor
+        networkInterceptor?: NetworkInterceptor,
+        disableCache?: boolean
     ): void;
     sendPostRequest: <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<T>;
     sendDeleteRequest: (

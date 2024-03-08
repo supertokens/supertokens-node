@@ -33,6 +33,7 @@ export class Querier {
 
     private static networkInterceptor: NetworkInterceptor | undefined = undefined;
     private static globalCacheTag = Date.now();
+    private static disableCache = false;
 
     private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined;
     private rIdToCore: string | undefined;
@@ -105,7 +106,8 @@ export class Querier {
     static init(
         hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[],
         apiKey?: string,
-        networkInterceptor?: NetworkInterceptor
+        networkInterceptor?: NetworkInterceptor,
+        disableCache?: boolean
     ) {
         if (!Querier.initCalled) {
             logDebugMessage("querier initialized");
@@ -116,6 +118,7 @@ export class Querier {
             Querier.lastTriedIndex = 0;
             Querier.hostsAliveForTesting = new Set<string>();
             Querier.networkInterceptor = networkInterceptor;
+            Querier.disableCache = disableCache ?? false;
         }
     }
 
@@ -283,8 +286,7 @@ export class Querier {
                     this.invalidateCoreCallCache(userContext, false);
                 }
 
-                if (uniqueKey in (userContext._default?.coreCallCache ?? {})) {
-                    console.log("fromCache", uniqueKey);
+                if (!Querier.disableCache && uniqueKey in (userContext._default?.coreCallCache ?? {})) {
                     return userContext._default.coreCallCache[uniqueKey];
                 }
                 /* CACHE CHECK END */
@@ -318,7 +320,7 @@ export class Querier {
                     headers,
                 });
 
-                if (response.status === 200) {
+                if (response.status === 200 && !Querier.disableCache) {
                     // If the request was successful, we save the result into the cache
                     // plus we update the cache tag
                     userContext._default = {
