@@ -348,11 +348,19 @@ export declare type RecipeInterface = {
     ) => Promise<{
         status: "OK";
     }>;
-    revokeCode: (input: {
-        codeId: string;
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    revokeCode: (
+        input:
+            | {
+                  codeId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+            | {
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+    ) => Promise<{
         status: "OK";
     }>;
     listCodesByEmail: (input: { email: string; tenantId: string; userContext: UserContext }) => Promise<DeviceType[]>;

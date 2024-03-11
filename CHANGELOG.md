@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `loginMethodsGET`: Now returns `firstFactors`
 -   `Passwordless`:
     -   Added new function: `checkCode`
+    -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
     -   Added new email and sms type for MFA
     -   Changed the signature of the following functions:
         -   `signInUp`, `createCode`: Takes a new (optional) `session` parameter
@@ -139,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `thirdPartySignInUpPOST`
 -   `ThirdPartyPasswordless`:
     -   Added new function: `checkCode`
+    -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
     -   Changed the signature of the following functions:
         -   `thirdPartyManuallyCreateOrUpdateUser`:
             -   Takes a new (optional) `session` parameter

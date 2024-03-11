@@ -283,7 +283,11 @@ export default class Wrapper {
         });
     }
 
-    static revokeCode(input: { codeId: string; tenantId: string; userContext?: Record<string, any> }) {
+    static revokeCode(
+        input:
+            | { codeId: string; tenantId: string; userContext?: Record<string, any> }
+            | { preAuthSessionId: string; tenantId: string; userContext?: Record<string, any> }
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({
             ...input,
             userContext: getUserContext(input.userContext),

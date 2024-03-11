@@ -265,11 +265,19 @@ export type RecipeInterface = {
         status: "OK";
     }>;
 
-    revokeCode: (input: {
-        codeId: string;
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
+    revokeCode: (
+        input:
+            | {
+                  codeId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+            | {
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+    ) => Promise<{
         status: "OK";
     }>;
 

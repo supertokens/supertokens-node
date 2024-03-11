@@ -224,11 +224,19 @@ export default class Wrapper {
     ): Promise<{
         status: "OK";
     }>;
-    static revokeCode(input: {
-        codeId: string;
-        tenantId: string;
-        userContext?: Record<string, any>;
-    }): Promise<{
+    static revokeCode(
+        input:
+            | {
+                  codeId: string;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+            | {
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext?: Record<string, any>;
+              }
+    ): Promise<{
         status: "OK";
     }>;
     static listCodesByEmail(input: {
