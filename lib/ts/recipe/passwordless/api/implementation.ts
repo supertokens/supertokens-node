@@ -1,4 +1,4 @@
-import { APIInterface } from "../";
+import { APIInterface, RecipeInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import { AuthUtils } from "../../../authUtils";
 import { FactorIds } from "../../multifactorauth";
@@ -53,23 +53,28 @@ export default function getAPIImplementation(): APIInterface {
                           email: deviceInfo.email!,
                       };
 
+            let checkCredentialsResponseProm: ReturnType<RecipeInterface["checkCode"]> | undefined;
             let checkCredentials = async () => {
-                const checkCredentialsResponse = await input.options.recipeImplementation.checkCode(
-                    "deviceId" in input
-                        ? {
-                              preAuthSessionId: input.preAuthSessionId,
-                              deviceId: input.deviceId,
-                              userInputCode: input.userInputCode,
-                              tenantId: input.tenantId,
-                              userContext: input.userContext,
-                          }
-                        : {
-                              preAuthSessionId: input.preAuthSessionId,
-                              linkCode: input.linkCode,
-                              tenantId: input.tenantId,
-                              userContext: input.userContext,
-                          }
-                );
+                if (checkCredentialsResponseProm === undefined) {
+                    checkCredentialsResponseProm = input.options.recipeImplementation.checkCode(
+                        "deviceId" in input
+                            ? {
+                                  preAuthSessionId: input.preAuthSessionId,
+                                  deviceId: input.deviceId,
+                                  userInputCode: input.userInputCode,
+                                  tenantId: input.tenantId,
+                                  userContext: input.userContext,
+                              }
+                            : {
+                                  preAuthSessionId: input.preAuthSessionId,
+                                  linkCode: input.linkCode,
+                                  tenantId: input.tenantId,
+                                  userContext: input.userContext,
+                              }
+                    );
+                }
+
+                const checkCredentialsResponse = await checkCredentialsResponseProm;
                 return checkCredentialsResponse.status === "OK";
             };
 
@@ -183,6 +188,15 @@ export default function getAPIImplementation(): APIInterface {
                     errorCodeMap,
                     "SIGN_IN_UP_NOT_ALLOWED"
                 );
+            }
+
+            if (checkCredentialsResponseProm !== undefined) {
+                // We need to cast this because otherwise TS thinks that this is never updated for some reason.
+                const checkCredentialsResponse = await checkCredentialsResponseProm;
+                if (checkCredentialsResponse.status !== "OK") {
+                    // In these cases we return early otherwise consumeCode would increase the invalidAttemptCount again
+                    return checkCredentialsResponse;
+                }
             }
 
             let response = await input.options.recipeImplementation.consumeCode(
