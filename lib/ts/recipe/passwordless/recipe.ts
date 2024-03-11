@@ -662,7 +662,6 @@ export default class Recipe extends RecipeModule {
         if (consumeCodeResponse.status === "OK") {
             return {
                 status: "OK",
-                // We know these are defined since we passed `deleteCode: true`
                 createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser!,
                 recipeUserId: consumeCodeResponse.recipeUserId!,
                 user: consumeCodeResponse.user!,

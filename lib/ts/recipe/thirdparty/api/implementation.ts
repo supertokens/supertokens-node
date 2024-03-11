@@ -91,37 +91,6 @@ export default function getAPIInterface(): APIInterface {
             });
 
             const isSignUp = authenticatingUser === undefined;
-            const preAuthChecks = await AuthUtils.preAuthChecks({
-                authenticatingAccountInfo: {
-                    recipeId,
-                    email: emailInfo.id,
-                    thirdParty: {
-                        userId: userInfo.thirdPartyUserId,
-                        id: provider.id,
-                    },
-                },
-                authenticatingUser: authenticatingUser?.user,
-                factorIds: ["thirdparty"],
-                isSignUp,
-                isVerified: emailInfo.isVerified,
-                signInVerifiesLoginMethod: false,
-                skipSessionUserUpdateInCore: false,
-                tenantId: input.tenantId,
-                userContext: input.userContext,
-                session: input.session,
-            });
-
-            if (preAuthChecks.status !== "OK") {
-                logDebugMessage("signInUpPOST: erroring out because preAuthChecks returned " + preAuthChecks.status);
-                // On the frontend, this should show a UI of asking the user
-                // to login using a different method.
-                return AuthUtils.getErrorStatusResponseWithReason(
-                    preAuthChecks,
-                    errorCodeMap,
-                    "SIGN_IN_UP_NOT_ALLOWED"
-                );
-            }
-
             if (authenticatingUser !== undefined) {
                 // This is a sign in. So before we proceed, we need to check if an email change
                 // is allowed since the email could have changed from the social provider's side.
@@ -212,6 +181,41 @@ export default function getAPIInterface(): APIInterface {
                             "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
                     };
                 }
+            }
+
+            const preAuthChecks = await AuthUtils.preAuthChecks({
+                authenticatingAccountInfo: {
+                    recipeId,
+                    email: emailInfo.id,
+                    thirdParty: {
+                        userId: userInfo.thirdPartyUserId,
+                        id: provider.id,
+                    },
+                },
+                authenticatingUser: authenticatingUser?.user,
+                factorIds: ["thirdparty"],
+                isSignUp,
+                isVerified: emailInfo.isVerified,
+                // this can be true if:
+                // - the third party provider marked the email as verified
+                // - the email address is changing and the new address has been verified previously
+                // in both cases, the user will end up with a verified login method after sign in completes
+                signInVerifiesLoginMethod: emailInfo.isVerified,
+                skipSessionUserUpdateInCore: false,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+            });
+
+            if (preAuthChecks.status !== "OK") {
+                logDebugMessage("signInUpPOST: erroring out because preAuthChecks returned " + preAuthChecks.status);
+                // On the frontend, this should show a UI of asking the user
+                // to login using a different method.
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
+                );
             }
 
             let response = await options.recipeImplementation.signInUp({

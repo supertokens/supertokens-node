@@ -55,12 +55,14 @@ export default class Recipe extends RecipeModule {
     }) => Promise<User | undefined>;
     isSignInAllowed: ({
         user,
+        accountInfo,
         tenantId,
         session,
         signInVerifiesLoginMethod,
         userContext,
     }: {
         user: User;
+        accountInfo: AccountInfoWithRecipeId | LoginMethod;
         session: SessionContainerInterface | undefined;
         signInVerifiesLoginMethod: boolean;
         tenantId: string;
@@ -85,6 +87,7 @@ export default class Recipe extends RecipeModule {
         session,
         tenantId,
         isSignIn,
+        user,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
@@ -92,6 +95,7 @@ export default class Recipe extends RecipeModule {
         session: SessionContainerInterface | undefined;
         tenantId: string;
         isSignIn: boolean;
+        user: User | undefined;
         userContext: UserContext;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {

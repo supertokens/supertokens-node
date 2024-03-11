@@ -879,16 +879,16 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     })
             );
 
-            assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
-            assert(
-                response.body.reason ===
-                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)"
+            assert.strictEqual(response.body.status, "SIGN_IN_UP_NOT_ALLOWED");
+            assert.strictEqual(
+                response.body.reason,
+                "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)"
             );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
             );
             assert(
-                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) === undefined
             );
         });
 

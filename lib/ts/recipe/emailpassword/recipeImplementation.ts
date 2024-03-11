@@ -278,7 +278,7 @@ export default function getRecipeInterface(
             // an update email API (post login update).
 
             let response = await querier.sendPutRequest(
-                new NormalisedURLPath(`${input.tenantIdForPasswordPolicy}/recipe/user`),
+                new NormalisedURLPath(`/recipe/user`),
                 {
                     recipeUserId: input.recipeUserId.getAsString(),
                     email: input.email,

@@ -489,10 +489,6 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
             "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_017)"
         );
         cookies = extractInfoFromResponse(res);
-        const parsedTokenAfterSecondSignIn = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-        assert.deepStrictEqual(
-            parsedTokenAfterSignIn.payload["st-mfa"],
-            parsedTokenAfterSecondSignIn.payload["st-mfa"]
-        );
+        assert.strictEqual(cookies.accessTokenFromAny, undefined);
     });
 });

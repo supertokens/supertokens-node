@@ -16,6 +16,7 @@
 const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
+let MultiFactorAuth = require("../../recipe/multifactorauth");
 let Totp = require("../../recipe/totp");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -48,7 +49,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), MultiFactorAuth.init(), Totp.init()],
         });
 
         const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
@@ -72,7 +73,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), MultiFactorAuth.init(), Totp.init()],
         });
 
         const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
@@ -104,7 +105,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), MultiFactorAuth.init(), Totp.init()],
         });
 
         const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
@@ -135,7 +136,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), MultiFactorAuth.init(), Totp.init()],
         });
 
         const deviceRes = await Totp.createDevice("testUserId", "test@email.com");
@@ -173,7 +174,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), MultiFactorAuth.init(), Totp.init()],
         });
 
         const deviceRes = await Totp.createDevice("testUserId", "test@email.com", "TOTP Device 0", 1, 5);
@@ -223,7 +224,7 @@ describe(`recipeFunctions: ${printPath("[test/totp/recipeFunctions.test.js]")}`,
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), Totp.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), MultiFactorAuth.init(), Totp.init()],
         });
 
         const deviceRes = await Totp.createDevice("testUserId", "test@email.com", "TOTP Device 0", 1, 5);

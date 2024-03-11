@@ -208,12 +208,13 @@ export default class Wrapper {
     }
 
     /**
-     * 1. verifies the code
-     * 2. doesn't create the user if it doesn't exist
-     * 3. tries to link it
-     * 4. marks the email as verified
+     * This function will only verify the code (not consume it), and:
+     * NOT create a new user if it doesn't exist
+     * NOT verify the user email if it exists
+     * NOT do any linking
+     * NOT delete the code
      */
-    static verifyCode(
+    static checkCode(
         input:
             | {
                   preAuthSessionId: string;
@@ -245,9 +246,8 @@ export default class Wrapper {
           }
         | { status: "RESTART_FLOW_ERROR" }
     > {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCode({
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.checkCode({
             ...input,
-            deleteCode: true,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -405,7 +405,7 @@ export let createMagicLink = Wrapper.createMagicLink;
 
 export let signInUp = Wrapper.signInUp;
 
-export let verifyCode = Wrapper.verifyCode;
+export let checkCode = Wrapper.checkCode;
 
 export type { RecipeInterface, APIOptions, APIInterface };
 

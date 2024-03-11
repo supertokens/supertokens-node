@@ -148,6 +148,7 @@ export default class Wrapper {
 
         return await Recipe.getInstance().isSignInAllowed({
             user,
+            accountInfo: user.loginMethods.find((lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString())!,
             session,
             tenantId,
             signInVerifiesLoginMethod: false,

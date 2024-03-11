@@ -197,20 +197,18 @@ export type RecipeInterface = {
           }
     >;
 
-    verifyCode: (
+    checkCode: (
         input:
             | {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
-                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
-                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }

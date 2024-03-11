@@ -172,20 +172,18 @@ export declare type RecipeInterface = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
-    verifyCode: (
+    checkCode: (
         input:
             | {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
-                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
-                  deleteCode: boolean;
                   tenantId: string;
                   userContext: UserContext;
               }

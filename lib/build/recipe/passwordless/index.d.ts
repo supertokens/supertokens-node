@@ -151,12 +151,13 @@ export default class Wrapper {
           }
     >;
     /**
-     * 1. verifies the code
-     * 2. doesn't create the user if it doesn't exist
-     * 3. tries to link it
-     * 4. marks the email as verified
+     * This function will only verify the code (not consume it), and:
+     * NOT create a new user if it doesn't exist
+     * NOT verify the user email if it exists
+     * NOT do any linking
+     * NOT delete the code
      */
-    static verifyCode(
+    static checkCode(
         input:
             | {
                   preAuthSessionId: string;
@@ -306,7 +307,7 @@ export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
 export declare let signInUp: typeof Wrapper.signInUp;
-export declare let verifyCode: typeof Wrapper.verifyCode;
+export declare let checkCode: typeof Wrapper.checkCode;
 export type { RecipeInterface, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

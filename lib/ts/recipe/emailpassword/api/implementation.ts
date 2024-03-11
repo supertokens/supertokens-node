@@ -630,6 +630,11 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
+            if (authenticatingUser === undefined) {
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
+            }
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
                     recipeId,

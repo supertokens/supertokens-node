@@ -219,12 +219,14 @@ export default class Recipe extends RecipeModule {
 
     isSignInAllowed = async ({
         user,
+        accountInfo,
         tenantId,
         session,
         signInVerifiesLoginMethod,
         userContext,
     }: {
         user: User;
+        accountInfo: AccountInfoWithRecipeId | LoginMethod;
         session: SessionContainerInterface | undefined;
         signInVerifiesLoginMethod: boolean;
         tenantId: string;
@@ -237,11 +239,12 @@ export default class Recipe extends RecipeModule {
         }
 
         return this.isSignInUpAllowedHelper({
-            accountInfo: user.loginMethods[0],
+            accountInfo,
             isVerified: user.loginMethods[0].verified,
             session,
             tenantId,
             isSignIn: true,
+            user,
             userContext,
         });
     };
@@ -272,6 +275,7 @@ export default class Recipe extends RecipeModule {
             session,
             tenantId,
             userContext,
+            user: undefined,
             isSignIn: false,
         });
     };
@@ -282,6 +286,7 @@ export default class Recipe extends RecipeModule {
         session,
         tenantId,
         isSignIn,
+        user,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
@@ -289,6 +294,7 @@ export default class Recipe extends RecipeModule {
         session: SessionContainerInterface | undefined;
         tenantId: string;
         isSignIn: boolean;
+        user: User | undefined;
         userContext: UserContext;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED);
@@ -325,7 +331,12 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
-        if (users.length === 1 && isSignIn) {
+        if (isSignIn && user === undefined) {
+            throw new Error(
+                "This should never happen: isSignInUpAllowedHelper called with isSignIn: true, user: undefined"
+            );
+        }
+        if (users.length === 1 && isSignIn && user !== undefined && users[0].id === user.id) {
             logDebugMessage(
                 "isSignInUpAllowedHelper returning true because this is sign in and there is only a single user with the given account info"
             );

@@ -72,7 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Changed the signature of the overrideable apis:
         -   `loginMethodsGET`: Now returns `firstFactors`
 -   `Passwordless`:
-    -   Added new function: `verifyCode`
+    -   Added new function: `checkCode`
     -   Added new email and sms type for MFA
     -   Changed the signature of the following functions:
         -   `signInUp`, `createCode`: Takes a new (optional) `session` parameter
@@ -138,7 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `emailPasswordSignUpPOST`
         -   `thirdPartySignInUpPOST`
 -   `ThirdPartyPasswordless`:
-    -   Added new function: `verifyCode`
+    -   Added new function: `checkCode`
     -   Changed the signature of the following functions:
         -   `thirdPartyManuallyCreateOrUpdateUser`:
             -   Takes a new (optional) `session` parameter

@@ -157,6 +157,11 @@ export const AuthUtils = {
                 userContext
             );
         }
+        if (!isSignUp && authenticatingUser === undefined) {
+            throw new Error(
+                "This should never happen: preAuthChecks called with isSignUp: false, authenticatingUser: undefined"
+            );
+        }
 
         // If this is a sign up we check that the sign up is allowed
         if (isSignUp) {
@@ -188,6 +193,7 @@ export const AuthUtils = {
             if (
                 !(await AccountLinking.getInstance().isSignInAllowed({
                     user: authenticatingUser,
+                    accountInfo: authenticatingAccountInfo,
                     signInVerifiesLoginMethod,
                     tenantId,
                     session,

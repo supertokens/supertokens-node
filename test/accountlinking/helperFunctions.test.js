@@ -86,8 +86,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 user.loginMethods[0].recipeUserId
             );
 
-            assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.user.id, user.id);
+            assert.strictEqual(response.id, user.id);
         });
 
         it("calling createPrimaryUserIdOrLinkAccounts should create a primary user if possible", async function () {
@@ -143,8 +142,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 user.loginMethods[0].recipeUserId
             );
 
-            assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.user.id, user.id);
+            assert.strictEqual(response.id, user.id);
             let userObj = await supertokens.getUser(user.id);
             assert(userObj.isPrimaryUser);
             assert(userObj.id === user.id);
@@ -198,8 +196,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 user.loginMethods[0].recipeUserId
             );
 
-            assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.user.id, user.id);
+            assert.strictEqual(response.id, user.id);
             let userObj = await supertokens.getUser(user.id);
             assert(!userObj.isPrimaryUser);
             assert(userObj.id === user.id);
@@ -245,8 +242,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 user.loginMethods[0].recipeUserId
             );
 
-            assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.user.id, user.id);
+            assert.strictEqual(response.id, user.id);
             let userObj = await supertokens.getUser(user.id);
             assert(!userObj.isPrimaryUser);
             assert(userObj.id === user.id);
@@ -342,10 +338,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 user.loginMethods[0].recipeUserId
             );
 
-            assert(response.user.isPrimaryUser);
-            assert.strictEqual(response.status, "OK");
-            assert(response.user.id === primaryUser.id);
-            assert(response.user.loginMethods.length === 2);
+            assert(response.isPrimaryUser);
+            assert.strictEqual(response.id, primaryUser.id);
+            assert.strictEqual(response.loginMethods.length, 2);
         });
 
         it("calling createPrimaryUserIdOrLinkAccounts should not link accounts if account linking is disabled", async function () {
@@ -429,8 +424,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 user.loginMethods[0].recipeUserId
             );
 
-            assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.user.id, user.id);
+            assert.strictEqual(response.id, user.id);
             let userObj = await supertokens.getUser(user.id);
             assert(!userObj.isPrimaryUser);
             assert(userObj.id === user.id);
@@ -514,8 +508,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 user.loginMethods[0].recipeUserId
             );
 
-            assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.user.id, user.id);
+            assert.strictEqual(response.id, user.id);
             let userObj = await supertokens.getUser(user.id);
             assert(!userObj.isPrimaryUser);
             assert(userObj.id === user.id);

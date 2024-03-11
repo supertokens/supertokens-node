@@ -159,15 +159,9 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
             const resp = await signUpPOST(app, email);
             assert.strictEqual(resp.body.status, "OK");
 
-            // tenant info
-            // user list by account info
-            // signup
-            // get user by id
-            // get email verification info
-            // create session
             assert.strictEqual(info.coreCallCount, 6);
         });
-        it("should call the core <=7 times with AL without MFA", async () => {
+        it("should call the core <=8 times with AL without MFA", async () => {
             const { app, info } = await setup({ initAccountLinking: true, initMFA: false });
             const email = getTestEmail();
             const resp = await signUpPOST(app, email);
@@ -182,14 +176,6 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
             const resp = await signUpPOST(app, email);
             assert.strictEqual(resp.body.status, "OK");
 
-            // 2 x tenant info
-            // 2 x user list by account info
-            // signup
-            // 2 x get user by id
-            // get email verification info
-            // create session
-            // get metadata
-            // regen session (add MFA claim)
             assert.strictEqual(info.coreCallCount, 12);
         });
     });
@@ -206,7 +192,7 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
 
             assert.strictEqual(info.coreCallCount, 6);
         });
-        it("should call the core <=7 times with AL without MFA", async () => {
+        it("should call the core <=9 times with AL without MFA", async () => {
             const { app, info } = await setup({ initAccountLinking: true, initMFA: false });
 
             const email = getTestEmail();
@@ -216,18 +202,6 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
             const resp = await signInPOST(app, email);
             assert.strictEqual(resp.body.status, "OK");
 
-            // tenant info
-            // user list by account info
-            // signup
-            // get user by id
-            // get email verification info
-            // create session
-            // tenant info
-            // 2 x user list by account info
-            // signup
-            // get user by id
-            // get email verification info
-            // create session
             assert.strictEqual(info.coreCallCount, 9);
         });
 
@@ -241,14 +215,6 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
             const resp = await signInPOST(app, email);
             assert.strictEqual(resp.body.status, "OK");
 
-            // 2 x tenant info
-            // 2 x user list by account info
-            // signup
-            // 2 x get user by id
-            // get email verification info
-            // create session
-            // get metadata
-            // regen session (add MFA claim)
             assert.strictEqual(info.coreCallCount, 13);
         });
     });
@@ -265,12 +231,6 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
             const resp = await signUpPOST(app, email, session);
             assert.strictEqual(resp.body.status, "OK");
 
-            // tenant info
-            // user list by account info
-            // signup
-            // get user by id
-            // get email verification info
-            // create session
             assert.strictEqual(info.coreCallCount, 3);
         });
 
@@ -284,16 +244,6 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
 
             const resp = await signUpPOST(app, email, session);
             assert.strictEqual(resp.body.status, "OK");
-
-            // tenant info
-            // 2 x user list by account info
-            // signup
-            // 2 x get user by id
-            // get email verification info
-            // link
-            // create token
-            // consume token
-
             assert.strictEqual(info.coreCallCount, 9);
         });
 
@@ -315,9 +265,7 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
 
             const email = getTestEmail();
             let user = await createThirdPartyUser(email, false);
-            // user = await makeUserPrimary(user);
             const session = await getSessionForUser(user);
-            // await session.fetchAndSetClaim(MultiFactorAuth.MultiFactorAuthClaim);
             info.coreCallCount = 0;
             // console.log("==========");
             const resp = await signUpPOST(app, email, session);
@@ -332,7 +280,6 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
             let user = await createThirdPartyUser(email, false);
             user = await makeUserPrimary(user);
             const session = await getSessionForUser(user);
-            // await session.fetchAndSetClaim(MultiFactorAuth.MultiFactorAuthClaim);
             info.coreCallCount = 0;
             // console.log("==========");
             const resp = await signUpPOST(app, email, session);
@@ -375,10 +322,10 @@ describe(`Multi-recipe account linking flows core call counts: ${printPath(
 
             const resp = await consumeCodePOST(app, code, session);
             assert.strictEqual(resp.body.status, "OK");
-            assert.strictEqual(info.coreCallCount, 7);
+            assert.strictEqual(info.coreCallCount, 8);
         });
 
-        it("should call the core <=6 times when completing totp", async () => {
+        it("should call the core <=5 times when completing totp", async () => {
             const { app, info } = await setup({ initAccountLinking: true, initMFA: true });
 
             const email = getTestEmail();

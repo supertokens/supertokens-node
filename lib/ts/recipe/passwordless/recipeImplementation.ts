@@ -4,10 +4,9 @@ import AccountLinking from "../accountlinking/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { logDebugMessage } from "../../logger";
 import { User } from "../../user";
-import { getUser, listUsersByAccountInfo } from "../..";
+import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { AuthUtils } from "../../authUtils";
-import { JSONObject } from "../usermetadata";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContextAndTenantId(input: any): any {
@@ -25,44 +24,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
     return {
         consumeCode: async function (this: RecipeInterface, input) {
-            let response;
-            if (
-                mockVerifyCode &&
-                verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))] !== undefined
-            ) {
-                response = verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))]!;
-
-                const email = response.consumedDevice.email;
-                const phoneNumber = response.consumedDevice.phoneNumber;
-                const users = await listUsersByAccountInfo(input.tenantId, {
-                    email,
-                    phoneNumber,
-                });
-                const user = users.find((u) =>
-                    u.loginMethods.some(
-                        (lm) =>
-                            lm.recipeId === "passwordless" &&
-                            (lm.hasSameEmailAs(email) || lm.hasSamePhoneNumberAs(phoneNumber))
-                    )
-                );
-                if (user !== undefined) {
-                    response.user = user.toJson();
-                    response.recipeUserId = user.loginMethods
-                        .find(
-                            (lm) =>
-                                lm.recipeId === "passwordless" &&
-                                (lm.hasSameEmailAs(email) || lm.hasSamePhoneNumberAs(phoneNumber))
-                        )
-                        ?.recipeUserId.getAsString()!;
-                    response.createdNewUser = false;
-                }
-            } else {
-                response = await querier.sendPostRequest(
-                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
-                    copyAndRemoveUserContextAndTenantId(input),
-                    input.userContext
-                );
-            }
+            const response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
+                copyAndRemoveUserContextAndTenantId(input),
+                input.userContext
+            );
 
             if (response.status !== "OK") {
                 return response;
@@ -79,11 +45,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (response.status !== "OK") {
                 return response;
-            }
-
-            // This is just to make TS happy, the createdNewUser check should cover this already
-            if (response.recipeUserId === undefined || response.user === undefined) {
-                throw new Error("This should never happen: no user in consumeCode response with deleteCode=true");
             }
 
             // Attempt account linking (this is a sign up)
@@ -117,31 +78,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             };
         },
 
-        verifyCode: async function (this: RecipeInterface, input) {
-            if (mockVerifyCode) {
-                delete (input as any).deleteCode;
-                if (verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))] !== undefined) {
-                    return verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))];
-                }
-
-                const response = await querier.sendPostRequest(
-                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
-                    copyAndRemoveUserContextAndTenantId({
-                        ...input,
-                        createRecipeUserIfNotExists: false,
-                    }),
-                    input.userContext
-                );
-
-                if (response.status === "OK") {
-                    verifyResponseCache[JSON.stringify(copyAndRemoveUserContextAndTenantId(input))] = response;
-                }
-
-                return response;
-            }
-
+        checkCode: async function (this: RecipeInterface, input) {
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/verify`),
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/check`),
                 copyAndRemoveUserContextAndTenantId(input),
                 input.userContext
             );
@@ -150,7 +89,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            logDebugMessage("Passwordless.verifyCode code verified");
+            logDebugMessage("Passwordless.checkCode code verified");
 
             return response;
         },
@@ -246,16 +185,3 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
     };
 }
-
-const mockVerifyCode = true;
-const verifyResponseCache: Record<
-    string,
-    | {
-          status: "OK";
-          createdNewUser?: boolean;
-          user?: JSONObject;
-          recipeUserId: string;
-          consumedDevice: { email?: string; phoneNumber?: string };
-      }
-    | undefined
-> = {};

@@ -208,7 +208,14 @@ export default class Wrapper {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
-    static verifyCode(
+    /**
+     * This function will only verify the code (not consume it), and:
+     * NOT create a new user if it doesn't exist
+     * NOT verify the user email if it exists
+     * NOT do any linking
+     * NOT delete the code
+     */
+    static checkCode(
         input:
             | {
                   preAuthSessionId: string;
@@ -361,7 +368,7 @@ export declare let createNewCodeForDevice: typeof Wrapper.createNewCodeForDevice
 export declare let updatePasswordlessUser: typeof Wrapper.updatePasswordlessUser;
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
-export declare let verifyCode: typeof Wrapper.verifyCode;
+export declare let checkCode: typeof Wrapper.checkCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
 export type { RecipeInterface, TypeProvider, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;

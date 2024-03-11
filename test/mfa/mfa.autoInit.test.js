@@ -54,21 +54,25 @@ describe(`mfa-autoinit: ${printPath("[test/mfa/mfa.autoInit.test.js]")}`, functi
         await UserMetadata.updateUserMetadata("test-userid", { key: "val" }); // should not have an error
     });
 
-    it("test mfa is auto-initialized if totp is initialised", async function () {
+    it("test init throws if totp is initialised without MFA", async function () {
         const connectionURI = await startSTWithMultitenancy();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI,
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Totp.init(), Session.init()],
-        });
-
-        const user = await EmailPassword.signUp("public", "test@example.com", "password");
-        await MultiFactorAuth.addToRequiredSecondaryFactorsForUser(user.user.id, "totp"); // should not have an error
+        let caught;
+        try {
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Totp.init(), Session.init()],
+            });
+        } catch (err) {
+            caught = err;
+        }
+        assert.ok(caught);
+        assert.strictEqual(caught.message, "Please initialize the MultiFactorAuth recipe to use TOTP.");
     });
 });
