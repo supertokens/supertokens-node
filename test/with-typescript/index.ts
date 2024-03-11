@@ -1072,7 +1072,12 @@ class StringClaim extends PrimitiveClaim<string> {
     };
 }
 const stringClaim = new StringClaim("cust-str");
-const boolClaim = new BooleanClaim({ key: "asdf", fetchValue: (userId) => userId.startsWith("5") });
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, currentPayload, userContext) => {
+        return userContext.claimValue;
+    },
+});
 
 Supertokens.init(config);
 

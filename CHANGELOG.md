@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Refactored sign in/up API codes to reduce code duplication
 -   Added MFA related information to dashboard APIs
 -   Added a cache to reduce the number of requests made to the core. This can be disabled using the `disableCoreCallCache: true`, in the config.
+-   Added new `overwriteSessionDuringSignInUp` configuration option to the Session recipe
+-   Added new function: `checkCode` to Passwordless and ThirdPartyPasswordless recipes
+-   Added new function: `verifyCredentials` to EmailPassword and ThirdPartyEmailPassword recipes
 -   Added the `MultiFactorAuth` and `TOTP` recipes. To start using them you'll need compatible versions:
     -   Core>=8.0.0
     -   supertokens-node>=17.0.0
@@ -26,40 +29,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking changes
 
 -   Now only supporting CDI 5.0. Compatible with core version >= 8.0
--   Account linking now takes active session into account. For more information please check our updated account linking [guide](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/account-linking/overview)
+-   Account linking now takes the active session into account.
 -   Fixed the typing of the `userContext`:
     -   All functions now take `Record<string, any>` instead of `any` as `userContext`. This means that primitives (strings, numbers) are no longer allowed as `userContext`.
     -   All functions overrides that take a `userContext` parameter now get a well typed `userContext` parameter ensuring that the right object is passed to the original implementation calls
+-   Calling sign in/up APIs with a session will now skip creating a new session by default. This is overrideable through by passing `overwriteSessionDuringSignInUp: true` to the Session recipe config.
+-   Added new support codes to sign in/up APIs. This means that there are new possible values coming from the default implementation for the `reason` strings of `SIGN_IN_NOT_ALLOWED`, `SIGN_UP_NOT_ALLOWED` and `SIGN_IN_UP_NOT_ALLOWED` responses.
 -   `AccountLinking` recipe:
     -   Changed the signature of the following functions, each taking a new (optional) `session` parameter:
         -   `createPrimaryUserIdOrLinkAccounts`
         -   `isSignUpAllowed`
         -   `isSignInAllowed`
         -   `isEmailChangeAllowed`
-    -   Changed the signature of the `shouldDoAutomaticAccountLinking` callback: it now takes a new (optional) parameter.
+    -   Changed the signature of the `shouldDoAutomaticAccountLinking` callback: it now takes a new (optional) session parameter.
 -   `EmailPassword`:
-    -   Added new function: `verifyCredentials`
     -   Changed the signature of the following overrideable functions:
         -   `signUp`
             -   Takes a new (optional) `session` parameter
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
-        -   `consumePasswordResetToken`
+        -   `signIn`
             -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
     -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
-        -   `generatePasswordResetTokenPOST`
-        -   `passwordResetPOST`
         -   `signInPOST`
         -   `signUpPOST`
     -   Changed the signature of functions:
         -   `signUp`
             -   Takes a new (optional) `session` parameter
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
-        -   `resetPasswordUsingToken`, `consumePasswordResetToken`: Takes a new (optional) `session` parameter
--   `EmailVerification`:
-    -   Changed the signature of the following overrideable functions:
-        -   `verifyEmailUsingToken`: Takes a new (optional) `session` parameter
-    -   Changed the signature of functions:
-        -   `verifyEmailUsingToken`: Takes a new (optional) `session` parameter
+        -   `signIn`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"
 -   `Multitenancy`:
     -   Changed the signature of the following functions:
         -   `createOrUpdateTenant`: Added optional `firstFactors` and `requiredSecondaryFactors` parameters.
@@ -72,7 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Changed the signature of the overrideable apis:
         -   `loginMethodsGET`: Now returns `firstFactors`
 -   `Passwordless`:
-    -   Added new function: `checkCode`
     -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
     -   Added new email and sms type for MFA
     -   Changed the signature of the following functions:
@@ -91,8 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `createCodePOST`
         -   `resendCodePOST`
         -   `consumeCodePOST`
--   `Session`:
-    -   Added new `overwriteSessionDuringSignInUp` configuration option
 -   Custom claims:
     -   `fetchValue` now also gets the `currentPayload` as a parameter
 -   `ThirdParty`:
@@ -118,8 +115,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `emailPasswordSignUp`
             -   Takes a new (optional) `session` parameter
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
-        -   `consumePasswordResetToken`
-            -   Takes a new (optional) `session` parameter
     -   Changed the signature of the following overrideable functions:
         -   `thirdPartySignInUp`:
             -   Takes a new (optional) `session` parameter
@@ -130,16 +125,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `emailPasswordSignUp`
             -   Takes a new (optional) `session` parameter
             -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
-        -   `consumePasswordResetToken`
-            -   Takes a new (optional) `session` parameter
     -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
-        -   `generatePasswordResetTokenPOST`
-        -   `passwordResetPOST`
         -   `emailPasswordSignInPOST`
         -   `emailPasswordSignUpPOST`
         -   `thirdPartySignInUpPOST`
 -   `ThirdPartyPasswordless`:
-    -   Added new function: `checkCode`
     -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
     -   Changed the signature of the following functions:
         -   `thirdPartyManuallyCreateOrUpdateUser`:
@@ -167,6 +157,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `createCodePOST`
         -   `resendCodePOST`
         -   `consumeCodePOST`
+
+#### Migration guide
+
+##### shouldDoAutomaticAccountLinking signature change
+
+If you use the `userContext` or `tenantId` parameters passed to `shouldDoAutomaticAccountLinking`, please update your implementation to account for the new parameter.
+
+Before:
+
+```ts
+AccountLinking.init({
+    shouldDoAutomaticAccountLinking: async (newAccountInfo, user, tenantId, userContext) => {
+        return {
+            shouldAutomaticallyLink: true,
+            shouldRequireVerification: true,
+        };
+    },
+});
+```
+
+After:
+
+```ts
+AccountLinking.init({
+    shouldDoAutomaticAccountLinking: async (newAccountInfo, user, session, tenantId, userContext) => {
+        return {
+            shouldAutomaticallyLink: true,
+            shouldRequireVerification: true,
+        };
+    },
+});
+```
+
+##### Optional `session` parameter added to public functions
+
+We've added a new optional `session` parameter to many function calls. In all cases, these have been added as the last parameter before `userContext`, so this should only affect you if you are using that. You only need to pass a session as a parameter if you are using account linking and want to try and link the user signing in/up to the session user.
+You can get the necessary session object using `verifySession` in an API call.
+
+Here we use the example of `EmailPassword.signIn` but this fits other functions with changed signatures.
+
+Before:
+
+```ts
+const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", { myContextVar: true });
+```
+
+After:
+
+```ts
+const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", undefined, { myContextVar: true });
+```
+
+##### `fetchValue` signature change
+
+If you use the `userContext` parameter passed to `fetchValue`, please update your implementation to account for the new parameter.
+
+Before:
+
+```ts
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, userContext) => {
+        return userContext.claimValue;
+    },
+});
+```
+
+After:
+
+```ts
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, currentPayload, userContext) => {
+        return userContext.claimValue;
+    },
+});
+```
 
 ## [16.7.4] - 2024-03-01
 

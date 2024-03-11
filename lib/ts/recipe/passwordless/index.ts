@@ -352,11 +352,13 @@ export default class Wrapper {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   userContext?: Record<string, any>;
               }
     ) {
