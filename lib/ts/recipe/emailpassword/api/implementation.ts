@@ -630,6 +630,10 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
+            // We check this before preAuthChecks, because that function assumes that if isSignUp is false,
+            // then authenticatingUser is defined. While it wouldn't technically cause any problems with
+            // the implementation of that function, this way we can guarantee that either isSignInAllowed or
+            // isSignUpAllowed will be called as expected.
             if (authenticatingUser === undefined) {
                 return {
                     status: "WRONG_CREDENTIALS_ERROR",
