@@ -155,7 +155,7 @@ export default class Wrapper {
      * NOT create a new user if it doesn't exist
      * NOT verify the user email if it exists
      * NOT do any linking
-     * NOT delete the code
+     * NOT delete the code unless it returned RESTART_FLOW_ERROR
      */
     static checkCode(
         input:
