@@ -3,7 +3,7 @@ import STError from "../../../../error";
 import UserMetaDataRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
 import { getUser } from "../../../..";
-import { User } from "../../../../types";
+import { User, UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -18,7 +18,7 @@ export const userGet: APIFunction = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 

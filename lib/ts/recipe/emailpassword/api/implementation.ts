@@ -1,25 +1,27 @@
 import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
-import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
-import { GeneralErrorResponse, User } from "../../../types";
-import { listUsersByAccountInfo, getUser } from "../../../";
+import { GeneralErrorResponse, User, UserContext } from "../../../types";
+import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
+import { AuthUtils } from "../../../authUtils";
+import { isFakeEmail } from "../../thirdparty/utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         emailExistsGET: async function ({
             email,
             tenantId,
+            userContext,
         }: {
             email: string;
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -30,13 +32,14 @@ export default function getAPIImplementation(): APIInterface {
             // even if the above returns true, we still need to check if there
             // exists an email password user with the same email cause the function
             // above does not check for that.
-            let users = await listUsersByAccountInfo(
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
-                {
+                accountInfo: {
                     email,
                 },
-                false
-            );
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
             let emailPasswordUserExists =
                 users.find((u) => {
                     return (
@@ -55,14 +58,6 @@ export default function getAPIImplementation(): APIInterface {
             tenantId,
             options,
             userContext,
-        }: {
-            formFields: {
-                id: string;
-                value: string;
-            }[];
-            tenantId: string;
-            options: APIOptions;
-            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -131,13 +126,14 @@ export default function getAPIImplementation(): APIInterface {
             /**
              * check if primaryUserId is linked with this email
              */
-            let users = await listUsersByAccountInfo(
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
-                {
+                accountInfo: {
                     email,
                 },
-                false
-            );
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
 
             // we find the recipe user ID of the email password account from the user's list
             // for later use.
@@ -178,6 +174,7 @@ export default function getAPIImplementation(): APIInterface {
                           email,
                       },
                 primaryUserAssociatedWithEmail,
+                undefined,
                 tenantId,
                 userContext
             );
@@ -210,6 +207,7 @@ export default function getAPIImplementation(): APIInterface {
                         email,
                     },
                     isVerified: true, // cause when the token is consumed, we will mark the email as verified
+                    session: undefined,
                     tenantId,
                     userContext,
                 });
@@ -346,7 +344,7 @@ export default function getAPIImplementation(): APIInterface {
             token: string;
             tenantId: string;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -529,12 +527,16 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        let linkedToUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                        // We do not take try linking by session here, since this is supposed to be called without a session
+                        // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
+                        const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
                             tenantId,
-                            user: createUserResponse.user,
+                            inputUser: createUserResponse.user,
+                            session: undefined,
                             userContext,
                         });
-                        if (linkedToUser.id !== existingUser.id) {
+                        const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
+                        if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
                             // this means that the account we just linked to
                             // was not the one we had expected to link it to. This can happen
                             // due to some race condition or the other.. Either way, this
@@ -543,7 +545,7 @@ export default function getAPIImplementation(): APIInterface {
                         return {
                             status: "OK",
                             email: tokenConsumptionResponse.email,
-                            user: linkedToUser,
+                            user: userAfterLinking,
                         };
                     }
                 }
@@ -555,9 +557,11 @@ export default function getAPIImplementation(): APIInterface {
                 return doUpdatePassword(new RecipeUserId(userIdForWhomTokenWasGenerated));
             }
         },
+
         signInPOST: async function ({
             formFields,
             tenantId,
+            session,
             options,
             userContext,
         }: {
@@ -566,8 +570,9 @@ export default function getAPIImplementation(): APIInterface {
                 value: string;
             }[];
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -583,69 +588,128 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
+            const errorCodeMap = {
+                SIGN_IN_NOT_ALLOWED:
+                    "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    EMAIL_VERIFICATION_REQUIRED:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_009)",
+                    RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_010)",
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_011)",
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_012)",
+                },
+            };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let response = await options.recipeImplementation.signIn({ email, password, tenantId, userContext });
-            if (response.status === "WRONG_CREDENTIALS_ERROR") {
-                return response;
-            }
+            const recipeId = "emailpassword";
 
-            let emailPasswordRecipeUser = response.user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
-            );
+            const checkCredentialsOnTenant = async (tenantId: string) => {
+                return (
+                    (await options.recipeImplementation.verifyCredentials({ email, password, tenantId, userContext }))
+                        .status === "OK"
+                );
+            };
 
-            if (emailPasswordRecipeUser === undefined) {
-                // this can happen cause of some race condition, but it's not a big deal.
-                throw new Error("Race condition error - please call this API again");
-            }
-
-            // Here we do this check after sign in is done cause:
-            // - We first want to check if the credentials are correct first or not
-            // - The above recipe function marks the email as verified if other linked users
-            // with the same email are verified. The function below checks for the email verification
-            // so we want to call it only once this is up to date,
-
-            let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                user: response.user,
-                tenantId,
-                userContext,
-            });
-
-            if (!isSignInAllowed) {
+            if (isFakeEmail(email) && session === undefined) {
+                // Fake emails cannot be used as a first factor
                 return {
-                    status: "SIGN_IN_NOT_ALLOWED",
-                    reason:
-                        "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
+                    status: "WRONG_CREDENTIALS_ERROR",
                 };
             }
 
-            // the above sign in recipe function does not do account linking - so we do it here.
-            response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                accountInfo: { email },
+                userContext,
+                recipeId,
+                session,
+                checkCredentialsOnTenant,
+            });
+
+            const isVerified = authenticatingUser !== undefined && authenticatingUser.loginMethod!.verified;
+            // We check this before preAuthChecks, because that function assumes that if isSignUp is false,
+            // then authenticatingUser is defined. While it wouldn't technically cause any problems with
+            // the implementation of that function, this way we can guarantee that either isSignInAllowed or
+            // isSignUpAllowed will be called as expected.
+            if (authenticatingUser === undefined) {
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
+            }
+            const preAuthChecks = await AuthUtils.preAuthChecks({
+                authenticatingAccountInfo: {
+                    recipeId,
+                    email,
+                },
+                factorIds: ["emailpassword"],
+                isSignUp: false,
+                authenticatingUser: authenticatingUser?.user,
+                isVerified,
+                signInVerifiesLoginMethod: false,
+                skipSessionUserUpdateInCore: false,
                 tenantId,
-                user: response.user,
+                userContext,
+                session,
+            });
+            if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
+                throw new Error("This should never happen: pre-auth checks should not fail for sign in");
+            }
+            if (preAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(preAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
+            }
+
+            if (isFakeEmail(email) && preAuthChecks.isFirstFactor) {
+                // Fake emails cannot be used as a first factor
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
+            }
+
+            const signInResponse = await options.recipeImplementation.signIn({
+                email,
+                password,
+                session,
+                tenantId,
                 userContext,
             });
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
+            if (signInResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                return signInResponse;
+            }
+            if (signInResponse.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(signInResponse, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
+            }
+
+            const postAuthChecks = await AuthUtils.postAuthChecks({
+                authenticatedUser: signInResponse.user,
+                recipeUserId: signInResponse.recipeUserId,
+                isSignUp: false,
+                factorId: "emailpassword",
+                session,
+                req: options.req,
+                res: options.res,
                 tenantId,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+                userContext,
+            });
+
+            if (postAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
+            }
+
             return {
                 status: "OK",
-                session,
-                user: response.user,
+                session: postAuthChecks.session,
+                user: postAuthChecks.user,
             };
         },
 
         signUpPOST: async function ({
             formFields,
             tenantId,
+            session,
             options,
             userContext,
         }: {
@@ -654,8 +718,9 @@ export default function getAPIImplementation(): APIInterface {
                 value: string;
             }[];
             tenantId: string;
+            session?: SessionContainerInterface;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -671,28 +736,40 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
+            const errorCodeMap = {
+                SIGN_UP_NOT_ALLOWED:
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    EMAIL_VERIFICATION_REQUIRED:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_013)",
+                    RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_014)",
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_015)",
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_016)",
+                },
+            };
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            // Here we do this check because if the input email already exists with a primary user,
-            // then we do not allow sign up, cause even though we do not link this and the existing
-            // account right away, and we send an email verification link, the user
-            // may click on it by mistake assuming it's for their existing account - resulting
-            // in account take over. In this case, we return an EMAIL_ALREADY_EXISTS_ERROR
-            // and if the user goes through the forgot password flow, it will create
-            // an account there and it will work fine cause there the email is also verified.
-
-            let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                newUser: {
+            const preAuthCheckRes = await AuthUtils.preAuthChecks({
+                authenticatingAccountInfo: {
                     recipeId: "emailpassword",
                     email,
                 },
-                isVerified: false,
+                factorIds: ["emailpassword"],
+                isSignUp: true,
+                isVerified: isFakeEmail(email),
+                signInVerifiesLoginMethod: false,
+                skipSessionUserUpdateInCore: false,
+                authenticatingUser: undefined, // since this a sign up, this is undefined
                 tenantId,
                 userContext,
+                session,
             });
 
-            if (!isSignUpAllowed) {
+            if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
                 const conflictingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                     tenantId,
                     accountInfo: {
@@ -710,46 +787,53 @@ export default function getAPIImplementation(): APIInterface {
                         status: "EMAIL_ALREADY_EXISTS_ERROR",
                     };
                 }
+            }
+            if (preAuthCheckRes.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(preAuthCheckRes, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
+            }
 
+            if (isFakeEmail(email) && preAuthCheckRes.isFirstFactor) {
+                // Fake emails cannot be used as a first factor
                 return {
-                    status: "SIGN_UP_NOT_ALLOWED",
-                    reason:
-                        "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                    status: "EMAIL_ALREADY_EXISTS_ERROR",
                 };
             }
 
-            // this function also does account linking
-            let response = await options.recipeImplementation.signUp({
+            const signUpResponse = await options.recipeImplementation.signUp({
                 tenantId,
                 email,
                 password,
+                session,
                 userContext,
             });
-            if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                return response;
-            }
-            let emailPasswordRecipeUser = response.user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
-            );
 
-            if (emailPasswordRecipeUser === undefined) {
-                // this can happen cause of some race condition, but it's not a big deal.
-                throw new Error("Race condition error - please call this API again");
+            if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                return signUpResponse;
+            }
+            if (signUpResponse.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(signUpResponse, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
             }
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
+            const postAuthChecks = await AuthUtils.postAuthChecks({
+                authenticatedUser: signUpResponse.user,
+                recipeUserId: signUpResponse.recipeUserId,
+                isSignUp: true,
+                factorId: "emailpassword",
+                session,
+                req: options.req,
+                res: options.res,
                 tenantId,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
-                userContext
-            );
+                userContext,
+            });
+
+            if (postAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
+            }
+
             return {
                 status: "OK",
-                session,
-                user: response.user,
+                session: postAuthChecks.session,
+                user: postAuthChecks.user,
             };
         },
     };

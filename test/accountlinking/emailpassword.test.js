@@ -364,7 +364,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
     });
 
     describe("sign in tests", function () {
-        it("sign in recipe function does not do account linking", async function () {
+        it("sign in recipe function should make the user primary if verification is not required", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -378,7 +378,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 recipeList: [
                     EmailPassword.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -394,14 +394,64 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             });
 
             let user = (
-                await EmailPassword.signUp("public", "test@example.com", "password123", {
+                await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
                     doNotLink: true,
                 })
             ).user;
             assert(!user.isPrimaryUser);
 
             user = (await EmailPassword.signIn("public", "test@example.com", "password123")).user;
+            assert(user.isPrimaryUser);
+        });
+
+        it("sign in recipe function should link to the session user if verification is not required", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
+
+            const createSessionUser = await EmailPassword.signUp("public", "test2@example.com", "password123");
+            const session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                createSessionUser.recipeUserId
+            );
+
+            let user = (
+                await EmailPassword.signUp("public", "test@example.com", "password123", undefined, {
+                    doNotLink: true,
+                })
+            ).user;
             assert(!user.isPrimaryUser);
+
+            const signInResp = await EmailPassword.signIn("public", "test@example.com", "password123", session);
+            assert(signInResp.status, "OK");
+            assert(signInResp.user.isPrimaryUser);
+            assert.strictEqual(signInResp.user.id, createSessionUser.user.id);
+            assert.notStrictEqual(signInResp.recipeUserId.getAsString(), createSessionUser.recipeUserId.getAsString());
         });
 
         it("sign in recipe function marks email as verified if linked accounts has email as verified and uses the same email", async function () {
@@ -480,7 +530,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 recipeList: [
                     EmailPassword.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -498,7 +548,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             const email1 = `test+${Date.now()}@example.com`;
             let user = (await EmailPassword.signUp("public", email1, "password123")).user;
             const email2 = `test+${Date.now()}@example.com`;
-            let user2 = (await EmailPassword.signUp("public", email2, "password123", { doNotLink: true })).user;
+            let user2 = (await EmailPassword.signUp("public", email2, "password123", undefined, { doNotLink: true }))
+                .user;
 
             const linkResp = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
             assert.strictEqual(linkResp.status, "OK");

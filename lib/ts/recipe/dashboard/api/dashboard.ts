@@ -13,12 +13,13 @@
  * under the License.
  */
 
+import { UserContext } from "../../../types";
 import { APIInterface, APIOptions } from "../types";
 
 export default async function dashboard(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.dashboardGET === undefined) {
         return false;

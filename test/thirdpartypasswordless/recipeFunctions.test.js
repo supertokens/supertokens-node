@@ -526,14 +526,14 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 deviceId: codeInfo.deviceId,
             });
 
-            assert(resp.status === "OK");
+            assert.strictEqual(resp.status, "OK");
             assert(resp.createdNewRecipeUser);
-            assert(typeof resp.user.id === "string");
-            assert(resp.user.emails[0] === "test@example.com");
-            assert(resp.user.phoneNumbers[0] === undefined);
-            assert(typeof resp.user.timeJoined === "number");
-            assert(Object.keys(resp).length === 4);
-            assert(Object.keys(resp.user).length === 8);
+            assert.strictEqual(typeof resp.user.id, "string");
+            assert.strictEqual(resp.user.emails[0], "test@example.com");
+            assert.strictEqual(resp.user.phoneNumbers[0], undefined);
+            assert.strictEqual(typeof resp.user.timeJoined, "number");
+            assert.strictEqual(Object.keys(resp).length, 6);
+            assert.strictEqual(Object.keys(resp.user).length, 8);
         }
 
         {

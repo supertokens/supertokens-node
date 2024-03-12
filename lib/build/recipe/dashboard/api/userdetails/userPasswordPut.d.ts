@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
+import { UserContext } from "../../../../types";
 declare type Response =
     | {
           status: "OK";
@@ -12,6 +13,6 @@ export declare const userPasswordPut: (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ) => Promise<Response>;
 export {};

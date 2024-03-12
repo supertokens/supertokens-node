@@ -1,6 +1,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import Session from "../../../session";
+import { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";
@@ -10,7 +11,7 @@ export const userSessionsPost = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const sessionHandles = requestBody.sessionHandles;

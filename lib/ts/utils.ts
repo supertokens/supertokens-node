@@ -1,6 +1,6 @@
 import * as psl from "psl";
 
-import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
+import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
@@ -10,11 +10,11 @@ import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
 
-export const doFetch: typeof fetch = (...args) => {
+export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
     if (typeof fetch !== "undefined") {
-        return fetch(...args);
+        return fetch(input, init);
     }
-    return crossFetch(...args);
+    return crossFetch(input, init);
 };
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -70,7 +70,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         );
     }
 
-    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         let origin = appInfo.origin;
 
         if (origin === undefined) {
@@ -90,7 +90,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
 
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         return getTopLevelDomainForSameSiteResolution(websiteDomainFunction(input).getAsStringDangerous());
     };
 
@@ -169,7 +169,8 @@ export function getBackwardsCompatibleUserInfo(
         user: User;
         session: SessionContainer;
         createdNewRecipeUser?: boolean;
-    }
+    },
+    userContext: UserContext
 ) {
     let resp: JSONObject;
     if (doesRequestSupportFDI(req, "1.18")) {
@@ -183,7 +184,7 @@ export function getBackwardsCompatibleUserInfo(
         return resp;
     } else {
         let loginMethod: undefined | LoginMethod = result.user.loginMethods.find(
-            (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId().getAsString()
+            (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId(userContext).getAsString()
         );
 
         if (loginMethod === undefined) {
@@ -266,13 +267,17 @@ export function humaniseMilliseconds(ms: number): string {
     }
 }
 
-export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
-    return setRequestInUserContextIfNotDefined({}, request);
+export function makeDefaultUserContextFromAPI(request: BaseRequest): UserContext {
+    return setRequestInUserContextIfNotDefined({} as UserContext, request);
 }
 
-export function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest) {
+export function getUserContext(inputUserContext?: Record<string, any>): UserContext {
+    return (inputUserContext ?? {}) as UserContext;
+}
+
+export function setRequestInUserContextIfNotDefined(userContext: UserContext | undefined, request: BaseRequest) {
     if (userContext === undefined) {
-        userContext = {};
+        userContext = {} as UserContext;
     }
 
     if (userContext._default === undefined) {
@@ -281,6 +286,7 @@ export function setRequestInUserContextIfNotDefined(userContext: any | undefined
 
     if (typeof userContext._default === "object") {
         userContext._default.request = request;
+        userContext._default.keepCacheAlive = true;
     }
 
     return userContext;

@@ -7,7 +7,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
@@ -26,7 +26,7 @@ export declare type TypeNormalisedInput = {
 };
 export declare type TypeInputFormField = {
     id: string;
-    validate?: (value: any, tenantId: string, userContext: any) => Promise<string | undefined>;
+    validate?: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
     optional?: boolean;
 };
 export declare type TypeFormField = {
@@ -38,7 +38,7 @@ export declare type TypeInputSignUp = {
 };
 export declare type NormalisedFormField = {
     id: string;
-    validate: (value: any, tenantId: string, userContext: any) => Promise<string | undefined>;
+    validate: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
     optional: boolean;
 };
 export declare type TypeNormalisedInputSignUp = {
@@ -66,8 +66,9 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -77,12 +78,20 @@ export declare type RecipeInterface = {
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
     createNewRecipeUser(input: {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -96,8 +105,32 @@ export declare type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    verifyCredentials(input: {
+        email: string;
+        password: string;
+        tenantId: string;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -117,7 +150,7 @@ export declare type RecipeInterface = {
         userId: string;
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -130,7 +163,7 @@ export declare type RecipeInterface = {
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -145,7 +178,7 @@ export declare type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -179,7 +212,7 @@ export declare type APIInterface = {
               email: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -196,7 +229,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -217,7 +250,7 @@ export declare type APIInterface = {
               token: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -241,8 +274,9 @@ export declare type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -266,8 +300,9 @@ export declare type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";

@@ -2,10 +2,10 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { ProviderConfig, ProviderInput } from "../thirdparty/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare type TypeInput = {
-    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -15,7 +15,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -35,78 +35,71 @@ declare type EnumCoreConfig = BaseCoreConfig & {
     options: Array<string>;
 };
 export declare type CoreConfigProperty = BaseCoreConfig | EnumCoreConfig;
+export declare type TenantConfig = {
+    emailPassword: {
+        enabled: boolean;
+    };
+    passwordless: {
+        enabled: boolean;
+    };
+    thirdParty: {
+        enabled: boolean;
+        providers: ProviderConfig[];
+    };
+    firstFactors?: string[];
+    requiredSecondaryFactors?: string[];
+    coreConfig: {
+        [key: string]: any;
+    };
+};
 export declare type RecipeInterface = {
-    getTenantId: (input: { tenantIdFromFrontend: string; userContext: any }) => Promise<string>;
+    getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled?: boolean;
+            firstFactors?: string[];
+            requiredSecondaryFactors?: string[];
             coreConfig?: {
                 [key: string]: any;
             };
         };
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
     }>;
     deleteTenant: (input: {
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didExist: boolean;
     }>;
     getTenant: (input: {
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
-        | {
+        | ({
               status: "OK";
-              emailPassword: {
-                  enabled: boolean;
-              };
-              passwordless: {
-                  enabled: boolean;
-              };
-              thirdParty: {
-                  enabled: boolean;
-                  providers: ProviderConfig[];
-              };
-              coreConfig: {
-                  [key: string]: any;
-              };
-          }
+          } & TenantConfig)
         | undefined
     >;
     listAllTenants: (input: {
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
-        tenants: {
+        tenants: (TenantConfig & {
             tenantId: string;
-            emailPassword: {
-                enabled: boolean;
-            };
-            passwordless: {
-                enabled: boolean;
-            };
-            thirdParty: {
-                enabled: boolean;
-                providers: ProviderConfig[];
-            };
-            coreConfig: {
-                [key: string]: any;
-            };
-        }[];
+        })[];
     }>;
     createOrUpdateThirdPartyConfig: (input: {
         tenantId: string;
         config: ProviderConfig;
         skipValidation?: boolean;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNew: boolean;
@@ -114,7 +107,7 @@ export declare type RecipeInterface = {
     deleteThirdPartyConfig: (input: {
         tenantId: string;
         thirdPartyId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -122,7 +115,7 @@ export declare type RecipeInterface = {
     associateUserToTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -143,7 +136,7 @@ export declare type RecipeInterface = {
     disassociateUserFromTenant: (input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         wasAssociated: boolean;
@@ -163,13 +156,15 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     staticThirdPartyProviders: ProviderInput[];
+    allAvailableFirstFactors: string[];
+    staticFirstFactors: string[] | undefined;
 };
 export declare type APIInterface = {
     loginMethodsGET: (input: {
         tenantId: string;
         clientType?: string;
         options: APIOptions;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -186,6 +181,7 @@ export declare type APIInterface = {
                       name?: string;
                   }[];
               };
+              firstFactors: string[];
           }
         | GeneralErrorResponse
     >;

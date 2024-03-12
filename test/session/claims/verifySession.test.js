@@ -277,9 +277,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                         accessTokenPayload: sinon.match.object,
                         claimValidators: testValidatorArr,
                         userContext: {
-                            _default: {
-                                request: sinon.match.any,
-                            },
+                            _default: sinon.match.any,
                         },
                     })
                     .resolves({
@@ -339,9 +337,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                             .and(sinon.match.instanceOf(RecipeUserId)),
                         claimValidators: testValidatorArr,
                         userContext: {
-                            _default: {
-                                request: sinon.match.any,
-                            },
+                            _default: sinon.match.any,
                         },
                     })
                     .resolves({

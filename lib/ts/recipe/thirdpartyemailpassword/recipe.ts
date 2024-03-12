@@ -13,7 +13,7 @@
  * under the License.
  */
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -188,7 +188,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the ThirdPartyEmailpassword.init function?");
     }
 
     getAPIsHandled = (): APIHandled[] => {
@@ -204,7 +204,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         if ((await this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
             return await this.emailPasswordRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);

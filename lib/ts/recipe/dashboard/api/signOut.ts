@@ -17,12 +17,13 @@ import { APIInterface, APIOptions } from "../types";
 import { send200Response } from "../../../utils";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import { UserContext } from "../../../types";
 
 export default async function signOut(
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     if (options.config.authMode === "api-key") {
         send200Response(options.res, { status: "OK" });

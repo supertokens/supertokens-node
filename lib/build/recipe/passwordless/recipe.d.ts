@@ -1,13 +1,14 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -38,7 +39,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
@@ -48,14 +49,16 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
-                  userContext?: any;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
+                  session?: SessionContainerInterface;
                   request: BaseRequest | undefined;
-                  userContext?: any;
+                  userContext: UserContext;
               }
     ) => Promise<string>;
     signInUp: (
@@ -63,12 +66,14 @@ export default class Recipe extends RecipeModule {
             | {
                   email: string;
                   tenantId: string;
-                  userContext?: any;
+                  session?: SessionContainerInterface;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext?: any;
+                  session?: SessionContainerInterface;
+                  userContext: UserContext;
               }
     ) => Promise<{
         status: string;

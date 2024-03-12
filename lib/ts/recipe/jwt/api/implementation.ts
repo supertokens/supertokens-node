@@ -14,7 +14,7 @@
  */
 
 import { APIInterface, APIOptions, JsonWebKey } from "../types";
-import { GeneralErrorResponse } from "../../../types";
+import { GeneralErrorResponse, UserContext } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -23,7 +23,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }: {
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<{ keys: JsonWebKey[] } | GeneralErrorResponse> {
             const resp = await options.recipeImplementation.getJWKS({ userContext });
 

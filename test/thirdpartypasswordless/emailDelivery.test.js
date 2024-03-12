@@ -569,6 +569,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                                     userInputCode = input.userInputCode;
                                     codeLifetime = input.codeLifetime;
                                     type = input.type;
+                                    isFirstFactor = input.isFirstFactor;
                                     await oI.sendEmail(input);
                                 },
                             };
@@ -613,6 +614,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         assert.strictEqual(email, "test@example.com");
         assert.strictEqual(appName, "SuperTokens");
         assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -666,6 +668,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                                     getContent: async (input) => {
                                         getContentCalled = true;
                                         assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert(input.isFirstFactor);
                                         userInputCode = input.userInputCode;
                                         urlWithLinkCode = input.urlWithLinkCode;
                                         codeLifetime = input.codeLifetime;
@@ -997,6 +1000,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                                         userInputCode = input.userInputCode;
                                         codeLifetime = input.codeLifetime;
                                         type = input.type;
+                                        isFirstFactor = input.isFirstFactor;
                                     }
                                     overrideCalled = true;
                                     await oI.sendEmail(input);
@@ -1061,6 +1065,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         assert.strictEqual(email, "test@example.com");
         assert.strictEqual(appName, "SuperTokens");
         assert.strictEqual(type, "PASSWORDLESS_LOGIN");
+        assert(isFirstFactor);
         assert.notStrictEqual(urlWithLinkCode, undefined);
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
@@ -1128,6 +1133,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                                         }
                                         getContentCalled = true;
                                         assert.strictEqual(input.type, "PASSWORDLESS_LOGIN");
+                                        assert(input.isFirstFactor);
                                         return {
                                             body: input.userInputCode,
                                             toEmail: input.email,

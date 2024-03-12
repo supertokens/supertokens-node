@@ -220,7 +220,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             SessionRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2); // multitenancy is initialised by default
+            assert.strictEqual(SuperTokens.getInstanceOrThrowError().recipeModules.length, 3); // multitenancy&usermetadata is initialised by default
             resetAll();
         }
 
@@ -238,7 +238,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             SessionRecipe.getInstanceOrThrowError();
             EmailPasswordRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 3); // multitenancy is initialised by default
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 4); // multitenancy&usermetadata is initialised by default
             resetAll();
         }
     });

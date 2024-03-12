@@ -7,11 +7,12 @@ import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
 import { getUser } from "../../../";
-import { User } from "../../../types";
+import { User, UserContext } from "../../../types";
 import RecipeUserId from "../../../recipeUserId";
 
 import { TypeNormalisedInput } from "../../emailpassword/types";
 import { ProviderInput } from "../../thirdparty/types";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
@@ -30,7 +31,7 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -39,10 +40,20 @@ export default function getRecipeInterface(
         emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
-            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
@@ -50,10 +61,19 @@ export default function getRecipeInterface(
         emailPasswordSignIn: async function (input: {
             email: string;
             password: string;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
-            userContext: any;
-        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            userContext: UserContext;
+        }) {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
+        },
+        emailPasswordVerifyCredentials: async function (input: {
+            email: string;
+            password: string;
+            tenantId: string;
+            userContext: UserContext;
+        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            return originalEmailPasswordImplementation.verifyCredentials.bind(DerivedEP(this))(input);
         },
 
         thirdPartySignInUp: async function (input: {
@@ -66,8 +86,9 @@ export default function getRecipeInterface(
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
             };
+            session: SessionContainerInterface | undefined;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -84,6 +105,14 @@ export default function getRecipeInterface(
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
@@ -93,10 +122,16 @@ export default function getRecipeInterface(
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
+            session: SessionContainerInterface | undefined;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
-            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: User;
+                  recipeUserId: RecipeUserId;
+              }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -104,6 +139,14 @@ export default function getRecipeInterface(
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
+              }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               }
         > {
             return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);
@@ -113,7 +156,7 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             clientType?: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<TypeProvider | undefined> {
             return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },
@@ -122,12 +165,16 @@ export default function getRecipeInterface(
             userId: string;
             email: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return originalEmailPasswordImplementation.createResetPasswordToken.bind(DerivedEP(this))(input);
         },
 
-        consumePasswordResetToken: async function (input: { token: string; tenantId: string; userContext: any }) {
+        consumePasswordResetToken: async function (input: {
+            token: string;
+            tenantId: string;
+            userContext: UserContext;
+        }) {
             return originalEmailPasswordImplementation.consumePasswordResetToken.bind(DerivedEP(this))(input);
         },
 
@@ -137,7 +184,7 @@ export default function getRecipeInterface(
                 recipeUserId: RecipeUserId;
                 email?: string;
                 password?: string;
-                userContext: any;
+                userContext: UserContext;
                 applyPasswordPolicy?: boolean;
                 tenantIdForPasswordPolicy: string;
             }

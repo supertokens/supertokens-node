@@ -1,6 +1,6 @@
 // @ts-nocheck
 import Recipe from "./recipe";
-import { RecipeInterface, APIOptions, APIInterface, CoreConfigProperty } from "./types";
+import { RecipeInterface, APIOptions, APIInterface, TenantConfig, CoreConfigProperty } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
@@ -12,70 +12,46 @@ export default class Wrapper {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled?: boolean;
+            firstFactors?: string[];
+            requiredSecondaryFactors?: string[];
             coreConfig?: {
                 [key: string]: any;
             };
         },
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         createdNew: boolean;
     }>;
     static deleteTenant(
         tenantId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didExist: boolean;
     }>;
     static getTenant(
         tenantId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
-        | {
+        | ({
               status: "OK";
-              emailPassword: {
-                  enabled: boolean;
-              };
-              passwordless: {
-                  enabled: boolean;
-              };
-              thirdParty: {
-                  enabled: boolean;
-                  providers: ProviderConfig[];
-              };
-              coreConfig: {
-                  [key: string]: any;
-              };
-          }
+          } & TenantConfig)
         | undefined
     >;
     static listAllTenants(
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
-        tenants: {
+        tenants: ({
             tenantId: string;
-            emailPassword: {
-                enabled: boolean;
-            };
-            passwordless: {
-                enabled: boolean;
-            };
-            thirdParty: {
-                enabled: boolean;
-                providers: ProviderConfig[];
-            };
-            coreConfig: {
-                [key: string]: any;
-            };
-        }[];
+        } & TenantConfig)[];
     }>;
     static createOrUpdateThirdPartyConfig(
         tenantId: string,
         config: ProviderConfig,
         skipValidation?: boolean,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         createdNew: boolean;
@@ -83,7 +59,7 @@ export default class Wrapper {
     static deleteThirdPartyConfig(
         tenantId: string,
         thirdPartyId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didConfigExist: boolean;
@@ -91,7 +67,7 @@ export default class Wrapper {
     static associateUserToTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -112,7 +88,7 @@ export default class Wrapper {
     static disassociateUserFromTenant(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         wasAssociated: boolean;

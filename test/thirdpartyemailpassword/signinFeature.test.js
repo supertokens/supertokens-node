@@ -245,26 +245,17 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 
-        let response1 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    redirectURIInfo: {
-                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
-                        redirectURIQueryParams: {
-                            code: "abcdefghj",
-                        },
+        let response1 = await request(app)
+            .post("/auth/signinup")
+            .send({
+                thirdPartyId: "custom",
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        code: "abcdefghj",
                     },
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+                },
+            });
 
         assert.strictEqual(process.env.userId, response1.body.user.id);
         assert.strictEqual(process.env.loginType, "thirdparty");

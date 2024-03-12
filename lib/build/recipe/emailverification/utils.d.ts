@@ -1,7 +1,7 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput } from "./types";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import { BaseRequest } from "../../framework";
 export declare function validateAndNormaliseUserInput(
     _: Recipe,
@@ -14,5 +14,5 @@ export declare function getEmailVerifyLink(input: {
     recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
-    userContext: any;
+    userContext: UserContext;
 }): string;

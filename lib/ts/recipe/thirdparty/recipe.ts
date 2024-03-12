@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import MultitenancyRecipe from "../multitenancy/recipe";
@@ -31,6 +31,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import { FactorIds } from "../multifactorauth";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -75,6 +76,7 @@ export default class Recipe extends RecipeModule {
             const mtRecipe = MultitenancyRecipe.getInstance();
             if (mtRecipe !== undefined) {
                 mtRecipe.staticThirdPartyProviders = this.config.signInAndUpFeature.providers;
+                mtRecipe.allAvailableFirstFactors.push(FactorIds.THIRDPARTY);
             }
         });
     }
@@ -92,6 +94,7 @@ export default class Recipe extends RecipeModule {
                         emailDelivery: undefined,
                     }
                 );
+
                 return Recipe.instance;
             } else {
                 throw new Error("ThirdParty recipe has already been initialised. Please check your code for bugs.");
@@ -103,7 +106,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the ThirdParty.init function?");
     }
 
     static reset() {
@@ -143,7 +146,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _path: NormalisedURLPath,
         _method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             config: this.config,

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import { ClientOpts } from "twilio/lib/base/BaseTwilio";
+import { UserContext } from "../../../types";
 /**
  * only one of "from" and "messagingServiceSid" should be passed.
  * if both are passed, we should throw error to the user
@@ -27,7 +28,7 @@ export interface GetContentResult {
     toPhoneNumber: string;
 }
 export declare type TypeInputSendRawSms = GetContentResult & {
-    userContext: any;
+    userContext: UserContext;
 } & (
         | {
               from: string;
@@ -40,7 +41,7 @@ export declare type ServiceInterface<T> = {
     sendRawSms: (input: TypeInputSendRawSms) => Promise<void>;
     getContent: (
         input: T & {
-            userContext: any;
+            userContext: UserContext;
         }
     ) => Promise<GetContentResult>;
 };

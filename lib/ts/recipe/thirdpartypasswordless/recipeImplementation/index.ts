@@ -6,9 +6,10 @@ import { RecipeInterface as ThirdPartyRecipeInterface, TypeProvider } from "../.
 import { Querier } from "../../../querier";
 import DerivedPwdless from "./passwordlessRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
-import { User } from "../../../types";
+import { User, UserContext } from "../../../types";
 import { RecipeUserId, getUser } from "../../../";
 import { ProviderInput } from "../../thirdparty/types";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getRecipeInterface(
     passwordlessQuerier: Querier,
@@ -24,6 +25,9 @@ export default function getRecipeInterface(
     return {
         consumeCode: async function (input) {
             return originalPasswordlessImplementation.consumeCode.bind(DerivedPwdless(this))(input);
+        },
+        checkCode: async function (input) {
+            return originalPasswordlessImplementation.checkCode.bind(DerivedPwdless(this))(input);
         },
         createCode: async function (input) {
             return originalPasswordlessImplementation.createCode.bind(DerivedPwdless(this))(input);
@@ -84,8 +88,9 @@ export default function getRecipeInterface(
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
             };
+            session: SessionContainerInterface | undefined;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -102,6 +107,14 @@ export default function getRecipeInterface(
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
@@ -112,9 +125,15 @@ export default function getRecipeInterface(
             email: string;
             isVerified: boolean;
             tenantId: string;
-            userContext: any;
+            session: SessionContainerInterface | undefined;
+            userContext: UserContext;
         }): Promise<
-            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: User;
+                  recipeUserId: RecipeUserId;
+              }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -122,6 +141,14 @@ export default function getRecipeInterface(
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
+              }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               }
         > {
             return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);
@@ -131,7 +158,7 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             clientType?: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<TypeProvider | undefined> {
             return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },

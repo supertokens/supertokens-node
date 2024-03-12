@@ -21,7 +21,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeNormalisedInput = {
@@ -42,7 +42,7 @@ export type TypeNormalisedInput = {
 
 export type TypeInputFormField = {
     id: string;
-    validate?: (value: any, tenantId: string, userContext: any) => Promise<string | undefined>;
+    validate?: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
     optional?: boolean;
 };
 
@@ -54,7 +54,7 @@ export type TypeInputSignUp = {
 
 export type NormalisedFormField = {
     id: string;
-    validate: (value: any, tenantId: string, userContext: any) => Promise<string | undefined>;
+    validate: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
     optional: boolean;
 };
 
@@ -87,8 +87,9 @@ export type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -96,8 +97,15 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
-
     // this function is meant only for creating the recipe in the core and nothing else.
     // we added this even though signUp exists cause devs may override signup expecting it
     // to be called just during sign up. But we also need a version of signing up which can be
@@ -106,7 +114,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -119,8 +127,27 @@ export type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
+    }): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+
+    verifyCredentials(input: {
+        email: string;
+        password: string;
+        tenantId: string;
+        userContext: UserContext;
     }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     /**
@@ -132,13 +159,13 @@ export type RecipeInterface = {
         userId: string; // the id can be either recipeUserId or primaryUserId
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -154,7 +181,7 @@ export type RecipeInterface = {
         // for which one to update the password for.
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -187,7 +214,7 @@ export type APIInterface = {
               email: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -205,7 +232,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -227,7 +254,7 @@ export type APIInterface = {
               token: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -249,8 +276,9 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -275,8 +303,9 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";

@@ -373,13 +373,13 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 deviceId: codeInfo.deviceId,
             });
 
-            assert(resp.status === "OK");
+            assert.strictEqual(resp.status, "OK");
             assert(resp.createdNewRecipeUser);
             assert.strictEqual(typeof resp.user.id, "string");
             assert.strictEqual(resp.user.emails[0], "test@example.com");
             assert.strictEqual(resp.user.phoneNumbers[0], undefined);
             assert.strictEqual(typeof resp.user.timeJoined, "number");
-            assert.strictEqual(Object.keys(resp).length, 4);
+            assert.strictEqual(Object.keys(resp).length, 6);
             assert.strictEqual(Object.keys(resp.user).length, 8);
 
             const emailVerified = await EmailVerification.isEmailVerified(
@@ -401,10 +401,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 deviceId: codeInfo.deviceId,
             });
 
-            assert(resp.status === "INCORRECT_USER_INPUT_CODE_ERROR");
-            assert(resp.failedCodeInputAttemptCount === 1);
-            assert(resp.maximumCodeInputAttempts === 5);
-            assert(Object.keys(resp).length === 3);
+            assert.strictEqual(resp.status, "INCORRECT_USER_INPUT_CODE_ERROR");
+            assert.strictEqual(resp.failedCodeInputAttemptCount, 1);
+            assert.strictEqual(resp.maximumCodeInputAttempts, 5);
+            assert.strictEqual(Object.keys(resp).length, 3);
         }
 
         {

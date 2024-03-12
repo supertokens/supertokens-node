@@ -138,7 +138,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
                         functions: (oI) => ({
                             ...oI,
                             getJWKS: async (input) => {
-                                const res = await oI.getJWKS();
+                                const res = await oI.getJWKS(input);
                                 return {
                                     ...res,
                                     validityInSeconds: 1234,
@@ -198,7 +198,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
                         functions: (oI) => ({
                             ...oI,
                             getJWKS: async (input) => {
-                                const res = await oI.getJWKS();
+                                const res = await oI.getJWKS(input);
                                 return {
                                     ...res,
                                     validityInSeconds: undefined,

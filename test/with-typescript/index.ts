@@ -31,6 +31,7 @@ import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
 import AccountLinking from "../../recipe/accountlinking";
+import MultiFactorAuth from "../../recipe/multifactorauth";
 import { verifySession as customVerifySession } from "../../recipe/session/framework/custom";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -354,6 +355,11 @@ ThirdPartyPasswordless.init({
                     },
                     getContent: async (input) => {
                         if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -365,6 +371,7 @@ ThirdPartyPasswordless.init({
                 ...oI,
                 sendSms: async (input) => {
                     if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     return await oI.sendSms(input);
                 },
@@ -412,6 +419,7 @@ ThirdPartyPasswordless.init({
                 ...oI,
                 sendSms: async (input) => {
                     if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     return await oI.sendSms(input);
                 },
@@ -465,6 +473,11 @@ ThirdPartyPasswordless.init({
                     },
                     getContent: async (input) => {
                         if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -476,6 +489,7 @@ ThirdPartyPasswordless.init({
                 ...oI,
                 sendEmail: async (input) => {
                     if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -571,6 +585,11 @@ Passwordless.init({
                     },
                     getContent: async (input) => {
                         if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -582,6 +601,7 @@ Passwordless.init({
                 ...oI,
                 sendSms: async (input) => {
                     if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendSms(input);
                 },
@@ -621,6 +641,7 @@ Passwordless.init({
                 ...oI,
                 sendSms: async (input) => {
                     if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendSms(input);
                 },
@@ -672,6 +693,11 @@ Passwordless.init({
                     },
                     getContent: async (input) => {
                         if (input.type === "PASSWORDLESS_LOGIN") {
+                            if (input.isFirstFactor) {
+                                //
+                            } else {
+                                //
+                            }
                         }
                         return await oI.getContent(input);
                     },
@@ -683,6 +709,7 @@ Passwordless.init({
                 ...oI,
                 sendEmail: async (input) => {
                     if (input.type === "PASSWORDLESS_LOGIN") {
+                    } else if (input.type === "FOR_SECONDARY_FACTOR") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -794,6 +821,7 @@ EmailPassword.init({
                     if (input.type === "PASSWORD_RESET") {
                     }
                     await oI.sendEmail(input);
+                    EmailPassword.signUp("public", "test@example.com", "password123", undefined, input.userContext);
                 },
             };
         },
@@ -887,6 +915,7 @@ Multitenancy.init({
                             enabled: true,
                             providers: [],
                         },
+                        firstFactors: [],
                     };
                 },
             };
@@ -930,7 +959,7 @@ Multitenancy.init({
     },
 });
 
-import { HTTPMethod, TypeInput } from "../../types";
+import { HTTPMethod, TypeInput, UserContext } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
@@ -993,12 +1022,13 @@ let epConfig: EPTypeInput = {
     override: {},
 };
 
+const appInfo = {
+    apiDomain: "",
+    appName: "",
+    websiteDomain: "",
+};
 let config: TypeInput = {
-    appInfo: {
-        apiDomain: "",
-        appName: "",
-        websiteDomain: "",
-    },
+    appInfo,
     recipeList: [Session.init(sessionConfig), EmailPassword.init(epConfig)],
     isInServerlessEnv: true,
     framework: "express",
@@ -1019,8 +1049,8 @@ class StringClaim extends PrimitiveClaim<string> {
                 claim: this,
                 id: key,
                 shouldRefetch: () => false,
-                validate: async (payload) => {
-                    const value = this.getValueFromPayload(payload);
+                validate: async (payload, userContext) => {
+                    const value = this.getValueFromPayload(payload, userContext);
                     if (!value || !value.startsWith(str)) {
                         return {
                             isValid: false,
@@ -1042,7 +1072,12 @@ class StringClaim extends PrimitiveClaim<string> {
     };
 }
 const stringClaim = new StringClaim("cust-str");
-const boolClaim = new BooleanClaim({ key: "asdf", fetchValue: (userId) => userId.startsWith("5") });
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, currentPayload, userContext) => {
+        return userContext.claimValue;
+    },
+});
 
 Supertokens.init(config);
 
@@ -1184,6 +1219,7 @@ Supertokens.init({
                                         {
                                             email: input.email,
                                         },
+                                        undefined,
                                         input.userContext
                                     )
                                 ).length === 0
@@ -1322,10 +1358,17 @@ EmailPassword.init({
                         email,
                         password,
                         tenantId: input.tenantId,
+                        session: input.session,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {
                         return response;
+                    }
+                    if (response.status === "LINKING_TO_SESSION_USER_FAILED") {
+                        return {
+                            status: "SIGN_IN_NOT_ALLOWED",
+                            reason: response.status,
+                        };
                     }
                     let user = response.user;
 
@@ -1377,10 +1420,19 @@ Session.init({
                     boolClaim.validators.hasValue(true),
                 ],
                 createNewSession: async function (input) {
-                    input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
+                    input.accessTokenPayload = stringClaim.removeFromPayload(
+                        input.accessTokenPayload,
+                        input.userContext
+                    );
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
-                        ...(await boolClaim.build(input.userId, input.recipeUserId, input.tenantId, input.userContext)),
+                        ...(await boolClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
                         lastTokenRefresh: Date.now(),
                     };
                     return originalImplementation.createNewSession(input);
@@ -1398,7 +1450,7 @@ Session.validateClaimsForSessionHandle("asdf", (globalClaimValidators) => [
 Session.validateClaimsForSessionHandle(
     "asdf",
     (globalClaimValidators, info) => [...globalClaimValidators, boolClaim.validators.isTrue(info.expiry)],
-    { test: 1 }
+    { test: 1, ...({} as UserContext) }
 );
 
 EmailVerification.sendEmail({
@@ -1431,7 +1483,7 @@ ThirdPartyEmailPassword.sendEmail({
         id: "",
         recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 ThirdPartyPasswordless.sendEmail({
@@ -1439,6 +1491,7 @@ ThirdPartyPasswordless.sendEmail({
     codeLifetime: 234,
     email: "",
     type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
     userInputCode: "",
     urlWithLinkCode: "",
@@ -1448,8 +1501,9 @@ ThirdPartyPasswordless.sendEmail({
     codeLifetime: 234,
     email: "",
     type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 ThirdPartyPasswordless.sendSms({
@@ -1457,6 +1511,7 @@ ThirdPartyPasswordless.sendSms({
     codeLifetime: 234,
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
     userInputCode: "",
     urlWithLinkCode: "",
@@ -1466,8 +1521,9 @@ ThirdPartyPasswordless.sendSms({
     codeLifetime: 234,
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
+    isFirstFactor: true,
     preAuthSessionId: "",
-    userContext: {},
+    userContext: {} as UserContext,
 });
 
 Supertokens.init({
@@ -1590,10 +1646,14 @@ Passwordless.init({
                             let user = await Passwordless.signInUp({
                                 tenantId: "test",
                                 phoneNumber: "TEST_PHONE_NUMBER",
-                                userContext: { calledManually: true },
+                                userContext: { calledManually: true, ...({} as UserContext) },
                             });
                             return {
                                 status: "OK",
+                                consumedDevice: {
+                                    failedCodeInputAttemptCount: 0,
+                                    preAuthSessionId: input.preAuthSessionId,
+                                },
                                 createdNewRecipeUser: user.createdNewRecipeUser,
                                 recipeUserId: user.recipeUserId,
                                 user: user.user,
@@ -1821,9 +1881,52 @@ Session.init({
 });
 
 async function accountLinkingFuncsTest() {
+    const session = await Session.createNewSessionWithoutRequestResponse(
+        "public",
+        Supertokens.convertToRecipeUserId("asdf")
+    );
+
     const signUpResp = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (signUpResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignUpResp = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (tpepSignUpResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const signUpRespWithSession = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw", session);
+    if (signUpRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignUpRespWithSession = await ThirdPartyEmailPassword.emailPasswordSignUp(
+        "public",
+        "asdf@asdf.asfd",
+        "testpw",
+        session
+    );
+    if (tpepSignUpRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
     if (signUpResp.status !== "OK") {
         return signUpResp;
+    }
+
+    const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (signInResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignInResp = await ThirdPartyEmailPassword.emailPasswordSignIn("public", "asdf@asdf.asfd", "testpw");
+    // @ts-expect-error
+    if (tpepSignInResp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const signInRespWithSession = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", session);
+    if (signInRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpepSignInRespWithSession = await ThirdPartyEmailPassword.emailPasswordSignIn(
+        "public",
+        "asdf@asdf.asfd",
+        "testpw",
+        session
+    );
+    if (tpepSignInRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
 
     let user: User;
@@ -1869,8 +1972,94 @@ async function accountLinkingFuncsTest() {
     }
 
     const tpSignUp = await ThirdParty.manuallyCreateOrUpdateUser("public", "mytp", "tpuser", "asfd@asfd.asdf", false);
+    // @ts-expect-error
+    if (tpSignUp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpSignUpWithSession = await ThirdParty.manuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false,
+        session
+    );
+    if (tpSignUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
     if (tpSignUp.status !== "OK") {
         return tpSignUp;
+    }
+
+    const tpEpSignInUp = await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false
+    );
+    // @ts-expect-error
+    if (tpEpSignInUp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpEpSignInUpWithSession = await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false,
+        session
+    );
+    if (tpEpSignInUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessSignInUp = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false
+    );
+    // @ts-expect-error
+    if (tpPwlessSignInUp.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessSignInUpWithSession = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+        "public",
+        "mytp",
+        "tpuser",
+        "asfd@asfd.asdf",
+        false,
+        session
+    );
+    if (tpPwlessSignInUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const consumeCode = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+    });
+    // @ts-expect-error
+    if (consumeCode.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const consumeCodeWithSession = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+        session,
+    });
+    if (consumeCodeWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessConsumeCode = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+    });
+    // @ts-expect-error
+    if (tpPwlessConsumeCode.status === "LINKING_TO_SESSION_USER_FAILED") {
+    }
+    const tpPwlessConsumeCodeWithSession = await ThirdPartyPasswordless.consumeCode({
+        linkCode: "asdf",
+        preAuthSessionId: "asdf",
+        tenantId: "public",
+        session,
+    });
+    if (tpPwlessConsumeCodeWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
     // This should be true
     const canLink = await AccountLinking.canLinkAccounts(tpSignUp.recipeUserId, user.id);
@@ -1882,18 +2071,127 @@ async function accountLinkingFuncsTest() {
     const linkResult = await AccountLinking.createPrimaryUserIdOrLinkAccounts("public", tpSignUp.recipeUserId);
 
     return {
-        canChangeEmail: await AccountLinking.isEmailChangeAllowed(tpSignUp.recipeUserId, "asfd@asfd.asfd", true),
-        canSignIn: await AccountLinking.isSignInAllowed("public", tpSignUp.recipeUserId),
+        canChangeEmail: await AccountLinking.isEmailChangeAllowed(
+            tpSignUp.recipeUserId,
+            "asfd@asfd.asfd",
+            true,
+            session
+        ),
+        canSignIn: await AccountLinking.isSignInAllowed("public", tpSignUp.recipeUserId, session),
         canSignUp: await AccountLinking.isSignUpAllowed(
             "public",
             {
                 recipeId: "passwordless",
                 email: "asdf@asdf.asdf",
             },
-            true
+            true,
+            session
         ),
     };
 }
+
+Supertokens.init({
+    appInfo,
+    recipeList: [EmailPassword.init(), MultiFactorAuth.init(), Session.init()],
+});
+
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        MultiFactorAuth.init({
+            // firstFactor defaults to all factors added by auth recipes
+            // emailpassword -> [emailpassword], passwordless -> [otp-phone, otp-email, link-phone, link-email], thirdparty -> [thirdparty], etc
+            firstFactors: ["emailpassword"],
+        }),
+        Session.init(),
+    ],
+});
+
+// const noMFARequired
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth();
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedRequirementList([]);
+MultiFactorAuth.MultiFactorAuthClaim.validators.hasCompletedRequirementList([
+    { oneOf: ["emailpassword", "thirdparty"] }, // We can include the first factors here... that feels a bit weird but it works.
+    { oneOf: ["totp", "otp-phone"] }, // We require either totp or otp-phone
+]);
+
+// Any X of List is a bit weird to implement, but also a fairly niche thing I think.
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        MultiFactorAuth.init({
+            firstFactors: ["emailpassword", "otp-phone", "link-phone"],
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+
+                    getMFARequirementsForAuth: ({ completedFactors }) => {
+                        const factors = ["otp-email", "totp", "biometric"] as const;
+                        const completedFromList = factors.filter((fact) => completedFactors[fact] !== undefined);
+                        if (completedFromList.length >= 2) {
+                            // We have completed two factors
+                            return [];
+                        }
+                        // Otherwise the next step is completing something from the rest of the list
+                        return [
+                            {
+                                oneOf: factors.filter((fact) => completedFactors[fact] === undefined),
+                            },
+                        ];
+                    },
+                }),
+            },
+        }),
+        Session.init(),
+    ],
+});
+
+Supertokens.init({
+    appInfo,
+    recipeList: [
+        EmailPassword.init(),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        MultiFactorAuth.init({
+            firstFactors: ["emailpassword", "otp-email", "link-email"],
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+                    getMFARequirementsForAuth: () => ["otp-phone"],
+                    assertAllowedToSetupFactorElseThrowInvalidClaimError: (input) => {
+                        return oI.assertAllowedToSetupFactorElseThrowInvalidClaimError({
+                            ...input,
+                            mfaRequirementsForAuth: Promise.resolve(["otp-phone"]),
+                        });
+                    },
+                }),
+            },
+        }),
+        Session.init({
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+                    createNewSession: async (input) => {
+                        const resp = await oI.createNewSession(input);
+                        if (input.userContext.shouldCompleteTOTP) {
+                            // this is a stand-in for the "remember me" check
+                            await MultiFactorAuth.markFactorAsCompleteInSession(resp, "totp", input.userContext);
+                        }
+                        return resp;
+                    },
+                }),
+            },
+        }),
+    ],
+});
 
 const nextAppDirMiddleware = customFramework.middleware<NextRequest>((req) => {
     const query = Object.fromEntries(new URL(req.url!).searchParams.entries());

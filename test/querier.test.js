@@ -96,7 +96,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {});
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {}, {});
         assert.deepStrictEqual(response.rid, ["session"]);
 
         nock(connectionURI, {
@@ -107,7 +107,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response2 = await querier.sendGetRequest(new NormalisedURLPath("/recipe/random"), {});
+        let response2 = await querier.sendGetRequest(new NormalisedURLPath("/recipe/random"), {}, {});
         assert.deepStrictEqual(response2.rid, ["session"]);
 
         nock(connectionURI, {
@@ -118,7 +118,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response3 = await querier.sendGetRequest(new NormalisedURLPath("/test"), {});
+        let response3 = await querier.sendGetRequest(new NormalisedURLPath("/test"), {}, {});
         assert.strictEqual(response3.rid, undefined);
     });
 
@@ -136,7 +136,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         });
         try {
             let q = Querier.getNewInstanceOrThrowError(undefined);
-            await q.sendGetRequest(new NormalisedURLPath("", "/"), {});
+            await q.sendGetRequest(new NormalisedURLPath("", "/"), {}, {});
             throw new Error();
         } catch (err) {
             if (err.message !== "No SuperTokens core available to query") {
@@ -162,11 +162,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         let q = Querier.getNewInstanceOrThrowError(undefined);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
-        assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n");
+        assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("/hello"), {}, undefined, {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
         assert.equal(hostsAlive.has(connectionURI), true);
@@ -189,11 +189,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         let q = Querier.getNewInstanceOrThrowError(undefined);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
-        assert.equal(await q.sendPostRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n");
+        assert.equal(await q.sendPostRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
-        assert.equal(await q.sendPutRequest(new NormalisedURLPath("/hello"), {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendPutRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
         assert.equal(hostsAlive.has(connectionURI), true);

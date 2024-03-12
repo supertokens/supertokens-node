@@ -42,6 +42,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypePass
                     userInputCode: input.userInputCode,
                     urlWithLinkCode: input.urlWithLinkCode,
                     codeLifetime: input.codeLifetime,
+                    isFirstFactor: input.isFirstFactor,
                     appName,
                 },
             },

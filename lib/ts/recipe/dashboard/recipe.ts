@@ -15,7 +15,7 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -130,7 +130,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the Dashboard.init function?");
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -443,7 +443,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         __: NormalisedURLPath,
         ___: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,

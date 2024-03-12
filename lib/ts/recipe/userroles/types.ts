@@ -14,6 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
+import { UserContext } from "../../types";
 
 export type TypeInput = {
     skipAddingRolesToAccessToken?: boolean;
@@ -46,7 +47,7 @@ export type RecipeInterface = {
         userId: string;
         role: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -61,7 +62,7 @@ export type RecipeInterface = {
         userId: string;
         role: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -75,7 +76,7 @@ export type RecipeInterface = {
     getRolesForUser: (input: {
         userId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         roles: string[];
@@ -84,7 +85,7 @@ export type RecipeInterface = {
     getUsersThatHaveRole: (input: {
         role: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -98,7 +99,7 @@ export type RecipeInterface = {
     createNewRoleOrAddPermissions: (input: {
         role: string;
         permissions: string[];
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         createdNewRole: boolean;
@@ -106,7 +107,7 @@ export type RecipeInterface = {
 
     getPermissionsForRole: (input: {
         role: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -120,14 +121,14 @@ export type RecipeInterface = {
     removePermissionsFromRole: (input: {
         role: string;
         permissions: string[];
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK" | "UNKNOWN_ROLE_ERROR";
     }>;
 
     getRolesThatHavePermission: (input: {
         permission: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         roles: string[];
@@ -135,14 +136,14 @@ export type RecipeInterface = {
 
     deleteRole: (input: {
         role: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didRoleExist: boolean;
     }>;
 
     getAllRoles: (input: {
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         roles: string[];

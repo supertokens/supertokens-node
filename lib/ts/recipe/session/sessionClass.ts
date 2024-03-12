@@ -21,7 +21,7 @@ import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { protectedProps } from "./constants";
-import { makeDefaultUserContextFromAPI } from "../../utils";
+import { getUserContext, makeDefaultUserContextFromAPI } from "../../utils";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -39,14 +39,19 @@ export default class Session implements SessionContainerInterface {
         protected tenantId: string
     ) {}
 
-    getRecipeUserId(_userContext?: any): RecipeUserId {
+    getRecipeUserId(_userContext?: Record<string, any>): RecipeUserId {
         return this.recipeUserId;
     }
 
-    async revokeSession(userContext?: any) {
+    async revokeSession(userContext?: Record<string, any>) {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
         await this.helpers.getRecipeImpl().revokeSession({
             sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: ctx,
         });
 
         if (this.reqResInfo !== undefined) {
@@ -61,15 +66,20 @@ export default class Session implements SessionContainerInterface {
                 this.reqResInfo.res,
                 this.reqResInfo.transferMethod,
                 this.reqResInfo.req,
-                userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
+                ctx
             );
         }
     }
 
-    async getSessionDataFromDatabase(userContext?: any): Promise<any> {
+    async getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: ctx,
         });
         if (sessionInfo === undefined) {
             logDebugMessage("getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore");
@@ -81,12 +91,17 @@ export default class Session implements SessionContainerInterface {
         return sessionInfo.sessionDataInDatabase;
     }
 
-    async updateSessionDataInDatabase(newSessionData: any, userContext?: any) {
+    async updateSessionDataInDatabase(newSessionData: any, userContext?: Record<string, any>) {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
         if (
             !(await this.helpers.getRecipeImpl().updateSessionDataInDatabase({
                 sessionHandle: this.sessionHandle,
                 newSessionData,
-                userContext: userContext === undefined ? {} : userContext,
+                userContext: ctx,
             }))
         ) {
             logDebugMessage(
@@ -99,15 +114,15 @@ export default class Session implements SessionContainerInterface {
         }
     }
 
-    getUserId(_userContext?: any) {
+    getUserId(_userContext?: Record<string, any>) {
         return this.userId;
     }
 
-    getTenantId(_userContext?: any) {
+    getTenantId(_userContext?: Record<string, any>) {
         return this.tenantId;
     }
 
-    getAccessTokenPayload(_userContext?: any) {
+    getAccessTokenPayload(_userContext?: Record<string, any>) {
         return this.userDataInAccessToken;
     }
 
@@ -130,8 +145,13 @@ export default class Session implements SessionContainerInterface {
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
-        let newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext) };
+    async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: Record<string, any>): Promise<void> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
+        let newAccessTokenPayload = { ...this.getAccessTokenPayload(ctx) };
         for (const key of protectedProps) {
             delete newAccessTokenPayload[key];
         }
@@ -147,7 +167,7 @@ export default class Session implements SessionContainerInterface {
         let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
             accessToken: this.getAccessToken(),
             newAccessTokenPayload,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: ctx,
         });
 
         if (response === undefined) {
@@ -176,7 +196,7 @@ export default class Session implements SessionContainerInterface {
                     this.helpers.config,
                     this.reqResInfo.transferMethod,
                     this.reqResInfo.req,
-                    userContext === undefined ? makeDefaultUserContextFromAPI(this.reqResInfo.req) : userContext
+                    ctx
                 );
             }
         } else {
@@ -184,16 +204,21 @@ export default class Session implements SessionContainerInterface {
             // We can't update the access token on the FE, as it will need to call refresh anyway but we handle this as a successful update during this request.
             // the changes will be reflected on the FE after refresh is called
             this.userDataInAccessToken = {
-                ...this.getAccessTokenPayload(),
+                ...this.getAccessTokenPayload(ctx),
                 ...response.session.userDataInJWT,
             };
         }
     }
 
-    async getTimeCreated(userContext?: any): Promise<number> {
+    async getTimeCreated(userContext?: Record<string, any>): Promise<number> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: ctx,
         });
         if (sessionInfo === undefined) {
             logDebugMessage("getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore");
@@ -205,10 +230,15 @@ export default class Session implements SessionContainerInterface {
         return sessionInfo.timeCreated;
     }
 
-    async getExpiry(userContext?: any): Promise<number> {
+    async getExpiry(userContext?: Record<string, any>): Promise<number> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: ctx,
         });
         if (sessionInfo === undefined) {
             logDebugMessage("getExpiry: Throwing UNAUTHORISED because session does not exist anymore");
@@ -221,13 +251,18 @@ export default class Session implements SessionContainerInterface {
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: Record<string, any>): Promise<void> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
         let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
-            accessTokenPayload: this.getAccessTokenPayload(userContext),
-            userId: this.getUserId(userContext),
-            recipeUserId: this.getRecipeUserId(userContext),
+            accessTokenPayload: this.getAccessTokenPayload(ctx),
+            userId: this.getUserId(ctx),
+            recipeUserId: this.getRecipeUserId(ctx),
             claimValidators,
-            userContext,
+            userContext: ctx,
         });
 
         if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
@@ -235,7 +270,7 @@ export default class Session implements SessionContainerInterface {
                 delete validateClaimResponse.accessTokenPayloadUpdate[key];
             }
 
-            await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
+            await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, ctx);
         }
 
         if (validateClaimResponse.invalidClaims.length !== 0) {
@@ -248,38 +283,63 @@ export default class Session implements SessionContainerInterface {
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
+    async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<void> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
         const update = await claim.build(
-            this.getUserId(userContext),
-            this.getRecipeUserId(userContext),
-            this.getTenantId(),
-            userContext
+            this.getUserId(ctx),
+            this.getRecipeUserId(ctx),
+            this.getTenantId(ctx),
+            this.getAccessTokenPayload(ctx),
+            ctx
         );
-        return this.mergeIntoAccessTokenPayload(update, userContext);
+        return this.mergeIntoAccessTokenPayload(update, ctx);
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
-        const update = claim.addToPayload_internal({}, value, userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: Record<string, any>): Promise<void> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
+        const update = claim.addToPayload_internal({}, value, getUserContext(ctx));
+        return this.mergeIntoAccessTokenPayload(update, ctx);
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    async getClaimValue<T>(claim: SessionClaim<T>, userContext?: any) {
-        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
+    async getClaimValue<T>(claim: SessionClaim<T>, userContext?: Record<string, any>) {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
+        return claim.getValueFromPayload(await this.getAccessTokenPayload(ctx), ctx);
     }
 
     // Any update to this function should also be reflected in the respective JWT version
-    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
-        const update = claim.removeFromPayloadByMerge_internal({}, userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
+    removeClaim(claim: SessionClaim<any>, userContext?: Record<string, any>): Promise<void> {
+        const ctx =
+            userContext === undefined && this.reqResInfo !== undefined
+                ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                : getUserContext(userContext);
+
+        const update = claim.removeFromPayloadByMerge_internal({}, ctx);
+        return this.mergeIntoAccessTokenPayload(update, ctx);
     }
 
-    attachToRequestResponse(info: ReqResInfo, userContext?: any) {
+    attachToRequestResponse(info: ReqResInfo, userContext?: Record<string, any>) {
         this.reqResInfo = info;
 
         if (this.accessTokenUpdated) {
             const { res, transferMethod } = info;
+            const ctx =
+                userContext === undefined && this.reqResInfo !== undefined
+                    ? makeDefaultUserContextFromAPI(this.reqResInfo.req)
+                    : getUserContext(userContext);
 
             setAccessTokenInResponse(
                 res,
@@ -288,7 +348,7 @@ export default class Session implements SessionContainerInterface {
                 this.helpers.config,
                 transferMethod,
                 info.req,
-                userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
+                ctx
             );
             if (this.refreshToken !== undefined) {
                 setToken(
@@ -299,7 +359,7 @@ export default class Session implements SessionContainerInterface {
                     this.refreshToken.expiry,
                     transferMethod,
                     info.req,
-                    userContext !== undefined ? userContext : makeDefaultUserContextFromAPI(info.req)
+                    ctx
                 );
             }
             if (this.antiCsrfToken !== undefined) {

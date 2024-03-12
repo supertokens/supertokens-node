@@ -21,6 +21,7 @@ import {
     GetContentResult,
 } from "../../../../../ingredients/emaildelivery/services/smtp";
 import getPasswordlessLoginEmailContent from "./passwordlessLogin";
+import { UserContext } from "../../../../../types";
 
 export function getServiceImplementation(
     transporter: Transporter,
@@ -48,7 +49,7 @@ export function getServiceImplementation(
             }
         },
         getContent: async function (
-            input: TypePasswordlessEmailDeliveryInput & { userContext: any }
+            input: TypePasswordlessEmailDeliveryInput & { userContext: UserContext }
         ): Promise<GetContentResult> {
             return getPasswordlessLoginEmailContent(input);
         },

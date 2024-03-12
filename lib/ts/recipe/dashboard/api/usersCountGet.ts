@@ -15,6 +15,7 @@
 
 import { APIInterface, APIOptions } from "../types";
 import SuperTokens from "../../../supertokens";
+import { UserContext } from "../../../types";
 
 export type Response = {
     status: "OK";
@@ -25,9 +26,9 @@ export default async function usersCountGet(
     _: APIInterface,
     tenantId: string,
     __: APIOptions,
-    ___: any
+    userContext: UserContext
 ): Promise<Response> {
-    const count = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId);
+    const count = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
 
     return {
         status: "OK",

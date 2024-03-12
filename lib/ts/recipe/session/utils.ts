@@ -27,7 +27,7 @@ import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cooki
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -39,7 +39,8 @@ export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
     _: string,
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ) {
     sendNon200ResponseWithMessage(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
 }
@@ -48,7 +49,8 @@ export async function sendUnauthorisedResponse(
     recipeInstance: SessionRecipe,
     _: string,
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ) {
     sendNon200ResponseWithMessage(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
 }
@@ -57,7 +59,8 @@ export async function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
     claimValidationErrors: ClaimValidationError[],
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    ___: UserContext
 ) {
     sendNon200Response(response, recipeInstance.config.invalidClaimStatusCode, {
         message: "invalid claim",
@@ -71,9 +74,10 @@ export async function sendTokenTheftDetectedResponse(
     _: string,
     __: RecipeUserId,
     ___: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    userContext: UserContext
 ) {
-    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} });
+    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext });
     sendNon200ResponseWithMessage(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }
 
@@ -140,8 +144,8 @@ export function validateAndNormaliseUserInput(
 
     let cookieSameSite: (input: {
         request: BaseRequest | undefined;
-        userContext: any;
-    }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: any }) => {
+        userContext: UserContext;
+    }) => "strict" | "lax" | "none" = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         let protocolOfWebsiteDomain = getURLProtocol(
             appInfo
                 .getOrigin({
@@ -186,7 +190,7 @@ export function validateAndNormaliseUserInput(
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
-        | ((input: { request: BaseRequest | undefined; userContext: any }) => "VIA_CUSTOM_HEADER" | "NONE") = ({
+        | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => "VIA_CUSTOM_HEADER" | "NONE") = ({
         request,
         userContext,
     }) => {
@@ -212,7 +216,8 @@ export function validateAndNormaliseUserInput(
             userId: string,
             recipeUserId: RecipeUserId,
             request: BaseRequest,
-            response: BaseResponse
+            response: BaseResponse,
+            userContext: UserContext
         ) => {
             return await sendTokenTheftDetectedResponse(
                 recipeInstance,
@@ -220,17 +225,33 @@ export function validateAndNormaliseUserInput(
                 userId,
                 recipeUserId,
                 request,
-                response
+                response,
+                userContext
             );
         },
-        onTryRefreshToken: async (message: string, request: BaseRequest, response: BaseResponse) => {
-            return await sendTryRefreshTokenResponse(recipeInstance, message, request, response);
+        onTryRefreshToken: async (
+            message: string,
+            request: BaseRequest,
+            response: BaseResponse,
+            userContext: UserContext
+        ) => {
+            return await sendTryRefreshTokenResponse(recipeInstance, message, request, response, userContext);
         },
-        onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
-            return await sendUnauthorisedResponse(recipeInstance, message, request, response);
+        onUnauthorised: async (
+            message: string,
+            request: BaseRequest,
+            response: BaseResponse,
+            userContext: UserContext
+        ) => {
+            return await sendUnauthorisedResponse(recipeInstance, message, request, response, userContext);
         },
-        onInvalidClaim: (validationErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse) => {
-            return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response);
+        onInvalidClaim: (
+            validationErrors: ClaimValidationError[],
+            request: BaseRequest,
+            response: BaseResponse,
+            userContext: UserContext
+        ) => {
+            return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response, userContext);
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
@@ -268,6 +289,7 @@ export function validateAndNormaliseUserInput(
         antiCsrfFunctionOrString: antiCsrf,
         override,
         invalidClaimStatusCode,
+        overwriteSessionDuringSignInUp: config?.overwriteSessionDuringSignInUp ?? false,
     };
 }
 
@@ -287,7 +309,7 @@ export function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: UserContext
 ) {
     setFrontTokenInHeaders(res, frontToken);
     setToken(
@@ -326,14 +348,14 @@ export function setAccessTokenInResponse(
 export async function getRequiredClaimValidators(
     session: SessionContainerInterface,
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
-    userContext: any
+    userContext: UserContext
 ) {
     const claimValidatorsAddedByOtherRecipes = SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
     const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
         {
-            userId: session.getUserId(),
-            recipeUserId: session.getRecipeUserId(),
-            tenantId: session.getTenantId(),
+            userId: session.getUserId(userContext),
+            recipeUserId: session.getRecipeUserId(userContext),
+            tenantId: session.getTenantId(userContext),
             claimValidatorsAddedByOtherRecipes,
             userContext,
         }
@@ -347,7 +369,7 @@ export async function getRequiredClaimValidators(
 export async function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,
-    userContext: any
+    userContext: UserContext
 ) {
     const validationErrors = [];
     for (const validator of claimValidators) {

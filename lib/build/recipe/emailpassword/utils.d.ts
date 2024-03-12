@@ -1,7 +1,7 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, NormalisedFormField, TypeInputFormField } from "./types";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import { BaseRequest } from "../../framework";
 export declare function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -28,5 +28,5 @@ export declare function getPasswordResetLink(input: {
     recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
-    userContext: any;
+    userContext: UserContext;
 }): string;

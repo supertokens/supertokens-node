@@ -15,6 +15,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import { ProviderConfig } from "../../../thirdparty/types";
+import { UserContext } from "../../../../types";
 
 type TenantListTenantType = {
     tenantId: string;
@@ -28,6 +29,8 @@ type TenantListTenantType = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
+    firstFactors?: string[];
+    requiredSecondaryFactors?: string[];
 };
 
 export type Response = {
@@ -39,7 +42,7 @@ export default async function listTenants(
     _: APIInterface,
     __: string,
     ___: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     let tenantsRes = await Multitenancy.listAllTenants(userContext);
     let finalTenants: TenantListTenantType[] = [];
@@ -55,6 +58,8 @@ export default async function listTenants(
             emailPassword: currentTenant.emailPassword,
             passwordless: currentTenant.passwordless,
             thirdParty: currentTenant.thirdParty,
+            firstFactors: currentTenant.firstFactors,
+            requiredSecondaryFactors: currentTenant.requiredSecondaryFactors,
         };
         finalTenants.push(modifiedTenant);
     }

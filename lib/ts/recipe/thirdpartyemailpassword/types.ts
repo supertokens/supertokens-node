@@ -32,7 +32,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse, User as GlobalUser, User } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeInputSignUp = {
@@ -76,7 +76,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         clientType?: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
 
     thirdPartySignInUp(input: {
@@ -89,8 +89,9 @@ export type RecipeInterface = {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
         };
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -107,6 +108,14 @@ export type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     thirdPartyManuallyCreateOrUpdateUser(input: {
@@ -114,8 +123,9 @@ export type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -131,13 +141,22 @@ export type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     emailPasswordSignUp(input: {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -145,12 +164,20 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     createNewEmailPasswordRecipeUser(input: {
         email: string;
         password: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -164,11 +191,34 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
-        userContext: any;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
               user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+
+    emailPasswordVerifyCredentials(input: {
+        email: string;
+        password: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
               recipeUserId: RecipeUserId;
           }
         | { status: "WRONG_CREDENTIALS_ERROR" }
@@ -178,13 +228,13 @@ export type RecipeInterface = {
         userId: string;
         email: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     consumePasswordResetToken(input: {
         token: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -198,7 +248,7 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext: any;
+        userContext: UserContext;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy: string;
     }): Promise<
@@ -224,7 +274,7 @@ export type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -240,7 +290,7 @@ export type APIInterface = {
               email: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -258,7 +308,7 @@ export type APIInterface = {
               }[];
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -280,7 +330,7 @@ export type APIInterface = {
               token: string;
               tenantId: string;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -300,8 +350,9 @@ export type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: ThirdPartyAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -342,8 +393,9 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -368,8 +420,9 @@ export type APIInterface = {
                   value: string;
               }[];
               tenantId: string;
+              session: SessionContainerInterface | undefined;
               options: EmailPasswordAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -391,7 +444,7 @@ export type APIInterface = {
         | ((input: {
               formPostInfoFromProvider: any;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<void>);
 };
 

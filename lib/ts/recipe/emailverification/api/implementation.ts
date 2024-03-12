@@ -11,7 +11,7 @@ export default function getAPIInterface(): APIInterface {
     return {
         verifyEmailPOST: async function (
             this: APIInterface,
-            { token, tenantId, options, session, userContext }
+            { token, tenantId, session, options, userContext }
         ): Promise<
             | { status: "OK"; user: UserEmailInfo; newSession?: SessionContainerInterface }
             | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
@@ -61,13 +61,13 @@ export default function getAPIInterface(): APIInterface {
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
                 undefined,
-                session.getRecipeUserId(),
+                session.getRecipeUserId(userContext),
                 userContext
             );
 
             if (emailInfo.status === "OK") {
                 const isVerified = await options.recipeImplementation.isEmailVerified({
-                    recipeUserId: session.getRecipeUserId(),
+                    recipeUserId: session.getRecipeUserId(userContext),
                     email: emailInfo.email,
                     userContext,
                 });
@@ -83,7 +83,7 @@ export default function getAPIInterface(): APIInterface {
                             req: options.req,
                             res: options.res,
                             session,
-                            recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(),
+                            recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(userContext),
                             userContext,
                         }
                     );
@@ -131,14 +131,14 @@ export default function getAPIInterface(): APIInterface {
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
                 undefined,
-                session.getRecipeUserId(),
+                session.getRecipeUserId(userContext),
                 userContext
             );
 
             if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
                 logDebugMessage(
                     `Email verification email not sent to user ${session
-                        .getRecipeUserId()
+                        .getRecipeUserId(userContext)
                         .getAsString()} because it doesn't have an email address.`
                 );
                 // this can happen if the user ID was found, but it has no email. In this
@@ -148,7 +148,7 @@ export default function getAPIInterface(): APIInterface {
                         req: options.req,
                         res: options.res,
                         session,
-                        recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(),
+                        recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(userContext),
                         userContext,
                     }
                 );
@@ -158,7 +158,7 @@ export default function getAPIInterface(): APIInterface {
                 };
             } else if (emailInfo.status === "OK") {
                 let response = await options.recipeImplementation.createEmailVerificationToken({
-                    recipeUserId: session.getRecipeUserId(),
+                    recipeUserId: session.getRecipeUserId(userContext),
                     email: emailInfo.email,
                     tenantId,
                     userContext,
@@ -169,7 +169,7 @@ export default function getAPIInterface(): APIInterface {
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
                     logDebugMessage(
                         `Email verification email not sent to user ${session
-                            .getRecipeUserId()
+                            .getRecipeUserId(userContext)
                             .getAsString()} because it is already verified.`
                     );
                     let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
@@ -177,7 +177,7 @@ export default function getAPIInterface(): APIInterface {
                             req: options.req,
                             res: options.res,
                             session,
-                            recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(),
+                            recipeUserIdWhoseEmailGotVerified: session.getRecipeUserId(userContext),
                             userContext,
                         }
                     );
@@ -208,7 +208,7 @@ export default function getAPIInterface(): APIInterface {
                     type: "EMAIL_VERIFICATION",
                     user: {
                         id: session.getUserId(),
-                        recipeUserId: session.getRecipeUserId(),
+                        recipeUserId: session.getRecipeUserId(userContext),
                         email: emailInfo.email,
                     },
                     emailVerifyLink,

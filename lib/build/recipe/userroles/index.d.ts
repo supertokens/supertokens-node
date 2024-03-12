@@ -9,7 +9,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         role: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -23,7 +23,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         role: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -36,7 +36,7 @@ export default class Wrapper {
     static getRolesForUser(
         tenantId: string,
         userId: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         roles: string[];
@@ -44,7 +44,7 @@ export default class Wrapper {
     static getUsersThatHaveRole(
         tenantId: string,
         role: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -57,14 +57,14 @@ export default class Wrapper {
     static createNewRoleOrAddPermissions(
         role: string,
         permissions: string[],
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         createdNewRole: boolean;
     }>;
     static getPermissionsForRole(
         role: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -77,26 +77,26 @@ export default class Wrapper {
     static removePermissionsFromRole(
         role: string,
         permissions: string[],
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK" | "UNKNOWN_ROLE_ERROR";
     }>;
     static getRolesThatHavePermission(
         permission: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         roles: string[];
     }>;
     static deleteRole(
         role: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         didRoleExist: boolean;
     }>;
     static getAllRoles(
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         roles: string[];
