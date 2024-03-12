@@ -17,6 +17,11 @@ import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { Querier } from "../../../querier";
 import SuperTokens from "../../../supertokens";
+import EmailPassword from "../../../recipe/emailpassword/recipe";
+import Passwordless from "../../../recipe/passwordless/recipe";
+import ThirdParty from "../../../recipe/thirdparty/recipe";
+import ThirdPartyEmailPassword from "../../../recipe/thirdpartyemailpassword/recipe";
+import ThirdPartyPasswordless from "../../../recipe/thirdpartypasswordless/recipe";
 import { maxVersion } from "../../../utils";
 import { DASHBOARD_API } from "../constants";
 import { APIInterface, AuthMode } from "../types";
@@ -50,6 +55,51 @@ export default function getAPIImplementation(): APIInterface {
                 isSearchEnabled = true;
             }
 
+            const loginMethods = {
+                emailPassword: false,
+                passwordless: {
+                    enabled: false,
+                    contactMethod: "",
+                    flowType: "",
+                },
+                thirdParty: false,
+            };
+
+            try {
+                EmailPassword.getInstanceOrThrowError();
+                loginMethods.emailPassword = true;
+            } catch (_) {}
+
+            try {
+                const instance = Passwordless.getInstanceOrThrowError();
+                loginMethods.passwordless = {
+                    enabled: true,
+                    contactMethod: instance.config.contactMethod,
+                    flowType: instance.config.flowType,
+                };
+            } catch (_) {}
+
+            try {
+                ThirdParty.getInstanceOrThrowError();
+                loginMethods.thirdParty = true;
+            } catch (_) {}
+
+            try {
+                ThirdPartyEmailPassword.getInstanceOrThrowError();
+                loginMethods.thirdParty = true;
+                loginMethods.emailPassword = true;
+            } catch (_) {}
+
+            try {
+                const instance = ThirdPartyPasswordless.getInstanceOrThrowError();
+                loginMethods.thirdParty = true;
+                loginMethods.passwordless = {
+                    enabled: true,
+                    contactMethod: instance.config.contactMethod,
+                    flowType: instance.config.flowType,
+                };
+            } catch (_) {}
+
             return `
             <html>
                 <head>
@@ -62,6 +112,7 @@ export default function getAPIImplementation(): APIInterface {
                         window.connectionURI = "${connectionURI}"
                         window.authMode = "${authMode}"
                         window.isSearchEnabled = "${isSearchEnabled}"
+                        window.loginMethods = ${JSON.stringify(loginMethods)}
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
