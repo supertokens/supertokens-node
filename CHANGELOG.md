@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   All functions overrides that take a `userContext` parameter now get a well typed `userContext` parameter ensuring that the right object is passed to the original implementation calls
 -   Calling sign in/up APIs with a session will now skip creating a new session by default. This is overrideable through by passing `overwriteSessionDuringSignInUp: true` to the Session recipe config.
 -   Added new support codes to sign in/up APIs. This means that there are new possible values coming from the default implementation for the `reason` strings of `SIGN_IN_NOT_ALLOWED`, `SIGN_UP_NOT_ALLOWED` and `SIGN_IN_UP_NOT_ALLOWED` responses.
+-   `Session` recipe:
+    -   The sign out API new returns a 401 instead of 200 in case the input access token has expired or is missing.
 -   `AccountLinking` recipe:
     -   Changed the signature of the following functions, each taking a new (optional) `session` parameter:
         -   `createPrimaryUserIdOrLinkAccounts`
