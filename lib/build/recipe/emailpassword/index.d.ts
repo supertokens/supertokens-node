@@ -3,6 +3,8 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
 import RecipeUserId from "../../recipeUserId";
+import { SessionContainerInterface } from "../session/types";
+import { User } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -10,32 +12,90 @@ export default class Wrapper {
         tenantId: string,
         email: string,
         password: string,
-        userContext?: any
+        session?: undefined,
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
-              user: import("../../types").User;
+              user: User;
               recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
+    static signUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
     static signIn(
         tenantId: string,
         email: string,
         password: string,
-        userContext?: any
+        session?: undefined,
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
-              user: import("../../types").User;
+              user: User;
               recipeUserId: RecipeUserId;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
+    static signIn(
+        tenantId: string,
+        email: string,
+        password: string,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static verifyCredentials(
+        tenantId: string,
+        email: string,
+        password: string,
+        userContext?: Record<string, any>
+    ): Promise<{
+        status: "OK" | "WRONG_CREDENTIALS_ERROR";
+    }>;
     /**
      * We do not make email optional here cause we want to
      * allow passing in primaryUserId. If we make email optional,
@@ -51,7 +111,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -65,7 +125,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -78,7 +138,7 @@ export default class Wrapper {
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -93,7 +153,7 @@ export default class Wrapper {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext?: any;
+        userContext?: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
     }): Promise<
@@ -113,7 +173,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -127,13 +187,13 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR";
     }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
-            userContext?: any;
+            userContext?: Record<string, any>;
         }
     ): Promise<void>;
 }
@@ -141,6 +201,7 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let signUp: typeof Wrapper.signUp;
 export declare let signIn: typeof Wrapper.signIn;
+export declare let verifyCredentials: typeof Wrapper.verifyCredentials;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;

@@ -36,7 +36,7 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
-import { GeneralErrorResponse, User } from "../../types";
+import { GeneralErrorResponse, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type DeviceType = DeviceTypeOriginal;
@@ -73,7 +73,7 @@ export type TypeInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -108,7 +108,7 @@ export type TypeNormalisedInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: UserContext) => Promise<string> | string;
     providers: ProviderInput[];
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
@@ -135,8 +135,9 @@ export type RecipeInterface = {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
         };
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -153,6 +154,14 @@ export type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     thirdPartyManuallyCreateOrUpdateUser(input: {
@@ -161,9 +170,15 @@ export type RecipeInterface = {
         email: string;
         isVerified: boolean;
         tenantId: string;
-        userContext: any;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
     }): Promise<
-        | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
@@ -172,13 +187,21 @@ export type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
 
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
         clientType?: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
 
     createCode: (
@@ -189,7 +212,12 @@ export type RecipeInterface = {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; tenantId: string; userContext: any }
+        ) & {
+            userInputCode?: string;
+            session: SessionContainerInterface | undefined;
+            tenantId: string;
+            userContext: UserContext;
+        }
     ) => Promise<{
         status: "OK";
         preAuthSessionId: string;
@@ -205,7 +233,7 @@ export type RecipeInterface = {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -227,20 +255,69 @@ export type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  session: SessionContainerInterface | undefined;
+                  userContext: UserContext;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   tenantId: string;
-                  userContext: any;
+                  session: SessionContainerInterface | undefined;
+                  userContext: UserContext;
               }
     ) => Promise<
         | {
               status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
               createdNewRecipeUser: boolean;
               user: User;
               recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+              failedCodeInputAttemptCount: number;
+              maximumCodeInputAttempts: number;
+          }
+        | { status: "RESTART_FLOW_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+
+    checkCode: (
+        input:
+            | {
+                  userInputCode: string;
+                  deviceId: string;
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+            | {
+                  linkCode: string;
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+    ) => Promise<
+        | {
+              status: "OK";
+              consumedDevice: {
+                  preAuthSessionId: string;
+                  failedCodeInputAttemptCount: number;
+                  email?: string;
+                  phoneNumber?: string;
+              };
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -254,7 +331,7 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status:
@@ -274,43 +351,51 @@ export type RecipeInterface = {
             | {
                   email: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: UserContext;
               }
             | {
                   phoneNumber: string;
                   tenantId: string;
-                  userContext: any;
+                  userContext: UserContext;
               }
     ) => Promise<{
         status: "OK";
     }>;
 
-    revokeCode: (input: {
-        codeId: string;
-        tenantId: string;
-        userContext: any;
-    }) => Promise<{
+    revokeCode: (
+        input:
+            | {
+                  codeId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+            | {
+                  preAuthSessionId: string;
+                  tenantId: string;
+                  userContext: UserContext;
+              }
+    ) => Promise<{
         status: "OK";
     }>;
 
-    listCodesByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByEmail: (input: { email: string; tenantId: string; userContext: UserContext }) => Promise<DeviceType[]>;
 
     listCodesByPhoneNumber: (input: {
         phoneNumber: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType[]>;
 
     listCodesByDeviceId: (input: {
         deviceId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
 
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<DeviceType | undefined>;
 };
 
@@ -325,7 +410,7 @@ export type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -341,8 +426,9 @@ export type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: ThirdPartyAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -380,7 +466,7 @@ export type APIInterface = {
         | ((input: {
               formPostInfoFromProvider: any;
               options: ThirdPartyAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<void>);
 
     createCodePOST:
@@ -388,8 +474,9 @@ export type APIInterface = {
         | ((
               input: ({ email: string } | { phoneNumber: string }) & {
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               }
           ) => Promise<
               | {
@@ -410,8 +497,9 @@ export type APIInterface = {
         | ((
               input: { deviceId: string; preAuthSessionId: string } & {
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               }
           ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>);
 
@@ -430,8 +518,9 @@ export type APIInterface = {
                     }
               ) & {
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: PasswordlessAPIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               }
           ) => Promise<
               | {
@@ -445,12 +534,12 @@ export type APIInterface = {
                     failedCodeInputAttemptCount: number;
                     maximumCodeInputAttempts: number;
                 }
-              | GeneralErrorResponse
               | { status: "RESTART_FLOW_ERROR" }
               | {
                     status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
+              | GeneralErrorResponse
           >);
 
     passwordlessUserEmailExistsGET:
@@ -459,7 +548,7 @@ export type APIInterface = {
               email: string;
               tenantId: string;
               options: PasswordlessAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -474,7 +563,7 @@ export type APIInterface = {
               phoneNumber: string;
               tenantId: string;
               options: PasswordlessAPIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";

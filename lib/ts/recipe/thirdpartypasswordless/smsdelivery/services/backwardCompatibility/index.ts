@@ -15,6 +15,7 @@
 import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import PasswordlessBackwardCompatibilityService from "../../../../passwordless/smsdelivery/services/backwardCompatibility";
+import { UserContext } from "../../../../../types";
 
 export default class BackwardCompatibilityService
     implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
@@ -24,7 +25,7 @@ export default class BackwardCompatibilityService
         this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService();
     }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: UserContext }) => {
         await this.passwordlessBackwardCompatibilityService.sendSms(input);
     };
 }

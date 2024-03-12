@@ -6,8 +6,9 @@ import { getUser } from "../..";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { User as UserType } from "../../types";
+import { UserContext, User as UserType } from "../../types";
 import { LoginMethod, User } from "../../user";
+import { AuthUtils } from "../../authUtils";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -16,19 +17,22 @@ export default function getRecipeInterface(
     return {
         signUp: async function (
             this: RecipeInterface,
-            {
-                email,
-                password,
-                tenantId,
-                userContext,
-            }: {
-                email: string;
-                password: string;
-                tenantId: string;
-                userContext: any;
-            }
+            { email, password, tenantId, session, userContext }
         ): Promise<
-            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "OK";
+                  user: UserType;
+                  recipeUserId: RecipeUserId;
+              }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "LINKING_TO_SESSION_USER_FAILED";
+                  reason:
+                      | "EMAIL_VERIFICATION_REQUIRED"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
         > {
             const response = await this.createNewRecipeUser({
                 email,
@@ -40,11 +44,20 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            let updatedUser = response.user;
+
+            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
-                user: response.user,
+                inputUser: response.user,
+                recipeUserId: response.recipeUserId,
+                session,
                 userContext,
             });
+
+            if (linkResult.status != "OK") {
+                return linkResult;
+            }
+            updatedUser = linkResult.user;
 
             return {
                 status: "OK",
@@ -57,7 +70,7 @@ export default function getRecipeInterface(
             tenantId: string;
             email: string;
             password: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -77,8 +90,11 @@ export default function getRecipeInterface(
                 input.userContext
             );
             if (resp.status === "OK") {
-                resp.user = new User(resp.user);
-                resp.recipeUserId = new RecipeUserId(resp.recipeUserId);
+                return {
+                    status: "OK",
+                    user: new User(resp.user),
+                    recipeUserId: new RecipeUserId(resp.recipeUserId),
+                };
             }
             return resp;
 
@@ -86,35 +102,13 @@ export default function getRecipeInterface(
             // users are always initially unverified.
         },
 
-        signIn: async function ({
-            email,
-            password,
-            tenantId,
-            userContext,
-        }: {
-            email: string;
-            password: string;
-            tenantId: string;
-            userContext: any;
-        }): Promise<
-            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }
-        > {
-            const response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
-                {
-                    email,
-                    password,
-                },
-                userContext
-            );
+        signIn: async function (this: RecipeInterface, { email, password, tenantId, session, userContext }) {
+            const response = await this.verifyCredentials({ email, password, tenantId, userContext });
 
             if (response.status === "OK") {
-                response.user = new User(response.user);
-                response.recipeUserId = new RecipeUserId(response.recipeUserId);
-
                 const loginMethod: LoginMethod = response.user.loginMethods.find(
                     (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
-                );
+                )!;
 
                 if (!loginMethod.verified) {
                     await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
@@ -137,9 +131,56 @@ export default function getRecipeInterface(
                     // function updated the verification status) and can return that
                     response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
                 }
+
+                const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                    tenantId,
+                    inputUser: response.user,
+                    recipeUserId: response.recipeUserId,
+                    session,
+                    userContext,
+                });
+                if (linkResult.status === "LINKING_TO_SESSION_USER_FAILED") {
+                    return linkResult;
+                }
+                response.user = linkResult.user;
             }
 
             return response;
+        },
+
+        verifyCredentials: async function ({
+            email,
+            password,
+            tenantId,
+            userContext,
+        }): Promise<
+            | {
+                  status: "OK";
+                  user: User;
+                  recipeUserId: RecipeUserId;
+              }
+            | { status: "WRONG_CREDENTIALS_ERROR" }
+        > {
+            const response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
+                {
+                    email,
+                    password,
+                },
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                    user: new User(response.user),
+                    recipeUserId: new RecipeUserId(response.recipeUserId),
+                };
+            }
+
+            return {
+                status: "WRONG_CREDENTIALS_ERROR",
+            };
         },
 
         createResetPasswordToken: async function ({
@@ -151,7 +192,7 @@ export default function getRecipeInterface(
             userId: string;
             email: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
@@ -173,7 +214,7 @@ export default function getRecipeInterface(
         }: {
             token: string;
             tenantId: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -200,7 +241,7 @@ export default function getRecipeInterface(
             password?: string;
             applyPasswordPolicy?: boolean;
             tenantIdForPasswordPolicy: string;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -237,7 +278,7 @@ export default function getRecipeInterface(
             // an update email API (post login update).
 
             let response = await querier.sendPutRequest(
-                new NormalisedURLPath(`${input.tenantIdForPasswordPolicy}/recipe/user`),
+                new NormalisedURLPath(`/recipe/user`),
                 {
                     recipeUserId: input.recipeUserId.getAsString(),
                     email: input.email,

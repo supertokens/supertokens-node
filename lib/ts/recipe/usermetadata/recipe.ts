@@ -52,7 +52,7 @@ export default class Recipe extends RecipeModule {
             return Recipe.instance;
         }
         throw new Error(
-            "Initialisation not done. Did you forget to call the UserMetadata.init or SuperTokens.init function?"
+            "Initialisation not done. Did you forget to call the UserMetadata.init or UserMetadata.init function?"
         );
     }
 

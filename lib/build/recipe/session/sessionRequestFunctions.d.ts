@@ -1,7 +1,7 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import { VerifySessionOptions, RecipeInterface, TypeNormalisedInput, SessionContainerInterface } from "./types";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare function getSessionFromRequest({
     req,
@@ -16,7 +16,7 @@ export declare function getSessionFromRequest({
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     options?: VerifySessionOptions;
-    userContext?: any;
+    userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined>;
 export declare function refreshSessionInRequest({
     res,
@@ -27,7 +27,7 @@ export declare function refreshSessionInRequest({
 }: {
     res: any;
     req: any;
-    userContext: any;
+    userContext: UserContext;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
 }): Promise<SessionContainerInterface>;
@@ -46,7 +46,7 @@ export declare function createNewSessionInRequest({
 }: {
     req: any;
     res: any;
-    userContext: any;
+    userContext: UserContext;
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;

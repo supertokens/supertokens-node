@@ -19,7 +19,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import type AccountLinkingRecipe from "./recipe";
 import { User } from "../../user";
-import type { User as UserType } from "../../types";
+import type { UserContext, User as UserType } from "../../types";
 
 export default function getRecipeImplementation(
     querier: Querier,
@@ -44,7 +44,7 @@ export default function getRecipeImplementation(
                 paginationToken?: string;
                 includeRecipeIds?: string[];
                 query?: { [key: string]: string };
-                userContext: any;
+                userContext: UserContext;
             }
         ): Promise<{
             users: UserType[];
@@ -77,7 +77,7 @@ export default function getRecipeImplementation(
                 userContext,
             }: {
                 recipeUserId: RecipeUserId;
-                userContext: any;
+                userContext: UserContext;
             }
         ): Promise<
             | {
@@ -108,7 +108,7 @@ export default function getRecipeImplementation(
                 userContext,
             }: {
                 recipeUserId: RecipeUserId;
-                userContext: any;
+                userContext: UserContext;
             }
         ): Promise<
             | {
@@ -148,7 +148,7 @@ export default function getRecipeImplementation(
             }: {
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
-                userContext: any;
+                userContext: UserContext;
             }
         ): Promise<
             | {
@@ -190,7 +190,7 @@ export default function getRecipeImplementation(
             }: {
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
-                userContext: any;
+                userContext: UserContext;
             }
         ): Promise<
             | {
@@ -268,7 +268,7 @@ export default function getRecipeImplementation(
                 userContext,
             }: {
                 recipeUserId: RecipeUserId;
-                userContext: any;
+                userContext: UserContext;
             }
         ): Promise<{
             status: "OK";
@@ -285,10 +285,7 @@ export default function getRecipeImplementation(
             return accountsUnlinkingResult;
         },
 
-        getUser: async function (
-            this: RecipeInterface,
-            { userId, userContext }: { userId: string; userContext: any }
-        ): Promise<User | undefined> {
+        getUser: async function (this: RecipeInterface, { userId, userContext }): Promise<User | undefined> {
             let result = await querier.sendGetRequest(
                 new NormalisedURLPath("/user/id"),
                 {
@@ -309,7 +306,12 @@ export default function getRecipeImplementation(
                 accountInfo,
                 doUnionOfAccountInfo,
                 userContext,
-            }: { tenantId: string; accountInfo: AccountInfo; doUnionOfAccountInfo: boolean; userContext: any }
+            }: {
+                tenantId: string;
+                accountInfo: AccountInfo;
+                doUnionOfAccountInfo: boolean;
+                userContext: UserContext;
+            }
         ): Promise<UserType[]> {
             let result = await querier.sendGetRequest(
                 new NormalisedURLPath(`${tenantId ?? "public"}/users/by-accountinfo`),
@@ -334,7 +336,7 @@ export default function getRecipeImplementation(
             }: {
                 userId: string;
                 removeAllLinkedAccounts: boolean;
-                userContext: any;
+                userContext: UserContext;
             }
         ): Promise<{
             status: "OK";

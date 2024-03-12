@@ -20,6 +20,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { getServiceImplementation } from "./serviceImplementation";
 import PasswordlessSMTPService from "../../../../passwordless/emaildelivery/services/smtp";
 import getPasswordlessServiceImplementation from "./serviceImplementation/passwordlessServiceImplementation";
+import { UserContext } from "../../../../../types";
 
 export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>;
@@ -49,7 +50,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeThirdPart
         });
     }
 
-    sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: UserContext }) => {
         return await this.passwordlessSMTPService.sendEmail(input);
     };
 }

@@ -17,6 +17,7 @@ import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/typ
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import Supertokens from "../../../../../supertokens";
 import { postWithFetch } from "../../../../../utils";
+import { UserContext } from "../../../../../types";
 
 async function createAndSendSmsUsingSupertokensService(input: {
     // Where the message should be delivered.
@@ -26,6 +27,7 @@ async function createAndSendSmsUsingSupertokensService(input: {
     // Full url that the end-user can click to finish sign in/up
     urlWithLinkCode?: string;
     codeLifetime: number;
+    isFirstFactor: boolean;
 }): Promise<void> {
     let supertokens = Supertokens.getInstanceOrThrowError();
     let appName = supertokens.appInfo.appName;
@@ -43,6 +45,7 @@ async function createAndSendSmsUsingSupertokensService(input: {
                 userInputCode: input.userInputCode,
                 urlWithLinkCode: input.urlWithLinkCode,
                 codeLifetime: input.codeLifetime,
+                // isFirstFactor: input.isFirstFactor,
             },
         },
         {
@@ -102,12 +105,13 @@ async function createAndSendSmsUsingSupertokensService(input: {
 export default class BackwardCompatibilityService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     constructor() {}
 
-    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: UserContext }) => {
         await createAndSendSmsUsingSupertokensService({
             phoneNumber: input.phoneNumber,
             userInputCode: input.userInputCode,
             urlWithLinkCode: input.urlWithLinkCode,
             codeLifetime: input.codeLifetime,
+            isFirstFactor: input.isFirstFactor,
         });
     };
 }

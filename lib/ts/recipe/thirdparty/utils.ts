@@ -55,3 +55,7 @@ function validateAndNormaliseSignInAndUpConfig(
         providers: config.providers,
     };
 }
+
+export function isFakeEmail(email: string): boolean {
+    return email.endsWith("@stfakeemail.supertokens.com") || email.endsWith(".fakeemail.com"); // .fakeemail.com for older users
+}

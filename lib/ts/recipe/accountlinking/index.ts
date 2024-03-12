@@ -17,6 +17,8 @@ import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
+import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -33,19 +35,24 @@ export default class Wrapper {
     static async createPrimaryUserIdOrLinkAccounts(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext: any = {}
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
         }
-
-        return await Recipe.getInstance().createPrimaryUserIdOrLinkAccounts({
+        const linkRes = await Recipe.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
             tenantId,
-            user,
-            userContext,
+            inputUser: user,
+            session,
+            userContext: getUserContext(userContext),
         });
+        if (linkRes.status === "NO_LINK") {
+            return user;
+        }
+        return linkRes.user;
     }
 
     /**
@@ -60,7 +67,7 @@ export default class Wrapper {
     static async getPrimaryUserThatCanBeLinkedToRecipeUserId(
         tenantId: string,
         recipeUserId: RecipeUserId,
-        userContext: any = {}
+        userContext?: Record<string, any>
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
@@ -70,44 +77,44 @@ export default class Wrapper {
         return await Recipe.getInstance().getPrimaryUserThatCanBeLinkedToRecipeUserId({
             tenantId,
             user,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext?: Record<string, any>) {
         return await Recipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUser({
             recipeUserId,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async createPrimaryUser(recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async createPrimaryUser(recipeUserId: RecipeUserId, userContext?: Record<string, any>) {
         return await Recipe.getInstance().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext: any = {}) {
+    static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: Record<string, any>) {
         return await Recipe.getInstance().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
             primaryUserId,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async linkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext: any = {}) {
+    static async linkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: Record<string, any>) {
         return await Recipe.getInstance().recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async unlinkAccount(recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async unlinkAccount(recipeUserId: RecipeUserId, userContext?: Record<string, any>) {
         return await Recipe.getInstance().recipeInterfaceImpl.unlinkAccount({
             recipeUserId,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -115,17 +122,24 @@ export default class Wrapper {
         tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
-        userContext?: any
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
     ) {
         return await Recipe.getInstance().isSignUpAllowed({
             newUser,
             isVerified,
+            session,
             tenantId,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async isSignInAllowed(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
@@ -134,8 +148,11 @@ export default class Wrapper {
 
         return await Recipe.getInstance().isSignInAllowed({
             user,
+            accountInfo: user.loginMethods.find((lm) => lm.recipeUserId.getAsString() === recipeUserId.getAsString())!,
+            session,
             tenantId,
-            userContext,
+            signInVerifiesLoginMethod: false,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -143,7 +160,8 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
-        userContext?: any
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
 
@@ -151,7 +169,8 @@ export default class Wrapper {
             user,
             newEmail,
             isVerified,
-            userContext,
+            session,
+            userContext: getUserContext(userContext),
         });
     }
 }

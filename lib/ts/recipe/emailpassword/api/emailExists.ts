@@ -16,12 +16,13 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
 
 export default async function emailExists(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
 

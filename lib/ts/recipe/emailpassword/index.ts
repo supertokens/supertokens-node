@@ -20,28 +20,151 @@ import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "./utils";
 import { getRequestFromUserContext, getUser } from "../..";
+import { getUserContext } from "../../utils";
+import { SessionContainerInterface } from "../session/types";
+import { User } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static signUp(tenantId: string, email: string, password: string, userContext?: any) {
+    static signUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: undefined,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
+    static signUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static signUp(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
+            session,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static signIn(tenantId: string, email: string, password: string, userContext?: any) {
+    static signIn(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: undefined,
+        userContext?: Record<string, any>
+    ): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    static signIn(
+        tenantId: string,
+        email: string,
+        password: string,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static signIn(
+        tenantId: string,
+        email: string,
+        password: string,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
+            session,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
+    }
+
+    static async verifyCredentials(
+        tenantId: string,
+        email: string,
+        password: string,
+        userContext?: Record<string, any>
+    ): Promise<{ status: "OK" | "WRONG_CREDENTIALS_ERROR" }> {
+        const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
+            email,
+            password,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext: getUserContext(userContext),
+        });
+
+        // Here we intentionally skip the user and recipeUserId props, because we do not want apps to accidentally use this to sign in
+        return {
+            status: resp.status,
+        };
     }
 
     /**
@@ -55,12 +178,17 @@ export default class Wrapper {
      *
      * And we want to allow primaryUserId being passed in.
      */
-    static createResetPasswordToken(tenantId: string, userId: string, email: string, userContext?: any) {
+    static createResetPasswordToken(
+        tenantId: string,
+        userId: string,
+        email: string,
+        userContext?: Record<string, any>
+    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
             email,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -68,7 +196,7 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         newPassword: string,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -103,11 +231,22 @@ export default class Wrapper {
         };
     }
 
-    static consumePasswordResetToken(tenantId: string, token: string, userContext?: any) {
+    static consumePasswordResetToken(
+        tenantId: string,
+        token: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -115,13 +254,22 @@ export default class Wrapper {
         recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
-        userContext?: any;
+        userContext?: Record<string, any>;
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
-    }) {
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             ...input,
-            userContext: input.userContext ?? {},
+            userContext: getUserContext(input.userContext),
             tenantIdForPasswordPolicy:
                 input.tenantIdForPasswordPolicy === undefined ? DEFAULT_TENANT_ID : input.tenantIdForPasswordPolicy,
         });
@@ -131,9 +279,10 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext: any = {}
+        userContext?: Record<string, any>
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-        let token = await createResetPasswordToken(tenantId, userId, email, userContext);
+        const ctx = getUserContext(userContext);
+        let token = await createResetPasswordToken(tenantId, userId, email, ctx);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
             return token;
         }
@@ -146,8 +295,8 @@ export default class Wrapper {
                 recipeId: recipeInstance.getRecipeId(),
                 token: token.token,
                 tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-                request: getRequestFromUserContext(userContext),
-                userContext,
+                request: getRequestFromUserContext(ctx),
+                userContext: ctx,
             }),
         };
     }
@@ -156,7 +305,7 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         email: string,
-        userContext: any = {}
+        userContext?: Record<string, any>
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
         const user = await getUser(userId, userContext);
         if (!user) {
@@ -190,12 +339,14 @@ export default class Wrapper {
         };
     }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
+    static async sendEmail(
+        input: TypeEmailPasswordEmailDeliveryInput & { userContext?: Record<string, any> }
+    ): Promise<void> {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
             ...input,
             tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
+            userContext: getUserContext(input.userContext),
         });
     }
 }
@@ -207,6 +358,8 @@ export let Error = Wrapper.Error;
 export let signUp = Wrapper.signUp;
 
 export let signIn = Wrapper.signIn;
+
+export let verifyCredentials = Wrapper.verifyCredentials;
 
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 

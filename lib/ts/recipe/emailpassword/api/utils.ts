@@ -15,12 +15,13 @@
 import { NormalisedFormField } from "../types";
 import STError from "../error";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
+import { UserContext } from "../../../types";
 
 export async function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],
     formFieldsRaw: any,
     tenantId: string,
-    userContext: any
+    userContext: UserContext
 ): Promise<
     {
         id: string;
@@ -90,7 +91,7 @@ async function validateFormOrThrowError(
     }[],
     configFormFields: NormalisedFormField[],
     tenantId: string,
-    userContext: any
+    userContext: UserContext
 ) {
     let validationErrors: { id: string; error: string }[] = [];
 

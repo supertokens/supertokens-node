@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForRecipeUserIdFunc } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -91,7 +91,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the EmailVerification.init function?");
     }
 
     static getInstance(): Recipe | undefined {
@@ -163,7 +163,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let options = {
             config: this.config,
@@ -233,7 +233,7 @@ export default class Recipe extends RecipeModule {
         };
     };
 
-    getPrimaryUserIdForRecipeUser = async (recipeUserId: RecipeUserId, userContext: any): Promise<string> => {
+    getPrimaryUserIdForRecipeUser = async (recipeUserId: RecipeUserId, userContext: UserContext): Promise<string> => {
         // We extract this into its own function like this cause we want to make sure that
         // this recipe does not get the email of the user ID from the getUser function.
         // In fact, there is a test "email verification recipe uses getUser function only in getEmailForRecipeUserId"
@@ -260,7 +260,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
         recipeUserIdWhoseEmailGotVerified: RecipeUserId;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<SessionContainerInterface | undefined> => {
         let primaryUserId = await this.getPrimaryUserIdForRecipeUser(
             input.recipeUserIdWhoseEmailGotVerified,
@@ -284,7 +284,8 @@ export default class Recipe extends RecipeModule {
             // we should ignore this since it will result in the user's session changing.)
 
             if (
-                input.session.getRecipeUserId().getAsString() === input.recipeUserIdWhoseEmailGotVerified.getAsString()
+                input.session.getRecipeUserId(input.userContext).getAsString() ===
+                input.recipeUserIdWhoseEmailGotVerified.getAsString()
             ) {
                 logDebugMessage(
                     "updateSessionIfRequiredPostEmailVerification the session belongs to the verified user"
@@ -346,7 +347,7 @@ export default class Recipe extends RecipeModule {
                         input.req,
                         input.res,
                         input.session.getTenantId(),
-                        input.session.getRecipeUserId(),
+                        input.session.getRecipeUserId(input.userContext),
                         {},
                         {},
                         input.userContext

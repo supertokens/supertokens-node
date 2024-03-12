@@ -19,11 +19,20 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
+declare const __brand: unique symbol;
+type Brand<B> = { [__brand]: B };
+
+type Branded<T, B> = T & Brand<B>;
+
+// Record<string,any> is still quite generic and we would like to ensure type safety for the userContext
+// so we use the concept of branded type, which enables catching of issues at compile time.
+// Detailed explanation about branded types is available here - https://egghead.io/blog/using-branded-types-in-typescript
+export type UserContext = Branded<Record<string, any>, "UserContext">;
 
 export type AppInfo = {
     appName: string;
     websiteDomain?: string;
-    origin?: string | ((input: { request: BaseRequest | undefined; userContext: any }) => string);
+    origin?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -32,10 +41,10 @@ export type AppInfo = {
 
 export type NormalisedAppinfo = {
     appName: string;
-    getOrigin: (input: { request: BaseRequest | undefined; userContext: any }) => NormalisedURLDomain;
+    getOrigin: (input: { request: BaseRequest | undefined; userContext: UserContext }) => NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: any }) => string;
+    getTopLevelWebsiteDomain: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;
@@ -45,6 +54,7 @@ export type SuperTokensInfo = {
     connectionURI: string;
     apiKey?: string;
     networkInterceptor?: NetworkInterceptor;
+    disableCoreCallCache?: boolean;
 };
 
 export type TypeInput = {
@@ -57,7 +67,7 @@ export type TypeInput = {
     debug?: boolean;
 };
 
-export type NetworkInterceptor = (request: HttpRequest, userContext: any) => HttpRequest;
+export type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;
 
 export interface HttpRequest {
     url: string;

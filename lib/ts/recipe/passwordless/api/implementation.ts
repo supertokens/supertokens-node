@@ -1,13 +1,36 @@
-import { APIInterface } from "../";
+import { APIInterface, RecipeInterface } from "../";
 import { logDebugMessage } from "../../../logger";
+import { AuthUtils } from "../../../authUtils";
+import { FactorIds } from "../../multifactorauth";
 import AccountLinking from "../../accountlinking/recipe";
-import Session from "../../session";
-import { listUsersByAccountInfo } from "../../..";
-import { RecipeLevelUser } from "../../accountlinking/types";
+import EmailVerification from "../../emailverification/recipe";
+import { getEnabledPwlessFactors } from "../utils";
+import { getUser, listUsersByAccountInfo } from "../../..";
+import { SessionContainerInterface } from "../../session/types";
+import { UserContext } from "../../../types";
+import { LoginMethod, User } from "../../../user";
+import SessionError from "../../session/error";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         consumeCodePOST: async function (input) {
+            const errorCodeMap = {
+                SIGN_UP_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                SIGN_IN_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    // We should never get an email verification error here, since pwless automatically marks the user
+                    // email as verified
+                    RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_017)",
+                    ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_018)",
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_019)",
+                },
+            };
+
             const deviceInfo = await input.options.recipeImplementation.listCodesByPreAuthSessionId({
                 tenantId: input.tenantId,
                 preAuthSessionId: input.preAuthSessionId,
@@ -20,48 +43,160 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            let existingUsers = await listUsersByAccountInfo(
-                input.tenantId,
-                {
-                    phoneNumber: deviceInfo.phoneNumber,
-                    email: deviceInfo.email,
-                },
-                false,
-                input.userContext
-            );
-            existingUsers = existingUsers.filter((u) =>
-                u.loginMethods.some(
-                    (m) =>
-                        m.recipeId === "passwordless" &&
-                        (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
-                )
-            );
+            const recipeId = "passwordless";
+            const accountInfo =
+                deviceInfo.phoneNumber !== undefined
+                    ? {
+                          phoneNumber: deviceInfo.phoneNumber!,
+                      }
+                    : {
+                          email: deviceInfo.email!,
+                      };
 
-            if (existingUsers.length === 0) {
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: {
-                        recipeId: "passwordless",
-                        email: deviceInfo.email,
-                        phoneNumber: deviceInfo.phoneNumber,
-                    },
-                    isVerified: true,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
-
-                if (!isSignUpAllowed) {
-                    // On the frontend, this should show a UI of asking the user
-                    // to login using a different method.
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                    };
+            let checkCredentialsResponseProm: ReturnType<RecipeInterface["checkCode"]> | undefined;
+            let checkCredentials = async () => {
+                if (checkCredentialsResponseProm === undefined) {
+                    checkCredentialsResponseProm = input.options.recipeImplementation.checkCode(
+                        "deviceId" in input
+                            ? {
+                                  preAuthSessionId: input.preAuthSessionId,
+                                  deviceId: input.deviceId,
+                                  userInputCode: input.userInputCode,
+                                  tenantId: input.tenantId,
+                                  userContext: input.userContext,
+                              }
+                            : {
+                                  preAuthSessionId: input.preAuthSessionId,
+                                  linkCode: input.linkCode,
+                                  tenantId: input.tenantId,
+                                  userContext: input.userContext,
+                              }
+                    );
                 }
-            } else if (existingUsers.length > 1) {
-                throw new Error(
-                    "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
+
+                const checkCredentialsResponse = await checkCredentialsResponseProm;
+                return checkCredentialsResponse.status === "OK";
+            };
+
+            const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
+                accountInfo,
+                recipeId,
+                userContext: input.userContext,
+                session: input.session,
+                checkCredentialsOnTenant: checkCredentials,
+            });
+
+            const emailVerificationInstance = EmailVerification.getInstance();
+            // If we have a session and emailverification was initialized plus this code was sent to an email
+            // then we check if we can/should verify this email address for the session user.
+            // This helps in usecases like phone-password and emailverification-with-otp where we only want to allow linking
+            // and making a user primary if they are verified, but the verification process itself involves account linking.
+
+            // If a valid code was submitted, we can take that as the session (and the session user) having access to the email
+            // which means that we can verify their email address
+            if (
+                accountInfo.email !== undefined &&
+                input.session !== undefined &&
+                emailVerificationInstance !== undefined
+            ) {
+                // We first load the session user, so we can check if verification is required
+                // We do this first, it is better for caching if we group the post calls together (verifyIng the code and the email address)
+                const sessionUser = await getUser(input.session.getUserId(), input.userContext);
+                if (sessionUser === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user not found",
+                    });
+                }
+
+                const loginMethod = sessionUser.loginMethods.find(
+                    (lm) => lm.recipeUserId.getAsString() === input.session!.getRecipeUserId().getAsString()
                 );
+                if (loginMethod === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Session user and session recipeUserId is inconsistent",
+                    });
+                }
+
+                // If the code was sent as an email and the authenticating user has the same email address as unverified,
+                // we verify it using the emailverification recipe
+                if (loginMethod.hasSameEmailAs(accountInfo.email) && !loginMethod.verified) {
+                    // We first check that the submitted code is actually valid
+                    if (await checkCredentials()) {
+                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                tenantId: input.tenantId,
+                                recipeUserId: loginMethod.recipeUserId,
+                                email: accountInfo.email,
+                                userContext: input.userContext,
+                            }
+                        );
+
+                        if (tokenResponse.status === "OK") {
+                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                tenantId: input.tenantId,
+                                token: tokenResponse.token,
+                                attemptAccountLinking: false, // we pass false here cause
+                                // we anyway do account linking in this API after this function is
+                                // called.
+                                userContext: input.userContext,
+                            });
+                        }
+                    }
+                }
+            }
+
+            let factorId;
+            if (deviceInfo.email !== undefined) {
+                if ("userInputCode" in input) {
+                    factorId = FactorIds.OTP_EMAIL;
+                } else {
+                    factorId = FactorIds.LINK_EMAIL;
+                }
+            } else {
+                if ("userInputCode" in input) {
+                    factorId = FactorIds.OTP_PHONE;
+                } else {
+                    factorId = FactorIds.LINK_PHONE;
+                }
+            }
+
+            const isSignUp = authenticatingUser === undefined;
+            const preAuthChecks = await AuthUtils.preAuthChecks({
+                authenticatingAccountInfo: {
+                    recipeId: "passwordless",
+                    email: deviceInfo.email,
+                    phoneNumber: deviceInfo.phoneNumber,
+                },
+                factorIds: [factorId],
+                authenticatingUser: authenticatingUser?.user,
+                isSignUp,
+                isVerified: authenticatingUser?.loginMethod.verified ?? true,
+                signInVerifiesLoginMethod: true,
+                skipSessionUserUpdateInCore: false,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+            });
+
+            if (preAuthChecks.status !== "OK") {
+                // On the frontend, this should show a UI of asking the user
+                // to login using a different method.
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
+                );
+            }
+
+            if (checkCredentialsResponseProm !== undefined) {
+                // We need to cast this because otherwise TS thinks that this is never updated for some reason.
+                const checkCredentialsResponse = await checkCredentialsResponseProm;
+                if (checkCredentialsResponse.status !== "OK") {
+                    // In these cases we return early otherwise consumeCode would increase the invalidAttemptCount again
+                    return checkCredentialsResponse;
+                }
             }
 
             let response = await input.options.recipeImplementation.consumeCode(
@@ -70,143 +205,122 @@ export default function getAPIImplementation(): APIInterface {
                           preAuthSessionId: input.preAuthSessionId,
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
+                          session: input.session,
                           tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
                     : {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
+                          session: input.session,
                           tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
             );
 
-            if (response.status !== "OK") {
+            if (
+                response.status === "RESTART_FLOW_ERROR" ||
+                response.status === "INCORRECT_USER_INPUT_CODE_ERROR" ||
+                response.status === "EXPIRED_USER_INPUT_CODE_ERROR"
+            ) {
                 return response;
             }
-
-            let loginMethod: RecipeLevelUser | undefined = response.user.loginMethods.find(
-                (m) =>
-                    m.recipeId === "passwordless" &&
-                    (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(m.phoneNumber))
-            );
-
-            if (loginMethod === undefined) {
-                throw new Error("Should never come here");
+            if (response.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(response, errorCodeMap, "SIGN_IN_UP_NOT_ALLOWED");
             }
 
-            if (existingUsers.length > 0) {
-                // Here we do this check after sign in is done cause:
-                // - We first want to check if the credentials are correct first or not
-                // - The above recipe function marks the email as verified
-                // - Even though the above call to signInUp is state changing (it changes the email
-                // of the user), it's OK to do this check here cause the isSignInAllowed checks
-                // conditions related to account linking
+            // Here we do these checks after sign in is done cause:
+            // - We first want to check if the credentials are correct first or not
+            // - The above recipe function marks the email as verified
+            // - Even though the above call to signInUp is state changing (it changes the email
+            // of the user), it's OK to do this check here cause the preAuthChecks already checks
+            // conditions related to account linking
+            const postAuthChecks = await AuthUtils.postAuthChecks({
+                factorId,
+                isSignUp,
+                authenticatedUser: response.user ?? authenticatingUser!.user,
+                recipeUserId: response.recipeUserId ?? authenticatingUser!.loginMethod!.recipeUserId,
+                req: input.options.req,
+                res: input.options.res,
+                tenantId: input.tenantId,
+                userContext: input.userContext,
+                session: input.session,
+            });
 
-                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    user: response.user,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
-
-                if (!isSignInAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-                    };
-                }
-
-                // we do account linking only during sign in here cause during sign up,
-                // the recipe function above does account linking for us.
-                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    tenantId: input.tenantId,
-                    user: response.user,
-                    userContext: input.userContext,
-                });
+            if (postAuthChecks.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    postAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
+                );
             }
-
-            const session = await Session.createNewSession(
-                input.options.req,
-                input.options.res,
-                input.tenantId,
-                loginMethod.recipeUserId,
-                {},
-                {},
-                input.userContext
-            );
 
             return {
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
-                user: response.user,
-                session,
+                user: postAuthChecks.user,
+                session: postAuthChecks.session,
             };
         },
         createCodePOST: async function (input) {
+            const errorCodeMap = {
+                SIGN_UP_NOT_ALLOWED:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                LINKING_TO_SESSION_USER_FAILED: {
+                    SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_019)",
+                },
+            };
             const accountInfo: { phoneNumber?: string; email?: string } = {};
             if ("email" in input) {
                 accountInfo.email = input.email;
             }
             if ("phoneNumber" in input) {
-                accountInfo.email = input.phoneNumber;
+                accountInfo.phoneNumber = input.phoneNumber;
             }
-            let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
-            existingUsers = existingUsers.filter((u) =>
-                u.loginMethods.some(
-                    (m) =>
-                        m.recipeId === "passwordless" &&
-                        (m.hasSameEmailAs(accountInfo.email) || m.hasSamePhoneNumberAs(accountInfo.phoneNumber))
-                )
-            );
 
-            if (existingUsers.length === 0) {
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-                    newUser: {
-                        recipeId: "passwordless",
-                        ...accountInfo,
-                    },
-                    isVerified: true,
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
+            // Here we use do not use the helper from AuthUtil to check if this is going to be a sign in or up, because:
+            // 1. At this point we have no way to check credentials
+            // 2. We do not want to associate the relevant recipe user with the current tenant (yet)
+            const userWithMatchingLoginMethod = await getPasswordlessUserByAccountInfo({ ...input, accountInfo });
 
-                if (!isSignUpAllowed) {
-                    // On the frontend, this should show a UI of asking the user
-                    // to login using a different method.
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
-                    };
-                }
-            } else if (existingUsers.length === 1) {
-                let loginMethod: RecipeLevelUser | undefined = existingUsers[0].loginMethods.find(
-                    (m) =>
-                        m.recipeId === "passwordless" &&
-                        (m.hasSameEmailAs(accountInfo.email) || m.hasSamePhoneNumberAs(accountInfo.phoneNumber))
-                );
-
-                if (loginMethod === undefined) {
-                    throw new Error("Should never come here");
-                }
-                let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    user: existingUsers[0],
-                    tenantId: input.tenantId,
-                    userContext: input.userContext,
-                });
-                if (!isSignInAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
-                    };
+            let factorIds;
+            if (input.session !== undefined) {
+                if (accountInfo.email !== undefined) {
+                    factorIds = [FactorIds.OTP_EMAIL];
+                } else {
+                    factorIds = [FactorIds.OTP_PHONE];
                 }
             } else {
-                throw new Error(
-                    "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
+                factorIds = getEnabledPwlessFactors(input.options.config);
+            }
+
+            const preAuthChecks = await AuthUtils.preAuthChecks({
+                authenticatingAccountInfo: {
+                    ...accountInfo,
+                    recipeId: "passwordless",
+                },
+                isSignUp: userWithMatchingLoginMethod === undefined,
+                authenticatingUser: userWithMatchingLoginMethod?.user,
+                isVerified: userWithMatchingLoginMethod?.loginMethod.verified ?? true,
+                signInVerifiesLoginMethod: true,
+                skipSessionUserUpdateInCore: true,
+                tenantId: input.tenantId,
+                factorIds,
+                userContext: input.userContext,
+                session: input.session,
+            });
+
+            if (preAuthChecks.status !== "OK") {
+                // On the frontend, this should show a UI of asking the user
+                // to login using a different method.
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    preAuthChecks,
+                    errorCodeMap,
+                    "SIGN_IN_UP_NOT_ALLOWED"
                 );
             }
+
             let response = await input.options.recipeImplementation.createCode(
                 "email" in input
                     ? {
@@ -219,6 +333,7 @@ export default function getAPIImplementation(): APIInterface {
                                         input.tenantId,
                                         input.userContext
                                     ),
+                          session: input.session,
                           tenantId: input.tenantId,
                       }
                     : {
@@ -231,14 +346,27 @@ export default function getAPIImplementation(): APIInterface {
                                         input.tenantId,
                                         input.userContext
                                     ),
+                          session: input.session,
                           tenantId: input.tenantId,
                       }
             );
 
+            if (response.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(response, {}, "SIGN_IN_UP_NOT_ALLOWED");
+            }
+
             // now we send the email / text message.
             let magicLink: string | undefined = undefined;
             let userInputCode: string | undefined = undefined;
-            const flowType = input.options.config.flowType;
+
+            let flowType = input.options.config.flowType;
+            if (preAuthChecks.validFactorIds.every((id) => id.startsWith("link"))) {
+                flowType = "MAGIC_LINK";
+            } else if (preAuthChecks.validFactorIds.every((id) => id.startsWith("otp"))) {
+                flowType = "USER_INPUT_CODE";
+            } else {
+                flowType = "USER_INPUT_CODE_AND_MAGIC_LINK";
+            }
             if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                 magicLink =
                     input.options.appInfo
@@ -272,6 +400,7 @@ export default function getAPIImplementation(): APIInterface {
                 logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                 await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
                     type: "PASSWORDLESS_LOGIN",
+                    isFirstFactor: preAuthChecks.isFirstFactor,
                     codeLifetime: response.codeLifetime,
                     phoneNumber: (input as any).phoneNumber!,
                     preAuthSessionId: response.preAuthSessionId,
@@ -284,6 +413,7 @@ export default function getAPIImplementation(): APIInterface {
                 logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                 await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     type: "PASSWORDLESS_LOGIN",
+                    isFirstFactor: preAuthChecks.isFirstFactor,
                     email: (input as any).email!,
                     codeLifetime: response.codeLifetime,
                     preAuthSessionId: response.preAuthSessionId,
@@ -354,6 +484,34 @@ export default function getAPIImplementation(): APIInterface {
                     status: "RESTART_FLOW_ERROR",
                 };
             }
+            const userWithMatchingLoginMethod = await getPasswordlessUserByAccountInfo({
+                ...input,
+                accountInfo: deviceInfo,
+            });
+            const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
+                input.session,
+                {
+                    recipeId: "passwordless",
+                    email: deviceInfo.email,
+                    phoneNumber: deviceInfo.phoneNumber,
+                },
+                userWithMatchingLoginMethod?.user,
+                true,
+                input.userContext
+            );
+
+            if (authTypeInfo.status === "LINKING_TO_SESSION_USER_FAILED") {
+                // This can happen in the following edge-cases:
+                // 1. Either the session didn't exist during createCode or the app didn't want to link to the session user
+                //  and now linking should happen (in consumeCode), but we can't make the session user primary.
+                // 2. The session user was a primary after createCode, but then before resend happens, it was unlinked and
+                //  another primary user was created with the same account info
+                // Both of these should be rare enough that we can ask the FE to start over with createCode that does more
+                // checks than we need to right here.
+                return {
+                    status: "RESTART_FLOW_ERROR",
+                };
+            }
 
             let numberOfTriesToCreateNewCode = 0;
             while (true) {
@@ -417,6 +575,7 @@ export default function getAPIImplementation(): APIInterface {
                         logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                         await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
                             type: "PASSWORDLESS_LOGIN",
+                            isFirstFactor: authTypeInfo.isFirstFactor,
                             codeLifetime: response.codeLifetime,
                             phoneNumber: deviceInfo.phoneNumber!,
                             preAuthSessionId: response.preAuthSessionId,
@@ -429,6 +588,7 @@ export default function getAPIImplementation(): APIInterface {
                         logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                         await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                             type: "PASSWORDLESS_LOGIN",
+                            isFirstFactor: authTypeInfo.isFirstFactor,
                             email: deviceInfo.email!,
                             codeLifetime: response.codeLifetime,
                             preAuthSessionId: response.preAuthSessionId,
@@ -446,4 +606,44 @@ export default function getAPIImplementation(): APIInterface {
             }
         },
     };
+}
+
+async function getPasswordlessUserByAccountInfo(input: {
+    tenantId: string;
+    session?: SessionContainerInterface;
+    userContext: UserContext;
+    accountInfo: { phoneNumber?: string | undefined; email?: string | undefined };
+}): Promise<{ user: User; loginMethod: LoginMethod } | undefined> {
+    const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+        tenantId: input.tenantId,
+        accountInfo: input.accountInfo,
+        doUnionOfAccountInfo: false,
+        userContext: input.userContext,
+    });
+    logDebugMessage(
+        `getPasswordlessUserByAccountInfo got ${existingUsers.length} from core resp ${JSON.stringify(
+            input.accountInfo
+        )}`
+    );
+    const usersWithMatchingLoginMethods = existingUsers
+        .map((user) => ({
+            user,
+            loginMethod: user.loginMethods.find(
+                (lm) =>
+                    lm.recipeId === "passwordless" &&
+                    (lm.hasSameEmailAs(input.accountInfo.email) ||
+                        lm.hasSamePhoneNumberAs(input.accountInfo.phoneNumber))
+            )!,
+        }))
+        .filter(({ loginMethod }) => loginMethod !== undefined);
+
+    logDebugMessage(
+        `getPasswordlessUserByAccountInfo ${usersWithMatchingLoginMethods.length} has matching login methods`
+    );
+    if (usersWithMatchingLoginMethods.length > 1) {
+        throw new Error(
+            "This should never happen: multiple users exist matching the accountInfo in passwordless createCode"
+        );
+    }
+    return usersWithMatchingLoginMethods[0];
 }

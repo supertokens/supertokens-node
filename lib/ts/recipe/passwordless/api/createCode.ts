@@ -17,12 +17,14 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
+import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function createCode(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.createCodePOST === undefined) {
         return false;
@@ -91,10 +93,24 @@ export default async function createCode(
         }
     }
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.createCodePOST(
         email !== undefined
-            ? { email, tenantId, options, userContext }
-            : { phoneNumber: phoneNumber!, tenantId, options, userContext }
+            ? { email, session, tenantId, options, userContext }
+            : { phoneNumber: phoneNumber!, session, tenantId, options, userContext }
     );
 
     send200Response(options.res, result);

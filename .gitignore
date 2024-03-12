@@ -10,3 +10,4 @@ releasePassword
 .tmp
 .idea
 /test_report
+/.nyc_output

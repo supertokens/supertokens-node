@@ -29,13 +29,13 @@ export default class Session implements SessionContainerInterface {
         accessTokenUpdated: boolean,
         tenantId: string
     );
-    getRecipeUserId(_userContext?: any): RecipeUserId;
-    revokeSession(userContext?: any): Promise<void>;
-    getSessionDataFromDatabase(userContext?: any): Promise<any>;
-    updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<void>;
-    getUserId(_userContext?: any): string;
-    getTenantId(_userContext?: any): string;
-    getAccessTokenPayload(_userContext?: any): any;
+    getRecipeUserId(_userContext?: Record<string, any>): RecipeUserId;
+    revokeSession(userContext?: Record<string, any>): Promise<void>;
+    getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any>;
+    updateSessionDataInDatabase(newSessionData: any, userContext?: Record<string, any>): Promise<void>;
+    getUserId(_userContext?: Record<string, any>): string;
+    getTenantId(_userContext?: Record<string, any>): string;
+    getAccessTokenPayload(_userContext?: Record<string, any>): any;
     getHandle(): string;
     getAccessToken(): string;
     getAllSessionTokensDangerously(): {
@@ -45,13 +45,13 @@ export default class Session implements SessionContainerInterface {
         frontToken: string;
         antiCsrfToken: string | undefined;
     };
-    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void>;
-    getTimeCreated(userContext?: any): Promise<number>;
-    getExpiry(userContext?: any): Promise<number>;
-    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
-    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
-    getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
-    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
-    attachToRequestResponse(info: ReqResInfo, userContext?: any): void;
+    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: Record<string, any>): Promise<void>;
+    getTimeCreated(userContext?: Record<string, any>): Promise<number>;
+    getExpiry(userContext?: Record<string, any>): Promise<number>;
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: Record<string, any>): Promise<void>;
+    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<void>;
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: Record<string, any>): Promise<void>;
+    getClaimValue<T>(claim: SessionClaim<T>, userContext?: Record<string, any>): Promise<T | undefined>;
+    removeClaim(claim: SessionClaim<any>, userContext?: Record<string, any>): Promise<void>;
+    attachToRequestResponse(info: ReqResInfo, userContext?: Record<string, any>): void;
 }

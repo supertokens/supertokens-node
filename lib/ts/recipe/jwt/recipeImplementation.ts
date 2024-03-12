@@ -15,7 +15,7 @@
 
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
 
 const defaultJWKSMaxAge = 60; // This corresponds to the dynamicSigningKeyOverlapMS in the core
@@ -35,7 +35,7 @@ export default function getRecipeInterface(
             payload?: any;
             useStaticSigningKey?: boolean;
             validitySeconds?: number;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -74,7 +74,7 @@ export default function getRecipeInterface(
             }
         },
 
-        getJWKS: async function (userContext: any): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
+        getJWKS: async function ({ userContext }): Promise<{ keys: JsonWebKey[]; validityInSeconds?: number }> {
             const { body, headers } = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath("/.well-known/jwks.json"),
                 {},

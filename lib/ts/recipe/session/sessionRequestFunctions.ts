@@ -21,7 +21,7 @@ import {
 } from "./cookieAndHeaders";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 
@@ -41,7 +41,7 @@ export async function getSessionFromRequest({
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     options?: VerifySessionOptions;
-    userContext?: any;
+    userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
     const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
@@ -207,7 +207,7 @@ export async function refreshSessionInRequest({
 }: {
     res: any;
     req: any;
-    userContext: any;
+    userContext: UserContext;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
 }) {
@@ -368,7 +368,7 @@ export async function createNewSessionInRequest({
 }: {
     req: any;
     res: any;
-    userContext: any;
+    userContext: UserContext;
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;
@@ -406,7 +406,7 @@ export async function createNewSessionInRequest({
     }
 
     for (const claim of claimsAddedByOtherRecipes) {
-        const update = await claim.build(userId, recipeUserId, tenantId, userContext);
+        const update = await claim.build(userId, recipeUserId, tenantId, finalAccessTokenPayload, userContext);
         finalAccessTokenPayload = {
             ...finalAccessTokenPayload,
             ...update,

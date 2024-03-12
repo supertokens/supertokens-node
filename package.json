@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "16.7.4",
+    "version": "17.0.0",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -79,6 +79,8 @@
         "next": "^14.0.4",
         "next-test-api-route-handler": "^3.1.10",
         "nock": "11.7.0",
+        "nyc": "^15.1.0",
+        "otpauth": "9.1.5",
         "prettier": "2.0.5",
         "pretty-quick": "^3.1.1",
         "react": "^18.2.0",

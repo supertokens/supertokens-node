@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
@@ -24,20 +24,20 @@ export default class SuperTokens {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (
-        includeRecipeIds?: string[] | undefined,
-        tenantId?: string | undefined,
-        userContext?: any
+        includeRecipeIds: string[] | undefined,
+        tenantId: string | undefined,
+        userContext: UserContext
     ) => Promise<number>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
-        userContext?: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -51,7 +51,7 @@ export default class SuperTokens {
     getUserIdMapping: (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-        userContext?: any;
+        userContext: UserContext;
     }) => Promise<
         | {
               status: "OK";
@@ -67,7 +67,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
-        userContext?: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -76,11 +76,11 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
-        userContext?: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    middleware: (request: BaseRequest, response: BaseResponse, userContext: any) => Promise<boolean>;
-    errorHandler: (err: any, request: BaseRequest, response: BaseResponse, userContext: any) => Promise<void>;
-    getRequestFromUserContext: (userContext: any | undefined) => BaseRequest | undefined;
+    middleware: (request: BaseRequest, response: BaseResponse, userContext: UserContext) => Promise<boolean>;
+    errorHandler: (err: any, request: BaseRequest, response: BaseResponse, userContext: UserContext) => Promise<void>;
+    getRequestFromUserContext: (userContext: UserContext | undefined) => BaseRequest | undefined;
 }
