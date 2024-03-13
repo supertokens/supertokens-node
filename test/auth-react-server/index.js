@@ -45,14 +45,14 @@ const { default: AccountLinkingRaw } = require("../../lib/build/recipe/accountli
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
 
-const UserMetadataRaw = require("supertokens-node/lib/build/recipe/usermetadata/recipe").default;
-const UserMetadata = require("supertokens-node/recipe/usermetadata");
+const UserMetadataRaw = require("../../lib/build/recipe/usermetadata/recipe").default;
+const UserMetadata = require("../../recipe/usermetadata");
 
-const MultiFactorAuthRaw = require("supertokens-node/lib/build/recipe/multifactorauth/recipe").default;
-const MultiFactorAuth = require("supertokens-node/recipe/multifactorauth");
+const MultiFactorAuthRaw = require("../../lib/build/recipe/multifactorauth/recipe").default;
+const MultiFactorAuth = require("../../recipe/multifactorauth");
 
-const TOTPRaw = require("supertokens-node/lib/build/recipe/totp/recipe").default;
-const TOTP = require("supertokens-node/recipe/totp");
+const TOTPRaw = require("../../lib/build/recipe/totp/recipe").default;
+const TOTP = require("../../recipe/totp");
 const OTPAuth = require("otpauth");
 
 let {
