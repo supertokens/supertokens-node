@@ -44,6 +44,17 @@ const { default: AccountLinkingRaw } = require("../../lib/build/recipe/accountli
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
+
+const UserMetadataRaw = require("supertokens-node/lib/build/recipe/usermetadata/recipe").default;
+const UserMetadata = require("supertokens-node/recipe/usermetadata");
+
+const MultiFactorAuthRaw = require("supertokens-node/lib/build/recipe/multifactorauth/recipe").default;
+const MultiFactorAuth = require("supertokens-node/recipe/multifactorauth");
+
+const TOTPRaw = require("supertokens-node/lib/build/recipe/totp/recipe").default;
+const TOTP = require("supertokens-node/recipe/totp");
+const OTPAuth = require("otpauth");
+
 let {
     startST,
     killAllST,
@@ -161,6 +172,7 @@ let passwordlessConfig = {};
 let accountLinkingConfig = {};
 let enabledProviders = undefined;
 let enabledRecipes = undefined;
+let mfaInfo = {};
 
 initST();
 
@@ -208,6 +220,7 @@ app.post("/startst", async (req, res) => {
 app.post("/beforeeach", async (req, res) => {
     deviceStore = new Map();
 
+    mfaInfo = {};
     accountLinkingConfig = {};
     passwordlessConfig = {};
     enabledProviders = undefined;
@@ -292,7 +305,7 @@ app.post("/changeEmail", async (req, res) => {
 app.get("/unverifyEmail", verifySession(), async (req, res) => {
     let session = req.session;
     await EmailVerification.unverifyEmail(session.getRecipeUserId());
-    await session.fetchAndSetClaim(EmailVerification.EmailVerificationClaim);
+    await session.fetchAndSetClaim(EmailVerification.EmailVerificationClaim, {});
     res.send({ status: "OK" });
 });
 
@@ -300,8 +313,8 @@ app.post("/setRole", verifySession(), async (req, res) => {
     let session = req.session;
     await UserRoles.createNewRoleOrAddPermissions(req.body.role, req.body.permissions);
     await UserRoles.addRoleToUser(session.getTenantId(), session.getUserId(), req.body.role);
-    await session.fetchAndSetClaim(UserRoles.UserRoleClaim);
-    await session.fetchAndSetClaim(UserRoles.PermissionClaim);
+    await session.fetchAndSetClaim(UserRoles.UserRoleClaim, {});
+    await session.fetchAndSetClaim(UserRoles.PermissionClaim, {});
     res.send({ status: "OK" });
 });
 
@@ -327,6 +340,36 @@ app.post(
         res.send({ status: "OK" });
     }
 );
+
+app.post("/setMFAInfo", async (req, res) => {
+    mfaInfo = req.body;
+
+    res.send({ status: "OK" });
+});
+
+app.post("/completeFactor", verifySession(), async (req, res) => {
+    let session = req.session;
+
+    await MultiFactorAuth.markFactorAsCompleteInSession(session, req.body.id);
+
+    res.send({ status: "OK" });
+});
+
+app.post("/addRequiredFactor", verifySession(), async (req, res) => {
+    let session = req.session;
+
+    await MultiFactorAuth.addToRequiredSecondaryFactorsForUser(session.getUserId(), req.body.factorId);
+
+    res.send({ status: "OK" });
+});
+
+app.post("/mergeIntoAccessTokenPayload", verifySession(), async (req, res) => {
+    let session = req.session;
+
+    await session.mergeIntoAccessTokenPayload(req.body);
+
+    res.send({ status: "OK" });
+});
 
 app.get("/token", async (_, res) => {
     res.send({
@@ -444,6 +487,10 @@ app.get("/test/getDevice", (req, res) => {
     res.send(deviceStore.get(req.query.preAuthSessionId));
 });
 
+app.post("/test/getTOTPCode", (req, res) => {
+    res.send(JSON.stringify({ totp: new OTPAuth.TOTP({ secret: req.body.secret, digits: 6, period: 1 }).generate() }));
+});
+
 app.get("/test/featureFlags", (req, res) => {
     const available = [];
 
@@ -454,6 +501,7 @@ app.get("/test/featureFlags", (req, res) => {
     available.push("multitenancy");
     available.push("multitenancyManagementEndpoints");
     available.push("accountlinking");
+    available.push("mfa");
     available.push("recipeConfig");
 
     res.send({
@@ -495,7 +543,8 @@ server.listen(process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT
 })(process.env.START === "true");
 
 function initST({ passwordlessConfig } = {}) {
-    AccountLinkingRaw.reset();
+    mfaInfo = {};
+
     UserRolesRaw.reset();
     ThirdPartyPasswordlessRaw.reset();
     PasswordlessRaw.reset();
@@ -506,7 +555,9 @@ function initST({ passwordlessConfig } = {}) {
     SessionRaw.reset();
     MultitenancyRaw.reset();
     AccountLinkingRaw.reset();
-
+    UserMetadataRaw.reset();
+    MultiFactorAuthRaw.reset();
+    TOTPRaw.reset();
     SuperTokensRaw.reset();
 
     passwordlessConfig = {
@@ -789,6 +840,7 @@ function initST({ passwordlessConfig } = {}) {
         [
             "session",
             Session.init({
+                overwriteSessionDuringSignIn: true,
                 override: {
                     apis: function (originalImplementation) {
                         return {
@@ -978,6 +1030,75 @@ function initST({ passwordlessConfig } = {}) {
             }),
         ]);
     }
+
+    recipeList.push([
+        "multifactorauth",
+        MultiFactorAuth.init({
+            firstFactors: mfaInfo.firstFactors,
+            override: {
+                functions: (oI) => ({
+                    ...oI,
+                    getFactorsSetupForUser: async (input) => {
+                        const res = await oI.getFactorsSetupForUser(input);
+                        if (mfaInfo?.alreadySetup) {
+                            return mfaInfo.alreadySetup;
+                        }
+                        return res;
+                    },
+                    assertAllowedToSetupFactorElseThrowInvalidClaimError: async (input) => {
+                        if (mfaInfo?.allowedToSetup) {
+                            if (!mfaInfo.allowedToSetup.includes(input.factorId)) {
+                                throw new Session.Error({
+                                    type: "INVALID_CLAIMS",
+                                    message: "INVALID_CLAIMS",
+                                    payload: [
+                                        {
+                                            id: "test",
+                                            reason: "test override",
+                                        },
+                                    ],
+                                });
+                            }
+                        } else {
+                            await oI.assertAllowedToSetupFactorElseThrowInvalidClaimError(input);
+                        }
+                    },
+                    getMFARequirementsForAuth: async (input) => {
+                        const res = await oI.getMFARequirementsForAuth(input);
+                        if (mfaInfo?.requirements) {
+                            return mfaInfo.requirements;
+                        }
+                        return res;
+                    },
+                }),
+                apis: (oI) => ({
+                    ...oI,
+                    resyncSessionAndFetchMFAInfoPUT: async (input) => {
+                        const res = await oI.resyncSessionAndFetchMFAInfoPUT(input);
+
+                        if (res.status === "OK") {
+                            if (mfaInfo.alreadySetup) {
+                                res.factors.alreadySetup = [...mfaInfo.alreadySetup];
+                            }
+                        }
+                        if (mfaInfo.noContacts) {
+                            res.emails = {};
+                            res.phoneNumbers = {};
+                        }
+                        return res;
+                    },
+                }),
+            },
+        }),
+    ]);
+
+    recipeList.push([
+        "totp",
+        TOTP.init({
+            defaultPeriod: 1,
+            defaultSkew: 30,
+        }),
+    ]);
 
     SuperTokens.init({
         appInfo: {
