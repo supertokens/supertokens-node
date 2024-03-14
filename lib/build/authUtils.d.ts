@@ -144,6 +144,7 @@ export declare const AuthUtils: {
         recipeId,
         accountInfo,
         checkCredentialsOnTenant,
+        tenantId,
         session,
         userContext,
     }: {
@@ -167,6 +168,7 @@ export declare const AuthUtils: {
                   };
                   phoneNumber?: undefined;
               };
+        tenantId: string;
         session: SessionContainerInterface | undefined;
         checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
         userContext: UserContext;
