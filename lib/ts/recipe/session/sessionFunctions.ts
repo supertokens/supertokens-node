@@ -407,8 +407,9 @@ export async function revokeAllSessionsForUser(
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
     }
+
     let response = await helpers.querier.sendPostRequest(
-        new NormalisedURLPath(`/${tenantId}/recipe/session/remove`),
+        new NormalisedURLPath(revokeAcrossAllTenants ? `/recipe/session/remove` : `/${tenantId}/recipe/session/remove`),
         {
             userId,
             revokeSessionsForLinkedAccounts,
@@ -434,7 +435,7 @@ export async function getAllSessionHandlesForUser(
         tenantId = DEFAULT_TENANT_ID;
     }
     let response = await helpers.querier.sendGetRequest(
-        new NormalisedURLPath(`/${tenantId}/recipe/session/user`),
+        new NormalisedURLPath(fetchAcrossAllTenants ? `/recipe/session/user` : `/${tenantId}/recipe/session/user`),
         {
             userId,
             fetchSessionsForAllLinkedAccounts,
