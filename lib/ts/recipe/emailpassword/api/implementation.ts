@@ -626,6 +626,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
                 recipeId,
                 session,
+                tenantId,
                 checkCredentialsOnTenant,
             });
 
