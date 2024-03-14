@@ -17,3 +17,16 @@ export declare const isValidFirstFactor: (
           status: "TENANT_NOT_FOUND_ERROR";
       }
 >;
+export declare const getValidFirstFactors: ({
+    firstFactorsFromCore,
+    staticFirstFactors,
+    allAvailableFirstFactors,
+    tenantId,
+    userContext,
+}: {
+    firstFactorsFromCore: string[] | undefined;
+    staticFirstFactors: string[] | undefined;
+    allAvailableFirstFactors: string[];
+    tenantId: string;
+    userContext: UserContext;
+}) => Promise<string[]>;

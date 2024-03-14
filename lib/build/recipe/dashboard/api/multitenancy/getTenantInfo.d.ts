@@ -20,6 +20,8 @@ export declare type Response =
               requiredSecondaryFactors?: string[];
               coreConfig: Record<string, unknown>;
               userCount: number;
+              mergedProvidersFromCoreAndStatic: ProviderConfig[];
+              validFirstFactors: string[];
           };
       }
     | {

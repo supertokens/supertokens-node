@@ -115,3 +115,46 @@ export const isValidFirstFactor = async function (
         status: "INVALID_FIRST_FACTOR_ERROR",
     };
 };
+
+export const getValidFirstFactors = async function ({
+    firstFactorsFromCore,
+    staticFirstFactors,
+    allAvailableFirstFactors,
+    tenantId,
+    userContext,
+}: {
+    firstFactorsFromCore: string[] | undefined;
+    staticFirstFactors: string[] | undefined;
+    allAvailableFirstFactors: string[];
+    tenantId: string;
+    userContext: UserContext;
+}): Promise<string[]> {
+    let firstFactors: string[];
+
+    if (firstFactorsFromCore !== undefined) {
+        firstFactors = firstFactorsFromCore; // highest priority, config from core
+    } else if (staticFirstFactors !== undefined) {
+        firstFactors = staticFirstFactors; // next priority, static config
+    } else {
+        // Fallback to all available factors (de-duplicated)
+        firstFactors = Array.from(new Set(allAvailableFirstFactors));
+    }
+
+    // we now filter out all available first factors by checking if they are valid because
+    // we want to return the ones that can work. this would be based on what recipes are enabled
+    // on the core and also firstFactors configured in the core and supertokens.init
+    // Also, this way, in the front end, the developer can just check for firstFactors for
+    // enabled recipes in all cases irrespective of whether they are using MFA or not
+    let validFirstFactors: string[] = [];
+    for (const factorId of firstFactors) {
+        let validRes = await isValidFirstFactor(tenantId, factorId, userContext);
+        if (validRes.status === "OK") {
+            validFirstFactors.push(factorId);
+        }
+        if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+            throw new Error("Tenant not found");
+        }
+    }
+
+    return validFirstFactors;
+};

@@ -17,7 +17,7 @@ const { printPath, killAllST, setupST, cleanST, startSTWithMultitenancy } = requ
 let STExpress = require("../../");
 let Dashboard = require("../../recipe/dashboard");
 let Multitenancy = require("../../recipe/multitenancy");
-let EmailPassword = require("../../recipe/emailpassword");
+let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
 const request = require("supertest");
@@ -51,7 +51,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
                 Dashboard.init({
                     apiKey: "testapikey",
                 }),
-                EmailPassword.init(),
+                ThirdPartyEmailPassword.init(),
                 Session.init(),
             ],
         });
@@ -80,7 +80,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
             ],
         });
 
-        await EmailPassword.signUp(tenantName, "test@supertokens.com", "abcd1235");
+        await ThirdPartyEmailPassword.emailPasswordSignUp(tenantName, "test@supertokens.com", "abcd1235");
 
         const getTenantInfoURL = `/auth/dashboard/api/tenant?tenantId=${tenantName}`;
 
@@ -102,8 +102,12 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
         assert.strictEqual(tenantInfoResponse.tenant.emailPassword.enabled, true);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.enabled, true);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers.length, 1);
-        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers[0].thirdPartyId, "google");
+        assert.strictEqual(tenantInfoResponse.tenant.mergedProvidersFromCoreAndStatic.length, 1);
+        assert.strictEqual(tenantInfoResponse.tenant.mergedProvidersFromCoreAndStatic[0].thirdPartyId, "google");
         assert.strictEqual(tenantInfoResponse.tenant.userCount, 1);
+        assert.strictEqual(tenantInfoResponse.tenant.validFirstFactors.length, 2);
+        assert.strictEqual(tenantInfoResponse.tenant.validFirstFactors.includes("emailpassword"), true);
+        assert.strictEqual(tenantInfoResponse.tenant.validFirstFactors.includes("thirdparty"), true);
     });
 
     it("Test that API returns error if tenant does not exist", async () => {
@@ -121,7 +125,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
                 Dashboard.init({
                     apiKey: "testapikey",
                 }),
-                EmailPassword.init(),
+                ThirdPartyEmailPassword.init(),
                 Session.init(),
             ],
         });
@@ -167,7 +171,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
                 Dashboard.init({
                     apiKey: "testapikey",
                 }),
-                EmailPassword.init(),
+                ThirdPartyEmailPassword.init(),
                 Session.init(),
             ],
         });

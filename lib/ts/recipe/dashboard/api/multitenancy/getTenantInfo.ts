@@ -14,9 +14,12 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
+import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokensError from "../../../../error";
 import { ProviderConfig } from "../../../thirdparty/types";
 import SuperTokens from "../../../../supertokens";
+import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
+import { getValidFirstFactors } from "../../../multitenancy/utils";
 
 export type Response =
     | {
@@ -37,6 +40,8 @@ export type Response =
               requiredSecondaryFactors?: string[];
               coreConfig: Record<string, unknown>;
               userCount: number;
+              mergedProvidersFromCoreAndStatic: ProviderConfig[];
+              validFirstFactors: string[];
           };
       }
     | {
@@ -72,13 +77,33 @@ export default async function getTenantInfo(
 
     const userCount = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
 
+    const providersFromCore = tenantRes?.thirdParty?.providers ?? [];
+    const mtRecipe = MultitenancyRecipe.getInstance();
+    const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
+
+    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders).map(
+        (provider) => provider.config
+    );
+
+    const validFirstFactors = await getValidFirstFactors({
+        firstFactorsFromCore: tenantRes.firstFactors,
+        staticFirstFactors: mtRecipe?.staticFirstFactors,
+        allAvailableFirstFactors: mtRecipe?.allAvailableFirstFactors ?? [],
+        userContext,
+        tenantId,
+    });
+
     const tenant = {
         tenantId,
         emailPassword: tenantRes.emailPassword,
         passwordless: tenantRes.passwordless,
         thirdParty: tenantRes.thirdParty,
         coreConfig: tenantRes.coreConfig,
+        firstFactors: tenantRes.firstFactors,
+        requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
         userCount,
+        mergedProvidersFromCoreAndStatic,
+        validFirstFactors,
     };
 
     return {
