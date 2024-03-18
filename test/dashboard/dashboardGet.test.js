@@ -69,9 +69,9 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
 
         it("Test connectionURI contains https protocol", async () => {
-            const connectionURI = "https://try.supertokens.com/appid-public";
+            const connectionURI = await startST();
             // removing protocol from the original connectionURI.
-            const connectionURIWithoutProtocol = connectionURI.replace("https://", "");
+            const connectionURIWithoutProtocol = connectionURI.replace("https://", "").replace("http://", "");
 
             STExpress.init({
                 supertokens: {
@@ -113,8 +113,8 @@ describe(`User Dashboard get: ${printPath("[test/dashboard/dashboardGet.test.js]
         });
 
         it("Test multiple connection URIs", async () => {
-            const firstConnectionURI = "https://try.supertokens.com/appid-public";
-            const secondConnectionURI = await startST();
+            const firstConnectionURI = await startST();
+            const secondConnectionURI = "http://no-core-here.supertokens.com";
 
             const multipleConnectionURIs = `${firstConnectionURI};${secondConnectionURI}`;
 
