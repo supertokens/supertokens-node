@@ -13,13 +13,11 @@
  * under the License.
  */
 import { APIInterface, APIOptions } from "../types";
-import Multitenancy from "../../multitenancy";
-import PasswordlessRecipe from "../../passwordless/recipe";
-import ThirdPartyPasswordlessRecipe from "../../thirdpartypasswordless/recipe";
-import EmailPasswordRecipe from "../../emailpassword/recipe";
-import ThirdPartyEmailPasswordRecipe from "../../thirdpartyemailpassword/recipe";
-import ThirdParty from "../../thirdparty/recipe";
+import MultitenancyRecipe from "../../multitenancy/recipe";
 import { TypeNormalisedInput } from "../../passwordless/types";
+import { isValidFirstFactor } from "../../multitenancy/utils";
+import { UserContext } from "../../../types";
+import { FactorIds } from "../../multifactorauth";
 
 type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 
@@ -53,20 +51,26 @@ export default async function getTenantLoginMethodsInfo(
     _: APIInterface,
     __: string,
     ___: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
-    const tenantsRes = await Multitenancy.listAllTenants(userContext);
+    const tenantsRes = await MultitenancyRecipe.getInstanceOrThrowError().recipeInterfaceImpl.listAllTenants({
+        userContext,
+    });
     const finalTenants: TenantLoginMethodType[] = [];
 
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         const currentTenant = tenantsRes.tenants[i];
 
-        const normalisedTenantLoginMethodsInfo = normaliseTenantLoginMethodsWithInitConfig({
-            tenantId: currentTenant.tenantId,
-            emailPassword: currentTenant.emailPassword,
-            passwordless: currentTenant.passwordless,
-            thirdParty: currentTenant.thirdParty,
-        });
+        const normalisedTenantLoginMethodsInfo = await normaliseTenantLoginMethodsWithInitConfig(
+            {
+                tenantId: currentTenant.tenantId,
+                emailPassword: currentTenant.emailPassword,
+                passwordless: currentTenant.passwordless,
+                thirdParty: currentTenant.thirdParty,
+                firstFactors: currentTenant.firstFactors,
+            },
+            userContext
+        );
 
         finalTenants.push(normalisedTenantLoginMethodsInfo);
     }
@@ -77,18 +81,22 @@ export default async function getTenantLoginMethodsInfo(
     };
 }
 
-function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: {
-    tenantId: string;
-    emailPassword: {
-        enabled: boolean;
-    };
-    passwordless: {
-        enabled: boolean;
-    };
-    thirdParty: {
-        enabled: boolean;
-    };
-}): TenantLoginMethodType {
+async function normaliseTenantLoginMethodsWithInitConfig(
+    tenantDetailsFromCore: {
+        tenantId: string;
+        emailPassword: {
+            enabled: boolean;
+        };
+        passwordless: {
+            enabled: boolean;
+        };
+        thirdParty: {
+            enabled: boolean;
+        };
+        firstFactors?: string[];
+    },
+    userContext: UserContext
+): Promise<TenantLoginMethodType> {
     const normalisedTenantLoginMethodsInfo: TenantLoginMethodType = {
         tenantId: tenantDetailsFromCore.tenantId,
         emailPassword: {
@@ -108,42 +116,55 @@ function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: {
         },
     };
 
-    if (tenantDetailsFromCore.passwordless.enabled === true) {
-        try {
-            const passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
+    let firstFactors: string[];
+
+    let mtInstance = MultitenancyRecipe.getInstanceOrThrowError();
+    if (tenantDetailsFromCore.firstFactors !== undefined) {
+        firstFactors = tenantDetailsFromCore.firstFactors; // highest priority, config from core
+    } else if (mtInstance.staticFirstFactors !== undefined) {
+        firstFactors = mtInstance.staticFirstFactors; // next priority, static config
+    } else {
+        // Fallback to all available factors (de-duplicated)
+        firstFactors = Array.from(new Set(mtInstance.allAvailableFirstFactors));
+    }
+
+    // we now filter out all available first factors by checking if they are valid because
+    // we want to return the ones that can work. this would be based on what recipes are enabled
+    // on the core and also firstFactors configured in the core and supertokens.init
+    // Also, this way, in the front end, the developer can just check for firstFactors for
+    // enabled recipes in all cases irrespective of whether they are using MFA or not
+    let validFirstFactors: string[] = [];
+    for (const factorId of firstFactors) {
+        let validRes = await isValidFirstFactor(tenantDetailsFromCore.tenantId, factorId, userContext);
+        if (validRes.status === "OK") {
+            validFirstFactors.push(factorId);
+        }
+        if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+            throw new Error("Tenant not found");
+        }
+    }
+
+    if (validFirstFactors.includes(FactorIds.EMAILPASSWORD)) {
+        normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
+    }
+    if (validFirstFactors.includes(FactorIds.THIRDPARTY)) {
+        normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
+    }
+    const pwlessEmailEnabled =
+        validFirstFactors.includes(FactorIds.OTP_EMAIL) || validFirstFactors.includes(FactorIds.LINK_EMAIL);
+    const pwlessPhoneEnabled =
+        validFirstFactors.includes(FactorIds.OTP_PHONE) || validFirstFactors.includes(FactorIds.LINK_PHONE);
+    if (pwlessEmailEnabled) {
+        if (pwlessPhoneEnabled) {
             normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
-            normalisedTenantLoginMethodsInfo.passwordless.contactMethod = passwordlessRecipe.config.contactMethod;
-        } catch (_) {}
-    }
-
-    if (tenantDetailsFromCore.thirdParty.enabled === true || tenantDetailsFromCore.passwordless.enabled === true) {
-        try {
-            const thirdpartyPasswordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless.enabled = true;
-            normalisedTenantLoginMethodsInfo.thirdPartyPasswordless.contactMethod =
-                thirdpartyPasswordlessRecipe.config.contactMethod;
-        } catch (_) {}
-    }
-
-    if (tenantDetailsFromCore.emailPassword.enabled === true) {
-        try {
-            EmailPasswordRecipe.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
-        } catch (_) {}
-    }
-
-    if (tenantDetailsFromCore.thirdParty.enabled === true || tenantDetailsFromCore.emailPassword.enabled === true) {
-        try {
-            ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.thirdPartyEmailPasssword.enabled = true;
-        } catch (_) {}
-    }
-
-    if (tenantDetailsFromCore.thirdParty.enabled === true) {
-        try {
-            ThirdParty.getInstanceOrThrowError();
-            normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
-        } catch (_) {}
+            normalisedTenantLoginMethodsInfo.passwordless.contactMethod = "EMAIL_OR_PHONE";
+        } else {
+            normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
+            normalisedTenantLoginMethodsInfo.passwordless.contactMethod = "EMAIL";
+        }
+    } else if (pwlessPhoneEnabled) {
+        normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
+        normalisedTenantLoginMethodsInfo.passwordless.contactMethod = "PHONE";
     }
 
     return normalisedTenantLoginMethodsInfo;
