@@ -1,5 +1,5 @@
 import { APIInterface } from "../";
-import { isValidFirstFactor } from "../../multitenancy/utils";
+import { getValidFirstFactors } from "../../multitenancy/utils";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
 
 export default function getAPIInterface(): APIInterface {
@@ -49,32 +49,13 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let firstFactors: string[];
-
-            if (tenantConfigRes.firstFactors !== undefined) {
-                firstFactors = tenantConfigRes.firstFactors; // highest priority, config from core
-            } else if (options.staticFirstFactors !== undefined) {
-                firstFactors = options.staticFirstFactors; // next priority, static config
-            } else {
-                // Fallback to all available factors (de-duplicated)
-                firstFactors = Array.from(new Set(options.allAvailableFirstFactors));
-            }
-
-            // we now filter out all available first factors by checking if they are valid because
-            // we want to return the ones that can work. this would be based on what recipes are enabled
-            // on the core and also firstFactors configured in the core and supertokens.init
-            // Also, this way, in the front end, the developer can just check for firstFactors for
-            // enabled recipes in all cases irrespective of whether they are using MFA or not
-            let validFirstFactors: string[] = [];
-            for (const factorId of firstFactors) {
-                let validRes = await isValidFirstFactor(tenantId, factorId, userContext);
-                if (validRes.status === "OK") {
-                    validFirstFactors.push(factorId);
-                }
-                if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
-                    throw new Error("Tenant not found");
-                }
-            }
+            const validFirstFactors = await getValidFirstFactors({
+                firstFactorsFromCore: tenantConfigRes.firstFactors,
+                staticFirstFactors: options.staticFirstFactors,
+                allAvailableFirstFactors: options.allAvailableFirstFactors,
+                userContext,
+                tenantId,
+            });
 
             return {
                 status: "OK",

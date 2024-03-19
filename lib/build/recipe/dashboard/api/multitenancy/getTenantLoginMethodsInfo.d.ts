@@ -1,21 +1,14 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
-import { TypeNormalisedInput } from "../../passwordless/types";
-import { UserContext } from "../../../types";
+import { APIInterface, APIOptions } from "../../types";
+import { TypeNormalisedInput } from "../../../passwordless/types";
+import { UserContext } from "../../../../types";
 declare type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 declare type TenantLoginMethodType = {
     tenantId: string;
     emailPassword: {
         enabled: boolean;
     };
-    thirdPartyEmailPasssword: {
-        enabled: boolean;
-    };
     passwordless: {
-        enabled: boolean;
-        contactMethod?: PasswordlessContactMethod;
-    };
-    thirdPartyPasswordless: {
         enabled: boolean;
         contactMethod?: PasswordlessContactMethod;
     };

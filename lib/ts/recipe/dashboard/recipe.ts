@@ -45,6 +45,9 @@ import {
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
     LIST_TENANT_LOGIN_METHODS,
+    TENANT_API,
+    TENANT_THIRD_PARTY,
+    LIST_ALL_CORE_CONFIG_PROPERTIES,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -69,7 +72,6 @@ import signIn from "./api/signIn";
 import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
-import listTenants from "./api/listTenants";
 import { userUnlink } from "./api/userdetails/userUnlinkGet";
 import getAllRoles from "./api/userroles/roles/getAllRoles";
 import deleteRole from "./api/userroles/roles/deleteRole";
@@ -81,7 +83,14 @@ import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
 import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
-import getTenantLoginMethodsInfo from "./api/getTenantLoginMethodsInfo";
+import listTenants from "./api/multitenancy/listTenants";
+import getTenantLoginMethodsInfo from "./api/multitenancy/getTenantLoginMethodsInfo";
+import getTenantInfo from "./api/multitenancy/getTenantInfo";
+import deleteTenant from "./api/multitenancy/deleteTenant";
+import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
+import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
+import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
+import listAllCoreConfigProperties from "./api/multitenancy/listAllCoreConfigProperties";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -149,6 +158,12 @@ export default class Recipe extends RecipeModule {
             {
                 id: DASHBOARD_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase("/roles")),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: DASHBOARD_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase("/tenants")),
                 disabled: false,
                 method: "get",
             },
@@ -352,6 +367,44 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "get",
             },
+            {
+                id: TENANT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: TENANT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
+                disabled: false,
+                method: "delete",
+            },
+            {
+                id: TENANT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: TENANT_THIRD_PARTY,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: TENANT_THIRD_PARTY,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
+                disabled: false,
+                method: "delete",
+            },
+            {
+                id: LIST_ALL_CORE_CONFIG_PROPERTIES,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(LIST_ALL_CORE_CONFIG_PROPERTIES)
+                ),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -481,6 +534,25 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "get") {
                 apiFunction = getTenantLoginMethodsInfo;
             }
+        } else if (id === TENANT_API) {
+            if (req.getMethod() === "put") {
+                apiFunction = createOrUpdateTenant;
+            }
+            if (req.getMethod() === "get") {
+                apiFunction = getTenantInfo;
+            }
+            if (req.getMethod() === "delete") {
+                apiFunction = deleteTenant;
+            }
+        } else if (id === TENANT_THIRD_PARTY) {
+            if (req.getMethod() === "delete") {
+                apiFunction = deleteThirdPartyConfig;
+            }
+            if (req.getMethod() === "put") {
+                apiFunction = createOrUpdateThirdPartyConfig;
+            }
+        } else if (id === LIST_ALL_CORE_CONFIG_PROPERTIES) {
+            apiFunction = listAllCoreConfigProperties;
         }
 
         // If the id doesnt match any APIs return false

@@ -123,3 +123,17 @@ export type User = {
     // the recipeUserId can be converted to string from the RecipeUserId object type.
     toJson: () => any;
 };
+
+type BaseCoreConfig = {
+    name: string;
+    description: string;
+    isDifferentAcrossTenants: boolean;
+    type: "string" | "number" | "boolean" | "enum";
+};
+
+type EnumCoreConfig = BaseCoreConfig & {
+    type: "enum";
+    options: Array<string>;
+};
+
+export type CoreConfigProperty = BaseCoreConfig | EnumCoreConfig;

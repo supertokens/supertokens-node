@@ -12,12 +12,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
-import MultitenancyRecipe from "../../multitenancy/recipe";
-import { TypeNormalisedInput } from "../../passwordless/types";
-import { isValidFirstFactor } from "../../multitenancy/utils";
-import { UserContext } from "../../../types";
-import { FactorIds } from "../../multifactorauth";
+import { APIInterface, APIOptions } from "../../types";
+import MultitenancyRecipe from "../../../multitenancy/recipe";
+import { TypeNormalisedInput } from "../../../passwordless/types";
+import { isValidFirstFactor } from "../../../multitenancy/utils";
+import { UserContext } from "../../../../types";
+import { FactorIds } from "../../../multifactorauth";
 
 type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 
@@ -26,14 +26,7 @@ type TenantLoginMethodType = {
     emailPassword: {
         enabled: boolean;
     };
-    thirdPartyEmailPasssword: {
-        enabled: boolean;
-    };
     passwordless: {
-        enabled: boolean;
-        contactMethod?: PasswordlessContactMethod;
-    };
-    thirdPartyPasswordless: {
         enabled: boolean;
         contactMethod?: PasswordlessContactMethod;
     };
@@ -102,13 +95,7 @@ async function normaliseTenantLoginMethodsWithInitConfig(
         emailPassword: {
             enabled: false,
         },
-        thirdPartyEmailPasssword: {
-            enabled: false,
-        },
         passwordless: {
-            enabled: false,
-        },
-        thirdPartyPasswordless: {
             enabled: false,
         },
         thirdParty: {
@@ -154,16 +141,15 @@ async function normaliseTenantLoginMethodsWithInitConfig(
         validFirstFactors.includes(FactorIds.OTP_EMAIL) || validFirstFactors.includes(FactorIds.LINK_EMAIL);
     const pwlessPhoneEnabled =
         validFirstFactors.includes(FactorIds.OTP_PHONE) || validFirstFactors.includes(FactorIds.LINK_PHONE);
-    if (pwlessEmailEnabled) {
-        if (pwlessPhoneEnabled) {
-            normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
-            normalisedTenantLoginMethodsInfo.passwordless.contactMethod = "EMAIL_OR_PHONE";
-        } else {
-            normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
-            normalisedTenantLoginMethodsInfo.passwordless.contactMethod = "EMAIL";
-        }
-    } else if (pwlessPhoneEnabled) {
+    const pwlessEnabled = pwlessEmailEnabled || pwlessPhoneEnabled;
+
+    if (pwlessEnabled) {
         normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
+    }
+
+    if (pwlessEmailEnabled) {
+        normalisedTenantLoginMethodsInfo.passwordless.contactMethod = pwlessPhoneEnabled ? "EMAIL_OR_PHONE" : "EMAIL";
+    } else if (pwlessPhoneEnabled) {
         normalisedTenantLoginMethodsInfo.passwordless.contactMethod = "PHONE";
     }
 

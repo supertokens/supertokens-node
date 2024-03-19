@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
-import { ProviderConfig } from "../../thirdparty/types";
-import { UserContext } from "../../../types";
+import { APIInterface, APIOptions } from "../../types";
+import { ProviderConfig } from "../../../thirdparty/types";
+import { UserContext } from "../../../../types";
 declare type TenantListTenantType = {
     tenantId: string;
     emailPassword: {

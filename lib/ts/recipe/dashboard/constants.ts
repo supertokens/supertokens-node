@@ -40,4 +40,9 @@ export const CREATE_PASSWORDLESS_USER = "/api/user/passwordless";
 export const LIST_TENANT_LOGIN_METHODS = "/api/tenants/login-methods";
 export const USERROLES_USER_API = "/api/userroles/user/roles";
 
+export const TENANT_API = "/api/tenant";
+export const TENANT_THIRD_PARTY = "/api/tenants/third-party";
+
 export const UNLINK_USER = "/api/user/unlink";
+
+export const LIST_ALL_CORE_CONFIG_PROPERTIES = "/api/core/config/list";
