@@ -22,7 +22,7 @@ export type Response =
           createdNew: boolean;
       }
     | {
-          status: "MULTITENANCY_NOT_ENABLED_ERROR";
+          status: "MULTITENANCY_NOT_ENABLED_IN_CORE";
       };
 
 export default async function createOrUpdateTenant(
@@ -49,7 +49,7 @@ export default async function createOrUpdateTenant(
         // it means that multitenancy is not enabled
         if ((err as Error).message.includes("402")) {
             return {
-                status: "MULTITENANCY_NOT_ENABLED_ERROR",
+                status: "MULTITENANCY_NOT_ENABLED_IN_CORE",
             };
         }
         throw err;

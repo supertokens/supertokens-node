@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext, CoreConfigProperty } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -476,5 +476,18 @@ export default class SuperTokens {
         }
 
         return userContext._default.request;
+    };
+
+    listAllCoreConfigProperties = async ({
+        userContext,
+    }: {
+        userContext: UserContext;
+    }): Promise<{
+        status: "OK";
+        config: Array<CoreConfigProperty>;
+    }> => {
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let response = await querier.sendGetRequest(new NormalisedURLPath(`/core-config/list`), {}, userContext);
+        return response;
     };
 }

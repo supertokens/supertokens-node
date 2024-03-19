@@ -64,7 +64,7 @@ describe(`User Dashboard listAllCoreConfigProperties: ${printPath(
 
         app.use(errorHandler());
 
-        const listAllTenantsURL = "/auth/dashboard/api/multitenancy/core-config/list";
+        const listAllTenantsURL = "/auth/dashboard/api/core/config/list";
 
         let coreConfigAPIResponse = await new Promise((res) => {
             request(app)

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
-import { CoreConfigProperty } from "../../../multitenancy/types";
+import { CoreConfigProperty } from "../../../../types";
 export declare type Response = {
     status: "OK";
     config: Array<CoreConfigProperty>;

@@ -43,20 +43,6 @@ export type TypeNormalisedInput = {
     };
 };
 
-type BaseCoreConfig = {
-    name: string;
-    description: string;
-    isDifferentAcrossTenants: boolean;
-    type: "string" | "number" | "boolean" | "enum";
-};
-
-type EnumCoreConfig = BaseCoreConfig & {
-    type: "enum";
-    options: Array<string>;
-};
-
-export type CoreConfigProperty = BaseCoreConfig | EnumCoreConfig;
-
 export type TenantConfig = {
     emailPassword: {
         enabled: boolean;
@@ -163,13 +149,6 @@ export type RecipeInterface = {
     }) => Promise<{
         status: "OK";
         wasAssociated: boolean;
-    }>;
-
-    listAllCoreConfigProperties: (input: {
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        config: Array<CoreConfigProperty>;
     }>;
 };
 

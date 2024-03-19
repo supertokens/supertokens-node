@@ -14,17 +14,11 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
-import SuperTokensError from "../../../../error";
 
-export type Response =
-    | {
-          status: "OK";
-          createdNew: boolean;
-      }
-    | {
-          status: "INVALID_PROVIDER_CONFIG";
-          message: string;
-      };
+export type Response = {
+    status: "OK";
+    createdNew: boolean;
+};
 
 export default async function createOrUpdateThirdPartyConfig(
     _: APIInterface,
@@ -34,24 +28,6 @@ export default async function createOrUpdateThirdPartyConfig(
 ): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { tenantId, providerConfig } = requestBody;
-
-    if (typeof tenantId !== "string" || tenantId === "") {
-        throw new SuperTokensError({
-            message: "Missing required parameter 'tenantId'",
-            type: SuperTokensError.BAD_INPUT_ERROR,
-        });
-    }
-
-    if (
-        typeof providerConfig !== "object" ||
-        providerConfig === null ||
-        typeof providerConfig?.thirdPartyId !== "string"
-    ) {
-        throw new SuperTokensError({
-            message: "Missing required parameter 'providerConfig' or 'providerConfig.thirdPartyId'",
-            type: SuperTokensError.BAD_INPUT_ERROR,
-        });
-    }
 
     const thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
         tenantId,

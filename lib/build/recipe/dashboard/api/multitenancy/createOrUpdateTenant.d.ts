@@ -6,7 +6,7 @@ export declare type Response =
           createdNew: boolean;
       }
     | {
-          status: "MULTITENANCY_NOT_ENABLED_ERROR";
+          status: "MULTITENANCY_NOT_ENABLED_IN_CORE";
       };
 export default function createOrUpdateTenant(
     _: APIInterface,

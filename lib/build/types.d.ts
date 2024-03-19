@@ -93,4 +93,15 @@ export declare type User = {
     })[];
     toJson: () => any;
 };
+declare type BaseCoreConfig = {
+    name: string;
+    description: string;
+    isDifferentAcrossTenants: boolean;
+    type: "string" | "number" | "boolean" | "enum";
+};
+declare type EnumCoreConfig = BaseCoreConfig & {
+    type: "enum";
+    options: Array<string>;
+};
+export declare type CoreConfigProperty = BaseCoreConfig | EnumCoreConfig;
 export {};

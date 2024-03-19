@@ -45,4 +45,4 @@ export const TENANT_THIRD_PARTY = "/api/tenants/third-party";
 
 export const UNLINK_USER = "/api/user/unlink";
 
-export const LIST_ALL_CORE_CONFIG_PROPERTIES = "/api/multitenancy/core-config/list";
+export const LIST_ALL_CORE_CONFIG_PROPERTIES = "/api/core/config/list";

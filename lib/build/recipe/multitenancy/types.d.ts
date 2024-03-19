@@ -24,17 +24,6 @@ export declare type TypeNormalisedInput = {
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-declare type BaseCoreConfig = {
-    name: string;
-    description: string;
-    isDifferentAcrossTenants: boolean;
-    type: "string" | "number" | "boolean" | "enum";
-};
-declare type EnumCoreConfig = BaseCoreConfig & {
-    type: "enum";
-    options: Array<string>;
-};
-export declare type CoreConfigProperty = BaseCoreConfig | EnumCoreConfig;
 export declare type TenantConfig = {
     emailPassword: {
         enabled: boolean;
@@ -141,12 +130,6 @@ export declare type RecipeInterface = {
         status: "OK";
         wasAssociated: boolean;
     }>;
-    listAllCoreConfigProperties: (input: {
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        config: Array<CoreConfigProperty>;
-    }>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -186,4 +169,3 @@ export declare type APIInterface = {
         | GeneralErrorResponse
     >;
 };
-export {};

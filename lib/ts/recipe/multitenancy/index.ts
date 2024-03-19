@@ -14,7 +14,7 @@
  */
 
 import Recipe from "./recipe";
-import { RecipeInterface, APIOptions, APIInterface, TenantConfig, CoreConfigProperty } from "./types";
+import { RecipeInterface, APIOptions, APIInterface, TenantConfig } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
@@ -168,18 +168,6 @@ export default class Wrapper {
             userContext: getUserContext(userContext),
         });
     }
-
-    static async listAllCoreConfigProperties(
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-        config: Array<CoreConfigProperty>;
-    }> {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        return recipeInstance.recipeInterfaceImpl.listAllCoreConfigProperties({
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
 }
 
 export let init = Wrapper.init;
@@ -194,8 +182,6 @@ export let deleteThirdPartyConfig = Wrapper.deleteThirdPartyConfig;
 
 export let associateUserToTenant = Wrapper.associateUserToTenant;
 export let disassociateUserFromTenant = Wrapper.disassociateUserFromTenant;
-
-export let listAllCoreConfigProperties = Wrapper.listAllCoreConfigProperties;
 
 export { AllowedDomainsClaim };
 export type { RecipeInterface, APIOptions, APIInterface };
