@@ -313,6 +313,7 @@ export const AuthUtils = {
         recipeId,
         accountInfo,
         checkCredentialsOnTenant,
+        tenantId,
         session,
         userContext,
     }: {
@@ -321,6 +322,7 @@ export const AuthUtils = {
             | { email: string; thirdParty?: undefined; phoneNumber?: undefined }
             | { email?: undefined; thirdParty?: undefined; phoneNumber: string }
             | { email?: undefined; thirdParty: { id: string; userId: string }; phoneNumber?: undefined };
+        tenantId: string;
         session: SessionContainerInterface | undefined;
         checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
         userContext: UserContext;
@@ -330,9 +332,8 @@ export const AuthUtils = {
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired called with ${JSON.stringify(accountInfo)}`
             );
-            const currentTenantId = session?.getTenantId(userContext) ?? "public";
             const existingUsers = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: currentTenantId,
+                tenantId,
                 accountInfo,
                 doUnionOfAccountInfo: true,
                 userContext: userContext,
@@ -393,7 +394,7 @@ export const AuthUtils = {
                     `getAuthenticatingUserAndAddToCurrentTenantIfRequired session has ${matchingLoginMethodsFromSessionUser.length} matching login methods`
                 );
 
-                if (matchingLoginMethodsFromSessionUser.some((lm) => lm.tenantIds.includes(currentTenantId))) {
+                if (matchingLoginMethodsFromSessionUser.some((lm) => lm.tenantIds.includes(tenantId))) {
                     logDebugMessage(
                         `getAuthenticatingUserAndAddToCurrentTenantIfRequired session has ${matchingLoginMethodsFromSessionUser.length} matching login methods`
                     );
@@ -403,9 +404,7 @@ export const AuthUtils = {
                     // concurrently.
                     return {
                         user: sessionUser,
-                        loginMethod: matchingLoginMethodsFromSessionUser.find((lm) =>
-                            lm.tenantIds.includes(currentTenantId)
-                        )!,
+                        loginMethod: matchingLoginMethodsFromSessionUser.find((lm) => lm.tenantIds.includes(tenantId))!,
                     };
                 }
                 let goToRetry = false;
@@ -418,7 +417,7 @@ export const AuthUtils = {
                             `getAuthenticatingUserAndAddToCurrentTenantIfRequired associating user from ${lm.tenantIds[0]} with current tenant`
                         );
                         const associateRes = await MultiTenancy.associateUserToTenant(
-                            currentTenantId,
+                            tenantId,
                             lm.recipeUserId,
                             userContext
                         );
@@ -427,7 +426,7 @@ export const AuthUtils = {
                         );
                         if (associateRes.status === "OK") {
                             // We know that this is what happens
-                            lm.tenantIds.push(currentTenantId);
+                            lm.tenantIds.push(tenantId);
                             return { user: sessionUser, loginMethod: lm };
                         }
                         if (

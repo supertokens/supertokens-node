@@ -87,6 +87,7 @@ export default function getAPIInterface(): APIInterface {
                 recipeId,
                 userContext: input.userContext,
                 session: input.session,
+                tenantId,
                 checkCredentialsOnTenant,
             });
 

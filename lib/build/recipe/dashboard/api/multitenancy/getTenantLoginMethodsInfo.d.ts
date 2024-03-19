@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
 import { TypeNormalisedInput } from "../../../passwordless/types";
+import { UserContext } from "../../../../types";
 declare type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 declare type TenantLoginMethodType = {
     tenantId: string;
@@ -30,6 +31,6 @@ export default function getTenantLoginMethodsInfo(
     _: APIInterface,
     __: string,
     ___: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response>;
 export {};

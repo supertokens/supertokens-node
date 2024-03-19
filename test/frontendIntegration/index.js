@@ -18,6 +18,7 @@ let SuperTokensRaw = require("../../lib/build/supertokens").default;
 let SessionRecipeRaw = require("../../lib/build/recipe/session/recipe").default;
 let DashboardRecipeRaw = require("../../lib/build/recipe/dashboard/recipe").default;
 let MultitenancyRecipeRaw = require("../../lib/build/recipe/multitenancy/recipe").default;
+let UserMetaDataRecipeRaw = require("../../lib/build/recipe/usermetadata/recipe").default;
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -216,6 +217,7 @@ app.post("/setAntiCsrf", async (req, res) => {
         SessionRecipeRaw.reset();
         DashboardRecipeRaw.reset();
         MultitenancyRecipeRaw.reset();
+        UserMetaDataRecipeRaw.reset();
         SuperTokens.init(getConfig(enableAntiCsrf));
     }
     res.send("success");
@@ -230,6 +232,7 @@ app.post("/setEnableJWT", async (req, res) => {
         SessionRecipeRaw.reset();
         DashboardRecipeRaw.reset();
         MultitenancyRecipeRaw.reset();
+        UserMetaDataRecipeRaw.reset();
         SuperTokens.init(getConfig(lastSetEnableAntiCSRF, enableJWT));
     }
     res.send("success");
@@ -254,6 +257,7 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
     SessionRecipeRaw.reset();
     DashboardRecipeRaw.reset();
     MultitenancyRecipeRaw.reset();
+    UserMetaDataRecipeRaw.reset();
     SuperTokens.init(getConfig(lastSetEnableAntiCSRF, currentEnableJWT, jwtPropertyName));
 
     res.send("");
@@ -278,7 +282,8 @@ app.post("/login-2.18", async (req, res) => {
             enableAntiCsrf: false,
             userDataInJWT: payload,
             userDataInDatabase: {},
-        }
+        },
+        {}
     );
     Querier.apiVersion = undefined;
 
