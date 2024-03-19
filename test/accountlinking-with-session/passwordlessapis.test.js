@@ -141,6 +141,30 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
                     const email2 = getTestEmail("2");
                     const app = await setup();
 
+                    const conflictingUser = await createThirdPartyUser(email2, false);
+                    await makeUserPrimary(conflictingUser);
+
+                    let sessionUser = await createEmailPasswordUser(email1, true);
+
+                    const session = await getSessionForUser(sessionUser);
+                    const code = await Passwordless.createCode({ email: email2, tenantId: "public", session });
+                    const resp = await consumeCodePOST(app, code, session);
+                    assert.strictEqual(resp.status, 200);
+                    assert.ok(resp.body);
+
+                    const body = resp.body;
+                    assert.deepStrictEqual(body, {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+                    });
+                });
+
+                it("should error if linking is not allowed because of conflicting primary user", async () => {
+                    const email1 = getTestEmail("1");
+                    const email2 = getTestEmail("2");
+                    const app = await setup();
+
                     const conflictingUser = await createThirdPartyUser(email2, true);
                     await makeUserPrimary(conflictingUser);
 
@@ -784,6 +808,192 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
             let sessionUser = await createEmailPasswordUser(email1, true);
             sessionUser = await makeUserPrimary(sessionUser);
             await createPasswordlessUser({ email: email2 });
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "OK");
+        });
+
+        it("should create a code if the session user is not primary user using the same email without verification", async () => {
+            const email1 = getTestEmail("1");
+            const app = await setup();
+            let sessionUser = await createEmailPasswordUser(email1, false);
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email1 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "OK");
+        });
+
+        it("should error if there is another user using the same email without verification and it's not the session user", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup();
+            await createEmailPasswordUser(email1, false);
+            let sessionUser = await createPasswordlessUser({ email: email2 });
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email1 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "SIGN_IN_UP_NOT_ALLOWED");
+            assert.strictEqual(
+                body.reason,
+                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)"
+            );
+        });
+
+        it("should create a code if the session user can be made primary", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup();
+            let sessionUser = await createEmailPasswordUser(email1, true);
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "OK");
+        });
+
+        it("should create a code even if the session user cannot be made primary - conflicting primary user", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup();
+
+            const conflictingUser = await createThirdPartyUser(email1, false);
+            await makeUserPrimary(conflictingUser);
+
+            let sessionUser = await createEmailPasswordUser(email1, true);
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "OK");
+        });
+
+        it("should create a code even if the session user cannot be made primary - email verification", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup();
+
+            let sessionUser = await createEmailPasswordUser(email1, false);
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "OK");
+        });
+
+        it("should error if sign up is not allowed", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup();
+
+            const conflictingUser = await createThirdPartyUser(email2, false);
+            await makeUserPrimary(conflictingUser);
+
+            let sessionUser = await createEmailPasswordUser(email1, true);
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.deepStrictEqual(body, {
+                status: "SIGN_IN_UP_NOT_ALLOWED",
+                reason:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+            });
+        });
+
+        it("should create a code if shouldDoAutomaticAccountLinking returns false while making the session user primary", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup({
+                shouldDoAutomaticAccountLinking: (accountInfo, user) => {
+                    if (accountInfo.email === email1 && user === undefined) {
+                        return { shouldAutomaticallyLink: false };
+                    }
+                    return {
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    };
+                },
+            });
+
+            let sessionUser = await createEmailPasswordUser(email1, true);
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "OK");
+        });
+
+        it("should create a code if shouldDoAutomaticAccountLinking returns false while linking to the session user and the session user is primary", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup({
+                shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                    if (user !== undefined && user.id === session.getUserId()) {
+                        return { shouldAutomaticallyLink: false };
+                    }
+                    return {
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    };
+                },
+            });
+
+            let sessionUser = await createEmailPasswordUser(email1, true);
+            sessionUser = await makeUserPrimary(sessionUser);
+
+            const session = await getSessionForUser(sessionUser);
+            const resp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(resp.status, 200);
+            assert.ok(resp.body);
+
+            const body = resp.body;
+            assert.strictEqual(body.status, "OK");
+        });
+
+        it("should create a code if shouldDoAutomaticAccountLinking returns false while linking to the session user", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const app = await setup({
+                shouldDoAutomaticAccountLinking: (accountInfo, user, session) => {
+                    if (user !== undefined && user.id === session.getUserId()) {
+                        return { shouldAutomaticallyLink: false };
+                    }
+                    return {
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    };
+                },
+            });
+
+            let sessionUser = await createEmailPasswordUser(email1, true);
 
             const session = await getSessionForUser(sessionUser);
             const resp = await createCodePOST(app, { email: email2 }, session);
