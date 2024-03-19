@@ -46,8 +46,6 @@ import {
     CREATE_PASSWORDLESS_USER,
     LIST_TENANT_LOGIN_METHODS,
     TENANT_API,
-    DISASSOCIATE_USER_FROM_TENANT,
-    ASSOCIATE_USER_TO_TENANT,
     TENANT_THIRD_PARTY,
     LIST_ALL_CORE_CONFIG_PROPERTIES,
 } from "./constants";
@@ -90,8 +88,6 @@ import getTenantLoginMethodsInfo from "./api/multitenancy/getTenantLoginMethodsI
 import getTenantInfo from "./api/multitenancy/getTenantInfo";
 import deleteTenant from "./api/multitenancy/deleteTenant";
 import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
-import associateUserToTenant from "./api/multitenancy/associateUserToTenant";
-import disassociateUserFromTenant from "./api/multitenancy/disassociateUserFromTenant";
 import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
 import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
 import listAllCoreConfigProperties from "./api/multitenancy/listAllCoreConfigProperties";
@@ -390,20 +386,6 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
-                id: ASSOCIATE_USER_TO_TENANT,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(ASSOCIATE_USER_TO_TENANT)),
-                disabled: false,
-                method: "put",
-            },
-            {
-                id: DISASSOCIATE_USER_FROM_TENANT,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(DISASSOCIATE_USER_FROM_TENANT)
-                ),
-                disabled: false,
-                method: "put",
-            },
-            {
                 id: TENANT_THIRD_PARTY,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
                 disabled: false,
@@ -562,10 +544,6 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteTenant;
             }
-        } else if (id === ASSOCIATE_USER_TO_TENANT) {
-            apiFunction = associateUserToTenant;
-        } else if (id === DISASSOCIATE_USER_FROM_TENANT) {
-            apiFunction = disassociateUserFromTenant;
         } else if (id === TENANT_THIRD_PARTY) {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteThirdPartyConfig;
