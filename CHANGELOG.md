@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.0.1] - 2024-03-08
+
+### Changes
+
+-   We now allow sign in/up even if the session user is conflicting with the current sign in/up (because of the email verification status)
+    -   This makes use-cases where an secondary factor (i.e.: otp-email) is also used as a means of verification.
+
 ## [17.0.0] - 2024-03-08
 
 ### Changes

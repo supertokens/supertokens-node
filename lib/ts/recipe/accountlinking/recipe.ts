@@ -385,6 +385,13 @@ export default class Recipe extends RecipeModule {
             for (let i = 0; i < users.length; i++) {
                 let currUser = users[i]; // all these are not primary users, so we can use
                 // loginMethods[0] to get the account info.
+
+                if (session !== undefined && currUser.id === session.getUserId(userContext)) {
+                    // We do not consider the current session user to be conflicting
+                    // This can be useful in cases where the current sign in will mark the session user as verified
+                    continue;
+                }
+
                 let thisIterationIsVerified = false;
                 if (accountInfo.email !== undefined) {
                     if (
@@ -468,6 +475,12 @@ export default class Recipe extends RecipeModule {
                 // in case email verification is not required, then linking should not be
                 // an issue anyway.
                 return false;
+            }
+
+            // We do not consider the current session user to be conflicting
+            // This can be useful in cases where the current sign in will mark the session user as verified
+            if (session !== undefined && primaryUser.id === session.getUserId()) {
+                return true;
             }
 
             // we check for even if one is verified as opposed to all being unverified cause
