@@ -246,6 +246,65 @@ const boolClaim = new BooleanClaim({
 });
 ```
 
+##### `build` signature change
+
+If you were using the `build` function for custom or built-in session claims, you should update the call signature to also pass the new parameter.
+
+Before:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+After:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
 ##### Post sign-in/up actions
 
 Since now sign in/up APIs and functions can be called with a session (e.g.: during MFA flows), you may need to add an extra check to your overrides to account for that:
