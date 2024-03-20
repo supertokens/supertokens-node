@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, TenantConfig } from "./types";
 import MultitenancyRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
 import { UserContext } from "../../types";
@@ -78,12 +78,41 @@ export const isValidFirstFactor = async function (
         configuredFirstFactors = mtRecipe.allAvailableFirstFactors;
     }
 
+    if (
+        isFactorConfiguredForTenant({
+            tenantConfig,
+            allAvailableFirstFactors: mtRecipe.allAvailableFirstFactors,
+            firstFactors: configuredFirstFactors,
+            factorId,
+        })
+    ) {
+        return {
+            status: "OK",
+        };
+    }
+
+    return {
+        status: "INVALID_FIRST_FACTOR_ERROR",
+    };
+};
+
+export function isFactorConfiguredForTenant({
+    tenantConfig,
+    allAvailableFirstFactors,
+    firstFactors,
+    factorId,
+}: {
+    tenantConfig: TenantConfig;
+    allAvailableFirstFactors: string[];
+    firstFactors: string[];
+    factorId: string;
+}) {
     // Here we filter the array so that we only have:
     // 1. Factors that other recipes have marked as available
     // 2. Custom factors (not in the built-in FactorIds list)
-    configuredFirstFactors = configuredFirstFactors.filter(
+    let configuredFirstFactors = firstFactors.filter(
         (factorId: string) =>
-            mtRecipe.allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)
+            allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)
     );
 
     // Filter based on enabled recipes in the core
@@ -105,13 +134,5 @@ export const isValidFirstFactor = async function (
         configuredFirstFactors = configuredFirstFactors.filter((factorId: string) => factorId !== FactorIds.THIRDPARTY);
     }
 
-    if (configuredFirstFactors.includes(factorId)) {
-        return {
-            status: "OK",
-        };
-    }
-
-    return {
-        status: "INVALID_FIRST_FACTOR_ERROR",
-    };
-};
+    return configuredFirstFactors.includes(factorId);
+}

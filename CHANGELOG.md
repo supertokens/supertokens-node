@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.0.2] - 2024-03-20
+
+-   Remove tenants listing dashboard API and update `getTenantLoginMethodsInfo` dashboard API to remove querying core in loop and return only firstFactors.
+
 ## [17.0.1] - 2024-03-08
 
 ### Changes
