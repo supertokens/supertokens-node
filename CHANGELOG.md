@@ -99,8 +99,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `createCodePOST`
         -   `resendCodePOST`
         -   `consumeCodePOST`
--   Custom claims:
-    -   `fetchValue` now also gets the `currentPayload` as a parameter
+-   Session claims:
+    -   The `build` function and the `fetchValue` callback of session claims now take a new `currentPayload` param.
+        -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+        -   This will affect all custom claims as well built on our base classes.
 -   `ThirdParty`:
     -   Changed the signature of the following functions:
         -   `manuallyCreateOrUpdateUser`:
@@ -242,6 +244,137 @@ const boolClaim = new BooleanClaim({
         return userContext.claimValue;
     },
 });
+```
+
+##### `build` signature change
+
+If you were using the `build` function for custom or built-in session claims, you should update the call signature to also pass the new parameter.
+
+Before:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+After:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+##### Post sign-in/up actions
+
+Since now sign in/up APIs and functions can be called with a session (e.g.: during MFA flows), you may need to add an extra check to your overrides to account for that:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                            // TODO: post sign up logic
+                        } else {
+                            // TODO: post sign in logic
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (input.session === undefined) {
+                            if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                                // TODO: post sign up logic
+                            } else {
+                                // TODO: post sign in logic
+                            }
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
 ```
 
 ## [16.7.4] - 2024-03-01
