@@ -12,6 +12,7 @@ export declare type Response =
               thirdParty: {
                   enabled: boolean;
                   providers: ProviderConfig[];
+                  mergedProvidersFromCoreAndStatic: ProviderConfig[];
               };
               passwordless: {
                   enabled: boolean;
@@ -20,7 +21,6 @@ export declare type Response =
               requiredSecondaryFactors?: string[];
               coreConfig: Record<string, unknown>;
               userCount: number;
-              mergedProvidersFromCoreAndStatic: ProviderConfig[];
               validFirstFactors: string[];
           };
       }

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, TenantConfig } from "./types";
 import MultitenancyRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
 import { UserContext } from "../../types";
@@ -35,7 +35,8 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
 export const isValidFirstFactor = async function (
     tenantId: string,
     factorId: string,
-    userContext: UserContext
+    userContext: UserContext,
+    tenantInfoFromCore?: Omit<TenantConfig, "coreConfig">
 ): Promise<
     | {
           status: "OK";
@@ -52,13 +53,17 @@ export const isValidFirstFactor = async function (
         throw new Error("Should never happen");
     }
 
-    const tenantInfo = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
-    if (tenantInfo === undefined) {
+    let tenantConfig = tenantInfoFromCore;
+
+    if (!tenantConfig) {
+        tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
+    }
+
+    if (tenantConfig === undefined) {
         return {
             status: "TENANT_NOT_FOUND_ERROR",
         };
     }
-    const { status: _, ...tenantConfig } = tenantInfo;
 
     const firstFactorsFromMFA = mtRecipe.staticFirstFactors;
 

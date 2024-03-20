@@ -32,6 +32,7 @@ export type Response =
               thirdParty: {
                   enabled: boolean;
                   providers: ProviderConfig[];
+                  mergedProvidersFromCoreAndStatic: ProviderConfig[];
               };
               passwordless: {
                   enabled: boolean;
@@ -40,7 +41,6 @@ export type Response =
               requiredSecondaryFactors?: string[];
               coreConfig: Record<string, unknown>;
               userCount: number;
-              mergedProvidersFromCoreAndStatic: ProviderConfig[];
               validFirstFactors: string[];
           };
       }
@@ -97,12 +97,14 @@ export default async function getTenantInfo(
         tenantId,
         emailPassword: tenantRes.emailPassword,
         passwordless: tenantRes.passwordless,
-        thirdParty: tenantRes.thirdParty,
+        thirdParty: {
+            ...tenantRes.thirdParty,
+            mergedProvidersFromCoreAndStatic,
+        },
         coreConfig: tenantRes.coreConfig,
         firstFactors: tenantRes.firstFactors,
         requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
         userCount,
-        mergedProvidersFromCoreAndStatic,
         validFirstFactors,
     };
 

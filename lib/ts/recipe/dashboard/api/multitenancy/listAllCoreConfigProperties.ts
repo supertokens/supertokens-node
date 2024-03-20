@@ -27,7 +27,7 @@ export default async function listAllCoreConfigProperties(
     ___: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const res = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties(userContext);
+    const res = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({ userContext });
 
     return res;
 }

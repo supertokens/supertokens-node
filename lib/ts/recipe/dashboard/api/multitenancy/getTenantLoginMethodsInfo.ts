@@ -18,6 +18,7 @@ import { TypeNormalisedInput } from "../../../passwordless/types";
 import { isValidFirstFactor } from "../../../multitenancy/utils";
 import { UserContext } from "../../../../types";
 import { FactorIds } from "../../../multifactorauth";
+import { ProviderConfig } from "../../../thirdparty/types";
 
 type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
 
@@ -26,7 +27,14 @@ type TenantLoginMethodType = {
     emailPassword: {
         enabled: boolean;
     };
+    thirdPartyEmailPasssword: {
+        enabled: boolean;
+    };
     passwordless: {
+        enabled: boolean;
+        contactMethod?: PasswordlessContactMethod;
+    };
+    thirdPartyPasswordless: {
         enabled: boolean;
         contactMethod?: PasswordlessContactMethod;
     };
@@ -85,6 +93,7 @@ async function normaliseTenantLoginMethodsWithInitConfig(
         };
         thirdParty: {
             enabled: boolean;
+            providers: ProviderConfig[];
         };
         firstFactors?: string[];
     },
@@ -95,7 +104,13 @@ async function normaliseTenantLoginMethodsWithInitConfig(
         emailPassword: {
             enabled: false,
         },
+        thirdPartyEmailPasssword: {
+            enabled: false,
+        },
         passwordless: {
+            enabled: false,
+        },
+        thirdPartyPasswordless: {
             enabled: false,
         },
         thirdParty: {
@@ -122,7 +137,12 @@ async function normaliseTenantLoginMethodsWithInitConfig(
     // enabled recipes in all cases irrespective of whether they are using MFA or not
     let validFirstFactors: string[] = [];
     for (const factorId of firstFactors) {
-        let validRes = await isValidFirstFactor(tenantDetailsFromCore.tenantId, factorId, userContext);
+        let validRes = await isValidFirstFactor(
+            tenantDetailsFromCore.tenantId,
+            factorId,
+            userContext,
+            tenantDetailsFromCore
+        );
         if (validRes.status === "OK") {
             validFirstFactors.push(factorId);
         }
