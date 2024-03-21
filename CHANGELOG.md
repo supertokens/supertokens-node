@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [16.7.5] - 2024-03-21
+
+-   Enable smooth switching between `useDynamicAccessTokenSigningKey` settings by allowing refresh calls to change the signing key type of a session
+
 ## [16.7.4] - 2024-03-01
 
 -   Adds a user friendly error screen that provides helpful information regarding Content Security Policy (CSP) issues..

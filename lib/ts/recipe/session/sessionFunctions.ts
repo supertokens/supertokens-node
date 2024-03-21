@@ -324,16 +324,14 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     disableAntiCsrf: boolean,
+    useDynamicAccessTokenSigningKey: boolean,
     userContext: any
 ): Promise<CreateOrRefreshAPIResponse> {
-    let requestBody: {
-        refreshToken: string;
-        antiCsrfToken?: string;
-        enableAntiCsrf?: boolean;
-    } = {
+    let requestBody = {
         refreshToken,
         antiCsrfToken,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN",
+        useDynamicSigningKey: useDynamicAccessTokenSigningKey,
     };
 
     if (
