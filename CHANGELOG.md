@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Now only supporting CDI 5.0. Compatible with core version >= 8.0
 -   Account linking now takes the active session into account.
+-   Account linking now also happens in sign in function calls (instead of sign ups and sign in API calls)
 -   Fixed the typing of the `userContext`:
     -   All functions now take `Record<string, any>` instead of `any` as `userContext`. This means that primitives (strings, numbers) are no longer allowed as `userContext`.
     -   All functions overrides that take a `userContext` parameter now get a well typed `userContext` parameter ensuring that the right object is passed to the original implementation calls
@@ -374,6 +375,42 @@ Passwordless.init({
                         }
                     }
                     return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+##### Sign-in/up linking to the session user
+
+Sign in/up APIs and functions will now attempt to link the authenticating user to the session user if a session is available (depending on AccountLinking settings). You can disable this and get the old behaviour by:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+                    input.session = undefined;
+                    return originalImplementation.consumeCode(input);
                 }
             }
         }
