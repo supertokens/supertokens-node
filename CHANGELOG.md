@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [15.2.2] - 2024-03-29
+
+-   Enable smooth switching between `useDynamicAccessTokenSigningKey` settings by allowing refresh calls to change the signing key type of a session
+
 ## [15.2.1] - 2023-09-22
 
 ### Fixes

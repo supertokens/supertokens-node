@@ -69,6 +69,7 @@ export default function getRecipeInterface(
     const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
         let lastError = undefined;
         if (JWKS.length === 0) {
+            console.log("I WAS HERE!!!!!");
             throw Error(
                 "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
             );
@@ -336,7 +337,8 @@ export default function getRecipeInterface(
                 helpers,
                 refreshToken,
                 antiCsrfToken,
-                disableAntiCsrf
+                disableAntiCsrf,
+                config.useDynamicAccessTokenSigningKey
             );
 
             logDebugMessage("refreshSession: Success!");

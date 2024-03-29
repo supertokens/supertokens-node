@@ -52,7 +52,8 @@ export declare function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    disableAntiCsrf: boolean
+    disableAntiCsrf: boolean,
+    useDynamicAccessTokenSigningKey: boolean
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
