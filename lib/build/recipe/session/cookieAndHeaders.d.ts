@@ -20,6 +20,8 @@ export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfTok
 export declare function buildFrontToken(userId: string, atExpiry: number, accessTokenPayload: any): string;
 export declare function setFrontTokenInHeaders(res: BaseResponse, frontToken: string): void;
 export declare function getCORSAllowedHeaders(): string[];
+export declare function getCookieNameFromTokenType(tokenType: TokenType): "sAccessToken" | "sRefreshToken";
+export declare function getResponseHeaderNameForTokenType(tokenType: TokenType): "st-access-token" | "st-refresh-token";
 export declare function getToken(
     req: BaseRequest,
     tokenType: TokenType,

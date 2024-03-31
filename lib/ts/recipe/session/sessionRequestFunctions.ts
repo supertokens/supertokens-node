@@ -266,7 +266,12 @@ export async function refreshSessionInRequest({
             setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
         }
 
-        logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
+        // We need to clear the access token cookie if refresh token is not found.
+        // See: https://github.com/supertokens/supertokens-node/issues/790
+        setCookie(config, res, "sAccessToken", "", 0, "accessTokenPath", req, userContext);
+        logDebugMessage(
+            "refreshSession: cleared access token and returning UNAUTHORISED because refresh token in request is undefined"
+        );
         throw new SessionError({
             message: "Refresh token not found. Are you sending the refresh token in the request?",
             payload: {

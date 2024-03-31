@@ -185,6 +185,117 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert.strictEqual(frontendInfo.up["rsub"], "testuserid");
     });
 
+    // check if access token cookie is cleared if refresh token api is called without the refresh token
+    it("test that access token cookie is cleared if refresh token api is called without the refresh token", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+        });
+
+        const app = express();
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let cookies = extractInfoFromResponse(res2);
+        assert(res2.status === 401);
+        assert(cookies.accessToken === "");
+        assert(cookies.accessTokenExpiry === new Date(0).toUTCString());
+        assert(cookies.refreshToken === undefined);
+    });
+
+    // check if access and refresh token for olderCookieDomain is cleared if multiple tokens are passed to the refresh endpoint
+    it("test that access and refresh token for olderCookieDomain is cleared if multiple tokens are passed to the refresh endpoint", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
+                    antiCsrf: "VIA_TOKEN",
+                    olderCookieDomain: ".example.com",
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", [
+                    "sAccessToken=accessToken1",
+                    "sAccessToken=accessToken2",
+                    "sRefreshToken=refreshToken1",
+                    "sRefreshToken=refreshToken2",
+                ])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let cookies = extractInfoFromResponse(res);
+        assert(res.status === 200);
+        assert(cookies.accessToken === "");
+        assert(cookies.accessTokenExpiry === new Date(0).toUTCString());
+        assert(cookies.accessTokenDomain === ".example.com");
+        assert(cookies.refreshToken === "");
+        assert(cookies.refreshTokenExpiry === new Date(0).toUTCString());
+        assert(cookies.refreshTokenDomain === ".example.com");
+    });
+
     // check if input cookies are missing, an appropriate error is thrown
     // Failure condition: if valid cookies are set in the refresh call the test will fail
     it("test that if input cookies are missing, an appropriate error is thrown", async function () {

@@ -45,6 +45,7 @@ export declare type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
+    olderCookieDomain?: string;
     overwriteSessionDuringSignInUp?: boolean;
     getTokenTransferMethod?: (input: {
         req: BaseRequest;
@@ -87,6 +88,7 @@ export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
+    olderCookieDomain: string | undefined;
     getCookieSameSite: (input: {
         request: BaseRequest | undefined;
         userContext: UserContext;
@@ -345,7 +347,10 @@ export declare type APIInterface = {
      */
     refreshPOST:
         | undefined
-        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<SessionContainerInterface>);
+        | ((input: {
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<SessionContainerInterface | undefined>);
     signOutPOST:
         | undefined
         | ((input: {

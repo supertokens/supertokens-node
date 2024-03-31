@@ -94,7 +94,7 @@ export function getCORSAllowedHeaders(): string[] {
     return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, authModeHeaderKey];
 }
 
-function getCookieNameFromTokenType(tokenType: TokenType) {
+export function getCookieNameFromTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             return accessTokenCookieKey;
@@ -105,7 +105,7 @@ function getCookieNameFromTokenType(tokenType: TokenType) {
     }
 }
 
-function getResponseHeaderNameForTokenType(tokenType: TokenType) {
+export function getResponseHeaderNameForTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             return accessTokenHeaderKey;

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.0.3] - 2024-03-31
+
+-   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from older domain when the cookieDomain is changed.
+-   Fixed an issue where the access token wasn't cleared if refresh token API was called without a refresh token.
+
 ## [17.0.2] - 2024-03-20
 
 -   Remove tenants listing dashboard API and update `getTenantLoginMethodsInfo` dashboard API to remove querying core in loop and return only firstFactors.

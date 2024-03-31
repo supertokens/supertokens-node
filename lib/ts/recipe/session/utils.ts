@@ -136,6 +136,10 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.cookieDomain === undefined
             ? undefined
             : normaliseSessionScopeOrThrowError(config.cookieDomain);
+    let olderCookieDomain =
+        config === undefined || config.olderCookieDomain === undefined || config.olderCookieDomain === ""
+            ? config?.olderCookieDomain
+            : normaliseSessionScopeOrThrowError(config.olderCookieDomain);
     let accessTokenPath =
         config === undefined || config.accessTokenPath === undefined
             ? new NormalisedURLPath("/")
@@ -282,6 +286,7 @@ export function validateAndNormaliseUserInput(
                 ? defaultGetTokenTransferMethod
                 : config.getTokenTransferMethod,
         cookieDomain,
+        olderCookieDomain,
         getCookieSameSite: cookieSameSite,
         cookieSecure,
         sessionExpiredStatusCode,
