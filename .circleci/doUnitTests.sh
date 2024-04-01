@@ -1,3 +1,11 @@
+#!/bin/bash
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+nvm use 14
+
 echo "Starting tests for CDI $1";
 
 if [ -z "$SUPERTOKENS_API_KEY" ]; then
