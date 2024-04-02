@@ -19,7 +19,6 @@ import SuperTokensError from "../../../../error";
 import { ProviderConfig } from "../../../thirdparty/types";
 import SuperTokens from "../../../../supertokens";
 import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
-import { getValidFirstFactors } from "../../../multitenancy/utils";
 
 export type Response =
     | {
@@ -41,7 +40,6 @@ export type Response =
               requiredSecondaryFactors?: string[];
               coreConfig: Record<string, unknown>;
               userCount: number;
-              validFirstFactors: string[];
           };
       }
     | {
@@ -85,14 +83,6 @@ export default async function getTenantInfo(
         (provider) => provider.config
     );
 
-    const validFirstFactors = await getValidFirstFactors({
-        firstFactorsFromCore: tenantRes.firstFactors,
-        staticFirstFactors: mtRecipe?.staticFirstFactors,
-        allAvailableFirstFactors: mtRecipe?.allAvailableFirstFactors ?? [],
-        userContext,
-        tenantId,
-    });
-
     const tenant = {
         tenantId,
         emailPassword: tenantRes.emailPassword,
@@ -105,7 +95,6 @@ export default async function getTenantInfo(
         firstFactors: tenantRes.firstFactors,
         requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
         userCount,
-        validFirstFactors,
     };
 
     return {

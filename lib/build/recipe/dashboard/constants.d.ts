@@ -13,7 +13,6 @@ export declare const USER_PASSWORD_API = "/api/user/password";
 export declare const USER_EMAIL_VERIFY_TOKEN_API = "/api/user/email/verify/token";
 export declare const SEARCH_TAGS_API = "/api/search/tags";
 export declare const DASHBOARD_ANALYTICS_API = "/api/analytics";
-export declare const TENANTS_LIST_API = "/api/tenants/list";
 export declare const USERROLES_LIST_API = "/api/userroles/roles";
 export declare const USERROLES_ROLE_API = "/api/userroles/role";
 export declare const USERROLES_PERMISSIONS_API = "/api/userroles/role/permissions";

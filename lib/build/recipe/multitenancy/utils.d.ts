@@ -5,8 +5,7 @@ export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeN
 export declare const isValidFirstFactor: (
     tenantId: string,
     factorId: string,
-    userContext: UserContext,
-    tenantInfoFromCore?: Omit<TenantConfig, "coreConfig"> | undefined
+    userContext: UserContext
 ) => Promise<
     | {
           status: "OK";
@@ -18,16 +17,14 @@ export declare const isValidFirstFactor: (
           status: "TENANT_NOT_FOUND_ERROR";
       }
 >;
-export declare const getValidFirstFactors: ({
-    firstFactorsFromCore,
-    staticFirstFactors,
+export declare function isFactorConfiguredForTenant({
+    tenantConfig,
     allAvailableFirstFactors,
-    tenantId,
-    userContext,
+    firstFactors,
+    factorId,
 }: {
-    firstFactorsFromCore: string[] | undefined;
-    staticFirstFactors: string[] | undefined;
+    tenantConfig: TenantConfig;
     allAvailableFirstFactors: string[];
-    tenantId: string;
-    userContext: UserContext;
-}) => Promise<string[]>;
+    firstFactors: string[];
+    factorId: string;
+}): boolean;

@@ -21,7 +21,6 @@ export declare type Response =
               requiredSecondaryFactors?: string[];
               coreConfig: Record<string, unknown>;
               userCount: number;
-              validFirstFactors: string[];
           };
       }
     | {

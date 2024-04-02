@@ -35,8 +35,7 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
 export const isValidFirstFactor = async function (
     tenantId: string,
     factorId: string,
-    userContext: UserContext,
-    tenantInfoFromCore?: Omit<TenantConfig, "coreConfig">
+    userContext: UserContext
 ): Promise<
     | {
           status: "OK";
@@ -53,17 +52,13 @@ export const isValidFirstFactor = async function (
         throw new Error("Should never happen");
     }
 
-    let tenantConfig = tenantInfoFromCore;
-
-    if (!tenantConfig) {
-        tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
-    }
-
-    if (tenantConfig === undefined) {
+    const tenantInfo = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
+    if (tenantInfo === undefined) {
         return {
             status: "TENANT_NOT_FOUND_ERROR",
         };
     }
+    const { status: _, ...tenantConfig } = tenantInfo;
 
     const firstFactorsFromMFA = mtRecipe.staticFirstFactors;
 
@@ -83,12 +78,41 @@ export const isValidFirstFactor = async function (
         configuredFirstFactors = mtRecipe.allAvailableFirstFactors;
     }
 
+    if (
+        isFactorConfiguredForTenant({
+            tenantConfig,
+            allAvailableFirstFactors: mtRecipe.allAvailableFirstFactors,
+            firstFactors: configuredFirstFactors,
+            factorId,
+        })
+    ) {
+        return {
+            status: "OK",
+        };
+    }
+
+    return {
+        status: "INVALID_FIRST_FACTOR_ERROR",
+    };
+};
+
+export function isFactorConfiguredForTenant({
+    tenantConfig,
+    allAvailableFirstFactors,
+    firstFactors,
+    factorId,
+}: {
+    tenantConfig: TenantConfig;
+    allAvailableFirstFactors: string[];
+    firstFactors: string[];
+    factorId: string;
+}) {
     // Here we filter the array so that we only have:
     // 1. Factors that other recipes have marked as available
     // 2. Custom factors (not in the built-in FactorIds list)
-    configuredFirstFactors = configuredFirstFactors.filter(
+    let configuredFirstFactors = firstFactors.filter(
         (factorId: string) =>
-            mtRecipe.allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)
+            allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)
     );
 
     // Filter based on enabled recipes in the core
@@ -110,56 +134,5 @@ export const isValidFirstFactor = async function (
         configuredFirstFactors = configuredFirstFactors.filter((factorId: string) => factorId !== FactorIds.THIRDPARTY);
     }
 
-    if (configuredFirstFactors.includes(factorId)) {
-        return {
-            status: "OK",
-        };
-    }
-
-    return {
-        status: "INVALID_FIRST_FACTOR_ERROR",
-    };
-};
-
-export const getValidFirstFactors = async function ({
-    firstFactorsFromCore,
-    staticFirstFactors,
-    allAvailableFirstFactors,
-    tenantId,
-    userContext,
-}: {
-    firstFactorsFromCore: string[] | undefined;
-    staticFirstFactors: string[] | undefined;
-    allAvailableFirstFactors: string[];
-    tenantId: string;
-    userContext: UserContext;
-}): Promise<string[]> {
-    let firstFactors: string[];
-
-    if (firstFactorsFromCore !== undefined) {
-        firstFactors = firstFactorsFromCore; // highest priority, config from core
-    } else if (staticFirstFactors !== undefined) {
-        firstFactors = staticFirstFactors; // next priority, static config
-    } else {
-        // Fallback to all available factors (de-duplicated)
-        firstFactors = Array.from(new Set(allAvailableFirstFactors));
-    }
-
-    // we now filter out all available first factors by checking if they are valid because
-    // we want to return the ones that can work. this would be based on what recipes are enabled
-    // on the core and also firstFactors configured in the core and supertokens.init
-    // Also, this way, in the front end, the developer can just check for firstFactors for
-    // enabled recipes in all cases irrespective of whether they are using MFA or not
-    let validFirstFactors: string[] = [];
-    for (const factorId of firstFactors) {
-        let validRes = await isValidFirstFactor(tenantId, factorId, userContext);
-        if (validRes.status === "OK") {
-            validFirstFactors.push(factorId);
-        }
-        if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
-            throw new Error("Tenant not found");
-        }
-    }
-
-    return validFirstFactors;
-};
+    return configuredFirstFactors.includes(factorId);
+}

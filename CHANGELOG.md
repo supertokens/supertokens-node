@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Creating or updating third party config for a tenant
     -   Deleting third party config for a tenant
 
+## [17.0.2] - 2024-03-20
+
+-   Remove tenants listing dashboard API and update `getTenantLoginMethodsInfo` dashboard API to remove querying core in loop and return only firstFactors.
+
+## [17.0.1] - 2024-03-08
+
+### Changes
+
+-   We now allow sign in/up even if the session user is conflicting with the current sign in/up (because of the email verification status)
+    -   This makes use-cases where an secondary factor (i.e.: otp-email) is also used as a means of verification.
+
 ## [17.0.0] - 2024-03-08
 
 ### Changes
@@ -39,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Now only supporting CDI 5.0. Compatible with core version >= 8.0
 -   Account linking now takes the active session into account.
+-   Account linking now also happens in sign in function calls (instead of sign ups and sign in API calls)
 -   Fixed the typing of the `userContext`:
     -   All functions now take `Record<string, any>` instead of `any` as `userContext`. This means that primitives (strings, numbers) are no longer allowed as `userContext`.
     -   All functions overrides that take a `userContext` parameter now get a well typed `userContext` parameter ensuring that the right object is passed to the original implementation calls
@@ -101,8 +113,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `createCodePOST`
         -   `resendCodePOST`
         -   `consumeCodePOST`
--   Custom claims:
-    -   `fetchValue` now also gets the `currentPayload` as a parameter
+-   Session claims:
+    -   The `build` function and the `fetchValue` callback of session claims now take a new `currentPayload` param.
+        -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+        -   This will affect all custom claims as well built on our base classes.
 -   `ThirdParty`:
     -   Changed the signature of the following functions:
         -   `manuallyCreateOrUpdateUser`:
@@ -244,6 +258,173 @@ const boolClaim = new BooleanClaim({
         return userContext.claimValue;
     },
 });
+```
+
+##### `build` signature change
+
+If you were using the `build` function for custom or built-in session claims, you should update the call signature to also pass the new parameter.
+
+Before:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+After:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+##### Post sign-in/up actions
+
+Since now sign in/up APIs and functions can be called with a session (e.g.: during MFA flows), you may need to add an extra check to your overrides to account for that:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                            // TODO: post sign up logic
+                        } else {
+                            // TODO: post sign in logic
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (input.session === undefined) {
+                            if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                                // TODO: post sign up logic
+                            } else {
+                                // TODO: post sign in logic
+                            }
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+##### Sign-in/up linking to the session user
+
+Sign in/up APIs and functions will now attempt to link the authenticating user to the session user if a session is available (depending on AccountLinking settings). You can disable this and get the old behaviour by:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+                    input.session = undefined;
+                    return originalImplementation.consumeCode(input);
+                }
+            }
+        }
+    }
+}),
 ```
 
 ## [16.7.4] - 2024-03-01

@@ -14,33 +14,13 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { TypeNormalisedInput } from "../../../passwordless/types";
-import { isValidFirstFactor } from "../../../multitenancy/utils";
+import { isFactorConfiguredForTenant } from "../../../multitenancy/utils";
 import { UserContext } from "../../../../types";
-import { FactorIds } from "../../../multifactorauth";
-import { ProviderConfig } from "../../../thirdparty/types";
-
-type PasswordlessContactMethod = TypeNormalisedInput["contactMethod"];
+import { TenantConfig } from "../../../multitenancy/types";
 
 type TenantLoginMethodType = {
     tenantId: string;
-    emailPassword: {
-        enabled: boolean;
-    };
-    thirdPartyEmailPasssword: {
-        enabled: boolean;
-    };
-    passwordless: {
-        enabled: boolean;
-        contactMethod?: PasswordlessContactMethod;
-    };
-    thirdPartyPasswordless: {
-        enabled: boolean;
-        contactMethod?: PasswordlessContactMethod;
-    };
-    thirdParty: {
-        enabled: boolean;
-    };
+    firstFactors: string[];
 };
 
 export type Response = {
@@ -62,18 +42,12 @@ export default async function getTenantLoginMethodsInfo(
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         const currentTenant = tenantsRes.tenants[i];
 
-        const normalisedTenantLoginMethodsInfo = await normaliseTenantLoginMethodsWithInitConfig(
-            {
-                tenantId: currentTenant.tenantId,
-                emailPassword: currentTenant.emailPassword,
-                passwordless: currentTenant.passwordless,
-                thirdParty: currentTenant.thirdParty,
-                firstFactors: currentTenant.firstFactors,
-            },
-            userContext
-        );
+        const loginMethods = normaliseTenantLoginMethodsWithInitConfig(currentTenant);
 
-        finalTenants.push(normalisedTenantLoginMethodsInfo);
+        finalTenants.push({
+            tenantId: currentTenant.tenantId,
+            firstFactors: loginMethods,
+        });
     }
 
     return {
@@ -82,42 +56,7 @@ export default async function getTenantLoginMethodsInfo(
     };
 }
 
-async function normaliseTenantLoginMethodsWithInitConfig(
-    tenantDetailsFromCore: {
-        tenantId: string;
-        emailPassword: {
-            enabled: boolean;
-        };
-        passwordless: {
-            enabled: boolean;
-        };
-        thirdParty: {
-            enabled: boolean;
-            providers: ProviderConfig[];
-        };
-        firstFactors?: string[];
-    },
-    userContext: UserContext
-): Promise<TenantLoginMethodType> {
-    const normalisedTenantLoginMethodsInfo: TenantLoginMethodType = {
-        tenantId: tenantDetailsFromCore.tenantId,
-        emailPassword: {
-            enabled: false,
-        },
-        thirdPartyEmailPasssword: {
-            enabled: false,
-        },
-        passwordless: {
-            enabled: false,
-        },
-        thirdPartyPasswordless: {
-            enabled: false,
-        },
-        thirdParty: {
-            enabled: false,
-        },
-    };
-
+function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: TenantConfig): string[] {
     let firstFactors: string[];
 
     let mtInstance = MultitenancyRecipe.getInstanceOrThrowError();
@@ -137,41 +76,17 @@ async function normaliseTenantLoginMethodsWithInitConfig(
     // enabled recipes in all cases irrespective of whether they are using MFA or not
     let validFirstFactors: string[] = [];
     for (const factorId of firstFactors) {
-        let validRes = await isValidFirstFactor(
-            tenantDetailsFromCore.tenantId,
-            factorId,
-            userContext,
-            tenantDetailsFromCore
-        );
-        if (validRes.status === "OK") {
+        if (
+            isFactorConfiguredForTenant({
+                tenantConfig: tenantDetailsFromCore,
+                allAvailableFirstFactors: mtInstance.allAvailableFirstFactors,
+                firstFactors: firstFactors,
+                factorId,
+            })
+        ) {
             validFirstFactors.push(factorId);
         }
-        if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
-            throw new Error("Tenant not found");
-        }
     }
 
-    if (validFirstFactors.includes(FactorIds.EMAILPASSWORD)) {
-        normalisedTenantLoginMethodsInfo.emailPassword.enabled = true;
-    }
-    if (validFirstFactors.includes(FactorIds.THIRDPARTY)) {
-        normalisedTenantLoginMethodsInfo.thirdParty.enabled = true;
-    }
-    const pwlessEmailEnabled =
-        validFirstFactors.includes(FactorIds.OTP_EMAIL) || validFirstFactors.includes(FactorIds.LINK_EMAIL);
-    const pwlessPhoneEnabled =
-        validFirstFactors.includes(FactorIds.OTP_PHONE) || validFirstFactors.includes(FactorIds.LINK_PHONE);
-    const pwlessEnabled = pwlessEmailEnabled || pwlessPhoneEnabled;
-
-    if (pwlessEnabled) {
-        normalisedTenantLoginMethodsInfo.passwordless.enabled = true;
-    }
-
-    if (pwlessEmailEnabled) {
-        normalisedTenantLoginMethodsInfo.passwordless.contactMethod = pwlessPhoneEnabled ? "EMAIL_OR_PHONE" : "EMAIL";
-    } else if (pwlessPhoneEnabled) {
-        normalisedTenantLoginMethodsInfo.passwordless.contactMethod = "PHONE";
-    }
-
-    return normalisedTenantLoginMethodsInfo;
+    return validFirstFactors;
 }

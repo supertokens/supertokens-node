@@ -26,7 +26,6 @@ import {
     SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
-    TENANTS_LIST_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -83,7 +82,6 @@ import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
 import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
-import listTenants from "./api/multitenancy/listTenants";
 import getTenantLoginMethodsInfo from "./api/multitenancy/getTenantLoginMethodsInfo";
 import getTenantInfo from "./api/multitenancy/getTenantInfo";
 import deleteTenant from "./api/multitenancy/deleteTenant";
@@ -280,12 +278,6 @@ export default class Recipe extends RecipeModule {
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_ANALYTICS_API)),
                 disabled: false,
                 method: "post",
-            },
-            {
-                id: TENANTS_LIST_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANTS_LIST_API)),
-                disabled: false,
-                method: "get",
             },
             {
                 id: UNLINK_USER,
@@ -493,8 +485,6 @@ export default class Recipe extends RecipeModule {
             apiFunction = signOut;
         } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
             apiFunction = analyticsPost;
-        } else if (id === TENANTS_LIST_API) {
-            apiFunction = listTenants;
         } else if (id === UNLINK_USER) {
             apiFunction = userUnlink;
         } else if (id === USERROLES_LIST_API) {
