@@ -17,13 +17,6 @@ import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { Querier } from "../../../querier";
 import SuperTokens from "../../../supertokens";
-import EmailPassword from "../../../recipe/emailpassword/recipe";
-import Passwordless from "../../../recipe/passwordless/recipe";
-import ThirdParty from "../../../recipe/thirdparty/recipe";
-import MultiFactorAuth from "../../../recipe/multifactorauth/recipe";
-import TOTP from "../../../recipe/totp/recipe";
-import ThirdPartyEmailPassword from "../../../recipe/thirdpartyemailpassword/recipe";
-import ThirdPartyPasswordless from "../../../recipe/thirdpartypasswordless/recipe";
 import { maxVersion } from "../../../utils";
 import { DASHBOARD_API } from "../constants";
 import { APIInterface, AuthMode } from "../types";
@@ -61,63 +54,6 @@ export default function getAPIImplementation(): APIInterface {
                 isSearchEnabled = true;
             }
 
-            const initializedRecipes = {
-                emailPassword: false,
-                passwordless: {
-                    enabled: false,
-                    contactMethod: "",
-                    flowType: "",
-                },
-                thirdParty: false,
-                mfa: false,
-                totp: false,
-            };
-
-            try {
-                EmailPassword.getInstanceOrThrowError();
-                initializedRecipes.emailPassword = true;
-            } catch (_) {}
-
-            try {
-                const instance = Passwordless.getInstanceOrThrowError();
-                initializedRecipes.passwordless = {
-                    enabled: true,
-                    contactMethod: instance.config.contactMethod,
-                    flowType: instance.config.flowType,
-                };
-            } catch (_) {}
-
-            try {
-                ThirdParty.getInstanceOrThrowError();
-                initializedRecipes.thirdParty = true;
-            } catch (_) {}
-
-            try {
-                MultiFactorAuth.getInstanceOrThrowError();
-                initializedRecipes.mfa = true;
-            } catch (_) {}
-
-            try {
-                TOTP.getInstanceOrThrowError();
-                initializedRecipes.totp = true;
-            } catch (_) {}
-
-            try {
-                ThirdPartyEmailPassword.getInstanceOrThrowError();
-                initializedRecipes.thirdParty = true;
-                initializedRecipes.emailPassword = true;
-            } catch (_) {}
-
-            try {
-                const instance = ThirdPartyPasswordless.getInstanceOrThrowError();
-                initializedRecipes.thirdParty = true;
-                initializedRecipes.passwordless = {
-                    enabled: true,
-                    contactMethod: instance.config.contactMethod,
-                    flowType: instance.config.flowType,
-                };
-            } catch (_) {}
-
             const htmlContent = `
             '<div class="csp-screen-container">' +
             '<div>' +
@@ -145,7 +81,6 @@ export default function getAPIImplementation(): APIInterface {
                         window.connectionURI = "${connectionURI}"
                         window.authMode = "${authMode}"
                         window.isSearchEnabled = "${isSearchEnabled}"
-                        window.initializedRecipes = ${JSON.stringify(initializedRecipes)}
                     </script>
                     
                     <style>
