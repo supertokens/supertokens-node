@@ -22,12 +22,12 @@ export type Response = {
 
 export default async function createOrUpdateThirdPartyConfig(
     _: APIInterface,
-    __: string,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
-    const { tenantId, providerConfig } = requestBody;
+    const { providerConfig } = requestBody;
 
     const thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
         tenantId,

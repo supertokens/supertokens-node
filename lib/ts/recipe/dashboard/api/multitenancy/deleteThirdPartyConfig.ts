@@ -23,11 +23,10 @@ export type Response = {
 
 export default async function deleteThirdPartyConfig(
     _: APIInterface,
-    __: string,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const tenantId = options.req.getKeyValueFromQuery("tenantId");
     const thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
 
     if (typeof tenantId !== "string" || tenantId === "" || typeof thirdPartyId !== "string" || thirdPartyId === "") {

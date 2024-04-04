@@ -14,7 +14,6 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
-import SuperTokensError from "../../../../error";
 
 export type Response = {
     status: "OK";
@@ -23,19 +22,10 @@ export type Response = {
 
 export default async function deleteTenant(
     _: APIInterface,
-    __: string,
-    options: APIOptions,
+    tenantId: string,
+    __: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const tenantId = options.req.getKeyValueFromQuery("tenantId");
-
-    if (typeof tenantId !== "string" || tenantId === "") {
-        throw new SuperTokensError({
-            message: "Missing required parameter 'tenantId'",
-            type: SuperTokensError.BAD_INPUT_ERROR,
-        });
-    }
-
     const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);
 
     return deleteTenantRes;

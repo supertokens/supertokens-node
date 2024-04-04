@@ -6,7 +6,7 @@ export declare type Response = {
 };
 export default function deleteThirdPartyConfig(
     _: APIInterface,
-    __: string,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response>;

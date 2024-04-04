@@ -15,7 +15,6 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
-import SuperTokensError from "../../../../error";
 import { ProviderConfig } from "../../../thirdparty/types";
 import SuperTokens from "../../../../supertokens";
 import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
@@ -48,19 +47,10 @@ export type Response =
 
 export default async function getTenantInfo(
     _: APIInterface,
-    __: string,
-    options: APIOptions,
+    tenantId: string,
+    __: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const tenantId = options.req.getKeyValueFromQuery("tenantId");
-
-    if (typeof tenantId !== "string" || tenantId === "") {
-        throw new SuperTokensError({
-            message: "Missing required parameter 'tenantId'",
-            type: SuperTokensError.BAD_INPUT_ERROR,
-        });
-    }
-
     let tenantRes;
 
     try {

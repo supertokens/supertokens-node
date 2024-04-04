@@ -6,7 +6,7 @@ export declare type Response = {
 };
 export default function deleteTenant(
     _: APIInterface,
-    __: string,
-    options: APIOptions,
+    tenantId: string,
+    __: APIOptions,
     userContext: any
 ): Promise<Response>;
