@@ -8,23 +8,21 @@ import { verifySession } from "../../recipe/session/framework/express";
 import { middleware, errorHandler, SessionRequest } from "../../framework/express";
 import customFramework, { CollectingResponse, PreParsedRequest } from "../../framework/custom";
 import NextJS from "../../nextjs";
-import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import ThirdParty from "../../recipe/thirdparty";
 import Multitenancy from "../../recipe/multitenancy";
 import Passwordless from "../../recipe/passwordless";
-import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
-import { SMTPService as SMTPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
+import { SMTPService as SMTPServiceTPP } from "../../recipe/passwordless/emaildelivery";
 import { SMTPService as SMTPServiceP } from "../../recipe/passwordless/emaildelivery";
-import { SMTPService as SMTPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
+import { SMTPService as SMTPServiceTPEP } from "../../recipe/emailpassword/emaildelivery";
 import { SMTPService as SMTPServiceEP } from "../../recipe/emailpassword/emaildelivery";
 import {
     TwilioService as TwilioServiceTPP,
     SupertokensService as SupertokensServiceTPP,
-} from "../../recipe/thirdpartypasswordless/smsdelivery";
+} from "../../recipe/passwordless/smsdelivery";
 import {
     TwilioService as TwilioServiceP,
     SupertokensService as SupertokensServiceP,
-} from "../../recipe/thirdpartypasswordless/smsdelivery";
+} from "../../recipe/passwordless/smsdelivery";
 import UserMetadata from "../../recipe/usermetadata";
 import { BooleanClaim, PrimitiveClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
@@ -130,15 +128,20 @@ UserMetadata.getUserMetadata("xyz").then((data) => {
     console.log(firstName);
 });
 
-ThirdPartyPasswordless.init({
-    providers: [
-        {
-            config: {
-                thirdPartyId: "google",
-                clients: [{ clientId: "" }],
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "google",
+                    clients: [{ clientId: "" }],
+                },
             },
-        },
-    ],
+        ],
+    },
+});
+
+Passwordless.init({
     smsDelivery: {
         override: (oI) => {
             return {
@@ -174,7 +177,7 @@ ThirdPartyPasswordless.init({
     },
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     contactMethod: "EMAIL",
     emailDelivery: {
         override: (oI) => {
@@ -199,7 +202,7 @@ ThirdPartyPasswordless.init({
     },
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     contactMethod: "EMAIL_OR_PHONE",
     flowType: "USER_INPUT_CODE",
     async validateEmailAddress(email, tenantId) {
@@ -210,7 +213,7 @@ ThirdPartyPasswordless.init({
     },
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     emailDelivery: {
         override: (oI) => {
             return {
@@ -225,7 +228,7 @@ ThirdPartyPasswordless.init({
     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     smsDelivery: {
         override: (oI) => {
             return {
@@ -331,15 +334,7 @@ Passwordless.init({
     flowType: "MAGIC_LINK",
 });
 
-ThirdPartyPasswordless.init({
-    providers: [
-        {
-            config: {
-                thirdPartyId: "google",
-                clients: [{ clientId: "" }],
-            },
-        },
-    ],
+Passwordless.init({
     smsDelivery: {
         service: new TwilioServiceTPP({
             twilioSettings: {
@@ -403,15 +398,7 @@ ThirdPartyPasswordless.init({
     },
 });
 
-ThirdPartyPasswordless.init({
-    providers: [
-        {
-            config: {
-                thirdPartyId: "google",
-                clients: [{ clientId: "" }],
-            },
-        },
-    ],
+Passwordless.init({
     smsDelivery: {
         service: new SupertokensServiceTPP(""),
         override: (oI) => {
@@ -451,7 +438,7 @@ ThirdPartyPasswordless.init({
     },
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     contactMethod: "EMAIL",
     emailDelivery: {
         service: new SMTPServiceTPP({
@@ -509,7 +496,7 @@ ThirdPartyPasswordless.init({
     },
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     emailDelivery: {
         service: new SMTPServiceTPP({
             smtpSettings: {
@@ -535,7 +522,7 @@ ThirdPartyPasswordless.init({
     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     smsDelivery: {
         service: new TwilioServiceTPP({
             twilioSettings: {
@@ -560,7 +547,7 @@ ThirdPartyPasswordless.init({
     flowType: "MAGIC_LINK",
 });
 
-ThirdPartyPasswordless.init({
+Passwordless.init({
     smsDelivery: {
         service: new SupertokensServiceTPP(""),
     },
@@ -828,7 +815,7 @@ EmailPassword.init({
     },
 });
 
-ThirdPartyEmailPassword.init({
+EmailPassword.init({
     emailDelivery: {
         service: new SMTPServiceTPEP({
             smtpSettings: {
@@ -1263,13 +1250,35 @@ Session.init({
     useDynamicAccessTokenSigningKey: false,
 });
 
-ThirdPartyEmailPassword.init({
+EmailPassword.init({
     override: {
         apis: (oI) => {
             return {
                 ...oI,
-                thirdPartySignInUpPOST: async (input) => {
-                    if (oI.thirdPartySignInUpPOST === undefined) {
+                signInPOST: async (input) => {
+                    if (oI.signInPOST === undefined) {
+                        throw Error("original implementation of emailPasswordSignInPOST API is undefined");
+                    }
+                    return oI.signInPOST(input);
+                },
+                signUpPOST: async (input) => {
+                    if (oI.signUpPOST === undefined) {
+                        throw Error("original implementation of emailPasswordSignUpPOST API is undefined");
+                    }
+                    return oI.signUpPOST(input);
+                },
+            };
+        },
+    },
+});
+
+ThirdParty.init({
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+                signInUpPOST: async (input) => {
+                    if (oI.signInUpPOST === undefined) {
                         throw Error("original implementation of thirdPartySignInUpPOST API is undefined");
                     }
                     let body: any = await input.options.req.getJSONBody();
@@ -1289,19 +1298,7 @@ ThirdPartyEmailPassword.init({
                     input.options.res.setHeader("key", "value", false);
                     input.options.res.setStatusCode(200);
                     let wr: boolean = input.options.res.wrapperUsed;
-                    return oI.thirdPartySignInUpPOST(input);
-                },
-                emailPasswordSignInPOST: async (input) => {
-                    if (oI.emailPasswordSignInPOST === undefined) {
-                        throw Error("original implementation of emailPasswordSignInPOST API is undefined");
-                    }
-                    return oI.emailPasswordSignInPOST(input);
-                },
-                emailPasswordSignUpPOST: async (input) => {
-                    if (oI.emailPasswordSignUpPOST === undefined) {
-                        throw Error("original implementation of emailPasswordSignUpPOST API is undefined");
-                    }
-                    return oI.emailPasswordSignUpPOST(input);
+                    return oI.signInUpPOST(input);
                 },
             };
         },
@@ -1464,7 +1461,7 @@ EmailVerification.sendEmail({
     },
 });
 
-ThirdPartyEmailPassword.sendEmail({
+EmailPassword.sendEmail({
     tenantId: "public",
     type: "PASSWORD_RESET",
     passwordResetLink: "",
@@ -1474,7 +1471,7 @@ ThirdPartyEmailPassword.sendEmail({
         recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
 });
-ThirdPartyEmailPassword.sendEmail({
+EmailPassword.sendEmail({
     tenantId: "public",
     type: "PASSWORD_RESET",
     passwordResetLink: "",
@@ -1486,7 +1483,7 @@ ThirdPartyEmailPassword.sendEmail({
     userContext: {} as UserContext,
 });
 
-ThirdPartyPasswordless.sendEmail({
+Passwordless.sendEmail({
     tenantId: "public",
     codeLifetime: 234,
     email: "",
@@ -1496,7 +1493,7 @@ ThirdPartyPasswordless.sendEmail({
     userInputCode: "",
     urlWithLinkCode: "",
 });
-ThirdPartyPasswordless.sendEmail({
+Passwordless.sendEmail({
     tenantId: "public",
     codeLifetime: 234,
     email: "",
@@ -1506,7 +1503,7 @@ ThirdPartyPasswordless.sendEmail({
     userContext: {} as UserContext,
 });
 
-ThirdPartyPasswordless.sendSms({
+Passwordless.sendSms({
     tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
@@ -1516,7 +1513,7 @@ ThirdPartyPasswordless.sendSms({
     userInputCode: "",
     urlWithLinkCode: "",
 });
-ThirdPartyPasswordless.sendSms({
+Passwordless.sendSms({
     tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
@@ -1836,7 +1833,7 @@ async function refreshSessionWithoutRequestResponse(req: express.Request, resp: 
 }
 
 ThirdParty.init();
-ThirdPartyEmailPassword.init({
+EmailPassword.init({
     signUpFeature: {
         formFields: [
             {
@@ -1854,7 +1851,7 @@ ThirdPartyEmailPassword.init({
         ],
     },
 });
-ThirdPartyPasswordless.init({
+Passwordless.init({
     contactMethod: "EMAIL",
     flowType: "MAGIC_LINK",
 });
@@ -1890,19 +1887,14 @@ async function accountLinkingFuncsTest() {
     // @ts-expect-error
     if (signUpResp.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpepSignUpResp = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "asdf@asdf.asfd", "testpw");
+    const tpepSignUpResp = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw");
     // @ts-expect-error
     if (tpepSignUpResp.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
     const signUpRespWithSession = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw", session);
     if (signUpRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpepSignUpRespWithSession = await ThirdPartyEmailPassword.emailPasswordSignUp(
-        "public",
-        "asdf@asdf.asfd",
-        "testpw",
-        session
-    );
+    const tpepSignUpRespWithSession = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw", session);
     if (tpepSignUpRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
     if (signUpResp.status !== "OK") {
@@ -1913,19 +1905,11 @@ async function accountLinkingFuncsTest() {
     // @ts-expect-error
     if (signInResp.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpepSignInResp = await ThirdPartyEmailPassword.emailPasswordSignIn("public", "asdf@asdf.asfd", "testpw");
-    // @ts-expect-error
-    if (tpepSignInResp.status === "LINKING_TO_SESSION_USER_FAILED") {
-    }
+    const tpepSignInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw");
     const signInRespWithSession = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", session);
     if (signInRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpepSignInRespWithSession = await ThirdPartyEmailPassword.emailPasswordSignIn(
-        "public",
-        "asdf@asdf.asfd",
-        "testpw",
-        session
-    );
+    const tpepSignInRespWithSession = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", session);
     if (tpepSignInRespWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
 
@@ -1989,7 +1973,7 @@ async function accountLinkingFuncsTest() {
         return tpSignUp;
     }
 
-    const tpEpSignInUp = await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+    const tpEpSignInUp = await ThirdParty.manuallyCreateOrUpdateUser(
         "public",
         "mytp",
         "tpuser",
@@ -1999,7 +1983,7 @@ async function accountLinkingFuncsTest() {
     // @ts-expect-error
     if (tpEpSignInUp.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpEpSignInUpWithSession = await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+    const tpEpSignInUpWithSession = await ThirdParty.manuallyCreateOrUpdateUser(
         "public",
         "mytp",
         "tpuser",
@@ -2009,7 +1993,7 @@ async function accountLinkingFuncsTest() {
     );
     if (tpEpSignInUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpPwlessSignInUp = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+    const tpPwlessSignInUp = await ThirdParty.manuallyCreateOrUpdateUser(
         "public",
         "mytp",
         "tpuser",
@@ -2019,7 +2003,7 @@ async function accountLinkingFuncsTest() {
     // @ts-expect-error
     if (tpPwlessSignInUp.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpPwlessSignInUpWithSession = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+    const tpPwlessSignInUpWithSession = await ThirdParty.manuallyCreateOrUpdateUser(
         "public",
         "mytp",
         "tpuser",
@@ -2029,7 +2013,7 @@ async function accountLinkingFuncsTest() {
     );
     if (tpPwlessSignInUpWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const consumeCode = await ThirdPartyPasswordless.consumeCode({
+    const consumeCode = await Passwordless.consumeCode({
         linkCode: "asdf",
         preAuthSessionId: "asdf",
         tenantId: "public",
@@ -2037,7 +2021,7 @@ async function accountLinkingFuncsTest() {
     // @ts-expect-error
     if (consumeCode.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const consumeCodeWithSession = await ThirdPartyPasswordless.consumeCode({
+    const consumeCodeWithSession = await Passwordless.consumeCode({
         linkCode: "asdf",
         preAuthSessionId: "asdf",
         tenantId: "public",
@@ -2045,7 +2029,7 @@ async function accountLinkingFuncsTest() {
     });
     if (consumeCodeWithSession.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpPwlessConsumeCode = await ThirdPartyPasswordless.consumeCode({
+    const tpPwlessConsumeCode = await Passwordless.consumeCode({
         linkCode: "asdf",
         preAuthSessionId: "asdf",
         tenantId: "public",
@@ -2053,7 +2037,7 @@ async function accountLinkingFuncsTest() {
     // @ts-expect-error
     if (tpPwlessConsumeCode.status === "LINKING_TO_SESSION_USER_FAILED") {
     }
-    const tpPwlessConsumeCodeWithSession = await ThirdPartyPasswordless.consumeCode({
+    const tpPwlessConsumeCodeWithSession = await Passwordless.consumeCode({
         linkCode: "asdf",
         preAuthSessionId: "asdf",
         tenantId: "public",
@@ -2275,7 +2259,7 @@ EmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
     }
 });
 
-ThirdPartyEmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
+EmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
     // @ts-expect-error
     if (resp.status === "EMAIL_ALREADY_EXISTS_ERROR") {
     }

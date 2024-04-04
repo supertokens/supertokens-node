@@ -16,9 +16,7 @@
 import { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import EmailPassword from "../../../../emailpassword";
-import ThirPartyEmailPassword from "../../../../thirdpartyemailpassword";
 import EmailPasswordRecipe from "../../../../emailpassword/recipe";
-import ThridPartyEmailPasswordRecipe from "../../../../thirdpartyemailpassword/recipe";
 import { User } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 
@@ -46,20 +44,13 @@ export const createEmailPasswordUser = async (
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {
-    let emailPasswordOrThirdpartyEmailPassword:
-        | EmailPasswordRecipe
-        | ThridPartyEmailPasswordRecipe
-        | undefined = undefined;
+    let emailPassword: EmailPasswordRecipe | undefined = undefined;
     try {
-        emailPasswordOrThirdpartyEmailPassword = EmailPasswordRecipe.getInstanceOrThrowError();
+        emailPassword = EmailPasswordRecipe.getInstanceOrThrowError();
     } catch (error) {
-        try {
-            emailPasswordOrThirdpartyEmailPassword = ThridPartyEmailPasswordRecipe.getInstanceOrThrowError();
-        } catch {
-            return {
-                status: "FEATURE_NOT_ENABLED_ERROR",
-            };
-        }
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
     }
 
     const requestBody = await options.req.getJSONBody();
@@ -81,9 +72,7 @@ export const createEmailPasswordUser = async (
         });
     }
 
-    const emailFormField = emailPasswordOrThirdpartyEmailPassword.config.signUpFeature.formFields.find(
-        (field) => field.id === "email"
-    )!; // using non-null assertion as the field with id email will always exists in formFields array.
+    const emailFormField = emailPassword.config.signUpFeature.formFields.find((field) => field.id === "email")!; // using non-null assertion as the field with id email will always exists in formFields array.
 
     const validateEmailError = await emailFormField.validate(email, tenantId, userContext);
 
@@ -94,9 +83,7 @@ export const createEmailPasswordUser = async (
         };
     }
 
-    const passwordFormField = emailPasswordOrThirdpartyEmailPassword.config.signUpFeature.formFields.find(
-        (field) => field.id === "password"
-    )!; // using non-null assertion as the field with id password will always exists in formFields array.
+    const passwordFormField = emailPassword.config.signUpFeature.formFields.find((field) => field.id === "password")!; // using non-null assertion as the field with id password will always exists in formFields array.
 
     const validatePasswordError = await passwordFormField.validate(password, tenantId, userContext);
 
@@ -107,27 +94,13 @@ export const createEmailPasswordUser = async (
         };
     }
 
-    if (emailPasswordOrThirdpartyEmailPassword.getRecipeId() === "emailpassword") {
-        const response = await EmailPassword.signUp(tenantId, email, password);
-        // For some reason TS complains if I check the other status codes then throw...
-        if (response.status === "OK" || response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-            return response;
-        } else {
-            throw new Error(
-                "This should never happen: EmailPassword.signUp threw a session user related error without passing a session"
-            );
-        }
+    const response = await EmailPassword.signUp(tenantId, email, password);
+    // For some reason TS complains if I check the other status codes then throw...
+    if (response.status === "OK" || response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+        return response;
     } else {
-        // not checking explicitly if the recipeId is thirdpartyemailpassword or not because at this point of time it should be thirdpartyemailpassword.
-
-        const response = await ThirPartyEmailPassword.emailPasswordSignUp(tenantId, email, password);
-        // For some reason TS complains if I check the other status codes then throw...
-        if (response.status === "OK" || response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-            return response;
-        } else {
-            throw new Error(
-                "This should never happen: EmailPassword.signUp threw a session user related error without passing a session"
-            );
-        }
+        throw new Error(
+            "This should never happen: EmailPassword.signUp threw a session user related error without passing a session"
+        );
     }
 };

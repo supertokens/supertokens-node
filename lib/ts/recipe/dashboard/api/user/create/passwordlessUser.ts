@@ -16,9 +16,7 @@
 import { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import Passwordless from "../../../../passwordless";
-import ThirdPartyPasswordless from "../../../../thirdpartypasswordless";
 import PasswordlessRecipe from "../../../../passwordless/recipe";
-import ThirdPartyPasswordlessRecipe from "../../../../thirdpartypasswordless/recipe";
 import { User } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 import { parsePhoneNumber } from "libphonenumber-js/max";
@@ -53,13 +51,9 @@ export const createPasswordlessUser = async (
     try {
         passwordlessRecipe = PasswordlessRecipe.getInstanceOrThrowError();
     } catch (_) {
-        try {
-            passwordlessRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().passwordlessRecipe;
-        } catch (_) {
-            return {
-                status: "FEATURE_NOT_ENABLED_ERROR",
-            };
-        }
+        return {
+            status: "FEATURE_NOT_ENABLED_ERROR",
+        };
     }
 
     const requestBody = await options.req.getJSONBody();
@@ -117,16 +111,7 @@ export const createPasswordlessUser = async (
         }
     }
 
-    if (passwordlessRecipe.getRecipeId() === "thirdpartypasswordless") {
-        const response = await ThirdPartyPasswordless.passwordlessSignInUp(
-            email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
-        );
-        return response;
-    } else {
-        // not checking explicitly if the recipeId is passwordless or not because at this point of time it should be passowordless.
-        const response = await Passwordless.signInUp(
-            email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
-        );
-        return response;
-    }
+    return await Passwordless.signInUp(
+        email !== undefined ? { email, tenantId } : { phoneNumber: phoneNumber!, tenantId }
+    );
 };
