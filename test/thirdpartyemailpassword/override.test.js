@@ -29,7 +29,6 @@ let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 const { Querier } = require("../../lib/build/querier");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let AccountLinking = require("../../recipe/accountlinking");
 const express = require("express");
 const request = require("supertest");

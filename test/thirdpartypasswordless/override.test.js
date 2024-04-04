@@ -30,7 +30,6 @@ let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 const { Querier } = require("../../lib/build/querier");
-let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
 const express = require("express");
 const request = require("supertest");
 let nock = require("nock");

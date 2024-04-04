@@ -17,8 +17,6 @@ const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("../
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-let ThirdPartyEmailPasswordRecipe = require("../../lib/build/recipe/thirdpartyemailpassword/recipe").default;
 
 describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]")}`, function () {
     before(function () {

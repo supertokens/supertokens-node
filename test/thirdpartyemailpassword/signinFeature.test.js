@@ -28,7 +28,6 @@ let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const express = require("express");
 const request = require("supertest");
 let nock = require("nock");

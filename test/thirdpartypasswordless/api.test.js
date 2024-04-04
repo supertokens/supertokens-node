@@ -15,7 +15,6 @@
 const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;

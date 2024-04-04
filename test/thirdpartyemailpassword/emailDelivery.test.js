@@ -19,11 +19,6 @@ let assert = require("assert");
 var url = require("url");
 let { ProcessState } = require("../../lib/build/processState");
 const EmailVerification = require("../../recipe/emailverification");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-let createResetPasswordLink = require("../../lib/build/recipe/thirdpartyemailpassword/index.js")
-    .createResetPasswordLink;
-let sendResetPasswordEmail = require("../../lib/build/recipe/thirdpartyemailpassword/index.js").sendResetPasswordEmail;
-let { SMTPService } = require("../../recipe/thirdpartyemailpassword/emaildelivery");
 let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");

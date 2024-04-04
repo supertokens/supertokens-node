@@ -25,7 +25,6 @@ const {
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");

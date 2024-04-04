@@ -21,7 +21,6 @@ let { ProcessState } = require("../../lib/build/processState");
 const SuperTokens = require("../../");
 const Multitenancy = require("../../recipe/multitenancy");
 const EmailPassword = require("../../recipe/emailpassword");
-const ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const Passwordless = require("../../recipe/passwordless");
 const MultifactorAuth = require("../../recipe/multifactorauth");
 const Session = require("../../recipe/session");
@@ -86,7 +85,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
-                    ThirdPartyEmailPassword.init(),
+                    EmailPassword.init(),
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
@@ -120,7 +119,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
-                    ThirdPartyEmailPassword.init(),
+                    EmailPassword.init(),
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",

@@ -24,7 +24,6 @@ const {
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
 const EmailVerification = require("../../lib/build/recipe/emailverification");
 let nock = require("nock");
 const express = require("express");

@@ -26,7 +26,6 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
 let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}`, function () {

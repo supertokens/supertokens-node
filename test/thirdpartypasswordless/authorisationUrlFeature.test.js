@@ -16,7 +16,6 @@ const { printPath, setupST, startST, killAllST, cleanST, isCDIVersionCompatible 
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyPasswordlessRecipe = require("../../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let Multitenancy = require("../../lib/build/recipe/multitenancy");
 let nock = require("nock");
 const express = require("express");

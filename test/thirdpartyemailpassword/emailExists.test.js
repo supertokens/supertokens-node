@@ -18,7 +18,6 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 const { Querier } = require("../../lib/build/querier");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const request = require("supertest");
 const express = require("express");
 let bodyParser = require("body-parser");
