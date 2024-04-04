@@ -15,6 +15,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
+import { QuerierError } from "../../../../QuerierError";
 
 export type Response =
     | {
@@ -23,6 +24,10 @@ export type Response =
       }
     | {
           status: "MULTITENANCY_NOT_ENABLED_IN_CORE";
+      }
+    | {
+          status: "INVALID_TENANT_ID";
+          message: string;
       };
 
 export default async function createOrUpdateTenant(
@@ -45,11 +50,16 @@ export default async function createOrUpdateTenant(
     try {
         tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
     } catch (err) {
-        // If the error message contains status 402,
-        // it means that multitenancy is not enabled
-        if ((err as Error).message.includes("402")) {
+        const error = err as QuerierError;
+        if (error.statusCode === 402) {
             return {
                 status: "MULTITENANCY_NOT_ENABLED_IN_CORE",
+            };
+        }
+        if (error.statusCode === 400) {
+            return {
+                status: "INVALID_TENANT_ID",
+                message: error.errorMessageFromCore,
             };
         }
         throw err;

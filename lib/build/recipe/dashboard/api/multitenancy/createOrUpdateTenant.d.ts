@@ -7,6 +7,10 @@ export declare type Response =
       }
     | {
           status: "MULTITENANCY_NOT_ENABLED_IN_CORE";
+      }
+    | {
+          status: "INVALID_TENANT_ID";
+          message: string;
       };
 export default function createOrUpdateTenant(
     _: APIInterface,
