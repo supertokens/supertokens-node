@@ -24,6 +24,7 @@ let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
+let url = require("url");
 
 describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]")}`, function () {
     beforeEach(async function () {
@@ -888,7 +889,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
 
         app.use(errorHandler());
 
-        user = await EmailPassword.emailPasswordSignUp("public", "test@example.com", "password1234");
+        user = await EmailPassword.signUp("public", "test@example.com", "password1234");
         resp = await EmailPassword.sendResetPasswordEmail("public", user.user.id, "test@example.com");
         assert(resp !== undefined);
         assert(resp.status === "OK");
@@ -927,7 +928,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         assert(resp !== undefined);
         assert(resp.status === "UNKNOWN_USER_ID_ERROR");
 
-        user = await EmailPassword.emailPasswordSignUp("public", "test@example.com", "password1234");
+        user = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
         try {
             await EmailPassword.sendResetPasswordEmail("invalidTenantID", user.user.id, "test@example.com");
