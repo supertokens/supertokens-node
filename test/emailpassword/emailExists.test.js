@@ -56,7 +56,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
     });
 
     // disable the email exists API, and check that calling it returns a 404.
-    it("test that if disableing api, the default email exists API does not work", async function () {
+    it("test that if disabling api, the default email exists API does not work", async function () {
         const connectionURI = await startST();
         STExpress.init({
             supertokens: {

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -24,6 +24,7 @@ const request = require("supertest");
 let Session = require("../../recipe/session");
 const EmailVerification = require("../../recipe/emailverification");
 let { middleware, errorHandler } = require("../../framework/express");
+let EmailPassword = require("../../recipe/emailpassword");
 
 describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")}`, function () {
     before(function () {
@@ -845,5 +846,210 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
         );
         assert.strictEqual(response8.statusCode, 200);
+    });
+
+    it("test handlePostSignUpIn gets set correctly", async function () {
+        const connectionURI = await startST();
+
+        process.env.userId = "";
+        process.env.loginType = "";
+
+        assert.strictEqual(process.env.userId, "");
+        assert.strictEqual(process.env.loginType, "");
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirdParty.init({
+                    providers: [this.customProvider1],
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    if (response.status === "OK") {
+                                        process.env.userId = response.user.id;
+                                        process.env.loginType = "thirdparty";
+                                    }
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
+
+        let response1 = await request(app)
+            .post("/auth/signinup")
+            .send({
+                thirdPartyId: "custom",
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        code: "abcdefghj",
+                    },
+                },
+            });
+
+        assert.strictEqual(process.env.userId, response1.body.user.id);
+        assert.strictEqual(process.env.loginType, "thirdparty");
+    });
+
+    it("test minimum config with one provider", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        nock("https://test.com").post("/oauth/token").times(1).reply(200, {});
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.body.status, "OK");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
+
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
+            true
+        );
+    });
+
+    it("test getUserCount and pagination works fine", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init(),
+                EmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.7") === "2.7") {
+            // we don't run the tests below for older versions of the core since it
+            // was introduced in >= 2.8 CDI
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        assert((await STExpress.getUserCount()) === 0);
+
+        await signUPRequest(app, "random@gmail.com", "validpass123");
+
+        assert((await STExpress.getUserCount()) === 1);
+        assert((await STExpress.getUserCount(["emailpassword"])) === 1);
+        assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 1);
+
+        await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "randomUserId", "test@example.com", false);
+
+        assert((await STExpress.getUserCount()) === 2);
+        assert((await STExpress.getUserCount(["emailpassword"])) === 1);
+        assert((await STExpress.getUserCount(["thirdparty"])) === 1);
+        assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 2);
+
+        await signUPRequest(app, "random1@gmail.com", "validpass123");
+
+        let usersOldest = await STExpress.getUsersOldestFirst({ tenantId: "public" });
+        assert(usersOldest.nextPaginationToken === undefined);
+        assert(usersOldest.users.length === 3);
+        assert(usersOldest.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersOldest.users[0].emails[0] === "random@gmail.com");
+
+        let usersNewest = await STExpress.getUsersNewestFirst({
+            tenantId: "public",
+            limit: 2,
+        });
+        assert(usersNewest.nextPaginationToken !== undefined);
+        assert(usersNewest.users.length === 2);
+        assert(usersNewest.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersNewest.users[0].emails[0] === "random1@gmail.com");
+
+        let usersNewest2 = await STExpress.getUsersNewestFirst({
+            tenantId: "public",
+            paginationToken: usersNewest.nextPaginationToken,
+        });
+        assert(usersNewest2.nextPaginationToken === undefined);
+        assert(usersNewest2.users.length === 1);
+        assert(usersNewest2.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersNewest2.users[0].emails[0] === "random@gmail.com");
     });
 });

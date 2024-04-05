@@ -787,4 +787,154 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         assert(sendRawEmailCalled);
         assert.notStrictEqual(emailVerifyURL, undefined);
     });
+
+    it("Test the reset password link", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        user = await EmailPassword.signUp("public", "test@example.com", "password1234");
+        link = await EmailPassword.createResetPasswordLink("public", user.user.id, "test@example.com");
+        assert(link !== undefined);
+        assert(link.status === "OK");
+
+        parsed = url.parse(link.link, true);
+
+        assert(parsed.pathname === "/auth/reset-password");
+        assert(parsed.query.token !== undefined);
+        assert(parsed.query.rid === "emailpassword");
+        assert(parsed.query.tenantId === "public");
+    });
+
+    it("Test the reset password link for invalid input", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let link = await EmailPassword.createResetPasswordLink("public", "invlidUserId", "test@example.com");
+        assert(link !== undefined);
+        assert(link.status === "UNKNOWN_USER_ID_ERROR");
+
+        try {
+            link = await EmailPassword.createResetPasswordLink("invalidTenantId", "invlidUserId", "test@example.com");
+        } catch (err) {
+            isErr = true;
+            assert(err.message.includes("status code: 400"));
+        }
+        assert(isErr);
+    });
+
+    it("test sendResetPasswordEmail", async function () {
+        const connectionURI = await startST();
+        let emailPasswordLink = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailDelivery: {
+                        override: (original) => {
+                            return {
+                                ...original,
+                                sendEmail: async (input) => {
+                                    emailPasswordLink = input.passwordResetLink;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        user = await EmailPassword.emailPasswordSignUp("public", "test@example.com", "password1234");
+        resp = await EmailPassword.sendResetPasswordEmail("public", user.user.id, "test@example.com");
+        assert(resp !== undefined);
+        assert(resp.status === "OK");
+
+        parsed = url.parse(emailPasswordLink, true);
+
+        assert(parsed.pathname === "/auth/reset-password");
+        assert(parsed.query.token !== undefined);
+        assert(parsed.query.rid === "emailpassword");
+        assert(parsed.query.tenantId === "public");
+    });
+
+    it("test sendResetPasswordEmail: invalid input", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                origin: ({ request }) => {
+                    return "localhost:3000";
+                },
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        resp = await EmailPassword.sendResetPasswordEmail("public", "invalidUserID", "test@example.com");
+        assert(resp !== undefined);
+        assert(resp.status === "UNKNOWN_USER_ID_ERROR");
+
+        user = await EmailPassword.emailPasswordSignUp("public", "test@example.com", "password1234");
+
+        try {
+            await EmailPassword.sendResetPasswordEmail("invalidTenantID", user.user.id, "test@example.com");
+        } catch (err) {
+            isErr = true;
+            assert(err.message.includes("status code: 400"));
+        }
+        assert(isErr);
+    });
 });

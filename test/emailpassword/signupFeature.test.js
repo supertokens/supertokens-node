@@ -39,6 +39,7 @@ const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 let { middleware, errorHandler } = require("../../framework/express");
+const ThirdParty = require("../../recipe/thirdparty");
 
 describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1536,5 +1537,213 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         assert(JSON.parse(response.text).status === "FIELD_ERROR");
         assert(JSON.parse(response.text).formFields[0].error === "error msg");
         assert(response.status === 200);
+    });
+
+    it("test handlePostSignUp gets set correctly", async function () {
+        const connectionURI = await startST();
+
+        process.env.userId = "";
+        process.env.loginType = "";
+
+        assert.strictEqual(process.env.userId, "");
+        assert.strictEqual(process.env.loginType, "");
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: async (input) => {
+                                    let response = await oI.signUpPOST(input);
+                                    if (response.status === "OK") {
+                                        process.env.userId = response.user.id;
+                                        process.env.loginType = "emailpassword";
+                                    }
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userInfo = JSON.parse(response.text).user;
+        assert(userInfo.id !== undefined);
+        assert.strictEqual(process.env.userId, userInfo.id);
+        assert.strictEqual(process.env.loginType, "emailpassword");
+    });
+
+    it("updateEmailOrPassword function test for third party login", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                }),
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "email",
+                            },
+                            {
+                                id: "password",
+                                validate: async (value) => {
+                                    if (value.length < 5) return "Password should be greater than 5 characters";
+                                    return undefined;
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        assert.strictEqual(
+            (
+                await STExpress.listUsersByAccountInfo("public", {
+                    thirdParty: { id: "custom", userId: "user" },
+                })
+            ).length,
+            0
+        );
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        nock("https://test.com").post("/oauth/token").reply(200, {});
+
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
+                    })
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.strictEqual(response.statusCode, 200);
+
+            let signUpUserInfo = response.body.user;
+            let userInfo = await STExpress.listUsersByAccountInfo("public", {
+                thirdParty: { id: "custom", userId: "user" },
+            });
+
+            assert.strictEqual(userInfo[0].emails[0], signUpUserInfo.emails[0]);
+            assert.strictEqual(userInfo[0].id, signUpUserInfo.id);
+
+            try {
+                await EmailPassword.updateEmailOrPassword({
+                    recipeUserId: STExpress.convertToRecipeUserId(userInfo[0].id),
+                    email: "test2@example.com",
+                });
+                throw new Error("test failed");
+            } catch (err) {
+                if (
+                    err.message !== "Cannot update email or password of a user who signed up using third party login."
+                ) {
+                    throw err;
+                }
+            }
+        }
+
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "pass@123",
+                            },
+                        ],
+                    })
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.strictEqual(response.statusCode, 200);
+
+            let signUpUserInfo = response.body.user;
+            let r = await EmailPassword.updateEmailOrPassword({
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id),
+                email: "test2@example.com",
+                password: "haha@1234",
+            });
+
+            assert(r.status === "OK");
+            let r2 = await EmailPassword.updateEmailOrPassword({
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id + "123"),
+                email: "test2@example.com",
+            });
+
+            assert(r2.status === "UNKNOWN_USER_ID_ERROR");
+            let r3 = await EmailPassword.updateEmailOrPassword({
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id),
+                email: "test2@example.com",
+                password: "test",
+            });
+
+            assert(r3.status === "PASSWORD_POLICY_VIOLATED_ERROR");
+            assert(r3.failureReason === "Password should be greater than 5 characters");
+        }
     });
 });
