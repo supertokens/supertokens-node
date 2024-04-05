@@ -1030,4 +1030,86 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         assert(typeof result.user.timeJoined === "number");
         assert(Object.keys(result.user).length === 8);
     });
+
+    it("Passwordless user that isEmailVerified returns true for both email and phone", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
+                    },
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        // create a Passwordless user with email
+        let response = await Passwordless.signInUp({
+            tenantId: "public",
+            email: "test@example.com",
+        });
+
+        // check that the Passwordless user's email is verified
+        assert(
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response.user.id),
+                response.user.email
+            )
+        );
+
+        // check that creating an email verification with a verified passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
+        assert(
+            (
+                await EmailVerification.createEmailVerificationToken(
+                    "public",
+                    STExpress.convertToRecipeUserId(response.user.id),
+                    response.user.email
+                )
+            ).status === "EMAIL_ALREADY_VERIFIED_ERROR"
+        );
+
+        // create a Passwordless user with phone and check that it is verified
+        let response2 = await Passwordless.signInUp({
+            tenantId: "public",
+            phoneNumber: "+123456789012",
+        });
+
+        // check that the Passwordless phone number user's is automatically verified
+        assert(await EmailVerification.isEmailVerified(STExpress.convertToRecipeUserId(response2.user.id)));
+        // check that creating an email verification with a phone-based passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
+        assert.equal(
+            (
+                await EmailVerification.createEmailVerificationToken(
+                    "public",
+                    STExpress.convertToRecipeUserId(response2.user.id)
+                )
+            ).status,
+            "EMAIL_ALREADY_VERIFIED_ERROR"
+        );
+    });
 });

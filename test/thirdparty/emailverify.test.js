@@ -70,6 +70,243 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
         await cleanST();
     });
 
+    it("test default backward compatibility api being called: email verify", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+            telemetry: false,
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        const app = express();
+        app.use(express.json());
+        app.use(middleware());
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let user = await ThirdParty.manuallyCreateOrUpdateUser(
+            "public",
+            "supertokens",
+            "test-user-id",
+            "test@example.com",
+            false
+        );
+        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
+
+        let appName = undefined;
+        let email = undefined;
+        let emailVerifyURL = undefined;
+
+        nock("https://api.supertokens.io")
+            .post("/0/st/auth/email/verify")
+            .reply(200, (uri, body) => {
+                appName = body.appName;
+                email = body.email;
+                emailVerifyURL = body.emailVerifyURL;
+                return {};
+            });
+
+        process.env.TEST_MODE = "production";
+
+        await supertest(app)
+            .post("/auth/user/email/verify/token")
+            .set("rid", "emailverification")
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
+            .expect(200);
+
+        process.env.TEST_MODE = "testing";
+
+        assert.strictEqual(appName, "SuperTokens");
+        assert.strictEqual(email, "test@example.com");
+        assert.notStrictEqual(emailVerifyURL, undefined);
+    });
+
+    it("test default backward compatibility api being called, error message not sent back to user: email verify", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+            telemetry: false,
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        const app = express();
+        app.use(express.json());
+        app.use(middleware());
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let user = await ThirdParty.manuallyCreateOrUpdateUser(
+            "public",
+            "supertokens",
+            "test-user-id",
+            "test@example.com",
+            false
+        );
+        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
+
+        let appName = undefined;
+        let email = undefined;
+        let emailVerifyURL = undefined;
+
+        nock("https://api.supertokens.io")
+            .post("/0/st/auth/email/verify")
+            .reply(500, (uri, body) => {
+                appName = body.appName;
+                email = body.email;
+                emailVerifyURL = body.emailVerifyURL;
+                return {};
+            });
+
+        process.env.TEST_MODE = "production";
+
+        let result = await supertest(app)
+            .post("/auth/user/email/verify/token")
+            .set("rid", "emailverification")
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
+            .expect(200);
+
+        process.env.TEST_MODE = "testing";
+
+        assert.strictEqual(appName, "SuperTokens");
+        assert.strictEqual(email, "test@example.com");
+        assert.notStrictEqual(emailVerifyURL, undefined);
+        assert.strictEqual(result.body.status, "OK");
+    });
+
+    it("test custom override: email verify", async function () {
+        const connectionURI = await startST();
+        let email = undefined;
+        let emailVerifyURL = undefined;
+        let type = undefined;
+        let appName = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                sendEmail: async (input) => {
+                                    email = input.user.email;
+                                    emailVerifyURL = input.emailVerifyLink;
+                                    type = input.type;
+                                    await oI.sendEmail(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+            telemetry: false,
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        const app = express();
+        app.use(express.json());
+        app.use(middleware());
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", STExpress.convertToRecipeUserId(req.body.id), {}, {});
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let user = await ThirdParty.manuallyCreateOrUpdateUser(
+            "public",
+            "supertokens",
+            "test-user-id",
+            "test@example.com",
+            false
+        );
+        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
+
+        process.env.TEST_MODE = "production";
+
+        nock("https://api.supertokens.io")
+            .post("/0/st/auth/email/verify")
+            .reply(200, (uri, body) => {
+                appName = body.appName;
+                return {};
+            });
+
+        await supertest(app)
+            .post("/auth/user/email/verify/token")
+            .set("rid", "emailverification")
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
+            .expect(200);
+
+        process.env.TEST_MODE = "testing";
+
+        await delay(2);
+        assert.strictEqual(email, "test@example.com");
+        assert.strictEqual(appName, "SuperTokens");
+        assert.strictEqual(type, "EMAIL_VERIFICATION");
+        assert.notStrictEqual(emailVerifyURL, undefined);
+    });
+
     it("test that providing your own email callback and make sure it is called", async function () {
         const connectionURI = await startST();
 

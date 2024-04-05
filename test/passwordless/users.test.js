@@ -27,33 +27,9 @@ let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let { middleware, errorHandler } = require("../../framework/express");
+let Passwordless = require("../../recipe/passwordless");
 
-describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}`, function () {
-    before(function () {
-        this.customProvider1 = {
-            config: {
-                thirdPartyId: "custom",
-                authorizationEndpoint: "https://test.com/oauth/auth",
-                tokenEndpoint: "https://test.com/oauth/token",
-                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
-            },
-            override: (oI) => {
-                return {
-                    ...oI,
-                    getUserInfo: async function ({ oAuthTokens }) {
-                        return {
-                            thirdPartyUserId: oAuthTokens.id,
-                            email: {
-                                id: oAuthTokens.email,
-                                isVerified: true,
-                            },
-                        };
-                    },
-                };
-            },
-        };
-    });
-
+describe(`usersTest: ${printPath("[test/passwordless/users.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -77,7 +53,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyPasswordless.init({
+                Passwordless.init({
                     contactMethod: "EMAIL",
                     emailDelivery: {
                         sendEmail: async (input) => {
@@ -85,7 +61,6 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                         },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers: [this.customProvider1],
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
@@ -158,7 +133,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyPasswordless.init({
+                Passwordless.init({
                     contactMethod: "EMAIL",
                     emailDelivery: {
                         sendEmail: async (input) => {
@@ -166,7 +141,6 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                         },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers: [this.customProvider1],
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
@@ -239,7 +213,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyPasswordless.init({
+                Passwordless.init({
                     contactMethod: "EMAIL",
                     emailDelivery: {
                         sendEmail: async (input) => {
@@ -247,7 +221,6 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                         },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers: [this.customProvider1],
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],

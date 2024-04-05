@@ -1052,4 +1052,145 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert(usersNewest2.users[0].loginMethods[0].recipeId === "emailpassword");
         assert(usersNewest2.users[0].emails[0] === "random@gmail.com");
     });
+
+    it("getUserById when user does not exist", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        assert.strictEqual(await STExpress.getUser("randomID"), undefined);
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        nock("https://test.com").post("/oauth/token").reply(200, {});
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://localhost.org",
+                        redirectURIQueryParams: {
+                            code: "32432432",
+                        },
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.statusCode, 200);
+
+        let signUpUserInfo = response.body.user;
+        let userInfo = await STExpress.getUser(signUpUserInfo.id);
+
+        assert.strictEqual(userInfo.emails[0], signUpUserInfo.emails[0]);
+        assert.strictEqual(userInfo.id, signUpUserInfo.id);
+    });
+
+    it("test getUserByThirdPartyInfo when user does not exist", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        assert.strictEqual(
+            (
+                await STExpress.listUsersByAccountInfo("public", {
+                    thirdParty: { id: "custom", userId: "user" },
+                })
+            ).length,
+            0
+        );
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        nock("https://test.com").post("/oauth/token").reply(200, {});
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://localhost.org",
+                        redirectURIQueryParams: {
+                            code: "32432432",
+                        },
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.statusCode, 200);
+
+        let signUpUserInfo = response.body.user;
+        let userInfo = await STExpress.listUsersByAccountInfo("public", {
+            thirdParty: { id: "custom", userId: "user" },
+        });
+
+        assert.strictEqual(userInfo[0].emails[0], signUpUserInfo.emails[0]);
+        assert.strictEqual(userInfo[0].id, signUpUserInfo.id);
+    });
 });
