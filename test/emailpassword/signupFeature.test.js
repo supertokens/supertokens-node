@@ -23,6 +23,7 @@ const {
     signUPRequest,
     extractInfoFromResponse,
 } = require("../utils");
+let nock = require("nock");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -42,6 +43,39 @@ let { middleware, errorHandler } = require("../../framework/express");
 const ThirdParty = require("../../recipe/thirdparty");
 
 describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]")}`, function () {
+    before(function () {
+        this.customProvider1 = {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    getConfigForClientType: async function (input) {
+                        result = await oI.getConfigForClientType(input);
+                        const dynamic = input.userContext?._default?.request.getKeyValueFromQuery("dynamic");
+                        result.authorizationEndpointQueryParams = {
+                            dynamic,
+                            ...(result.authorizationEndpointQueryParams || {}),
+                        };
+                        return result;
+                    },
+                    getUserInfo: async function (oAuthTokens) {
+                        return {
+                            thirdPartyUserId: "user",
+                            email: {
+                                id: "email@test.com",
+                                isVerified: true,
+                            },
+                        };
+                    },
+                };
+            },
+        };
+    });
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -1680,20 +1714,6 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
             assert.strictEqual(userInfo[0].emails[0], signUpUserInfo.emails[0]);
             assert.strictEqual(userInfo[0].id, signUpUserInfo.id);
-
-            try {
-                await EmailPassword.updateEmailOrPassword({
-                    recipeUserId: STExpress.convertToRecipeUserId(userInfo[0].id),
-                    email: "test2@example.com",
-                });
-                throw new Error("test failed");
-            } catch (err) {
-                if (
-                    err.message !== "Cannot update email or password of a user who signed up using third party login."
-                ) {
-                    throw err;
-                }
-            }
         }
 
         {

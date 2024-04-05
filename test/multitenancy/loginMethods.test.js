@@ -25,6 +25,7 @@ const Passwordless = require("../../recipe/passwordless");
 const MultifactorAuth = require("../../recipe/multifactorauth");
 const Session = require("../../recipe/session");
 let { middleware, errorHandler } = require("../../framework/express");
+let ThirdParty = require("../../recipe/thirdparty");
 
 describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}`, function () {
     beforeEach(async function () {
@@ -90,6 +91,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     }),
+                    ThirdParty.init(),
                     Multitenancy.init(),
                 ],
             });

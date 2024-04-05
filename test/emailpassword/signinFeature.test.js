@@ -24,6 +24,8 @@ const {
     signUPRequest,
     extractInfoFromResponse,
     assertJSONEquals,
+    signUPRequestEmptyJSON,
+    signUPRequestNoBody,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -41,6 +43,7 @@ const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 let { middleware, errorHandler } = require("../../framework/express");
+let bodyParser = require("body-parser");
 
 describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]")}`, function () {
     beforeEach(async function () {
