@@ -22,6 +22,8 @@ const {
     signInUPCustomRequest,
     extractInfoFromResponse,
     emailVerifyTokenRequest,
+    isCDIVersionCompatible,
+    delay,
 } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
@@ -32,6 +34,8 @@ const ThirdParty = require("../../recipe/thirdparty");
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
+let supertest = require("supertest");
+let nock = require("nock");
 
 describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, function () {
     before(function () {
@@ -85,7 +89,7 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
                 EmailVerification.init({ mode: "OPTIONAL" }),
                 ThirdParty.init({
                     signInAndUpFeature: {
-                        providers: [this.customProvider],
+                        providers: [this.customProvider1],
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
@@ -159,7 +163,7 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
                 EmailVerification.init({ mode: "OPTIONAL" }),
                 ThirdParty.init({
                     signInAndUpFeature: {
-                        providers: [this.customProvider],
+                        providers: [this.customProvider1],
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
@@ -252,7 +256,7 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
                 }),
                 ThirdParty.init({
                     signInAndUpFeature: {
-                        providers: [this.customProvider],
+                        providers: [this.customProvider1],
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
