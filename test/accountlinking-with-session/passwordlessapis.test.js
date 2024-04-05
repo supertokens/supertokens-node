@@ -801,7 +801,7 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
     });
 
     describe("createCodePOST", function () {
-        it("should create a code if the session user is already primary", async () => {
+        it("should create a code if the session user is already primary and have the appropriate flowType", async () => {
             const email1 = getTestEmail("1");
             const email2 = getTestEmail("2");
             const app = await setup();
@@ -816,6 +816,7 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
 
             const body = resp.body;
             assert.strictEqual(body.status, "OK");
+            assert.strictEqual(body.flowType, "USER_INPUT_CODE");
         });
 
         it("should create a code if the session user is not primary user using the same email without verification", async () => {
@@ -1004,6 +1005,47 @@ describe(`passwordless accountlinkingTests w/ session: ${printPath(
             assert.strictEqual(body.status, "OK");
         });
     });
+
+    describe("resendCodePOST", function () {
+        it("should create a code with the appropriate flowType", async () => {
+            const email1 = getTestEmail("1");
+            const email2 = getTestEmail("2");
+            const emailInputs = [];
+            const app = await setup({ emailInputs });
+            let sessionUser = await createEmailPasswordUser(email1, true);
+            sessionUser = await makeUserPrimary(sessionUser);
+            await createPasswordlessUser({ email: email2 });
+
+            const session = await getSessionForUser(sessionUser);
+            const createResp = await createCodePOST(app, { email: email2 }, session);
+            assert.strictEqual(createResp.status, 200);
+            assert.ok(createResp.body);
+
+            const createRespBody = createResp.body;
+            assert.strictEqual(createRespBody.status, "OK");
+            assert.strictEqual(createRespBody.flowType, "USER_INPUT_CODE");
+
+            const resendResp = await resendCodePOST(
+                app,
+                {
+                    preAuthSessionId: createRespBody.preAuthSessionId,
+                    deviceId: createRespBody.deviceId,
+                },
+                session
+            );
+            assert.strictEqual(resendResp.status, 200);
+            assert.ok(resendResp.body);
+
+            const resendRespBody = resendResp.body;
+            assert.strictEqual(resendRespBody.status, "OK");
+
+            assert.strictEqual(emailInputs.length, 2);
+            assert.strictEqual(emailInputs[0].urlWithLinkCode, undefined);
+            assert.strictEqual(emailInputs[1].urlWithLinkCode, undefined);
+            assert.strictEqual(emailInputs[1].isFirstFactor, false);
+            assert.strictEqual(emailInputs[1].isFirstFactor, false);
+        });
+    });
 });
 
 async function consumeCodePOST(app, code, session) {
@@ -1026,4 +1068,8 @@ async function consumeCodePOST(app, code, session) {
 
 async function createCodePOST(app, accountInfo, session) {
     return postAPI(app, "/auth/signinup/code", accountInfo, session);
+}
+
+async function resendCodePOST(app, deviceInfo, session) {
+    return postAPI(app, "/auth/signinup/code/resend", deviceInfo, session);
 }

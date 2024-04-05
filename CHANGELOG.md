@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.0.3] - 2024-04-08
+
+### Fixes
+
+-   Smaller fixes in `Passwordless`:
+    -   Fixed an issue in `createCodePOST` where the flowtype wasn't appropriately set in some MFA cases
+    -   Fixed an interaction with the `firstFactors` config of the `MultiFactorAuth` recipe in `createCodePOST`
+    -   Fixed an issue in `resendCodePOST` where the email/text message included a magic link when it shouldn't have in some MFA cases
+
 ## [17.0.2] - 2024-03-20
 
 -   Remove tenants listing dashboard API and update `getTenantLoginMethodsInfo` dashboard API to remove querying core in loop and return only firstFactors.
