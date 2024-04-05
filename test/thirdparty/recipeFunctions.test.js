@@ -22,7 +22,7 @@ let { isCDIVersionCompatible } = require("../utils");
 const { default: RecipeUserId } = require("../../lib/build/recipeUserId");
 let ThirdParty = require("../../recipe/thirdparty");
 
-describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {
+describe(`recipeFunctions: ${printPath("[test/thirdparty/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
