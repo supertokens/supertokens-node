@@ -49,7 +49,7 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
    `./startTestingEnv --wait`
 3. Navigate to the `supertokens-node` repository  
    `cd ../supertokens-node/`
-4. Run all tests  
+4. Run all tests (make sure to have node version >= 16.20.0 and < 17.0.0)
    `INSTALL_PATH=../supertokens-root npm test`
 5. If all tests pass the output should be:  
    ![node tests passing](https://github.com/supertokens/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png)
