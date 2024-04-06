@@ -361,26 +361,62 @@ export default class SuperTokens {
             requestRID = undefined;
         }
         if (requestRID !== undefined) {
-            let matchedRecipe: RecipeModule | undefined = undefined;
+            let matchedRecipe: RecipeModule[] = [];
 
             // we loop through all recipe modules to find the one with the matching rId
             for (let i = 0; i < this.recipeModules.length; i++) {
                 logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
                 if (this.recipeModules[i].getRecipeId() === requestRID) {
-                    matchedRecipe = this.recipeModules[i];
-                    break;
+                    matchedRecipe.push(this.recipeModules[i]);
+                } else if (requestRID === "thirdpartyemailpassword") {
+                    if (
+                        this.recipeModules[i].getRecipeId() === "thirdparty" ||
+                        this.recipeModules[i].getRecipeId() === "emailpassword"
+                    ) {
+                        matchedRecipe.push(this.recipeModules[i]);
+                    }
+                } else if (requestRID === "thirdpartypasswordless") {
+                    if (
+                        this.recipeModules[i].getRecipeId() === "thirdparty" ||
+                        this.recipeModules[i].getRecipeId() === "passwordless"
+                    ) {
+                        matchedRecipe.push(this.recipeModules[i]);
+                    }
                 }
             }
 
-            if (matchedRecipe === undefined) {
+            if (matchedRecipe.length === 0) {
                 logDebugMessage("middleware: Not handling because no recipe matched");
                 // we could not find one, so we skip
                 return false;
             }
-            logDebugMessage("middleware: Matched with recipe ID: " + matchedRecipe.getRecipeId());
+            for (let i = 0; i < matchedRecipe.length; i++) {
+                logDebugMessage("middleware: Matched with recipe IDs: " + matchedRecipe[i].getRecipeId());
+            }
+            let idResult:
+                | {
+                      id: string;
+                      tenantId: string;
+                  }
+                | undefined = undefined;
 
-            let idResult = await matchedRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext);
-            if (idResult === undefined) {
+            let finalMatchedRecipe: RecipeModule | undefined = undefined;
+            for (let i = 0; i < matchedRecipe.length; i++) {
+                // Here we assume that if there are multiple recipes that have matched, then
+                // the path and methods of the APIs exposed via those recipes is unique.
+                let currIdResult = await matchedRecipe[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
+                if (currIdResult !== undefined) {
+                    if (idResult !== undefined) {
+                        throw new Error(
+                            "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support."
+                        );
+                    } else {
+                        finalMatchedRecipe = matchedRecipe[i];
+                        idResult = currIdResult;
+                    }
+                }
+            }
+            if (idResult === undefined || finalMatchedRecipe === undefined) {
                 logDebugMessage(
                     "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
                         path.getAsStringDangerous() +
@@ -394,7 +430,7 @@ export default class SuperTokens {
             logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
 
             // give task to the matched recipe
-            let requestHandled = await matchedRecipe.handleAPIRequest(
+            let requestHandled = await finalMatchedRecipe.handleAPIRequest(
                 idResult.id,
                 idResult.tenantId,
                 request,
