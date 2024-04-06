@@ -252,7 +252,6 @@ export async function defaultEmailValidator(value: any) {
 export function getPasswordResetLink(input: {
     appInfo: NormalisedAppinfo;
     token: string;
-    recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
     userContext: UserContext;
@@ -267,8 +266,6 @@ export function getPasswordResetLink(input: {
         input.appInfo.websiteBasePath.getAsStringDangerous() +
         "/reset-password?token=" +
         input.token +
-        "&rid=" +
-        input.recipeId +
         "&tenantId=" +
         input.tenantId
     );

@@ -360,7 +360,45 @@ export default class SuperTokens {
             // see https://github.com/supertokens/supertokens-node/issues/202
             requestRID = undefined;
         }
+
+        async function handleWithoutRid(recipeModules: RecipeModule[]) {
+            for (let i = 0; i < recipeModules.length; i++) {
+                logDebugMessage(
+                    "middleware: Checking recipe ID for match: " +
+                        recipeModules[i].getRecipeId() +
+                        " with path: " +
+                        path.getAsStringDangerous() +
+                        " and method: " +
+                        method
+                );
+                let idResult = await recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
+                if (idResult !== undefined) {
+                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
+                    let requestHandled = await recipeModules[i].handleAPIRequest(
+                        idResult.id,
+                        idResult.tenantId,
+                        request,
+                        response,
+                        path,
+                        method,
+                        userContext
+                    );
+                    if (!requestHandled) {
+                        logDebugMessage("middleware: Not handled because API returned requestHandled as false");
+                        return false;
+                    }
+                    logDebugMessage("middleware: Ended");
+                    return true;
+                }
+            }
+            logDebugMessage("middleware: Not handling because no recipe matched");
+            return false;
+        }
+
         if (requestRID !== undefined) {
+            // We have the below matching based on RID header cause
+            // we still support older FDIs (< 1.20). In the newer FDIs,
+            // the API paths across all recipes are unique.
             let matchedRecipe: RecipeModule[] = [];
 
             // we loop through all recipe modules to find the one with the matching rId
@@ -386,9 +424,8 @@ export default class SuperTokens {
             }
 
             if (matchedRecipe.length === 0) {
-                logDebugMessage("middleware: Not handling because no recipe matched");
-                // we could not find one, so we skip
-                return false;
+                logDebugMessage("middleware: Not handling based on rid match. Trying without rid.");
+                return handleWithoutRid(this.recipeModules);
             }
             for (let i = 0; i < matchedRecipe.length; i++) {
                 logDebugMessage("middleware: Matched with recipe IDs: " + matchedRecipe[i].getRecipeId());
@@ -417,14 +454,7 @@ export default class SuperTokens {
                 }
             }
             if (idResult === undefined || finalMatchedRecipe === undefined) {
-                logDebugMessage(
-                    "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
-                        path.getAsStringDangerous() +
-                        ", request method: " +
-                        method
-                );
-                // the matched recipe doesn't handle this path and http method
-                return false;
+                return handleWithoutRid(this.recipeModules);
             }
 
             logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
@@ -446,31 +476,7 @@ export default class SuperTokens {
             logDebugMessage("middleware: Ended");
             return true;
         } else {
-            // we loop through all recipe modules to find the one with the matching path and method
-            for (let i = 0; i < this.recipeModules.length; i++) {
-                logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
-                let idResult = await this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
-                if (idResult !== undefined) {
-                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
-                    let requestHandled = await this.recipeModules[i].handleAPIRequest(
-                        idResult.id,
-                        idResult.tenantId,
-                        request,
-                        response,
-                        path,
-                        method,
-                        userContext
-                    );
-                    if (!requestHandled) {
-                        logDebugMessage("middleware: Not handled because API returned requestHandled as false");
-                        return false;
-                    }
-                    logDebugMessage("middleware: Ended");
-                    return true;
-                }
-            }
-            logDebugMessage("middleware: Not handling because no recipe matched");
-            return false;
+            return handleWithoutRid(this.recipeModules);
         }
     };
 

@@ -19,6 +19,10 @@ export const RESEND_CODE_API = "/signinup/code/resend";
 
 export const CONSUME_CODE_API = "/signinup/code/consume";
 
-export const DOES_EMAIL_EXIST_API = "/signup/email/exists";
+export const DOES_EMAIL_EXIST_API_OLD = "/signup/email/exists";
 
-export const DOES_PHONE_NUMBER_EXIST_API = "/signup/phonenumber/exists";
+export const DOES_EMAIL_EXIST_API = "/passwordless/email/exists";
+
+export const DOES_PHONE_NUMBER_EXIST_API_OLD = "/signup/phonenumber/exists";
+
+export const DOES_PHONE_NUMBER_EXIST_API = "/passwordless/phonenumber/exists";

@@ -11,7 +11,6 @@ export declare function validateAndNormaliseUserInput(
 export declare function getEmailVerifyLink(input: {
     appInfo: NormalisedAppinfo;
     token: string;
-    recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
     userContext: UserContext;

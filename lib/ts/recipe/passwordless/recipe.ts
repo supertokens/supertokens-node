@@ -34,6 +34,8 @@ import {
     CREATE_CODE_API,
     DOES_EMAIL_EXIST_API,
     DOES_PHONE_NUMBER_EXIST_API,
+    DOES_EMAIL_EXIST_API_OLD,
+    DOES_PHONE_NUMBER_EXIST_API_OLD,
     RESEND_CODE_API,
 } from "./constants";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
@@ -477,10 +479,22 @@ export default class Recipe extends RecipeModule {
                 pathWithoutApiBasePath: new NormalisedURLPath(DOES_EMAIL_EXIST_API),
             },
             {
+                id: DOES_EMAIL_EXIST_API_OLD,
+                disabled: this.apiImpl.emailExistsGET === undefined,
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(DOES_EMAIL_EXIST_API_OLD),
+            },
+            {
                 id: DOES_PHONE_NUMBER_EXIST_API,
                 disabled: this.apiImpl.phoneNumberExistsGET === undefined,
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(DOES_PHONE_NUMBER_EXIST_API),
+            },
+            {
+                id: DOES_PHONE_NUMBER_EXIST_API_OLD,
+                disabled: this.apiImpl.phoneNumberExistsGET === undefined,
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(DOES_PHONE_NUMBER_EXIST_API_OLD),
             },
             {
                 id: RESEND_CODE_API,
@@ -515,9 +529,9 @@ export default class Recipe extends RecipeModule {
             return await consumeCodeAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === CREATE_CODE_API) {
             return await createCodeAPI(this.apiImpl, tenantId, options, userContext);
-        } else if (id === DOES_EMAIL_EXIST_API) {
+        } else if (id === DOES_EMAIL_EXIST_API || id === DOES_EMAIL_EXIST_API_OLD) {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
-        } else if (id === DOES_PHONE_NUMBER_EXIST_API) {
+        } else if (id === DOES_PHONE_NUMBER_EXIST_API || id === DOES_PHONE_NUMBER_EXIST_API_OLD) {
             return await phoneNumberExistsAPI(this.apiImpl, tenantId, options, userContext);
         } else {
             return await resendCodeAPI(this.apiImpl, tenantId, options, userContext);
@@ -593,9 +607,7 @@ export default class Recipe extends RecipeModule {
                 .getAsStringDangerous() +
             appInfo.websiteBasePath.getAsStringDangerous() +
             "/verify" +
-            "?rid=" +
-            this.getRecipeId() +
-            "&preAuthSessionId=" +
+            "?preAuthSessionId=" +
             codeInfo.preAuthSessionId +
             "&tenantId=" +
             input.tenantId +

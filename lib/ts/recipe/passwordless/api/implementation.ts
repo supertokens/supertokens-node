@@ -387,9 +387,7 @@ export default function getAPIImplementation(): APIInterface {
                         .getAsStringDangerous() +
                     input.options.appInfo.websiteBasePath.getAsStringDangerous() +
                     "/verify" +
-                    "?rid=" +
-                    input.options.recipeId +
-                    "&preAuthSessionId=" +
+                    "?preAuthSessionId=" +
                     response.preAuthSessionId +
                     "&tenantId=" +
                     input.tenantId +
@@ -591,9 +589,7 @@ export default function getAPIImplementation(): APIInterface {
                                 .getAsStringDangerous() +
                             input.options.appInfo.websiteBasePath.getAsStringDangerous() +
                             "/verify" +
-                            "?rid=" +
-                            input.options.recipeId +
-                            "&preAuthSessionId=" +
+                            "?preAuthSessionId=" +
                             response.preAuthSessionId +
                             "&tenantId=" +
                             input.tenantId +
