@@ -34,6 +34,7 @@ let Session = require("../../recipe/session");
 const EmailVerification = require("../../recipe/emailverification");
 let { middleware, errorHandler } = require("../../framework/express");
 let EmailPassword = require("../../recipe/emailpassword");
+let Passwordless = require("../../recipe/passwordless");
 const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 
@@ -157,6 +158,221 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("test with rid thirdpartypasswordless still works", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirdPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider6],
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .set("rid", "thirdpartypasswordless")
+                .send({
+                    thirdPartyId: "custom",
+                    oAuthTokens: {
+                        access_token: "saodiasjodai",
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.body.status, "OK");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
+
+        let cookies1 = extractInfoFromResponse(response1);
+        assert.notStrictEqual(cookies1.accessToken, undefined);
+        assert.notStrictEqual(cookies1.refreshToken, undefined);
+        assert.notStrictEqual(cookies1.antiCsrf, undefined);
+        assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
+        assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies1.refreshToken, undefined);
+        assert.strictEqual(cookies1.accessTokenDomain, undefined);
+        assert.strictEqual(cookies1.refreshTokenDomain, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .set("rid", "thirdpartypasswordless")
+                .send({
+                    thirdPartyId: "custom",
+                    oAuthTokens: {
+                        access_token: "saodiasjodai",
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response2, undefined);
+        assert.strictEqual(response2.body.status, "OK");
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
+
+        let cookies2 = extractInfoFromResponse(response2);
+        assert.notStrictEqual(cookies2.accessToken, undefined);
+        assert.notStrictEqual(cookies2.refreshToken, undefined);
+        assert.notStrictEqual(cookies2.antiCsrf, undefined);
+        assert.notStrictEqual(cookies2.accessTokenExpiry, undefined);
+        assert.notStrictEqual(cookies2.refreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies2.refreshToken, undefined);
+        assert.strictEqual(cookies2.accessTokenDomain, undefined);
+        assert.strictEqual(cookies2.refreshTokenDomain, undefined);
+        assert.notStrictEqual(cookies2.frontToken, "remove");
+    });
+
+    it("test with rid thirdpartyemailpassword still works", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirdPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider6],
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .set("rid", "thirdpartyemailpassword")
+                .send({
+                    thirdPartyId: "custom",
+                    oAuthTokens: {
+                        access_token: "saodiasjodai",
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.body.status, "OK");
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
+
+        let cookies1 = extractInfoFromResponse(response1);
+        assert.notStrictEqual(cookies1.accessToken, undefined);
+        assert.notStrictEqual(cookies1.refreshToken, undefined);
+        assert.notStrictEqual(cookies1.antiCsrf, undefined);
+        assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
+        assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies1.refreshToken, undefined);
+        assert.strictEqual(cookies1.accessTokenDomain, undefined);
+        assert.strictEqual(cookies1.refreshTokenDomain, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .set("rid", "thirdpartyemailpassword")
+                .send({
+                    thirdPartyId: "custom",
+                    oAuthTokens: {
+                        access_token: "saodiasjodai",
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response2, undefined);
+        assert.strictEqual(response2.body.status, "OK");
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
+
+        let cookies2 = extractInfoFromResponse(response2);
+        assert.notStrictEqual(cookies2.accessToken, undefined);
+        assert.notStrictEqual(cookies2.refreshToken, undefined);
+        assert.notStrictEqual(cookies2.antiCsrf, undefined);
+        assert.notStrictEqual(cookies2.accessTokenExpiry, undefined);
+        assert.notStrictEqual(cookies2.refreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies2.refreshToken, undefined);
+        assert.strictEqual(cookies2.accessTokenDomain, undefined);
+        assert.strictEqual(cookies2.refreshTokenDomain, undefined);
+        assert.notStrictEqual(cookies2.frontToken, "remove");
     });
 
     it("test that disable api, the default signinup API does not work", async function () {
