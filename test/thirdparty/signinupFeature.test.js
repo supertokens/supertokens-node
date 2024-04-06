@@ -12,7 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    extractInfoFromResponse,
+    signUPRequest,
+    isCDIVersionCompatible,
+} = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -25,6 +34,8 @@ let Session = require("../../recipe/session");
 const EmailVerification = require("../../recipe/emailverification");
 let { middleware, errorHandler } = require("../../framework/express");
 let EmailPassword = require("../../recipe/emailpassword");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")}`, function () {
     before(function () {
@@ -869,7 +880,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             recipeList: [
                 Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdParty.init({
-                    providers: [this.customProvider1],
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
                     override: {
                         apis: (oI) => {
                             return {
