@@ -1582,10 +1582,10 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
             assert(validCreateCodeResponse.status === "OK");
 
-            // check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
+            // check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?preAuthSessionId=<some string>#linkCode
             assert(magicLinkURL.hostname === "supertokens.io");
             assert(magicLinkURL.pathname === "/auth/verify");
-            assert(magicLinkURL.searchParams.get("rid") === "passwordless");
+            assert(magicLinkURL.searchParams.get("rid") === null);
             assert(magicLinkURL.searchParams.get("preAuthSessionId") === validCreateCodeResponse.preAuthSessionId);
             assert(magicLinkURL.hash.length > 1);
         }

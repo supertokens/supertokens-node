@@ -174,7 +174,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(resetURL === "https://supertokens.io/auth/reset-password");
         assert.notStrictEqual(tokenInfo, undefined);
         assert.notStrictEqual(tokenInfo, null);
-        assert.strictEqual(ridInfo, "emailpassword");
+        assert.strictEqual(ridInfo, null);
         assert.strictEqual(tenantInfo, "public");
     });
 
