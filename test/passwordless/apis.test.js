@@ -34,8 +34,34 @@ const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible } = require("../utils");
 const { default: RecipeUserId } = require("../../lib/build/recipeUserId");
+let ThirdParty = require("../../recipe/thirdparty");
+let EmailPassword = require("../../recipe/emailpassword");
 
 describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
+    before(function () {
+        this.customProvider1 = {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
+                        return {
+                            thirdPartyUserId: "user",
+                            email: {
+                                id: "email@test.com",
+                                isVerified: true,
+                            },
+                        };
+                    },
+                };
+            },
+        };
+    });
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -45,6 +71,294 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("test emailExistsAPI with email password conflicting path, but different rid", async function () {
+        const connectionURI = await startST();
+
+        let emailPasswordEmailExistsCalled = false;
+        let passwordlessEmailExistsCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async (input) => {
+                                    emailPasswordEmailExistsCalled = true;
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async (input) => {
+                                    passwordlessEmailExistsCalled = true;
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists")
+                    .set("rid", "passwordless")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+            assert(emailPasswordEmailExistsCalled === false);
+            assert(passwordlessEmailExistsCalled === true);
+        }
+
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists")
+                    .set("rid", "thirdpartypasswordless")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+            assert(emailPasswordEmailExistsCalled === false);
+            assert(passwordlessEmailExistsCalled === true);
+        }
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists")
+                    .set("rid", "thirdpartyemailpassword")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+            assert(emailPasswordEmailExistsCalled === true);
+            assert(passwordlessEmailExistsCalled === false);
+        }
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists")
+                    .set("rid", "emailpassword")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+            assert(emailPasswordEmailExistsCalled === true);
+            assert(passwordlessEmailExistsCalled === false);
+        }
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+            assert(emailPasswordEmailExistsCalled === true);
+            assert(passwordlessEmailExistsCalled === false);
+        }
+    });
+
+    it("test APIs still work with thirdpartypasswordless recipe", async function () {
+        const connectionURI = await startST();
+
+        let userInputCode = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        const email = "test@example.com";
+        // createCodeAPI with email
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .set("rid", "thirdpartypasswordless")
+                .send({
+                    email: email,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(typeof validCreateCodeResponse.deviceId === "string");
+        assert(typeof validCreateCodeResponse.preAuthSessionId === "string");
+        assert(validCreateCodeResponse.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+        assert(Object.keys(validCreateCodeResponse).length === 4);
+
+        // consumeCode API
+        let validUserInputCodeResponse = await new Promise((resolve, reject) =>
+            request(app)
+                .post("/auth/signinup/code/consume")
+                .set("rid", "thirdpartypasswordless")
+                .send({
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                    userInputCode,
+                    deviceId: validCreateCodeResponse.deviceId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        checkConsumeResponse(validUserInputCodeResponse, {
+            email,
+            phoneNumber: undefined,
+            isNew: true,
+            isPrimary: false,
+        });
     });
 
     /**
@@ -1268,10 +1582,10 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
             assert(validCreateCodeResponse.status === "OK");
 
-            // check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
+            // check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?preAuthSessionId=<some string>#linkCode
             assert(magicLinkURL.hostname === "supertokens.io");
             assert(magicLinkURL.pathname === "/auth/verify");
-            assert(magicLinkURL.searchParams.get("rid") === "passwordless");
+            assert(magicLinkURL.searchParams.get("rid") === null);
             assert(magicLinkURL.searchParams.get("preAuthSessionId") === validCreateCodeResponse.preAuthSessionId);
             assert(magicLinkURL.hash.length > 1);
         }
@@ -1372,6 +1686,101 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         }
     });
 
+    it("test emailExistsAPI with new path", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // email does not exist
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/passwordless/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+        }
+
+        {
+            // email exists
+
+            // create a passwordless user through email
+            let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
+                email: "test@example.com",
+            });
+
+            await Passwordless.consumeCode({
+                tenantId: "public",
+                preAuthSessionId: codeInfo.preAuthSessionId,
+                linkCode: codeInfo.linkCode,
+            });
+
+            let emailExistsResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/passwordless/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailExistsResponse.status === "OK");
+            assert(emailExistsResponse.exists === true);
+        }
+    });
+
     it("test phoneNumberExistsAPI", async function () {
         const connectionURI = await startST();
 
@@ -1450,6 +1859,101 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             let phoneNumberExistsResponse = await new Promise((resolve) =>
                 request(app)
                     .get("/auth/signup/phonenumber/exists")
+                    .query({
+                        phoneNumber: "+1234567890",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(phoneNumberExistsResponse.status === "OK");
+            assert(phoneNumberExistsResponse.exists === true);
+        }
+    });
+
+    it("test phoneNumberExistsAPI with new path", async function () {
+        const connectionURI = await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // phoneNumber does not exist
+            let phoneNumberDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/passwordless/phonenumber/exists")
+                    .query({
+                        phoneNumber: "+1234567890",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(phoneNumberDoesNotExistResponse.status === "OK");
+            assert(phoneNumberDoesNotExistResponse.exists === false);
+        }
+
+        {
+            // phoneNumber exists
+
+            // create a passwordless user through phone
+            let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
+                phoneNumber: "+1234567890",
+            });
+
+            await Passwordless.consumeCode({
+                tenantId: "public",
+                preAuthSessionId: codeInfo.preAuthSessionId,
+                linkCode: codeInfo.linkCode,
+            });
+
+            let phoneNumberExistsResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/passwordless/phonenumber/exists")
                     .query({
                         phoneNumber: "+1234567890",
                     })

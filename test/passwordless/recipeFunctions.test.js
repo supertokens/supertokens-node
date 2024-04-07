@@ -936,7 +936,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     /*
     - createMagicLink
-    - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
+    - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify&preAuthSessionId=<some string>#linkCode
     */
 
     it("createMagicLink test", async function () {
@@ -979,7 +979,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         assert(magicLinkURL.hostname === "supertokens.io");
         assert(magicLinkURL.pathname === "/auth/verify");
-        assert(magicLinkURL.searchParams.get("rid") === "passwordless");
+        assert(magicLinkURL.searchParams.get("rid") === null);
         assert(typeof magicLinkURL.searchParams.get("preAuthSessionId") === "string");
         assert(magicLinkURL.hash.length > 1);
     });

@@ -292,7 +292,6 @@ export default class Wrapper {
             status: "OK",
             link: getPasswordResetLink({
                 appInfo: recipeInstance.getAppInfo(),
-                recipeId: recipeInstance.getRecipeId(),
                 token: token.token,
                 tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
                 request: getRequestFromUserContext(ctx),

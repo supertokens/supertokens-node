@@ -596,6 +596,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         const connectionURI = await startST();
 
         let token = null;
+        let rid = undefined;
 
         STExpress.init({
             supertokens: {
@@ -614,6 +615,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                             sendEmail: async (input) => {
                                 const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
                                 token = searchParams.get("token");
+                                rid = searchParams.get("rid");
                             },
                         },
                     },
@@ -675,6 +677,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response3.text).status === "OK");
         assert(JSON.parse(response3.text).isVerified === true);
         assert(Object.keys(JSON.parse(response3.text)).length === 2);
+        assert(rid === null);
     });
 
     // Call the API with no session and see the error

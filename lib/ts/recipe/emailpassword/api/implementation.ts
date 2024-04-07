@@ -99,7 +99,6 @@ export default function getAPIImplementation(): APIInterface {
                 let passwordResetLink = getPasswordResetLink({
                     appInfo: options.appInfo,
                     token: response.token,
-                    recipeId: options.recipeId,
                     tenantId,
                     request: options.req,
                     userContext,

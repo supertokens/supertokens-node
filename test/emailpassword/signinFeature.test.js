@@ -44,8 +44,33 @@ const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 let { middleware, errorHandler } = require("../../framework/express");
 let bodyParser = require("body-parser");
+let ThirdParty = require("../../recipe/thirdparty");
 
 describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]")}`, function () {
+    before(function () {
+        this.customProvider1 = {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
+                        return {
+                            thirdPartyUserId: "user",
+                            email: {
+                                id: "email@test.com",
+                                isVerified: true,
+                            },
+                        };
+                    },
+                };
+            },
+        };
+    });
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -55,6 +80,100 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("test singinAPI works when rid is thirdpartyemailpassword", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                }),
+                EmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let signUpUserInfo = JSON.parse(response.text).user;
+
+        {
+            let userInfo = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signin")
+                    .set("rid", "thirdpartyemailpassword")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text).user);
+                        }
+                    })
+            );
+            assert(userInfo.id === signUpUserInfo.id);
+            assert(userInfo.email === signUpUserInfo.email);
+        }
+        {
+            let userInfo = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signin")
+                    .set("rid", "emailpassword")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text).user);
+                        }
+                    })
+            );
+            assert(userInfo.id === signUpUserInfo.id);
+            assert(userInfo.email === signUpUserInfo.email);
+        }
     });
 
     // check if disabling api, the default signin API does not work - you get a 404
