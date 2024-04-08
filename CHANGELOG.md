@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [17.0.3] - 2024-03-31
+## [17.0.4] - 2024-04-09
 
 -   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from older domain when the cookieDomain is changed.
 -   Fixed an issue where the access token wasn't cleared if refresh token API was called without a refresh token.
+
+## [17.0.3] - 2024-04-08
+
+### Fixes
+
+-   Smaller fixes in `Passwordless`:
+    -   Fixed an issue in `createCodePOST` where the flowtype wasn't appropriately set in some MFA cases
+    -   Fixed an interaction with the `firstFactors` config of the `MultiFactorAuth` recipe in `createCodePOST`
+    -   Fixed an issue in `resendCodePOST` where the email/text message included a magic link when it shouldn't have in some MFA cases
 
 ## [17.0.2] - 2024-03-20
 

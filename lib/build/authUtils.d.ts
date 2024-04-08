@@ -329,4 +329,10 @@ export declare const AuthUtils: {
               reason: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
+    filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid: (
+        factorIds: string[],
+        tenantId: string,
+        hasSession: boolean,
+        userContext: UserContext
+    ) => Promise<string[]>;
 };

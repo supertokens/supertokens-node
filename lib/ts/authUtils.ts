@@ -138,7 +138,7 @@ export const AuthUtils = {
             // The filtered list can be used to select email templates. As an example:
             // If the flowType for passwordless is USER_INPUT_CODE_AND_MAGIC_LINK and firstFactors for the tenant we only have otp-email
             // then we do not want to include a link in the email.
-            const validFirstFactors = await filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
+            const validFirstFactors = await AuthUtils.filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
                 factorIds,
                 tenantId,
                 session !== undefined,
@@ -916,6 +916,48 @@ export const AuthUtils = {
             return { status: "LINKING_TO_SESSION_USER_FAILED", reason: linkAccountsResult.status };
         }
     },
+
+    filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid: async function (
+        factorIds: string[],
+        tenantId: string,
+        hasSession: boolean,
+        userContext: UserContext
+    ): Promise<string[]> {
+        let validFactorIds = [];
+        for (const id of factorIds) {
+            // This util takes the tenant config into account (if it exists), then the MFA (static) config if it was initialized and set.
+            let validRes = await isValidFirstFactor(tenantId, id, userContext);
+
+            if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
+                if (hasSession) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Tenant not found",
+                    });
+                } else {
+                    throw new Error("Tenant not found error.");
+                }
+            } else if (validRes.status === "OK") {
+                validFactorIds.push(id);
+            }
+        }
+
+        if (validFactorIds.length === 0) {
+            if (!hasSession) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "A valid session is required to authenticate with secondary factors",
+                });
+            } else {
+                throw new SuperTokensError({
+                    type: SuperTokensError.BAD_INPUT_ERROR,
+                    message: "First factor sign in/up called for a non-first factor with an active session.",
+                });
+            }
+        }
+
+        return validFactorIds;
+    },
 };
 
 async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
@@ -1027,45 +1069,4 @@ async function filterOutInvalidSecondFactorsOrThrowIfAllAreInvalid(
         // If MFA is not enabled, we allow the user to connect any secondary account to the session user.
         return factorIds;
     }
-}
-
-async function filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
-    factorIds: string[],
-    tenantId: string,
-    hasSession: boolean,
-    userContext: UserContext
-): Promise<string[]> {
-    let validFactorIds = [];
-    for (const id of factorIds) {
-        // This util takes the tenant config into account (if it exists), then the MFA (static) config if it was initialized and set.
-        let validRes = await isValidFirstFactor(tenantId, id, userContext);
-
-        if (validRes.status === "TENANT_NOT_FOUND_ERROR") {
-            if (hasSession) {
-                throw new SessionError({
-                    type: SessionError.UNAUTHORISED,
-                    message: "Tenant not found",
-                });
-            } else {
-                throw new Error("Tenant not found error.");
-            }
-        } else if (validRes.status === "OK") {
-            validFactorIds.push(id);
-        }
-    }
-
-    if (validFactorIds.length === 0) {
-        if (!hasSession) {
-            throw new SessionError({
-                type: SessionError.UNAUTHORISED,
-                message: "A valid session is required to authenticate with secondary factors",
-            });
-        } else {
-            throw new SuperTokensError({
-                type: SuperTokensError.BAD_INPUT_ERROR,
-                message: "First factor sign in/up called for a non-first factor with an active session.",
-            });
-        }
-    }
-    return validFactorIds;
 }
