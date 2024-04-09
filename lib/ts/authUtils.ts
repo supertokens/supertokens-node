@@ -951,7 +951,8 @@ export const AuthUtils = {
             } else {
                 throw new SuperTokensError({
                     type: SuperTokensError.BAD_INPUT_ERROR,
-                    message: "First factor sign in/up called for a non-first factor with an active session.",
+                    message:
+                        "First factor sign in/up called for a non-first factor with an active session. This might indicate that you are trying to use this as a secondary factor, but disabled account linking.",
                 });
             }
         }
