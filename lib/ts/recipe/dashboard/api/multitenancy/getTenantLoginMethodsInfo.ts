@@ -12,11 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
-import MultitenancyRecipe from "../../multitenancy/recipe";
-import { isFactorConfiguredForTenant } from "../../multitenancy/utils";
-import { UserContext } from "../../../types";
-import { TenantConfig } from "../../multitenancy/types";
+import { APIInterface, APIOptions } from "../../types";
+import MultitenancyRecipe from "../../../multitenancy/recipe";
+import { isFactorConfiguredForTenant } from "../../../multitenancy/utils";
+import { UserContext } from "../../../../types";
+import { TenantConfig } from "../../../multitenancy/types";
 
 type TenantLoginMethodType = {
     tenantId: string;

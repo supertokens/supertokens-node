@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
-import { UserContext } from "../../../types";
+import { APIInterface, APIOptions } from "../../types";
+import { UserContext } from "../../../../types";
 declare type TenantLoginMethodType = {
     tenantId: string;
     firstFactors: string[];

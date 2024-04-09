@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   Add Multitenancy APIs dashboard APIs for:
+    -   Fetching a tenant's info
+    -   Deleting a tenant
+    -   Listing all tenants with their user counts
+    -   Creating or updating an existing tenant
+    -   Associating and disassociating a user from a tenant
+    -   Creating or updating third party config for a tenant
+    -   Deleting third party config for a tenant
+
 ## [17.0.3] - 2024-04-08
 
 ### Fixes
