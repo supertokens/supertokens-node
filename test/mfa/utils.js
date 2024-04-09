@@ -111,6 +111,42 @@ module.exports.epSignIn = async function (app, email, password, accessToken) {
     }
 };
 
+module.exports.plessCreateCode = async function (app, { email, phoneNumber }, accessToken) {
+    if (accessToken === undefined) {
+        return request(app).post("/auth/signinup/code").send({
+            email,
+            phoneNumber,
+        });
+    } else {
+        return request(app)
+            .post("/auth/signinup/code")
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({
+                email,
+                phoneNumber,
+            })
+            .expect(200);
+    }
+};
+
+module.exports.plessResendCode = async function (app, code, accessToken) {
+    if (accessToken === undefined) {
+        return request(app).post("/auth/signinup/code/resend").send({
+            preAuthSessionId: code.preAuthSessionId,
+            deviceId: code.deviceId,
+        });
+    } else {
+        return request(app)
+            .post("/auth/signinup/code/resend")
+            .set("Authorization", `Bearer ${accessToken}`)
+            .send({
+                preAuthSessionId: code.preAuthSessionId,
+                deviceId: code.deviceId,
+            })
+            .expect(200);
+    }
+};
+
 module.exports.plessEmailSignInUp = async function (app, email, accessToken) {
     const code = await Passwordless.createCode({
         tenantId: "public",
