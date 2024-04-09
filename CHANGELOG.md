@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `GET /emailpassword/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `emailpassword` or `thirdpartyemailpassword` which is now deprecated)
     -   `GET /passwordless/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `passwordless` or `thirdpartypasswordless` which is now deprecated)
     -   `GET /passwordless/phonenumber/exists` => email password, does email exist API (used to be `GET /signup/phonenumber/exists` which is now deprecated)
--   Support for FDI 1.20
+-   Support for FDI 2.0 and 3.0
 
 ## Migration guide
 
