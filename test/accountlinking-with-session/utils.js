@@ -30,16 +30,25 @@ exports.setup = async function setup(config = {}) {
             Passwordless.init({
                 contactMethod: "EMAIL_OR_PHONE",
                 flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-
-                createAndSendCustomTextMessage: (input) => {
-                    userInputCode = input.userInputCode;
-                    console.log(input);
-                    return;
+                emailDelivery: {
+                    service: {
+                        sendEmail: (input) => {
+                            if (config.emailInputs) {
+                                config.emailInputs.push(input);
+                            }
+                            return;
+                        },
+                    },
                 },
-                createAndSendCustomEmail: (input) => {
-                    console.log(input);
-                    userInputCode = input.userInputCode;
-                    return;
+                smsDelivery: {
+                    service: {
+                        sendSms: (input) => {
+                            if (config.smsInputs) {
+                                config.smsInputs.push(input);
+                            }
+                            return;
+                        },
+                    },
                 },
             }),
             ThirdParty.init({
@@ -231,6 +240,10 @@ exports.putAPI = async function putAPI(app, path, body, session) {
 
 exports.getTestEmail = function getTestEmail(suffix) {
     return `john.doe+${Date.now()}+${suffix ?? 1}@supertokens.io`;
+};
+
+exports.getTestPhoneNumber = function () {
+    return `+3630${Date.now().toString().substr(-7)}`;
 };
 
 exports.testPassword = "Asdf12..";

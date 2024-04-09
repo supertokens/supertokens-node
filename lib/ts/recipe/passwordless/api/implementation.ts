@@ -294,6 +294,15 @@ export default function getAPIImplementation(): APIInterface {
                 }
             } else {
                 factorIds = getEnabledPwlessFactors(input.options.config);
+                if (accountInfo.email !== undefined) {
+                    factorIds = factorIds.filter((factor) =>
+                        [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL].includes(factor)
+                    );
+                } else {
+                    factorIds = factorIds.filter((factor) =>
+                        [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE].includes(factor)
+                    );
+                }
             }
 
             const preAuthChecks = await AuthUtils.preAuthChecks({
@@ -428,7 +437,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 deviceId: response.deviceId,
-                flowType: input.options.config.flowType,
+                flowType: flowType,
                 preAuthSessionId: response.preAuthSessionId,
             };
         },
@@ -541,7 +550,37 @@ export default function getAPIImplementation(): APIInterface {
                 if (response.status === "OK") {
                     let magicLink: string | undefined = undefined;
                     let userInputCode: string | undefined = undefined;
-                    const flowType = input.options.config.flowType;
+
+                    // This mirrors how we construct factorIds in createCodePOST
+                    let factorIds;
+                    if (input.session !== undefined) {
+                        if (deviceInfo.email !== undefined) {
+                            factorIds = [FactorIds.OTP_EMAIL];
+                        } else {
+                            factorIds = [FactorIds.OTP_PHONE];
+                        }
+                        // We do not do further filtering here, since we know the exact factor id and the fact that it was created
+                        // which means it was allowed and the user is allowed to re-send it.
+                        // We will execute all check when the code is consumed anyway.
+                    } else {
+                        factorIds = getEnabledPwlessFactors(input.options.config);
+                        factorIds = await AuthUtils.filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid(
+                            factorIds,
+                            input.tenantId,
+                            false,
+                            input.userContext
+                        );
+                    }
+
+                    // This is correct because in createCodePOST we only allow OTP_EMAIL
+                    let flowType = input.options.config.flowType;
+                    if (factorIds.every((id) => id.startsWith("link"))) {
+                        flowType = "MAGIC_LINK";
+                    } else if (factorIds.every((id) => id.startsWith("otp"))) {
+                        flowType = "USER_INPUT_CODE";
+                    } else {
+                        flowType = "USER_INPUT_CODE_AND_MAGIC_LINK";
+                    }
                     if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                         magicLink =
                             input.options.appInfo
