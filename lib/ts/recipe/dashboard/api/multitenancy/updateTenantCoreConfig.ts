@@ -18,7 +18,7 @@ import MultitenancyRecipe from "../../../multitenancy/recipe";
 export type Response =
     | { status: "OK" }
     | { status: "UNKNOWN_TENANT_ERROR" }
-    | { status: "INVALID_CONFIG"; message: string };
+    | { status: "INVALID_CONFIG_ERROR"; message: string };
 
 export default async function updateTenantCoreConfig(
     _: APIInterface,

@@ -5,7 +5,7 @@ export declare type Response =
           status: "OK";
       }
     | {
-          status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK";
+          status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR";
           message: string;
       }
     | {

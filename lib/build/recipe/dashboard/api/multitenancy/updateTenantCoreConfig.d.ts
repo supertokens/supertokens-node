@@ -8,7 +8,7 @@ export declare type Response =
           status: "UNKNOWN_TENANT_ERROR";
       }
     | {
-          status: "INVALID_CONFIG";
+          status: "INVALID_CONFIG_ERROR";
           message: string;
       };
 export default function updateTenantCoreConfig(

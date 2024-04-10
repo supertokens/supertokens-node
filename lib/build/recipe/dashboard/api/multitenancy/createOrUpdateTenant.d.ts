@@ -6,10 +6,10 @@ export declare type Response =
           createdNew: boolean;
       }
     | {
-          status: "MULTITENANCY_NOT_ENABLED_IN_CORE";
+          status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR";
       }
     | {
-          status: "INVALID_TENANT_ID";
+          status: "INVALID_TENANT_ID_ERROR";
           message: string;
       };
 export default function createOrUpdateTenant(

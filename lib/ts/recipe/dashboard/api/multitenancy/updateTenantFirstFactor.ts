@@ -19,7 +19,7 @@ import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
 
 export type Response =
     | { status: "OK" }
-    | { status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK"; message: string }
+    | { status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR"; message: string }
     | { status: "UNKNOWN_TENANT_ERROR" };
 
 export default async function updateTenantFirstFactor(
@@ -36,7 +36,7 @@ export default async function updateTenantFirstFactor(
     if (enable === true) {
         if (!mtRecipe?.allAvailableFirstFactors.includes(factorId)) {
             return {
-                status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK",
+                status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR",
                 message: `No suitable recipe for the factor ${factorId} is initialised on the backend SDK`,
             };
         }

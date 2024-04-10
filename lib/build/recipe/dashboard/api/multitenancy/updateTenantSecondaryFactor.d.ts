@@ -3,17 +3,14 @@ import { APIInterface, APIOptions } from "../../types";
 export declare type Response =
     | {
           status: "OK";
-          isMfaRequirementsForAuthOverridden: boolean;
+          isMFARequirementsForAuthOverridden: boolean;
       }
     | {
-          status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK";
+          status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR";
           message: string;
       }
     | {
-          status: "MFA_NOT_INITIALIZED";
-      }
-    | {
-          status: "MFA_REQUIREMENTS_FOR_AUTH_OVERRIDDEN";
+          status: "MFA_NOT_INITIALIZED_ERROR";
       }
     | {
           status: "UNKNOWN_TENANT_ERROR";

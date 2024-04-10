@@ -23,10 +23,10 @@ export type Response =
           createdNew: boolean;
       }
     | {
-          status: "MULTITENANCY_NOT_ENABLED_IN_CORE";
+          status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR";
       }
     | {
-          status: "INVALID_TENANT_ID";
+          status: "INVALID_TENANT_ID_ERROR";
           message: string;
       };
 
@@ -53,12 +53,12 @@ export default async function createOrUpdateTenant(
         const error = err as QuerierError;
         if (error.statusCode === 402) {
             return {
-                status: "MULTITENANCY_NOT_ENABLED_IN_CORE",
+                status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR",
             };
         }
         if (error.statusCode === 400) {
             return {
-                status: "INVALID_TENANT_ID",
+                status: "INVALID_TENANT_ID_ERROR",
                 message: error.errorMessageFromCore,
             };
         }

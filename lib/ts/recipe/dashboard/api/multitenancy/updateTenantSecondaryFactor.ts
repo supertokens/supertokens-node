@@ -19,10 +19,9 @@ import { FactorIds } from "../../../multifactorauth";
 import { normaliseTenantSecondaryFactors } from "./utils";
 
 export type Response =
-    | { status: "OK"; isMfaRequirementsForAuthOverridden: boolean }
-    | { status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK"; message: string }
-    | { status: "MFA_NOT_INITIALIZED" }
-    | { status: "MFA_REQUIREMENTS_FOR_AUTH_OVERRIDDEN" }
+    | { status: "OK"; isMFARequirementsForAuthOverridden: boolean }
+    | { status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR"; message: string }
+    | { status: "MFA_NOT_INITIALIZED_ERROR" }
     | { status: "UNKNOWN_TENANT_ERROR" };
 
 export default async function updateTenantSecondaryFactor(
@@ -39,7 +38,7 @@ export default async function updateTenantSecondaryFactor(
 
     if (mfaInstance === undefined) {
         return {
-            status: "MFA_NOT_INITIALIZED",
+            status: "MFA_NOT_INITIALIZED_ERROR",
         };
     }
 
@@ -71,7 +70,7 @@ export default async function updateTenantSecondaryFactor(
 
         if (!allAvailableSecondaryFactors.includes(factorId)) {
             return {
-                status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK",
+                status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR",
                 message: `No suitable recipe for the factor ${factorId} is initialised on the backend SDK`,
             };
         }
@@ -98,6 +97,6 @@ export default async function updateTenantSecondaryFactor(
 
     return {
         status: "OK",
-        isMfaRequirementsForAuthOverridden: mfaInstance.isGetMfaRequirementsForAuthOverridden,
+        isMFARequirementsForAuthOverridden: mfaInstance.isGetMfaRequirementsForAuthOverridden,
     };
 }
