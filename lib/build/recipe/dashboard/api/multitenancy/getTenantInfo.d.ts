@@ -1,25 +1,16 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
-import { ProviderConfig } from "../../../thirdparty/types";
 export declare type Response =
     | {
           status: "OK";
           tenant: {
               tenantId: string;
-              emailPassword: {
-                  enabled: boolean;
-              };
               thirdParty: {
-                  enabled: boolean;
-                  providers: ProviderConfig[];
-                  mergedProvidersFromCoreAndStatic: ProviderConfig[];
+                  providers: string[];
               };
-              passwordless: {
-                  enabled: boolean;
-              };
-              firstFactors?: string[];
-              requiredSecondaryFactors?: string[];
-              coreConfig: Record<string, unknown>;
+              firstFactors: string[];
+              requiredSecondaryFactors?: string[] | null;
+              coreConfig: any[];
               userCount: number;
           };
       }

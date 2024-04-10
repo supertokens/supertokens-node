@@ -47,6 +47,7 @@ import {
     TENANT_API,
     TENANT_THIRD_PARTY,
     LIST_ALL_CORE_CONFIG_PROPERTIES,
+    UPDATE_TENANT_FIRST_FACTOR_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -89,6 +90,7 @@ import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
 import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
 import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
 import listAllCoreConfigProperties from "./api/multitenancy/listAllCoreConfigProperties";
+import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -378,6 +380,14 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
+                id: UPDATE_TENANT_FIRST_FACTOR_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(UPDATE_TENANT_FIRST_FACTOR_API)
+                ),
+                disabled: false,
+                method: "put",
+            },
+            {
                 id: TENANT_THIRD_PARTY,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
                 disabled: false,
@@ -534,6 +544,8 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteTenant;
             }
+        } else if (id === UPDATE_TENANT_FIRST_FACTOR_API) {
+            apiFunction = updateTenantFirstFactor;
         } else if (id === TENANT_THIRD_PARTY) {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteThirdPartyConfig;

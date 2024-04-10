@@ -22,6 +22,7 @@ export declare const CREATE_PASSWORDLESS_USER = "/api/user/passwordless";
 export declare const LIST_TENANT_LOGIN_METHODS = "/api/tenants/login-methods";
 export declare const USERROLES_USER_API = "/api/userroles/user/roles";
 export declare const TENANT_API = "/api/tenant";
+export declare const UPDATE_TENANT_FIRST_FACTOR_API = "/api/tenant/first-factor";
 export declare const TENANT_THIRD_PARTY = "/api/tenants/third-party";
 export declare const UNLINK_USER = "/api/user/unlink";
 export declare const LIST_ALL_CORE_CONFIG_PROPERTIES = "/api/core/config/list";

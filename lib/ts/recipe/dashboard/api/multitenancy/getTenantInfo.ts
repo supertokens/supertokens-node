@@ -14,30 +14,23 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
-import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { ProviderConfig } from "../../../thirdparty/types";
+// import MultitenancyRecipe from "../../../multitenancy/recipe";
+// import { ProviderConfig } from "../../../thirdparty/types";
 import SuperTokens from "../../../../supertokens";
-import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
+import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
+// import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
 
 export type Response =
     | {
           status: "OK";
           tenant: {
               tenantId: string;
-              emailPassword: {
-                  enabled: boolean;
-              };
               thirdParty: {
-                  enabled: boolean;
-                  providers: ProviderConfig[];
-                  mergedProvidersFromCoreAndStatic: ProviderConfig[];
+                  providers: string[];
               };
-              passwordless: {
-                  enabled: boolean;
-              };
-              firstFactors?: string[];
-              requiredSecondaryFactors?: string[];
-              coreConfig: Record<string, unknown>;
+              firstFactors: string[];
+              requiredSecondaryFactors?: string[] | null;
+              coreConfig: any[]; // TODO
               userCount: number;
           };
       }
@@ -63,27 +56,43 @@ export default async function getTenantInfo(
         };
     }
 
+    let { status, ...tenantConfig } = tenantRes;
+
+    let firstFactors = normaliseTenantLoginMethodsWithInitConfig(tenantConfig);
+
+    if (tenantRes === undefined) {
+        return {
+            status: "UNKNOWN_TENANT_ERROR",
+        };
+    }
+
     const userCount = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
 
-    const providersFromCore = tenantRes?.thirdParty?.providers ?? [];
-    const mtRecipe = MultitenancyRecipe.getInstance();
-    const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
+    // const providersFromCore = tenantRes?.thirdParty?.providers ?? [];
+    // const mtRecipe = MultitenancyRecipe.getInstance();
+    // const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
-    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders).map(
-        (provider) => provider.config
-    );
+    // const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders).map(
+    //     (provider) => provider.config
+    // );
 
-    const tenant = {
-        tenantId,
-        emailPassword: tenantRes.emailPassword,
-        passwordless: tenantRes.passwordless,
+    const tenant: {
+        tenantId: string;
         thirdParty: {
-            ...tenantRes.thirdParty,
-            mergedProvidersFromCoreAndStatic,
+            providers: string[];
+        };
+        firstFactors: string[];
+        requiredSecondaryFactors?: string[] | null;
+        coreConfig: any[];
+        userCount: number;
+    } = {
+        tenantId,
+        thirdParty: {
+            providers: [], // TODO
         },
-        coreConfig: tenantRes.coreConfig,
-        firstFactors: tenantRes.firstFactors,
+        firstFactors: firstFactors,
         requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
+        coreConfig: [], // TODO
         userCount,
     };
 
