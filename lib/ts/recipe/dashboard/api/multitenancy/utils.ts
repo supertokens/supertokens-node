@@ -1,4 +1,5 @@
 import MultitenancyRecipe from "../../../multitenancy/recipe";
+import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
 import { isFactorConfiguredForTenant } from "../../../multitenancy/utils";
 import { TenantConfig } from "../../../multitenancy/types";
 
@@ -35,4 +36,19 @@ export function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore:
     }
 
     return validFirstFactors;
+}
+
+export function normaliseTenantSecondaryFactors(tenantDetailsFromCore: TenantConfig): string[] {
+    const mfaInstance = MultifactorAuthRecipe.getInstance();
+
+    if (mfaInstance === undefined) {
+        return [];
+    }
+
+    let secondaryFactors = mfaInstance.getAllAvailableSecondaryFactorIds(tenantDetailsFromCore);
+    secondaryFactors = secondaryFactors.filter((factorId) =>
+        (tenantDetailsFromCore.requiredSecondaryFactors ?? []).includes(factorId)
+    );
+
+    return secondaryFactors;
 }

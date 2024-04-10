@@ -53,6 +53,8 @@ export default class Recipe extends RecipeModule {
     getEmailsForFactorFromOtherRecipesFunc: GetEmailsForFactorFromOtherRecipesFunc[] = [];
     getPhoneNumbersForFactorFromOtherRecipesFunc: GetPhoneNumbersForFactorsFromOtherRecipesFunc[] = [];
 
+    isGetMfaRequirementsForAuthOverridden: boolean = false;
+
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
@@ -69,8 +71,16 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(this));
+            let originalImpl = RecipeImplementation(this);
+            let builder = new OverrideableBuilder(originalImpl);
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+
+            // @ts-ignore
+            let layers = builder.layers;
+
+            if (Object.keys(layers[1]).includes("getMFARequirementsForAuth")) {
+                this.isGetMfaRequirementsForAuthOverridden = true;
+            }
         }
 
         {
