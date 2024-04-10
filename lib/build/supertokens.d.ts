@@ -84,8 +84,10 @@ export default class SuperTokens {
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse, userContext: UserContext) => Promise<void>;
     getRequestFromUserContext: (userContext: UserContext | undefined) => BaseRequest | undefined;
     listAllCoreConfigProperties: ({
+        tenantId,
         userContext,
     }: {
+        tenantId: string;
         userContext: UserContext;
     }) => Promise<{
         status: "OK";

@@ -479,15 +479,21 @@ export default class SuperTokens {
     };
 
     listAllCoreConfigProperties = async ({
+        tenantId,
         userContext,
     }: {
+        tenantId: string;
         userContext: UserContext;
     }): Promise<{
         status: "OK";
         config: Array<CoreConfigProperty>;
     }> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let response = await querier.sendGetRequest(new NormalisedURLPath(`/core-config/list`), {}, userContext);
+        let response = await querier.sendGetRequest(
+            new NormalisedURLPath(`/${tenantId}/core-config/list`),
+            {},
+            userContext
+        );
         return response;
     };
 }

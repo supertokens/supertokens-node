@@ -51,9 +51,24 @@ export default async function updateTenantSecondaryFactor(
         };
     }
 
-    const allAvailableSecondaryFactors = mfaInstance.getAllAvailableSecondaryFactorIds(tenantRes);
+    let updateTenantBody: any = {};
 
     if (enable === true) {
+        if ([FactorIds.EMAILPASSWORD].includes(factorId)) {
+            updateTenantBody.emailPasswordEnabled = true;
+            tenantRes.emailPassword.enabled = true;
+        } else if (
+            [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(factorId)
+        ) {
+            updateTenantBody.passwordlessEnabled = true;
+            tenantRes.passwordless.enabled = true;
+        } else if ([FactorIds.THIRDPARTY].includes(factorId)) {
+            updateTenantBody.thirdPartyEnabled = true;
+            tenantRes.thirdParty.enabled = true;
+        }
+
+        const allAvailableSecondaryFactors = mfaInstance.getAllAvailableSecondaryFactorIds(tenantRes);
+
         if (!allAvailableSecondaryFactors.includes(factorId)) {
             return {
                 status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK",
@@ -64,21 +79,9 @@ export default async function updateTenantSecondaryFactor(
 
     let secondaryFactors = normaliseTenantSecondaryFactors(tenantRes);
 
-    let updateTenantBody: any = {};
-
     if (enable === true) {
         if (!secondaryFactors.includes(factorId)) {
             secondaryFactors.push(factorId);
-        }
-
-        if ([FactorIds.EMAILPASSWORD].includes(factorId)) {
-            updateTenantBody.emailPasswordEnabled = true;
-        } else if (
-            [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(factorId)
-        ) {
-            updateTenantBody.passwordlessEnabled = true;
-        } else if ([FactorIds.THIRDPARTY].includes(factorId)) {
-            updateTenantBody.thirdPartyEnabled = true;
         }
     } else {
         secondaryFactors = secondaryFactors.filter((f) => f !== factorId);

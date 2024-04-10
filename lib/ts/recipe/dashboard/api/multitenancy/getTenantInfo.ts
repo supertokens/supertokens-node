@@ -76,6 +76,11 @@ export default async function getTenantInfo(
     //     (provider) => provider.config
     // );
 
+    const coreConfig = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({
+        tenantId,
+        userContext,
+    });
+
     const tenant: {
         tenantId: string;
         thirdParty: {
@@ -92,7 +97,7 @@ export default async function getTenantInfo(
         },
         firstFactors: firstFactors,
         requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
-        coreConfig: [], // TODO
+        coreConfig: coreConfig.config,
         userCount,
     };
 

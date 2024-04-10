@@ -7,7 +7,7 @@ export declare type Response = {
 };
 export default function listAllCoreConfigProperties(
     _: APIInterface,
-    __: string,
+    tenantId: string,
     ___: APIOptions,
     userContext: any
 ): Promise<Response>;

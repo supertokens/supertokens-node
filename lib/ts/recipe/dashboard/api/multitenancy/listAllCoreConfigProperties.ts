@@ -23,11 +23,11 @@ export type Response = {
 
 export default async function listAllCoreConfigProperties(
     _: APIInterface,
-    __: string,
+    tenantId: string,
     ___: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const res = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({ userContext });
+    const res = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({ tenantId, userContext });
 
     return res;
 }
