@@ -14,11 +14,10 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
-// import MultitenancyRecipe from "../../../multitenancy/recipe";
-// import { ProviderConfig } from "../../../thirdparty/types";
+import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokens from "../../../../supertokens";
 import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
-// import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
+import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
 
 export type Response =
     | {
@@ -68,13 +67,13 @@ export default async function getTenantInfo(
 
     const userCount = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
 
-    // const providersFromCore = tenantRes?.thirdParty?.providers ?? [];
-    // const mtRecipe = MultitenancyRecipe.getInstance();
-    // const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
+    const providersFromCore = tenantRes?.thirdParty?.providers ?? [];
+    const mtRecipe = MultitenancyRecipe.getInstance();
+    const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
-    // const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders).map(
-    //     (provider) => provider.config
-    // );
+    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders).map(
+        (provider) => provider.config
+    );
 
     const coreConfig = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({
         tenantId,
@@ -93,7 +92,7 @@ export default async function getTenantInfo(
     } = {
         tenantId,
         thirdParty: {
-            providers: [], // TODO
+            providers: mergedProvidersFromCoreAndStatic.map((provider) => provider.thirdPartyId),
         },
         firstFactors: firstFactors,
         requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
