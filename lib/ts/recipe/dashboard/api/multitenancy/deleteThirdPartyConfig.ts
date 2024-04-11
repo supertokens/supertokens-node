@@ -14,12 +14,18 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
+import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokensError from "../../../../error";
+import { FactorIds } from "../../../multifactorauth";
 
-export type Response = {
-    status: "OK";
-    didConfigExist: boolean;
-};
+export type Response =
+    | {
+          status: "OK";
+          didConfigExist: boolean;
+      }
+    | {
+          status: "UNKNOWN_TENANT_ERROR";
+      };
 
 export default async function deleteThirdPartyConfig(
     _: APIInterface,
@@ -36,7 +42,56 @@ export default async function deleteThirdPartyConfig(
         });
     }
 
-    const deleteThirdPartyRes = await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
+    const tenantRes = await Multitenancy.getTenant(tenantId, userContext);
+    if (tenantRes === undefined) {
+        return {
+            status: "UNKNOWN_TENANT_ERROR",
+        };
+    }
 
-    return deleteThirdPartyRes;
+    const thirdPartyIdsFromCore = tenantRes.thirdParty.providers.map((provider) => provider.thirdPartyId);
+
+    if (thirdPartyIdsFromCore.length > 1) {
+        return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
+    } else if (thirdPartyIdsFromCore.length === 0) {
+        const mtRecipe = MultitenancyRecipe.getInstance();
+        const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
+        let staticProviderIds = staticProviders.map((provider) => provider.config.thirdPartyId);
+
+        staticProviderIds = staticProviderIds.filter((id) => id !== thirdPartyId);
+
+        for (const providerId of staticProviderIds) {
+            await Multitenancy.createOrUpdateThirdPartyConfig(
+                tenantId,
+                {
+                    thirdPartyId: providerId,
+                },
+                undefined,
+                userContext
+            );
+        }
+
+        return {
+            status: "OK",
+            didConfigExist: true,
+        };
+    } else {
+        let firstFactors = tenantRes.firstFactors ?? [];
+
+        firstFactors = firstFactors.filter((factor) => factor !== FactorIds.THIRDPARTY);
+
+        await Multitenancy.createOrUpdateTenant(
+            tenantId,
+            {
+                thirdPartyEnabled: false,
+                firstFactors: firstFactors,
+            },
+            userContext
+        );
+
+        return {
+            status: "OK",
+            didConfigExist: true,
+        };
+    }
 }

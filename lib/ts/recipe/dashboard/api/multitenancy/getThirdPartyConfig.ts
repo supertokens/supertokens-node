@@ -165,6 +165,7 @@ export default async function getThirdPartyConfig(
                     }
                 }
             }
+            break;
         }
     }
 
