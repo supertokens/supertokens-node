@@ -108,7 +108,9 @@ export default function getAPIInterface(): APIInterface {
 
             if (next.length === 0 && nextSetOfUnsatisfiedFactors.factorIds.length !== 0) {
                 throw new Error(
-                    `The user is required to complete secondary factors they are not allowed to, because of configuration issues`
+                    `The user is required to complete secondary factors they are not allowed to (${nextSetOfUnsatisfiedFactors.factorIds.join(
+                        ", "
+                    )}), likely because of configuration issues.`
                 );
             }
 
