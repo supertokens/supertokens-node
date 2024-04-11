@@ -107,6 +107,20 @@ export default async function getThirdPartyConfig(
                           oidcDiscoveryEndpoint: options.req.getKeyValueFromQuery("oktaDomain"),
                       }
                     : undefined),
+                ...(thirdPartyId === "active-directory"
+                    ? {
+                          oidcDiscoveryEndpoint: `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
+                              "directoryId"
+                          )}/v2.0/`,
+                      }
+                    : undefined),
+                ...(thirdPartyId === "boxy-saml"
+                    ? {
+                          authorizationEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/authorize`,
+                          tokenEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/token`,
+                          userInfoEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/userinfo`,
+                      }
+                    : undefined),
             },
         },
     ];
