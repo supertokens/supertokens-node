@@ -95,14 +95,18 @@ export default async function getTenantInfo(
         thirdParty: {
             providers: await Promise.all(
                 mergedProvidersFromCoreAndStatic.map(async (provider) => {
-                    console.log(provider);
-                    const providerInstance = await findAndCreateProviderInstance(
-                        mergedProvidersFromCoreAndStatic,
-                        provider.config.thirdPartyId,
-                        provider.config.clients![0].clientType,
-                        userContext
-                    );
-                    return { thirdPartyId: provider.config.thirdPartyId, name: providerInstance?.config.name! };
+                    try {
+                        const providerInstance = await findAndCreateProviderInstance(
+                            mergedProvidersFromCoreAndStatic,
+                            provider.config.thirdPartyId,
+                            provider.config.clients![0].clientType,
+                            userContext
+                        );
+
+                        return { thirdPartyId: provider.config.thirdPartyId, name: providerInstance?.config.name! };
+                    } catch (_) {
+                        return { thirdPartyId: provider.config.thirdPartyId, name: provider.config.thirdPartyId }; // TODO fix the name
+                    }
                 })
             ),
         },
