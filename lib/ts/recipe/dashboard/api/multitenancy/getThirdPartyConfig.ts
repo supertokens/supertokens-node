@@ -40,17 +40,7 @@ export default async function getThirdPartyConfig(
     options: APIOptions,
     userContext: any
 ): Promise<Response> {
-    let tenantRes;
-
-    try {
-        tenantRes = await Multitenancy.getTenant(tenantId, userContext);
-    } catch (_) {}
-
-    if (tenantRes === undefined) {
-        return {
-            status: "UNKNOWN_TENANT_ERROR",
-        };
-    }
+    let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
 
     if (tenantRes === undefined) {
         return {
@@ -108,7 +98,7 @@ export default async function getThirdPartyConfig(
                 ...(thirdPartyId === "active-directory"
                     ? {
                           oidcDiscoveryEndpoint: `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
-                              "tenantId"
+                              "directoryId"
                           )}/v2.0/`,
                       }
                     : undefined),

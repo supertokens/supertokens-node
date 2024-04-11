@@ -76,15 +76,16 @@ export default async function deleteThirdPartyConfig(
             didConfigExist: true,
         };
     } else {
+        await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
+
         let firstFactors = tenantRes.firstFactors ?? [];
 
         firstFactors = firstFactors.filter((factor) => factor !== FactorIds.THIRDPARTY);
-
         await Multitenancy.createOrUpdateTenant(
             tenantId,
             {
                 thirdPartyEnabled: false,
-                firstFactors: firstFactors,
+                firstFactors: firstFactors.length > 0 ? firstFactors : null,
             },
             userContext
         );

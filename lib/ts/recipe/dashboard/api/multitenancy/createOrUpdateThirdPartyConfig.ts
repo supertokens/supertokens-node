@@ -14,11 +14,14 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
+import MultitenancyRecipe from "../../../multitenancy/recipe";
 
-export type Response = {
-    status: "OK";
-    createdNew: boolean;
-};
+export type Response =
+    | {
+          status: "OK";
+          createdNew: boolean;
+      }
+    | { status: "UNKNOWN_TENANT_ERROR" };
 
 export default async function createOrUpdateThirdPartyConfig(
     _: APIInterface,
@@ -28,6 +31,29 @@ export default async function createOrUpdateThirdPartyConfig(
 ): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { providerConfig } = requestBody;
+
+    let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
+
+    if (tenantRes === undefined) {
+        return {
+            status: "UNKNOWN_TENANT_ERROR",
+        };
+    }
+
+    if (tenantRes.thirdParty.providers.length == 0) {
+        const mtRecipe = MultitenancyRecipe.getInstance();
+        const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
+        for (const provider of staticProviders) {
+            await Multitenancy.createOrUpdateThirdPartyConfig(
+                tenantId,
+                {
+                    thirdPartyId: provider.config.thirdPartyId,
+                },
+                undefined,
+                userContext
+            );
+        }
+    }
 
     const thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
         tenantId,
