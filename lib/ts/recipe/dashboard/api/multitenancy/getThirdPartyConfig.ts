@@ -113,48 +113,63 @@ export default async function getThirdPartyConfig(
 
     for (const provider of mergedProvidersFromCoreAndStatic) {
         if (provider.config.thirdPartyId === thirdPartyId) {
+            let foundCorrectConfig = false;
+
             for (const client of provider.config.clients ?? []) {
-                const providerInstance = await findAndCreateProviderInstance(
-                    mergedProvidersFromCoreAndStatic,
-                    thirdPartyId,
-                    client.clientType,
-                    userContext
-                );
-                const {
-                    clientId,
-                    clientSecret,
-                    clientType,
-                    scope,
-                    additionalConfig,
-                    ...commonConfig
-                } = providerInstance!.config;
+                try {
+                    const providerInstance = await findAndCreateProviderInstance(
+                        mergedProvidersFromCoreAndStatic,
+                        thirdPartyId,
+                        client.clientType,
+                        userContext
+                    );
+                    const {
+                        clientId,
+                        clientSecret,
+                        clientType,
+                        scope,
+                        additionalConfig,
+                        ...commonConfig
+                    } = providerInstance!.config;
 
-                clients.push({
-                    clientId,
-                    clientSecret,
-                    scope,
-                    clientType,
-                    additionalConfig,
-                });
-                commonProviderConfig = commonConfig;
+                    clients.push({
+                        clientId,
+                        clientSecret,
+                        scope,
+                        clientType,
+                        additionalConfig,
+                    });
+                    commonProviderConfig = commonConfig;
 
-                if (provider.override !== undefined) {
-                    const beforeOverride = { ...providerInstance! };
-                    const afterOverride = provider.override(beforeOverride);
+                    if (provider.override !== undefined) {
+                        const beforeOverride = { ...providerInstance! };
+                        const afterOverride = provider.override(beforeOverride);
 
-                    if (beforeOverride.getAuthorisationRedirectURL !== afterOverride.getAuthorisationRedirectURL) {
-                        isGetAuthorisationRedirectUrlOverridden = true;
+                        if (beforeOverride.getAuthorisationRedirectURL !== afterOverride.getAuthorisationRedirectURL) {
+                            isGetAuthorisationRedirectUrlOverridden = true;
+                        }
+                        if (
+                            beforeOverride.exchangeAuthCodeForOAuthTokens !==
+                            afterOverride.exchangeAuthCodeForOAuthTokens
+                        ) {
+                            isExchangeAuthCodeForOAuthTokensOverridden = true;
+                        }
+                        if (beforeOverride.getUserInfo !== afterOverride.getUserInfo) {
+                            isGetUserInfoOverridden = true;
+                        }
                     }
-                    if (
-                        beforeOverride.exchangeAuthCodeForOAuthTokens !== afterOverride.exchangeAuthCodeForOAuthTokens
-                    ) {
-                        isExchangeAuthCodeForOAuthTokensOverridden = true;
-                    }
-                    if (beforeOverride.getUserInfo !== afterOverride.getUserInfo) {
-                        isGetUserInfoOverridden = true;
-                    }
+
+                    foundCorrectConfig = true;
+                } catch (err) {
+                    // ignore the error
+                    clients.push(client);
                 }
             }
+
+            if (!foundCorrectConfig) {
+                commonProviderConfig = provider.config;
+            }
+
             break;
         }
     }
