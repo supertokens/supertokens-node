@@ -68,7 +68,7 @@ export default async function getThirdPartyConfig(
     const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
-    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
+    let mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
 
     const clients = [];
     let commonProviderConfig: ProviderConfig = {
@@ -77,6 +77,49 @@ export default async function getThirdPartyConfig(
     let isGetAuthorisationRedirectUrlOverridden = false;
     let isExchangeAuthCodeForOAuthTokensOverridden = false;
     let isGetUserInfoOverridden = false;
+
+    mergedProvidersFromCoreAndStatic = [
+        ...mergedProvidersFromCoreAndStatic,
+        {
+            config: {
+                thirdPartyId,
+                clients: [
+                    {
+                        clientId: "client-id",
+                        ...(thirdPartyId === "apple"
+                            ? {
+                                  additionalConfig: {
+                                      teamId: "team-id",
+                                      keyId: "key-id",
+                                      privateKey:
+                                          "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                  },
+                              }
+                            : undefined),
+                        ...(thirdPartyId === "google-workspaces"
+                            ? {
+                                  additionalConfig: {
+                                      hd: options.req.getKeyValueFromQuery("hd"),
+                                  },
+                              }
+                            : undefined),
+                    },
+                ],
+                ...(thirdPartyId === "active-directory"
+                    ? {
+                          oidcDiscoveryEndpoint: `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
+                              "tenantId"
+                          )}/v2.0/`,
+                      }
+                    : undefined),
+                ...(thirdPartyId === "okta"
+                    ? {
+                          oidcDiscoveryEndpoint: options.req.getKeyValueFromQuery("oktaDomain"),
+                      }
+                    : undefined),
+            },
+        },
+    ];
 
     for (const provider of mergedProvidersFromCoreAndStatic) {
         if (provider.config.thirdPartyId === thirdPartyId) {
