@@ -50,6 +50,7 @@ import {
     UPDATE_TENANT_FIRST_FACTOR_API,
     UPDATE_TENANT_SECONDARY_FACTOR_API,
     UPDATE_TENANT_CORE_CONFIG_API,
+    TENANT_THIRD_PARTY_CONFIG_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -95,6 +96,7 @@ import listAllCoreConfigProperties from "./api/multitenancy/listAllCoreConfigPro
 import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor";
 import updateTenantSecondaryFactor from "./api/multitenancy/updateTenantSecondaryFactor";
 import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
+import getThirdPartyConfig from "./api/multitenancy/getThirdPartyConfig";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -414,6 +416,14 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
+                id: TENANT_THIRD_PARTY_CONFIG_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                disabled: false,
+                method: "get",
+            },
+            {
                 id: TENANT_THIRD_PARTY,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
                 disabled: false,
@@ -576,6 +586,10 @@ export default class Recipe extends RecipeModule {
             }
             if (req.getMethod() === "put") {
                 apiFunction = createOrUpdateThirdPartyConfig;
+            }
+        } else if (id === TENANT_THIRD_PARTY_CONFIG_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = getThirdPartyConfig;
             }
         } else if (id === LIST_ALL_CORE_CONFIG_PROPERTIES) {
             apiFunction = listAllCoreConfigProperties;
