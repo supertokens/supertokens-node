@@ -14,6 +14,7 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
+import { QuerierError } from "../../../../QuerierError";
 
 export type Response =
     | { status: "OK" }
@@ -38,15 +39,28 @@ export default async function updateTenantCoreConfig(
         };
     }
 
-    await mtRecipe!.recipeInterfaceImpl.createOrUpdateTenant({
-        tenantId,
-        config: {
-            coreConfig: {
-                [name]: value,
+    try {
+        await mtRecipe!.recipeInterfaceImpl.createOrUpdateTenant({
+            tenantId,
+            config: {
+                coreConfig: {
+                    [name]: value,
+                },
             },
-        },
-        userContext,
-    });
+            userContext,
+        });
+    } catch (err) {
+        if (err instanceof QuerierError) {
+            console.log(err);
+            if (err.statusCode === 400) {
+                return {
+                    status: "INVALID_CONFIG_ERROR",
+                    message: err.errorMessageFromCore,
+                };
+            }
+        }
+        throw err;
+    }
 
     return {
         status: "OK",

@@ -75,10 +75,10 @@ export default async function getTenantInfo(
         (provider) => provider.config
     );
 
-    // const coreConfig = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({
-    //     tenantId,
-    //     userContext,
-    // });
+    const coreConfig = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({
+        tenantId,
+        userContext,
+    });
 
     const tenant: {
         tenantId: string;
@@ -96,57 +96,7 @@ export default async function getTenantInfo(
         },
         firstFactors: firstFactors,
         requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
-        // coreConfig: coreConfig.config,
-        coreConfig: [
-            {
-                key: "password_reset_token_lifetime",
-                valueType: "number",
-                value: 3600000,
-                description: "The time in milliseconds for which the password reset token is valid.",
-                isSaaSProtected: false,
-                isDifferentAcrossTenants: true,
-                isModifyableOnlyViaConfigYaml: false,
-                defaultValue: 3600000,
-                isNullable: false,
-                isPluginProperty: false,
-            },
-            {
-                key: "access_token_blacklisting",
-                valueType: "boolean",
-                value: false,
-                description: "Whether to blacklist access tokens or not.",
-                isSaaSProtected: false,
-                isDifferentAcrossTenants: true,
-                isModifyableOnlyViaConfigYaml: false,
-                defaultValue: false,
-                isNullable: false,
-                isPluginProperty: false,
-            },
-            {
-                key: "ip_allow_regex",
-                valueType: "string",
-                value: null,
-                description: "The regex to match the IP address of the user.",
-                isSaaSProtected: false,
-                isDifferentAcrossTenants: true,
-                isModifyableOnlyViaConfigYaml: false,
-                defaultValue: null,
-                isNullable: true,
-                isPluginProperty: false,
-            },
-            {
-                key: "postgresql_emailpassword_users_table_name",
-                valueType: "string",
-                value: null,
-                description: "The name of the table where the emailpassword users are stored.",
-                isSaaSProtected: false,
-                isDifferentAcrossTenants: true,
-                isModifyableOnlyViaConfigYaml: false,
-                defaultValue: 3600000,
-                isNullable: true,
-                isPluginProperty: true,
-            },
-        ],
+        coreConfig: coreConfig.config,
         userCount,
     };
 
