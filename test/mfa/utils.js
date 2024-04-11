@@ -222,6 +222,6 @@ module.exports.tpSignInUp = async function (app, thirdPartyId, email, accessToke
     }
 };
 
-module.exports.getMfaInfo = async function (app, accessToken) {
-    return request(app).put("/auth/mfa/info").set("Authorization", `Bearer ${accessToken}`).expect(200);
+module.exports.getMfaInfo = async function (app, accessToken, statusCode = 200) {
+    return request(app).put("/auth/mfa/info").set("Authorization", `Bearer ${accessToken}`).expect(statusCode);
 };
