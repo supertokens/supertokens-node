@@ -75,7 +75,7 @@ export default async function getThirdPartyConfig(
                 thirdPartyId,
                 clients: [
                     {
-                        clientId: "client-id",
+                        clientId: "nonguessable-temporary-client-id",
                         ...(thirdPartyId === "apple"
                             ? {
                                   additionalConfig: {
@@ -163,7 +163,7 @@ export default async function getThirdPartyConfig(
         status: "OK",
         providerConfig: {
             ...commonProviderConfig,
-            clients,
+            clients: clients.filter((client) => client.clientId !== "nonguessable-temporary-client-id"),
             isGetAuthorisationRedirectUrlOverridden,
             isExchangeAuthCodeForOAuthTokensOverridden,
             isGetUserInfoOverridden,
