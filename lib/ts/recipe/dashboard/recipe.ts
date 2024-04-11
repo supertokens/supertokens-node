@@ -432,6 +432,14 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
+                id: TENANT_THIRD_PARTY_CONFIG_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                disabled: false,
+                method: "delete",
+            },
+            {
                 id: TENANT_THIRD_PARTY,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
                 disabled: false,
@@ -601,6 +609,9 @@ export default class Recipe extends RecipeModule {
             }
             if (req.getMethod() === "put") {
                 apiFunction = createOrUpdateThirdPartyConfig;
+            }
+            if (req.getMethod() === "delete") {
+                apiFunction = deleteThirdPartyConfig;
             }
         } else if (id === LIST_ALL_CORE_CONFIG_PROPERTIES) {
             apiFunction = listAllCoreConfigProperties;
