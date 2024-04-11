@@ -6,7 +6,10 @@ export declare type Response =
           tenant: {
               tenantId: string;
               thirdParty: {
-                  providers: string[];
+                  providers: {
+                      thirdPartyId: string;
+                      name: string;
+                  }[];
               };
               firstFactors: string[];
               requiredSecondaryFactors?: string[] | null;

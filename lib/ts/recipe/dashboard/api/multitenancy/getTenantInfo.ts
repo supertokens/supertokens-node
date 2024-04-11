@@ -17,7 +17,10 @@ import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokens from "../../../../supertokens";
 import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
-import { mergeProvidersFromCoreAndStatic } from "../../../thirdparty/providers/configUtils";
+import {
+    findAndCreateProviderInstance,
+    mergeProvidersFromCoreAndStatic,
+} from "../../../thirdparty/providers/configUtils";
 
 export type Response =
     | {
@@ -25,7 +28,7 @@ export type Response =
           tenant: {
               tenantId: string;
               thirdParty: {
-                  providers: string[];
+                  providers: { thirdPartyId: string; name: string }[];
               };
               firstFactors: string[];
               requiredSecondaryFactors?: string[] | null;
@@ -71,9 +74,7 @@ export default async function getTenantInfo(
     const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
-    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders).map(
-        (provider) => provider.config
-    );
+    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
 
     const coreConfig = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({
         tenantId,
@@ -83,7 +84,7 @@ export default async function getTenantInfo(
     const tenant: {
         tenantId: string;
         thirdParty: {
-            providers: string[];
+            providers: { thirdPartyId: string; name: string }[];
         };
         firstFactors: string[];
         requiredSecondaryFactors?: string[] | null;
@@ -92,7 +93,18 @@ export default async function getTenantInfo(
     } = {
         tenantId,
         thirdParty: {
-            providers: mergedProvidersFromCoreAndStatic.map((provider) => provider.thirdPartyId),
+            providers: await Promise.all(
+                mergedProvidersFromCoreAndStatic.map(async (provider) => {
+                    console.log(provider);
+                    const providerInstance = await findAndCreateProviderInstance(
+                        mergedProvidersFromCoreAndStatic,
+                        provider.config.thirdPartyId,
+                        provider.config.clients![0].clientType,
+                        userContext
+                    );
+                    return { thirdPartyId: provider.config.thirdPartyId, name: providerInstance?.config.name! };
+                })
+            ),
         },
         firstFactors: firstFactors,
         requiredSecondaryFactors: tenantRes.requiredSecondaryFactors,
