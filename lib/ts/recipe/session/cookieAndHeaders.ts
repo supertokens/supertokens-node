@@ -236,7 +236,7 @@ export function clearSessionCookiesFromOlderCookieDomain({
         return didClearCookies;
     }
 
-    const cookies = parseCookieStringFromRequestHeader(cookieString);
+    const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
 
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
@@ -265,7 +265,7 @@ export function clearSessionCookiesFromOlderCookieDomain({
 
 // This function is required because cookies library (and most of the popular libraries in npm)
 // does not support parsing multiple cookies with the same name.
-function parseCookieStringFromRequestHeader(cookieString: string): Record<string, string[]> {
+function parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString: string): Record<string, string[]> {
     const cookies: Record<string, string[]> = {};
 
     const cookiePairs = cookieString.split(";");
