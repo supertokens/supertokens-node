@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Calling the `refreshPOST` API with multiple access token cookies (possible if `cookieDomain` is updated) will result in a 200 response with the access token cookies with `olderCookieDomain` cleared. This may be a breaking change if you are overriding the `refreshPOST` API implementation.
 
+## [17.0.4] - 2024-04-09
+
+### Changes
+
+-   Improved error message to help debugging if MFA was enabled without account linking.
+-   Now the `resyncSessionAndFetchMFAInfoPUT` will throw if the user is in a stuck state, because they are required to complete factors, but they are not allowed to because of some configuration issue.
+
 ## [17.0.3] - 2024-04-08
 
 ### Fixes
