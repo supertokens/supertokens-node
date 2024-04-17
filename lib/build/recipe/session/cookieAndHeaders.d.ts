@@ -83,3 +83,4 @@ export declare function clearSessionCookiesFromOlderCookieDomain({
     config: TypeNormalisedInput;
     userContext: UserContext;
 }): boolean;
+export declare function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: TokenType): boolean;

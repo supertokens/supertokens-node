@@ -230,21 +230,12 @@ export function clearSessionCookiesFromOlderCookieDomain({
     userContext: UserContext;
 }): boolean {
     let didClearCookies = false;
-    const cookieString = req.getHeaderValue("cookie");
-
-    if (cookieString === undefined || config.olderCookieDomain === undefined) {
-        return didClearCookies;
-    }
-
-    const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
 
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        const cookieName = getCookieNameFromTokenType(token);
-
-        if (cookies[cookieName] !== undefined && cookies[cookieName].length > 1) {
+        if (hasMultipleCookiesForTokenType(req, token)) {
             logDebugMessage(
-                `clearDuplicateSessionCookies: Clearing duplicate ${cookieName} cookie with domain ${config.olderCookieDomain}`
+                `clearSessionCookiesFromOlderCookieDomain: Clearing duplicate ${token} cookie with domain ${config.olderCookieDomain}`
             );
             setToken(
                 { ...config, cookieDomain: config.olderCookieDomain },
@@ -259,8 +250,19 @@ export function clearSessionCookiesFromOlderCookieDomain({
             didClearCookies = true;
         }
     }
-
     return didClearCookies;
+}
+
+export function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: TokenType): boolean {
+    const cookieString = req.getHeaderValue("cookie");
+
+    if (cookieString === undefined) {
+        return false;
+    }
+
+    const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
+    const cookieName = getCookieNameFromTokenType(tokenType);
+    return cookies[cookieName] !== undefined && cookies[cookieName].length > 1;
 }
 
 // This function is required because cookies library (and most of the popular libraries in npm)

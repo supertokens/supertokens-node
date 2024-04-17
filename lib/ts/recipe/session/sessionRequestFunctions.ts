@@ -17,6 +17,7 @@ import {
     getAntiCsrfTokenFromHeaders,
     getAuthModeFromHeader,
     getToken,
+    hasMultipleCookiesForTokenType,
     setCookie,
 } from "./cookieAndHeaders";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
@@ -44,6 +45,21 @@ export async function getSessionFromRequest({
     userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
+
+    // If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+    // This prompts the client to call the refresh endpoint, clearing olderCookieDomain cookies (if set).
+    // ensuring outdated token payload isn't used.
+    const hasMultipleAccessTokenCookies = hasMultipleCookiesForTokenType(req, "access");
+    if (hasMultipleAccessTokenCookies) {
+        logDebugMessage(
+            "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
+        );
+        throw new SessionError({
+            message: "Multiple access tokens present in the request cookies.",
+            type: SessionError.TRY_REFRESH_TOKEN,
+        });
+    }
+
     const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
     if (configuredFramework !== "custom") {
         if (!req.wrapperUsed) {
