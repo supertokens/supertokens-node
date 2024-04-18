@@ -185,7 +185,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert.strictEqual(frontendInfo.up["rsub"], "testuserid");
     });
 
-    // check if access token cookie is cleared if refresh token api is called without the refresh token
     it("test that access token cookie is cleared if refresh token api is called without the refresh token", async function () {
         const connectionURI = await startST();
         SuperTokens.init({
@@ -244,7 +243,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.refreshToken === undefined);
     });
 
-    // check if access and refresh token for olderCookieDomain is cleared if multiple tokens are passed to the refresh endpoint
     it("test that access and refresh token for olderCookieDomain is cleared if multiple tokens are passed to the refresh endpoint", async function () {
         const connectionURI = await startST();
         SuperTokens.init({
@@ -294,6 +292,49 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.refreshToken === "");
         assert(cookies.refreshTokenExpiry === new Date(0).toUTCString());
         assert(cookies.refreshTokenDomain === ".example.com");
+    });
+
+    it("test that refresh endpoint throws a 500 if multiple tokens are passed and olderCookieDomain is undefined", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", [
+                    "sAccessToken=accessToken1",
+                    "sAccessToken=accessToken2",
+                    "sRefreshToken=refreshToken1",
+                    "sRefreshToken=refreshToken2",
+                ])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.status === 500);
     });
 
     // check if input cookies are missing, an appropriate error is thrown

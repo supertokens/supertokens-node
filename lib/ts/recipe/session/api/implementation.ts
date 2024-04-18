@@ -4,7 +4,7 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
 import { GeneralErrorResponse, UserContext } from "../../../types";
 import { getSessionFromRequest, refreshSessionInRequest } from "../sessionRequestFunctions";
-import { clearSessionCookiesFromOlderCookieDomain } from "../cookieAndHeaders";
+import { clearSessionCookiesFromOlderCookieDomain, hasMultipleCookiesForTokenType } from "../cookieAndHeaders";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -15,6 +15,20 @@ export default function getAPIInterface(): APIInterface {
             options: APIOptions;
             userContext: UserContext;
         }): Promise<SessionContainerInterface | undefined> {
+            // If a request has multiple session cookies and 'olderCookieDomain' is
+            // unset, we can't identify the correct cookie for refreshing the session.
+            // Using the wrong cookie can cause an infinite refresh loop. To avoid this,
+            // we throw a 500 error asking the user to set 'olderCookieDomain'.
+            if (
+                (hasMultipleCookiesForTokenType(options.req, "access") ||
+                    hasMultipleCookiesForTokenType(options.req, "refresh")) &&
+                options.config.olderCookieDomain === undefined
+            ) {
+                throw new Error(
+                    `The request contains multiple session cookies. This may happen if you've changed the 'cookieDomain' setting in your configuration. To clear tokens from the previous domain, set 'olderCookieDomain' in your config.`
+                );
+            }
+
             let didClearCookies = clearSessionCookiesFromOlderCookieDomain({
                 req: options.req,
                 res: options.res,

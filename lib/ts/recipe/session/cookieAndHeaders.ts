@@ -231,6 +231,10 @@ export function clearSessionCookiesFromOlderCookieDomain({
 }): boolean {
     let didClearCookies = false;
 
+    if (config.olderCookieDomain === undefined) {
+        return didClearCookies;
+    }
+
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
         if (hasMultipleCookiesForTokenType(req, token)) {
