@@ -14,7 +14,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: UserContext;
-        }): Promise<SessionContainerInterface | undefined> {
+        }): Promise<SessionContainerInterface> {
             // If a request has multiple session cookies and 'olderCookieDomain' is
             // unset, we can't identify the correct cookie for refreshing the session.
             // Using the wrong cookie can cause an infinite refresh loop. To avoid this,
@@ -29,18 +29,12 @@ export default function getAPIInterface(): APIInterface {
                 );
             }
 
-            let didClearCookies = clearSessionCookiesFromOlderCookieDomain({
+            clearSessionCookiesFromOlderCookieDomain({
                 req: options.req,
                 res: options.res,
                 config: options.config,
                 userContext,
             });
-
-            // Return early if we cleared cookies from older cookie domain
-            // to avoid setting multiple cookies with the same name
-            if (didClearCookies) {
-                return undefined;
-            }
 
             return refreshSessionInRequest({
                 req: options.req,

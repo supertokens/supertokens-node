@@ -50,8 +50,10 @@ export type CreateOrRefreshAPIResponse = {
 
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
+    onTryRefreshToken?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
     onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
+    onClearDuplicateSessionCookies?: ErrorHandlerMiddleware;
 }
 
 export type TokenType = "access" | "refresh";
@@ -199,6 +201,7 @@ export interface NormalisedErrorHandlers {
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
     onInvalidClaim: InvalidClaimErrorHandlerMiddleware;
+    onClearDuplicateSessionCookies: ErrorHandlerMiddleware;
 }
 
 export interface VerifySessionOptions {

@@ -7,16 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [18.0.0] - 2024-04-17
+## [17.1.0] - 2024-04-17
 
 -   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from older domain when the cookieDomain is changed.
 -   Fixed an issue where the access token wasn't cleared if refresh token API was called without a refresh token.
 -   `verifySession` now returns 401 if there are multiple access tokens present in the request.
 -   `refreshPOST` API returns 500 error if multiple access tokens are present in the request and `config.olderCookieDomain` is not set.
-
-### Breaking Changes
-
--   Calling the `refreshPOST` API with multiple access token cookies (possible if `cookieDomain` is updated) will result in a 200 response with the access token cookies with `olderCookieDomain` cleared. This may be a breaking change if you are overriding the `refreshPOST` API implementation.
 
 ## [17.0.4] - 2024-04-09
 

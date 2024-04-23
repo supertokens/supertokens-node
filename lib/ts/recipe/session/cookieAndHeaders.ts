@@ -17,6 +17,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
 import { UserContext } from "../../types";
 import { availableTokenTransferMethods } from "./constants";
+import SessionError from "./error";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 
 const authorizationHeaderKey = "authorization";
@@ -253,6 +254,14 @@ export function clearSessionCookiesFromOlderCookieDomain({
             );
             didClearCookies = true;
         }
+    }
+
+    if (didClearCookies) {
+        throw new SessionError({
+            message:
+                "The request contains multiple session cookies. We are clearing the cookie from olderCookieDomain. Session will be refreshed in the next refresh call.",
+            type: SessionError.CLEAR_DUPLICATE_SESSION_COOKIES,
+        });
     }
     return didClearCookies;
 }

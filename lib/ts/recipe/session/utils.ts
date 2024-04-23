@@ -28,7 +28,7 @@ import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo, UserContext } from "../../types";
-import { isAnIpAddress } from "../../utils";
+import { isAnIpAddress, send200Response } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -256,6 +256,14 @@ export function validateAndNormaliseUserInput(
             userContext: UserContext
         ) => {
             return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response, userContext);
+        },
+        onClearDuplicateSessionCookies: async (
+            message: string,
+            _: BaseRequest,
+            response: BaseResponse,
+            __: UserContext
+        ) => {
+            return send200Response(response, { message });
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
