@@ -229,16 +229,22 @@ export function clearSessionCookiesFromOlderCookieDomain({
     res: BaseResponse;
     config: TypeNormalisedInput;
     userContext: UserContext;
-}): boolean {
+}): void {
     let didClearCookies = false;
-
-    if (config.olderCookieDomain === undefined) {
-        return didClearCookies;
-    }
 
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
         if (hasMultipleCookiesForTokenType(req, token)) {
+            // If a request has multiple session cookies and 'olderCookieDomain' is
+            // unset, we can't identify the correct cookie for refreshing the session.
+            // Using the wrong cookie can cause an infinite refresh loop. To avoid this,
+            // we throw a 500 error asking the user to set 'olderCookieDomain'.
+            if (config.olderCookieDomain === undefined) {
+                throw new Error(
+                    `The request contains multiple session cookies. This may happen if you've changed the 'cookieDomain' value in your configuration. To clear tokens from the previous domain, set 'olderCookieDomain' in your config.`
+                );
+            }
+
             logDebugMessage(
                 `clearSessionCookiesFromOlderCookieDomain: Clearing duplicate ${token} cookie with domain ${config.olderCookieDomain}`
             );
@@ -263,7 +269,6 @@ export function clearSessionCookiesFromOlderCookieDomain({
             type: SessionError.CLEAR_DUPLICATE_SESSION_COOKIES,
         });
     }
-    return didClearCookies;
 }
 
 export function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: TokenType): boolean {

@@ -415,10 +415,7 @@ export type APIInterface = {
      */
     refreshPOST:
         | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<SessionContainerInterface | undefined>);
+        | ((input: { options: APIOptions; userContext: UserContext }) => Promise<SessionContainerInterface>);
 
     signOutPOST:
         | undefined
