@@ -284,7 +284,11 @@ export async function refreshSessionInRequest({
 
         // We need to clear the access token cookie if refresh token is not found, provided the allowedTransferMethod is 'cookie' or 'any'
         // See: https://github.com/supertokens/supertokens-node/issues/790
-        if (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") {
+        // Check if access token cookie is present
+        if (
+            (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+            getToken(req, "access", "cookie") !== undefined
+        ) {
             setCookie(config, res, "sAccessToken", "", 0, "accessTokenPath", req, userContext);
             logDebugMessage(
                 "refreshSession: cleared access token and returning UNAUTHORISED because refresh token in request is undefined"

@@ -227,6 +227,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {

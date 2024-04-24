@@ -10,9 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [17.1.0] - 2024-04-17
 
 -   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from older domain when the cookieDomain is changed.
--   Fixed an issue where the access token wasn't cleared if refresh token API was called without a refresh token.
--   `verifySession` now returns 401 if there are multiple access tokens present in the request.
--   `refreshPOST` API returns 500 error if multiple access tokens are present in the request and `config.olderCookieDomain` is not set.
+-   Fixed an issue where the access token wasn't cleared if the refresh token API was called without a refresh token.
+-   If `verifySession` detects multiple access tokens in the request, it will return a 401 error, prompting a refresh, even if one of the tokens is valid.
+-   If the request contains multiple access tokens, the `refreshPOST` API will return a 200 response, clearing cookies from the old domain if `olderCookieDomain` is specified, or a 500 error with instructions to set `olderCookieDomain` if it is not. Note that a 200 response from `refreshPOST` might not include new session tokens.
+
+### Rationale
+
+This update addresses an edge case where changing the `cookieDomain` config on the server can lead to session integrity issues. For instance, if the API server URL is 'api.example.com' with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com', the client may retain cookies with both '.example.com' and 'api.example.com' domains.
+
+Previously, verifySession would select one of the access tokens from the incoming request. If it chose the older cookie, it would return a 401 status code, prompting a refresh request. However, the `refreshPOST` API would then set new session token cookies with the updated `cookieDomain`, but older cookies will persist, leading to repeated 401 errors and refresh loops.
+
+With this update, verifySession will return a 401 error if it detects multiple access tokens in the request, prompting a refresh request. The `refreshPOST` API will clear cookies from the old domain if `olderCookieDomain` is specified in the configuration, then return a 200 status. If `olderCookieDomain` is not configured, the `refreshPOST` API will return a 500 error with a message instructing to set `olderCookieDomain`.
 
 ## [17.0.4] - 2024-04-09
 
