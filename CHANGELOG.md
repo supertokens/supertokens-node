@@ -43,6 +43,8 @@ With this update, verifySession will return a 401 error if it detects multiple a
     - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response.
         - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
 
+## [17.0.4] - 2024-04-09
+
 ### Changes
 
 -   Improved error message to help debugging if MFA was enabled without account linking.
