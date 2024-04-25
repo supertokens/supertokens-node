@@ -305,6 +305,10 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         if (hostname.endsWith(".amazonaws.com") && parsedURL.tld === hostname) {
             return hostname;
         }
+        // support for .local domain
+        if (hostname.endsWith(".local") && parsedURL.tld === null) {
+            return hostname;
+        }
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
     }
     return parsedURL.domain;
