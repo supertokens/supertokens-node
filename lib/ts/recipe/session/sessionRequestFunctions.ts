@@ -282,9 +282,11 @@ export async function refreshSessionInRequest({
             setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
         }
 
-        // We need to clear the access token cookie if refresh token is not found, provided the allowedTransferMethod is 'cookie' or 'any'
+        // We need to clear the access token cookie if 
+        // - the refresh token is not found, and
+        // - the allowedTransferMethod is 'cookie' or 'any', and
+        // - an access token cookie exists (otherwise it'd be a no-op)
         // See: https://github.com/supertokens/supertokens-node/issues/790
-        // Check if access token cookie is present
         if (
             (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
             getToken(req, "access", "cookie") !== undefined
