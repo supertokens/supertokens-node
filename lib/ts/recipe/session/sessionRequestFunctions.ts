@@ -282,7 +282,7 @@ export async function refreshSessionInRequest({
             setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
         }
 
-        // We need to clear the access token cookie if 
+        // We need to clear the access token cookie if
         // - the refresh token is not found, and
         // - the allowedTransferMethod is 'cookie' or 'any', and
         // - an access token cookie exists (otherwise it'd be a no-op)

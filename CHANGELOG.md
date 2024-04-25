@@ -7,15 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [17.1.0] - 2024-04-17
+## [17.1.0] - 2024-04-25
 
 -   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookieDomain` is changed.
 -   If `verifySession` detects multiple access tokens in the request, it will return a 401 error, prompting a refresh, even if one of the tokens is valid.
 -   `refreshPOST` (`/auth/session/refresh` by default) API changes:
     -   now returns 500 error if multiple access tokens are present in the request and `config.olderCookieDomain` is not set.
-    -   now clears the access token cookie if it was called without a refresh token (if an access token cookie exists and if using cookie-based sessions)
-    -   now clears cookies from the old domain if `olderCookieDomain` is specified and multiple refresh/access token cookies exist, without updating the front-token or any of the tokens
-    -   now a 200 response might not include new session tokens
+    -   now clears the access token cookie if it was called without a refresh token (if an access token cookie exists and if using cookie-based sessions).
+    -   now clears cookies from the old domain if `olderCookieDomain` is specified and multiple refresh/access token cookies exist, without updating the front-token or any of the tokens.
+    -   now a 200 response may not include new session tokens.
 
 ### Rationale
 
@@ -25,7 +25,23 @@ Previously, verifySession would select one of the access tokens from the incomin
 
 With this update, verifySession will return a 401 error if it detects multiple access tokens in the request, prompting a refresh request. The `refreshPOST` API will clear cookies from the old domain if `olderCookieDomain` is specified in the configuration, then return a 200 status. If `olderCookieDomain` is not configured, the `refreshPOST` API will return a 500 error with a message instructing to set `olderCookieDomain`.
 
-## [17.0.4] - 2024-04-09
+**Example:**
+
+-   `apiDomain`: 'api.example.com'
+-   `cookieDomain`: 'api.example.com'
+
+**Flow:**
+
+1. After authentication, the frontend has cookies set with `domain=api.example.com`, but the access token has expired.
+2. The server updates `cookieDomain` to `.example.com`.
+3. An API call requiring session with an expired access token (cookie with `domain=api.example.com`) results in a 401 response.
+4. The frontend attempts to refresh the session, generating a new access token saved with `domain=.example.com`.
+5. The original API call is retried, but because it sends both the old and new cookies, it again results in a 401 response.
+6. The frontend tries to refresh the session with multiple access tokens:
+    - If `olderCookieDomain` is not set, the refresh fails with a 500 error.
+        - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set.
+    - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response.
+        - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
 
 ### Changes
 
