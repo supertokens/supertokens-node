@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [17.1.0] - 2024-04-17
 
--   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from older domain when the cookieDomain is changed.
--   Fixed an issue where the access token wasn't cleared if the refresh token API was called without a refresh token.
+-   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookieDomain` is changed.
 -   If `verifySession` detects multiple access tokens in the request, it will return a 401 error, prompting a refresh, even if one of the tokens is valid.
--   If the request contains multiple access tokens, the `refreshPOST` API will return a 200 response, clearing cookies from the old domain if `olderCookieDomain` is specified, or a 500 error with instructions to set `olderCookieDomain` if it is not. Note that a 200 response from `refreshPOST` might not include new session tokens.
+-   `refreshPOST` (`/auth/session/refresh` by default) API changes:
+    -   now returns 500 error if multiple access tokens are present in the request and `config.olderCookieDomain` is not set.
+    -   now clears the access token cookie if it was called without a refresh token (if an access token cookie exists and if using cookie-based sessions)
+    -   now clears cookies from the old domain if `olderCookieDomain` is specified and multiple refresh/access token cookies exist, without updating the front-token or any of the tokens
+    -   now a 200 response might not include new session tokens
 
 ### Rationale
 
