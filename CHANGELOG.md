@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.0.5] - 2024-04-25
+
+-   Support for websiteDomain / apiDomain ending with `.local`: https://github.com/supertokens/supertokens-node/issues/823
+
 ## [17.0.4] - 2024-04-09
 
 ### Changes
