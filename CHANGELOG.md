@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Rationale
 
-This update addresses an edge case where changing the `cookieDomain` config on the server can lead to session integrity issues. For instance, if the API server URL is 'api.example.com' with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com', the client may retain cookies with both '.example.com' and 'api.example.com' domains.
+This update addresses an edge case where changing the `cookieDomain` config on the server can lead to session integrity issues. For instance, if the API server URL is 'api.example.com' with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com', the client may retain cookies with both '.example.com' and 'api.example.com' domains, resulting in multiple sets of session token cookies existing.
 
 Previously, verifySession would select one of the access tokens from the incoming request. If it chose the older cookie, it would return a 401 status code, prompting a refresh request. However, the `refreshPOST` API would then set new session token cookies with the updated `cookieDomain`, but older cookies will persist, leading to repeated 401 errors and refresh loops.
 
