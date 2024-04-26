@@ -28,7 +28,7 @@ import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo, UserContext } from "../../types";
-import { isAnIpAddress } from "../../utils";
+import { isAnIpAddress, send200Response } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -136,6 +136,10 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.cookieDomain === undefined
             ? undefined
             : normaliseSessionScopeOrThrowError(config.cookieDomain);
+    let olderCookieDomain =
+        config === undefined || config.olderCookieDomain === undefined || config.olderCookieDomain === ""
+            ? config?.olderCookieDomain
+            : normaliseSessionScopeOrThrowError(config.olderCookieDomain);
     let accessTokenPath =
         config === undefined || config.accessTokenPath === undefined
             ? new NormalisedURLPath("/")
@@ -253,6 +257,14 @@ export function validateAndNormaliseUserInput(
         ) => {
             return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response, userContext);
         },
+        onClearDuplicateSessionCookies: async (
+            message: string,
+            _: BaseRequest,
+            response: BaseResponse,
+            __: UserContext
+        ) => {
+            return send200Response(response, { message });
+        },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
         if (config.errorHandlers.onTokenTheftDetected !== undefined) {
@@ -282,6 +294,7 @@ export function validateAndNormaliseUserInput(
                 ? defaultGetTokenTransferMethod
                 : config.getTokenTransferMethod,
         cookieDomain,
+        olderCookieDomain,
         getCookieSameSite: cookieSameSite,
         cookieSecure,
         sessionExpiredStatusCode,

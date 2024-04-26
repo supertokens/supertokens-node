@@ -4,6 +4,7 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
 import { GeneralErrorResponse, UserContext } from "../../../types";
 import { getSessionFromRequest, refreshSessionInRequest } from "../sessionRequestFunctions";
+import { clearSessionCookiesFromOlderCookieDomain } from "../cookieAndHeaders";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -14,6 +15,13 @@ export default function getAPIInterface(): APIInterface {
             options: APIOptions;
             userContext: UserContext;
         }): Promise<SessionContainerInterface> {
+            clearSessionCookiesFromOlderCookieDomain({
+                req: options.req,
+                res: options.res,
+                config: options.config,
+                userContext,
+            });
+
             return refreshSessionInRequest({
                 req: options.req,
                 res: options.res,
