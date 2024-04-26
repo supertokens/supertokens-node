@@ -230,6 +230,17 @@ export function clearSessionCookiesFromOlderCookieDomain({
     config: TypeNormalisedInput;
     userContext: UserContext;
 }): void {
+    const allowedTransferMethod = config.getTokenTransferMethod({
+        req,
+        forCreateNewSession: false,
+        userContext,
+    });
+
+    // If the transfer method is 'header', there's no need to clear cookies immediately, even if there are multiple in the request.
+    if (allowedTransferMethod === "header") {
+        return;
+    }
+
     let didClearCookies = false;
 
     const tokenTypes: TokenType[] = ["access", "refresh"];
