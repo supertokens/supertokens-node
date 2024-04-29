@@ -27,6 +27,12 @@
         "type": "git",
         "url": "git+https://github.com/supertokens/supertokens-node.git"
     },
+    "exports": {
+        "./recipe/*": {
+            "types": "./recipe/*/index.d.ts",
+            "default": "./recipe/*/index.js"
+        }
+    },
     "author": "rishabhpoddar",
     "license": "Apache-2.0",
     "bugs": {
