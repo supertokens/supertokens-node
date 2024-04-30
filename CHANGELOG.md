@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## Breaking change
+### Breaking change
 
 -   Removed ThirdPartyEmailPassword and ThirdPartyPasswordless recipes. Instead, you should use ThirdParty + EmailPassword or ThirdParty + Passwordless recipes separately in your recipe list.
 -   Removed `rid` query param from:
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   passwordless magic links
     -   password reset links
 
-## Changes
+### Changes
 
 -   If `rid` header is present in an API call, the routing no only only depends on that. If the SDK cannot resolve a request handler based on the `rid`, request path and method, it will try to resolve a request handler only based on the request path and method (therefore ignoring the `rid` header).
 -   New API handlers are:
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `GET /passwordless/phonenumber/exists` => email password, does email exist API (used to be `GET /signup/phonenumber/exists` which is now deprecated)
 -   Support for FDI 2.0 and 3.0
 
-## Migration guide
+### Migration guide
 
 -   If you were using `ThirdPartyEmailPassword`, you should now init `ThirdParty` and `EmailPassword` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [EmailPassword](https://supertokens.com/docs/emailpassword/introduction) for more information.
 
