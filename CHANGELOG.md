@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-<<<<<<< HEAD
-
 ## [17.1.0] - 2024-04-25
 
 -   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookieDomain` is changed.
@@ -44,7 +42,6 @@ With this update, verifySession will return a 401 error if it detects multiple a
 ## [17.0.6] - 2024-05-02
 
 -   Fixes how FDI header is parsed from frontend requests to account for more than one version being passed.
-    > > > > > > > 17.0
 
 ## [17.0.5] - 2024-04-25
 
