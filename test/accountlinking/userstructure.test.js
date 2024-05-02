@@ -309,6 +309,242 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
         assert.strictEqual(tokens2.accessTokenFromAny, undefined);
     });
 
+    it("user structure FDI 1.16,1.17 is correctly returned even if session does not match logged in user", async function () {
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+        supertokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    overwriteSessionDuringSignInUp: false,
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let { user, status } = await EmailPassword.signUp("public", "test@example.com", "password123");
+        assert(status === "OK");
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.16,1.17")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let tokens = extractInfoFromResponse(res);
+        assert(tokens.accessTokenFromAny !== undefined);
+
+        // now we sign up a new user with another email, but with the older session.
+        let signUp2 = await EmailPassword.signUp("public", "test2@example.com", "password123");
+        assert(signUp2.status === "OK");
+        let linkingResult = await AccountLinking.createPrimaryUser(signUp2.user.loginMethods[0].recipeUserId);
+        assert(linkingResult.status === "OK");
+
+        let signUp3 = await EmailPassword.signUp("public", "test3@example.com", "password123");
+        assert(signUp3.status === "OK");
+        linkingResult = await AccountLinking.linkAccounts(signUp3.user.loginMethods[0].recipeUserId, signUp2.user.id);
+        assert(linkingResult.status === "OK");
+
+        {
+            res = await request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.16,1.17")
+                .set("Authorization", `Bearer ${tokens.accessTokenFromAny}`)
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test3@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200);
+
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(res.body.user.email, "test2@example.com");
+            assert.strictEqual(res.body.user.id, signUp2.user.id);
+            assert.strictEqual(res.body.user.timeJoined, signUp2.user.timeJoined);
+            assert.strictEqual(Object.keys(res.body.user).length, 3);
+
+            let tokens2 = extractInfoFromResponse(res);
+            assert.strictEqual(tokens2.accessTokenFromAny, undefined);
+        }
+        {
+            res = await request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.17,1.16")
+                .set("Authorization", `Bearer ${tokens.accessTokenFromAny}`)
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test3@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200);
+
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(res.body.user.email, "test2@example.com");
+            assert.strictEqual(res.body.user.id, signUp2.user.id);
+            assert.strictEqual(res.body.user.timeJoined, signUp2.user.timeJoined);
+            assert.strictEqual(Object.keys(res.body.user).length, 3);
+
+            let tokens2 = extractInfoFromResponse(res);
+            assert.strictEqual(tokens2.accessTokenFromAny, undefined);
+        }
+    });
+
+    it("user structure FDI 1.17,1.18 is correctly returned even if session does not match logged in user", async function () {
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+        supertokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    overwriteSessionDuringSignInUp: false,
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let { user, status } = await EmailPassword.signUp("public", "test@example.com", "password123");
+        assert(status === "OK");
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.18,1.17")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let tokens = extractInfoFromResponse(res);
+        assert(tokens.accessTokenFromAny !== undefined);
+
+        // now we sign up a new user with another email, but with the older session.
+        let signUp2 = await EmailPassword.signUp("public", "test2@example.com", "password123");
+        assert(signUp2.status === "OK");
+        let linkingResult = await AccountLinking.createPrimaryUser(signUp2.user.loginMethods[0].recipeUserId);
+        assert(linkingResult.status === "OK");
+
+        let signUp3 = await EmailPassword.signUp("public", "test3@example.com", "password123");
+        assert(signUp3.status === "OK");
+        linkingResult = await AccountLinking.linkAccounts(signUp3.user.loginMethods[0].recipeUserId, signUp2.user.id);
+        assert(linkingResult.status === "OK");
+
+        {
+            res = await request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.18,1.17")
+                .set("Authorization", `Bearer ${tokens.accessTokenFromAny}`)
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test3@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200);
+
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(res.body.user.emails[1], "test2@example.com"); // new structure
+        }
+        {
+            res = await request(app)
+                .post("/auth/signin")
+                .set("fdi-version", "1.17,1.18")
+                .set("Authorization", `Bearer ${tokens.accessTokenFromAny}`)
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "test3@example.com",
+                        },
+                        {
+                            id: "password",
+                            value: "password123",
+                        },
+                    ],
+                })
+                .expect(200);
+
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(res.body.user.emails[1], "test2@example.com"); // new structure
+        }
+    });
+
     it("user structure FDI 1.17 is correctly returned based on session user ID", async function () {
         const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
