@@ -173,7 +173,12 @@ export function getBackwardsCompatibleUserInfo(
     userContext: UserContext
 ) {
     let resp: JSONObject;
-    if (doesRequestSupportFDI(req, "1.18")) {
+    // (>= 1.18 && < 2.0) || >= 3.0: This is because before 1.18, and between 2 and 3, FDI does not
+    // support account linking.
+    if (
+        (hasGreaterThanEqualToFDI(req, "1.18") && !hasGreaterThanEqualToFDI(req, "2.0")) ||
+        hasGreaterThanEqualToFDI(req, "3.0")
+    ) {
         resp = {
             user: result.user.toJson(),
         };
@@ -229,7 +234,7 @@ export function getBackwardsCompatibleUserInfo(
     return resp;
 }
 
-export function doesRequestSupportFDI(req: BaseRequest, version: string) {
+export function hasGreaterThanEqualToFDI(req: BaseRequest, version: string) {
     let requestFDI = req.getHeaderValue(HEADER_FDI);
     if (requestFDI === undefined) {
         // By default we assume they want to use the latest FDI, this also helps with tests
