@@ -21,6 +21,7 @@ export declare function getBackwardsCompatibleUserInfo(
     },
     userContext: UserContext
 ): JSONObject;
+export declare function getLatestFDIVersionFromFDIList(fdiHeaderValue: string): string;
 export declare function hasGreaterThanEqualToFDI(req: BaseRequest, version: string): boolean;
 export declare function getRidFromHeader(req: BaseRequest): string | undefined;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;

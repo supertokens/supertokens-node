@@ -228,6 +228,18 @@ export default class SessionRecipe extends RecipeModule {
                 );
             } else if (err.type === STError.INVALID_CLAIMS) {
                 return await this.config.errorHandlers.onInvalidClaim(err.payload, request, response, userContext);
+            } else if (err.type === STError.CLEAR_DUPLICATE_SESSION_COOKIES) {
+                logDebugMessage("errorHandler: returning CLEAR_DUPLICATE_SESSION_COOKIES");
+                // This error occurs in the `refreshPOST` API when multiple session
+                // cookies are found in the request and the user has set `olderCookieDomain`.
+                // We remove session cookies from the olderCookieDomain. The response must return `200 OK`
+                // to avoid logging out the user, allowing the session to continue with the valid cookie.
+                return await this.config.errorHandlers.onClearDuplicateSessionCookies(
+                    err.message,
+                    request,
+                    response,
+                    userContext
+                );
             } else {
                 throw err;
             }

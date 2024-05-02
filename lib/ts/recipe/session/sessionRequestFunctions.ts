@@ -17,6 +17,7 @@ import {
     getAntiCsrfTokenFromHeaders,
     getAuthModeFromHeader,
     getToken,
+    hasMultipleCookiesForTokenType,
     setCookie,
 } from "./cookieAndHeaders";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
@@ -44,6 +45,7 @@ export async function getSessionFromRequest({
     userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
+
     const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
     if (configuredFramework !== "custom") {
         if (!req.wrapperUsed) {
@@ -111,6 +113,21 @@ export async function getSessionFromRequest({
         accessTokens["cookie"] !== undefined
     ) {
         logDebugMessage("getSession: using cookie transfer method");
+
+        // If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        // This prompts the client to call the refresh endpoint, clearing olderCookieDomain cookies (if set).
+        // ensuring outdated token payload isn't used.
+        const hasMultipleAccessTokenCookies = hasMultipleCookiesForTokenType(req, "access");
+        if (hasMultipleAccessTokenCookies) {
+            logDebugMessage(
+                "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
+            );
+            throw new SessionError({
+                message: "Multiple access tokens present in the request cookies.",
+                type: SessionError.TRY_REFRESH_TOKEN,
+            });
+        }
+
         requestTransferMethod = "cookie";
         accessToken = accessTokens["cookie"];
     }
@@ -266,7 +283,21 @@ export async function refreshSessionInRequest({
             setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
         }
 
-        logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
+        // We need to clear the access token cookie if
+        // - the refresh token is not found, and
+        // - the allowedTransferMethod is 'cookie' or 'any', and
+        // - an access token cookie exists (otherwise it'd be a no-op)
+        // See: https://github.com/supertokens/supertokens-node/issues/790
+        if (
+            (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+            getToken(req, "access", "cookie") !== undefined
+        ) {
+            setCookie(config, res, "sAccessToken", "", 0, "accessTokenPath", req, userContext);
+            logDebugMessage(
+                "refreshSession: cleared access token and returning UNAUTHORISED because refresh token in request is undefined"
+            );
+        }
+
         throw new SessionError({
             message: "Refresh token not found. Are you sending the refresh token in the request?",
             payload: {

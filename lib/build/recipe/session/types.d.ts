@@ -32,8 +32,10 @@ export declare type CreateOrRefreshAPIResponse = {
 };
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
+    onTryRefreshToken?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
     onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
+    onClearDuplicateSessionCookies?: ErrorHandlerMiddleware;
 }
 export declare type TokenType = "access" | "refresh";
 export declare type TokenTransferMethod = "header" | "cookie";
@@ -45,6 +47,7 @@ export declare type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
+    olderCookieDomain?: string;
     overwriteSessionDuringSignInUp?: boolean;
     getTokenTransferMethod?: (input: {
         req: BaseRequest;
@@ -87,6 +90,7 @@ export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
+    olderCookieDomain: string | undefined;
     getCookieSameSite: (input: {
         request: BaseRequest | undefined;
         userContext: UserContext;
@@ -164,6 +168,7 @@ export interface NormalisedErrorHandlers {
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
     onInvalidClaim: InvalidClaimErrorHandlerMiddleware;
+    onClearDuplicateSessionCookies: ErrorHandlerMiddleware;
 }
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;

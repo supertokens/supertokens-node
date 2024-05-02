@@ -101,6 +101,20 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         }
     });
 
+    it("testing .local tld", async function () {
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:3567",
+            },
+            appInfo: {
+                apiDomain: "api.local/hi",
+                appName: "SuperTokens",
+                websiteDomain: "website.local/lol",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+        });
+    });
+
     it("test values for compulsory inputs for appInfo", async function () {
         const connectionURI = await startST();
 

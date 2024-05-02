@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import type { Request, ResponseToolkit, Plugin, ResponseObject, ServerRoute } from "@hapi/hapi";
+import type { Request, ResponseToolkit, Plugin, ResponseObject, ServerRoute, SameSitePolicy } from "@hapi/hapi";
 import type { Boom } from "@hapi/boom";
 import type { HTTPMethod } from "../../types";
 import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
@@ -126,17 +126,19 @@ export class HapiResponse extends BaseResponse {
     ) => {
         let now = Date.now();
 
+        const cookieOptions = {
+            isHttpOnly: httpOnly,
+            isSecure: secure,
+            path: path,
+            domain,
+            ttl: expires - now,
+            isSameSite: (sameSite === "lax" ? "Lax" : sameSite === "none" ? "None" : "Strict") as SameSitePolicy,
+        };
+
         if (expires > now) {
-            this.response.state(key, value, {
-                isHttpOnly: httpOnly,
-                isSecure: secure,
-                path: path,
-                domain,
-                ttl: expires - now,
-                isSameSite: sameSite === "lax" ? "Lax" : sameSite === "none" ? "None" : "Strict",
-            });
+            this.response.state(key, value, cookieOptions);
         } else {
-            this.response.unstate(key);
+            this.response.unstate(key, cookieOptions);
         }
     };
 
