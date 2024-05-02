@@ -50,4 +50,15 @@ describe("normaliseSessionScopeOrThrowError", () => {
         const result = normaliseSessionScopeOrThrowError("  example.com  ");
         assert.strictEqual(result, "example.com");
     });
+
+    it("should return correct scope for subdomains", () => {
+        assert.strictEqual(normaliseSessionScopeOrThrowError("sub.example.com"), "sub.example.com");
+        assert.strictEqual(normaliseSessionScopeOrThrowError("http://sub.example.com"), "sub.example.com");
+        assert.strictEqual(normaliseSessionScopeOrThrowError("https://sub.example.com"), "sub.example.com");
+        assert.strictEqual(normaliseSessionScopeOrThrowError(".sub.example.com"), ".sub.example.com");
+        assert.strictEqual(normaliseSessionScopeOrThrowError("a.sub.example.com"), "a.sub.example.com");
+        assert.strictEqual(normaliseSessionScopeOrThrowError("http://a.sub.example.com"), "a.sub.example.com");
+        assert.strictEqual(normaliseSessionScopeOrThrowError("https://a.sub.example.com"), "a.sub.example.com");
+        assert.strictEqual(normaliseSessionScopeOrThrowError(".a.sub.example.com"), ".a.sub.example.com");
+    });
 });

@@ -271,6 +271,12 @@ export function validateAndNormaliseUserInput(
         if (config.errorHandlers.onInvalidClaim !== undefined) {
             errorHandlers.onInvalidClaim = config.errorHandlers.onInvalidClaim;
         }
+        if (config.errorHandlers.onTryRefreshToken !== undefined) {
+            errorHandlers.onTryRefreshToken = config.errorHandlers.onTryRefreshToken;
+        }
+        if (config.errorHandlers.onClearDuplicateSessionCookies !== undefined) {
+            errorHandlers.onClearDuplicateSessionCookies = config.errorHandlers.onClearDuplicateSessionCookies;
+        }
     }
 
     let override = {

@@ -185,7 +185,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert.strictEqual(frontendInfo.up["rsub"], "testuserid");
     });
 
-    it("test that access token cookie is cleared if refresh token api is called without the refresh token", async function () {
+    it("test that session tokens are cleared if refresh token api is called without the refresh token but with access token", async function () {
         const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
@@ -241,7 +241,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(res2.status === 401);
         assert(cookies.accessToken === "");
         assert(cookies.accessTokenExpiry === new Date(0).toUTCString());
-        assert(cookies.refreshToken === undefined);
+        assert(cookies.refreshToken === "");
+        assert(cookies.refreshTokenExpiry === new Date(0).toUTCString());
     });
 
     it("test that access and refresh token for olderCookieDomain is cleared if multiple tokens are passed to the refresh endpoint", async function () {

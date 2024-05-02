@@ -14,6 +14,7 @@ import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods, protectedProps } from "./constants";
 import {
     clearSession,
+    clearSessionCookiesFromOlderCookieDomain,
     getAntiCsrfTokenFromHeaders,
     getAuthModeFromHeader,
     getToken,
@@ -242,6 +243,8 @@ export async function refreshSessionInRequest({
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
     logDebugMessage("refreshSession: Wrapping done");
 
+    clearSessionCookiesFromOlderCookieDomain({ req, res, config, userContext });
+
     const refreshTokens: {
         [key in TokenTransferMethod]?: string;
     } = {};
@@ -292,10 +295,20 @@ export async function refreshSessionInRequest({
             (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
             getToken(req, "access", "cookie") !== undefined
         ) {
-            setCookie(config, res, "sAccessToken", "", 0, "accessTokenPath", req, userContext);
             logDebugMessage(
-                "refreshSession: cleared access token and returning UNAUTHORISED because refresh token in request is undefined"
+                "refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh token in request is undefined"
             );
+
+            // We're clearing all session tokens instead of just the access token and then throwing an UNAUTHORISED
+            // error with `clearTokens: false`. This approach avoids confusion and we don't want to retain session
+            // tokens on the client in any case if the refresh API is called without a refresh token but with an access token.
+            throw new SessionError({
+                message: "Refresh token not found but access token is present. Clearing all tokens.",
+                payload: {
+                    clearTokens: true,
+                },
+                type: SessionError.UNAUTHORISED,
+            });
         }
 
         throw new SessionError({
