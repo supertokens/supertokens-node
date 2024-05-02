@@ -229,12 +229,22 @@ export function getBackwardsCompatibleUserInfo(
     return resp;
 }
 
+export function getLatestFDIVersionFromFDIList(fdiHeaderValue: string): string {
+    let versions = fdiHeaderValue.split(",");
+    let maxVersionStr = versions[0];
+    for (let i = 1; i < versions.length; i++) {
+        maxVersionStr = maxVersion(maxVersionStr, versions[i]);
+    }
+    return maxVersionStr;
+}
+
 export function doesRequestSupportFDI(req: BaseRequest, version: string) {
     let requestFDI = req.getHeaderValue(HEADER_FDI);
     if (requestFDI === undefined) {
         // By default we assume they want to use the latest FDI, this also helps with tests
         return true;
     }
+    requestFDI = getLatestFDIVersionFromFDIList(requestFDI);
     if (requestFDI === version || maxVersion(version, requestFDI) !== version) {
         return true;
     }
