@@ -371,4 +371,37 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             assert(res.length === 0);
         }
     });
+
+    it("test that no-cache header is added when querying the core", async function () {
+        const connectionURI = await startST();
+        ST.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(SessionRecipe.getInstanceOrThrowError().getRecipeId());
+
+        nock(connectionURI, {
+            allowUnmocked: true,
+        })
+            .get("/recipe")
+            .reply(200, function (uri, requestBody) {
+                return this.req.headers;
+            });
+
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {}, {});
+        assert.deepStrictEqual(response.rid, ["session"]);
+        let noCacheHeaderAdded = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH,
+            2000
+        );
+        assert(noCacheHeaderAdded !== undefined);
+    });
 });
