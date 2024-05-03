@@ -37,11 +37,11 @@ With this update, verifySession will return a 401 error if it detects multiple a
 3. An API call requiring session with an expired access token (cookie with `domain=api.example.com`) results in a 401 response.
 4. The frontend attempts to refresh the session, generating a new access token saved with `domain=.example.com`.
 5. The original API call is retried, but because it sends both the old and new cookies, it again results in a 401 response.
-6. The frontend tries to refresh the session with multiple access tokens:
-    - If `olderCookieDomain` is not set, the refresh fails with a 500 error.
-        - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set.
-    - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response.
-        - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
+6. # The frontend tries to refresh the session with multiple access tokens: - If `olderCookieDomain` is not set, the refresh fails with a 500 error. - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set. - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response. - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
+
+## [17.0.6] - 2024-05-02
+
+-   Fixes how FDI header is parsed from frontend requests to account for more than one version being passed.
 
 ## [17.0.5] - 2024-04-25
 
