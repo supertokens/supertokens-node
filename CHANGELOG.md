@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.0.7] - 2024-05-03
+
+-   Adds `no-cache` header when querying core, so that frameworks like NextJS don't cache GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
+
 ## [17.0.6] - 2024-05-02
 
 -   Fixes how FDI header is parsed from frontend requests to account for more than one version being passed.
