@@ -16,6 +16,12 @@ const assert = require("assert");
 const { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
 
 describe("normaliseSessionScopeOrThrowError", () => {
+    it("should throw an error when scope is an empty string", () => {
+        assert.throws(() => normaliseSessionScopeOrThrowError(""), {
+            message: "Please provide a valid sessionScope",
+        });
+    });
+
     it("should retain the leading dot when original scope starts with a dot", () => {
         const result = normaliseSessionScopeOrThrowError(".example.com");
         assert.strictEqual(result, ".example.com");
