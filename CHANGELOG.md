@@ -39,6 +39,10 @@ With this update, verifySession will return a 401 error if it detects multiple a
 5. The original API call is retried, but because it sends both the old and new cookies, it again results in a 401 response.
 6. # The frontend tries to refresh the session with multiple access tokens: - If `olderCookieDomain` is not set, the refresh fails with a 500 error. - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set. - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response. - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
 
+## [17.0.7] - 2024-05-03
+
+-   Adds `no-cache` header when querying core, so that frameworks like NextJS don't cache GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
+
 ## [17.0.6] - 2024-05-02
 
 -   Fixes how FDI header is parsed from frontend requests to account for more than one version being passed.
