@@ -98,11 +98,6 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
             let urlObj = new URL(sessionScope);
             sessionScope = urlObj.hostname;
 
-            // remove leading dot
-            if (sessionScope.startsWith(".")) {
-                sessionScope = sessionScope.substr(1);
-            }
-
             return sessionScope;
         } catch (err) {
             throw new Error("Please provide a valid sessionScope");
@@ -275,6 +270,12 @@ export function validateAndNormaliseUserInput(
         }
         if (config.errorHandlers.onInvalidClaim !== undefined) {
             errorHandlers.onInvalidClaim = config.errorHandlers.onInvalidClaim;
+        }
+        if (config.errorHandlers.onTryRefreshToken !== undefined) {
+            errorHandlers.onTryRefreshToken = config.errorHandlers.onTryRefreshToken;
+        }
+        if (config.errorHandlers.onClearDuplicateSessionCookies !== undefined) {
+            errorHandlers.onClearDuplicateSessionCookies = config.errorHandlers.onClearDuplicateSessionCookies;
         }
     }
 

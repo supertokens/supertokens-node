@@ -9,8 +9,22 @@ import { HEADER_FDI, HEADER_RID } from "./constants";
 import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
+import { ProcessState, PROCESS_STATE } from "./processState";
 
 export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
+    // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
+    // we don't want that because it may lead to weird behaviour when querying the core.
+    if (init === undefined) {
+        ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+        init = {
+            cache: "no-cache",
+        };
+    } else {
+        if (init.cache === undefined) {
+            ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+            init.cache = "no-cache";
+        }
+    }
     if (typeof fetch !== "undefined") {
         return fetch(input, init);
     }
