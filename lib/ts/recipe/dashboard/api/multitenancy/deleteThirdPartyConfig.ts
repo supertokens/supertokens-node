@@ -16,7 +16,6 @@ import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokensError from "../../../../error";
-import { FactorIds } from "../../../multifactorauth";
 
 export type Response =
     | {
@@ -59,8 +58,6 @@ export default async function deleteThirdPartyConfig(
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         let staticProviderIds = staticProviders.map((provider) => provider.config.thirdPartyId);
 
-        staticProviderIds = staticProviderIds.filter((id) => id !== thirdPartyId);
-
         for (const providerId of staticProviderIds) {
             await Multitenancy.createOrUpdateThirdPartyConfig(
                 tenantId,
@@ -72,30 +69,8 @@ export default async function deleteThirdPartyConfig(
             );
         }
 
-        return {
-            status: "OK",
-            didConfigExist: true,
-        };
-    } else if (thirdPartyIdsFromCore.length > 1) {
         return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
     } else {
-        await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
-
-        let firstFactors = tenantRes.firstFactors ?? [];
-
-        firstFactors = firstFactors.filter((factor) => factor !== FactorIds.THIRDPARTY);
-        await Multitenancy.createOrUpdateTenant(
-            tenantId,
-            {
-                thirdPartyEnabled: false,
-                firstFactors: firstFactors.length > 0 ? firstFactors : null,
-            },
-            userContext
-        );
-
-        return {
-            status: "OK",
-            didConfigExist: true,
-        };
+        return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
     }
 }

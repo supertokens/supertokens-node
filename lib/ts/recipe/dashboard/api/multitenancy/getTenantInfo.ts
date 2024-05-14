@@ -71,7 +71,7 @@ export default async function getTenantInfo(
 
     const userCount = await SuperTokens.getInstanceOrThrowError().getUserCount(undefined, tenantId, userContext);
 
-    const providersFromCore = tenantRes?.thirdParty?.providers ?? [];
+    const providersFromCore = tenantRes?.thirdParty?.providers;
     const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 

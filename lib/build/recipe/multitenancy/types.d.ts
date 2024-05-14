@@ -36,7 +36,7 @@ export declare type TenantConfig = {
 };
 export declare type CoreConfigFieldInfo = {
     key: string;
-    valueType: string;
+    valueType: "string" | "boolean" | "number";
     value: string | number | boolean | null;
     description: string;
     isDifferentAcrossTenants: boolean;
