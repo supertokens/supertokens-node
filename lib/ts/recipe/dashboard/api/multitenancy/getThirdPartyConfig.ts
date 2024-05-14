@@ -54,7 +54,7 @@ export default async function getThirdPartyConfig(
         throw new Error("Please provide thirdPartyId");
     }
 
-    const providersFromCore = tenantRes?.thirdParty?.providers ?? [];
+    const providersFromCore = tenantRes?.thirdParty?.providers;
     const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
