@@ -44,19 +44,25 @@ export type TypeNormalisedInput = {
 };
 
 export type TenantConfig = {
-    emailPassword: {
-        enabled: boolean;
-    };
-    passwordless: {
-        enabled: boolean;
-    };
     thirdParty: {
-        enabled: boolean;
-        providers: ProviderConfig[];
+        providers?: ProviderConfig[];
     };
     firstFactors?: string[];
     requiredSecondaryFactors?: string[];
     coreConfig: { [key: string]: any };
+};
+
+export type CoreConfigFieldInfo = {
+    key: string;
+    valueType: string;
+    value: string | number | boolean | null;
+    description: string;
+    isDifferentAcrossTenants: boolean;
+    possibleValues?: string[];
+    isNullable: boolean;
+    defaultValue: string | number | boolean | null;
+    isPluginProperty: boolean;
+    isPluginPropertyEditable: boolean;
 };
 
 export type RecipeInterface = {
@@ -66,9 +72,6 @@ export type RecipeInterface = {
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
-            emailPasswordEnabled?: boolean;
-            passwordlessEnabled?: boolean;
-            thirdPartyEnabled?: boolean;
             firstFactors?: string[] | null;
             requiredSecondaryFactors?: string[] | null;
             coreConfig?: { [key: string]: any };
@@ -150,6 +153,14 @@ export type RecipeInterface = {
         status: "OK";
         wasAssociated: boolean;
     }>;
+
+    getTenantCoreConfig: (input: {
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<{
+        status: "OK";
+        config: CoreConfigFieldInfo[];
+    }>;
 };
 
 export type APIOptions = {
@@ -173,14 +184,7 @@ export type APIInterface = {
     }) => Promise<
         | {
               status: "OK";
-              emailPassword: {
-                  enabled: boolean;
-              };
-              passwordless: {
-                  enabled: boolean;
-              };
               thirdParty: {
-                  enabled: boolean;
                   providers: { id: string; name?: string }[];
               };
               firstFactors: string[];

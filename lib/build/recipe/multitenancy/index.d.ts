@@ -93,6 +93,13 @@ export default class Wrapper {
         status: "OK";
         wasAssociated: boolean;
     }>;
+    static getTenantCoreConfig(
+        tenantId?: string,
+        userContext?: Record<string, any>
+    ): Promise<{
+        status: "OK";
+        config: import("./types").CoreConfigFieldInfo[];
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createOrUpdateTenant: typeof Wrapper.createOrUpdateTenant;
@@ -103,5 +110,6 @@ export declare let createOrUpdateThirdPartyConfig: typeof Wrapper.createOrUpdate
 export declare let deleteThirdPartyConfig: typeof Wrapper.deleteThirdPartyConfig;
 export declare let associateUserToTenant: typeof Wrapper.associateUserToTenant;
 export declare let disassociateUserFromTenant: typeof Wrapper.disassociateUserFromTenant;
+export declare let getTenantCoreConfig: typeof Wrapper.getTenantCoreConfig;
 export { AllowedDomainsClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

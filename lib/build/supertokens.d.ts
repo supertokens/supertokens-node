@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext, CoreConfigProperty } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
@@ -83,14 +83,4 @@ export default class SuperTokens {
     middleware: (request: BaseRequest, response: BaseResponse, userContext: UserContext) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse, userContext: UserContext) => Promise<void>;
     getRequestFromUserContext: (userContext: UserContext | undefined) => BaseRequest | undefined;
-    listAllCoreConfigProperties: ({
-        tenantId,
-        userContext,
-    }: {
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        config: Array<CoreConfigProperty>;
-    }>;
 }

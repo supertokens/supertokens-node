@@ -40,7 +40,7 @@ export default async function createOrUpdateThirdPartyConfig(
         };
     }
 
-    if (tenantRes.thirdParty.providers.length == 0) {
+    if (tenantRes.thirdParty.providers === undefined) {
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         for (const provider of staticProviders) {

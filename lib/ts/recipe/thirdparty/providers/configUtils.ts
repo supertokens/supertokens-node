@@ -125,12 +125,12 @@ export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderCo
 }
 
 export function mergeProvidersFromCoreAndStatic(
-    providerConfigsFromCore: ProviderConfig[],
+    providerConfigsFromCore: ProviderConfig[] | undefined,
     providerInputsFromStatic: ProviderInput[]
 ): ProviderInput[] {
     const mergedProviders: ProviderInput[] = [];
 
-    if (providerConfigsFromCore.length === 0) {
+    if (providerConfigsFromCore === undefined) {
         for (const config of providerInputsFromStatic) {
             mergedProviders.push(config);
         }

@@ -21,6 +21,7 @@ import {
     findAndCreateProviderInstance,
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
+import { CoreConfigFieldInfo } from "../../../multitenancy/types";
 
 export type Response =
     | {
@@ -32,7 +33,7 @@ export type Response =
               };
               firstFactors: string[];
               requiredSecondaryFactors?: string[] | null;
-              coreConfig: any[]; // TODO
+              coreConfig: CoreConfigFieldInfo[];
               userCount: number;
           };
       }
@@ -76,10 +77,7 @@ export default async function getTenantInfo(
 
     const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
 
-    const coreConfig = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({
-        tenantId,
-        userContext,
-    });
+    const coreConfig = await Multitenancy.getTenantCoreConfig(tenantId, userContext);
 
     const tenant: {
         tenantId: string;

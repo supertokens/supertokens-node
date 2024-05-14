@@ -49,11 +49,12 @@ export default async function deleteThirdPartyConfig(
         };
     }
 
-    const thirdPartyIdsFromCore = tenantRes.thirdParty.providers.map((provider) => provider.thirdPartyId);
+    const thirdPartyIdsFromCore =
+        tenantRes.thirdParty.providers === undefined
+            ? undefined
+            : tenantRes.thirdParty.providers.map((provider) => provider.thirdPartyId);
 
-    if (thirdPartyIdsFromCore.length > 1) {
-        return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
-    } else if (thirdPartyIdsFromCore.length === 0) {
+    if (thirdPartyIdsFromCore === undefined) {
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         let staticProviderIds = staticProviders.map((provider) => provider.config.thirdPartyId);
@@ -75,6 +76,8 @@ export default async function deleteThirdPartyConfig(
             status: "OK",
             didConfigExist: true,
         };
+    } else if (thirdPartyIdsFromCore.length > 1) {
+        return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
     } else {
         await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
 

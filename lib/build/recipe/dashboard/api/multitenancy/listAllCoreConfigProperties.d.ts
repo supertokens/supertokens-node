@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
-import { CoreConfigProperty } from "../../../../types";
+import { CoreConfigFieldInfo } from "../../../multitenancy/types";
 export declare type Response = {
     status: "OK";
-    config: Array<CoreConfigProperty>;
+    config: CoreConfigFieldInfo[];
 };
 export default function listAllCoreConfigProperties(
     _: APIInterface,

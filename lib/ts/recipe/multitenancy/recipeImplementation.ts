@@ -11,7 +11,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         createOrUpdateTenant: async function ({ tenantId, config, userContext }) {
             let response = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/multitenancy/tenant`),
+                new NormalisedURLPath(`/recipe/multitenancy/tenant/v2`),
                 {
                     tenantId,
                     ...config,
@@ -37,7 +37,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         getTenant: async function ({ tenantId, userContext }) {
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant`
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/v2`
                 ),
                 {},
                 userContext
@@ -52,7 +52,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         listAllTenants: async function ({ userContext }) {
             let response = await querier.sendGetRequest(
-                new NormalisedURLPath(`/recipe/multitenancy/tenant/list`),
+                new NormalisedURLPath(`/recipe/multitenancy/tenant/list/v2`),
                 {},
                 userContext
             );
@@ -109,6 +109,17 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 {
                     recipeUserId: recipeUserId.getAsString(),
                 },
+                userContext
+            );
+            return response;
+        },
+
+        getTenantCoreConfig: async function ({ tenantId, userContext }) {
+            let response = await querier.sendGetRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/core-config`
+                ),
+                {},
                 userContext
             );
             return response;

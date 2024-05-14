@@ -13,12 +13,12 @@
  * under the License.
  */
 import { APIInterface, APIOptions } from "../../types";
-import { CoreConfigProperty } from "../../../../types";
-import SuperTokens from "../../../../supertokens";
+import { CoreConfigFieldInfo } from "../../../multitenancy/types";
+import Multitenancy from "../../../multitenancy";
 
 export type Response = {
     status: "OK";
-    config: Array<CoreConfigProperty>;
+    config: CoreConfigFieldInfo[];
 };
 
 export default async function listAllCoreConfigProperties(
@@ -27,7 +27,7 @@ export default async function listAllCoreConfigProperties(
     ___: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const res = await SuperTokens.getInstanceOrThrowError().listAllCoreConfigProperties({ tenantId, userContext });
+    const res = await Multitenancy.getTenantCoreConfig(tenantId, userContext);
 
     return res;
 }

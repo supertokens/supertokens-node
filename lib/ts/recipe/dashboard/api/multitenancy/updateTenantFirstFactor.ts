@@ -14,7 +14,6 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { FactorIds } from "../../../multifactorauth";
 import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
 
 export type Response =
@@ -51,21 +50,10 @@ export default async function updateTenantFirstFactor(
     }
 
     let firstFactors = normaliseTenantLoginMethodsWithInitConfig(tenantRes);
-    let updateTenantBody: any = {};
 
     if (enable === true) {
         if (!firstFactors.includes(factorId)) {
             firstFactors.push(factorId);
-        }
-
-        if ([FactorIds.EMAILPASSWORD].includes(factorId)) {
-            updateTenantBody.emailPasswordEnabled = true;
-        } else if (
-            [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(factorId)
-        ) {
-            updateTenantBody.passwordlessEnabled = true;
-        } else if ([FactorIds.THIRDPARTY].includes(factorId)) {
-            updateTenantBody.thirdPartyEnabled = true;
         }
     } else {
         firstFactors = firstFactors.filter((f) => f !== factorId);
@@ -74,8 +62,7 @@ export default async function updateTenantFirstFactor(
     await mtRecipe?.recipeInterfaceImpl.createOrUpdateTenant({
         tenantId,
         config: {
-            ...updateTenantBody,
-            firstFactors: firstFactors.length > 0 ? firstFactors : null,
+            firstFactors,
         },
         userContext,
     });

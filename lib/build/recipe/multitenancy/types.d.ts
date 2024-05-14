@@ -25,15 +25,8 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type TenantConfig = {
-    emailPassword: {
-        enabled: boolean;
-    };
-    passwordless: {
-        enabled: boolean;
-    };
     thirdParty: {
-        enabled: boolean;
-        providers: ProviderConfig[];
+        providers?: ProviderConfig[];
     };
     firstFactors?: string[];
     requiredSecondaryFactors?: string[];
@@ -41,14 +34,23 @@ export declare type TenantConfig = {
         [key: string]: any;
     };
 };
+export declare type CoreConfigFieldInfo = {
+    key: string;
+    valueType: string;
+    value: string | number | boolean | null;
+    description: string;
+    isDifferentAcrossTenants: boolean;
+    possibleValues?: string[];
+    isNullable: boolean;
+    defaultValue: string | number | boolean | null;
+    isPluginProperty: boolean;
+    isPluginPropertyEditable: boolean;
+};
 export declare type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
-            emailPasswordEnabled?: boolean;
-            passwordlessEnabled?: boolean;
-            thirdPartyEnabled?: boolean;
             firstFactors?: string[] | null;
             requiredSecondaryFactors?: string[] | null;
             coreConfig?: {
@@ -130,6 +132,13 @@ export declare type RecipeInterface = {
         status: "OK";
         wasAssociated: boolean;
     }>;
+    getTenantCoreConfig: (input: {
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<{
+        status: "OK";
+        config: CoreConfigFieldInfo[];
+    }>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -151,14 +160,7 @@ export declare type APIInterface = {
     }) => Promise<
         | {
               status: "OK";
-              emailPassword: {
-                  enabled: boolean;
-              };
-              passwordless: {
-                  enabled: boolean;
-              };
               thirdParty: {
-                  enabled: boolean;
                   providers: {
                       id: string;
                       name?: string;

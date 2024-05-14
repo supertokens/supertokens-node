@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
+import { CoreConfigFieldInfo } from "../../../multitenancy/types";
 export declare type Response =
     | {
           status: "OK";
@@ -13,7 +14,7 @@ export declare type Response =
               };
               firstFactors: string[];
               requiredSecondaryFactors?: string[] | null;
-              coreConfig: any[];
+              coreConfig: CoreConfigFieldInfo[];
               userCount: number;
           };
       }

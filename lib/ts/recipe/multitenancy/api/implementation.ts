@@ -78,14 +78,7 @@ export default function getAPIInterface(): APIInterface {
 
             return {
                 status: "OK",
-                emailPassword: {
-                    enabled: tenantConfigRes.emailPassword.enabled,
-                },
-                passwordless: {
-                    enabled: tenantConfigRes.passwordless.enabled,
-                },
                 thirdParty: {
-                    enabled: tenantConfigRes.thirdParty.enabled,
                     providers: finalProviderList,
                 },
                 firstFactors: validFirstFactors,

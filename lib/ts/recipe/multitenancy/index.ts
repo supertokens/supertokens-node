@@ -168,6 +168,14 @@ export default class Wrapper {
             userContext: getUserContext(userContext),
         });
     }
+
+    static async getTenantCoreConfig(tenantId?: string, userContext?: Record<string, any>) {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.recipeInterfaceImpl.getTenantCoreConfig({
+            tenantId: tenantId === undefined ? "public" : tenantId,
+            userContext: getUserContext(userContext),
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -182,6 +190,8 @@ export let deleteThirdPartyConfig = Wrapper.deleteThirdPartyConfig;
 
 export let associateUserToTenant = Wrapper.associateUserToTenant;
 export let disassociateUserFromTenant = Wrapper.disassociateUserFromTenant;
+
+export let getTenantCoreConfig = Wrapper.getTenantCoreConfig;
 
 export { AllowedDomainsClaim };
 export type { RecipeInterface, APIOptions, APIInterface };
