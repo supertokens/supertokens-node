@@ -36,16 +36,14 @@ export const USERROLES_REMOVE_PERMISSIONS_API = "/api/userroles/role/permissions
 export const CREATE_EMAIL_PASSWORD_USER = "/api/user/emailpassword";
 export const CREATE_PASSWORDLESS_USER = "/api/user/passwordless";
 
-export const LIST_TENANT_LOGIN_METHODS = "/api/tenants/login-methods";
+export const LIST_TENANTS_WITH_LOGIN_METHODS = "/api/tenants";
 export const USERROLES_USER_API = "/api/userroles/user/roles";
 
 export const TENANT_API = "/api/tenant";
 export const UPDATE_TENANT_FIRST_FACTOR_API = "/api/tenant/first-factor";
 export const UPDATE_TENANT_SECONDARY_FACTOR_API = "/api/tenant/secondary-factor";
-export const UPDATE_TENANT_CORE_CONFIG_API = "/api/tenant/core-config";
+export const GET_OR_UPDATE_TENANT_CORE_CONFIG_API = "/api/tenant/core-config";
 export const TENANT_THIRD_PARTY = "/api/tenants/third-party";
 export const TENANT_THIRD_PARTY_CONFIG_API = "/api/thirdparty/config";
 
 export const UNLINK_USER = "/api/user/unlink";
-
-export const LIST_ALL_CORE_CONFIG_PROPERTIES = "/api/core/config/list";

@@ -54,6 +54,7 @@ export default async function deleteThirdPartyConfig(
             : tenantRes.thirdParty.providers.map((provider) => provider.thirdPartyId);
 
     if (thirdPartyIdsFromCore === undefined) {
+        // this means that the tenant was using the static list of providers, we need to add them all before deleting one
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         let staticProviderIds = staticProviders.map((provider) => provider.config.thirdPartyId);
@@ -68,9 +69,7 @@ export default async function deleteThirdPartyConfig(
                 userContext
             );
         }
-
-        return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
-    } else {
-        return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
     }
+
+    return await Multitenancy.deleteThirdPartyConfig(tenantId, thirdPartyId, userContext);
 }

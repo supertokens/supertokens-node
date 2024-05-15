@@ -17,17 +17,17 @@ import MultitenancyRecipe from "../../../multitenancy/recipe";
 import { UserContext } from "../../../../types";
 import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
 
-type TenantLoginMethodType = {
+type TenantWithLoginMethods = {
     tenantId: string;
     firstFactors: string[];
 };
 
 export type Response = {
     status: "OK";
-    tenants: TenantLoginMethodType[];
+    tenants: TenantWithLoginMethods[];
 };
 
-export default async function getTenantLoginMethodsInfo(
+export default async function listAllTenantsWithLoginMethods(
     _: APIInterface,
     __: string,
     ___: APIOptions,
@@ -36,7 +36,7 @@ export default async function getTenantLoginMethodsInfo(
     const tenantsRes = await MultitenancyRecipe.getInstanceOrThrowError().recipeInterfaceImpl.listAllTenants({
         userContext,
     });
-    const finalTenants: TenantLoginMethodType[] = [];
+    const finalTenants: TenantWithLoginMethods[] = [];
 
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         const currentTenant = tenantsRes.tenants[i];

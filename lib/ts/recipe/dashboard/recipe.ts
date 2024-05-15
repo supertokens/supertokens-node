@@ -43,13 +43,12 @@ import {
     USERROLES_USER_API,
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
-    LIST_TENANT_LOGIN_METHODS,
+    LIST_TENANTS_WITH_LOGIN_METHODS as LIST_ALL_TENANTS_WITH_LOGIN_METHODS,
     TENANT_API,
     TENANT_THIRD_PARTY,
-    LIST_ALL_CORE_CONFIG_PROPERTIES,
     UPDATE_TENANT_FIRST_FACTOR_API,
     UPDATE_TENANT_SECONDARY_FACTOR_API,
-    UPDATE_TENANT_CORE_CONFIG_API,
+    GET_OR_UPDATE_TENANT_CORE_CONFIG_API,
     TENANT_THIRD_PARTY_CONFIG_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -86,7 +85,7 @@ import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
 import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
-import getTenantLoginMethodsInfo from "./api/multitenancy/getTenantLoginMethodsInfo";
+import listAllTenantsWithLoginMethods from "./api/multitenancy/listAllTenantsWithLoginMethods";
 import getTenantInfo from "./api/multitenancy/getTenantInfo";
 import deleteTenant from "./api/multitenancy/deleteTenant";
 import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
@@ -362,8 +361,10 @@ export default class Recipe extends RecipeModule {
                 method: "post",
             },
             {
-                id: LIST_TENANT_LOGIN_METHODS,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(LIST_TENANT_LOGIN_METHODS)),
+                id: LIST_ALL_TENANTS_WITH_LOGIN_METHODS,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(LIST_ALL_TENANTS_WITH_LOGIN_METHODS)
+                ),
                 disabled: false,
                 method: "get",
             },
@@ -402,9 +403,9 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
-                id: UPDATE_TENANT_CORE_CONFIG_API,
+                id: GET_OR_UPDATE_TENANT_CORE_CONFIG_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(UPDATE_TENANT_CORE_CONFIG_API)
+                    getApiPathWithDashboardBase(GET_OR_UPDATE_TENANT_CORE_CONFIG_API)
                 ),
                 disabled: false,
                 method: "put",
@@ -446,9 +447,9 @@ export default class Recipe extends RecipeModule {
                 method: "delete",
             },
             {
-                id: LIST_ALL_CORE_CONFIG_PROPERTIES,
+                id: GET_OR_UPDATE_TENANT_CORE_CONFIG_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(LIST_ALL_CORE_CONFIG_PROPERTIES)
+                    getApiPathWithDashboardBase(GET_OR_UPDATE_TENANT_CORE_CONFIG_API)
                 ),
                 disabled: false,
                 method: "get",
@@ -576,9 +577,9 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "post") {
                 apiFunction = createPasswordlessUser;
             }
-        } else if (id === LIST_TENANT_LOGIN_METHODS) {
+        } else if (id === LIST_ALL_TENANTS_WITH_LOGIN_METHODS) {
             if (req.getMethod() === "get") {
-                apiFunction = getTenantLoginMethodsInfo;
+                apiFunction = listAllTenantsWithLoginMethods;
             }
         } else if (id === TENANT_API) {
             if (req.getMethod() === "put") {
@@ -594,8 +595,13 @@ export default class Recipe extends RecipeModule {
             apiFunction = updateTenantFirstFactor;
         } else if (id === UPDATE_TENANT_SECONDARY_FACTOR_API) {
             apiFunction = updateTenantSecondaryFactor;
-        } else if (id === UPDATE_TENANT_CORE_CONFIG_API) {
-            apiFunction = updateTenantCoreConfig;
+        } else if (id === GET_OR_UPDATE_TENANT_CORE_CONFIG_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = listAllCoreConfigProperties;
+            }
+            if (req.getMethod() === "put") {
+                apiFunction = updateTenantCoreConfig;
+            }
         } else if (id === TENANT_THIRD_PARTY) {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteThirdPartyConfig;
@@ -613,8 +619,6 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteThirdPartyConfig;
             }
-        } else if (id === LIST_ALL_CORE_CONFIG_PROPERTIES) {
-            apiFunction = listAllCoreConfigProperties;
         }
 
         // If the id doesnt match any APIs return false

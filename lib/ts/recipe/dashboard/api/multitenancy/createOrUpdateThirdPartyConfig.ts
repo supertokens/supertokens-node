@@ -41,6 +41,7 @@ export default async function createOrUpdateThirdPartyConfig(
     }
 
     if (tenantRes.thirdParty.providers === undefined) {
+        // This means that the tenant was using the static list of providers, we need to add them all before adding the new one
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         for (const provider of staticProviders) {

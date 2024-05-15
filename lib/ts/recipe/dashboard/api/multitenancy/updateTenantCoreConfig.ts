@@ -51,7 +51,6 @@ export default async function updateTenantCoreConfig(
         });
     } catch (err) {
         if (err instanceof QuerierError) {
-            console.log(err);
             if (err.statusCode === 400) {
                 return {
                     status: "INVALID_CONFIG_ERROR",
