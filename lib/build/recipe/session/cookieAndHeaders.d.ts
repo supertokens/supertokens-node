@@ -20,6 +20,8 @@ export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfTok
 export declare function buildFrontToken(userId: string, atExpiry: number, accessTokenPayload: any): string;
 export declare function setFrontTokenInHeaders(res: BaseResponse, frontToken: string): void;
 export declare function getCORSAllowedHeaders(): string[];
+export declare function getCookieNameFromTokenType(tokenType: TokenType): "sAccessToken" | "sRefreshToken";
+export declare function getResponseHeaderNameForTokenType(tokenType: TokenType): "st-access-token" | "st-refresh-token";
 export declare function getToken(
     req: BaseRequest,
     tokenType: TokenType,
@@ -58,3 +60,27 @@ export declare function setCookie(
     userContext: UserContext
 ): void;
 export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;
+/**
+ *  This function addresses an edge case where changing the cookieDomain config on the server can
+ *  lead to session integrity issues. For instance, if the API server URL is 'api.example.com'
+ *  with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com',
+ *  the client may retain cookies with both '.example.com' and 'api.example.com' domains.
+ *
+ *  Consequently, if the server chooses the older cookie, session invalidation occurs, potentially
+ *  resulting in an infinite refresh loop. To fix this, users are asked to specify "olderCookieDomain" in
+ *  the config.
+ *
+ * This function checks for multiple cookies with the same name and clears the cookies for the older domain
+ */
+export declare function clearSessionCookiesFromOlderCookieDomain({
+    req,
+    res,
+    config,
+    userContext,
+}: {
+    req: BaseRequest;
+    res: BaseResponse;
+    config: TypeNormalisedInput;
+    userContext: UserContext;
+}): void;
+export declare function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: TokenType): boolean;

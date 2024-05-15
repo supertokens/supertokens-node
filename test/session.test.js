@@ -185,6 +185,361 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert.strictEqual(frontendInfo.up["rsub"], "testuserid");
     });
 
+    it("test that session tokens are cleared if refresh token api is called without the refresh token but with access token", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+        });
+
+        const app = express();
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let cookies = extractInfoFromResponse(res2);
+        assert(res2.status === 401);
+        assert(cookies.accessToken === "");
+        assert(cookies.accessTokenExpiry === new Date(0).toUTCString());
+        assert(cookies.refreshToken === "");
+        assert(cookies.refreshTokenExpiry === new Date(0).toUTCString());
+    });
+
+    it("test that access and refresh token for olderCookieDomain is cleared if multiple tokens are passed to the refresh endpoint", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
+                    antiCsrf: "VIA_TOKEN",
+                    olderCookieDomain: ".example.com",
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", [
+                    "sAccessToken=accessToken1",
+                    "sAccessToken=accessToken2",
+                    "sRefreshToken=refreshToken1",
+                    "sRefreshToken=refreshToken2",
+                ])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let cookies = extractInfoFromResponse(res);
+        assert(res.status === 200);
+        assert(cookies.accessToken === "");
+        assert(cookies.accessTokenExpiry === new Date(0).toUTCString());
+        assert(cookies.accessTokenDomain === ".example.com");
+        assert(cookies.refreshToken === "");
+        assert(cookies.refreshTokenExpiry === new Date(0).toUTCString());
+        assert(cookies.refreshTokenDomain === ".example.com");
+    });
+
+    it("test that refresh endpoint throws a 500 if multiple tokens are passed and olderCookieDomain is undefined", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", [
+                    "sAccessToken=accessToken1",
+                    "sAccessToken=accessToken2",
+                    "sRefreshToken=refreshToken1",
+                    "sRefreshToken=refreshToken2",
+                ])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.status === 500);
+    });
+
+    it("test that verifySession returns 401 if multiple tokens are passed in the request", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+        });
+
+        const app = express();
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", async (req, res, next) => {
+            try {
+                let sessionResponse = await Session.getSession(req, res);
+                res.status(200).json({ userId: sessionResponse.userId });
+            } catch (error) {
+                next(error);
+            }
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", [
+                    `sAccessToken=${res.accessToken}`,
+                    `sRefreshToken=${res.refreshToken}`,
+                    `sAccessToken=${res.accessToken}`,
+                    `sRefreshToken=${res.refreshToken}`,
+                ])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res2.status === 401);
+        assert(JSON.parse(res2.text).message === "try refresh token");
+    });
+
+    it("test verifySession returns 200 in header based auth even if multiple tokens are present in the cookie", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "header" })],
+        });
+
+        const app = express();
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", async (req, res, next) => {
+            try {
+                let sessionResponse = await Session.getSession(req, res);
+                res.status(200).json({ userId: sessionResponse.userId });
+            } catch (error) {
+                next(error);
+            }
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set({
+                    Authorization: `Bearer ${res.accessTokenFromHeader}`,
+                })
+                .set("Cookie", [`sAccessToken=${res.accessToken}`, `sAccessToken=${res.accessToken}`])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res2.status === 200);
+        assert(JSON.parse(res2.text).userId === "testuserid");
+    });
+
+    it("test that refresh endpoint refreshes the token in header based auth even if multiple tokens are present in the cookie", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "header" })],
+        });
+
+        const app = express();
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set({
+                    Authorization: `Bearer ${res.refreshTokenFromHeader}`,
+                })
+                .set("Cookie", [
+                    `sAccessToken=${res.accessToken}`,
+                    `sRefreshToken=${res.refreshToken}`,
+                    `sAccessToken=${res.accessToken}`,
+                    `sRefreshToken=${res.refreshToken}`,
+                ])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        info = extractInfoFromResponse(res2);
+        assert(res2.status === 200);
+        assert(info.accessTokenFromHeader !== undefined);
+        assert(info.refreshTokenFromHeader !== undefined);
+    });
+
     // check if input cookies are missing, an appropriate error is thrown
     // Failure condition: if valid cookies are set in the refresh call the test will fail
     it("test that if input cookies are missing, an appropriate error is thrown", async function () {

@@ -246,6 +246,7 @@ app.get("/featureFlags", async (req, res) => {
             maxVersion(supertokens_node_version, "8.3") === supertokens_node_version && currentEnableJWT === true,
         sessionClaims: maxVersion(supertokens_node_version, "12.0") === supertokens_node_version,
         v3AccessToken: maxVersion(supertokens_node_version, "14.0") === supertokens_node_version,
+        duplicateCookieHandling: maxVersion(supertokens_node_version, "17.1") === supertokens_node_version,
     });
 });
 
@@ -508,7 +509,7 @@ app.use("*", async (req, res, next) => {
 app.use(errorHandler());
 
 app.use(async (err, req, res, next) => {
-    res.send(500).send(err);
+    res.status(500).send(err.message);
 });
 
 app.listen(process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT, "0.0.0.0", () => {

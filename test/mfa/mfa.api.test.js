@@ -226,6 +226,64 @@ describe(`mfa-api: ${printPath("[test/mfa/mfa.api.test.js]")}`, function () {
         assert.deepEqual(["emailpassword", "otp-email", "totp"], res.body.factors.allowedToSetup);
     });
 
+    it("mfa info errors if the user is stuck", async function () {
+        const connectionURI = await startSTWithMultitenancy();
+        let requireFactor = false;
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                ThirdParty.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => ({
+                        shouldAutomaticallyLink: true,
+                        shouldRequireVerification: true,
+                    }),
+                }),
+                MultiFactorAuth.init({
+                    override: {
+                        functions: (oI) => ({
+                            ...oI,
+                            getMFARequirementsForAuth: () => (requireFactor ? ["otp-phone"] : []),
+                        }),
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        const app = getTestExpressApp();
+
+        await EmailPassword.signUp("public", "test@example.com", "password");
+
+        let res = await epSignIn(app, "test@example.com", "password");
+        assert.equal("OK", res.body.status);
+
+        let cookies = extractInfoFromResponse(res);
+        const accessToken = cookies.accessTokenFromAny;
+
+        res = await getMfaInfo(app, accessToken);
+        assert.equal("OK", res.body.status);
+        assert.deepEqual([], res.body.factors.next);
+
+        requireFactor = true;
+
+        res = await getMfaInfo(app, accessToken, 500);
+        assert(
+            res.text.includes(
+                "The user is required to complete secondary factors they are not allowed to (otp-phone), likely because of configuration issues."
+            )
+        );
+    });
+
     it("test that only a valid first factor is allowed to login", async function () {
         const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({

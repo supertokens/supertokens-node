@@ -9,8 +9,22 @@ import { HEADER_FDI, HEADER_RID } from "./constants";
 import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
+import { ProcessState, PROCESS_STATE } from "./processState";
 
 export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
+    // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
+    // we don't want that because it may lead to weird behaviour when querying the core.
+    if (init === undefined) {
+        ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+        init = {
+            cache: "no-cache",
+        };
+    } else {
+        if (init.cache === undefined) {
+            ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+            init.cache = "no-cache";
+        }
+    }
     if (typeof fetch !== "undefined") {
         return fetch(input, init);
     }
@@ -229,12 +243,22 @@ export function getBackwardsCompatibleUserInfo(
     return resp;
 }
 
+export function getLatestFDIVersionFromFDIList(fdiHeaderValue: string): string {
+    let versions = fdiHeaderValue.split(",");
+    let maxVersionStr = versions[0];
+    for (let i = 1; i < versions.length; i++) {
+        maxVersionStr = maxVersion(maxVersionStr, versions[i]);
+    }
+    return maxVersionStr;
+}
+
 export function doesRequestSupportFDI(req: BaseRequest, version: string) {
     let requestFDI = req.getHeaderValue(HEADER_FDI);
     if (requestFDI === undefined) {
         // By default we assume they want to use the latest FDI, this also helps with tests
         return true;
     }
+    requestFDI = getLatestFDIVersionFromFDIList(requestFDI);
     if (requestFDI === version || maxVersion(version, requestFDI) !== version) {
         return true;
     }
@@ -303,6 +327,10 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
     let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
     if (parsedURL.domain === null) {
         if (hostname.endsWith(".amazonaws.com") && parsedURL.tld === hostname) {
+            return hostname;
+        }
+        // support for .local domain
+        if (hostname.endsWith(".local") && parsedURL.tld === null) {
             return hostname;
         }
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
