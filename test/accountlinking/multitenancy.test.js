@@ -67,8 +67,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -109,8 +108,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -164,8 +162,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -212,8 +209,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -267,8 +263,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -318,8 +313,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -366,8 +360,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -416,8 +409,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -464,8 +456,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -511,8 +502,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -559,8 +549,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -606,8 +595,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -654,8 +642,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -701,8 +688,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -748,8 +734,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -795,8 +780,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -845,8 +829,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -891,8 +874,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -945,9 +927,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
-                thirdPartyEnabled: true,
+                firstFactors: null,
             });
             assert.strictEqual(createTenant.status, "OK");
 
@@ -995,8 +975,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             });
 
             const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
-                emailPasswordEnabled: true,
-                passwordlessEnabled: true,
+                firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
             });
             assert.strictEqual(createTenant.status, "OK");
 

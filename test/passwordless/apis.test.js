@@ -1698,9 +1698,15 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             return;
         }
 
-        await Multitenancy.createOrUpdateTenant("t1", { passwordlessEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { passwordlessEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
+        await Multitenancy.createOrUpdateTenant("t2", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
+        await Multitenancy.createOrUpdateTenant("t3", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
 
         const app = express();
 

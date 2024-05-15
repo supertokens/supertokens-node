@@ -65,8 +65,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
         const tenantName = "tenant1";
 
         await Multitenancy.createOrUpdateTenant(tenantName, {
-            emailPasswordEnabled: true,
-            thirdPartyEnabled: true,
+            firstFactors: ["emailpassword", "thirdparty"],
         });
 
         await Multitenancy.createOrUpdateThirdPartyConfig(tenantName, {

@@ -67,8 +67,7 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
         const tenantName = "tenant1";
 
         await Multitenancy.createOrUpdateTenant(tenantName, {
-            emailPasswordEnabled: true,
-            thirdPartyEnabled: true,
+            firstFactors: ["emailpassword", "thirdparty"],
         });
 
         const createThirdPartyConfigURL = "/auth/dashboard/api/tenants/third-party";

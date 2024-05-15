@@ -65,8 +65,7 @@ describe(`User Dashboard deleteTenant: ${printPath("[test/dashboard/deleteTenant
         const tenantName = "tenant1";
 
         await Multitenancy.createOrUpdateTenant(tenantName, {
-            emailPasswordEnabled: true,
-            thirdPartyEnabled: true,
+            firstFactors: ["emailpassword", "thirdparty"],
         });
 
         const deleteTenantURL = `/auth/dashboard/api/tenant?tenantId=${tenantName}`;

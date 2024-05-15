@@ -1214,8 +1214,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 ],
             });
             await Multitenancy.createOrUpdateTenant("tenant1", {
-                thirdPartyEnabled: true,
-                emailPasswordEnabled: true,
+                firstFactors: ["emailpassword", "thirdparty"],
             });
 
             const { user: pubUser } = await EmailPassword.signUp("public", "test@example.com", "password123");
@@ -1384,8 +1383,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 ],
             });
             await Multitenancy.createOrUpdateTenant("tenant1", {
-                thirdPartyEnabled: true,
-                emailPasswordEnabled: true,
+                firstFactors: ["emailpassword", "thirdparty"],
             });
 
             const { user: pubUser } = await EmailPassword.signUp("public", "test@example.com", "password123");

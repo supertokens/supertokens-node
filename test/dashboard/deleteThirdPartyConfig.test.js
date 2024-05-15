@@ -67,8 +67,7 @@ describe(`User Dashboard deleteThirdPartyConfig: ${printPath(
         const tenantName = "tenant1";
 
         await Multitenancy.createOrUpdateTenant(tenantName, {
-            emailPasswordEnabled: true,
-            thirdPartyEnabled: true,
+            firstFactors: ["emailpassword", "thirdparty"],
         });
 
         await Multitenancy.createOrUpdateThirdPartyConfig(tenantName, {

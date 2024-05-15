@@ -122,14 +122,10 @@ exports.setup = async function setup(config = {}) {
     });
 
     await Multitenancy.createOrUpdateTenant("tenant1", {
-        passwordlessEnabled: true,
-        thirdPartyEnabled: true,
-        emailPasswordEnabled: true,
+        firstFactors: null,
     });
     await Multitenancy.createOrUpdateTenant("tenant2", {
-        passwordlessEnabled: true,
-        thirdPartyEnabled: true,
-        emailPasswordEnabled: true,
+        firstFactors: null,
     });
 
     const app = express();

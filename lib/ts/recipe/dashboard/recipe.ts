@@ -48,7 +48,7 @@ import {
     TENANT_THIRD_PARTY,
     UPDATE_TENANT_FIRST_FACTOR_API,
     UPDATE_TENANT_SECONDARY_FACTOR_API,
-    GET_OR_UPDATE_TENANT_CORE_CONFIG_API,
+    UPDATE_TENANT_CORE_CONFIG_API,
     TENANT_THIRD_PARTY_CONFIG_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -91,7 +91,6 @@ import deleteTenant from "./api/multitenancy/deleteTenant";
 import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
 import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
 import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
-import listAllCoreConfigProperties from "./api/multitenancy/listAllCoreConfigProperties";
 import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor";
 import updateTenantSecondaryFactor from "./api/multitenancy/updateTenantSecondaryFactor";
 import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
@@ -403,9 +402,9 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
-                id: GET_OR_UPDATE_TENANT_CORE_CONFIG_API,
+                id: UPDATE_TENANT_CORE_CONFIG_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(GET_OR_UPDATE_TENANT_CORE_CONFIG_API)
+                    getApiPathWithDashboardBase(UPDATE_TENANT_CORE_CONFIG_API)
                 ),
                 disabled: false,
                 method: "put",
@@ -445,14 +444,6 @@ export default class Recipe extends RecipeModule {
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
                 disabled: false,
                 method: "delete",
-            },
-            {
-                id: GET_OR_UPDATE_TENANT_CORE_CONFIG_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(GET_OR_UPDATE_TENANT_CORE_CONFIG_API)
-                ),
-                disabled: false,
-                method: "get",
             },
         ];
     };
@@ -595,13 +586,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = updateTenantFirstFactor;
         } else if (id === UPDATE_TENANT_SECONDARY_FACTOR_API) {
             apiFunction = updateTenantSecondaryFactor;
-        } else if (id === GET_OR_UPDATE_TENANT_CORE_CONFIG_API) {
-            if (req.getMethod() === "get") {
-                apiFunction = listAllCoreConfigProperties;
-            }
-            if (req.getMethod() === "put") {
-                apiFunction = updateTenantCoreConfig;
-            }
+        } else if (id === UPDATE_TENANT_CORE_CONFIG_API) {
+            apiFunction = updateTenantCoreConfig;
         } else if (id === TENANT_THIRD_PARTY) {
             if (req.getMethod() === "delete") {
                 apiFunction = deleteThirdPartyConfig;
