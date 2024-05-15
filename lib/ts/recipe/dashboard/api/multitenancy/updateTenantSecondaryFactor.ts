@@ -15,7 +15,6 @@
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
-import { FactorIds } from "../../../multifactorauth";
 import { normaliseTenantSecondaryFactors } from "./utils";
 
 export type Response =
@@ -50,19 +49,7 @@ export default async function updateTenantSecondaryFactor(
         };
     }
 
-    let updateTenantBody: any = {};
-
     if (enable === true) {
-        if ([FactorIds.EMAILPASSWORD].includes(factorId)) {
-            updateTenantBody.emailPasswordEnabled = true;
-        } else if (
-            [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(factorId)
-        ) {
-            updateTenantBody.passwordlessEnabled = true;
-        } else if ([FactorIds.THIRDPARTY].includes(factorId)) {
-            updateTenantBody.thirdPartyEnabled = true;
-        }
-
         const allAvailableSecondaryFactors = mfaInstance.getAllAvailableSecondaryFactorIds(tenantRes);
 
         if (!allAvailableSecondaryFactors.includes(factorId)) {
@@ -86,7 +73,6 @@ export default async function updateTenantSecondaryFactor(
     await mtRecipe?.recipeInterfaceImpl.createOrUpdateTenant({
         tenantId,
         config: {
-            ...updateTenantBody,
             requiredSecondaryFactors: secondaryFactors.length > 0 ? secondaryFactors : null,
         },
         userContext,
