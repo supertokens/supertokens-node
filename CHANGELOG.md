@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.1.1] - 2024-05-16
+
+### Fixes
+
+-   Fixed an issue when using Apple as a third party provider with our NextJs integration.
+-   Added a compatibility layer into `BaseRequest` to handle the form data parser returning `FormData` instead of the raw parsed object. This is to address/fix the above issues, possibly present in other frameworks.
+
 ## [17.1.0] - 2024-04-25
 
 -   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookieDomain` is changed.

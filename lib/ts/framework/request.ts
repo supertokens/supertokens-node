@@ -42,6 +42,13 @@ export abstract class BaseRequest {
         if (this.parsedUrlEncodedFormData === undefined) {
             this.parsedUrlEncodedFormData = await this.getFormDataFromRequestBody();
         }
+
+        if (this.parsedUrlEncodedFormData instanceof FormData) {
+            const ret: Record<string, FormDataEntryValue | undefined> = {};
+            this.parsedUrlEncodedFormData.forEach((value, key) => (ret[key] = value));
+            return ret;
+        }
+
         return this.parsedUrlEncodedFormData;
     };
 
