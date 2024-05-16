@@ -51,12 +51,12 @@ export default async function createOrUpdateTenant(
         tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
     } catch (err) {
         const error = err as QuerierError;
-        if (error.statusCode === 402) {
+        if (error.statusCodeFromCore === 402) {
             return {
                 status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR",
             };
         }
-        if (error.statusCode === 400) {
+        if (error.statusCodeFromCore === 400) {
             return {
                 status: "INVALID_TENANT_ID_ERROR",
                 message: error.errorMessageFromCore,

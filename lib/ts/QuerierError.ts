@@ -1,10 +1,10 @@
 export class QuerierError extends Error {
-    statusCode: number;
+    statusCodeFromCore: number;
     errorMessageFromCore: string;
 
     constructor(message: string, statusCode: number, errorMessageFromCore: string) {
         super(message);
-        this.statusCode = statusCode;
+        this.statusCodeFromCore = statusCode;
         this.errorMessageFromCore = errorMessageFromCore;
         if (Error.captureStackTrace) {
             // This excludes QuerierError from the stack trace.

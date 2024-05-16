@@ -248,7 +248,7 @@ describe(`loginMethods: ${printPath("[test/multitenancy/loginMethods.test.js]")}
             app.use(errorHandler());
 
             await Multitenancy.createOrUpdateTenant("public", {
-                emailPasswordEnabled: false,
+                firstFactors: ["link-email", "link-phone"], // removing emailpassword
             });
 
             let response = await request(app).get("/auth/loginmethods").send();
