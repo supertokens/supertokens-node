@@ -52,3 +52,17 @@ export function normaliseTenantSecondaryFactors(tenantDetailsFromCore: TenantCon
 
     return secondaryFactors;
 }
+
+export function factorIdToRecipe(factorId: string): string {
+    const factorIdToRecipe: Record<string, string> = {
+        emailpassword: "Emailpassword or ThirdPartyEmailpassword",
+        thirdparty: "ThirdParty, ThirdPartyEmailpassword or ThirdPartyPasswordless",
+        "otp-email": "Passwordless or ThirdPartyPasswordless",
+        "otp-phone": "Passwordless or ThirdPartyPasswordless",
+        "link-email": "Passwordless or ThirdPartyPasswordless",
+        "link-phone": "Passwordless or ThirdPartyPasswordless",
+        totp: "Totp",
+    };
+
+    return factorIdToRecipe[factorId];
+}

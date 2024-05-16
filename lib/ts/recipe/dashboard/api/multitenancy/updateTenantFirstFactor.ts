@@ -14,7 +14,7 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
+import { factorIdToRecipe, normaliseTenantLoginMethodsWithInitConfig } from "./utils";
 
 export type Response =
     | { status: "OK" }
@@ -36,7 +36,7 @@ export default async function updateTenantFirstFactor(
         if (!mtRecipe?.allAvailableFirstFactors.includes(factorId)) {
             return {
                 status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR",
-                message: `No suitable recipe for the factor ${factorId} is initialised on the backend SDK`,
+                message: `Please initialise ${factorIdToRecipe(factorId)} recipe to be able to use this login method`,
             };
         }
     }
