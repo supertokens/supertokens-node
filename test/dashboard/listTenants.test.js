@@ -68,7 +68,7 @@ describe(`User Dashboard listTenants: ${printPath("[test/dashboard/listTenants.t
             firstFactors: ["emailpassword", "thirdparty"],
         });
 
-        const listAllTenantsURL = "/auth/dashboard/api/tenants/list";
+        const listAllTenantsURL = "/auth/dashboard/api/tenants";
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)

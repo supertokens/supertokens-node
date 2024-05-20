@@ -134,7 +134,7 @@ describe(`User Dashboard deleteTenant: ${printPath("[test/dashboard/deleteTenant
                 });
         });
 
-        assert.strictEqual(responseStatus, 400);
-        assert.strictEqual(tenantInfoResponse.message, "Missing required parameter 'tenantId'");
+        assert.strictEqual(responseStatus, 200);
+        assert.strictEqual(tenantInfoResponse.status, "CANNOT_DELETE_PUBLIC_TENANT_ERROR");
     });
 });

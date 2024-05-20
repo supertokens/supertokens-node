@@ -15,10 +15,14 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 
-export type Response = {
-    status: "OK";
-    didExist: boolean;
-};
+export type Response =
+    | {
+          status: "OK";
+          didExist: boolean;
+      }
+    | {
+          status: "CANNOT_DELETE_PUBLIC_TENANT_ERROR";
+      };
 
 export default async function deleteTenant(
     _: APIInterface,
@@ -26,7 +30,16 @@ export default async function deleteTenant(
     __: APIOptions,
     userContext: any
 ): Promise<Response> {
-    const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);
+    try {
+        const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);
 
-    return deleteTenantRes;
+        return deleteTenantRes;
+    } catch (err) {
+        if (err.statusCodeFromCore === 403 && err.errorMessageFromCore.includes("Cannot delete public tenant")) {
+            return {
+                status: "CANNOT_DELETE_PUBLIC_TENANT_ERROR",
+            };
+        }
+        throw err;
+    }
 }

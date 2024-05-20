@@ -81,7 +81,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
 
         await ThirdPartyEmailPassword.emailPasswordSignUp(tenantName, "test@supertokens.com", "abcd1235");
 
-        const getTenantInfoURL = `/auth/dashboard/api/tenant?tenantId=${tenantName}`;
+        const getTenantInfoURL = `/auth/${tenantName}/dashboard/api/tenant`;
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)
@@ -98,15 +98,13 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
 
         assert.strictEqual(tenantInfoResponse.status, "OK");
         assert.strictEqual(tenantInfoResponse.tenant.tenantId, "tenant1");
-        assert.strictEqual(tenantInfoResponse.tenant.emailPassword.enabled, true);
-        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.enabled, true);
         assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers.length, 1);
-        assert.strictEqual(tenantInfoResponse.tenant.mergedProvidersFromCoreAndStatic.length, 1);
-        assert.strictEqual(tenantInfoResponse.tenant.mergedProvidersFromCoreAndStatic[0].thirdPartyId, "google");
+        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers.length, 1);
+        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers[0].thirdPartyId, "google");
         assert.strictEqual(tenantInfoResponse.tenant.userCount, 1);
-        assert.strictEqual(tenantInfoResponse.tenant.validFirstFactors.length, 2);
-        assert.strictEqual(tenantInfoResponse.tenant.validFirstFactors.includes("emailpassword"), true);
-        assert.strictEqual(tenantInfoResponse.tenant.validFirstFactors.includes("thirdparty"), true);
+        assert.strictEqual(tenantInfoResponse.tenant.firstFactors.length, 2);
+        assert.strictEqual(tenantInfoResponse.tenant.firstFactors.includes("emailpassword"), true);
+        assert.strictEqual(tenantInfoResponse.tenant.firstFactors.includes("thirdparty"), true);
     });
 
     it("Test that API returns error if tenant does not exist", async () => {
@@ -137,7 +135,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
 
         const tenantName = "tenant1";
 
-        const getTenantInfoURL = `/auth/dashboard/api/tenant?tenantId=${tenantName}`;
+        const getTenantInfoURL = `/auth/${tenantName}/dashboard/api/tenant`;
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)
@@ -155,7 +153,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
         assert.strictEqual(tenantInfoResponse.status, "UNKNOWN_TENANT_ERROR");
     });
 
-    it("Test that API throws error if tenant id is not provided", async () => {
+    it("Test that API returns public tenant if tenant id is not provided", async () => {
         const connectionURI = await startSTWithMultitenancy();
         STExpress.init({
             supertokens: {
@@ -198,7 +196,12 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
                 });
         });
 
-        assert.strictEqual(responseStatus, 400);
-        assert.strictEqual(tenantInfoResponse.message, "Missing required parameter 'tenantId'");
+        assert.strictEqual(responseStatus, 200);
+        assert.strictEqual(tenantInfoResponse.status, "OK");
+        assert.strictEqual(tenantInfoResponse.tenant.tenantId, "public");
+        assert.strictEqual(tenantInfoResponse.tenant.thirdParty.providers.length, 0);
+        assert.strictEqual(tenantInfoResponse.tenant.firstFactors.length, 2);
+        assert.strictEqual(tenantInfoResponse.tenant.firstFactors.includes("emailpassword"), true);
+        assert.strictEqual(tenantInfoResponse.tenant.firstFactors.includes("thirdparty"), true);
     });
 });
