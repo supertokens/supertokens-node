@@ -127,7 +127,7 @@ describe(`User Dashboard createOrUpdateTenant: ${printPath("[test/dashboard/crea
                 .put(createTenantURL)
                 .set("Authorization", "Bearer testapikey")
                 .set("Content-Type", "application/json")
-                .send(JSON.stringify({ tenantId: tenantName, emailPasswordEnabled: false }))
+                .send(JSON.stringify({ tenantId: tenantName, firstFactors: ["thirdparty"] }))
                 .end((err, response) => {
                     if (err) {
                         res(undefined);
@@ -142,7 +142,7 @@ describe(`User Dashboard createOrUpdateTenant: ${printPath("[test/dashboard/crea
 
         const tenant = await Multitenancy.getTenant(tenantName);
         assert.strictEqual(tenant.status, "OK");
-        assert.strictEqual(tenant.emailPassword.enabled, false);
+        assert.deepEqual(tenant.firstFactors, ["thirdparty"]);
     });
 
     it("Test that API throws an error if the tenant id is not provided", async () => {

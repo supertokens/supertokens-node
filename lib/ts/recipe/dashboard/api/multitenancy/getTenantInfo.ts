@@ -22,6 +22,8 @@ import {
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
 import { CoreConfigFieldInfo } from "../../../multitenancy/types";
+import NormalisedURLPath from "../../../../normalisedURLPath";
+import { Querier } from "../../../../querier";
 
 export type Response =
     | {
@@ -44,7 +46,7 @@ export type Response =
 export default async function getTenantInfo(
     _: APIInterface,
     tenantId: string,
-    __: APIOptions,
+    options: APIOptions,
     userContext: any
 ): Promise<Response> {
     let tenantRes;
@@ -77,7 +79,12 @@ export default async function getTenantInfo(
 
     const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
 
-    const coreConfig = await Multitenancy.getTenantCoreConfig(tenantId, userContext);
+    let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
+    let coreConfig = await querier.sendGetRequest(
+        new NormalisedURLPath("/recipe/dashboard/tenant/core-config"),
+        {},
+        userContext
+    );
 
     const tenant: {
         tenantId: string;

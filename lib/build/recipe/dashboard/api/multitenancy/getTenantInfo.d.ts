@@ -24,6 +24,6 @@ export declare type Response =
 export default function getTenantInfo(
     _: APIInterface,
     tenantId: string,
-    __: APIOptions,
+    options: APIOptions,
     userContext: any
 ): Promise<Response>;

@@ -68,7 +68,7 @@ describe(`User Dashboard deleteTenant: ${printPath("[test/dashboard/deleteTenant
             firstFactors: ["emailpassword", "thirdparty"],
         });
 
-        const deleteTenantURL = `/auth/dashboard/api/tenant?tenantId=${tenantName}`;
+        const deleteTenantURL = `/auth/${tenantName}/dashboard/api/tenant`;
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)

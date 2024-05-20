@@ -132,13 +132,6 @@ export declare type RecipeInterface = {
         status: "OK";
         wasAssociated: boolean;
     }>;
-    getTenantCoreConfig: (input: {
-        tenantId: string;
-        userContext: UserContext;
-    }) => Promise<{
-        status: "OK";
-        config: CoreConfigFieldInfo[];
-    }>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

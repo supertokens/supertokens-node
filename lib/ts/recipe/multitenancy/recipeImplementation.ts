@@ -113,16 +113,5 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             );
             return response;
         },
-
-        getTenantCoreConfig: async function ({ tenantId, userContext }) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/core-config`
-                ),
-                {},
-                userContext
-            );
-            return response;
-        },
     };
 }

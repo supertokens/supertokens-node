@@ -70,7 +70,7 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
             firstFactors: ["emailpassword", "thirdparty"],
         });
 
-        const createThirdPartyConfigURL = "/auth/dashboard/api/tenants/third-party";
+        const createThirdPartyConfigURL = `/auth/${tenantName}/dashboard/api/tenants/third-party`;
 
         let thirdPartyConfigResponse = await new Promise((res) => {
             request(app)
@@ -79,7 +79,6 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
                 .set("Content-Type", "application/json")
                 .send(
                     JSON.stringify({
-                        tenantId: tenantName,
                         providerConfig: {
                             thirdPartyId: "google",
                             name: "google",
@@ -94,6 +93,7 @@ describe(`User Dashboard createOrUpdateThirdPartyConfig: ${printPath(
                 )
                 .end((err, response) => {
                     if (err) {
+                        console.log(err);
                         res(undefined);
                     } else {
                         res(JSON.parse(response.text));
