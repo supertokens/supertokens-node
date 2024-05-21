@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.1.2] - 2024-05-21
+
+### Fixes
+
+-   Add workaround for unsupported 'cache' field in Cloudflare Workers. We retry fetch requests without the 'cache' field if they fail due to it not being implemented.
+
 ## [17.1.1] - 2024-05-16
 
 ### Fixes
