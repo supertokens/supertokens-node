@@ -285,7 +285,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         );
 
         // Wait for the access token to expire
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         let res2 = await new Promise((resolve) =>
             request(app)
