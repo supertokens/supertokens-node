@@ -47,7 +47,7 @@ import {
     TENANT_API,
     TENANT_THIRD_PARTY,
     UPDATE_TENANT_FIRST_FACTOR_API,
-    UPDATE_TENANT_SECONDARY_FACTOR_API,
+    UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
     UPDATE_TENANT_CORE_CONFIG_API,
     TENANT_THIRD_PARTY_CONFIG_API,
 } from "./constants";
@@ -394,9 +394,9 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
-                id: UPDATE_TENANT_SECONDARY_FACTOR_API,
+                id: UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(
-                    getApiPathWithDashboardBase(UPDATE_TENANT_SECONDARY_FACTOR_API)
+                    getApiPathWithDashboardBase(UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API)
                 ),
                 disabled: false,
                 method: "put",
@@ -584,7 +584,7 @@ export default class Recipe extends RecipeModule {
             }
         } else if (id === UPDATE_TENANT_FIRST_FACTOR_API) {
             apiFunction = updateTenantFirstFactor;
-        } else if (id === UPDATE_TENANT_SECONDARY_FACTOR_API) {
+        } else if (id === UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API) {
             apiFunction = updateTenantSecondaryFactor;
         } else if (id === UPDATE_TENANT_CORE_CONFIG_API) {
             apiFunction = updateTenantCoreConfig;
