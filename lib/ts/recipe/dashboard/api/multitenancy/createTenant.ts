@@ -23,14 +23,14 @@ export type Response =
           createdNew: boolean;
       }
     | {
-          status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR";
+          status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR" | "TENANT_ID_ALREADY_EXISTS_ERROR";
       }
     | {
           status: "INVALID_TENANT_ID_ERROR";
           message: string;
       };
 
-export default async function createOrUpdateTenant(
+export default async function createTenant(
     _: APIInterface,
     __: string,
     options: APIOptions,
@@ -63,6 +63,12 @@ export default async function createOrUpdateTenant(
             };
         }
         throw err;
+    }
+
+    if (tenantRes.createdNew === false) {
+        return {
+            status: "TENANT_ID_ALREADY_EXISTS_ERROR",
+        };
     }
 
     return tenantRes;

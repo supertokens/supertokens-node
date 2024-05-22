@@ -6,13 +6,13 @@ export declare type Response =
           createdNew: boolean;
       }
     | {
-          status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR";
+          status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR" | "TENANT_ID_ALREADY_EXISTS_ERROR";
       }
     | {
           status: "INVALID_TENANT_ID_ERROR";
           message: string;
       };
-export default function createOrUpdateTenant(
+export default function createTenant(
     _: APIInterface,
     __: string,
     options: APIOptions,

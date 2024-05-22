@@ -88,7 +88,7 @@ import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
 import listAllTenantsWithLoginMethods from "./api/multitenancy/listAllTenantsWithLoginMethods";
 import getTenantInfo from "./api/multitenancy/getTenantInfo";
 import deleteTenant from "./api/multitenancy/deleteTenant";
-import createOrUpdateTenant from "./api/multitenancy/createOrUpdateTenant";
+import createTenant from "./api/multitenancy/createTenant";
 import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
 import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
 import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor";
@@ -383,7 +383,7 @@ export default class Recipe extends RecipeModule {
                 id: TENANT_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
                 disabled: false,
-                method: "put",
+                method: "post",
             },
             {
                 id: UPDATE_TENANT_FIRST_FACTOR_API,
@@ -573,8 +573,8 @@ export default class Recipe extends RecipeModule {
                 apiFunction = listAllTenantsWithLoginMethods;
             }
         } else if (id === TENANT_API) {
-            if (req.getMethod() === "put") {
-                apiFunction = createOrUpdateTenant;
+            if (req.getMethod() === "post") {
+                apiFunction = createTenant;
             }
             if (req.getMethod() === "get") {
                 apiFunction = getTenantInfo;
