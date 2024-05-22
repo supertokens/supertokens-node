@@ -440,18 +440,20 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         emailExistsGET: async function (input) {
-            let users = await listUsersByAccountInfo(
-                input.tenantId,
-                {
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId: input.tenantId,
+                accountInfo: {
                     email: input.email,
-                    // tenantId: input.tenantId,
                 },
-                false,
-                input.userContext
-            );
+                doUnionOfAccountInfo: false,
+                userContext: input.userContext,
+            });
+            let userExists = users.some((u) => {
+                u.loginMethods.some((lm) => lm.recipeId === "passwordless" && lm.hasSameEmailAs(input.email));
+            });
 
             return {
-                exists: users.length > 0,
+                exists: userExists,
                 status: "OK",
             };
         },
