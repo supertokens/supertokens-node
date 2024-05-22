@@ -440,7 +440,7 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         emailExistsGET: async function (input) {
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId: input.tenantId,
                 accountInfo: {
                     email: input.email,
@@ -448,9 +448,9 @@ export default function getAPIImplementation(): APIInterface {
                 doUnionOfAccountInfo: false,
                 userContext: input.userContext,
             });
-            let userExists = users.some((u) => {
-                u.loginMethods.some((lm) => lm.recipeId === "passwordless" && lm.hasSameEmailAs(input.email));
-            });
+            const userExists = users.some((u) =>
+                u.loginMethods.some((lm) => lm.recipeId === "passwordless" && lm.hasSameEmailAs(input.email))
+            );
 
             return {
                 exists: userExists,
