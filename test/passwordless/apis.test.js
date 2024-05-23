@@ -73,7 +73,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         await cleanST();
     });
 
-    it("test emailExistsAPI with email password conflicting path, but different rid", async function () {
+    it("test emailExistsAPI on old path with email password conflicting path, but different rid", async function () {
         const connectionURI = await startST();
 
         let emailPasswordEmailExistsCalled = false;
@@ -253,6 +253,166 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             assert(emailDoesNotExistResponse.exists === false);
             assert(emailPasswordEmailExistsCalled === true);
             assert(passwordlessEmailExistsCalled === false);
+        }
+    });
+
+    it("test emailExistsAPI conflicting with email password", async function () {
+        const connectionURI = await startST();
+
+        let emailPasswordEmailExistsCalled = false;
+        let passwordlessEmailExistsCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async (input) => {
+                                    emailPasswordEmailExistsCalled = true;
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async (input) => {
+                                    passwordlessEmailExistsCalled = true;
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/passwordless/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+            assert(emailPasswordEmailExistsCalled === false);
+            assert(passwordlessEmailExistsCalled === true);
+        }
+        await EmailPassword.signUp("public", "test@example.com", "Asdf12..");
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/passwordless/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+            assert(emailPasswordEmailExistsCalled === false);
+            assert(passwordlessEmailExistsCalled === true);
+        }
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/emailpassword/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === true);
+            assert(emailPasswordEmailExistsCalled === true);
+            assert(passwordlessEmailExistsCalled === false);
+        }
+        await Passwordless.signInUp({
+            email: "test@example.com",
+            tenantId: "public",
+        });
+        {
+            emailPasswordEmailExistsCalled = false;
+            passwordlessEmailExistsCalled = false;
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/passwordless/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === true);
+            assert(emailPasswordEmailExistsCalled === false);
+            assert(passwordlessEmailExistsCalled === true);
         }
     });
 
