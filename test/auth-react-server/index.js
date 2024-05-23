@@ -542,12 +542,10 @@ function initST({ passwordlessConfig } = {}) {
     mfaInfo = {};
 
     UserRolesRaw.reset();
-    ThirdPartyPasswordlessRaw.reset();
     PasswordlessRaw.reset();
     EmailVerificationRaw.reset();
     EmailPasswordRaw.reset();
     ThirdPartyRaw.reset();
-    ThirdPartyEmailPasswordRaw.reset();
     SessionRaw.reset();
     MultitenancyRaw.reset();
     AccountLinkingRaw.reset();
