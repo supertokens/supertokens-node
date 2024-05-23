@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   email verification links
     -   passwordless magic links
     -   password reset links
+-   The API for checking if an email exists in the passwordless recipe has changed to return true only if there exists a user with that email as a passwordless user. So for example, earlier, if a user existed with email `test@example.com` as an emailpassword user (and not passwordless user), the passwordless API for does email exist would return true, but now, it won't.
 
 ### Changes
 
