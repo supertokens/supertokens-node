@@ -54,11 +54,120 @@ export default async function getThirdPartyConfig(
         throw new Error("Please provide thirdPartyId");
     }
 
-    const providersFromCore = tenantRes?.thirdParty?.providers;
+    let providersFromCore = tenantRes?.thirdParty?.providers;
     const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
+    if (providersFromCore === undefined) {
+        providersFromCore = [];
+    }
+
+    let found = false;
+    for (let i = 0; i < providersFromCore.length; i++) {
+        if (providersFromCore[i].thirdPartyId === thirdPartyId) {
+            found = true;
+            if (thirdPartyId === "okta") {
+                providersFromCore[i].oidcDiscoveryEndpoint = options.req.getKeyValueFromQuery("oktaDomain");
+                providersFromCore[i].authorizationEndpoint = undefined;
+                providersFromCore[i].tokenEndpoint = undefined;
+                providersFromCore[i].userInfoEndpoint = undefined;
+            } else if (thirdPartyId === "active-directory") {
+                providersFromCore[
+                    i
+                ].oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
+                    "directoryId"
+                )}/v2.0/`;
+                providersFromCore[i].authorizationEndpoint = undefined;
+                providersFromCore[i].tokenEndpoint = undefined;
+                providersFromCore[i].userInfoEndpoint = undefined;
+            } else if (thirdPartyId === "boxy-saml") {
+                providersFromCore[i].oidcDiscoveryEndpoint = undefined;
+                providersFromCore[i].authorizationEndpoint = `${options.req.getKeyValueFromQuery(
+                    "boxyUrl"
+                )}/api/oauth/authorize`;
+                providersFromCore[i].tokenEndpoint = `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/token`;
+                providersFromCore[i].userInfoEndpoint = `${options.req.getKeyValueFromQuery(
+                    "boxyUrl"
+                )}/api/oauth/userinfo`;
+            } else if (thirdPartyId === "google-workspaces") {
+                if (providersFromCore[i].clients !== undefined) {
+                    for (let j = 0; j < providersFromCore[i].clients!.length; j++) {
+                        providersFromCore[i].clients![j].additionalConfig = {
+                            hd: options.req.getKeyValueFromQuery("hd"),
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    if (!found) {
+        if (thirdPartyId === "okta") {
+            providersFromCore.push({
+                thirdPartyId,
+                oidcDiscoveryEndpoint: options.req.getKeyValueFromQuery("oktaDomain"),
+            });
+        } else if (thirdPartyId === "active-directory") {
+            providersFromCore.push({
+                thirdPartyId,
+                oidcDiscoveryEndpoint: `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
+                    "directoryId"
+                )}/v2.0/`,
+            });
+        } else if (thirdPartyId === "boxy-saml") {
+            providersFromCore.push({
+                thirdPartyId,
+                authorizationEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/authorize`,
+                tokenEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/token`,
+                userInfoEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/userinfo`,
+            });
+        } else if (thirdPartyId === "apple") {
+            providersFromCore.push({
+                thirdPartyId,
+                clients: [
+                    {
+                        clientId: "nonguessable-temporary-client-id",
+                        additionalConfig: {
+                            teamId: "team-id",
+                            keyId: "key-id",
+                            privateKey:
+                                "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                        },
+                    },
+                ],
+            });
+        } else if (thirdPartyId === "google-workspaces") {
+            providersFromCore.push({
+                thirdPartyId,
+                clients: [
+                    {
+                        clientId: "nonguessable-temporary-client-id",
+                        additionalConfig: {
+                            hd: options.req.getKeyValueFromQuery("hd"),
+                        },
+                    },
+                ],
+            });
+        } else {
+            providersFromCore.push({
+                thirdPartyId,
+            });
+        }
+    }
+
     let mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
+
+    for (const mergedProvider of mergedProvidersFromCoreAndStatic) {
+        if (mergedProvider.config.thirdPartyId === thirdPartyId) {
+            if (mergedProvider.config.clients === undefined || mergedProvider.config.clients.length === 0) {
+                mergedProvider.config.clients = [
+                    {
+                        clientId: "nonguessable-temporary-client-id",
+                    },
+                ];
+            }
+        }
+    }
 
     const clients = [];
     let commonProviderConfig: ProviderConfig = {
@@ -67,63 +176,6 @@ export default async function getThirdPartyConfig(
     let isGetAuthorisationRedirectUrlOverridden = false;
     let isExchangeAuthCodeForOAuthTokensOverridden = false;
     let isGetUserInfoOverridden = false;
-
-    mergedProvidersFromCoreAndStatic = [
-        ...mergedProvidersFromCoreAndStatic,
-        {
-            config: {
-                thirdPartyId,
-                clients: [
-                    {
-                        clientId: "nonguessable-temporary-client-id",
-                        ...(thirdPartyId === "apple"
-                            ? {
-                                  additionalConfig: {
-                                      teamId: "team-id",
-                                      keyId: "key-id",
-                                      privateKey:
-                                          "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                  },
-                              }
-                            : undefined),
-                        ...(thirdPartyId === "google-workspaces"
-                            ? {
-                                  additionalConfig: {
-                                      hd: options.req.getKeyValueFromQuery("hd"),
-                                  },
-                              }
-                            : undefined),
-                    },
-                ],
-                ...(thirdPartyId === "active-directory"
-                    ? {
-                          oidcDiscoveryEndpoint: `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
-                              "directoryId"
-                          )}/v2.0/`,
-                      }
-                    : undefined),
-                ...(thirdPartyId === "okta"
-                    ? {
-                          oidcDiscoveryEndpoint: options.req.getKeyValueFromQuery("oktaDomain"),
-                      }
-                    : undefined),
-                ...(thirdPartyId === "active-directory"
-                    ? {
-                          oidcDiscoveryEndpoint: `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
-                              "directoryId"
-                          )}/v2.0/`,
-                      }
-                    : undefined),
-                ...(thirdPartyId === "boxy-saml"
-                    ? {
-                          authorizationEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/authorize`,
-                          tokenEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/token`,
-                          userInfoEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/userinfo`,
-                      }
-                    : undefined),
-            },
-        },
-    ];
 
     for (const provider of mergedProvidersFromCoreAndStatic) {
         if (provider.config.thirdPartyId === thirdPartyId) {

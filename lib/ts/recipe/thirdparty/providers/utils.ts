@@ -101,11 +101,14 @@ export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
 var oidcInfoMap: { [key: string]: any } = {};
 
 async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
+    const wellKnownIncluded = issuer.endsWith("/.well-known/openid-configuration");
     const normalizedDomain = new NormalisedURLDomain(issuer);
     let normalizedPath = new NormalisedURLPath(issuer);
     const openIdConfigPath = new NormalisedURLPath("/.well-known/openid-configuration");
 
-    normalizedPath = normalizedPath.appendPath(openIdConfigPath);
+    if (!wellKnownIncluded) {
+        normalizedPath = normalizedPath.appendPath(openIdConfigPath);
+    }
 
     if (oidcInfoMap[issuer] !== undefined) {
         return oidcInfoMap[issuer];

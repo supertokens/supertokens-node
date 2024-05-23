@@ -49,11 +49,7 @@ export default async function getTenantInfo(
     options: APIOptions,
     userContext: any
 ): Promise<Response> {
-    let tenantRes;
-
-    try {
-        tenantRes = await Multitenancy.getTenant(tenantId, userContext);
-    } catch (_) {}
+    let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
 
     if (tenantRes === undefined) {
         return {
