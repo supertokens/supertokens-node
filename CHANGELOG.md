@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changes
 
--   If `rid` header is present in an API call, the routing no only only depends on that. If the SDK cannot resolve a request handler based on the `rid`, request path and method, it will try to resolve a request handler only based on the request path and method (therefore ignoring the `rid` header).
+-   Even if the `rid` header is present in an API call, the routing now not only depends on that. If the SDK cannot resolve a request handler based on the `rid`, request path and method, it will try to resolve a request handler only based on the request path and method (therefore ignoring the `rid` header).
 -   New API handlers are:
     -   `GET /emailpassword/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `emailpassword` or `thirdpartyemailpassword` which is now deprecated)
     -   `GET /passwordless/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `passwordless` or `thirdpartypasswordless` which is now deprecated)
