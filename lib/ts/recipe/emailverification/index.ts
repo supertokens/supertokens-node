@@ -99,7 +99,6 @@ export default class Wrapper {
             link: getEmailVerifyLink({
                 appInfo,
                 token: emailVerificationToken.token,
-                recipeId: recipeInstance.getRecipeId(),
                 tenantId,
                 request: getRequestFromUserContext(ctx),
                 userContext: ctx,

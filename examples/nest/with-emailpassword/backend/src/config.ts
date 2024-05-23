@@ -3,7 +3,7 @@ import Session from 'supertokens-node/recipe/session';
 import Dashboard from 'supertokens-node/recipe/dashboard';
 
 export const appInfo = {
-  // Learn more about this on https://supertokens.com/docs/thirdpartypasswordless/appinfo
+  // Learn more about this on https://supertokens.com/docs/emailpassword/appinfo
   appName: 'ST',
   apiDomain: 'http://localhost:3001',
   websiteDomain: 'http://localhost:3000',

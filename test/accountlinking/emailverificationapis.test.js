@@ -1479,7 +1479,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                             return {
                                 ...oI,
                                 sendEmail: async function (input) {
-                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&tenantId=")[0];
                                 },
                             };
                         },
@@ -1623,7 +1623,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                             return {
                                 ...oI,
                                 sendEmail: async function (input) {
-                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&tenantId=")[0];
                                 },
                             };
                         },

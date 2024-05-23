@@ -25,6 +25,7 @@ import {
     GENERATE_PASSWORD_RESET_TOKEN_API,
     PASSWORD_RESET_API,
     SIGNUP_EMAIL_EXISTS_API,
+    SIGNUP_EMAIL_EXISTS_API_OLD,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -286,6 +287,12 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGNUP_EMAIL_EXISTS_API_OLD),
+                id: SIGNUP_EMAIL_EXISTS_API_OLD,
+                disabled: this.apiImpl.emailExistsGET === undefined,
+            },
         ];
     };
 
@@ -316,7 +323,7 @@ export default class Recipe extends RecipeModule {
             return await generatePasswordResetTokenAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === PASSWORD_RESET_API) {
             return await passwordResetAPI(this.apiImpl, tenantId, options, userContext);
-        } else if (id === SIGNUP_EMAIL_EXISTS_API) {
+        } else if (id === SIGNUP_EMAIL_EXISTS_API || id === SIGNUP_EMAIL_EXISTS_API_OLD) {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         }
         return false;

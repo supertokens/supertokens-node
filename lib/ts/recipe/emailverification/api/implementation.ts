@@ -197,7 +197,6 @@ export default function getAPIInterface(): APIInterface {
                 let emailVerifyLink = getEmailVerifyLink({
                     appInfo: options.appInfo,
                     token: response.token,
-                    recipeId: options.recipeId,
                     tenantId,
                     request: options.req,
                     userContext,
