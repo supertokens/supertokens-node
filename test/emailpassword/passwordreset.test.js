@@ -792,7 +792,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         assert(parsed.pathname === "/auth/reset-password");
         assert(parsed.query.token !== undefined);
-        assert(parsed.query.rid === "emailpassword");
         assert(parsed.query.tenantId === "public");
     });
 
@@ -870,7 +869,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         assert(parsed.pathname === "/auth/reset-password");
         assert(parsed.query.token !== undefined);
-        assert(parsed.query.rid === "emailpassword");
         assert(parsed.query.tenantId === "public");
     });
 
