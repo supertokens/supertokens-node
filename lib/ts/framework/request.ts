@@ -42,6 +42,16 @@ export abstract class BaseRequest {
         if (this.parsedUrlEncodedFormData === undefined) {
             this.parsedUrlEncodedFormData = await this.getFormDataFromRequestBody();
         }
+
+        // If the framework returned a FormData type, that basically maps to: { name: string, value: FormDataEntryValue }[]
+        // however, where we actually use the form data (in appleRedirectPOST) we expect this to be a raw object.
+        // Since many frameworks return a raw object and convert FormData into a raw object as well
+        if (typeof FormData !== "undefined" && this.parsedUrlEncodedFormData instanceof FormData) {
+            const ret: Record<string, FormDataEntryValue | undefined> = {};
+            this.parsedUrlEncodedFormData.forEach((value, key) => (ret[key] = value));
+            return ret;
+        }
+
         return this.parsedUrlEncodedFormData;
     };
 

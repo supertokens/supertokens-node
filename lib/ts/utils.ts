@@ -25,10 +25,26 @@ export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestIn
             init.cache = "no-cache";
         }
     }
-    if (typeof fetch !== "undefined") {
-        return fetch(input, init);
+    const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;
+    try {
+        return fetchFunction(input, init);
+    } catch (e) {
+        // Cloudflare Workers don't support the 'cache' field in RequestInit.
+        // To work around this, we delete the 'cache' field and retry the fetch if the error is due to the missing 'cache' field.
+        // Remove this workaround once the 'cache' field is supported.
+        // More info: https://github.com/cloudflare/workerd/issues/698
+        const unimplementedCacheError =
+            e &&
+            typeof e === "object" &&
+            "message" in e &&
+            e.message === "The 'cache' field on 'RequestInitializerDict' is not implemented.";
+        if (!unimplementedCacheError) throw e;
+
+        const newOpts = { ...init };
+        delete newOpts.cache;
+
+        return fetchFunction(input, newOpts);
     }
-    return crossFetch(input, init);
 };
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {

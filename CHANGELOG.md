@@ -30,6 +30,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   If you were using `ThirdPartyPasswordless`, you should now init `ThirdParty` and `Passwordless` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [Passwordless](https://supertokens.com/docs/passwordless/introduction) for more information.
 
+## [17.1.2] - 2024-05-21
+
+### Fixes
+
+-   Add workaround for unsupported 'cache' field in Cloudflare Workers. We retry fetch requests without the 'cache' field if they fail due to it not being implemented.
+
+## [17.1.1] - 2024-05-16
+
+### Fixes
+
+-   Fixed an issue when using Apple as a third party provider with our NextJs integration.
+-   Added a compatibility layer into `BaseRequest` to handle the form data parser returning `FormData` instead of the raw parsed object. This is to address/fix the above issues, possibly present in other frameworks.
+
 ## [17.1.0] - 2024-04-25
 
 -   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookieDomain` is changed.
