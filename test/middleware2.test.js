@@ -46,7 +46,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         await cleanST();
     });
 
-    it("test rid with session and non existant API in session recipe gives 404", async function () {
+    it("test rid with session and non existant API in session recipe still works if the other recipe is initialized", async function () {
         const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
@@ -77,7 +77,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                     }
                 })
         );
-        assert(response.status === 404);
+        assert(response.status === 400);
     });
 
     it("test no rid with existent API does not give 404", async function () {
@@ -305,7 +305,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         assert(response.status === 400);
     });
 
-    it("test random rid with existent API gives 404", async function () {
+    it("test random rid with existent API still works", async function () {
         const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
@@ -336,7 +336,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                     }
                 })
         );
-        assert(response.status === 404);
+        assert(response.status === 400);
     });
 
     it("custom response express", async function () {

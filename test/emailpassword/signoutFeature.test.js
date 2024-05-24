@@ -125,7 +125,9 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
+                EmailPassword.init(),
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -135,7 +137,6 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                         },
                     },
                 }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
