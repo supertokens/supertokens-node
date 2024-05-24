@@ -98,7 +98,7 @@ function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userI
         codes: [],
     };
     device.codes.push({
-        urlWithLinkCode,
+        urlWithLinkCode: urlWithLinkCode.replace("?preAuthSessionId", "?test=fix&preAuthSessionId"),
         userInputCode,
     });
     deviceStore.set(preAuthSessionId, device);
@@ -474,6 +474,14 @@ app.post("/test/setAccountLinkingConfig", (req, res) => {
 
 app.post("/test/setEnabledRecipes", (req, res) => {
     enabledRecipes = req.body.enabledRecipes;
+    if (enabledRecipes.includes("thirdpartyemailpassword")) {
+        enabledRecipes.push("thirdparty");
+        enabledRecipes.push("emailpassword");
+    }
+    if (enabledRecipes.includes("thirdpartypasswordless")) {
+        enabledRecipes.push("thirdparty");
+        enabledRecipes.push("passwordless");
+    }
     enabledProviders = req.body.enabledProviders;
     initST();
     res.sendStatus(200);
