@@ -101,7 +101,7 @@ function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userI
         // We add an extra item to the start of the querystring, because there was a bug in older auth-react tests
         // that only worked because we used to have an `rid` query param before the preAuthSessionId.
         // This is strictly a test fix, the extra queryparam makes no difference to the actual SDK code.
-        urlWithLinkCode: urlWithLinkCode.replace("?preAuthSessionId", "?test=fix&preAuthSessionId"),
+        urlWithLinkCode: urlWithLinkCode?.replace("?preAuthSessionId", "?test=fix&preAuthSessionId"),
         userInputCode,
     });
     deviceStore.set(preAuthSessionId, device);
