@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [15.1.2] - 2024-05-28
+
+-   Fixes override recursion issue with inbuilt providers
+-   Fixes reference issue with `config` object in `TypeProvider` while overriding
+
 ## [15.1.1] - 2023-08-14
 
 ### Fixes

@@ -35,39 +35,40 @@ export function getProviderConfigForClient(
 async function fetchAndSetConfig(provider: TypeProvider, clientType: string | undefined, userContext: any) {
     let config = await provider.getConfigForClientType({ clientType, userContext });
 
-    config = await discoverOIDCEndpoints(config);
+    await discoverOIDCEndpoints(config);
 
-    provider.config = config;
+    Object.assign(provider.config, config);
 }
 
 function createProvider(input: ProviderInput): TypeProvider {
-    if (input.config.thirdPartyId.startsWith("active-directory")) {
-        return ActiveDirectory(input);
-    } else if (input.config.thirdPartyId.startsWith("apple")) {
-        return Apple(input);
-    } else if (input.config.thirdPartyId.startsWith("bitbucket")) {
-        return Bitbucket(input);
-    } else if (input.config.thirdPartyId.startsWith("discord")) {
-        return Discord(input);
-    } else if (input.config.thirdPartyId.startsWith("facebook")) {
-        return Facebook(input);
-    } else if (input.config.thirdPartyId.startsWith("github")) {
-        return Github(input);
-    } else if (input.config.thirdPartyId.startsWith("gitlab")) {
-        return Gitlab(input);
-    } else if (input.config.thirdPartyId.startsWith("google-workspaces")) {
-        return GoogleWorkspaces(input);
-    } else if (input.config.thirdPartyId.startsWith("google")) {
-        return Google(input);
-    } else if (input.config.thirdPartyId.startsWith("okta")) {
-        return Okta(input);
-    } else if (input.config.thirdPartyId.startsWith("linkedin")) {
-        return Linkedin(input);
-    } else if (input.config.thirdPartyId.startsWith("boxy-saml")) {
-        return BoxySAML(input);
+    const clonedInput = { ...input };
+    if (clonedInput.config.thirdPartyId.startsWith("active-directory")) {
+        return ActiveDirectory(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("apple")) {
+        return Apple(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("bitbucket")) {
+        return Bitbucket(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("discord")) {
+        return Discord(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("facebook")) {
+        return Facebook(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("github")) {
+        return Github(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("gitlab")) {
+        return Gitlab(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("google-workspaces")) {
+        return GoogleWorkspaces(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("google")) {
+        return Google(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("okta")) {
+        return Okta(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("linkedin")) {
+        return Linkedin(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("boxy-saml")) {
+        return BoxySAML(clonedInput);
     }
 
-    return NewProvider(input);
+    return NewProvider(clonedInput);
 }
 
 export async function findAndCreateProviderInstance(
