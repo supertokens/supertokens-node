@@ -216,6 +216,159 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         await cleanST();
     });
 
+    it("test the provider override is not increasing call stack", async function () {
+        await startSTWithMultitenancy();
+
+        let stackCount = [];
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [{ clientId: "test", clientSecret: "secret" }],
+                                },
+                                override: (oI) => {
+                                    const err = new Error();
+                                    stackCount.push(err.stack.split("\n").length);
+                                    return {
+                                        ...oI,
+                                        getAuthorisationRedirectURL: async (input) => {
+                                            return await oI.getAuthorisationRedirectURL(input);
+                                        },
+                                    };
+                                },
+                            },
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        for (let i = 0; i < 10; i++) {
+            await (await ThirdParty.getProvider("public", "google")).getAuthorisationRedirectURL({
+                redirectURIOnProviderDashboard: "http://localhost:8080",
+                userContext: {},
+            });
+        }
+
+        for (let i = 1; i < stackCount.length; i++) {
+            assert.equal(stackCount[i], stackCount[i - 1]); // stack should be same and not increasing
+        }
+    });
+
+    it("test the config is same within override and provider instance", async function () {
+        await startSTWithMultitenancy();
+
+        let oIConfig;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [{ clientId: "test", clientSecret: "secret" }],
+                                },
+                                override: (oI) => {
+                                    return {
+                                        ...oI,
+                                        getAuthorisationRedirectURL: async (input) => {
+                                            oIConfig = oI.config;
+                                            return await oI.getAuthorisationRedirectURL(input);
+                                        },
+                                    };
+                                },
+                            },
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        const provider = await ThirdParty.getProvider("public", "google");
+        await provider.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "http://localhost:8080",
+            userContext: {},
+        });
+
+        assert.strictEqual(provider.config, oIConfig);
+    });
+
+    it("test the config is same within override and provider instance when overriding getConfigForClientType", async function () {
+        await startSTWithMultitenancy();
+
+        let oIConfig;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [{ clientId: "test", clientSecret: "secret" }],
+                                },
+                                override: (oI) => {
+                                    return {
+                                        ...oI,
+                                        getConfigForClientType: async (input) => {
+                                            return {
+                                                id: "google",
+                                                clientId: "hello",
+                                                authorizationEndpoint: "http://localhost:8080/authorize",
+                                            };
+                                        },
+                                        getAuthorisationRedirectURL: async (input) => {
+                                            oIConfig = oI.config;
+                                            return await oI.getAuthorisationRedirectURL(input);
+                                        },
+                                    };
+                                },
+                            },
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        const provider = await ThirdParty.getProvider("public", "google");
+        await provider.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "http://localhost:8080",
+            userContext: {},
+        });
+
+        assert.strictEqual(provider.config, oIConfig);
+    });
+
     it("test built-in provider computed config from static config", async function () {
         await startSTWithMultitenancy();
 

@@ -100,7 +100,7 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     return oidcInfo;
 }
 
-export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<ProviderConfigForClientType> {
+export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void> {
     if (config.oidcDiscoveryEndpoint !== undefined) {
         const oidcInfo = await getOIDCDiscoveryInfo(config.oidcDiscoveryEndpoint);
 
@@ -120,6 +120,4 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
             config.jwksURI = oidcInfo.jwks_uri;
         }
     }
-
-    return config;
 }
