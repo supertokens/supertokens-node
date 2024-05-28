@@ -33,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   If you were using `ThirdPartyPasswordless`, you should now init `ThirdParty` and `Passwordless` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [Passwordless](https://supertokens.com/docs/passwordless/introduction) for more information.
 
+### Fixes
+
+-   Fixes override recursion build-up in built-in providers due to the modification of the `input.override` object in the ThirdParty providers list.
+-   Fixes issue with reference to `config` object in `TypeProvider` in the provider override. The issue was the `originalImplementation.config` object did not have the updated `config` values that was being used in the provider implementation.
+
 ## [17.1.2] - 2024-05-21
 
 ### Fixes
