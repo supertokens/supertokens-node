@@ -24,6 +24,4 @@ export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     jwks: jose.JWTVerifyGetKey,
     otherOptions: jose.JWTVerifyOptions
 ): Promise<any>;
-export declare function discoverOIDCEndpoints(
-    config: ProviderConfigForClientType
-): Promise<ProviderConfigForClientType>;
+export declare function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void>;
