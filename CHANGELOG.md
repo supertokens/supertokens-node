@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [16.7.6] - 2024-05-28
 
--   Fixes override recursion issue with inbuilt providers
--   Fixes reference issue with `config` object in `TypeProvider` while overriding
+-   Fixes override recursion build-up in built-in providers due to the modification of the `input.override` object in the ThirdParty providers list.
+-   Fixes issue with reference to `config` object in `TypeProvider` in the provider override. The issue was the `originalImplementation.config` object did not have the updated `config` values that was being used in the provider implementation.
 
 ## [16.7.5] - 2024-03-21
 
