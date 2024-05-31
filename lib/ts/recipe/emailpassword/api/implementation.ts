@@ -379,7 +379,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            async function doUpdatePassword(
+            async function doUpdatePasswordAndEmailVerification(
                 recipeUserId: RecipeUserId
             ): Promise<
                 | {
@@ -417,10 +417,56 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 } else {
                     // status: "OK"
+
+                    // If the update was successful, we try to mark the email as verified.
+                    // We do this because we assume that the password reset token was delivered by email (and to the appropriate email address)
+                    // so consuming it means that the user actually has access to the emails we send.
+
+                    // We only do this if the password update was successful, otherwise the following scenario is possible:
+                    // 1. User M: signs up using the email of user V with their own password. They can't validate the email, because it is not their own.
+                    // 2. User A: tries signing up but sees the email already exists message
+                    // 3. User A: resets their password, but somehow this fails (e.g.: password policy issue)
+                    // If we verified (and linked) the existing user with the original password, User M would get access to the current user and any linked users.
+                    await markEmailAsVerified(recipeUserId, emailForWhomTokenWasGenerated);
+                    // We refresh the user information here, because the verification status may be updated, which is used during linking.
+                    const updatedUserAfterEmailVerification = await getUser(recipeUserId.getAsString(), userContext);
+                    if (updatedUserAfterEmailVerification === undefined) {
+                        throw new Error("Should never happen - user deleted after during password reset");
+                    }
+
+                    if (updatedUserAfterEmailVerification.isPrimaryUser) {
+                        // If the user is already primary, we do not need to do any linking
+                        return {
+                            status: "OK",
+                            email: emailForWhomTokenWasGenerated,
+                            user: updatedUserAfterEmailVerification,
+                        };
+                    }
+
+                    // If the user was not primary:
+
+                    // Now we try and link the accounts.
+                    // The function below will try and also create a primary user of the new account, this can happen if:
+                    // 1. the user was unverified and linking requires verification
+                    // We do not take try linking by session here, since this is supposed to be called without a session
+                    // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
+                    const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                        tenantId,
+                        inputUser: updatedUserAfterEmailVerification,
+                        session: undefined,
+                        userContext,
+                    });
+                    const userAfterLinking = linkRes.status === "OK" ? linkRes.user : updatedUserAfterEmailVerification;
+                    if (linkRes.status === "OK" && linkRes.user.id !== updatedUserAfterEmailVerification.id) {
+                        // this means that the account we just linked to
+                        // was not the one we had expected to link it to. This can happen
+                        // due to some race condition or the other.. Either way, this
+                        // is not an issue and we can just return OK
+                    }
                     return {
                         status: "OK",
-                        user: existingUser!,
                         email: emailForWhomTokenWasGenerated,
+                        user: userAfterLinking,
                     };
                 }
             }
@@ -478,7 +524,7 @@ export default function getAPIImplementation(): APIInterface {
                     }) !== undefined;
 
                 if (emailPasswordUserIsLinkedToExistingUser) {
-                    return doUpdatePassword(new RecipeUserId(userIdForWhomTokenWasGenerated));
+                    return doUpdatePasswordAndEmailVerification(new RecipeUserId(userIdForWhomTokenWasGenerated));
                 } else {
                     // this means that the existingUser does not have an emailpassword user associated
                     // with it. It could now mean that no emailpassword user exists, or it could mean that
@@ -553,7 +599,7 @@ export default function getAPIImplementation(): APIInterface {
                 // it must be a non linked email password account. In this case, we simply update the password.
                 // Linking to an existing account will be done after the user goes through the email
                 // verification flow once they log in (if applicable).
-                return doUpdatePassword(new RecipeUserId(userIdForWhomTokenWasGenerated));
+                return doUpdatePasswordAndEmailVerification(new RecipeUserId(userIdForWhomTokenWasGenerated));
             }
         },
 
