@@ -28,7 +28,47 @@
         "url": "git+https://github.com/supertokens/supertokens-node.git"
     },
     "exports": {
+        ".": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
+        "./framework/*": {
+            "types": "./framework/*/index.d.ts",
+            "default": "./framework/*/index.js"
+        },
+        "./framework/*/index.js": {
+            "types": "./framework/*/index.d.ts",
+            "default": "./framework/*/index.js"
+        },
+        "./nextjs": {
+            "types": "./nextjs/index.d.ts",
+            "default": "./nextjs/index.js"
+        },
+        "./nextjs/index.js": {
+            "types": "./nextjs/index.d.ts",
+            "default": "./nextjs/index.js"
+        },
+        "./types": {
+            "types": "./types/index.d.ts",
+            "default": "./types/index.js"
+        },
+        "./types/index.js": {
+            "types": "./types/index.d.ts",
+            "default": "./types/index.js"
+        },
+        "./lib/*": {
+            "types": "./lib/*/index.d.ts",
+            "default": "./lib/*/index.js"
+        },
+        "./lib/*.js": {
+            "types": "./lib/*.d.ts",
+            "default": "./lib/*.js"
+        },
         "./recipe/*": {
+            "types": "./recipe/*/index.d.ts",
+            "default": "./recipe/*/index.js"
+        },
+        "./recipe/*/index.js": {
             "types": "./recipe/*/index.d.ts",
             "default": "./recipe/*/index.js"
         }
