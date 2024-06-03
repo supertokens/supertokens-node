@@ -27,7 +27,7 @@ export default class NormalisedURLDomain {
     };
 }
 
-function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): string {
+function normaliseURLDomainOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
 
     // if the input starts with a . (eg: .domain.tld)
@@ -36,7 +36,7 @@ function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): 
     }
 
     // if the input dosen't start with a protocol add a default one;
-    if (input.match(/^[^:]:\/\//)) {
+    if (!input.match(/^[^:]+:\/\//)) {
         if (input.startsWith("localhost") || isAnIpAddress(input)) {
             input = "http://" + input;
         } else {
@@ -47,15 +47,7 @@ function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): 
     try {
         const urlObj = new URL(input);
 
-        if (ignoreProtocol) {
-            if (urlObj.hostname.startsWith("localhost") || isAnIpAddress(urlObj.hostname)) {
-                return "http://" + urlObj.host;
-            } else {
-                return "https://" + urlObj.host;
-            }
-        } else {
-            return urlObj.protocol + "//" + urlObj.host;
-        }
+        return urlObj.protocol + "//" + urlObj.host;
     } catch {
         throw Error("Please provide a valid domain name");
     }
