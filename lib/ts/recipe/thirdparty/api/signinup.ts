@@ -16,12 +16,14 @@
 import STError from "../error";
 import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function signInUpAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {
         return false;
@@ -80,11 +82,26 @@ export default async function signInUpAPI(
 
     const provider = providerResponse;
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signInUpPOST({
         provider,
         redirectURIInfo,
         oAuthTokens,
         tenantId,
+        session,
         options,
         userContext,
     });
@@ -92,7 +109,7 @@ export default async function signInUpAPI(
     if (result.status === "OK") {
         send200Response(options.res, {
             status: result.status,
-            ...getBackwardsCompatibleUserInfo(options.req, result),
+            ...getBackwardsCompatibleUserInfo(options.req, result, userContext),
         });
     } else {
         send200Response(options.res, result);

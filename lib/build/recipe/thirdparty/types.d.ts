@@ -1,6 +1,6 @@
 // @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
@@ -68,7 +68,7 @@ declare type CommonProviderConfig = {
             [key: string]: any;
         };
         clientConfig: ProviderConfigForClientType;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<void>;
     /**
      * This function is responsible for validating the access token received from the third party provider.
@@ -83,19 +83,26 @@ declare type CommonProviderConfig = {
     validateAccessToken?: (input: {
         accessToken: string;
         clientConfig: ProviderConfigForClientType;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<void>;
     requireEmail?: boolean;
-    generateFakeEmail?: (input: { thirdPartyUserId: string; tenantId: string; userContext: any }) => Promise<string>;
+    generateFakeEmail?: (input: {
+        thirdPartyUserId: string;
+        tenantId: string;
+        userContext: UserContext;
+    }) => Promise<string>;
 };
 export declare type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
 export declare type TypeProvider = {
     id: string;
     config: ProviderConfigForClientType;
-    getConfigForClientType: (input: { clientType?: string; userContext: any }) => Promise<ProviderConfigForClientType>;
+    getConfigForClientType: (input: {
+        clientType?: string;
+        userContext: UserContext;
+    }) => Promise<ProviderConfigForClientType>;
     getAuthorisationRedirectURL: (input: {
         redirectURIOnProviderDashboard: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         urlWithQueryParams: string;
         pkceCodeVerifier?: string;
@@ -106,9 +113,9 @@ export declare type TypeProvider = {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string;
         };
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<any>;
-    getUserInfo: (input: { oAuthTokens: any; userContext: any }) => Promise<UserInfo>;
+    getUserInfo: (input: { oAuthTokens: any; userContext: UserContext }) => Promise<UserInfo>;
 };
 export declare type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];
@@ -148,7 +155,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         tenantId: string;
         clientType?: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<TypeProvider | undefined>;
     signInUp(input: {
         thirdPartyId: string;
@@ -166,8 +173,9 @@ export declare type RecipeInterface = {
                 [key: string]: any;
             };
         };
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -190,14 +198,23 @@ export declare type RecipeInterface = {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
     >;
     manuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -212,6 +229,14 @@ export declare type RecipeInterface = {
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
+          }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     >;
 };
@@ -233,7 +258,7 @@ export declare type APIInterface = {
               redirectURIOnProviderDashboard: string;
               tenantId: string;
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
@@ -248,8 +273,9 @@ export declare type APIInterface = {
               input: {
                   provider: TypeProvider;
                   tenantId: string;
+                  session: SessionContainerInterface | undefined;
                   options: APIOptions;
-                  userContext: any;
+                  userContext: UserContext;
               } & (
                   | {
                         redirectURIInfo: {
@@ -298,7 +324,7 @@ export declare type APIInterface = {
                   [key: string]: any;
               };
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<void>);
 };
 export {};

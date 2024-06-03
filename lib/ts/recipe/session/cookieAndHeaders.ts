@@ -15,7 +15,9 @@
 import { HEADER_RID } from "../../constants";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
+import { UserContext } from "../../types";
 import { availableTokenTransferMethods } from "./constants";
+import SessionError from "./error";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 
 const authorizationHeaderKey = "authorization";
@@ -34,7 +36,7 @@ export function clearSessionFromAllTokenTransferMethods(
     config: TypeNormalisedInput,
     res: BaseResponse,
     request: BaseRequest | undefined,
-    userContext: any
+    userContext: UserContext
 ) {
     // We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     // This is done to handle the following use-case:
@@ -52,7 +54,7 @@ export function clearSession(
     res: BaseResponse,
     transferMethod: TokenTransferMethod,
     request: BaseRequest | undefined,
-    userContext: any
+    userContext: UserContext
 ) {
     // If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     const tokenTypes: TokenType[] = ["access", "refresh"];
@@ -93,7 +95,7 @@ export function getCORSAllowedHeaders(): string[] {
     return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, authModeHeaderKey];
 }
 
-function getCookieNameFromTokenType(tokenType: TokenType) {
+export function getCookieNameFromTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             return accessTokenCookieKey;
@@ -104,7 +106,7 @@ function getCookieNameFromTokenType(tokenType: TokenType) {
     }
 }
 
-function getResponseHeaderNameForTokenType(tokenType: TokenType) {
+export function getResponseHeaderNameForTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             return accessTokenHeaderKey;
@@ -138,7 +140,7 @@ export function setToken(
     expires: number,
     transferMethod: TokenTransferMethod,
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: UserContext
 ) {
     logDebugMessage(`setToken: Setting ${tokenType} token as ${transferMethod}`);
     if (transferMethod === "cookie") {
@@ -181,7 +183,7 @@ export function setCookie(
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath",
     req: BaseRequest | undefined,
-    userContext: any
+    userContext: UserContext
 ) {
     let domain = config.cookieDomain;
     let secure = config.cookieSecure;
@@ -203,4 +205,114 @@ export function setCookie(
 
 export function getAuthModeFromHeader(req: BaseRequest): string | undefined {
     return req.getHeaderValue(authModeHeaderKey)?.toLowerCase();
+}
+
+/**
+ *  This function addresses an edge case where changing the cookieDomain config on the server can
+ *  lead to session integrity issues. For instance, if the API server URL is 'api.example.com'
+ *  with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com',
+ *  the client may retain cookies with both '.example.com' and 'api.example.com' domains.
+ *
+ *  Consequently, if the server chooses the older cookie, session invalidation occurs, potentially
+ *  resulting in an infinite refresh loop. To fix this, users are asked to specify "olderCookieDomain" in
+ *  the config.
+ *
+ * This function checks for multiple cookies with the same name and clears the cookies for the older domain
+ */
+export function clearSessionCookiesFromOlderCookieDomain({
+    req,
+    res,
+    config,
+    userContext,
+}: {
+    req: BaseRequest;
+    res: BaseResponse;
+    config: TypeNormalisedInput;
+    userContext: UserContext;
+}): void {
+    const allowedTransferMethod = config.getTokenTransferMethod({
+        req,
+        forCreateNewSession: false,
+        userContext,
+    });
+
+    // If the transfer method is 'header', there's no need to clear cookies immediately, even if there are multiple in the request.
+    if (allowedTransferMethod === "header") {
+        return;
+    }
+
+    let didClearCookies = false;
+
+    const tokenTypes: TokenType[] = ["access", "refresh"];
+    for (const token of tokenTypes) {
+        if (hasMultipleCookiesForTokenType(req, token)) {
+            // If a request has multiple session cookies and 'olderCookieDomain' is
+            // unset, we can't identify the correct cookie for refreshing the session.
+            // Using the wrong cookie can cause an infinite refresh loop. To avoid this,
+            // we throw a 500 error asking the user to set 'olderCookieDomain'.
+            if (config.olderCookieDomain === undefined) {
+                throw new Error(
+                    `The request contains multiple session cookies. This may happen if you've changed the 'cookieDomain' value in your configuration. To clear tokens from the previous domain, set 'olderCookieDomain' in your config.`
+                );
+            }
+
+            logDebugMessage(
+                `clearSessionCookiesFromOlderCookieDomain: Clearing duplicate ${token} cookie with domain ${config.olderCookieDomain}`
+            );
+            setToken(
+                { ...config, cookieDomain: config.olderCookieDomain },
+                res,
+                token,
+                "",
+                0,
+                "cookie",
+                req,
+                userContext
+            );
+            didClearCookies = true;
+        }
+    }
+
+    if (didClearCookies) {
+        throw new SessionError({
+            message:
+                "The request contains multiple session cookies. We are clearing the cookie from olderCookieDomain. Session will be refreshed in the next refresh call.",
+            type: SessionError.CLEAR_DUPLICATE_SESSION_COOKIES,
+        });
+    }
+}
+
+export function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: TokenType): boolean {
+    const cookieString = req.getHeaderValue("cookie");
+
+    if (cookieString === undefined) {
+        return false;
+    }
+
+    const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
+    const cookieName = getCookieNameFromTokenType(tokenType);
+    return cookies[cookieName] !== undefined && cookies[cookieName].length > 1;
+}
+
+// This function is required because cookies library (and most of the popular libraries in npm)
+// does not support parsing multiple cookies with the same name.
+function parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString: string): Record<string, string[]> {
+    const cookies: Record<string, string[]> = {};
+
+    const cookiePairs = cookieString.split(";");
+
+    for (const cookiePair of cookiePairs) {
+        const [name, value] = cookiePair
+            .trim()
+            .split("=")
+            .map((part) => decodeURIComponent(part));
+
+        if (cookies.hasOwnProperty(name)) {
+            cookies[name].push(value);
+        } else {
+            cookies[name] = [value];
+        }
+    }
+
+    return cookies;
 }

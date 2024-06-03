@@ -75,7 +75,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [EmailPassword.init(), Session.init()],
         });
         const app = express();
 
@@ -174,7 +174,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(resetURL === "https://supertokens.io/auth/reset-password");
         assert.notStrictEqual(tokenInfo, undefined);
         assert.notStrictEqual(tokenInfo, null);
-        assert.strictEqual(ridInfo, "emailpassword");
+        assert.strictEqual(ridInfo, null);
         assert.strictEqual(tenantInfo, "public");
     });
 
@@ -196,7 +196,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [EmailPassword.init(), Session.init()],
         });
         const app = express();
 
@@ -229,7 +229,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(response.formFields[0].error === "Password must contain at least 8 characters, including a number");
         assert(response.formFields[0].id === "password");
 
-        response = await new Promise((resolve) =>
+        response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset")
                 .send({
@@ -244,7 +244,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -264,7 +264,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [EmailPassword.init(), Session.init()],
         });
         const app = express();
 
@@ -306,7 +306,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [EmailPassword.init(), Session.init()],
         });
         const app = express();
 
@@ -513,7 +513,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init()],
+                recipeList: [EmailPassword.init(), Session.init()],
             });
 
             let resetPassword = await EmailPassword.createResetPasswordToken("public", "random", "test@example.com");
@@ -580,7 +580,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init()],
+                recipeList: [EmailPassword.init(), Session.init()],
             });
 
             let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
@@ -609,7 +609,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init()],
+                recipeList: [EmailPassword.init(), Session.init()],
             });
 
             let info = await EmailPassword.consumePasswordResetToken("public", "random");
@@ -699,6 +699,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                         },
                     },
                 }),
+                Session.init(),
             ],
         });
 
@@ -710,7 +711,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         await EmailPassword.signUp("public", "test@example.com", "password1234");
 
-        await new Promise((resolve) =>
+        await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/user/password/reset/token")
                 .send({
@@ -724,7 +725,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }
@@ -773,7 +774,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     return "localhost:3000";
                 },
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [EmailPassword.init(), Session.init()],
         });
 
         const app = express();
@@ -791,7 +792,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         assert(parsed.pathname === "/auth/reset-password");
         assert(parsed.query.token !== undefined);
-        assert(parsed.query.rid === "emailpassword");
         assert(parsed.query.tenantId === "public");
     });
 
@@ -808,7 +808,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     return "localhost:3000";
                 },
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [EmailPassword.init(), Session.init()],
         });
 
         let link = await createResetPasswordLink("public", "invlidUserId", "test@example.com");
@@ -869,7 +869,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         assert(parsed.pathname === "/auth/reset-password");
         assert(parsed.query.token !== undefined);
-        assert(parsed.query.rid === "emailpassword");
         assert(parsed.query.tenantId === "public");
     });
 
@@ -886,7 +885,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     return "localhost:3000";
                 },
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [EmailPassword.init(), Session.init()],
         });
 
         const app = express();

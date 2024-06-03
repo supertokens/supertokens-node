@@ -18,6 +18,7 @@ let SuperTokensRaw = require("../../lib/build/supertokens").default;
 let SessionRecipeRaw = require("../../lib/build/recipe/session/recipe").default;
 let DashboardRecipeRaw = require("../../lib/build/recipe/dashboard/recipe").default;
 let MultitenancyRecipeRaw = require("../../lib/build/recipe/multitenancy/recipe").default;
+let UserMetaDataRecipeRaw = require("../../lib/build/recipe/usermetadata/recipe").default;
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -216,6 +217,7 @@ app.post("/setAntiCsrf", async (req, res) => {
         SessionRecipeRaw.reset();
         DashboardRecipeRaw.reset();
         MultitenancyRecipeRaw.reset();
+        UserMetaDataRecipeRaw.reset();
         SuperTokens.init(getConfig(enableAntiCsrf));
     }
     res.send("success");
@@ -230,6 +232,7 @@ app.post("/setEnableJWT", async (req, res) => {
         SessionRecipeRaw.reset();
         DashboardRecipeRaw.reset();
         MultitenancyRecipeRaw.reset();
+        UserMetaDataRecipeRaw.reset();
         SuperTokens.init(getConfig(lastSetEnableAntiCSRF, enableJWT));
     }
     res.send("success");
@@ -243,6 +246,7 @@ app.get("/featureFlags", async (req, res) => {
             maxVersion(supertokens_node_version, "8.3") === supertokens_node_version && currentEnableJWT === true,
         sessionClaims: maxVersion(supertokens_node_version, "12.0") === supertokens_node_version,
         v3AccessToken: maxVersion(supertokens_node_version, "14.0") === supertokens_node_version,
+        duplicateCookieHandling: maxVersion(supertokens_node_version, "17.1") === supertokens_node_version,
     });
 });
 
@@ -254,6 +258,7 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
     SessionRecipeRaw.reset();
     DashboardRecipeRaw.reset();
     MultitenancyRecipeRaw.reset();
+    UserMetaDataRecipeRaw.reset();
     SuperTokens.init(getConfig(lastSetEnableAntiCSRF, currentEnableJWT, jwtPropertyName));
 
     res.send("");
@@ -278,7 +283,8 @@ app.post("/login-2.18", async (req, res) => {
             enableAntiCsrf: false,
             userDataInJWT: payload,
             userDataInDatabase: {},
-        }
+        },
+        {}
     );
     Querier.apiVersion = undefined;
 
@@ -503,7 +509,7 @@ app.use("*", async (req, res, next) => {
 app.use(errorHandler());
 
 app.use(async (err, req, res, next) => {
-    res.send(500).send(err);
+    res.status(500).send(err.message);
 });
 
 app.listen(process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT, "0.0.0.0", () => {

@@ -254,7 +254,9 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
             }
         }
     } catch (err) {
-        throw new Error("Error while setting header with key: " + key + " and value: " + value);
+        throw new Error(
+            "Error while setting header with key: " + key + " and value: " + value + "\nError: " + (err.message ?? err)
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 import RecipeUserId from "../../../recipeUserId";
-import { JSONPrimitive } from "../../../types";
+import { JSONObject, JSONPrimitive, UserContext } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
@@ -7,7 +7,8 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
         userId: string,
         recipeUserId: RecipeUserId,
         tenantId: string,
-        userContext: any
+        currentPayload: JSONObject | undefined,
+        userContext: UserContext
     ) => Promise<T | undefined> | T | undefined;
     public readonly defaultMaxAgeInSeconds: number | undefined;
 
@@ -17,7 +18,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
         this.defaultMaxAgeInSeconds = config.defaultMaxAgeInSeconds;
     }
 
-    addToPayload_internal(payload: any, value: T, _userContext: any): any {
+    addToPayload_internal(payload: any, value: T, _userContext: UserContext): any {
         return {
             ...payload,
             [this.key]: {
@@ -26,7 +27,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
             },
         };
     }
-    removeFromPayloadByMerge_internal(payload: any, _userContext?: any): any {
+    removeFromPayloadByMerge_internal(payload: any, _userContext: UserContext): any {
         const res = {
             ...payload,
             [this.key]: null,
@@ -35,7 +36,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
         return res;
     }
 
-    removeFromPayload(payload: any, _userContext?: any): any {
+    removeFromPayload(payload: any, _userContext: UserContext): any {
         const res = {
             ...payload,
         };
@@ -44,11 +45,11 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
         return res;
     }
 
-    getValueFromPayload(payload: any, _userContext?: any): T | undefined {
+    getValueFromPayload(payload: any, _userContext: UserContext): T | undefined {
         return payload[this.key]?.v;
     }
 
-    getLastRefetchTime(payload: any, _userContext?: any): number | undefined {
+    getLastRefetchTime(payload: any, _userContext: UserContext): number | undefined {
         return payload[this.key]?.t;
     }
 

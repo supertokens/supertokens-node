@@ -1,6 +1,6 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
-import { JSONObject } from "../../types";
+import { JSONObject, UserContext } from "../../types";
 export declare type TypeInput = {
     override?: {
         functions?: (
@@ -23,7 +23,7 @@ export declare type APIInterface = {};
 export declare type RecipeInterface = {
     getUserMetadata: (input: {
         userId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         metadata: any;
@@ -39,14 +39,14 @@ export declare type RecipeInterface = {
     updateUserMetadata: (input: {
         userId: string;
         metadataUpdate: JSONObject;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
     clearUserMetadata: (input: {
         userId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<{
         status: "OK";
     }>;

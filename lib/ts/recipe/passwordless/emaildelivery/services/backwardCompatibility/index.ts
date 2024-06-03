@@ -14,7 +14,7 @@
  */
 import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import { NormalisedAppinfo } from "../../../../../types";
+import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { postWithFetch } from "../../../../../utils";
 
 async function createAndSendEmailUsingSupertokensService(input: {
@@ -26,6 +26,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
     // Full url that the end-user can click to finish sign in/up
     urlWithLinkCode?: string;
     codeLifetime: number;
+    isFirstFactor: boolean;
 }): Promise<void> {
     if (process.env.TEST_MODE === "testing") {
         return;
@@ -42,6 +43,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
             codeLifetime: input.codeLifetime,
             urlWithLinkCode: input.urlWithLinkCode,
             userInputCode: input.userInputCode,
+            // isFirstFactor: input.isFirstFactor,
         },
         {
             successLog: `Email sent to ${input.email}`,
@@ -72,13 +74,14 @@ export default class BackwardCompatibilityService
         this.appInfo = appInfo;
     }
 
-    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
+    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: UserContext }) => {
         await createAndSendEmailUsingSupertokensService({
             appInfo: this.appInfo,
             email: input.email,
             userInputCode: input.userInputCode,
             urlWithLinkCode: input.urlWithLinkCode,
             codeLifetime: input.codeLifetime,
+            isFirstFactor: input.isFirstFactor,
         });
     };
 }

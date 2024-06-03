@@ -18,13 +18,14 @@ import { send200Response } from "../../../utils";
 import STError from "../../../error";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import { UserContext } from "../../../types";
 
 type SignInResponse =
     | { status: "OK"; sessionId: string }
     | { status: "INVALID_CREDENTIALS_ERROR" }
     | { status: "USER_SUSPENDED_ERROR" };
 
-export default async function signIn(_: APIInterface, options: APIOptions, userContext: any): Promise<boolean> {
+export default async function signIn(_: APIInterface, options: APIOptions, userContext: UserContext): Promise<boolean> {
     const { email, password } = await options.req.getJSONBody();
 
     if (email === undefined) {

@@ -165,6 +165,9 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
+                }),
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -174,7 +177,6 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                         },
                     },
                 }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -199,7 +201,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         assert.strictEqual(response.statusCode, 404);
     });
 
-    it("test that calling the API without a session should return OK", async function () {
+    it("test that calling the API without a session should return 401", async function () {
         const connectionURI = await startST();
 
         STExpress.init({
@@ -230,7 +232,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
-                .expect(200)
+                .expect(401)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -239,8 +241,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                     }
                 })
         );
-        assert.strictEqual(response.body.status, "OK");
-        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.status, 401);
         assert.strictEqual(response.header["set-cookie"], undefined);
     });
 

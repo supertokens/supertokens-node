@@ -19,6 +19,7 @@ import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
 import BackwardCompatibilityEmailService from "./emaildelivery/services/backwardCompatibility";
 import BackwardCompatibilitySmsService from "./smsdelivery/services/backwardCompatibility";
+import { FactorIds } from "../multifactorauth";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -173,4 +174,34 @@ export function defaultValidateEmail(value: string): Promise<string | undefined>
     }
 
     return undefined;
+}
+
+export function getEnabledPwlessFactors(config: TypeInput) {
+    let allFactors;
+    if (config.flowType === "MAGIC_LINK") {
+        if (config.contactMethod === "EMAIL") {
+            allFactors = [FactorIds.LINK_EMAIL];
+        } else if (config.contactMethod === "PHONE") {
+            allFactors = [FactorIds.LINK_PHONE];
+        } else {
+            allFactors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
+        }
+    } else if (config.flowType === "USER_INPUT_CODE") {
+        if (config.contactMethod === "EMAIL") {
+            allFactors = [FactorIds.OTP_EMAIL];
+        } else if (config.contactMethod === "PHONE") {
+            allFactors = [FactorIds.OTP_PHONE];
+        } else {
+            allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE];
+        }
+    } else {
+        if (config.contactMethod === "EMAIL") {
+            allFactors = [FactorIds.OTP_EMAIL, FactorIds.LINK_EMAIL];
+        } else if (config.contactMethod === "PHONE") {
+            allFactors = [FactorIds.OTP_PHONE, FactorIds.LINK_PHONE];
+        } else {
+            allFactors = [FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE, FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE];
+        }
+    }
+    return allFactors;
 }

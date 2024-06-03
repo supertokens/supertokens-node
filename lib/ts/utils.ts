@@ -1,6 +1,6 @@
 import * as psl from "psl";
 
-import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
+import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
@@ -9,12 +9,42 @@ import { HEADER_FDI, HEADER_RID } from "./constants";
 import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
+import { ProcessState, PROCESS_STATE } from "./processState";
 
-export const doFetch: typeof fetch = (...args) => {
-    if (typeof fetch !== "undefined") {
-        return fetch(...args);
+export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
+    // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
+    // we don't want that because it may lead to weird behaviour when querying the core.
+    if (init === undefined) {
+        ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+        init = {
+            cache: "no-cache",
+        };
+    } else {
+        if (init.cache === undefined) {
+            ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
+            init.cache = "no-cache";
+        }
     }
-    return crossFetch(...args);
+    const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;
+    try {
+        return fetchFunction(input, init);
+    } catch (e) {
+        // Cloudflare Workers don't support the 'cache' field in RequestInit.
+        // To work around this, we delete the 'cache' field and retry the fetch if the error is due to the missing 'cache' field.
+        // Remove this workaround once the 'cache' field is supported.
+        // More info: https://github.com/cloudflare/workerd/issues/698
+        const unimplementedCacheError =
+            e &&
+            typeof e === "object" &&
+            "message" in e &&
+            e.message === "The 'cache' field on 'RequestInitializerDict' is not implemented.";
+        if (!unimplementedCacheError) throw e;
+
+        const newOpts = { ...init };
+        delete newOpts.cache;
+
+        return fetchFunction(input, newOpts);
+    }
 };
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -70,7 +100,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         );
     }
 
-    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    let websiteDomainFunction = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         let origin = appInfo.origin;
 
         if (origin === undefined) {
@@ -90,7 +120,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
 
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: any }) => {
+    const topLevelWebsiteDomain = (input: { request: BaseRequest | undefined; userContext: UserContext }) => {
         return getTopLevelDomainForSameSiteResolution(websiteDomainFunction(input).getAsStringDangerous());
     };
 
@@ -169,10 +199,16 @@ export function getBackwardsCompatibleUserInfo(
         user: User;
         session: SessionContainer;
         createdNewRecipeUser?: boolean;
-    }
+    },
+    userContext: UserContext
 ) {
     let resp: JSONObject;
-    if (doesRequestSupportFDI(req, "1.18")) {
+    // (>= 1.18 && < 2.0) || >= 3.0: This is because before 1.18, and between 2 and 3, FDI does not
+    // support account linking.
+    if (
+        (hasGreaterThanEqualToFDI(req, "1.18") && !hasGreaterThanEqualToFDI(req, "2.0")) ||
+        hasGreaterThanEqualToFDI(req, "3.0")
+    ) {
         resp = {
             user: result.user.toJson(),
         };
@@ -183,7 +219,7 @@ export function getBackwardsCompatibleUserInfo(
         return resp;
     } else {
         let loginMethod: undefined | LoginMethod = result.user.loginMethods.find(
-            (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId().getAsString()
+            (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId(userContext).getAsString()
         );
 
         if (loginMethod === undefined) {
@@ -228,12 +264,22 @@ export function getBackwardsCompatibleUserInfo(
     return resp;
 }
 
-export function doesRequestSupportFDI(req: BaseRequest, version: string) {
+export function getLatestFDIVersionFromFDIList(fdiHeaderValue: string): string {
+    let versions = fdiHeaderValue.split(",");
+    let maxVersionStr = versions[0];
+    for (let i = 1; i < versions.length; i++) {
+        maxVersionStr = maxVersion(maxVersionStr, versions[i]);
+    }
+    return maxVersionStr;
+}
+
+export function hasGreaterThanEqualToFDI(req: BaseRequest, version: string) {
     let requestFDI = req.getHeaderValue(HEADER_FDI);
     if (requestFDI === undefined) {
         // By default we assume they want to use the latest FDI, this also helps with tests
         return true;
     }
+    requestFDI = getLatestFDIVersionFromFDIList(requestFDI);
     if (requestFDI === version || maxVersion(version, requestFDI) !== version) {
         return true;
     }
@@ -266,13 +312,17 @@ export function humaniseMilliseconds(ms: number): string {
     }
 }
 
-export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
-    return setRequestInUserContextIfNotDefined({}, request);
+export function makeDefaultUserContextFromAPI(request: BaseRequest): UserContext {
+    return setRequestInUserContextIfNotDefined({} as UserContext, request);
 }
 
-export function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest) {
+export function getUserContext(inputUserContext?: Record<string, any>): UserContext {
+    return (inputUserContext ?? {}) as UserContext;
+}
+
+export function setRequestInUserContextIfNotDefined(userContext: UserContext | undefined, request: BaseRequest) {
     if (userContext === undefined) {
-        userContext = {};
+        userContext = {} as UserContext;
     }
 
     if (userContext._default === undefined) {
@@ -281,6 +331,7 @@ export function setRequestInUserContextIfNotDefined(userContext: any | undefined
 
     if (typeof userContext._default === "object") {
         userContext._default.request = request;
+        userContext._default.keepCacheAlive = true;
     }
 
     return userContext;
@@ -297,6 +348,10 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
     let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
     if (parsedURL.domain === null) {
         if (hostname.endsWith(".amazonaws.com") && parsedURL.tld === hostname) {
+            return hostname;
+        }
+        // support for .local domain
+        if (hostname.endsWith(".local") && parsedURL.tld === null) {
             return hostname;
         }
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");

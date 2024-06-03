@@ -17,12 +17,14 @@ import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils"
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
+import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function signUpAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
 
@@ -43,16 +45,31 @@ export default async function signUpAPI(
         userContext
     );
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signUpPOST({
         formFields,
         tenantId,
+        session,
         options,
         userContext: userContext,
     });
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            ...getBackwardsCompatibleUserInfo(options.req, result),
+            ...getBackwardsCompatibleUserInfo(options.req, result, userContext),
         });
     } else if (result.status === "GENERAL_ERROR") {
         send200Response(options.res, result);

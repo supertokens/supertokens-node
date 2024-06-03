@@ -3,6 +3,7 @@ import { ParsedJWTInfo } from "./jwt";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
 import RecipeUserId from "../../recipeUserId";
+import { UserContext } from "../../types";
 /**
  * @description call this to "login" a user.
  */
@@ -13,7 +14,7 @@ export declare function createNewSession(
     disableAntiCsrf: boolean,
     accessTokenPayload: any,
     sessionDataInDatabase: any,
-    userContext: any
+    userContext: UserContext
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
@@ -24,7 +25,7 @@ export declare function getSession(
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     alwaysCheckCore: boolean,
-    userContext: any
+    userContext: UserContext
 ): Promise<{
     session: {
         handle: string;
@@ -47,7 +48,7 @@ export declare function getSession(
 export declare function getSessionInformation(
     helpers: Helpers,
     sessionHandle: string,
-    userContext: any
+    userContext: UserContext
 ): Promise<SessionInformation | undefined>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
@@ -58,7 +59,8 @@ export declare function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     disableAntiCsrf: boolean,
-    userContext: any
+    useDynamicAccessTokenSigningKey: boolean,
+    userContext: UserContext
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
@@ -70,7 +72,7 @@ export declare function revokeAllSessionsForUser(
     revokeSessionsForLinkedAccounts: boolean,
     tenantId: string | undefined,
     revokeAcrossAllTenants: boolean | undefined,
-    userContext: any
+    userContext: UserContext
 ): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
@@ -81,13 +83,17 @@ export declare function getAllSessionHandlesForUser(
     fetchSessionsForAllLinkedAccounts: boolean,
     tenantId: string | undefined,
     fetchAcrossAllTenants: boolean | undefined,
-    userContext: any
+    userContext: UserContext
 ): Promise<string[]>;
 /**
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export declare function revokeSession(helpers: Helpers, sessionHandle: string, userContext: any): Promise<boolean>;
+export declare function revokeSession(
+    helpers: Helpers,
+    sessionHandle: string,
+    userContext: UserContext
+): Promise<boolean>;
 /**
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
@@ -95,7 +101,7 @@ export declare function revokeSession(helpers: Helpers, sessionHandle: string, u
 export declare function revokeMultipleSessions(
     helpers: Helpers,
     sessionHandles: string[],
-    userContext: any
+    userContext: UserContext
 ): Promise<string[]>;
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
@@ -104,11 +110,11 @@ export declare function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean>;
 export declare function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
     newAccessTokenPayload: any,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean>;

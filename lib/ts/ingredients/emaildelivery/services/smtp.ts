@@ -13,6 +13,7 @@
  * under the License.
  */
 import OverrideableBuilder from "supertokens-js-override";
+import { UserContext } from "../../../types";
 
 export interface SMTPServiceConfig {
     host: string;
@@ -33,11 +34,11 @@ export interface GetContentResult {
     toEmail: string;
 }
 
-export type TypeInputSendRawEmail = GetContentResult & { userContext: any };
+export type TypeInputSendRawEmail = GetContentResult & { userContext: UserContext };
 
 export type ServiceInterface<T> = {
     sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
-    getContent: (input: T & { userContext: any }) => Promise<GetContentResult>;
+    getContent: (input: T & { userContext: UserContext }) => Promise<GetContentResult>;
 };
 
 export type TypeInput<T> = {

@@ -14,31 +14,32 @@
  */
 
 import { JSONObject } from "../../types";
+import { getUserContext } from "../../utils";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getUserMetadata(userId: string, userContext?: any) {
+    static async getUserMetadata(userId: string, userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserMetadata({
             userId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: any) {
+    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserMetadata({
             userId,
             metadataUpdate,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async clearUserMetadata(userId: string, userContext?: any) {
+    static async clearUserMetadata(userId: string, userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.clearUserMetadata({
             userId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext: getUserContext(userContext),
         });
     }
 }

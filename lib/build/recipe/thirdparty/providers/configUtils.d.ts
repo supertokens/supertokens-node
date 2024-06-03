@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { UserContext } from "../../../types";
 import {
     ProviderClientConfig,
     ProviderConfig,
@@ -14,7 +15,7 @@ export declare function findAndCreateProviderInstance(
     providers: ProviderInput[],
     thirdPartyId: string,
     clientType: string | undefined,
-    userContext: any
+    userContext: UserContext
 ): Promise<TypeProvider | undefined>;
 export declare function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderConfig): ProviderConfig;
 export declare function mergeProvidersFromCoreAndStatic(

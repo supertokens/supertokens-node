@@ -2,6 +2,7 @@ import { APIInterface, APIOptions } from "../../types";
 import UserMetadaRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
 import STError from "../../../../error";
+import { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";
@@ -11,7 +12,7 @@ export const userMetadataPut = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;

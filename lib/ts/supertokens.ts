@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -84,7 +84,8 @@ export default class SuperTokens {
                     };
                 }),
             config.supertokens?.apiKey,
-            config.supertokens?.networkInterceptor
+            config.supertokens?.networkInterceptor,
+            config.supertokens?.disableCoreCallCache
         );
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");
@@ -99,14 +100,28 @@ export default class SuperTokens {
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
         let multitenancyFound = false;
+        let totpFound = false;
+        let userMetadataFound = false;
+        let multiFactorAuthFound = false;
+
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
         // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
         let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
+        let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
+        let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
+        let TotpRecipe = require("./recipe/totp/recipe").default;
+
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
+            } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {
+                userMetadataFound = true;
+            } else if (recipeModule.getRecipeId() === MultiFactorAuthRecipe.RECIPE_ID) {
+                multiFactorAuthFound = true;
+            } else if (recipeModule.getRecipeId() === TotpRecipe.RECIPE_ID) {
+                totpFound = true;
             }
             return recipeModule;
         });
@@ -114,6 +129,18 @@ export default class SuperTokens {
         if (!multitenancyFound) {
             this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
         }
+        if (totpFound && !multiFactorAuthFound) {
+            throw new Error("Please initialize the MultiFactorAuth recipe to use TOTP.");
+        }
+        if (!userMetadataFound) {
+            // Initializing the user metadata recipe shouldn't cause any issues/side effects and it doesn't expose any APIs,
+            // so we can just always initialize it
+            this.recipeModules.push(UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
+        // While for many usecases account linking recipe also has to be initialized for MFA to function well,
+        // the app doesn't have to do that if they only use TOTP (which shouldn't be that uncommon)
+        // To let those cases function without initializing account linking we do not check it here, but when
+        // the authentication endpoints are called.
 
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }
@@ -148,7 +175,7 @@ export default class SuperTokens {
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ) => {
         return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method, userContext);
     };
@@ -166,7 +193,11 @@ export default class SuperTokens {
         return Array.from(headerSet);
     };
 
-    getUserCount = async (includeRecipeIds?: string[], tenantId?: string, userContext?: any): Promise<number> => {
+    getUserCount = async (
+        includeRecipeIds: string[] | undefined,
+        tenantId: string | undefined,
+        userContext: UserContext
+    ): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
@@ -185,7 +216,7 @@ export default class SuperTokens {
                 includeRecipeIds: includeRecipeIdsStr,
                 includeAllTenants: tenantId === undefined,
             },
-            userContext === undefined ? {} : userContext
+            userContext
         );
         return Number(response.count);
     };
@@ -195,7 +226,7 @@ export default class SuperTokens {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
-        userContext?: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -218,7 +249,7 @@ export default class SuperTokens {
                     externalUserIdInfo: input.externalUserIdInfo,
                     force: input.force,
                 },
-                input.userContext === undefined ? {} : input.userContext
+                input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -228,7 +259,7 @@ export default class SuperTokens {
     getUserIdMapping = async function (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-        userContext?: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -250,7 +281,7 @@ export default class SuperTokens {
                     userId: input.userId,
                     userIdType: input.userIdType,
                 },
-                input.userContext === undefined ? {} : input.userContext
+                input.userContext
             );
             return response;
         } else {
@@ -262,7 +293,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         force?: boolean;
-        userContext?: any;
+        userContext: UserContext;
     }): Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -277,7 +308,7 @@ export default class SuperTokens {
                     userIdType: input.userIdType,
                     force: input.force,
                 },
-                input.userContext === undefined ? {} : input.userContext
+                input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -288,7 +319,7 @@ export default class SuperTokens {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo?: string;
-        userContext?: any;
+        userContext: UserContext;
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }> {
@@ -302,14 +333,14 @@ export default class SuperTokens {
                     userIdType: input.userIdType,
                     externalUserIdInfo: input.externalUserIdInfo,
                 },
-                input.userContext === undefined ? {} : input.userContext
+                input.userContext
             );
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
         }
     };
 
-    middleware = async (request: BaseRequest, response: BaseResponse, userContext: any): Promise<boolean> => {
+    middleware = async (request: BaseRequest, response: BaseResponse, userContext: UserContext): Promise<boolean> => {
         logDebugMessage("middleware: Started");
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
@@ -329,63 +360,21 @@ export default class SuperTokens {
             // see https://github.com/supertokens/supertokens-node/issues/202
             requestRID = undefined;
         }
-        if (requestRID !== undefined) {
-            let matchedRecipe: RecipeModule | undefined = undefined;
 
-            // we loop through all recipe modules to find the one with the matching rId
-            for (let i = 0; i < this.recipeModules.length; i++) {
-                logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
-                if (this.recipeModules[i].getRecipeId() === requestRID) {
-                    matchedRecipe = this.recipeModules[i];
-                    break;
-                }
-            }
-
-            if (matchedRecipe === undefined) {
-                logDebugMessage("middleware: Not handling because no recipe matched");
-                // we could not find one, so we skip
-                return false;
-            }
-            logDebugMessage("middleware: Matched with recipe ID: " + matchedRecipe.getRecipeId());
-
-            let idResult = await matchedRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext);
-            if (idResult === undefined) {
+        async function handleWithoutRid(recipeModules: RecipeModule[]) {
+            for (let i = 0; i < recipeModules.length; i++) {
                 logDebugMessage(
-                    "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
+                    "middleware: Checking recipe ID for match: " +
+                        recipeModules[i].getRecipeId() +
+                        " with path: " +
                         path.getAsStringDangerous() +
-                        ", request method: " +
+                        " and method: " +
                         method
                 );
-                // the matched recipe doesn't handle this path and http method
-                return false;
-            }
-
-            logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
-
-            // give task to the matched recipe
-            let requestHandled = await matchedRecipe.handleAPIRequest(
-                idResult.id,
-                idResult.tenantId,
-                request,
-                response,
-                path,
-                method,
-                userContext
-            );
-            if (!requestHandled) {
-                logDebugMessage("middleware: Not handled because API returned requestHandled as false");
-                return false;
-            }
-            logDebugMessage("middleware: Ended");
-            return true;
-        } else {
-            // we loop through all recipe modules to find the one with the matching path and method
-            for (let i = 0; i < this.recipeModules.length; i++) {
-                logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
-                let idResult = await this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
+                let idResult = await recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
                 if (idResult !== undefined) {
                     logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
-                    let requestHandled = await this.recipeModules[i].handleAPIRequest(
+                    let requestHandled = await recipeModules[i].handleAPIRequest(
                         idResult.id,
                         idResult.tenantId,
                         request,
@@ -405,9 +394,93 @@ export default class SuperTokens {
             logDebugMessage("middleware: Not handling because no recipe matched");
             return false;
         }
+
+        if (requestRID !== undefined) {
+            // We have the below matching based on RID header cause
+            // we still support older FDIs (< 1.20). In the newer FDIs,
+            // the API paths across all recipes are unique.
+            let matchedRecipe: RecipeModule[] = [];
+
+            // we loop through all recipe modules to find the one with the matching rId
+            for (let i = 0; i < this.recipeModules.length; i++) {
+                logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
+                if (this.recipeModules[i].getRecipeId() === requestRID) {
+                    matchedRecipe.push(this.recipeModules[i]);
+                } else if (requestRID === "thirdpartyemailpassword") {
+                    if (
+                        this.recipeModules[i].getRecipeId() === "thirdparty" ||
+                        this.recipeModules[i].getRecipeId() === "emailpassword"
+                    ) {
+                        matchedRecipe.push(this.recipeModules[i]);
+                    }
+                } else if (requestRID === "thirdpartypasswordless") {
+                    if (
+                        this.recipeModules[i].getRecipeId() === "thirdparty" ||
+                        this.recipeModules[i].getRecipeId() === "passwordless"
+                    ) {
+                        matchedRecipe.push(this.recipeModules[i]);
+                    }
+                }
+            }
+
+            if (matchedRecipe.length === 0) {
+                logDebugMessage("middleware: Not handling based on rid match. Trying without rid.");
+                return handleWithoutRid(this.recipeModules);
+            }
+            for (let i = 0; i < matchedRecipe.length; i++) {
+                logDebugMessage("middleware: Matched with recipe IDs: " + matchedRecipe[i].getRecipeId());
+            }
+            let idResult:
+                | {
+                      id: string;
+                      tenantId: string;
+                  }
+                | undefined = undefined;
+
+            let finalMatchedRecipe: RecipeModule | undefined = undefined;
+            for (let i = 0; i < matchedRecipe.length; i++) {
+                // Here we assume that if there are multiple recipes that have matched, then
+                // the path and methods of the APIs exposed via those recipes is unique.
+                let currIdResult = await matchedRecipe[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
+                if (currIdResult !== undefined) {
+                    if (idResult !== undefined) {
+                        throw new Error(
+                            "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support."
+                        );
+                    } else {
+                        finalMatchedRecipe = matchedRecipe[i];
+                        idResult = currIdResult;
+                    }
+                }
+            }
+            if (idResult === undefined || finalMatchedRecipe === undefined) {
+                return handleWithoutRid(this.recipeModules);
+            }
+
+            logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
+
+            // give task to the matched recipe
+            let requestHandled = await finalMatchedRecipe.handleAPIRequest(
+                idResult.id,
+                idResult.tenantId,
+                request,
+                response,
+                path,
+                method,
+                userContext
+            );
+            if (!requestHandled) {
+                logDebugMessage("middleware: Not handled because API returned requestHandled as false");
+                return false;
+            }
+            logDebugMessage("middleware: Ended");
+            return true;
+        } else {
+            return handleWithoutRid(this.recipeModules);
+        }
     };
 
-    errorHandler = async (err: any, request: BaseRequest, response: BaseResponse, userContext: any) => {
+    errorHandler = async (err: any, request: BaseRequest, response: BaseResponse, userContext: UserContext) => {
         logDebugMessage("errorHandler: Started");
         if (STError.isErrorFromSuperTokens(err)) {
             logDebugMessage("errorHandler: Error is from SuperTokens recipe. Message: " + err.message);
@@ -427,7 +500,7 @@ export default class SuperTokens {
         throw err;
     };
 
-    getRequestFromUserContext = (userContext: any | undefined): BaseRequest | undefined => {
+    getRequestFromUserContext = (userContext: UserContext | undefined): BaseRequest | undefined => {
         if (userContext === undefined) {
             return undefined;
         }

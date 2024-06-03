@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, UserContext } from "../../types";
 export declare type JsonWebKey = {
     kty: string;
     kid: string;
@@ -43,7 +43,7 @@ export declare type RecipeInterface = {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -54,7 +54,7 @@ export declare type RecipeInterface = {
           }
     >;
     getJWKS(input: {
-        userContext: any;
+        userContext: UserContext;
     }): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number;
@@ -65,7 +65,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<
               | {
                     keys: JsonWebKey[];

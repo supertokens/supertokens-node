@@ -3,6 +3,7 @@ import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
 import EmailVerificationRecipe from "../../../emailverification/recipe";
 import RecipeUserId from "../../../../recipeUserId";
+import { UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -17,7 +18,7 @@ export const userEmailVerifyGet: APIFunction = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     const req = options.req;
     const recipeUserId = req.getKeyValueFromQuery("recipeUserId");

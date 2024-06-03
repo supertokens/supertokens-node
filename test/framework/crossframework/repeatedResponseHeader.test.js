@@ -22,7 +22,7 @@ addCrossFrameworkTests(
                         {
                             path: "/create",
                             method: "post",
-                            handler: async (req, res, next) => {
+                            handler: async (req, res, _, next) => {
                                 await Session.createNewSession(
                                     req,
                                     res,
@@ -40,7 +40,7 @@ addCrossFrameworkTests(
                             path: "/session/multipleMerge",
                             method: "post",
                             verifySession: true,
-                            handler: async (req, res, session) => {
+                            handler: async (req, res, session, _) => {
                                 await session.mergeIntoAccessTokenPayload({ test1: Date.now() });
                                 await session.mergeIntoAccessTokenPayload({ test2: Date.now() });
                                 await session.mergeIntoAccessTokenPayload({ test3: Date.now() });

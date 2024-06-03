@@ -1,7 +1,8 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
 export default function appleRedirectHandler(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean>;

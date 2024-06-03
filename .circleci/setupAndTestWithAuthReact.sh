@@ -51,7 +51,12 @@ git checkout $2
 npm run init
 (cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ./test/server/
-npm i git+https://github.com:supertokens/supertokens-node.git#$3
+
+# We do not update the node-SDK in the test server we have in the auth-react repo because:
+#  1. it's only supposed to be used for test setup related things (e.g.: starting/configuring core)
+#  2. the current version may have an incompatible interface with it (this is problem esp with removed/changed recipes & configs)
+# npm i git+https://github.com:supertokens/supertokens-node.git#$3
+
 npm i
 cd ../../
 cd ../project/test/auth-react-server

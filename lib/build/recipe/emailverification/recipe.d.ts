@@ -1,7 +1,7 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForRecipeUserIdFunc } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -38,18 +38,18 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc;
-    getPrimaryUserIdForRecipeUser: (recipeUserId: RecipeUserId, userContext: any) => Promise<string>;
+    getPrimaryUserIdForRecipeUser: (recipeUserId: RecipeUserId, userContext: UserContext) => Promise<string>;
     updateSessionIfRequiredPostEmailVerification: (input: {
         req: BaseRequest;
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
         recipeUserIdWhoseEmailGotVerified: RecipeUserId;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<SessionContainerInterface | undefined>;
 }

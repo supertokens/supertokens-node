@@ -15,7 +15,7 @@
 
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, UserContext } from "../../types";
 
 export type JsonWebKey = {
     kty: string;
@@ -62,7 +62,7 @@ export type RecipeInterface = {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
-        userContext: any;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -74,7 +74,7 @@ export type RecipeInterface = {
     >;
 
     getJWKS(input: {
-        userContext: any;
+        userContext: UserContext;
     }): Promise<{
         keys: JsonWebKey[];
         validityInSeconds?: number;
@@ -86,6 +86,6 @@ export type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
-              userContext: any;
+              userContext: UserContext;
           }) => Promise<{ keys: JsonWebKey[] } | GeneralErrorResponse>);
 };

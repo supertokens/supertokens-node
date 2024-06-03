@@ -3,10 +3,11 @@ import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User, UserContext } from "../../types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { LoginMethod } from "../../user";
+import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -34,15 +35,6 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
     static reset(): void;
-    createPrimaryUserIdOrLinkAccounts: ({
-        tenantId,
-        user,
-        userContext,
-    }: {
-        tenantId: string;
-        user: User;
-        userContext: any;
-    }) => Promise<User>;
     getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
         tenantId,
         user,
@@ -50,50 +42,92 @@ export default class Recipe extends RecipeModule {
     }: {
         tenantId: string;
         user: User;
-        userContext: any;
+        userContext: UserContext;
+    }) => Promise<User | undefined>;
+    getOldestUserThatCanBeLinkedToRecipeUser: ({
+        tenantId,
+        user,
+        userContext,
+    }: {
+        tenantId: string;
+        user: User;
+        userContext: UserContext;
     }) => Promise<User | undefined>;
     isSignInAllowed: ({
         user,
+        accountInfo,
         tenantId,
+        session,
+        signInVerifiesLoginMethod,
         userContext,
     }: {
         user: User;
+        accountInfo: AccountInfoWithRecipeId | LoginMethod;
+        session: SessionContainerInterface | undefined;
+        signInVerifiesLoginMethod: boolean;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<boolean>;
     isSignUpAllowed: ({
         newUser,
         isVerified,
+        session,
         tenantId,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<boolean>;
     isSignInUpAllowedHelper: ({
         accountInfo,
         isVerified,
+        session,
         tenantId,
         isSignIn,
+        user,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
+        session: SessionContainerInterface | undefined;
         tenantId: string;
         isSignIn: boolean;
-        userContext: any;
+        user: User | undefined;
+        userContext: UserContext;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {
         user?: User;
         newEmail: string;
         isVerified: boolean;
-        userContext: any;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
         user: User;
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<void>;
+    private shouldBecomePrimaryUser;
+    tryLinkingByAccountInfoOrCreatePrimaryUser({
+        inputUser,
+        session,
+        tenantId,
+        userContext,
+    }: {
+        tenantId: string;
+        inputUser: User;
+        session: SessionContainerInterface | undefined;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "NO_LINK";
+          }
+    >;
 }

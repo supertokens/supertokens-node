@@ -14,6 +14,7 @@
  */
 import OverrideableBuilder from "supertokens-js-override";
 import { ClientOpts } from "twilio/lib/base/BaseTwilio";
+import { UserContext } from "../../../types";
 
 /**
  * only one of "from" and "messagingServiceSid" should be passed.
@@ -42,7 +43,7 @@ export interface GetContentResult {
     toPhoneNumber: string;
 }
 
-export type TypeInputSendRawSms = GetContentResult & { userContext: any } & (
+export type TypeInputSendRawSms = GetContentResult & { userContext: UserContext } & (
         | {
               from: string;
           }
@@ -53,7 +54,7 @@ export type TypeInputSendRawSms = GetContentResult & { userContext: any } & (
 
 export type ServiceInterface<T> = {
     sendRawSms: (input: TypeInputSendRawSms) => Promise<void>;
-    getContent: (input: T & { userContext: any }) => Promise<GetContentResult>;
+    getContent: (input: T & { userContext: UserContext }) => Promise<GetContentResult>;
 };
 
 export type TypeInput<T> = {

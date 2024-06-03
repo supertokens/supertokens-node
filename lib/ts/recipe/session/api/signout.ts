@@ -16,11 +16,12 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import { getSessionFromRequest } from "../sessionRequestFunctions";
+import { UserContext } from "../../../types";
 
 export default async function signOutAPI(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
@@ -34,11 +35,15 @@ export default async function signOutAPI(
         config: options.config,
         recipeInterfaceImpl: options.recipeImplementation,
         options: {
-            sessionRequired: false,
+            sessionRequired: true,
             overrideGlobalClaimValidators: () => [],
         },
         userContext,
     });
+
+    if (session === undefined) {
+        throw new Error("should never come here"); // Session required is true
+    }
 
     let result = await apiImplementation.signOutPOST({
         options,

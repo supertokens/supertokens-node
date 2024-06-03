@@ -133,7 +133,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             EmailPasswordRecipe.getInstanceOrThrowError();
             assert(false);
         } catch (err) {
-            if (err.message !== "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
+            if (err.message !== "Initialisation not done. Did you forget to call the Emailpassword.init function?") {
                 throw err;
             }
         }

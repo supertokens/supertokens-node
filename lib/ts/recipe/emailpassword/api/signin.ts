@@ -16,12 +16,14 @@
 import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
+import Session from "../../session";
 
 export default async function signInAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
     if (apiImplementation.signInPOST === undefined) {
@@ -39,9 +41,24 @@ export default async function signInAPI(
         userContext
     );
 
+    let session = await Session.getSession(
+        options.req,
+        options.res,
+        {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext
+    );
+
+    if (session !== undefined) {
+        tenantId = session.getTenantId();
+    }
+
     let result = await apiImplementation.signInPOST({
         formFields,
         tenantId,
+        session,
         options,
         userContext,
     });
@@ -49,7 +66,7 @@ export default async function signInAPI(
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            ...getBackwardsCompatibleUserInfo(options.req, result),
+            ...getBackwardsCompatibleUserInfo(options.req, result, userContext),
         });
     } else {
         send200Response(options.res, result);

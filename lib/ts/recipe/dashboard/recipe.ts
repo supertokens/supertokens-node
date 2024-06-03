@@ -15,7 +15,7 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -26,7 +26,6 @@ import {
     SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
-    TENANTS_LIST_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -69,7 +68,6 @@ import signIn from "./api/signIn";
 import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
-import listTenants from "./api/listTenants";
 import { userUnlink } from "./api/userdetails/userUnlinkGet";
 import getAllRoles from "./api/userroles/roles/getAllRoles";
 import deleteRole from "./api/userroles/roles/deleteRole";
@@ -115,7 +113,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the Dashboard.init function?");
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -267,12 +265,6 @@ export default class Recipe extends RecipeModule {
                 method: "post",
             },
             {
-                id: TENANTS_LIST_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANTS_LIST_API)),
-                disabled: false,
-                method: "get",
-            },
-            {
                 id: UNLINK_USER,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(UNLINK_USER)),
                 disabled: false,
@@ -362,7 +354,7 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         __: NormalisedURLPath,
         ___: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,
@@ -440,8 +432,6 @@ export default class Recipe extends RecipeModule {
             apiFunction = signOut;
         } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
             apiFunction = analyticsPost;
-        } else if (id === TENANTS_LIST_API) {
-            apiFunction = listTenants;
         } else if (id === UNLINK_USER) {
             apiFunction = userUnlink;
         } else if (id === USERROLES_LIST_API) {

@@ -18,8 +18,9 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { RATE_LIMIT_STATUS_CODE } from "./constants";
-import { NetworkInterceptor } from "./types";
 import { logDebugMessage } from "./logger";
+import { UserContext } from "./types";
+import { NetworkInterceptor } from "./types";
 
 export class Querier {
     private static initCalled = false;
@@ -31,6 +32,8 @@ export class Querier {
     private static hostsAliveForTesting: Set<string> = new Set<string>();
 
     private static networkInterceptor: NetworkInterceptor | undefined = undefined;
+    private static globalCacheTag = Date.now();
+    private static disableCache = false;
 
     private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined;
     private rIdToCore: string | undefined;
@@ -103,7 +106,8 @@ export class Querier {
     static init(
         hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[],
         apiKey?: string,
-        networkInterceptor?: NetworkInterceptor
+        networkInterceptor?: NetworkInterceptor,
+        disableCache?: boolean
     ) {
         if (!Querier.initCalled) {
             logDebugMessage("querier initialized");
@@ -114,11 +118,14 @@ export class Querier {
             Querier.lastTriedIndex = 0;
             Querier.hostsAliveForTesting = new Set<string>();
             Querier.networkInterceptor = networkInterceptor;
+            Querier.disableCache = disableCache ?? false;
         }
     }
 
     // path should start with "/"
-    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: any): Promise<T> => {
+    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext): Promise<T> => {
+        this.invalidateCoreCallCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "POST",
@@ -168,7 +175,14 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendDeleteRequest = async (path: NormalisedURLPath, body: any, params: any, userContext: any): Promise<any> => {
+    sendDeleteRequest = async (
+        path: NormalisedURLPath,
+        body: any,
+        params: any | undefined,
+        userContext: UserContext
+    ): Promise<any> => {
+        this.invalidateCoreCallCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
@@ -227,7 +241,7 @@ export class Querier {
     sendGetRequest = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: any
+        userContext: UserContext
     ): Promise<any> => {
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -247,6 +261,36 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
+
+                /* CACHE CHECK BEGIN */
+                const sortedKeys = Object.keys(params).sort();
+                const sortedHeaderKeys = Object.keys(headers).sort();
+                let uniqueKey = path.getAsStringDangerous();
+
+                for (const key of sortedKeys) {
+                    const value = params[key];
+                    uniqueKey += `;${key}=${value}`;
+                }
+
+                uniqueKey += ";hdrs";
+
+                for (const key of sortedHeaderKeys) {
+                    const value = headers[key];
+                    uniqueKey += `;${key}=${value}`;
+                }
+
+                // If globalCacheTag doesn't match the current one (or if it's not defined), we invalidate the cache, because that means
+                // that there was a non-GET call that didn't have a proper userContext passed to it.
+                // However, we do not want to invalidate all global caches for a GET call even if it was made without a proper user context.
+                if (userContext._default?.globalCacheTag !== Querier.globalCacheTag) {
+                    this.invalidateCoreCallCache(userContext, false);
+                }
+
+                if (!Querier.disableCache && uniqueKey in (userContext._default?.coreCallCache ?? {})) {
+                    return userContext._default.coreCallCache[uniqueKey];
+                }
+                /* CACHE CHECK END */
+
                 if (Querier.networkInterceptor !== undefined) {
                     let request = Querier.networkInterceptor(
                         {
@@ -268,20 +312,39 @@ export class Querier {
                     Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
                 );
                 finalURL.search = searchParams.toString();
-                return doFetch(finalURL.toString(), {
+
+                // Update cache and return
+
+                let response = await doFetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
+
+                if (response.status === 200 && !Querier.disableCache) {
+                    // If the request was successful, we save the result into the cache
+                    // plus we update the cache tag
+                    userContext._default = {
+                        ...userContext._default,
+                        coreCallCache: {
+                            ...userContext._default?.coreCallCache,
+                            [uniqueKey]: response,
+                        },
+                        globalCacheTag: Querier.globalCacheTag,
+                    };
+                }
+
+                return response;
             },
             this.__hosts?.length || 0
         );
+
         return respBody;
     };
 
     sendGetRequestWithResponseHeaders = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
-        userContext: any
+        userContext: UserContext
     ): Promise<{ body: any; headers: Headers }> => {
         return await this.sendRequestHelper(
             path,
@@ -332,7 +395,9 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: any): Promise<any> => {
+    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
+        this.invalidateCoreCallCache(userContext);
+
         const { body: respBody } = await this.sendRequestHelper(
             path,
             "PUT",
@@ -377,6 +442,17 @@ export class Querier {
             this.__hosts?.length || 0
         );
         return respBody;
+    };
+
+    invalidateCoreCallCache = (userContext: UserContext, updGlobalCacheTagIfNecessary = true) => {
+        if (updGlobalCacheTagIfNecessary && userContext._default?.keepCacheAlive !== true) {
+            Querier.globalCacheTag = Date.now();
+        }
+
+        userContext._default = {
+            ...userContext._default,
+            coreCallCache: {},
+        };
     };
 
     public getAllCoreUrlsForPath(path: string) {
@@ -427,6 +503,7 @@ export class Querier {
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
+            logDebugMessage(`core-call: ${method} ${url}`);
             let response = await requestFunc(url);
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
@@ -435,13 +512,14 @@ export class Querier {
                 throw response;
             }
             if (response.headers.get("content-type")?.startsWith("text")) {
-                return { body: await response.text(), headers: response.headers };
+                return { body: await response.clone().text(), headers: response.headers };
             }
-            return { body: await response.json(), headers: response.headers };
+            return { body: await response.clone().json(), headers: response.headers };
         } catch (err) {
             if (
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") ||
+                    err.message.includes("fetch failed") ||
                     err.message.includes("ECONNREFUSED") ||
                     err.code === "ECONNREFUSED")
             ) {

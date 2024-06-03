@@ -694,7 +694,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             }
         });
 
-        it("sign up in does not create primary user during sign in", async function () {
+        it("sign up in creates primary user during sign in", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -741,14 +741,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             let user1 = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "test@example.com", false)
             ).user;
-            assert(user1.isPrimaryUser === false);
+            assert(!user1.isPrimaryUser);
 
             user1 = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "test@example.com", true))
                 .user;
-            assert(user1.isPrimaryUser === false);
+            assert(user1.isPrimaryUser);
         });
 
-        it("sign up in does not link accounts during sign in", async function () {
+        it("sign up in does link accounts during sign in", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -795,16 +795,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             let user = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "github", "abcd", "test@example.com", true)
             ).user;
-            assert(user.isPrimaryUser === true);
+            assert(user.isPrimaryUser);
 
             let user1 = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "test@example.com", false)
             ).user;
-            assert(user1.isPrimaryUser === false);
+            assert(!user1.isPrimaryUser);
 
             user1 = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "test@example.com", true))
                 .user;
-            assert(user1.isPrimaryUser === false);
+            assert(user1.isPrimaryUser);
+            assert.strictEqual(user1.id, user.id);
         });
 
         it("sign up in links accounts during sign up with another third party account", async function () {
@@ -1349,7 +1350,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(user.loginMethods[0].thirdParty.id === "google");
         });
 
-        it("sign up in does not attempt to make primary user / account link during sign in", async function () {
+        it("sign up in does attempt to make primary user / account link during sign in", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -1400,7 +1401,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
 
             user = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "test@example.com", true))
                 .user;
-            assert(user.isPrimaryUser === false);
+            assert(user.isPrimaryUser);
         });
     });
 });

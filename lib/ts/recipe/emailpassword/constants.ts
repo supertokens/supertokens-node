@@ -25,4 +25,6 @@ export const GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
 
 export const PASSWORD_RESET_API = "/user/password/reset";
 
-export const SIGNUP_EMAIL_EXISTS_API = "/signup/email/exists";
+export const SIGNUP_EMAIL_EXISTS_API_OLD = "/signup/email/exists";
+
+export const SIGNUP_EMAIL_EXISTS_API = "/emailpassword/email/exists";

@@ -20,17 +20,16 @@ const { default: fetch } = require("cross-fetch");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let AccountLinkingRecipe = require("../lib/build/recipe/accountlinking/recipe").default;
-let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
-let ThirPartyPasswordless = require("../lib/build/recipe/thirdpartypasswordless/recipe").default;
-let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
-let ThirdPartyPasswordlessRecipe = require("../lib/build/recipe/thirdpartypasswordless/recipe").default;
+let ThirdPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let DashboardRecipe = require("../lib/build/recipe/dashboard/recipe").default;
+let TotpRecipe = require("../lib/build/recipe/totp/recipe").default;
 const EmailVerificationRecipe = require("../lib/build/recipe/emailverification/recipe").default;
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 let MultitenancyRecipe = require("../lib/build/recipe/multitenancy/recipe").default;
+let MultiFactorAuthRecipe = require("../lib/build/recipe/multifactorauth/recipe").default;
 const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
@@ -254,11 +253,8 @@ module.exports.resetAll = function (disableLogging = true) {
     SuperTokens.reset();
     AccountLinkingRecipe.reset();
     SessionRecipe.reset();
-    ThirdPartyPasswordlessRecipe.reset();
-    ThirdPartyEmailPasswordRecipe.reset();
-    ThirPartyPasswordless.reset();
     EmailPasswordRecipe.reset();
-    ThirPartyRecipe.reset();
+    ThirdPartyRecipe.reset();
     EmailVerificationRecipe.reset();
     JWTRecipe.reset();
     UserMetadataRecipe.reset();
@@ -268,6 +264,8 @@ module.exports.resetAll = function (disableLogging = true) {
     DashboardRecipe.reset();
     ProcessState.getInstance().reset();
     MultitenancyRecipe.reset();
+    TotpRecipe.reset();
+    MultiFactorAuthRecipe.reset();
     if (disableLogging) {
         debug.disable();
     }

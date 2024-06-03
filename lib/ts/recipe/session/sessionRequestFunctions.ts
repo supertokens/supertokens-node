@@ -14,14 +14,16 @@ import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods, protectedProps } from "./constants";
 import {
     clearSession,
+    clearSessionCookiesFromOlderCookieDomain,
     getAntiCsrfTokenFromHeaders,
     getAuthModeFromHeader,
     getToken,
+    hasMultipleCookiesForTokenType,
     setCookie,
 } from "./cookieAndHeaders";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
-import { NormalisedAppinfo } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 
@@ -41,9 +43,10 @@ export async function getSessionFromRequest({
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     options?: VerifySessionOptions;
-    userContext?: any;
+    userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined> {
     logDebugMessage("getSession: Started");
+
     const configuredFramework = SuperTokens.getInstanceOrThrowError().framework;
     if (configuredFramework !== "custom") {
         if (!req.wrapperUsed) {
@@ -111,6 +114,21 @@ export async function getSessionFromRequest({
         accessTokens["cookie"] !== undefined
     ) {
         logDebugMessage("getSession: using cookie transfer method");
+
+        // If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        // This prompts the client to call the refresh endpoint, clearing olderCookieDomain cookies (if set).
+        // ensuring outdated token payload isn't used.
+        const hasMultipleAccessTokenCookies = hasMultipleCookiesForTokenType(req, "access");
+        if (hasMultipleAccessTokenCookies) {
+            logDebugMessage(
+                "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
+            );
+            throw new SessionError({
+                message: "Multiple access tokens present in the request cookies.",
+                type: SessionError.TRY_REFRESH_TOKEN,
+            });
+        }
+
         requestTransferMethod = "cookie";
         accessToken = accessTokens["cookie"];
     }
@@ -207,7 +225,7 @@ export async function refreshSessionInRequest({
 }: {
     res: any;
     req: any;
-    userContext: any;
+    userContext: UserContext;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
 }) {
@@ -224,6 +242,8 @@ export async function refreshSessionInRequest({
     }
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
     logDebugMessage("refreshSession: Wrapping done");
+
+    clearSessionCookiesFromOlderCookieDomain({ req, res, config, userContext });
 
     const refreshTokens: {
         [key in TokenTransferMethod]?: string;
@@ -266,7 +286,31 @@ export async function refreshSessionInRequest({
             setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", req, userContext);
         }
 
-        logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
+        // We need to clear the access token cookie if
+        // - the refresh token is not found, and
+        // - the allowedTransferMethod is 'cookie' or 'any', and
+        // - an access token cookie exists (otherwise it'd be a no-op)
+        // See: https://github.com/supertokens/supertokens-node/issues/790
+        if (
+            (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+            getToken(req, "access", "cookie") !== undefined
+        ) {
+            logDebugMessage(
+                "refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh token in request is undefined"
+            );
+
+            // We're clearing all session tokens instead of just the access token and then throwing an UNAUTHORISED
+            // error with `clearTokens: false`. This approach avoids confusion and we don't want to retain session
+            // tokens on the client in any case if the refresh API is called without a refresh token but with an access token.
+            throw new SessionError({
+                message: "Refresh token not found but access token is present. Clearing all tokens.",
+                payload: {
+                    clearTokens: true,
+                },
+                type: SessionError.UNAUTHORISED,
+            });
+        }
+
         throw new SessionError({
             message: "Refresh token not found. Are you sending the refresh token in the request?",
             payload: {
@@ -368,7 +412,7 @@ export async function createNewSessionInRequest({
 }: {
     req: any;
     res: any;
-    userContext: any;
+    userContext: UserContext;
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;
@@ -406,7 +450,7 @@ export async function createNewSessionInRequest({
     }
 
     for (const claim of claimsAddedByOtherRecipes) {
-        const update = await claim.build(userId, recipeUserId, tenantId, userContext);
+        const update = await claim.build(userId, recipeUserId, tenantId, finalAccessTokenPayload, userContext);
         finalAccessTokenPayload = {
             ...finalAccessTokenPayload,
             ...update,

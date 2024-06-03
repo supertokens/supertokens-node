@@ -29,7 +29,7 @@ describe(`importTests: ${printPath("[test/import.test.js]")}`, function () {
      */
     it("Test that importing all build files independently does not cause errors", function () {
         const fileNames = getAllFilesInDirectory(resolve(process.cwd(), "./lib/build")).filter(
-            (i) => !i.endsWith(".d.ts")
+            (i) => !i.endsWith(".d.ts") && !i.endsWith(".map")
         );
 
         fileNames.forEach((fileName) => {

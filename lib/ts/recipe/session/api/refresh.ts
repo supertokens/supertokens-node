@@ -15,11 +15,12 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
 
 export default async function handleRefreshAPI(
     apiImplementation: APIInterface,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.refreshPOST === undefined) {
         return false;

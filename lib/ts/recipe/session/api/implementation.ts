@@ -2,7 +2,7 @@ import { APIInterface, APIOptions, VerifySessionOptions } from "../";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
-import { GeneralErrorResponse } from "../../../types";
+import { GeneralErrorResponse, UserContext } from "../../../types";
 import { getSessionFromRequest, refreshSessionInRequest } from "../sessionRequestFunctions";
 
 export default function getAPIInterface(): APIInterface {
@@ -12,7 +12,7 @@ export default function getAPIInterface(): APIInterface {
             userContext,
         }: {
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<SessionContainerInterface> {
             return refreshSessionInRequest({
                 req: options.req,
@@ -30,7 +30,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             verifySessionOptions: VerifySessionOptions | undefined;
             options: APIOptions;
-            userContext: any;
+            userContext: UserContext;
         }): Promise<SessionContainerInterface | undefined> {
             let method = normaliseHttpMethod(options.req.getMethod());
             if (method === "options" || method === "trace") {
@@ -66,17 +66,15 @@ export default function getAPIInterface(): APIInterface {
             userContext,
         }: {
             options: APIOptions;
-            session: SessionContainerInterface | undefined;
-            userContext: any;
+            session: SessionContainerInterface;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
               }
             | GeneralErrorResponse
         > {
-            if (session !== undefined) {
-                await session.revokeSession(userContext);
-            }
+            await session.revokeSession(userContext);
 
             return {
                 status: "OK",

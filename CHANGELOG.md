@@ -7,6 +7,525 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [18.0.0] - 2024-05-23
+
+### Breaking change
+
+-   Removed ThirdPartyEmailPassword and ThirdPartyPasswordless recipes. Instead, you should use ThirdParty + EmailPassword or ThirdParty + Passwordless recipes separately in your recipe list.
+-   Removed `rid` query param from:
+    -   email verification links
+    -   passwordless magic links
+    -   password reset links
+-   The API for checking if an email exists in the passwordless recipe has changed to return true only if there exists a user with that email as a passwordless user. So for example, earlier, if a user existed with email `test@example.com` as an emailpassword user (and not passwordless user), the passwordless API for does email exist would return true, but now, it won't.
+
+### Changes
+
+-   Even if the `rid` header is present in an API call, the routing now not only depends on that. If the SDK cannot resolve a request handler based on the `rid`, request path and method, it will try to resolve a request handler only based on the request path and method (therefore ignoring the `rid` header).
+-   New API handlers are:
+    -   `GET /emailpassword/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `emailpassword` or `thirdpartyemailpassword` which is now deprecated)
+    -   `GET /passwordless/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `passwordless` or `thirdpartypasswordless` which is now deprecated)
+    -   `GET /passwordless/phonenumber/exists` => email password, does email exist API (used to be `GET /signup/phonenumber/exists` which is now deprecated)
+-   Support for FDI 2.0 and 3.0
+
+### Migration guide
+
+-   If you were using `ThirdPartyEmailPassword`, you should now init `ThirdParty` and `EmailPassword` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [EmailPassword](https://supertokens.com/docs/emailpassword/introduction) for more information.
+
+-   If you were using `ThirdPartyPasswordless`, you should now init `ThirdParty` and `Passwordless` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [Passwordless](https://supertokens.com/docs/passwordless/introduction) for more information.
+
+### Fixes
+
+-   Fixes override recursion build-up in built-in providers due to the modification of the `input.override` object in the ThirdParty providers list.
+-   Fixes issue with reference to `config` object in `TypeProvider` in the provider override. The issue was the `originalImplementation.config` object did not have the updated `config` values that was being used in the provider implementation.
+
+## [17.1.2] - 2024-05-21
+
+### Fixes
+
+-   Add workaround for unsupported 'cache' field in Cloudflare Workers. We retry fetch requests without the 'cache' field if they fail due to it not being implemented.
+
+## [17.1.1] - 2024-05-16
+
+### Fixes
+
+-   Fixed an issue when using Apple as a third party provider with our NextJs integration.
+-   Added a compatibility layer into `BaseRequest` to handle the form data parser returning `FormData` instead of the raw parsed object. This is to address/fix the above issues, possibly present in other frameworks.
+
+## [17.1.0] - 2024-04-25
+
+-   Added `olderCookieDomain` config option in the session recipe. This will allow users to clear cookies from the older domain when the `cookieDomain` is changed.
+-   If `verifySession` detects multiple access tokens in the request, it will return a 401 error, prompting a refresh, even if one of the tokens is valid.
+-   `refreshPOST` (`/auth/session/refresh` by default) API changes:
+    -   now returns 500 error if multiple access tokens are present in the request and `config.olderCookieDomain` is not set.
+    -   now clears the access token cookie if it was called without a refresh token (if an access token cookie exists and if using cookie-based sessions).
+    -   now clears cookies from the old domain if `olderCookieDomain` is specified and multiple refresh/access token cookies exist, without updating the front-token or any of the tokens.
+    -   now a 200 response may not include new session tokens.
+
+### Rationale
+
+This update addresses an edge case where changing the `cookieDomain` config on the server can lead to session integrity issues. For instance, if the API server URL is 'api.example.com' with a cookie domain of '.example.com', and the server updates the cookie domain to 'api.example.com', the client may retain cookies with both '.example.com' and 'api.example.com' domains, resulting in multiple sets of session token cookies existing.
+
+Previously, verifySession would select one of the access tokens from the incoming request. If it chose the older cookie, it would return a 401 status code, prompting a refresh request. However, the `refreshPOST` API would then set new session token cookies with the updated `cookieDomain`, but older cookies will persist, leading to repeated 401 errors and refresh loops.
+
+With this update, verifySession will return a 401 error if it detects multiple access tokens in the request, prompting a refresh request. The `refreshPOST` API will clear cookies from the old domain if `olderCookieDomain` is specified in the configuration, then return a 200 status. If `olderCookieDomain` is not configured, the `refreshPOST` API will return a 500 error with a message instructing to set `olderCookieDomain`.
+
+**Example:**
+
+-   `apiDomain`: 'api.example.com'
+-   `cookieDomain`: 'api.example.com'
+
+**Flow:**
+
+1. After authentication, the frontend has cookies set with `domain=api.example.com`, but the access token has expired.
+2. The server updates `cookieDomain` to `.example.com`.
+3. An API call requiring session with an expired access token (cookie with `domain=api.example.com`) results in a 401 response.
+4. The frontend attempts to refresh the session, generating a new access token saved with `domain=.example.com`.
+5. The original API call is retried, but because it sends both the old and new cookies, it again results in a 401 response.
+6. The frontend tries to refresh the session with multiple access tokens: - If `olderCookieDomain` is not set, the refresh fails with a 500 error. - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set. - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response. - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
+
+## [17.0.7] - 2024-05-03
+
+-   Adds `no-cache` header when querying core, so that frameworks like NextJS don't cache GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
+
+## [17.0.6] - 2024-05-02
+
+-   Fixes how FDI header is parsed from frontend requests to account for more than one version being passed.
+
+## [17.0.5] - 2024-04-25
+
+-   Support for websiteDomain / apiDomain ending with `.local`: https://github.com/supertokens/supertokens-node/issues/823
+
+## [17.0.4] - 2024-04-09
+
+### Changes
+
+-   Improved error message to help debugging if MFA was enabled without account linking.
+-   Now the `resyncSessionAndFetchMFAInfoPUT` will throw if the user is in a stuck state, because they are required to complete factors, but they are not allowed to because of some configuration issue.
+
+## [17.0.3] - 2024-04-08
+
+### Fixes
+
+-   Smaller fixes in `Passwordless`:
+    -   Fixed an issue in `createCodePOST` where the flowtype wasn't appropriately set in some MFA cases
+    -   Fixed an interaction with the `firstFactors` config of the `MultiFactorAuth` recipe in `createCodePOST`
+    -   Fixed an issue in `resendCodePOST` where the email/text message included a magic link when it shouldn't have in some MFA cases
+
+## [17.0.2] - 2024-03-20
+
+-   Remove tenants listing dashboard API and update `getTenantLoginMethodsInfo` dashboard API to remove querying core in loop and return only firstFactors.
+
+## [17.0.1] - 2024-03-08
+
+### Changes
+
+-   We now allow sign in/up even if the session user is conflicting with the current sign in/up (because of the email verification status)
+    -   This makes use-cases where an secondary factor (i.e.: otp-email) is also used as a means of verification.
+
+## [17.0.0] - 2024-03-08
+
+### Changes
+
+-   Enable smooth switching between `useDynamicAccessTokenSigningKey` settings by allowing refresh calls to change the signing key type of a session
+-   Added a core call cache that should reduce traffic to your SuperTokens core instances
+-   Refactored sign in/up API codes to reduce code duplication
+-   Added MFA related information to dashboard APIs
+-   Added a cache to reduce the number of requests made to the core. This can be disabled using the `disableCoreCallCache: true`, in the config.
+-   Added new `overwriteSessionDuringSignInUp` configuration option to the Session recipe
+-   Added new function: `checkCode` to Passwordless and ThirdPartyPasswordless recipes
+-   Added new function: `verifyCredentials` to EmailPassword and ThirdPartyEmailPassword recipes
+-   Added the `MultiFactorAuth` and `TOTP` recipes. To start using them you'll need compatible versions:
+    -   Core>=8.0.0
+    -   supertokens-node>=17.0.0
+    -   supertokens-website>=18.0.0
+    -   supertokens-web-js>=0.10.0
+    -   supertokens-auth-react>=0.39.0
+
+### Breaking changes
+
+-   Now only supporting CDI 5.0. Compatible with core version >= 8.0
+-   Account linking now takes the active session into account.
+-   Account linking now also happens in sign in function calls (instead of sign ups and sign in API calls)
+-   Fixed the typing of the `userContext`:
+    -   All functions now take `Record<string, any>` instead of `any` as `userContext`. This means that primitives (strings, numbers) are no longer allowed as `userContext`.
+    -   All functions overrides that take a `userContext` parameter now get a well typed `userContext` parameter ensuring that the right object is passed to the original implementation calls
+-   Calling sign in/up APIs with a session will now skip creating a new session by default. This is overrideable through by passing `overwriteSessionDuringSignInUp: true` to the Session recipe config.
+-   Added new support codes to sign in/up APIs. This means that there are new possible values coming from the default implementation for the `reason` strings of `SIGN_IN_NOT_ALLOWED`, `SIGN_UP_NOT_ALLOWED` and `SIGN_IN_UP_NOT_ALLOWED` responses.
+-   `Session` recipe:
+    -   The sign out API new returns a 401 instead of 200 in case the input access token has expired or is missing.
+-   `AccountLinking` recipe:
+    -   Changed the signature of the following functions, each taking a new (optional) `session` parameter:
+        -   `createPrimaryUserIdOrLinkAccounts`
+        -   `isSignUpAllowed`
+        -   `isSignInAllowed`
+        -   `isEmailChangeAllowed`
+    -   Changed the signature of the `shouldDoAutomaticAccountLinking` callback: it now takes a new (optional) session parameter.
+-   `EmailPassword`:
+    -   Changed the signature of the following overrideable functions:
+        -   `signUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `signIn`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `signInPOST`
+        -   `signUpPOST`
+    -   Changed the signature of functions:
+        -   `signUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `signIn`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"
+-   `Multitenancy`:
+    -   Changed the signature of the following functions:
+        -   `createOrUpdateTenant`: Added optional `firstFactors` and `requiredSecondaryFactors` parameters.
+        -   `getTenant`: Added `firstFactors` and `requiredSecondaryFactors` to the return type
+        -   `listAllTenants`: Added `firstFactors` and `requiredSecondaryFactors` to the returned tenants
+    -   Changed the signature of the following overrideable functions:
+        -   `createOrUpdateTenant`: Now gets optional `firstFactors` and `requiredSecondaryFactors` in the input.
+        -   `getTenant`: Added `firstFactors` and `requiredSecondaryFactors` to the return type
+        -   `listAllTenants`: Added `firstFactors` and `requiredSecondaryFactors` to the returned tenants
+    -   Changed the signature of the overrideable apis:
+        -   `loginMethodsGET`: Now returns `firstFactors`
+-   `Passwordless`:
+    -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
+    -   Added new email and sms type for MFA
+    -   Changed the signature of the following functions:
+        -   `signInUp`, `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of the following overrideable functions:
+        -   `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `createCodePOST`
+        -   `resendCodePOST`
+        -   `consumeCodePOST`
+-   Session claims:
+    -   The `build` function and the `fetchValue` callback of session claims now take a new `currentPayload` param.
+        -   This affects built-in claims: `EmailVerificationClaim`, `UserRoleClaim`, `PermissionClaim`, `AllowedDomainsClaim`.
+        -   This will affect all custom claims as well built on our base classes.
+-   `ThirdParty`:
+    -   Changed the signature of the following functions:
+        -   `manuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of the following overrideable functions:
+        -   `signInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `manuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `signInUpPOST`
+-   `ThirdPartyEmailPassword`:
+    -   Added new function: `emailPasswordVerifyCredentials`
+    -   Changed the signature of the following functions:
+        -   `thirdPartyManuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `emailPasswordSignUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of the following overrideable functions:
+        -   `thirdPartySignInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `thirdPartyManuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `emailPasswordSignUp`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `emailPasswordSignInPOST`
+        -   `emailPasswordSignUpPOST`
+        -   `thirdPartySignInUpPOST`
+-   `ThirdPartyPasswordless`:
+    -   `revokeCode` (and the related overrideable func) can now be called with either `preAuthSessionId` or `codeId` instead of only `codeId`.
+    -   Changed the signature of the following functions:
+        -   `thirdPartyManuallyCreateOrUpdateUser`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `passwordlessSignInUp`, `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of the following overrideable functions:
+        -   `thirdPartySignInUp`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `thirdPartyManuallyCreateOrUpdateUser`
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+        -   `createCode`: Takes a new (optional) `session` parameter
+        -   `consumeCode`:
+            -   Takes a new (optional) `session` parameter
+            -   Can now return with `status: "LINKING_TO_SESSION_USER_FAILED"`
+            -   It now also returns `consumedDevice` if the code was successfully consumed
+    -   Changed the signature of overrideable APIs, adding a new (optional) session parameter:
+        -   `thirdPartySignInUpPOST`
+        -   `createCodePOST`
+        -   `resendCodePOST`
+        -   `consumeCodePOST`
+
+#### Migration guide
+
+##### shouldDoAutomaticAccountLinking signature change
+
+If you use the `userContext` or `tenantId` parameters passed to `shouldDoAutomaticAccountLinking`, please update your implementation to account for the new parameter.
+
+Before:
+
+```ts
+AccountLinking.init({
+    shouldDoAutomaticAccountLinking: async (newAccountInfo, user, tenantId, userContext) => {
+        return {
+            shouldAutomaticallyLink: true,
+            shouldRequireVerification: true,
+        };
+    },
+});
+```
+
+After:
+
+```ts
+AccountLinking.init({
+    shouldDoAutomaticAccountLinking: async (newAccountInfo, user, session, tenantId, userContext) => {
+        return {
+            shouldAutomaticallyLink: true,
+            shouldRequireVerification: true,
+        };
+    },
+});
+```
+
+##### Optional `session` parameter added to public functions
+
+We've added a new optional `session` parameter to many function calls. In all cases, these have been added as the last parameter before `userContext`, so this should only affect you if you are using that. You only need to pass a session as a parameter if you are using account linking and want to try and link the user signing in/up to the session user.
+You can get the necessary session object using `verifySession` in an API call.
+
+Here we use the example of `EmailPassword.signIn` but this fits other functions with changed signatures.
+
+Before:
+
+```ts
+const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", { myContextVar: true });
+```
+
+After:
+
+```ts
+const signInResp = await EmailPassword.signIn("public", "asdf@asdf.asfd", "testpw", undefined, { myContextVar: true });
+```
+
+##### `fetchValue` signature change
+
+If you use the `userContext` parameter passed to `fetchValue`, please update your implementation to account for the new parameter.
+
+Before:
+
+```ts
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, userContext) => {
+        return userContext.claimValue;
+    },
+});
+```
+
+After:
+
+```ts
+const boolClaim = new BooleanClaim({
+    key: "asdf",
+    fetchValue: (userId, recipeUserId, tenantId, currentPayload, userContext) => {
+        return userContext.claimValue;
+    },
+});
+```
+
+##### `build` signature change
+
+If you were using the `build` function for custom or built-in session claims, you should update the call signature to also pass the new parameter.
+
+Before:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+After:
+
+```ts
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        ...(await UserRoleClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.tenantId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )),
+                    };
+
+                    return originalImplementation.createNewSession(input);
+                },
+            };
+        },
+    },
+});
+```
+
+##### Post sign-in/up actions
+
+Since now sign in/up APIs and functions can be called with a session (e.g.: during MFA flows), you may need to add an extra check to your overrides to account for that:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                            // TODO: post sign up logic
+                        } else {
+                            // TODO: post sign in logic
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+
+                    // First we call the original implementation of consumeCode.
+                    let response = await originalImplementation.consumeCode(input);
+
+                    // Post sign up response, we check if it was successful
+                    if (response.status === "OK") {
+                        if (input.session === undefined) {
+                            if (response.createdNewRecipeUser && response.user.loginMethods.length === 1) {
+                                // TODO: post sign up logic
+                            } else {
+                                // TODO: post sign in logic
+                            }
+                        }
+                    }
+                    return response;
+                }
+            }
+        }
+    }
+}),
+```
+
+##### Sign-in/up linking to the session user
+
+Sign in/up APIs and functions will now attempt to link the authenticating user to the session user if a session is available (depending on AccountLinking settings). You can disable this and get the old behaviour by:
+
+Before:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+}),
+```
+
+After:
+
+```ts
+// While this example uses Passwordless, all recipes require a very similar change
+Passwordless.init({
+    contactMethod: "EMAIL", // This example will work with any contactMethod
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK", // This example will work with any flowType
+
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async (input) => {
+                    input.session = undefined;
+                    return originalImplementation.consumeCode(input);
+                }
+            }
+        }
+    }
+}),
+```
+
+## [16.7.4] - 2024-03-01
+
+-   Adds a user friendly error screen that provides helpful information regarding Content Security Policy (CSP) issues..
+
 ## [16.7.3] - 2024-02-26
 
 -   Fixes dashboard URI path. Now it returns the complete user given path instead of just the normalized connectionURI domain.

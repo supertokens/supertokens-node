@@ -3,7 +3,7 @@ import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
@@ -24,9 +24,9 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse,
         _path: normalisedURLPath,
         _method: HTTPMethod,
-        userContext: any
+        userContext: UserContext
     ) => Promise<boolean>;
-    handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void>;
+    handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
 }

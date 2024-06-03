@@ -52,8 +52,8 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
 
                                     return createJWTResponse;
                                 },
-                                getJWKS: async () => {
-                                    let getJWKSResponse = await originalImplementation.getJWKS();
+                                getJWKS: async (input) => {
+                                    let getJWKSResponse = await originalImplementation.getJWKS(input);
 
                                     jwksKeys = getJWKSResponse.keys;
 

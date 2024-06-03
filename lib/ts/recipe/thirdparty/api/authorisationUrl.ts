@@ -16,12 +16,13 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
+import { UserContext } from "../../../types";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<boolean> {
     if (apiImplementation.authorisationUrlGET === undefined) {
         return false;

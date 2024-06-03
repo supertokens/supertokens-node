@@ -17,6 +17,7 @@ import STError from "../../../error";
 import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
+import { UserContext } from "../../../types";
 
 export type Response = {
     status: "OK";
@@ -28,7 +29,7 @@ export default async function usersGet(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");

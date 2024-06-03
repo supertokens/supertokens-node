@@ -3,7 +3,7 @@ import OpenIdRecipe from "./recipe";
 export default class OpenIdRecipeWrapper {
     static init: typeof OpenIdRecipe.init;
     static getOpenIdDiscoveryConfiguration(
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         status: "OK";
         issuer: string;
@@ -13,7 +13,7 @@ export default class OpenIdRecipeWrapper {
         payload?: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -24,7 +24,7 @@ export default class OpenIdRecipeWrapper {
           }
     >;
     static getJWKS(
-        userContext?: any
+        userContext?: Record<string, any>
     ): Promise<{
         keys: import("../jwt").JsonWebKey[];
         validityInSeconds?: number | undefined;

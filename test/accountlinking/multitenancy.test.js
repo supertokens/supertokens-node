@@ -292,7 +292,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
         });
     });
 
-    describe("getPrimaryUserThatCanBeLinkedToRecipeUserId", () => {
+    describe("getUsersThatCanBeLinkedToRecipeUser", () => {
         it("should not suggest linking users on separate tenants", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
@@ -1018,7 +1018,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
     });
 });
 
-const automaticallyLinkNoVerify = async (_accountInfo, _user, _tenantId, userContext) => {
+const automaticallyLinkNoVerify = async (_accountInfo, _user, _session, _tenantId, userContext) => {
     if (userContext.doNotLink === true) {
         return { shouldAutomaticallyLink: false };
     }
@@ -1028,7 +1028,7 @@ const automaticallyLinkNoVerify = async (_accountInfo, _user, _tenantId, userCon
     };
 };
 
-const automaticallyLinkIfVerified = async (_accountInfo, _user, _tenantId, userContext) => {
+const automaticallyLinkIfVerified = async (_accountInfo, _user, _session, _tenantId, userContext) => {
     if (userContext?.doNotLink === true) {
         return { shouldAutomaticallyLink: false };
     }

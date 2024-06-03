@@ -2,6 +2,7 @@ import { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import UserMetaDataRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
+import { UserContext } from "../../../../types";
 
 type Response =
     | {
@@ -16,7 +17,7 @@ export const userMetaDataGet: APIFunction = async (
     _: APIInterface,
     ___: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 

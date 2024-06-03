@@ -22,6 +22,7 @@ import Twilio from "twilio";
 import OverrideableBuilder from "supertokens-js-override";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { getServiceImplementation } from "./serviceImplementation";
+import { UserContext } from "../../../../../types";
 
 export default class TwilioService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     serviceImpl: ServiceInterface<TypePasswordlessSmsDeliveryInput>;
@@ -41,7 +42,7 @@ export default class TwilioService implements SmsDeliveryInterface<TypePasswordl
         this.serviceImpl = builder.build();
     }
 
-    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
+    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: UserContext }) => {
         let content = await this.serviceImpl.getContent(input);
         if ("from" in this.config.twilioSettings) {
             await this.serviceImpl.sendRawSms({

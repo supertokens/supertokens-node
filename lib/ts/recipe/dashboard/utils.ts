@@ -28,10 +28,8 @@ import AccountLinking from "../accountlinking/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import PasswordlessRecipe from "../passwordless/recipe";
-import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
-import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { User } from "../../types";
+import { User, UserContext } from "../../types";
 import { logDebugMessage } from "../../logger";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
@@ -69,18 +67,13 @@ export function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser {
 
 export async function getUserForRecipeId(
     recipeUserId: RecipeUserId,
-    recipeId: string
+    recipeId: string,
+    userContext: UserContext
 ): Promise<{
     user: UserWithFirstAndLastName | undefined;
-    recipe:
-        | "emailpassword"
-        | "thirdparty"
-        | "passwordless"
-        | "thirdpartyemailpassword"
-        | "thirdpartypasswordless"
-        | undefined;
+    recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
 }> {
-    let userResponse = await _getUserForRecipeId(recipeUserId, recipeId);
+    let userResponse = await _getUserForRecipeId(recipeUserId, recipeId, userContext);
     let user: UserWithFirstAndLastName | undefined = undefined;
     if (userResponse.user !== undefined) {
         user = {
@@ -97,28 +90,17 @@ export async function getUserForRecipeId(
 
 async function _getUserForRecipeId(
     recipeUserId: RecipeUserId,
-    recipeId: string
+    recipeId: string,
+    userContext: UserContext
 ): Promise<{
     user: User | undefined;
-    recipe:
-        | "emailpassword"
-        | "thirdparty"
-        | "passwordless"
-        | "thirdpartyemailpassword"
-        | "thirdpartypasswordless"
-        | undefined;
+    recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
 }> {
-    let recipe:
-        | "emailpassword"
-        | "thirdparty"
-        | "passwordless"
-        | "thirdpartyemailpassword"
-        | "thirdpartypasswordless"
-        | undefined;
+    let recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
 
     const user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
         userId: recipeUserId.getAsString(),
-        userContext: {},
+        userContext,
     });
 
     if (user === undefined) {
@@ -147,41 +129,12 @@ async function _getUserForRecipeId(
         } catch (e) {
             // No - op
         }
-
-        if (recipe === undefined) {
-            try {
-                // we detect if this recipe has been init or not..
-                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-                recipe = "thirdpartyemailpassword";
-            } catch (e) {
-                // No - op
-            }
-        }
     } else if (recipeId === ThirdPartyRecipe.RECIPE_ID) {
         try {
             ThirdPartyRecipe.getInstanceOrThrowError();
             recipe = "thirdparty";
         } catch (e) {
             // No - op
-        }
-
-        if (recipe === undefined) {
-            try {
-                // we detect if this recipe has been init or not..
-                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-                recipe = "thirdpartyemailpassword";
-            } catch (e) {
-                // No - op
-            }
-        }
-
-        if (recipe === undefined) {
-            try {
-                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-                recipe = "thirdpartypasswordless";
-            } catch (e) {
-                // No - op
-            }
         }
     } else if (recipeId === PasswordlessRecipe.RECIPE_ID) {
         try {
@@ -190,15 +143,6 @@ async function _getUserForRecipeId(
         } catch (e) {
             // No - op
         }
-
-        if (recipe === undefined) {
-            try {
-                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-                recipe = "thirdpartypasswordless";
-            } catch (e) {
-                // No - op
-            }
-        }
     }
     return {
         user,
@@ -206,58 +150,11 @@ async function _getUserForRecipeId(
     };
 }
 
-export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
-    let isRecipeInitialised = false;
-
-    if (recipeId === "emailpassword") {
-        try {
-            EmailPasswordRecipe.getInstanceOrThrowError();
-            isRecipeInitialised = true;
-        } catch (_) {}
-
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
-    } else if (recipeId === "passwordless") {
-        try {
-            PasswordlessRecipe.getInstanceOrThrowError();
-            isRecipeInitialised = true;
-        } catch (_) {}
-
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
-    } else if (recipeId === "thirdparty") {
-        try {
-            ThirdPartyRecipe.getInstanceOrThrowError();
-            isRecipeInitialised = true;
-        } catch (_) {}
-
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
-
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
-    }
-
-    return isRecipeInitialised;
-}
-
-export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
+export async function validateApiKey(input: {
+    req: BaseRequest;
+    config: TypeNormalisedInput;
+    userContext: UserContext;
+}) {
     let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
 
     // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
