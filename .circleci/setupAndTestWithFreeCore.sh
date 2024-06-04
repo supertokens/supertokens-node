@@ -55,3 +55,26 @@ if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
 else
     TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 fi
+
+API_PORT=3030
+ST_CONNECTION_URI=http://localhost:$NODE_PORT
+
+# start test-server
+pushd test/test-server
+npm install
+npm run build || { echo 'test-server build failed'; exit 1; }
+API_PORT=$API_PORT ST_CONNECTION_URI=$ST_CONNECTION_URI SUPERTOKENS_ENV=testing TEST_MODE=testing npm start &
+popd
+
+# run tests
+cd ../
+git clone git@github.com:supertokens/backend-sdk-testing.git
+cd backend-sdk-testing
+git checkout 641af3fbe8d6b7a064726be82244df3ff4b32bce # checkout latest
+npm install
+npm link ../project # link supertokens-node sdk
+npm run build || { echo 'backend-sdk-testing build failed'; exit 1; }
+API_PORT=$API_PORT INSTALL_PATH=../supertokens-root npm test
+
+# kill test-server
+kill $(lsof -t -i:$API_PORT)
