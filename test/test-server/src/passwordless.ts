@@ -1,12 +1,15 @@
-import type { Debugger } from "debug";
 import type { Express } from "express";
 import Passwordless from "../../../recipe/passwordless";
 import { handleSession } from "./utils";
+import { logger } from "./logger";
 
-export function setupPasswordlessRoutes(app: Express, log: Debugger) {
+const namespace = "com.supertokens:node-test-server:passwordless";
+const { logDebugMessage } = logger(namespace);
+
+export function setupPasswordlessRoutes(app: Express) {
     app.post("/test/passwordless/signinup", async (req, res, next) => {
         try {
-            log("Passwordless:signInUp %j", req.body);
+            logDebugMessage("Passwordless:signInUp %j", req.body);
             const response = await Passwordless.signInUp({
                 ...(req.body.email
                     ? {
@@ -39,7 +42,7 @@ export function setupPasswordlessRoutes(app: Express, log: Debugger) {
 
     app.post("/test/passwordless/createcode", async (req, res, next) => {
         try {
-            log("Passwordless:createCode %j", req.body);
+            logDebugMessage("Passwordless:createCode %j", req.body);
             const response = await Passwordless.createCode({
                 email: req.body.email,
                 phoneNumber: req.body.phoneNumber,
@@ -55,7 +58,7 @@ export function setupPasswordlessRoutes(app: Express, log: Debugger) {
     });
     app.post("/test/passwordless/consumecode", async (req, res, next) => {
         try {
-            log("Passwordless:consumeCode %j", req.body);
+            logDebugMessage("Passwordless:consumeCode %j", req.body);
             const response = await Passwordless.consumeCode({
                 deviceId: req.body.deviceId,
                 linkCode: req.body.linkCode,

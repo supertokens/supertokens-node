@@ -1,12 +1,15 @@
-import type { Debugger } from "debug";
 import type { Express } from "express";
 import Multitenancy from "../../../recipe/multitenancy";
 import * as supertokens from "../../../lib/build";
+import { logger } from "./logger";
 
-export function setupMultitenancyRoutes(app: Express, log: Debugger) {
+const namespace = "com.supertokens:node-test-server:multitenancy";
+const { logDebugMessage } = logger(namespace);
+
+export function setupMultitenancyRoutes(app: Express) {
     app.post("/test/multitenancy/createorupdatetenant", async (req, res, next) => {
         try {
-            log("Multitenancy:createOrUpdateTenant %j", req.body);
+            logDebugMessage("Multitenancy:createOrUpdateTenant %j", req.body);
             const response = await Multitenancy.createOrUpdateTenant(
                 req.body.tenantId,
                 req.body.config,
@@ -20,7 +23,7 @@ export function setupMultitenancyRoutes(app: Express, log: Debugger) {
 
     app.post("/test/multitenancy/associateusertotenant", async (req, res, next) => {
         try {
-            log("Multitenancy:associateUserToTenant %j", req.body);
+            logDebugMessage("Multitenancy:associateUserToTenant %j", req.body);
             const response = await Multitenancy.associateUserToTenant(
                 req.body.tenantId,
                 supertokens.convertToRecipeUserId(req.body.recipeUserId),

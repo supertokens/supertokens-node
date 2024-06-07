@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "scripts": {
         "start": "TEST_MODE=testing tsx src/index.ts",
-        "dev": "TEST_MODE=testing tsx watch src/index.ts"
+        "dev": "TEST_MODE=testing NODE_ENV=development tsx watch src/index.ts"
     },
     "dependencies": {
         "debug": "^4.3.5",

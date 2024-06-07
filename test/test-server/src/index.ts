@@ -43,8 +43,9 @@ import nock from "nock";
 import { setupMultiFactorAuthRoutes } from "./multifactorauth";
 import { setupThirdPartyRoutes } from "./thirdparty";
 import { setupTOTPRoutes } from "./totp";
+import { logger } from "./logger";
 
-const log = debug("api-mock");
+const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
 const API_PORT = Number(process.env.API_PORT || 3030);
 
@@ -136,7 +137,7 @@ function initST(config: any) {
     const recipeList: RecipeListFunction[] = [];
 
     const settings = JSON.parse(config);
-    log("initST %j", settings);
+    logDebugMessage("initST %j", settings);
 
     settings.recipeList.forEach((recipe) => {
         const config = recipe.config ? JSON.parse(recipe.config) : undefined;
@@ -275,7 +276,7 @@ supertokens.init({
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
-    log(req.method, req.path);
+    logDebugMessage(req.method, req.path);
     next();
 });
 app.use(middleware());
@@ -328,7 +329,7 @@ app.post("/test/mockexternalapi", async (req, res, next) => {
 
 app.get("/test/waitforevent", async (req, res, next) => {
     try {
-        log("ProcessState:waitForEvent %j", req.query);
+        logDebugMessage("ProcessState:waitForEvent %j", req.query);
         const instance = ProcessState.getInstance();
         const eventEnum = req.query.event ? Number(req.query.event) : null;
         const event = eventEnum ? await instance.waitForEvent(eventEnum) : undefined;
@@ -338,16 +339,16 @@ app.get("/test/waitforevent", async (req, res, next) => {
     }
 });
 
-setupSupertokensRoutes(app, log);
-setupEmailpasswordRoutes(app, log);
-setupAccountlinkingRoutes(app, log);
-setupSessionRoutes(app, log);
-setupEmailverificationRoutes(app, log);
-setupMultitenancyRoutes(app, log);
-setupPasswordlessRoutes(app, log);
-setupMultiFactorAuthRoutes(app, log);
-setupThirdPartyRoutes(app, log);
-setupTOTPRoutes(app, log);
+setupSupertokensRoutes(app);
+setupEmailpasswordRoutes(app);
+setupAccountlinkingRoutes(app);
+setupSessionRoutes(app);
+setupEmailverificationRoutes(app);
+setupMultitenancyRoutes(app);
+setupPasswordlessRoutes(app);
+setupMultiFactorAuthRoutes(app);
+setupThirdPartyRoutes(app);
+setupTOTPRoutes(app);
 
 // *** Custom routes to help with session tests ***
 app.post("/create", async (req, res, next) => {
@@ -385,15 +386,17 @@ app.get("/verify", verifySession(), (req, res) => res.send({ status: "OK" }));
 // *** End of custom routes ***
 
 app.use((err, req, res, next) => {
-    log(err);
+    logDebugMessage(err);
     res.status(500).json({ ...err, message: err.message });
 });
 
 app.use((req, res, next) => {
-    res.status(404).send(`api-mock: route not found ${req.method} ${req.path}`);
-    throw new Error(`api-mock: route not found ${req.method} ${req.path}`);
+    res.status(404).send(`node-test-server: route not found ${req.method} ${req.path}`);
+    if (process.env.NODE_ENV === "development") {
+        throw new Error(`node-test-server: route not found ${req.method} ${req.path}`);
+    }
 });
 
 app.listen(API_PORT, "localhost", () => {
-    log(`api-mock-server started on localhost:${API_PORT}`);
+    logDebugMessage(`node-test-server-server started on localhost:${API_PORT}`);
 });

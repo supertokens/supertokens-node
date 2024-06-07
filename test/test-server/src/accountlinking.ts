@@ -1,14 +1,17 @@
-import type { Debugger } from "debug";
 import type { Express } from "express";
 import { User } from "../../../lib/build";
 import AccountLinkingRecipe from "../../../lib/build/recipe/accountlinking/recipe";
 import AccountLinking from "../../../recipe/accountlinking";
 import * as supertokens from "../../../lib/build";
+import { logger } from "./logger";
 
-export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
+const namespace = "com.supertokens:node-test-server:accountlinking";
+const { logDebugMessage } = logger(namespace);
+
+export function setupAccountlinkingRoutes(app: Express) {
     app.post("/test/accountlinking/createprimaryuser", async (req, res, next) => {
         try {
-            log("AccountLinking:createPrimaryUser %j", req.body);
+            logDebugMessage("AccountLinking:createPrimaryUser %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.createPrimaryUser(recipeUserId, req.body.userContext);
             res.json({ ...response, user: "user" in response ? response.user.toJson() : undefined });
@@ -19,7 +22,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/linkaccounts", async (req, res, next) => {
         try {
-            log("AccountLinking:linkAccounts %j", req.body);
+            logDebugMessage("AccountLinking:linkAccounts %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.linkAccounts(
                 recipeUserId,
@@ -41,7 +44,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/isemailchangeallowed", async (req, res, next) => {
         try {
-            log("AccountLinking:isEmailChangeAllowed %j", req.body);
+            logDebugMessage("AccountLinking:isEmailChangeAllowed %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.isEmailChangeAllowed(
                 recipeUserId,
@@ -58,7 +61,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/unlinkaccount", async (req, res, next) => {
         try {
-            log("AccountLinking:unlinkAccount %j", req.body);
+            logDebugMessage("AccountLinking:unlinkAccount %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.unlinkAccount(recipeUserId, req.body.userContext);
             res.json(response);
@@ -69,7 +72,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/createprimaryuseridorlinkaccounts", async (req, res, next) => {
         try {
-            log("AccountLinking:createPrimaryUserIdOrLinkAccounts %j", req.body);
+            logDebugMessage("AccountLinking:createPrimaryUserIdOrLinkAccounts %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
                 req.body.tenantId,
@@ -85,7 +88,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/getprimaryuserthatcanbelinkedtorecipeuserid", async (req, res, next) => {
         try {
-            log("AccountLinking:getPrimaryUserThatCanBeLinkedToRecipeUserId %j", req.body);
+            logDebugMessage("AccountLinking:getPrimaryUserThatCanBeLinkedToRecipeUserId %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
                 req.body.tenantId,
@@ -100,7 +103,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/issignupallowed", async (req, res, next) => {
         try {
-            log("AccountLinking:isSignUpAllowed %j", req.body);
+            logDebugMessage("AccountLinking:isSignUpAllowed %j", req.body);
             const response = await AccountLinking.isSignUpAllowed(
                 req.body.tenantId,
                 req.body.newUser,
@@ -116,7 +119,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/issigninallowed", async (req, res, next) => {
         try {
-            log("AccountLinking:isSignInAllowed %j", req.body);
+            logDebugMessage("AccountLinking:isSignInAllowed %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.isSignInAllowed(
                 req.body.tenantId,
@@ -132,7 +135,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/verifyemailforrecipeuseriflinkedaccountsareverified", async (req, res, next) => {
         try {
-            log("AccountLinking:verifyEmailForRecipeUserIfLinkedAccountsAreVerified %j", req.body);
+            logDebugMessage("AccountLinking:verifyEmailForRecipeUserIfLinkedAccountsAreVerified %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const user = new User(req.body.user);
             const response = await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified(
@@ -150,7 +153,7 @@ export function setupAccountlinkingRoutes(app: Express, log: Debugger) {
 
     app.post("/test/accountlinking/cancreateprimaryuser", async (req, res, next) => {
         try {
-            log("AccountLinking:canCreatePrimaryUser %j", req.body);
+            logDebugMessage("AccountLinking:canCreatePrimaryUser %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.canCreatePrimaryUser(recipeUserId, req.body.userContext);
             res.json(response);

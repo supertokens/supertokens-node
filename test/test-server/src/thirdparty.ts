@@ -1,12 +1,15 @@
-import type { Debugger } from "debug";
 import type { Express } from "express";
 import ThirdParty from "../../../recipe/thirdparty";
 import { handleSession } from "./utils";
+import { logger } from "./logger";
 
-export function setupThirdPartyRoutes(app: Express, log: Debugger) {
+const namespace = "com.supertokens:node-test-server:thirdparty";
+const { logDebugMessage } = logger(namespace);
+
+export function setupThirdPartyRoutes(app: Express) {
     app.post("/test/thirdparty/manuallycreateorupdateuser", async (req, res, next) => {
         try {
-            log("ThirdParty:manuallyCreateOrUpdateUser %j", req.body);
+            logDebugMessage("ThirdParty:manuallyCreateOrUpdateUser %j", req.body);
             let session = req.body.session && (await handleSession(req.body.session));
             const response = await ThirdParty.manuallyCreateOrUpdateUser(
                 req.body.tenantId || "public",

@@ -1,13 +1,16 @@
-import type { Debugger } from "debug";
 import type { Express } from "express";
 import EmailPassword from "../../../recipe/emailpassword";
 import { handleSession } from "./utils";
 import * as supertokens from "../../../lib/build";
+import { logger } from "./logger";
 
-export function setupEmailpasswordRoutes(app: Express, log: Debugger) {
+const namespace = "com.supertokens:node-test-server:emailpassword";
+const { logDebugMessage } = logger(namespace);
+
+export function setupEmailpasswordRoutes(app: Express) {
     app.post("/test/emailpassword/signup", async (req, res, next) => {
         try {
-            log("EmailPassword:signup %j", req.body);
+            logDebugMessage("EmailPassword:signup %j", req.body);
             let session = req.body.session && (await handleSession(req.body.session));
             const response = await EmailPassword.signUp(
                 req.body.tenantId || "public",
@@ -36,7 +39,7 @@ export function setupEmailpasswordRoutes(app: Express, log: Debugger) {
 
     app.post("/test/emailpassword/signin", async (req, res, next) => {
         try {
-            log("EmailPassword:signin %j", req.body);
+            logDebugMessage("EmailPassword:signin %j", req.body);
             let session = req.body.session && (await handleSession(req.body.session));
             const response = await EmailPassword.signIn(
                 req.body.tenantId || "public",
@@ -65,7 +68,7 @@ export function setupEmailpasswordRoutes(app: Express, log: Debugger) {
 
     app.post("/test/emailpassword/createresetpasswordlink", async (req, res, next) => {
         try {
-            log("EmailPassword:createResetPasswordLink %j", req.body);
+            logDebugMessage("EmailPassword:createResetPasswordLink %j", req.body);
             const response = await EmailPassword.createResetPasswordLink(
                 req.body.tenantId || "public",
                 req.body.userId,
@@ -80,7 +83,7 @@ export function setupEmailpasswordRoutes(app: Express, log: Debugger) {
 
     app.post("/test/emailpassword/updateemailorpassword", async (req, res, next) => {
         try {
-            log("EmailPassword:updateEmailOrPassword %j", req.body);
+            logDebugMessage("EmailPassword:updateEmailOrPassword %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await EmailPassword.updateEmailOrPassword({
                 recipeUserId,

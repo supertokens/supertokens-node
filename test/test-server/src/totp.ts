@@ -1,10 +1,14 @@
-import type { Debugger } from "debug";
 import type { Express } from "express";
 import TOTP from "../../../recipe/totp";
+import { logger } from "./logger";
 
-export function setupTOTPRoutes(app: Express, log: Debugger) {
+const namespace = "com.supertokens:node-test-server:totp";
+const { logDebugMessage } = logger(namespace);
+
+export function setupTOTPRoutes(app: Express) {
     app.post("/test/totp/createdevice", async (req, res, next) => {
         try {
+            logDebugMessage("TOTP.createDevice %j", req.body);
             const response = await TOTP.createDevice(
                 req.body.userId,
                 req.body.userIdentifierInfo,
@@ -21,6 +25,7 @@ export function setupTOTPRoutes(app: Express, log: Debugger) {
 
     app.post("/test/totp/verifydevice", async (req, res, next) => {
         try {
+            logDebugMessage("TOTP.verifyDevice %j", req.body);
             const response = await TOTP.verifyDevice(
                 req.body.tenantId,
                 req.body.userId,
