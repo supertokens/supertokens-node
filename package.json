@@ -32,7 +32,19 @@
             "types": "./index.d.ts",
             "default": "./index.js"
         },
+        "./index": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
+        "./index.js": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
         "./framework/*": {
+            "types": "./framework/*/index.d.ts",
+            "default": "./framework/*/index.js"
+        },
+        "./framework/*/index": {
             "types": "./framework/*/index.d.ts",
             "default": "./framework/*/index.js"
         },
@@ -44,6 +56,10 @@
             "types": "./nextjs/index.d.ts",
             "default": "./nextjs/index.js"
         },
+        "./nextjs/index": {
+            "types": "./nextjs/index.d.ts",
+            "default": "./nextjs/index.js"
+        },
         "./nextjs/index.js": {
             "types": "./nextjs/index.d.ts",
             "default": "./nextjs/index.js"
@@ -52,13 +68,17 @@
             "types": "./types/index.d.ts",
             "default": "./types/index.js"
         },
+        "./types/index": {
+            "types": "./types/index.d.ts",
+            "default": "./types/index.js"
+        },
         "./types/index.js": {
             "types": "./types/index.d.ts",
             "default": "./types/index.js"
         },
         "./lib/*": {
-            "types": "./lib/*/index.d.ts",
-            "default": "./lib/*/index.js"
+            "types": "./lib/*.d.ts",
+            "default": "./lib/*.js"
         },
         "./lib/*.js": {
             "types": "./lib/*.d.ts",
@@ -68,9 +88,21 @@
             "types": "./recipe/*/index.d.ts",
             "default": "./recipe/*/index.js"
         },
+        "./recipe/*/index": {
+            "types": "./recipe/*/index.d.ts",
+            "default": "./recipe/*/index.js"
+        },
         "./recipe/*/index.js": {
             "types": "./recipe/*/index.d.ts",
             "default": "./recipe/*/index.js"
+        },
+        "./recipe/session/claims": {
+            "types": "./recipe/session/claims.d.ts",
+            "default": "./recipe/session/claims.js"
+        },
+        "./recipe/session/claims.js": {
+            "types": "./recipe/session/claims.d.ts",
+            "default": "./recipe/session/claims.js"
         }
     },
     "author": "rishabhpoddar",
