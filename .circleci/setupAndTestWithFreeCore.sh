@@ -57,7 +57,7 @@ else
 fi
 
 API_PORT=3030
-ST_CONNECTION_URI=http://localhost:$NODE_PORT
+ST_CONNECTION_URI=http://localhost:8081
 
 # start test-server
 pushd test/test-server
