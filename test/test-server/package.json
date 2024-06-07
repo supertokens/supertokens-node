@@ -4,8 +4,8 @@
     "description": "",
     "main": "dist/index.js",
     "scripts": {
-        "start": "SUPERTOKENS_ENV=testing TEST_MODE=testing tsx src/index.ts",
-        "dev": "SUPERTOKENS_ENV=testing TEST_MODE=testing tsx watch src/index.ts"
+        "start": "TEST_MODE=testing tsx src/index.ts",
+        "dev": "TEST_MODE=testing tsx watch src/index.ts"
     },
     "dependencies": {
         "debug": "^4.3.5",
