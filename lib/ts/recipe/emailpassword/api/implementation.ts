@@ -379,7 +379,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            async function doUpdatePasswordAndEmailVerification(
+            async function doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
                 recipeUserId: RecipeUserId
             ): Promise<
                 | {
@@ -524,7 +524,9 @@ export default function getAPIImplementation(): APIInterface {
                     }) !== undefined;
 
                 if (emailPasswordUserIsLinkedToExistingUser) {
-                    return doUpdatePasswordAndEmailVerification(new RecipeUserId(userIdForWhomTokenWasGenerated));
+                    return doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
+                        new RecipeUserId(userIdForWhomTokenWasGenerated)
+                    );
                 } else {
                     // this means that the existingUser does not have an emailpassword user associated
                     // with it. It could now mean that no emailpassword user exists, or it could mean that
@@ -599,7 +601,9 @@ export default function getAPIImplementation(): APIInterface {
                 // it must be a non linked email password account. In this case, we simply update the password.
                 // Linking to an existing account will be done after the user goes through the email
                 // verification flow once they log in (if applicable).
-                return doUpdatePasswordAndEmailVerification(new RecipeUserId(userIdForWhomTokenWasGenerated));
+                return doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
+                    new RecipeUserId(userIdForWhomTokenWasGenerated)
+                );
             }
         },
 
