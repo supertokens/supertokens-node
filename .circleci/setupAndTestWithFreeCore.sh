@@ -62,8 +62,7 @@ ST_CONNECTION_URI=http://localhost:8081
 # start test-server
 pushd test/test-server
 npm install
-npm run build || { echo 'test-server build failed'; exit 1; }
-API_PORT=$API_PORT ST_CONNECTION_URI=$ST_CONNECTION_URI SUPERTOKENS_ENV=testing TEST_MODE=testing npm start &
+API_PORT=$API_PORT ST_CONNECTION_URI=$ST_CONNECTION_URI npm start &
 popd
 
 # run tests

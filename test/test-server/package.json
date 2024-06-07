@@ -4,8 +4,7 @@
     "description": "",
     "main": "dist/index.js",
     "scripts": {
-        "build": "sh ./build.sh",
-        "start": "SUPERTOKENS_ENV=testing TEST_MODE=testing node dist/index.js",
+        "start": "SUPERTOKENS_ENV=testing TEST_MODE=testing tsx src/index.ts",
         "dev": "SUPERTOKENS_ENV=testing TEST_MODE=testing tsx watch src/index.ts"
     },
     "dependencies": {
