@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import { Router } from "express";
 import Session from "../../../recipe/session";
 import * as supertokens from "../../../lib/build";
 import { PrimitiveClaim } from "../../../lib/build/recipe/session/claims";
@@ -23,8 +23,8 @@ export function resetSessionVars() {
     recipeUserIdInCallback = undefined;
 }
 
-export function setupSessionRoutes(app: Express) {
-    app.post("/test/session/createnewsessionwithoutrequestresponse", async (req, res, next) => {
+const router = Router()
+    .post("/createnewsessionwithoutrequestresponse", async (req, res, next) => {
         try {
             logDebugMessage("Session.createNewSessionWithoutRequestResponse %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(
@@ -42,9 +42,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/getsessionwithoutrequestresponse", async (req, res, next) => {
+    })
+    .post("/getsessionwithoutrequestresponse", async (req, res, next) => {
         try {
             logDebugMessage("Session.getSessionWithoutRequestResponse %j", req.body);
             const response = await Session.getSessionWithoutRequestResponse(
@@ -57,9 +56,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/getsessioninformation", async (req, res, next) => {
+    })
+    .post("/getsessioninformation", async (req, res, next) => {
         try {
             logDebugMessage("Session.getSessionInformation %j", req.body);
             const response = await Session.getSessionInformation(req.body.sessionHandle, req.body.userContext);
@@ -67,9 +65,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/getallsessionhandlesforuser", async (req, res, next) => {
+    })
+    .post("/getallsessionhandlesforuser", async (req, res, next) => {
         try {
             logDebugMessage("Session.getAllSessionHandlesForUser %j", req.body);
             const response = await Session.getAllSessionHandlesForUser(
@@ -82,9 +79,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/refreshsessionwithoutrequestresponse", async (req, res, next) => {
+    })
+    .post("/refreshsessionwithoutrequestresponse", async (req, res, next) => {
         try {
             logDebugMessage("Session.refreshSessionWithoutRequestResponse %j", req.body);
             const response = await Session.refreshSessionWithoutRequestResponse(
@@ -97,9 +93,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/revokeallsessionsforuser", async (req, res, next) => {
+    })
+    .post("/revokeallsessionsforuser", async (req, res, next) => {
         try {
             logDebugMessage("Session.revokeAllSessionsForUser %j", req.body);
             const response = await Session.revokeAllSessionsForUser(
@@ -112,9 +107,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/mergeintoaccesspayload", async (req, res, next) => {
+    })
+    .post("/mergeintoaccesspayload", async (req, res, next) => {
         try {
             logDebugMessage("Session.mergeIntoAccessPayload %j", req.body);
             const response = await Session.mergeIntoAccessTokenPayload(
@@ -126,9 +120,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/fetchandsetclaim", async (req, res, next) => {
+    })
+    .post("/fetchandsetclaim", async (req, res, next) => {
         try {
             logDebugMessage("Session.fetchAndSetClaim %j", req.body);
             let claim = new PrimitiveClaim({
@@ -140,9 +133,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/validateclaimsforsessionhandle", async (req, res, next) => {
+    })
+    .post("/validateclaimsforsessionhandle", async (req, res, next) => {
         try {
             logDebugMessage("Session.validateClaimsForSessionHandle %j", req.body);
 
@@ -158,9 +150,8 @@ export function setupSessionRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/session/regenerateaccesstoken", async (req, res, next) => {
+    })
+    .post("/regenerateaccesstoken", async (req, res, next) => {
         try {
             logDebugMessage("Session.regenerateAccessToken %j", req.body);
             const response = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.regenerateAccessToken(
@@ -171,4 +162,5 @@ export function setupSessionRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

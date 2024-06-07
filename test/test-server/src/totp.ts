@@ -1,12 +1,12 @@
-import type { Express } from "express";
+import { Router } from "express";
 import TOTP from "../../../recipe/totp";
 import { logger } from "./logger";
 
 const namespace = "com.supertokens:node-test-server:totp";
 const { logDebugMessage } = logger(namespace);
 
-export function setupTOTPRoutes(app: Express) {
-    app.post("/test/totp/createdevice", async (req, res, next) => {
+const router = Router()
+    .post("/createdevice", async (req, res, next) => {
         try {
             logDebugMessage("TOTP.createDevice %j", req.body);
             const response = await TOTP.createDevice(
@@ -21,9 +21,9 @@ export function setupTOTPRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
+    })
 
-    app.post("/test/totp/verifydevice", async (req, res, next) => {
+    .post("/verifydevice", async (req, res, next) => {
         try {
             logDebugMessage("TOTP.verifyDevice %j", req.body);
             const response = await TOTP.verifyDevice(
@@ -38,4 +38,5 @@ export function setupTOTPRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

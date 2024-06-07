@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import { Router } from "express";
 import { MultiFactorAuthClaim } from "../../../lib/build/recipe/multifactorauth/multiFactorAuthClaim";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
@@ -6,8 +6,9 @@ import { logger } from "./logger";
 const namespace = "com.supertokens:node-test-server:multifactorauth";
 const { logDebugMessage } = logger(namespace);
 
-export function setupMultiFactorAuthRoutes(app: Express) {
-    app.post("/test/multifactorauth/multifactorauthclaim.fetchvalue", async (req, res, next) => {
+const router = Router()
+    //
+    .post("/multifactorauthclaim.fetchvalue", async (req, res, next) => {
         try {
             logDebugMessage("MultiFactorAuthClaim:fetchValue %j", req.body);
             const response = await MultiFactorAuthClaim.fetchValue(
@@ -22,4 +23,5 @@ export function setupMultiFactorAuthRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

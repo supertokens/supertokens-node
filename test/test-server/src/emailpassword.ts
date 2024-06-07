@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import { Router } from "express";
 import EmailPassword from "../../../recipe/emailpassword";
 import { handleSession } from "./utils";
 import * as supertokens from "../../../lib/build";
@@ -7,8 +7,8 @@ import { logger } from "./logger";
 const namespace = "com.supertokens:node-test-server:emailpassword";
 const { logDebugMessage } = logger(namespace);
 
-export function setupEmailpasswordRoutes(app: Express) {
-    app.post("/test/emailpassword/signup", async (req, res, next) => {
+const router = Router()
+    .post("/signup", async (req, res, next) => {
         try {
             logDebugMessage("EmailPassword:signup %j", req.body);
             let session = req.body.session && (await handleSession(req.body.session));
@@ -35,9 +35,8 @@ export function setupEmailpasswordRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/emailpassword/signin", async (req, res, next) => {
+    })
+    .post("/signin", async (req, res, next) => {
         try {
             logDebugMessage("EmailPassword:signin %j", req.body);
             let session = req.body.session && (await handleSession(req.body.session));
@@ -64,9 +63,8 @@ export function setupEmailpasswordRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/emailpassword/createresetpasswordlink", async (req, res, next) => {
+    })
+    .post("/createresetpasswordlink", async (req, res, next) => {
         try {
             logDebugMessage("EmailPassword:createResetPasswordLink %j", req.body);
             const response = await EmailPassword.createResetPasswordLink(
@@ -79,9 +77,8 @@ export function setupEmailpasswordRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/emailpassword/updateemailorpassword", async (req, res, next) => {
+    })
+    .post("/updateemailorpassword", async (req, res, next) => {
         try {
             logDebugMessage("EmailPassword:updateEmailOrPassword %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -98,4 +95,5 @@ export function setupEmailpasswordRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

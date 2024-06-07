@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import { Router } from "express";
 import EmailVerificationRecipe from "../../../lib/build/recipe/emailverification/recipe";
 import SessionClass from "../../../lib/build/recipe/session/sessionClass";
 import EmailVerification from "../../../recipe/emailverification";
@@ -8,8 +8,8 @@ import { logger } from "./logger";
 const namespace = "com.supertokens:node-test-server:emailverification";
 const { logDebugMessage } = logger(namespace);
 
-export function setupEmailverificationRoutes(app: Express) {
-    app.post("/test/emailverification/isemailverified", async (req, res, next) => {
+const router = Router()
+    .post("/isemailverified", async (req, res, next) => {
         try {
             logDebugMessage("EmailVerification:isEmailVerified %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -22,9 +22,8 @@ export function setupEmailverificationRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/emailverification/createemailverificationtoken", async (req, res, next) => {
+    })
+    .post("/createemailverificationtoken", async (req, res, next) => {
         try {
             logDebugMessage("EmailVerification:createEmailVerificationToken %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -38,9 +37,8 @@ export function setupEmailverificationRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/emailverification/verifyemailusingtoken", async (req, res, next) => {
+    })
+    .post("/verifyemailusingtoken", async (req, res, next) => {
         try {
             logDebugMessage("EmailVerification:verifyEmailUsingToken %j", req.body);
             const response = await EmailVerification.verifyEmailUsingToken(
@@ -53,9 +51,8 @@ export function setupEmailverificationRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/emailverification/unverifyemail", async (req, res, next) => {
+    })
+    .post("/unverifyemail", async (req, res, next) => {
         try {
             logDebugMessage("EmailVerification:unverifyEmail %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -64,9 +61,8 @@ export function setupEmailverificationRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/emailverification/updatesessionifrequiredpostemailverification", async (req, res, next) => {
+    })
+    .post("/updatesessionifrequiredpostemailverification", async (req, res, next) => {
         try {
             logDebugMessage("EmailVerificationRecipe:updateSessionIfRequiredPostEmailVerification %j", req.body);
             const recipeUserIdWhoseEmailGotVerified = supertokens.convertToRecipeUserId(
@@ -103,4 +99,5 @@ export function setupEmailverificationRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

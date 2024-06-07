@@ -1,12 +1,12 @@
-import type { Express } from "express";
+import { Router } from "express";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
 
 const namespace = "com.supertokens:node-test-server:supertokens";
 const { logDebugMessage } = logger(namespace);
 
-export function setupSupertokensRoutes(app: Express) {
-    app.post("/test/supertokens/getuser", async (req, res, next) => {
+const router = Router()
+    .post("/getuser", async (req, res, next) => {
         try {
             logDebugMessage("SuperTokens:getUser %j", req.body);
             const response = await supertokens.getUser(req.body.userId, req.body.userContext);
@@ -14,8 +14,8 @@ export function setupSupertokensRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-    app.post("/test/supertokens/deleteuser", async (req, res, next) => {
+    })
+    .post("/deleteuser", async (req, res, next) => {
         try {
             logDebugMessage("SuperTokens:deleteUser %j", req.body);
             const response = await supertokens.deleteUser(
@@ -27,8 +27,8 @@ export function setupSupertokensRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-    app.post("/test/supertokens/listusersbyaccountinfo", async (req, res, next) => {
+    })
+    .post("/listusersbyaccountinfo", async (req, res, next) => {
         try {
             logDebugMessage("SuperTokens:listUsersByAccountInfo %j", req.body);
             const response = await supertokens.listUsersByAccountInfo(
@@ -41,8 +41,8 @@ export function setupSupertokensRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-    app.post("/test/supertokens/getusersnewestfirst", async (req, res, next) => {
+    })
+    .post("/getusersnewestfirst", async (req, res, next) => {
         try {
             logDebugMessage("SuperTokens:getUsersNewestFirst %j", req.body);
             const response = await supertokens.getUsersNewestFirst(req.body);
@@ -51,4 +51,5 @@ export function setupSupertokensRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

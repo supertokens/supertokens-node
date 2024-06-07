@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import { Router } from "express";
 import { User } from "../../../lib/build";
 import AccountLinkingRecipe from "../../../lib/build/recipe/accountlinking/recipe";
 import AccountLinking from "../../../recipe/accountlinking";
@@ -8,8 +8,8 @@ import { logger } from "./logger";
 const namespace = "com.supertokens:node-test-server:accountlinking";
 const { logDebugMessage } = logger(namespace);
 
-export function setupAccountlinkingRoutes(app: Express) {
-    app.post("/test/accountlinking/createprimaryuser", async (req, res, next) => {
+const router = Router()
+    .post("/createprimaryuser", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:createPrimaryUser %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -18,9 +18,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/linkaccounts", async (req, res, next) => {
+    })
+    .post("/linkaccounts", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:linkAccounts %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -40,9 +39,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/isemailchangeallowed", async (req, res, next) => {
+    })
+    .post("/isemailchangeallowed", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:isEmailChangeAllowed %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -57,9 +55,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/unlinkaccount", async (req, res, next) => {
+    })
+    .post("/unlinkaccount", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:unlinkAccount %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -68,9 +65,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/createprimaryuseridorlinkaccounts", async (req, res, next) => {
+    })
+    .post("/createprimaryuseridorlinkaccounts", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:createPrimaryUserIdOrLinkAccounts %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -84,9 +80,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/getprimaryuserthatcanbelinkedtorecipeuserid", async (req, res, next) => {
+    })
+    .post("/getprimaryuserthatcanbelinkedtorecipeuserid", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:getPrimaryUserThatCanBeLinkedToRecipeUserId %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -99,9 +94,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/issignupallowed", async (req, res, next) => {
+    })
+    .post("/issignupallowed", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:isSignUpAllowed %j", req.body);
             const response = await AccountLinking.isSignUpAllowed(
@@ -115,9 +109,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/issigninallowed", async (req, res, next) => {
+    })
+    .post("/issigninallowed", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:isSignInAllowed %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -131,9 +124,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/verifyemailforrecipeuseriflinkedaccountsareverified", async (req, res, next) => {
+    })
+    .post("/verifyemailforrecipeuseriflinkedaccountsareverified", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:verifyEmailForRecipeUserIfLinkedAccountsAreVerified %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -149,9 +141,8 @@ export function setupAccountlinkingRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/accountlinking/cancreateprimaryuser", async (req, res, next) => {
+    })
+    .post("/cancreateprimaryuser", async (req, res, next) => {
         try {
             logDebugMessage("AccountLinking:canCreatePrimaryUser %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
@@ -161,4 +152,5 @@ export function setupAccountlinkingRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

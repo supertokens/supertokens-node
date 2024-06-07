@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import { Router } from "express";
 import Passwordless from "../../../recipe/passwordless";
 import { handleSession } from "./utils";
 import { logger } from "./logger";
@@ -6,8 +6,8 @@ import { logger } from "./logger";
 const namespace = "com.supertokens:node-test-server:passwordless";
 const { logDebugMessage } = logger(namespace);
 
-export function setupPasswordlessRoutes(app: Express) {
-    app.post("/test/passwordless/signinup", async (req, res, next) => {
+const router = Router()
+    .post("/signinup", async (req, res, next) => {
         try {
             logDebugMessage("Passwordless:signInUp %j", req.body);
             const response = await Passwordless.signInUp({
@@ -38,9 +38,8 @@ export function setupPasswordlessRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-
-    app.post("/test/passwordless/createcode", async (req, res, next) => {
+    })
+    .post("/createcode", async (req, res, next) => {
         try {
             logDebugMessage("Passwordless:createCode %j", req.body);
             const response = await Passwordless.createCode({
@@ -55,8 +54,8 @@ export function setupPasswordlessRoutes(app: Express) {
         } catch (e) {
             next(e);
         }
-    });
-    app.post("/test/passwordless/consumecode", async (req, res, next) => {
+    })
+    .post("/consumecode", async (req, res, next) => {
         try {
             logDebugMessage("Passwordless:consumeCode %j", req.body);
             const response = await Passwordless.consumeCode({
@@ -77,4 +76,5 @@ export function setupPasswordlessRoutes(app: Express) {
             next(e);
         }
     });
-}
+
+export default router;

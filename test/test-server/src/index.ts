@@ -1,5 +1,7 @@
-import debug from "debug";
+import express from "express";
+import nock from "nock";
 import { errorHandler, middleware } from "../../../framework/express";
+import * as supertokens from "../../../lib/build";
 import { User } from "../../../lib/build";
 import { ProcessState } from "../../../lib/build/processState";
 import AccountLinkingRecipe from "../../../lib/build/recipe/accountlinking/recipe";
@@ -8,6 +10,7 @@ import EmailPasswordRecipe from "../../../lib/build/recipe/emailpassword/recipe"
 import { TypeInput as EmailPasswordTypeInput } from "../../../lib/build/recipe/emailpassword/types";
 import EmailVerificationRecipe from "../../../lib/build/recipe/emailverification/recipe";
 import { TypeInput as EmailVerificationTypeInput } from "../../../lib/build/recipe/emailverification/types";
+import MultiFactorAuthRecipe from "../../../lib/build/recipe/multifactorauth/recipe";
 import MultitenancyRecipe from "../../../lib/build/recipe/multitenancy/recipe";
 import PasswordlessRecipe from "../../../lib/build/recipe/passwordless/recipe";
 import { TypeInput as PasswordlessTypeInput } from "../../../lib/build/recipe/passwordless/types";
@@ -15,35 +18,31 @@ import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { TypeInput as SessionTypeInput } from "../../../lib/build/recipe/session/types";
 import ThirdPartyRecipe from "../../../lib/build/recipe/thirdparty/recipe";
 import { TypeInput as ThirdPartyTypeInput } from "../../../lib/build/recipe/thirdparty/types";
+import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
 import UserMetadataRecipe from "../../../lib/build/recipe/usermetadata/recipe";
 import SuperTokensRecipe from "../../../lib/build/supertokens";
 import { RecipeListFunction } from "../../../lib/build/types";
 import AccountLinking from "../../../recipe/accountlinking";
 import EmailPassword from "../../../recipe/emailpassword";
 import EmailVerification from "../../../recipe/emailverification";
+import MultiFactorAuth from "../../../recipe/multifactorauth";
 import Multitenancy from "../../../recipe/multitenancy";
 import Passwordless from "../../../recipe/passwordless";
-import MultiFactorAuth from "../../../recipe/multifactorauth";
-import MultiFactorAuthRecipe from "../../../lib/build/recipe/multifactorauth/recipe";
-import TOTP from "../../../recipe/totp";
-import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
 import Session from "../../../recipe/session";
 import { verifySession } from "../../../recipe/session/framework/express";
 import ThirdParty from "../../../recipe/thirdparty";
-import { setupAccountlinkingRoutes } from "./accountlinking";
-import { setupEmailpasswordRoutes } from "./emailpassword";
-import { setupEmailverificationRoutes } from "./emailverification";
-import { setupMultitenancyRoutes } from "./multitenancy";
-import { setupPasswordlessRoutes } from "./passwordless";
-import { getSessionVars, resetSessionVars, setupSessionRoutes } from "./session";
-import { setupSupertokensRoutes } from "./supertokens";
-import * as supertokens from "../../../lib/build";
-import express from "express";
-import nock from "nock";
-import { setupMultiFactorAuthRoutes } from "./multifactorauth";
-import { setupThirdPartyRoutes } from "./thirdparty";
-import { setupTOTPRoutes } from "./totp";
+import TOTP from "../../../recipe/totp";
+import accountlinkingRoutes from "./accountlinking";
+import emailpasswordRoutes from "./emailpassword";
+import emailverificationRoutes from "./emailverification";
 import { logger } from "./logger";
+import multiFactorAuthRoutes from "./multifactorauth";
+import multitenancyRoutes from "./multitenancy";
+import passwordlessRoutes from "./passwordless";
+import sessionRoutes, { getSessionVars, resetSessionVars } from "./session";
+import supertokensRoutes from "./supertokens";
+import thirdPartyRoutes from "./thirdparty";
+import TOTPRoutes from "./totp";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
@@ -339,16 +338,16 @@ app.get("/test/waitforevent", async (req, res, next) => {
     }
 });
 
-setupSupertokensRoutes(app);
-setupEmailpasswordRoutes(app);
-setupAccountlinkingRoutes(app);
-setupSessionRoutes(app);
-setupEmailverificationRoutes(app);
-setupMultitenancyRoutes(app);
-setupPasswordlessRoutes(app);
-setupMultiFactorAuthRoutes(app);
-setupThirdPartyRoutes(app);
-setupTOTPRoutes(app);
+app.use("/test/supertokens", supertokensRoutes);
+app.use("/test/emailpassword", emailpasswordRoutes);
+app.use("/test/accountlinking", accountlinkingRoutes);
+app.use("/test/session", sessionRoutes);
+app.use("/test/emailverification", emailverificationRoutes);
+app.use("/test/multitenancy", multitenancyRoutes);
+app.use("/test/passwordless", passwordlessRoutes);
+app.use("/test/multifactorauth", multiFactorAuthRoutes);
+app.use("/test/thirdparty", thirdPartyRoutes);
+app.use("/test/totp", TOTPRoutes);
 
 // *** Custom routes to help with session tests ***
 app.post("/create", async (req, res, next) => {
