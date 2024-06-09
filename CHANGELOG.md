@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [19.0.0] - 2024-06-10
+
+### Changes
+
+-   `passwordResetPOST`:
+    -   now verifies the email address in all cases if the EmailVerification recipe is initialized
+    -   now tries to link accounts based on account info if AccountLinking is enabled
+
 ## [18.0.0] - 2024-05-23
 
 ### Breaking change
