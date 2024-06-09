@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## UNRELEASED
+
+-   Added OAuth2 recipe
+
 ## [18.0.0] - 2024-05-23
 
 ### Breaking change
