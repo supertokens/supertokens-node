@@ -27,9 +27,7 @@ const router = Router()
     .post("/createnewsessionwithoutrequestresponse", async (req, res, next) => {
         try {
             logDebugMessage("Session.createNewSessionWithoutRequestResponse %j", req.body);
-            const recipeUserId = supertokens.convertToRecipeUserId(
-                req.body.recipeUserId.recipeUserId || req.body.recipeUserId
-            );
+            const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await Session.createNewSessionWithoutRequestResponse(
                 req.body.tenantId || "public",
                 recipeUserId,
