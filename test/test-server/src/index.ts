@@ -94,7 +94,7 @@ const info = {
 };
 let store;
 
-function resetOverrideparams() {
+function resetOverrideParams() {
     sendEmailToUserId = undefined;
     token = undefined;
     userPostPasswordReset = undefined;
@@ -114,7 +114,7 @@ function resetOverrideparams() {
 }
 
 function STReset() {
-    resetOverrideparams();
+    resetOverrideParams();
 
     EmailPasswordRecipe.reset();
     SessionRecipe.reset();
@@ -316,7 +316,7 @@ app.get("/test/overrideparams", async (req, res, next) => {
 });
 
 app.post("/test/resetoverrideparams", async (req, res, next) => {
-    resetOverrideparams();
+    resetOverrideParams();
     res.json({ ok: true });
 });
 
