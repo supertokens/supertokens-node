@@ -329,9 +329,15 @@ app.post("/test/mockexternalapi", async (req, res, next) => {
 app.get("/test/waitforevent", async (req, res, next) => {
     try {
         logDebugMessage("ProcessState:waitForEvent %j", req.query);
+        if (!req.query.event) {
+            throw new Error("event query param missing");
+        }
+        const eventEnum = Number(req.query.event);
+        if (isNaN(eventEnum)) {
+            throw new Error("event query param is not a number");
+        }
         const instance = ProcessState.getInstance();
-        const eventEnum = req.query.event ? Number(req.query.event) : null;
-        const event = eventEnum ? await instance.waitForEvent(eventEnum) : undefined;
+        const event = await instance.waitForEvent(eventEnum);
         res.json(event);
     } catch (e) {
         next(e);
