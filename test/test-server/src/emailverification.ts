@@ -1,9 +1,9 @@
 import { Router } from "express";
 import EmailVerificationRecipe from "../../../lib/build/recipe/emailverification/recipe";
-import SessionClass from "../../../lib/build/recipe/session/sessionClass";
 import EmailVerification from "../../../recipe/emailverification";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
+import { handleSession } from "./utils";
 
 const namespace = "com.supertokens:node-test-server:emailverification";
 const { logDebugMessage } = logger(namespace);
@@ -66,25 +66,9 @@ const router = Router()
         try {
             logDebugMessage("EmailVerificationRecipe:updateSessionIfRequiredPostEmailVerification %j", req.body);
             const recipeUserIdWhoseEmailGotVerified = supertokens.convertToRecipeUserId(
-                req.body.recipeUserIdWhoseEmailGotVerified.recipeUserId || req.body.recipeUserIdWhoseEmailGotVerified
+                req.body.recipeUserIdWhoseEmailGotVerified.recipeUserId
             );
-            const sessionRaw = req.body.session;
-            const session = sessionRaw
-                ? new SessionClass(
-                      sessionRaw.helpers,
-                      sessionRaw.accessToken,
-                      sessionRaw.frontToken,
-                      sessionRaw.refreshToken,
-                      sessionRaw.antiCsrfToken,
-                      sessionRaw.sessionHandle,
-                      sessionRaw.userId,
-                      supertokens.convertToRecipeUserId(sessionRaw.recipeUserId.recipeUserId),
-                      sessionRaw.userDataInAccessToken,
-                      sessionRaw.reqResInfo,
-                      sessionRaw.accessTokenUpdated,
-                      sessionRaw.tenantId
-                  )
-                : sessionRaw;
+            const session = req.body.session && (await handleSession(req.body.session));
             const response = await EmailVerificationRecipe.getInstance()?.updateSessionIfRequiredPostEmailVerification({
                 ...req.body,
                 session,
