@@ -69,7 +69,11 @@ const router = Router()
                 req.body.recipeUserIdWhoseEmailGotVerified.recipeUserId
             );
             const session = req.body.session && (await handleSession(req.body.session));
-            const response = await EmailVerificationRecipe.getInstance()?.updateSessionIfRequiredPostEmailVerification({
+            let instance = EmailVerificationRecipe.getInstance();
+            if (instance === undefined) {
+                throw new Error("No instance of EmailVerificationRecipe found");
+            }
+            const response = await instance.updateSessionIfRequiredPostEmailVerification({
                 ...req.body,
                 session,
                 recipeUserIdWhoseEmailGotVerified,
