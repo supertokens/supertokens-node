@@ -65,13 +65,19 @@ npm install
 API_PORT=$API_PORT ST_CONNECTION_URI=$ST_CONNECTION_URI npm start &
 popd
 
+# lets read frontendDriverInterfaceSupported
+frontendDriverJson=`cat ./frontendDriverInterfaceSupported.json`
+# get versions
+frontendDriverArray=`echo $frontendDriverJson | jq ".versions"`
+# use latest version
+frontendDriverVersion=`echo $frontendDriverArray | jq ".[-1]" | tr -d '"'`
+
 # run tests
 cd ../
 git clone git@github.com:supertokens/backend-sdk-testing.git
 cd backend-sdk-testing
-git checkout 641af3fbe8d6b7a064726be82244df3ff4b32bce # checkout latest
+git checkout $frontendDriverVersion
 npm install
-npm link ../project # link supertokens-node sdk
 npm run build || { echo 'backend-sdk-testing build failed'; exit 1; }
 API_PORT=$API_PORT INSTALL_PATH=../supertokens-root npm test
 
