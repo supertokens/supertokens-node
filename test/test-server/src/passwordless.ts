@@ -1,6 +1,6 @@
 import { Router } from "express";
 import Passwordless from "../../../recipe/passwordless";
-import { handleSession } from "./utils";
+import { handleSession, serializeRecipeUserId, serializeUser } from "./utils";
 import { logger } from "./logger";
 
 const namespace = "com.supertokens:node-test-server:passwordless";
@@ -24,16 +24,8 @@ const router = Router()
             });
             res.json({
                 ...response,
-                ...("user" in response
-                    ? {
-                          user: response.user.toJson(),
-                      }
-                    : {}),
-                ...("recipeUserId" in response
-                    ? {
-                          recipeUserId: response.recipeUserId.getAsString(),
-                      }
-                    : {}),
+                ...serializeUser(response),
+                ...serializeRecipeUserId(response),
             });
         } catch (e) {
             next(e);
@@ -69,8 +61,8 @@ const router = Router()
             });
             res.json({
                 ...response,
-                ...("user" in response ? { user: response.user.toJson() } : {}),
-                ...("recipeUserId" in response ? { recipeUserId: response.recipeUserId.getAsString() } : {}),
+                ...serializeUser(response),
+                ...serializeRecipeUserId(response),
             });
         } catch (e) {
             next(e);

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import EmailPassword from "../../../recipe/emailpassword";
-import { handleSession } from "./utils";
+import { handleSession, serializeRecipeUserId, serializeUser } from "./utils";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
 
@@ -21,16 +21,8 @@ const router = Router()
             );
             res.json({
                 ...response,
-                ...("user" in response
-                    ? {
-                          user: response.user.toJson(),
-                      }
-                    : {}),
-                ...("recipeUserId" in response
-                    ? {
-                          recipeUserId: response.recipeUserId.getAsString(),
-                      }
-                    : {}),
+                ...serializeUser(response),
+                ...serializeRecipeUserId(response),
             });
         } catch (e) {
             next(e);
@@ -49,16 +41,8 @@ const router = Router()
             );
             res.json({
                 ...response,
-                ...("user" in response
-                    ? {
-                          user: response.user.toJson(),
-                      }
-                    : {}),
-                ...("recipeUserId" in response
-                    ? {
-                          recipeUserId: response.recipeUserId.getAsString(),
-                      }
-                    : {}),
+                ...serializeUser(response),
+                ...serializeRecipeUserId(response),
             });
         } catch (e) {
             next(e);

@@ -37,7 +37,7 @@ const router = Router()
                 req.body.doUnionOfAccountInfo,
                 req.body.userContext
             );
-            res.json(response);
+            res.json(response.map((user) => user.toJson()));
         } catch (e) {
             next(e);
         }
@@ -46,7 +46,7 @@ const router = Router()
         try {
             logDebugMessage("SuperTokens:getUsersNewestFirst %j", req.body);
             const response = await supertokens.getUsersNewestFirst(req.body);
-            res.json(response);
+            res.json({ ...response, users: response.users.map((user) => user.toJson()) });
         } catch (e) {
             next(e);
         }
