@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "ES2016",
+        "strictNullChecks": true,
+        "declaration": true,
+        "module": "commonJS",
+        "moduleResolution": "Node",
+        "sourceMap": true,
+        "skipLibCheck": true,
+        "noFallthroughCasesInSwitch": true,
+        "outDir": "./dist",
+        "sourceRoot": "./src",
+        "esModuleInterop": true
+    },
+    "include": ["./**/*"],
+    "exclude": ["dist"],
+    "compileOnSave": true
+}

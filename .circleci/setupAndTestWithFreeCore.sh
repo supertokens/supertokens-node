@@ -55,3 +55,31 @@ if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
 else
     TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 fi
+
+API_PORT=3030
+ST_CONNECTION_URI=http://localhost:8081
+
+# start test-server
+pushd test/test-server
+npm install
+API_PORT=$API_PORT ST_CONNECTION_URI=$ST_CONNECTION_URI npm start &
+popd
+
+# lets read frontendDriverInterfaceSupported
+frontendDriverJson=`cat ./frontendDriverInterfaceSupported.json`
+# get versions
+frontendDriverArray=`echo $frontendDriverJson | jq ".versions"`
+# use latest version
+frontendDriverVersion=`echo $frontendDriverArray | jq ".[-1]" | tr -d '"'`
+
+# run tests
+cd ../
+git clone git@github.com:supertokens/backend-sdk-testing.git
+cd backend-sdk-testing
+git checkout $frontendDriverVersion
+npm install
+npm run build || { echo 'backend-sdk-testing build failed'; exit 1; }
+API_PORT=$API_PORT INSTALL_PATH=../supertokens-root npm test
+
+# kill test-server
+kill $(lsof -t -i:$API_PORT)
