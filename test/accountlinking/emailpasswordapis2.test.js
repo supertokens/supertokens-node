@@ -1941,7 +1941,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
     });
 
     describe("passwordResetPOST tests", function () {
-        it("calling passwordResetPOST with no primary user and existing email password user should change password and not link account, and not mark email as verified.", async function () {
+        it("calling passwordResetPOST with no primary user and existing email password user should change password and mark the email as verified and make the user primary.", async function () {
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
@@ -1957,6 +1957,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    EmailVerification.init({ mode: "OPTIONAL" }),
                     EmailPassword.init({
                         override: {
                             apis: (oI) => {
@@ -2076,9 +2077,164 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 status: "OK",
             });
             assert.strictEqual(emailPostPasswordReset, "test@example.com");
-            assert(!userPostPasswordReset.isPrimaryUser);
+            assert(userPostPasswordReset.isPrimaryUser);
             assert.strictEqual(userPostPasswordReset.loginMethods.length, 1);
             assert.strictEqual(userPostPasswordReset.id, epUser.user.id);
+        });
+
+        it("calling passwordResetPOST with no primary user and existing email password user should change password and mark the email as verified and try linking", async function () {
+            let sendEmailToUserId = undefined;
+            let token = undefined;
+            let userPostPasswordReset = undefined;
+            let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailVerification.init({ mode: "OPTIONAL" }),
+                    EmailPassword.init({
+                        override: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    passwordResetPOST: async (input) => {
+                                        let response = await oI.passwordResetPOST(input);
+                                        if (response.status === "OK") {
+                                            emailPostPasswordReset = response.email;
+                                            userPostPasswordReset = response.user;
+                                        }
+                                        return response;
+                                    },
+                                };
+                            },
+                        },
+                        emailDelivery: {
+                            override: (oI) => {
+                                return {
+                                    ...oI,
+                                    sendEmail: async function (input) {
+                                        sendEmailToUserId = input.user.id;
+                                        token = input.passwordResetLink.split("?")[1].split("&")[0].split("=")[1];
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, _session, _tenantId, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                true,
+                undefined,
+                {
+                    doNotLink: true,
+                }
+            );
+            assert(!tpUser.isPrimaryUser);
+
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            assert(!epUser.isPrimaryUser);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/password/reset/token")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "OK");
+            assert(sendEmailToUserId === tpUser.id);
+
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/password/reset")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                        ],
+                        token,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(res2 !== undefined);
+            assert.deepStrictEqual(res2, {
+                status: "OK",
+            });
+            assert.strictEqual(emailPostPasswordReset, "test@example.com");
+            assert(userPostPasswordReset.isPrimaryUser);
+            assert.strictEqual(userPostPasswordReset.loginMethods.length, 2);
+            assert.strictEqual(userPostPasswordReset.id, tpUser.id);
         });
 
         it("calling passwordResetPOST with bad password returns a PASSWORD_POLICY_VIOLATED_ERROR", async function () {
@@ -3004,7 +3160,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             }
         });
 
-        it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked, should change existing email password account's password if account linking is enabled, and NOT mark both as verified", async function () {
+        it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked, should change existing email password account's password if account linking is enabled, and mark the EP one as verified", async function () {
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
             let token = undefined;
@@ -3021,6 +3177,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     EmailPassword.init({
                         override: {
                             apis: (oI) => {
@@ -3155,10 +3314,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                     assert(userPostPasswordReset.loginMethods[i].email === "test@example.com");
+                    assert(userPostPasswordReset.loginMethods[i].verified);
                 } else {
                     assert(userPostPasswordReset.loginMethods[i].email === "test2@example.com");
+                    assert(!userPostPasswordReset.loginMethods[i].verified);
                 }
-                assert(!userPostPasswordReset.loginMethods[i].verified);
             }
 
             let signInResp = await EmailPassword.signIn("public", "test@example.com", "validpass123");
@@ -3166,7 +3326,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(signInResp.user.id === tpUser.id);
         });
 
-        it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked, should change existing email password account's password if account linking is disabled, and NOT mark both as verified", async function () {
+        it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked but linking is now disabled, should change existing email password account's password if account linking is disabled, and mark the EP one as verified", async function () {
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
             let token = undefined;
@@ -3183,6 +3343,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     EmailPassword.init({
                         override: {
                             apis: (oI) => {
@@ -3316,10 +3479,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                     assert(userPostPasswordReset.loginMethods[i].email === "test@example.com");
+                    assert(userPostPasswordReset.loginMethods[i].verified);
                 } else {
                     assert(userPostPasswordReset.loginMethods[i].email === "test2@example.com");
+                    assert(!userPostPasswordReset.loginMethods[i].verified);
                 }
-                assert(!userPostPasswordReset.loginMethods[i].verified);
             }
 
             let signInResp = await EmailPassword.signIn("public", "test@example.com", "validpass123");
@@ -3327,7 +3491,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(signInResp.user.id === tpUser.id);
         });
 
-        it("calling passwordResetPOST with primary user existing, and multiple email password user existing, where all accounts are linked, should change the right email password account's password, and NOT mark both as verified", async function () {
+        it("calling passwordResetPOST with primary user existing, and multiple email password user existing, where all accounts are linked, should change the right email password account's password, and only mark the right one as verified", async function () {
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
             let token = undefined;
@@ -3344,6 +3508,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    EmailVerification.init({ mode: "OPTIONAL" }),
                     EmailPassword.init({
                         override: {
                             apis: (oI) => {
@@ -3487,10 +3652,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         userPostPasswordReset.loginMethods[i].email === "test@example.com" ||
                             userPostPasswordReset.loginMethods[i].email === "test2@example.com"
                     );
+                    assert.strictEqual(
+                        userPostPasswordReset.loginMethods[i].verified,
+                        userPostPasswordReset.loginMethods[i].email === "test@example.com"
+                    );
                 } else {
                     assert(userPostPasswordReset.loginMethods[i].email === "test2@example.com");
+                    assert(!userPostPasswordReset.loginMethods[i].verified);
                 }
-                assert(!userPostPasswordReset.loginMethods[i].verified);
             }
 
             {
@@ -3994,7 +4163,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert.strictEqual(signInResp.user.isPrimaryUser, true);
         });
 
-        it("should reset the password if a primary user exists with an unverified emailpassword and a verified thirdparty sign in method with the same email", async function () {
+        it("should reset the password if a primary user exists with an unverified emailpassword and a verified thirdparty sign in method with the same email and mark the EP method as verified", async function () {
             let date = Date.now();
             let email = `john.doe+${date}@supertokens.com`;
             let sendEmailToUserId = undefined;
@@ -4150,6 +4319,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert.strictEqual(signInResp.status, "OK");
             assert.strictEqual(signInResp.user.id, primUser.id);
             assert.strictEqual(signInResp.user.loginMethods.length, 2);
+            assert(signInResp.user.loginMethods[0].verified);
+            assert(signInResp.user.loginMethods[1].verified);
             assert.strictEqual(signInResp.user.isPrimaryUser, true);
         });
 
