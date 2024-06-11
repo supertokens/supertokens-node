@@ -91,6 +91,10 @@ export type RecipeInterface = {
         tenantId: string;
         securityOptions: {
             enforceEmailBan: boolean;
+            ipBan: {
+                enabled: boolean;
+                ipAddress: string;
+            };
             checkBreachedPassword: boolean;
         };
         userContext: UserContext;
@@ -110,7 +114,7 @@ export type RecipeInterface = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
         | {
-              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR";
+              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR" | "IP_BANNED_ERROR";
           }
     >;
     // this function is meant only for creating the recipe in the core and nothing else.
@@ -124,6 +128,10 @@ export type RecipeInterface = {
         securityOptions: {
             enforceEmailBan: boolean;
             checkBreachedPassword: boolean;
+            ipBan: {
+                enabled: boolean;
+                ipAddress: string;
+            };
         };
         userContext: UserContext;
     }): Promise<
@@ -134,7 +142,7 @@ export type RecipeInterface = {
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         | {
-              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR";
+              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR" | "IP_BANNED_ERROR";
           }
     >;
 
@@ -146,6 +154,10 @@ export type RecipeInterface = {
         securityOptions: {
             enforceUserBan: boolean;
             enforceEmailBan: boolean;
+            ipBan: {
+                enabled: boolean;
+                ipAddress: string;
+            };
             checkBreachedPassword: boolean;
             limitWrongPasswordAttempts: {
                 enabled: boolean;
@@ -166,7 +178,7 @@ export type RecipeInterface = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
         | {
-              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR";
+              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR" | "IP_BANNED_ERROR";
           }
         | {
               status: "USER_BANNED";
@@ -200,8 +212,27 @@ export type RecipeInterface = {
         userId: string; // the id can be either recipeUserId or primaryUserId
         email: string;
         tenantId: string;
+        securityOptions: {
+            enforceUserBan: boolean;
+            enforceEmailBan: boolean;
+            ipBan: {
+                enabled: boolean;
+                ipAddress: string;
+            };
+        };
         userContext: UserContext;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
+    }): Promise<
+        | { status: "OK"; token: string }
+        | { status: "UNKNOWN_USER_ID_ERROR" }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
+          }
+        | {
+              status: "USER_BANNED";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+    >;
 
     consumePasswordResetToken(input: {
         token: string;
