@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "test": "TEST_MODE=testing npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000",
+        "test-exports": "./test/testExports.sh",
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npm run build",
         "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npm run build && cd ../.. && npm run post-build",
         "pretty": "npx pretty-quick .",
@@ -26,6 +27,84 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/supertokens/supertokens-node.git"
+    },
+    "exports": {
+        ".": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
+        "./index": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
+        "./index.js": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
+        "./framework/*": {
+            "types": "./framework/*/index.d.ts",
+            "default": "./framework/*/index.js"
+        },
+        "./framework/*/index": {
+            "types": "./framework/*/index.d.ts",
+            "default": "./framework/*/index.js"
+        },
+        "./framework/*/index.js": {
+            "types": "./framework/*/index.d.ts",
+            "default": "./framework/*/index.js"
+        },
+        "./nextjs": {
+            "types": "./nextjs/index.d.ts",
+            "default": "./nextjs/index.js"
+        },
+        "./nextjs/index": {
+            "types": "./nextjs/index.d.ts",
+            "default": "./nextjs/index.js"
+        },
+        "./nextjs/index.js": {
+            "types": "./nextjs/index.d.ts",
+            "default": "./nextjs/index.js"
+        },
+        "./types": {
+            "types": "./types/index.d.ts",
+            "default": "./types/index.js"
+        },
+        "./types/index": {
+            "types": "./types/index.d.ts",
+            "default": "./types/index.js"
+        },
+        "./types/index.js": {
+            "types": "./types/index.d.ts",
+            "default": "./types/index.js"
+        },
+        "./lib/*": {
+            "types": "./lib/*.d.ts",
+            "default": "./lib/*.js"
+        },
+        "./lib/*.js": {
+            "types": "./lib/*.d.ts",
+            "default": "./lib/*.js"
+        },
+        "./recipe/*": {
+            "types": "./recipe/*/index.d.ts",
+            "default": "./recipe/*/index.js"
+        },
+        "./recipe/*/index": {
+            "types": "./recipe/*/index.d.ts",
+            "default": "./recipe/*/index.js"
+        },
+        "./recipe/*/index.js": {
+            "types": "./recipe/*/index.d.ts",
+            "default": "./recipe/*/index.js"
+        },
+        "./recipe/session/claims": {
+            "types": "./recipe/session/claims.d.ts",
+            "default": "./recipe/session/claims.js"
+        },
+        "./recipe/session/claims.js": {
+            "types": "./recipe/session/claims.d.ts",
+            "default": "./recipe/session/claims.js"
+        }
     },
     "author": "rishabhpoddar",
     "license": "Apache-2.0",
