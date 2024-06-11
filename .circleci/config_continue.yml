@@ -9,6 +9,7 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         steps:
+            - run: echo "Testing branch << pipeline.git.branch >>"
             - when:
                   condition:
                       not:
@@ -78,6 +79,7 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         steps:
+            - run: echo "Testing passed for branch << pipeline.git.branch >>"
             - when:
                   condition:
                       not:
