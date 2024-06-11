@@ -24,7 +24,9 @@ let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPat
 let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
 let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
 const { Querier } = require("../../lib/build/querier");
+let EmailVerification = require("../../recipe/emailverification");
 let EmailPassword = require("../../recipe/emailpassword");
+let AccountLinking = require("../../recipe/accountlinking");
 let ThirdParty = require("../../recipe/thirdparty");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let generatePasswordResetToken = require("../../lib/build/recipe/emailpassword/api/generatePasswordResetToken").default;
@@ -338,7 +340,172 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(response.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
     });
 
-    it("test valid token input and passoword has changed", async function () {
+    it("test valid token input and passoword has changed with email verification", async function () {
+        const connectionURI = await startST();
+
+        let passwordResetUserId = undefined;
+        let token = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                EmailPassword.init({
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async (input) => {
+                                    token = input.passwordResetLink.split("?")[1].split("&")[0].split("=")[1];
+                                },
+                            };
+                        },
+                    },
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                passwordResetPOST: async function (input) {
+                                    let resp = await oI.passwordResetPOST(input);
+                                    passwordResetUserId = resp.user.id;
+                                    return resp;
+                                },
+                            };
+                        },
+                    },
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.passwordResetLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userInfo = JSON.parse(response.text).user;
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset/token")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass12345",
+                        },
+                    ],
+                    token,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
+
+        let failureResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(failureResponse.status === "WRONG_CREDENTIALS_ERROR");
+
+        let successResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass12345",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(successResponse.status === "OK");
+        assert(successResponse.user.id === userInfo.id);
+        assert(successResponse.user.email === userInfo.email);
+        assert(successResponse.user.loginMethods[0].verified);
+    });
+
+    it("test valid token input and passoword has changed without email verification", async function () {
         const connectionURI = await startST();
 
         let passwordResetUserId = undefined;
@@ -499,6 +666,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(successResponse.status === "OK");
         assert(successResponse.user.id === userInfo.id);
         assert(successResponse.user.email === userInfo.email);
+        assert(!successResponse.user.loginMethods[0].verified);
     });
 
     describe("createPasswordResetToken tests", function () {
@@ -629,6 +797,12 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => ({
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        }),
+                    }),
                     EmailPassword.init(),
                     ThirdParty.init({
                         signInAndUpFeature: {
