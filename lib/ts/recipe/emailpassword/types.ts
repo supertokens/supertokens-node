@@ -89,6 +89,10 @@ export type RecipeInterface = {
         password: string;
         session: SessionContainerInterface | undefined;
         tenantId: string;
+        securityOptions: {
+            enforceEmailBan: boolean;
+            checkBreachedPassword: boolean;
+        };
         userContext: UserContext;
     }): Promise<
         | {
@@ -104,6 +108,9 @@ export type RecipeInterface = {
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR";
           }
     >;
     // this function is meant only for creating the recipe in the core and nothing else.
@@ -114,6 +121,10 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
+        securityOptions: {
+            enforceEmailBan: boolean;
+            checkBreachedPassword: boolean;
+        };
         userContext: UserContext;
     }): Promise<
         | {
@@ -122,6 +133,9 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR";
+          }
     >;
 
     signIn(input: {
@@ -129,10 +143,20 @@ export type RecipeInterface = {
         password: string;
         session: SessionContainerInterface | undefined;
         tenantId: string;
+        securityOptions: {
+            enforceUserBan: boolean;
+            enforceEmailBan: boolean;
+            checkBreachedPassword: boolean;
+            limitWrongPasswordAttempts: {
+                enabled: boolean;
+                counterKey?: string; // by default will be email, so that the counter is per email, but users can customize it to be something else, like email + IP if they want.
+                maxNumberOfAttempts?: number; // by default will be 4
+            };
+        };
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR"; numberOfIncorrectAttemptsSoFar: number }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -141,7 +165,24 @@ export type RecipeInterface = {
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR";
+          }
+        | {
+              status: "USER_BANNED";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_LIMIT_REACHED_ERROR";
+              lastLoginAttemptTime: number; // this can be used to reset the timer and try again.
+          }
     >;
+
+    resetWrongCredentialsCounter(input: {
+        email: string;
+        tenantId: string;
+    }): Promise<{ status: "OK" | "UNKNOWN_EMAIL_ERROR" }>;
 
     verifyCredentials(input: {
         email: string;
@@ -183,6 +224,13 @@ export type RecipeInterface = {
         password?: string;
         userContext: UserContext;
         applyPasswordPolicy?: boolean;
+        securityOptions: {
+            checkBreachedPassword: boolean;
+            limitOldPasswordReuse: {
+                enabled: boolean;
+                numberOfOldPasswordsToCheck?: number; // can be infinity by default
+            };
+        };
         tenantIdForPasswordPolicy: string;
     }): Promise<
         | {
@@ -193,6 +241,7 @@ export type RecipeInterface = {
               reason: string;
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+        | { status: "BREACHED_PASSWORD_ERROR" | "OLD_PASSWORD_REUSED_ERROR" }
     >;
 };
 
