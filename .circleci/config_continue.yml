@@ -13,7 +13,7 @@ jobs:
                   condition:
                       not:
                           matches:
-                              pattern: "^test-cicd/"
+                              pattern: "^test-cicd/.*$"
                               value: << pipeline.git.branch >>
                   steps:
                       - checkout
@@ -82,7 +82,7 @@ jobs:
                   condition:
                       not:
                           matches:
-                              pattern: "^test-cicd/"
+                              pattern: "^test-cicd/.*$"
                               value: << pipeline.git.branch >>
                   steps:
                       - checkout
