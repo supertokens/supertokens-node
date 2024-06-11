@@ -20,8 +20,7 @@ let SuperTokens = require("../..");
 let MultiFactorAuth = require("../../lib/build/recipe/multifactorauth");
 let Session = require("../../lib/build/recipe/session");
 let Passwordless = require("../../lib/build/recipe/passwordless");
-const { plessCreateCode, plessResendCode, getTestExpressApp } = require("./utils");
-const { getTestEmail, getTestPhoneNumber } = require("../accountlinking-with-session/utils");
+const { plessCreateCode, plessResendCode, getTestExpressApp, getTestEmail, getTestPhoneNumber } = require("./utils");
 
 describe(`mfa with passwordless: ${printPath("[test/mfa/mfa.passwordlessapis.test.js]")}`, function () {
     beforeEach(async function () {
