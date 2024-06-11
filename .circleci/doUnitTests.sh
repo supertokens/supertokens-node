@@ -18,6 +18,15 @@ then
 fi
 coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
+cd ..
+./test/testExports.sh
+if [[ $? -ne 0 ]]
+then
+    echo "export test failed... exiting!"
+    exit 1
+fi
+cd .circleci
+
 ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
 if [[ $? -ne 0 ]]
 then
