@@ -9,8 +9,15 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         steps:
-            - checkout
-            - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
+            - when:
+                  condition:
+                      not:
+                          matches:
+                              pattern: "^test-cicd/"
+                              value: << pipeline.git.branch >>
+                  steps:
+                      - checkout
+                      - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
     test-unit:
         docker:
             - image: rishabhpoddar/supertokens_node_driver_testing_node_20
@@ -71,9 +78,16 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         steps:
-            - checkout
-            - run: (cd .circleci/ && ./markAsSuccess.sh)
-            - slack/status
+            - when:
+                  condition:
+                      not:
+                          matches:
+                              pattern: "^test-cicd/"
+                              value: << pipeline.git.branch >>
+                  steps:
+                      - checkout
+                      - run: (cd .circleci/ && ./markAsSuccess.sh)
+                      - slack/status
 
 workflows:
     version: 2
