@@ -22,6 +22,11 @@ import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 
+const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
+const hydraAdmDomain = process.env.HYDRA_ADM ?? "http://localhost:4445"; // This will be used as a domain for paths starting with hydraAdmPathPrefix
+const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
+const hydraAdmPathPrefix = "/recipe/oauth2/admin"; // Replaced with "/admin" when sending the request (/recipe/oauth2/admin/clients -> /admin/clients)
+
 export class Querier {
     private static initCalled = false;
     private static hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined = undefined;
@@ -488,6 +493,18 @@ export class Querier {
         }
         let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
+
+        let strPath = path.getAsStringDangerous();
+        if (strPath.startsWith(hydraPubPathPrefix)) {
+            currentDomain = hydraPubDomain;
+            strPath.replace(hydraPubPathPrefix, "/oauth2");
+        }
+
+        if (strPath.startsWith(hydraAdmPathPrefix)) {
+            currentDomain = hydraAdmDomain;
+            strPath.replace(hydraAdmPathPrefix, "/admin");
+        }
+
         const url = currentDomain + currentBasePath + path.getAsStringDangerous();
         const maxRetries = 5;
 
