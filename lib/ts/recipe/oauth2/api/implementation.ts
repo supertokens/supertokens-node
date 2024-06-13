@@ -13,8 +13,162 @@
  * under the License.
  */
 
+import SuperTokens from "../../../supertokens";
 import { APIInterface } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
-    return {};
+    return {
+        loginGET: async ({ loginChallenge, options, session, userContext }) => {
+            const request = await options.recipeImplementation.getLoginRequest({
+                challenge: loginChallenge,
+                userContext,
+            });
+
+            if (request.skip) {
+                const accept = await options.recipeImplementation.acceptLoginRequest({
+                    challenge: loginChallenge,
+                    subject: request.subject,
+                    userContext,
+                });
+                return { redirectTo: accept.redirectTo };
+            } else if (session) {
+                if (session.getUserId() !== request.subject) {
+                    // TODO?
+                }
+                const accept = await options.recipeImplementation.acceptLoginRequest({
+                    challenge: loginChallenge,
+                    subject: session.getUserId(),
+                    userContext,
+                });
+                return { redirectTo: accept.redirectTo };
+            }
+            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
+            const websiteDomain = appInfo
+                .getOrigin({
+                    request: options.req,
+                    userContext: userContext,
+                })
+                .getAsStringDangerous();
+            const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
+            // TODO:
+            return {
+                redirectTo:
+                    websiteDomain +
+                    websiteBasePath +
+                    `?hint=${request.oidcContext?.login_hint ?? ""}&redirectToPath=${encodeURIComponent(
+                        "/continue-/auth/oauth2/login?login_challenge=" + loginChallenge
+                    )}`,
+            };
+        },
+        loginPOST: async ({ loginChallenge, accept, options, session, userContext }) => {
+            const res = accept
+                ? await options.recipeImplementation.acceptLoginRequest({
+                      challenge: loginChallenge,
+                      subject: session.getUserId(),
+                      userContext,
+                  })
+                : await options.recipeImplementation.rejectLoginRequest({
+                      challenge: loginChallenge,
+                      error: { error: "access_denied", errorDescription: "The resource owner denied the request" },
+                      userContext,
+                  });
+            return { redirectTo: res.redirectTo };
+        },
+
+        logoutGET: async ({ logoutChallenge, options, userContext }) => {
+            const request = await options.recipeImplementation.getLogoutRequest({
+                challenge: logoutChallenge,
+                userContext,
+            });
+
+            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
+            return {
+                redirectTo:
+                    appInfo
+                        .getOrigin({
+                            request: options.req,
+                            userContext: userContext,
+                        })
+                        .getAsStringDangerous() +
+                    appInfo.websiteBasePath.getAsStringDangerous() +
+                    `/logout?challenge=${request.challenge}`,
+            };
+        },
+
+        logoutPOST: async ({ logoutChallenge, accept, options, userContext }) => {
+            if (accept) {
+                const res = await options.recipeImplementation.acceptLogoutRequest({
+                    challenge: logoutChallenge,
+                    userContext,
+                });
+                return { redirectTo: res.redirectTo };
+            }
+            await options.recipeImplementation.rejectLogoutRequest({
+                challenge: logoutChallenge,
+                //   error: { error: "access_denied", errorDescription: "The resource owner denied the request" },
+                userContext,
+            });
+            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
+            return {
+                redirectTo:
+                    appInfo
+                        .getOrigin({
+                            request: options.req,
+                            userContext: userContext,
+                        })
+                        .getAsStringDangerous() + appInfo.websiteBasePath.getAsStringDangerous(),
+            };
+        },
+
+        consentGET: async ({ consentChallenge, options, userContext }) => {
+            const request = await options.recipeImplementation.getConsentRequest({
+                challenge: consentChallenge,
+                userContext,
+            });
+
+            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
+            return {
+                redirectTo:
+                    appInfo
+                        .getOrigin({
+                            request: options.req,
+                            userContext: userContext,
+                        })
+                        .getAsStringDangerous() +
+                    appInfo.websiteBasePath.getAsStringDangerous() +
+                    `/consent?challenge=${request.challenge}&scopes=${request.requestedScope}&client=${request.client}&`,
+            };
+        },
+
+        consentPOST: async ({ consentChallenge, accept, remember, grantScope, options, userContext }) => {
+            const request = await options.recipeImplementation.getConsentRequest({
+                challenge: consentChallenge,
+                userContext,
+            });
+            const res = accept
+                ? await options.recipeImplementation.acceptConsentRequest({
+                      challenge: consentChallenge,
+                      grantAccessTokenAudience: request.requestedAccessTokenAudience,
+                      remember,
+                      grantScope,
+                      userContext,
+                  })
+                : await options.recipeImplementation.rejectConsentRequest({
+                      challenge: consentChallenge,
+                      error: { error: "access_denied", errorDescription: "The resource owner denied the request" },
+                      userContext,
+                  });
+            return { redirectTo: res.redirectTo };
+        },
+        authGET: async (input) => {
+            const res = await input.options.recipeImplementation.authorization({
+                params: input.params,
+                userContext: input.userContext,
+            });
+            return res;
+        },
+        tokenPOST: async (input) => {
+            return input.options.recipeImplementation.token({ body: input.body, userContext: input.userContext });
+        },
+    };
 }

@@ -319,11 +319,14 @@ export class Querier {
                 finalURL.search = searchParams.toString();
 
                 // Update cache and return
-
                 let response = await doFetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
+
+                if (response.status === 302) {
+                    return response;
+                }
 
                 if (response.status === 200 && !Querier.disableCache) {
                     // If the request was successful, we save the result into the cache
@@ -400,7 +403,12 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
+    sendPutRequest = async (
+        path: NormalisedURLPath,
+        body: any,
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: UserContext
+    ): Promise<any> => {
         this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
@@ -428,6 +436,7 @@ export class Querier {
                             method: "put",
                             headers: headers,
                             body: body,
+                            params: params,
                         },
                         userContext
                     );
@@ -438,7 +447,13 @@ export class Querier {
                     }
                 }
 
-                return doFetch(url, {
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
+                );
+                finalURL.search = searchParams.toString();
+
+                return doFetch(finalURL.toString(), {
                     method: "PUT",
                     body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,

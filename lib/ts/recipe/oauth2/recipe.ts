@@ -20,7 +20,13 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
+import authGET from "./api/auth";
+import consentAPI from "./api/consent";
 import APIImplementation from "./api/implementation";
+import loginAPI from "./api/login";
+import logoutAPI from "./api/logout";
+import tokenPOST from "./api/token";
+import { AUTH_PATH, CONSENT_PATH, LOGIN_PATH, LOGOUT_PATH, TOKEN_PATH } from "./constants";
 import RecipeImplementation from "./recipeImplementation";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -54,6 +60,9 @@ export default class Recipe extends RecipeModule {
 
     /* Init functions */
 
+    static getInstance(): Recipe | undefined {
+        return Recipe.instance;
+    }
     static getInstanceOrThrowError(): Recipe {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
@@ -82,28 +91,92 @@ export default class Recipe extends RecipeModule {
     /* RecipeModule functions */
 
     getAPIsHandled(): APIHandled[] {
-        return [];
+        return [
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGIN_PATH),
+                id: LOGIN_PATH,
+                disabled: this.apiImpl.loginPOST === undefined,
+            },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGIN_PATH),
+                id: LOGIN_PATH,
+                disabled: this.apiImpl.loginGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGOUT_PATH),
+                id: LOGOUT_PATH,
+                disabled: this.apiImpl.logoutPOST === undefined,
+            },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGOUT_PATH),
+                id: LOGOUT_PATH,
+                disabled: this.apiImpl.logoutGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(CONSENT_PATH),
+                id: CONSENT_PATH,
+                disabled: this.apiImpl.consentPOST === undefined,
+            },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(CONSENT_PATH),
+                id: CONSENT_PATH,
+                disabled: this.apiImpl.consentGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(TOKEN_PATH),
+                id: TOKEN_PATH,
+                disabled: this.apiImpl.tokenPOST === undefined,
+            },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(AUTH_PATH),
+                id: AUTH_PATH,
+                disabled: this.apiImpl.authGET === undefined,
+            },
+        ];
     }
 
     handleAPIRequest = async (
-        _id: string,
+        id: string,
         _tenantId: string | undefined,
-        _req: BaseRequest,
-        _res: BaseResponse,
+        req: BaseRequest,
+        res: BaseResponse,
         _path: NormalisedURLPath,
         _method: HTTPMethod,
-        _userContext: UserContext
+        userContext: UserContext
     ): Promise<boolean> => {
-        // let options = {
-        //     config: this.config,
-        //     recipeId: this.getRecipeId(),
-        //     isInServerlessEnv: this.isInServerlessEnv,
-        //     recipeImplementation: this.recipeInterfaceImpl,
-        //     req,
-        //     res,
-        // };
+        let options = {
+            config: this.config,
+            recipeId: this.getRecipeId(),
+            isInServerlessEnv: this.isInServerlessEnv,
+            recipeImplementation: this.recipeInterfaceImpl,
+            req,
+            res,
+        };
 
-        throw new Error("Not implemented");
+        if (id === LOGIN_PATH) {
+            return loginAPI(this.apiImpl, options, userContext);
+        }
+        if (id === LOGOUT_PATH) {
+            return logoutAPI(this.apiImpl, options, userContext);
+        }
+        if (id === CONSENT_PATH) {
+            return consentAPI(this.apiImpl, options, userContext);
+        }
+        if (id === TOKEN_PATH) {
+            return tokenPOST(this.apiImpl, options, userContext);
+        }
+        if (id === AUTH_PATH) {
+            return authGET(this.apiImpl, options, userContext);
+        }
+        throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };
 
     handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void> {

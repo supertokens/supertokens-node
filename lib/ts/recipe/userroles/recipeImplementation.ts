@@ -24,6 +24,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return querier.sendPutRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/role`),
                 { userId, role },
+                {},
                 userContext
             );
         },
@@ -55,7 +56,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
 
         createNewRoleOrAddPermissions: function ({ role, permissions, userContext }) {
-            return querier.sendPutRequest(new NormalisedURLPath("/recipe/role"), { role, permissions }, userContext);
+            return querier.sendPutRequest(
+                new NormalisedURLPath("/recipe/role"),
+                { role, permissions },
+                {},
+                userContext
+            );
         },
 
         getPermissionsForRole: function ({ role, userContext }) {
