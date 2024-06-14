@@ -422,3 +422,9 @@ export function normaliseEmail(email: string): string {
 
     return email;
 }
+
+export function toCamelCase(str: string): string {
+    return str.replace(/([-_][a-z])/gi, (match) => {
+        return match.toUpperCase().replace("-", "").replace("_", "");
+    });
+}

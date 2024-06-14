@@ -13,14 +13,46 @@
  * under the License.
  */
 
+import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
+import { toCamelCase } from "../../utils";
+import { OAuth2Client } from "./OAuth2Client";
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 
 export default function getRecipeInterface(
-    _querier: Querier,
+    querier: Querier,
     _config: TypeNormalisedInput,
     _appInfo: NormalisedAppinfo
 ): RecipeInterface {
-    return {};
+    return {
+        createOAuth2Client: async function (input, userContext) {
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
+                input,
+                userContext
+            );
+
+            if (response.status === "OK") {
+                const oAuth2ClientInput = Object.keys(response.data).reduce((result, key) => {
+                    const camelCaseKey = toCamelCase(key);
+                    result[camelCaseKey] = response.data[key];
+                    return result;
+                }, {} as any);
+
+                const client = new OAuth2Client(oAuth2ClientInput);
+
+                return {
+                    status: "OK",
+                    client,
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
+        },
+    };
 }
