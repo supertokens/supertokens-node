@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `passwordResetPOST`:
     -   now verifies the email address in all cases if the EmailVerification recipe is initialized
     -   now tries to link accounts based on account info if AccountLinking is enabled
+-   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
 
 ## [18.0.0] - 2024-05-23
 

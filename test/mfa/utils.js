@@ -225,3 +225,11 @@ module.exports.tpSignInUp = async function (app, thirdPartyId, email, accessToke
 module.exports.getMfaInfo = async function (app, accessToken, statusCode = 200) {
     return request(app).put("/auth/mfa/info").set("Authorization", `Bearer ${accessToken}`).expect(statusCode);
 };
+
+exports.getTestEmail = function getTestEmail(suffix) {
+    return `john.doe+${Date.now()}+${suffix ?? 1}@supertokens.io`;
+};
+
+exports.getTestPhoneNumber = function () {
+    return `+3630${Date.now().toString().substr(-7)}`;
+};
