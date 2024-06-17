@@ -13,13 +13,20 @@
  * under the License.
  */
 
+import { UserContext } from "../../types";
 import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, APIOptions } from "./types";
+import { APIInterface, RecipeInterface, APIOptions, OAuth2ClientOptions } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
+
+    static async createOAuth2Client(input: OAuth2ClientOptions, userContext: UserContext) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createOAuth2Client(input, userContext);
+    }
 }
 
 export let init = Wrapper.init;
+
+export let createOAuth2Client = Wrapper.createOAuth2Client;
 
 export type { APIInterface, APIOptions, RecipeInterface };

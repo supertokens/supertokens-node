@@ -57,3 +57,4 @@ export declare function postWithFetch(
       }
 >;
 export declare function normaliseEmail(email: string): string;
+export declare function toCamelCase(str: string): string;

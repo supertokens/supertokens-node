@@ -495,6 +495,8 @@ export class Querier {
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
 
         let strPath = path.getAsStringDangerous();
+        const isHydraAPICall = strPath.startsWith(hydraAdmPathPrefix) || strPath.startsWith(hydraPubPathPrefix);
+
         if (strPath.startsWith(hydraPubPathPrefix)) {
             currentDomain = hydraPubDomain;
             strPath = strPath.replace(hydraPubPathPrefix, "/oauth2");
@@ -525,6 +527,12 @@ export class Querier {
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
+
+            // TODO: Temporary solution for handling Hydra API calls. Remove when Hydra is no longer called directly.
+            if (isHydraAPICall) {
+                return handleHydraAPICall(response);
+            }
+
             if (response.status !== 200) {
                 throw response;
             }
@@ -574,4 +582,8 @@ export class Querier {
             throw err;
         }
     };
+}
+
+async function handleHydraAPICall(response: Response) {
+    return { body: { status: response.ok ? "OK" : "ERROR", data: await response.clone().json() } };
 }
