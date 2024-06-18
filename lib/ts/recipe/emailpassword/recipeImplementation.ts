@@ -1,5 +1,6 @@
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
+import EmailVerification from "../emailverification/recipe";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
@@ -252,6 +253,39 @@ export default function getRecipeInterface(
               }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
+            const accountLinking = AccountLinking.getInstance();
+            if (input.email) {
+                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+
+                if (user === undefined) {
+                    return { status: "UNKNOWN_USER_ID_ERROR" };
+                }
+
+                const evInstance = EmailVerification.getInstance();
+
+                let isEmailVerified = false;
+                if (evInstance) {
+                    isEmailVerified = await evInstance.recipeInterfaceImpl.isEmailVerified({
+                        recipeUserId: input.recipeUserId,
+                        email: input.email,
+                        userContext: input.userContext,
+                    });
+                }
+                const isEmailChangeAllowed = await accountLinking.isEmailChangeAllowed({
+                    user,
+                    isVerified: isEmailVerified,
+                    newEmail: input.email,
+                    session: undefined, // TODO: should this also get session?
+                    userContext: input.userContext,
+                });
+                if (!isEmailChangeAllowed) {
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        // TODO: error code?
+                        reason: "New email cannot be applied to existing account because of account takeover risks.",
+                    };
+                }
+            }
             if (input.applyPasswordPolicy || input.applyPasswordPolicy === undefined) {
                 let formFields = getEmailPasswordConfig().signUpFeature.formFields;
                 if (input.password !== undefined) {

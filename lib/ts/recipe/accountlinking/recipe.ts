@@ -560,18 +560,42 @@ export default class Recipe extends RecipeModule {
                 userContext: input.userContext,
             });
 
-            let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
-            if (primaryUserForNewEmail.length > 1) {
+            let otherUsersWithNewEmail = existingUsersWithNewEmail.filter((u) => u.id !== user!.id);
+
+            let otherPrimaryUserForNewEmail = otherUsersWithNewEmail.filter((u) => u.isPrimaryUser);
+            if (otherPrimaryUserForNewEmail.length > 1) {
                 throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
             }
 
             if (user.isPrimaryUser) {
                 // this is condition one from the above comment.
-                if (primaryUserForNewEmail.length === 1 && primaryUserForNewEmail[0].id !== user.id) {
+                if (otherPrimaryUserForNewEmail.length !== 0) {
                     logDebugMessage(
-                        "isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email"
+                        `isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email on ${tenantId}`
                     );
                     return false;
+                }
+                if (
+                    !input.isVerified && // TODO: verify
+                    !user.loginMethods.some((lm) => lm.hasSameEmailAs(input.newEmail) && lm.verified) &&
+                    otherUsersWithNewEmail.length !== 0
+                ) {
+                    let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                        otherUsersWithNewEmail[0].loginMethods[0],
+                        user,
+                        input.session,
+                        tenantId,
+                        input.userContext
+                    );
+                    if (
+                        shouldDoAccountLinking.shouldAutomaticallyLink &&
+                        shouldDoAccountLinking.shouldRequireVerification
+                    ) {
+                        logDebugMessage(
+                            `isEmailChangeAllowed: returning false because the user hasn't verified the new email address and there exists another user with it on ${tenantId} and linking requires verification`
+                        );
+                        return false;
+                    }
                 }
                 logDebugMessage(
                     `isEmailChangeAllowed: can change on ${tenantId} cause input user is primary and new email doesn't belong to any other primary user`
@@ -592,10 +616,10 @@ export default class Recipe extends RecipeModule {
                     continue;
                 }
 
-                if (primaryUserForNewEmail.length === 1) {
+                if (otherPrimaryUserForNewEmail.length === 1) {
                     let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                         user.loginMethods[0],
-                        primaryUserForNewEmail[0],
+                        otherPrimaryUserForNewEmail[0],
                         input.session,
                         tenantId,
                         input.userContext

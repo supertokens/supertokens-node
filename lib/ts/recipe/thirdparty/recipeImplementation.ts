@@ -5,7 +5,7 @@ import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "
 import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { getUser } from "../..";
+import { getUser, listUsersByAccountInfo } from "../..";
 import { User as UserType } from "../../types";
 import { User } from "../../user";
 import { AuthUtils } from "../../authUtils";
@@ -16,6 +16,32 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             this: RecipeInterface,
             { thirdPartyId, thirdPartyUserId, email, isVerified, tenantId, session, userContext }
         ) {
+            const accountLinking = AccountLinking.getInstance();
+            const users = await listUsersByAccountInfo(
+                tenantId,
+                { thirdParty: { id: thirdPartyId, userId: thirdPartyUserId } },
+                false,
+                userContext
+            );
+
+            const user = users[0];
+            if (user !== undefined) {
+                const isEmailChangeAllowed = await accountLinking.isEmailChangeAllowed({
+                    user,
+                    isVerified: isVerified,
+                    newEmail: email,
+                    session,
+                    userContext: userContext,
+                });
+                if (!isEmailChangeAllowed) {
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        // TODO: error code? In this case reason is overwritten by ERR_CODE_005 by the wrapping function
+                        // if called by our build-in APIs
+                        reason: "New email cannot be applied to existing account because of account takeover risks.",
+                    };
+                }
+            }
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/signinup`),
                 {
