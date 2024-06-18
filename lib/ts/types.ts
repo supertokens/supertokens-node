@@ -102,6 +102,7 @@ export type GeneralErrorResponse = {
 export type User = {
     id: string; // primaryUserId or recipeUserId
     timeJoined: number; // minimum timeJoined value from linkedRecipes
+    timeBanned: number | null; // Unix timestamp indicating the ban time. Null if the user is not banned.
     isPrimaryUser: boolean;
     tenantIds: string[];
     emails: string[];

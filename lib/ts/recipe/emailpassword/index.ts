@@ -102,7 +102,11 @@ export default class Wrapper {
         password: string,
         session?: undefined,
         userContext?: Record<string, any>
-    ): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    ): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        | { status: "USER_BANNED_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+    >;
     static signIn(
         tenantId: string,
         email: string,
@@ -112,6 +116,7 @@ export default class Wrapper {
     ): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "USER_BANNED_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -130,6 +135,7 @@ export default class Wrapper {
     ): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "USER_BANNED_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -153,7 +159,7 @@ export default class Wrapper {
         email: string,
         password: string,
         userContext?: Record<string, any>
-    ): Promise<{ status: "OK" | "WRONG_CREDENTIALS_ERROR" }> {
+    ): Promise<{ status: "OK" | "WRONG_CREDENTIALS_ERROR" | "USER_BANNED_ERROR" }> {
         const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
             email,
             password,
@@ -183,7 +189,9 @@ export default class Wrapper {
         userId: string,
         email: string,
         userContext?: Record<string, any>
-    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+    ): Promise<
+        { status: "OK"; token: string } | { status: "USER_BANNED_ERROR" } | { status: "UNKNOWN_USER_ID_ERROR" }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
             email,
@@ -199,7 +207,7 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ): Promise<
         | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+              status: "OK" | "USER_BANNED_ERROR" | "UNKNOWN_USER_ID_ERROR" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
     > {
@@ -242,6 +250,7 @@ export default class Wrapper {
               userId: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+        | { status: "USER_BANNED_ERROR" }
     > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
@@ -259,7 +268,7 @@ export default class Wrapper {
         tenantIdForPasswordPolicy?: string;
     }): Promise<
         | {
-              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "USER_BANNED_ERROR";
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -280,10 +289,10 @@ export default class Wrapper {
         userId: string,
         email: string,
         userContext?: Record<string, any>
-    ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+    ): Promise<{ status: "OK"; link: string } | { status: "USER_BANNED_ERROR" } | { status: "UNKNOWN_USER_ID_ERROR" }> {
         const ctx = getUserContext(userContext);
         let token = await createResetPasswordToken(tenantId, userId, email, ctx);
-        if (token.status === "UNKNOWN_USER_ID_ERROR") {
+        if (token.status === "UNKNOWN_USER_ID_ERROR" || token.status === "USER_BANNED_ERROR") {
             return token;
         }
 
@@ -305,7 +314,7 @@ export default class Wrapper {
         userId: string,
         email: string,
         userContext?: Record<string, any>
-    ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
+    ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "USER_BANNED_ERROR" }> {
         const user = await getUser(userId, userContext);
         if (!user) {
             return { status: "UNKNOWN_USER_ID_ERROR" };
@@ -317,7 +326,7 @@ export default class Wrapper {
         }
 
         let link = await createResetPasswordLink(tenantId, userId, email, userContext);
-        if (link.status === "UNKNOWN_USER_ID_ERROR") {
+        if (link.status === "UNKNOWN_USER_ID_ERROR" || link.status === "USER_BANNED_ERROR") {
             return link;
         }
 
@@ -368,7 +377,7 @@ export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
-export type { RecipeInterface, APIOptions, APIInterface };
+export type { APIInterface, APIOptions, RecipeInterface };
 
 export let createResetPasswordLink = Wrapper.createResetPasswordLink;
 
