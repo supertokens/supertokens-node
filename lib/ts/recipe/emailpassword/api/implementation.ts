@@ -63,6 +63,9 @@ export default function getAPIImplementation(): APIInterface {
                   status: "OK";
               }
             | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
+            | {
+                  status: "USER_BANNED_ERROR";
+              }
             | GeneralErrorResponse
         > {
             const email = formFields.filter((f) => f.id === "email")[0].value;
@@ -350,6 +353,9 @@ export default function getAPIImplementation(): APIInterface {
                   user: User;
                   email: string;
               }
+            | {
+                  status: "USER_BANNED_ERROR";
+              }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | GeneralErrorResponse
@@ -389,6 +395,9 @@ export default function getAPIImplementation(): APIInterface {
                   }
                 | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
                 | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+                | {
+                      status: "USER_BANNED_ERROR";
+                  }
                 | GeneralErrorResponse
             > {
                 let updateResponse = await options.recipeImplementation.updateEmailOrPassword({
@@ -577,6 +586,9 @@ export default function getAPIImplementation(): APIInterface {
                   status: "OK";
                   session: SessionContainerInterface;
                   user: User;
+              }
+            | {
+                  status: "USER_BANNED_ERROR";
               }
             | {
                   status: "WRONG_CREDENTIALS_ERROR";

@@ -238,6 +238,9 @@ export type APIInterface = {
                     status: "OK";
                 }
               | {
+                    status: "USER_BANNED_ERROR";
+                }
+              | {
                     status: "PASSWORD_RESET_NOT_ALLOWED";
                     reason: string;
                 }
@@ -260,6 +263,9 @@ export type APIInterface = {
                     status: "OK";
                     email: string;
                     user: User;
+                }
+              | {
+                    status: "USER_BANNED_ERROR";
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -288,6 +294,9 @@ export type APIInterface = {
               | {
                     status: "SIGN_IN_NOT_ALLOWED";
                     reason: string;
+                }
+              | {
+                    status: "USER_BANNED_ERROR";
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";

@@ -14,6 +14,7 @@ export class LoginMethod implements RecipeLevelUser {
     public readonly verified: boolean;
 
     public readonly timeJoined: number;
+    public readonly timeBanned: number | null;
 
     constructor(loginMethod: UserWithoutHelperFunctions["loginMethods"][number]) {
         this.recipeId = loginMethod.recipeId;
@@ -25,6 +26,7 @@ export class LoginMethod implements RecipeLevelUser {
         this.thirdParty = loginMethod.thirdParty;
 
         this.timeJoined = loginMethod.timeJoined;
+        this.timeBanned = loginMethod.timeBanned;
         this.verified = loginMethod.verified;
     }
 
@@ -74,6 +76,7 @@ export class LoginMethod implements RecipeLevelUser {
             phoneNumber: this.phoneNumber,
             thirdParty: this.thirdParty,
             timeJoined: this.timeJoined,
+            timeBanned: this.timeBanned,
             verified: this.verified,
         };
     }
@@ -93,6 +96,7 @@ export class User implements UserType {
     public readonly loginMethods: LoginMethod[];
 
     public readonly timeJoined: number; // minimum timeJoined value from linkedRecipes
+    public readonly timeBanned: number | null;
 
     constructor(user: UserWithoutHelperFunctions) {
         this.id = user.id;
@@ -104,6 +108,7 @@ export class User implements UserType {
         this.thirdParty = user.thirdParty;
 
         this.timeJoined = user.timeJoined;
+        this.timeBanned = user.timeBanned;
 
         this.loginMethods = user.loginMethods.map((m) => new LoginMethod(m));
     }
@@ -120,6 +125,7 @@ export class User implements UserType {
             loginMethods: this.loginMethods.map((m) => m.toJson()),
 
             timeJoined: this.timeJoined,
+            timeBanned: this.timeBanned,
         };
     }
 }
@@ -127,6 +133,7 @@ export class User implements UserType {
 export type UserWithoutHelperFunctions = {
     id: string; // primaryUserId or recipeUserId
     timeJoined: number; // minimum timeJoined value from linkedRecipes
+    timeBanned: number | null;
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
@@ -149,5 +156,6 @@ export type UserWithoutHelperFunctions = {
 
         verified: boolean;
         timeJoined: number;
+        timeBanned: number | null;
     }[];
 };

@@ -201,5 +201,6 @@ export type AccountInfoWithRecipeId = {
 export type RecipeLevelUser = {
     tenantIds: string[];
     timeJoined: number;
+    timeBanned: number | null;
     recipeUserId: RecipeUserId;
 } & AccountInfoWithRecipeId;
