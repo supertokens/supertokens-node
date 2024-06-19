@@ -8,9 +8,25 @@ import {
     CreateOAuth2ClientInput,
     UpdateOAuth2ClientInput,
     DeleteOAuth2ClientInput,
+    GetOAuth2ClientsInput,
 } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
+    static getOAuth2Clients(
+        input: GetOAuth2ClientsInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              clients: import("./OAuth2Client").OAuth2Client[];
+              nextPageToken?: string | undefined;
+          }
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
     static createOAuth2Client(
         input: CreateOAuth2ClientInput,
         userContext: UserContext
@@ -54,6 +70,7 @@ export default class Wrapper {
     >;
 }
 export declare let init: typeof Recipe.init;
+export declare let getOAuth2Clients: typeof Wrapper.getOAuth2Clients;
 export declare let createOAuth2Client: typeof Wrapper.createOAuth2Client;
 export declare let updateOAuth2Client: typeof Wrapper.updateOAuth2Client;
 export declare let deleteOAuth2Client: typeof Wrapper.deleteOAuth2Client;

@@ -22,11 +22,15 @@ import {
     CreateOAuth2ClientInput,
     UpdateOAuth2ClientInput,
     DeleteOAuth2ClientInput,
+    GetOAuth2ClientsInput,
 } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
+    static async getOAuth2Clients(input: GetOAuth2ClientsInput, userContext: UserContext) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Clients(input, userContext);
+    }
     static async createOAuth2Client(input: CreateOAuth2ClientInput, userContext: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createOAuth2Client(input, userContext);
     }
@@ -39,6 +43,8 @@ export default class Wrapper {
 }
 
 export let init = Wrapper.init;
+
+export let getOAuth2Clients = Wrapper.getOAuth2Clients;
 
 export let createOAuth2Client = Wrapper.createOAuth2Client;
 

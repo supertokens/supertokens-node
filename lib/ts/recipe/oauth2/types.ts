@@ -48,6 +48,22 @@ export type APIOptions = {
 };
 
 export type RecipeInterface = {
+    getOAuth2Clients(
+        input: GetOAuth2ClientsInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              clients: Array<OAuth2Client>;
+              nextPageToken?: string;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
     createOAuth2Client(
         input: CreateOAuth2ClientInput,
         userContext: UserContext
@@ -148,6 +164,28 @@ export type OAuth2ClientOptions = {
     registrationAccessToken: string;
     registrationClientUri: string;
     metadata?: Record<string, any>;
+};
+
+export type GetOAuth2ClientsInput = {
+    /**
+     * Items per Page. Defaults to 250.
+     */
+    pageSize?: number;
+
+    /**
+     * Next Page Token. Defaults to "1".
+     */
+    pageToken?: string;
+
+    /**
+     * The name of the clients to filter by.
+     */
+    clientName?: string;
+
+    /**
+     * The owner of the clients to filter by.
+     */
+    owner?: string;
 };
 
 export type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;

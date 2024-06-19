@@ -149,4 +149,92 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
 
         assert.strictEqual(status, "OK");
     });
+
+    it("should get OAuth2Clients with pagination", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [OAuth2Recipe.init()],
+        });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
+        // Create 10 clients
+        for (let i = 0; i < 10; i++) {
+            await OAuth2Recipe.createOAuth2Client(
+                {
+                    client_id: `client_id_${i}`,
+                },
+                {}
+            );
+        }
+
+        let allClients = [];
+        let nextPageToken = undefined;
+
+        // Fetch clients in pages of 3
+        do {
+            const result = await OAuth2Recipe.getOAuth2Clients({ pageSize: 3, pageToken: nextPageToken }, {});
+            assert.strictEqual(result.status, "OK");
+            nextPageToken = result.nextPageToken;
+            allClients.push(...result.clients);
+        } while (nextPageToken);
+
+        // Check the client IDs
+        for (let i = 0; i < 10; i++) {
+            assert.strictEqual(allClients[i].clientId, `client_id_${i}`);
+        }
+    });
+
+    it("should get OAuth2Clients with filter", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [OAuth2Recipe.init()],
+        });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
+        // Create 5 clients with clientName = "customClientName"
+        for (let i = 0; i < 5; i++) {
+            await OAuth2Recipe.createOAuth2Client({ clientName: "customClientName" }, {});
+        }
+
+        // Create 5 clients with owner = "test"
+        for (let i = 0; i < 5; i++) {
+            await OAuth2Recipe.createOAuth2Client({ owner: "test" }, {});
+        }
+
+        let result = await OAuth2Recipe.getOAuth2Clients({ clientName: "customClientName" }, {});
+        assert.strictEqual(result.status, "OK");
+        assert.strictEqual(result.clients.length, 5);
+
+        result = await OAuth2Recipe.getOAuth2Clients({ owner: "test" }, {});
+        assert.strictEqual(result.status, "OK");
+        assert.strictEqual(result.clients.length, 5);
+    });
 });

@@ -638,10 +638,19 @@ async function handleHydraAPICall(response: Response) {
     const contentType = response.headers.get("Content-Type");
 
     if (contentType?.startsWith("application/json")) {
-        return { body: { status: response.ok ? "OK" : "ERROR", data: await response.clone().json() } };
+        return {
+            body: {
+                status: response.ok ? "OK" : "ERROR",
+                data: await response.clone().json(),
+                headers: response.headers,
+            },
+        };
     } else if (contentType?.startsWith("text/plain")) {
-        return { body: { status: response.ok ? "OK" : "ERROR", data: await response.clone().text() } };
+        return {
+            body: { status: response.ok ? "OK" : "ERROR", data: await response.clone().text() },
+            headers: response.headers,
+        };
     }
 
-    return { body: { status: response.ok ? "OK" : "ERROR" } };
+    return { body: { status: response.ok ? "OK" : "ERROR", headers: response.headers } };
 }

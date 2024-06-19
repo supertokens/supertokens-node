@@ -30,6 +30,21 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type RecipeInterface = {
+    getOAuth2Clients(
+        input: GetOAuth2ClientsInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              clients: Array<OAuth2Client>;
+              nextPageToken?: string;
+          }
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
     createOAuth2Client(
         input: CreateOAuth2ClientInput,
         userContext: UserContext
@@ -121,6 +136,24 @@ export declare type OAuth2ClientOptions = {
     registrationAccessToken: string;
     registrationClientUri: string;
     metadata?: Record<string, any>;
+};
+export declare type GetOAuth2ClientsInput = {
+    /**
+     * Items per Page. Defaults to 250.
+     */
+    pageSize?: number;
+    /**
+     * Next Page Token. Defaults to "1".
+     */
+    pageToken?: string;
+    /**
+     * The name of the clients to filter by.
+     */
+    clientName?: string;
+    /**
+     * The owner of the clients to filter by.
+     */
+    owner?: string;
 };
 export declare type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
 export declare type UpdateOAuth2ClientInput = NonNullableProperties<

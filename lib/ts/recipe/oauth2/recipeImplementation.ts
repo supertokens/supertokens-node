@@ -26,6 +26,37 @@ export default function getRecipeInterface(
     _appInfo: NormalisedAppinfo
 ): RecipeInterface {
     return {
+        getOAuth2Clients: async function (input, userContext) {
+            let response = await querier.sendGetRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
+                transformObjectKeys(input, "snake-case"),
+                userContext
+            );
+
+            if (response.status === "OK") {
+                let nextPageToken: string | undefined;
+                const linkHeader = response.headers.get("link");
+
+                const nextLinkMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+                if (nextLinkMatch) {
+                    const url = nextLinkMatch[1];
+                    const urlParams = new URLSearchParams(url.split("?")[1]);
+                    nextPageToken = urlParams.get("page_token") as string;
+                }
+
+                return {
+                    status: "OK",
+                    clients: response.data.map((client: any) => createOAuth2ClientFromResponse(client)),
+                    nextPageToken,
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
+        },
         createOAuth2Client: async function (input, userContext) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
