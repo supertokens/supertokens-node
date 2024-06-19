@@ -24,6 +24,11 @@ type Brand<B> = { [__brand]: B };
 
 type Branded<T, B> = T & Brand<B>;
 
+// A utility type that makes all properties of a given type nullable.
+export type Nullable<T> = {
+    [P in keyof T]: T[P] | null;
+};
+
 // Record<string,any> is still quite generic and we would like to ensure type safety for the userContext
 // so we use the concept of branded type, which enables catching of issues at compile time.
 // Detailed explanation about branded types is available here - https://egghead.io/blog/using-branded-types-in-typescript
@@ -86,7 +91,7 @@ export type APIHandled = {
     disabled: boolean;
 };
 
-export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
+export type HTTPMethod = "post" | "get" | "delete" | "put" | "patch" | "options" | "trace";
 
 export type JSONPrimitive = string | number | boolean | null;
 export type JSONArray = Array<JSONValue>;

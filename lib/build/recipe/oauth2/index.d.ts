@@ -1,11 +1,18 @@
 // @ts-nocheck
 import { UserContext } from "../../types";
 import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, APIOptions, OAuth2ClientOptions } from "./types";
+import {
+    APIInterface,
+    RecipeInterface,
+    APIOptions,
+    CreateOAuth2ClientInput,
+    UpdateOAuth2ClientInput,
+    DeleteOAuth2ClientInput,
+} from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static createOAuth2Client(
-        input: OAuth2ClientOptions,
+        input: CreateOAuth2ClientInput,
         userContext: UserContext
     ): Promise<
         | {
@@ -18,7 +25,36 @@ export default class Wrapper {
               errorHint: string;
           }
     >;
+    static updateOAuth2Client(
+        input: UpdateOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              client: import("./OAuth2Client").OAuth2Client;
+          }
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    static deleteOAuth2Client(
+        input: DeleteOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
 }
 export declare let init: typeof Recipe.init;
 export declare let createOAuth2Client: typeof Wrapper.createOAuth2Client;
+export declare let updateOAuth2Client: typeof Wrapper.updateOAuth2Client;
+export declare let deleteOAuth2Client: typeof Wrapper.deleteOAuth2Client;
 export type { APIInterface, APIOptions, RecipeInterface };

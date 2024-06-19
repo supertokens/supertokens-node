@@ -15,7 +15,7 @@
 
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { UserContext } from "../../types";
+import { Nullable, UserContext } from "../../types";
 import { OAuth2Client } from "./OAuth2Client";
 
 export type TypeInput = {
@@ -49,12 +49,41 @@ export type APIOptions = {
 
 export type RecipeInterface = {
     createOAuth2Client(
-        input: OAuth2ClientOptions,
+        input: CreateOAuth2ClientInput,
         userContext: UserContext
     ): Promise<
         | {
               status: "OK";
               client: OAuth2Client;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    updateOAuth2Client(
+        input: UpdateOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              client: OAuth2Client;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    deleteOAuth2Client(
+        input: DeleteOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
           }
         // TODO: Define specific error types once requirements are clearer
         | {
@@ -122,3 +151,9 @@ export type OAuth2ClientOptions = {
 };
 
 export type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
+
+export type UpdateOAuth2ClientInput = Nullable<CreateOAuth2ClientInput>;
+
+export type DeleteOAuth2ClientInput = {
+    clientId: string;
+};

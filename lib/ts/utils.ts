@@ -428,3 +428,18 @@ export function toCamelCase(str: string): string {
         return match.toUpperCase().replace("-", "").replace("_", "");
     });
 }
+
+export function toSnakeCase(str: string): string {
+    return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+// Transforms the keys of an object from camelCase to snakeCase or vice versa.
+export function transformObjectKeys<T>(obj: { [key: string]: any }, caseType: "snake-case" | "camelCase"): T {
+    const transformKey = caseType === "camelCase" ? toCamelCase : toSnakeCase;
+
+    return Object.entries(obj).reduce((result, [key, value]) => {
+        const transformedKey = transformKey(key);
+        result[transformedKey] = value;
+        return result;
+    }, {} as any) as T;
+}
