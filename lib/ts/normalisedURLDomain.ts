@@ -27,51 +27,28 @@ export default class NormalisedURLDomain {
     };
 }
 
-function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): string {
+function normaliseURLDomainOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
 
-    try {
-        if (!input.startsWith("http://") && !input.startsWith("https://") && !input.startsWith("supertokens://")) {
-            throw new Error("converting to proper URL");
-        }
-        let urlObj = new URL(input);
-        if (ignoreProtocol) {
-            if (urlObj.hostname.startsWith("localhost") || isAnIpAddress(urlObj.hostname)) {
-                input = "http://" + urlObj.host;
-            } else {
-                input = "https://" + urlObj.host;
-            }
+    // if the input starts with a . (eg: .domain.tld)
+    if (input.indexOf(".") === 0) {
+        input = input.substring(1);
+    }
+
+    // if the input dosen't start with a protocol add a default one;
+    if (!input.match(/^[^:]+:\/\//)) {
+        if (input.startsWith("localhost") || isAnIpAddress(input)) {
+            input = "http://" + input;
         } else {
-            input = urlObj.protocol + "//" + urlObj.host;
+            input = "https://" + input;
         }
+    }
 
-        return input;
-    } catch (err) {}
-    // not a valid URL
+    try {
+        const urlObj = new URL(input);
 
-    if (input.startsWith("/")) {
+        return urlObj.protocol + "//" + urlObj.host;
+    } catch {
         throw Error("Please provide a valid domain name");
     }
-
-    if (input.indexOf(".") === 0) {
-        input = input.substr(1);
-    }
-
-    // If the input contains a . it means they have given a domain name.
-    // So we try assuming that they have given a domain name
-    if (
-        (input.indexOf(".") !== -1 || input.startsWith("localhost")) &&
-        !input.startsWith("http://") &&
-        !input.startsWith("https://")
-    ) {
-        input = "https://" + input;
-
-        // at this point, it should be a valid URL. So we test that before doing a recursive call
-        try {
-            new URL(input);
-            return normaliseURLDomainOrThrowError(input, true);
-        } catch (err) {}
-    }
-
-    throw Error("Please provide a valid domain name");
 }
