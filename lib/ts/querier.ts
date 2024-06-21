@@ -464,6 +464,56 @@ export class Querier {
         return respBody;
     };
 
+    // path should start with "/"
+    sendPatchRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
+        this.invalidateCoreCallCache(userContext);
+
+        const { body: respBody } = await this.sendRequestHelper(
+            path,
+            "PATCH",
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion();
+                let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
+                if (Querier.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": Querier.apiKey,
+                    };
+                }
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
+                    headers = {
+                        ...headers,
+                        rid: this.rIdToCore,
+                    };
+                }
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "patch",
+                            headers: headers,
+                            body: body,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                    if (request.body !== undefined) {
+                        body = request.body;
+                    }
+                }
+
+                return doFetch(url, {
+                    method: "PATCH",
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
+                    headers,
+                });
+            },
+            this.__hosts?.length || 0
+        );
+        return respBody;
+    };
+
     invalidateCoreCallCache = (userContext: UserContext, updGlobalCacheTagIfNecessary = true) => {
         if (updGlobalCacheTagIfNecessary && userContext._default?.keepCacheAlive !== true) {
             Querier.globalCacheTag = Date.now();
@@ -510,6 +560,8 @@ export class Querier {
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
 
         let strPath = path.getAsStringDangerous();
+        const isHydraAPICall = strPath.startsWith(hydraAdmPathPrefix) || strPath.startsWith(hydraPubPathPrefix);
+
         if (strPath.startsWith(hydraPubPathPrefix)) {
             currentDomain = hydraPubDomain;
             strPath = strPath.replace(hydraPubPathPrefix, "/oauth2");
@@ -540,6 +592,12 @@ export class Querier {
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
+
+            // TODO: Temporary solution for handling Hydra API calls. Remove when Hydra is no longer called directly.
+            if (isHydraAPICall) {
+                return handleHydraAPICall(response);
+            }
+
             if (response.status !== 200) {
                 throw response;
             }
@@ -589,4 +647,25 @@ export class Querier {
             throw err;
         }
     };
+}
+
+async function handleHydraAPICall(response: Response) {
+    const contentType = response.headers.get("Content-Type");
+
+    if (contentType?.startsWith("application/json")) {
+        return {
+            body: {
+                status: response.ok ? "OK" : "ERROR",
+                data: await response.clone().json(),
+            },
+            headers: response.headers,
+        };
+    } else if (contentType?.startsWith("text/plain")) {
+        return {
+            body: { status: response.ok ? "OK" : "ERROR", data: await response.clone().text() },
+            headers: response.headers,
+        };
+    }
+
+    return { body: { status: response.ok ? "OK" : "ERROR", headers: response.headers } };
 }

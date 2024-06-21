@@ -10,6 +10,9 @@ declare type Brand<B> = {
     [__brand]: B;
 };
 declare type Branded<T, B> = T & Brand<B>;
+export declare type NonNullableProperties<T> = {
+    [P in keyof T]: NonNullable<T[P]>;
+};
 export declare type UserContext = Branded<Record<string, any>, "UserContext">;
 export declare type AppInfo = {
     appName: string;
@@ -62,7 +65,7 @@ export declare type APIHandled = {
     id: string;
     disabled: boolean;
 };
-export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
+export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "patch" | "options" | "trace";
 export declare type JSONPrimitive = string | number | boolean | null;
 export declare type JSONArray = Array<JSONValue>;
 export declare type JSONValue = JSONPrimitive | JSONObject | JSONArray | undefined;

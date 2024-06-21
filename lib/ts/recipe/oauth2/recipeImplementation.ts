@@ -16,7 +16,9 @@
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
-import { ConsentRequest, LoginRequest, LogoutRequest, RecipeInterface, TypeNormalisedInput } from "./types";
+import { RecipeInterface, TypeNormalisedInput, ConsentRequest, LoginRequest, LogoutRequest } from "./types";
+import { toSnakeCase, transformObjectKeys } from "../../utils";
+import { OAuth2Client } from "./OAuth2Client";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -205,6 +207,117 @@ export default function getRecipeInterface(
                 input.body,
                 input.userContext
             );
+        },
+
+        getOAuth2Clients: async function (input, userContext) {
+            let response = await querier.sendGetRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
+                {
+                    ...transformObjectKeys(input, "snake-case"),
+                    page_token: input.paginationToken,
+                },
+                userContext
+            );
+
+            if (response.status === "OK") {
+                // Pagination info is in the Link header, containing comma-separated links:
+                // "first", "next" (if applicable).
+                // Example: Link: </admin/clients?page_size=5&page_token=token1>; rel="first", </admin/clients?page_size=5&page_token=token2>; rel="next"
+
+                // We parse the nextPaginationToken from the Link header using RegExp
+                let nextPaginationToken: string | undefined;
+                const linkHeader = response.headers.get("link");
+
+                const nextLinkMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+                if (nextLinkMatch) {
+                    const url = nextLinkMatch[1];
+                    const urlParams = new URLSearchParams(url.split("?")[1]);
+                    nextPaginationToken = urlParams.get("page_token") as string;
+                }
+
+                return {
+                    status: "OK",
+                    clients: response.data.map((client: any) => OAuth2Client.fromAPIResponse(client)),
+                    nextPaginationToken,
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
+        },
+        createOAuth2Client: async function (input, userContext) {
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
+                transformObjectKeys(input, "snake-case"),
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                    client: OAuth2Client.fromAPIResponse(response.data),
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
+        },
+        updateOAuth2Client: async function (input, userContext) {
+            // We convert the input into an array of "replace" operations
+            const requestBody = Object.entries(input).reduce<
+                Array<{ from: string; op: "replace"; path: string; value: any }>
+            >((result, [key, value]) => {
+                result.push({
+                    from: `/${toSnakeCase(key)}`,
+                    op: "replace",
+                    path: `/${toSnakeCase(key)}`,
+                    value,
+                });
+                return result;
+            }, []);
+
+            let response = await querier.sendPatchRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
+                requestBody,
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                    client: OAuth2Client.fromAPIResponse(response.data),
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
+        },
+        deleteOAuth2Client: async function (input, userContext) {
+            let response = await querier.sendDeleteRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
+                undefined,
+                undefined,
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return { status: "OK" };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
         },
     };
 }

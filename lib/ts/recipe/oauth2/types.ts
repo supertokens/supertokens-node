@@ -15,8 +15,9 @@
 
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, JSONObject, UserContext } from "../../types";
+import { GeneralErrorResponse, JSONObject, NonNullableProperties, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import { OAuth2Client } from "./OAuth2Client";
 
 export type TypeInput = {
     override?: {
@@ -46,8 +47,6 @@ export type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-
-export type OAuth2Client = {};
 
 export type ErrorOAuth2 = {
     // The error should follow the OAuth2 error format (e.g. invalid_request, login_required).
@@ -255,6 +254,67 @@ export type RecipeInterface = {
     getLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<LogoutRequest>;
     acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
     rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<void>;
+
+    getOAuth2Clients(
+        input: GetOAuth2ClientsInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              clients: Array<OAuth2Client>;
+              nextPaginationToken?: string;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    createOAuth2Client(
+        input: CreateOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              client: OAuth2Client;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    updateOAuth2Client(
+        input: UpdateOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              client: OAuth2Client;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    deleteOAuth2Client(
+        input: DeleteOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
 };
 
 export type APIInterface = {
@@ -327,4 +387,111 @@ export type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>);
+};
+
+export type OAuth2ClientOptions = {
+    clientId: string;
+    clientSecret: string;
+    clientName: string;
+    scope: string;
+    redirectUris?: string[] | null;
+
+    authorizationCodeGrantAccessTokenLifespan?: string | null;
+    authorizationCodeGrantIdTokenLifespan?: string | null;
+    authorizationCodeGrantRefreshTokenLifespan?: string | null;
+    clientCredentialsGrantAccessTokenLifespan?: string | null;
+    implicitGrantAccessTokenLifespan?: string | null;
+    implicitGrantIdTokenLifespan?: string | null;
+    jwtBearerGrantAccessTokenLifespan?: string | null;
+    refreshTokenGrantAccessTokenLifespan?: string | null;
+    refreshTokenGrantIdTokenLifespan?: string | null;
+    refreshTokenGrantRefreshTokenLifespan?: string | null;
+
+    tokenEndpointAuthMethod: string;
+    tokenEndpointAuthSigningAlg?: string;
+    accessTokenStrategy?: "jwt" | "opaque";
+
+    backchannelLogoutSessionRequired?: boolean;
+    backchannelLogoutUri?: string;
+    frontchannelLogoutSessionRequired?: boolean;
+    frontchannelLogoutUri?: string;
+    requestObjectSigningAlg?: string;
+    sectorIdentifierUri?: string;
+    userinfoSignedResponseAlg: string;
+
+    jwks?: Record<any, any>;
+    jwksUri?: string;
+    owner?: string;
+    clientUri?: string;
+    allowedCorsOrigins?: string[];
+    audience?: string[];
+    grantTypes?: string[] | null;
+    postLogoutRedirectUris?: string[];
+    requestUris?: string[];
+    responseTypes?: string[] | null;
+    contacts?: string[] | null;
+    logoUri?: string;
+    policyUri?: string;
+    tosUri?: string;
+    skipConsent?: boolean;
+    skipLogoutConsent?: boolean | null;
+    subjectType: string;
+    createdAt: string;
+    updatedAt: string;
+    registrationAccessToken: string;
+    registrationClientUri: string;
+    metadata?: Record<string, any>;
+};
+
+export type GetOAuth2ClientsInput = {
+    /**
+     * Items per Page. Defaults to 250.
+     */
+    pageSize?: number;
+
+    /**
+     * Next Page Token. Defaults to "1".
+     */
+    paginationToken?: string;
+
+    /**
+     * The name of the clients to filter by.
+     */
+    clientName?: string;
+
+    /**
+     * The owner of the clients to filter by.
+     */
+    owner?: string;
+};
+
+export type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
+
+export type UpdateOAuth2ClientInput = NonNullableProperties<
+    Omit<
+        CreateOAuth2ClientInput,
+        | "redirectUris"
+        | "grantTypes"
+        | "postLogoutRedirectUris"
+        | "requestUris"
+        | "responseTypes"
+        | "contacts"
+        | "registrationAccessToken"
+        | "registrationClientUri"
+        | "metadata"
+    >
+> & {
+    redirectUris?: string[] | null;
+    grantTypes?: string[] | null;
+    postLogoutRedirectUris?: string[] | null;
+    requestUris?: string[] | null;
+    responseTypes?: string[] | null;
+    contacts?: string[] | null;
+    registrationAccessToken?: string | null;
+    registrationClientUri?: string | null;
+    metadata?: Record<string, any> | null;
+};
+
+export type DeleteOAuth2ClientInput = {
+    clientId: string;
 };
