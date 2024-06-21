@@ -35,7 +35,7 @@ export default function getRecipeInterface(
 
             return {
                 challenge: resp.challenge,
-                client: resp.client,
+                client: OAuth2Client.fromAPIResponse(resp.client),
                 oidcContext: resp.oidc_context,
                 requestUrl: resp.request_url,
                 requestedAccessTokenAudience: resp.requested_access_token_audience,

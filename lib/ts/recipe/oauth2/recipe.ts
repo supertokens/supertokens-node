@@ -26,7 +26,8 @@ import APIImplementation from "./api/implementation";
 import loginAPI from "./api/login";
 import logoutAPI from "./api/logout";
 import tokenPOST from "./api/token";
-import { AUTH_PATH, CONSENT_PATH, LOGIN_PATH, LOGOUT_PATH, TOKEN_PATH } from "./constants";
+import loginInfoGET from "./api/loginInfo";
+import { AUTH_PATH, CONSENT_PATH, LOGIN_INFO_PATH, LOGIN_PATH, LOGOUT_PATH, TOKEN_PATH } from "./constants";
 import RecipeImplementation from "./recipeImplementation";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -140,6 +141,12 @@ export default class Recipe extends RecipeModule {
                 id: AUTH_PATH,
                 disabled: this.apiImpl.authGET === undefined,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGIN_INFO_PATH),
+                id: LOGIN_INFO_PATH,
+                disabled: this.apiImpl.loginInfoGET === undefined,
+            },
         ];
     }
 
@@ -175,6 +182,9 @@ export default class Recipe extends RecipeModule {
         }
         if (id === AUTH_PATH) {
             return authGET(this.apiImpl, options, userContext);
+        }
+        if (id === LOGIN_INFO_PATH) {
+            return loginInfoGET(this.apiImpl, options, userContext);
         }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };
