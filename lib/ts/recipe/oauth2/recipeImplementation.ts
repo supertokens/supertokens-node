@@ -20,10 +20,6 @@ import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 
-function createOAuth2ClientFromResponse(response: any): OAuth2Client {
-    return new OAuth2Client(transformObjectKeys(response, "camelCase"));
-}
-
 export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
@@ -40,7 +36,7 @@ export default function getRecipeInterface(
             if (response.status === "OK") {
                 return {
                     status: "OK",
-                    client: createOAuth2ClientFromResponse(response.data),
+                    client: OAuth2Client.fromAPIResponse(response.data),
                 };
             } else {
                 return {
@@ -73,7 +69,7 @@ export default function getRecipeInterface(
             if (response.status === "OK") {
                 return {
                     status: "OK",
-                    client: createOAuth2ClientFromResponse(response.data),
+                    client: OAuth2Client.fromAPIResponse(response.data),
                 };
             } else {
                 return {

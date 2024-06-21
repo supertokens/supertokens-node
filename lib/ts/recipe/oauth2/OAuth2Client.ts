@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import { transformObjectKeys } from "../../utils";
 import { OAuth2ClientOptions } from "./types";
 
 export class OAuth2Client {
@@ -118,14 +119,14 @@ export class OAuth2Client {
      * OAuth 2.0 Token Endpoint Signing Algorithm
      * Requested Client Authentication signing algorithm for the Token Endpoint.
      */
-    tokenEndpointAuthSigningAlg: string | null;
+    tokenEndpointAuthSigningAlg?: string;
 
     /**
      * OAuth 2.0 Access Token Strategy
      * AccessTokenStrategy is the strategy used to generate access tokens.
      * Valid options are jwt and opaque.
      */
-    accessTokenStrategy: "jwt" | "opaque" | null;
+    accessTokenStrategy?: "jwt" | "opaque";
 
     /**
      * OpenID Connect Back-Channel Logout Session Required
@@ -133,13 +134,13 @@ export class OAuth2Client {
      * Token to identify the RP session with the OP when the backchannel_logout_uri is used.
      * If omitted, the default value is false.
      */
-    backchannelLogoutSessionRequired: boolean;
+    backchannelLogoutSessionRequired?: boolean;
 
     /**
      * OpenID Connect Back-Channel Logout URI
      * RP URL that will cause the RP to log itself out when sent a Logout Token by the OP.
      */
-    backchannelLogoutUri: string | null;
+    backchannelLogoutUri?: string;
 
     /**
      * OpenID Connect Front-Channel Logout Session Required
@@ -147,34 +148,34 @@ export class OAuth2Client {
      * included to identify the RP session with the OP when the frontchannel_logout_uri is used.
      * If omitted, the default value is false.
      */
-    frontchannelLogoutSessionRequired: boolean;
+    frontchannelLogoutSessionRequired?: boolean;
 
     /**
      * OpenID Connect Front-Channel Logout URI
      * RP URL that will cause the RP to log itself out when rendered in an iframe by the OP.
      */
-    frontchannelLogoutUri: string | null;
+    frontchannelLogoutUri?: string;
 
     /**
      * OpenID Connect Request Object Signing Algorithm
      * JWS alg algorithm that MUST be used for signing Request Objects sent to the OP. All Request Objects
      * from this Client MUST be rejected, if not signed with this algorithm.
      */
-    requestObjectSigningAlg: string | null;
+    requestObjectSigningAlg?: string;
 
     /**
      * OpenID Connect Sector Identifier URI
      * URL using the https scheme to be used in calculating Pseudonymous Identifiers by the OP. The URL references a
      * file with a single JSON array of redirect_uri values.
      */
-    sectorIdentifierUri: string | null;
+    sectorIdentifierUri?: string;
 
     /**
      * OpenID Connect Request Userinfo Signed Response Algorithm
      * JWS alg algorithm REQUIRED for signing UserInfo Responses. If this is specified, the response will be JWT
      * serialized, and signed using JWS.
      */
-    userinfoSignedResponseAlg: string | null;
+    userinfoSignedResponseAlg: string;
 
     /**
      * OAuth 2.0 Client JSON Web Key Set
@@ -186,7 +187,7 @@ export class OAuth2Client {
      * OAuth 2.0 Client JSON Web Key Set URL
      * URL for the Client's JSON Web Key Set [JWK] document.
      */
-    jwksUri: string | null;
+    jwksUri?: string;
 
     /**
      * OAuth 2.0 Client Owner
@@ -222,13 +223,13 @@ export class OAuth2Client {
      * Array of post-logout redirect URIs
      * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
-    postLogoutRedirectUris: string[] | null;
+    postLogoutRedirectUris?: string[];
 
     /**
      * Array of request URIs
      * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
-    requestUris: string[] | null;
+    requestUris?: string[];
 
     /**
      * Array of response types
@@ -331,24 +332,24 @@ export class OAuth2Client {
         refreshTokenGrantIdTokenLifespan = null,
         refreshTokenGrantRefreshTokenLifespan = null,
         tokenEndpointAuthMethod,
-        tokenEndpointAuthSigningAlg = null,
-        accessTokenStrategy = null,
+        tokenEndpointAuthSigningAlg,
+        accessTokenStrategy,
         backchannelLogoutSessionRequired = false,
-        backchannelLogoutUri = null,
+        backchannelLogoutUri,
         frontchannelLogoutSessionRequired = false,
-        frontchannelLogoutUri = null,
-        requestObjectSigningAlg = null,
-        sectorIdentifierUri = null,
-        userinfoSignedResponseAlg = null,
+        frontchannelLogoutUri,
+        requestObjectSigningAlg,
+        sectorIdentifierUri,
+        userinfoSignedResponseAlg,
         jwks = {},
-        jwksUri = null,
+        jwksUri,
         owner = "",
         clientUri = "",
         allowedCorsOrigins = [],
         audience = [],
         grantTypes = null,
-        postLogoutRedirectUris = null,
-        requestUris = null,
+        postLogoutRedirectUris,
+        requestUris,
         responseTypes = null,
         contacts = null,
         logoUri = "",
@@ -410,5 +411,9 @@ export class OAuth2Client {
         this.registrationAccessToken = registrationAccessToken;
         this.registrationClientUri = registrationClientUri;
         this.metadata = metadata;
+    }
+
+    static fromAPIResponse(response: any): OAuth2Client {
+        return new OAuth2Client(transformObjectKeys(response, "camelCase"));
     }
 }

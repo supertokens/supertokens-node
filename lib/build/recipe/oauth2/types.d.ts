@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { Nullable, UserContext } from "../../types";
+import { NonNullableProperties, UserContext } from "../../types";
 import { OAuth2Client } from "./OAuth2Client";
 export declare type TypeInput = {
     override?: {
@@ -90,24 +90,24 @@ export declare type OAuth2ClientOptions = {
     refreshTokenGrantIdTokenLifespan?: string | null;
     refreshTokenGrantRefreshTokenLifespan?: string | null;
     tokenEndpointAuthMethod: string;
-    tokenEndpointAuthSigningAlg?: string | null;
-    accessTokenStrategy?: "jwt" | "opaque" | null;
+    tokenEndpointAuthSigningAlg?: string;
+    accessTokenStrategy?: "jwt" | "opaque";
     backchannelLogoutSessionRequired?: boolean;
-    backchannelLogoutUri?: string | null;
+    backchannelLogoutUri?: string;
     frontchannelLogoutSessionRequired?: boolean;
-    frontchannelLogoutUri?: string | null;
-    requestObjectSigningAlg?: string | null;
-    sectorIdentifierUri?: string | null;
-    userinfoSignedResponseAlg?: string | null;
+    frontchannelLogoutUri?: string;
+    requestObjectSigningAlg?: string;
+    sectorIdentifierUri?: string;
+    userinfoSignedResponseAlg: string;
     jwks?: Record<any, any>;
-    jwksUri?: string | null;
+    jwksUri?: string;
     owner?: string;
     clientUri?: string;
     allowedCorsOrigins?: string[];
     audience?: string[];
     grantTypes?: string[] | null;
-    postLogoutRedirectUris?: string[] | null;
-    requestUris?: string[] | null;
+    postLogoutRedirectUris?: string[];
+    requestUris?: string[];
     responseTypes?: string[] | null;
     contacts?: string[] | null;
     logoUri?: string;
@@ -123,7 +123,30 @@ export declare type OAuth2ClientOptions = {
     metadata?: Record<string, any>;
 };
 export declare type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
-export declare type UpdateOAuth2ClientInput = Nullable<CreateOAuth2ClientInput>;
+export declare type UpdateOAuth2ClientInput = NonNullableProperties<
+    Omit<
+        CreateOAuth2ClientInput,
+        | "redirectUris"
+        | "grantTypes"
+        | "postLogoutRedirectUris"
+        | "requestUris"
+        | "responseTypes"
+        | "contacts"
+        | "registrationAccessToken"
+        | "registrationClientUri"
+        | "metadata"
+    >
+> & {
+    redirectUris?: string[] | null;
+    grantTypes?: string[] | null;
+    postLogoutRedirectUris?: string[] | null;
+    requestUris?: string[] | null;
+    responseTypes?: string[] | null;
+    contacts?: string[] | null;
+    registrationAccessToken?: string | null;
+    registrationClientUri?: string | null;
+    metadata?: Record<string, any> | null;
+};
 export declare type DeleteOAuth2ClientInput = {
     clientId: string;
 };

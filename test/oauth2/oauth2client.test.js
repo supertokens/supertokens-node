@@ -4,8 +4,6 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let OAuth2Recipe = require("../../recipe/oauth2");
-let { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
 
 describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`, function () {
     beforeEach(async function () {
@@ -33,13 +31,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             recipeList: [OAuth2Recipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         const { client } = await OAuth2Recipe.createOAuth2Client({}, {});
 
         assert(client.clientId !== undefined);
@@ -60,13 +51,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             },
             recipeList: [OAuth2Recipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         const { client } = await OAuth2Recipe.createOAuth2Client(
             {
@@ -93,13 +77,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             },
             recipeList: [OAuth2Recipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         // Create a client
         const { client } = await OAuth2Recipe.createOAuth2Client(
@@ -149,13 +126,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             },
             recipeList: [OAuth2Recipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         // Create a client
         const { client } = await OAuth2Recipe.createOAuth2Client(

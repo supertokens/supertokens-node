@@ -24,9 +24,9 @@ type Brand<B> = { [__brand]: B };
 
 type Branded<T, B> = T & Brand<B>;
 
-// A utility type that makes all properties of a given type nullable.
-export type Nullable<T> = {
-    [P in keyof T]: T[P] | null;
+// A utility type that makes all properties of a given type non-nullable.
+export type NonNullableProperties<T> = {
+    [P in keyof T]: NonNullable<T[P]>;
 };
 
 // Record<string,any> is still quite generic and we would like to ensure type safety for the userContext

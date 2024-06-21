@@ -10,8 +10,8 @@ declare type Brand<B> = {
     [__brand]: B;
 };
 declare type Branded<T, B> = T & Brand<B>;
-export declare type Nullable<T> = {
-    [P in keyof T]: T[P] | null;
+export declare type NonNullableProperties<T> = {
+    [P in keyof T]: NonNullable<T[P]>;
 };
 export declare type UserContext = Branded<Record<string, any>, "UserContext">;
 export declare type AppInfo = {
