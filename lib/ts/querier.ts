@@ -642,8 +642,8 @@ async function handleHydraAPICall(response: Response) {
             body: {
                 status: response.ok ? "OK" : "ERROR",
                 data: await response.clone().json(),
-                headers: response.headers,
             },
+            headers: response.headers,
         };
     } else if (contentType?.startsWith("text/plain")) {
         return {
