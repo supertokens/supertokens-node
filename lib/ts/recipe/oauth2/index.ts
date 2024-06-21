@@ -15,18 +15,35 @@
 
 import { UserContext } from "../../types";
 import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, APIOptions, OAuth2ClientOptions } from "./types";
+import {
+    APIInterface,
+    RecipeInterface,
+    APIOptions,
+    CreateOAuth2ClientInput,
+    UpdateOAuth2ClientInput,
+    DeleteOAuth2ClientInput,
+} from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async createOAuth2Client(input: OAuth2ClientOptions, userContext: UserContext) {
+    static async createOAuth2Client(input: CreateOAuth2ClientInput, userContext: UserContext) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createOAuth2Client(input, userContext);
+    }
+    static async updateOAuth2Client(input: UpdateOAuth2ClientInput, userContext: UserContext) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateOAuth2Client(input, userContext);
+    }
+    static async deleteOAuth2Client(input: DeleteOAuth2ClientInput, userContext: UserContext) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteOAuth2Client(input, userContext);
     }
 }
 
 export let init = Wrapper.init;
 
 export let createOAuth2Client = Wrapper.createOAuth2Client;
+
+export let updateOAuth2Client = Wrapper.updateOAuth2Client;
+
+export let deleteOAuth2Client = Wrapper.deleteOAuth2Client;
 
 export type { APIInterface, APIOptions, RecipeInterface };

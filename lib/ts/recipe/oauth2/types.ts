@@ -15,7 +15,7 @@
 
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { UserContext } from "../../types";
+import { NonNullableProperties, UserContext } from "../../types";
 import { OAuth2Client } from "./OAuth2Client";
 
 export type TypeInput = {
@@ -49,12 +49,41 @@ export type APIOptions = {
 
 export type RecipeInterface = {
     createOAuth2Client(
-        input: OAuth2ClientOptions,
+        input: CreateOAuth2ClientInput,
         userContext: UserContext
     ): Promise<
         | {
               status: "OK";
               client: OAuth2Client;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    updateOAuth2Client(
+        input: UpdateOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              client: OAuth2Client;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
+    deleteOAuth2Client(
+        input: DeleteOAuth2ClientInput,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
           }
         // TODO: Define specific error types once requirements are clearer
         | {
@@ -86,26 +115,26 @@ export type OAuth2ClientOptions = {
     refreshTokenGrantRefreshTokenLifespan?: string | null;
 
     tokenEndpointAuthMethod: string;
-    tokenEndpointAuthSigningAlg?: string | null;
-    accessTokenStrategy?: "jwt" | "opaque" | null;
+    tokenEndpointAuthSigningAlg?: string;
+    accessTokenStrategy?: "jwt" | "opaque";
 
     backchannelLogoutSessionRequired?: boolean;
-    backchannelLogoutUri?: string | null;
+    backchannelLogoutUri?: string;
     frontchannelLogoutSessionRequired?: boolean;
-    frontchannelLogoutUri?: string | null;
-    requestObjectSigningAlg?: string | null;
-    sectorIdentifierUri?: string | null;
-    userinfoSignedResponseAlg?: string | null;
+    frontchannelLogoutUri?: string;
+    requestObjectSigningAlg?: string;
+    sectorIdentifierUri?: string;
+    userinfoSignedResponseAlg: string;
 
     jwks?: Record<any, any>;
-    jwksUri?: string | null;
+    jwksUri?: string;
     owner?: string;
     clientUri?: string;
     allowedCorsOrigins?: string[];
     audience?: string[];
     grantTypes?: string[] | null;
-    postLogoutRedirectUris?: string[] | null;
-    requestUris?: string[] | null;
+    postLogoutRedirectUris?: string[];
+    requestUris?: string[];
     responseTypes?: string[] | null;
     contacts?: string[] | null;
     logoUri?: string;
@@ -122,3 +151,32 @@ export type OAuth2ClientOptions = {
 };
 
 export type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
+
+export type UpdateOAuth2ClientInput = NonNullableProperties<
+    Omit<
+        CreateOAuth2ClientInput,
+        | "redirectUris"
+        | "grantTypes"
+        | "postLogoutRedirectUris"
+        | "requestUris"
+        | "responseTypes"
+        | "contacts"
+        | "registrationAccessToken"
+        | "registrationClientUri"
+        | "metadata"
+    >
+> & {
+    redirectUris?: string[] | null;
+    grantTypes?: string[] | null;
+    postLogoutRedirectUris?: string[] | null;
+    requestUris?: string[] | null;
+    responseTypes?: string[] | null;
+    contacts?: string[] | null;
+    registrationAccessToken?: string | null;
+    registrationClientUri?: string | null;
+    metadata?: Record<string, any> | null;
+};
+
+export type DeleteOAuth2ClientInput = {
+    clientId: string;
+};

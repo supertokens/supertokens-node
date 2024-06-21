@@ -16,7 +16,7 @@
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
-import { toCamelCase } from "../../utils";
+import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 
@@ -29,23 +29,66 @@ export default function getRecipeInterface(
         createOAuth2Client: async function (input, userContext) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
-                input,
+                transformObjectKeys(input, "snake-case"),
                 userContext
             );
 
             if (response.status === "OK") {
-                const oAuth2ClientInput = Object.keys(response.data).reduce((result, key) => {
-                    const camelCaseKey = toCamelCase(key);
-                    result[camelCaseKey] = response.data[key];
-                    return result;
-                }, {} as any);
-
-                const client = new OAuth2Client(oAuth2ClientInput);
-
                 return {
                     status: "OK",
-                    client,
+                    client: OAuth2Client.fromAPIResponse(response.data),
                 };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
+        },
+        updateOAuth2Client: async function (input, userContext) {
+            // We convert the input into an array of "replace" operations
+            const requestBody = Object.entries(input).reduce<
+                Array<{ from: string; op: "replace"; path: string; value: any }>
+            >((result, [key, value]) => {
+                result.push({
+                    from: `/${toSnakeCase(key)}`,
+                    op: "replace",
+                    path: `/${toSnakeCase(key)}`,
+                    value,
+                });
+                return result;
+            }, []);
+
+            let response = await querier.sendPatchRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
+                requestBody,
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                    client: OAuth2Client.fromAPIResponse(response.data),
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.data.error,
+                    errorHint: response.data.errorHint,
+                };
+            }
+        },
+        deleteOAuth2Client: async function (input, userContext) {
+            let response = await querier.sendDeleteRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
+                undefined,
+                undefined,
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return { status: "OK" };
             } else {
                 return {
                     status: "ERROR",

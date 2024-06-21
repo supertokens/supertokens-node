@@ -4,8 +4,6 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let OAuth2Recipe = require("../../recipe/oauth2");
-let { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
 
 describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`, function () {
     beforeEach(async function () {
@@ -33,13 +31,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             recipeList: [OAuth2Recipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         const { client } = await OAuth2Recipe.createOAuth2Client({}, {});
 
         assert(client.clientId !== undefined);
@@ -61,13 +52,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             recipeList: [OAuth2Recipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         const { client } = await OAuth2Recipe.createOAuth2Client(
             {
                 client_id: "client_id",
@@ -76,7 +60,93 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             {}
         );
 
-        assert(client.clientId === "client_id");
-        assert(client.clientSecret === "client_secret");
+        assert.strictEqual(client.clientId, "client_id");
+        assert.strictEqual(client.clientSecret, "client_secret");
+    });
+
+    it("should update the OAuth2Client", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [OAuth2Recipe.init()],
+        });
+
+        // Create a client
+        const { client } = await OAuth2Recipe.createOAuth2Client(
+            {
+                client_id: "client_id",
+                client_secret: "client_secret",
+                scope: "offline_access offline",
+                redirectUris: ["http://localhost:3000"],
+            },
+            {}
+        );
+
+        assert.strictEqual(client.clientId, "client_id");
+        assert.strictEqual(client.clientSecret, "client_secret");
+        assert.strictEqual(client.scope, "offline_access offline");
+        assert.strictEqual(JSON.stringify(client.redirectUris), JSON.stringify(["http://localhost:3000"]));
+        assert.strictEqual(JSON.stringify(client.metadata), JSON.stringify({}));
+
+        // Update the client
+        const { client: updatedClient } = await OAuth2Recipe.updateOAuth2Client(
+            {
+                clientId: client.clientId,
+                clientSecret: "new_client_secret",
+                scope: "offline_access",
+                redirectUris: null,
+                metadata: { a: 1, b: 2 },
+            },
+            {}
+        );
+
+        assert.strictEqual(updatedClient.clientSecret, "new_client_secret");
+        assert.strictEqual(updatedClient.scope, "offline_access");
+        assert.strictEqual(updatedClient.redirectUris, null);
+        assert.strictEqual(JSON.stringify(updatedClient.metadata), JSON.stringify({ a: 1, b: 2 }));
+    });
+
+    it("should delete the OAuth2Client", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [OAuth2Recipe.init()],
+        });
+
+        // Create a client
+        const { client } = await OAuth2Recipe.createOAuth2Client(
+            {
+                client_id: "client_id",
+                client_secret: "client_secret",
+            },
+            {}
+        );
+
+        assert.strictEqual(client.clientId, "client_id");
+        assert.strictEqual(client.clientSecret, "client_secret");
+
+        // Delete the client
+        const { status } = await OAuth2Recipe.deleteOAuth2Client(
+            {
+                clientId: client.clientId,
+            },
+            {}
+        );
+
+        assert.strictEqual(status, "OK");
     });
 });

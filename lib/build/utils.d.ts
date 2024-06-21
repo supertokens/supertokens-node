@@ -58,3 +58,10 @@ export declare function postWithFetch(
 >;
 export declare function normaliseEmail(email: string): string;
 export declare function toCamelCase(str: string): string;
+export declare function toSnakeCase(str: string): string;
+export declare function transformObjectKeys<T>(
+    obj: {
+        [key: string]: any;
+    },
+    caseType: "snake-case" | "camelCase"
+): T;
