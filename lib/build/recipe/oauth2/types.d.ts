@@ -37,7 +37,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               clients: Array<OAuth2Client>;
-              nextPageToken?: string;
+              nextPaginationToken?: string;
           }
         | {
               status: "ERROR";
@@ -145,7 +145,7 @@ export declare type GetOAuth2ClientsInput = {
     /**
      * Next Page Token. Defaults to "1".
      */
-    pageToken?: string;
+    paginationToken?: string;
     /**
      * The name of the clients to filter by.
      */

@@ -164,13 +164,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             recipeList: [OAuth2Recipe.init()],
         });
 
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
         // Create 10 clients
         for (let i = 0; i < 10; i++) {
             await OAuth2Recipe.createOAuth2Client(
@@ -182,15 +175,18 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
         }
 
         let allClients = [];
-        let nextPageToken = undefined;
+        let nextPaginationToken = undefined;
 
         // Fetch clients in pages of 3
         do {
-            const result = await OAuth2Recipe.getOAuth2Clients({ pageSize: 3, pageToken: nextPageToken }, {});
+            const result = await OAuth2Recipe.getOAuth2Clients(
+                { pageSize: 3, paginationToken: nextPaginationToken },
+                {}
+            );
             assert.strictEqual(result.status, "OK");
-            nextPageToken = result.nextPageToken;
+            nextPaginationToken = result.nextPaginationToken;
             allClients.push(...result.clients);
-        } while (nextPageToken);
+        } while (nextPaginationToken);
 
         // Check the client IDs
         for (let i = 0; i < 10; i++) {
@@ -211,13 +207,6 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             },
             recipeList: [OAuth2Recipe.init()],
         });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
 
         // Create 5 clients with clientName = "customClientName"
         for (let i = 0; i < 5; i++) {

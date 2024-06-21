@@ -55,7 +55,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               clients: Array<OAuth2Client>;
-              nextPageToken?: string;
+              nextPaginationToken?: string;
           }
         // TODO: Define specific error types once requirements are clearer
         | {
@@ -175,7 +175,7 @@ export type GetOAuth2ClientsInput = {
     /**
      * Next Page Token. Defaults to "1".
      */
-    pageToken?: string;
+    paginationToken?: string;
 
     /**
      * The name of the clients to filter by.

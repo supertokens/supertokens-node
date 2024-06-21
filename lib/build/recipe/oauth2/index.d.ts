@@ -19,7 +19,7 @@ export default class Wrapper {
         | {
               status: "OK";
               clients: import("./OAuth2Client").OAuth2Client[];
-              nextPageToken?: string | undefined;
+              nextPaginationToken?: string | undefined;
           }
         | {
               status: "ERROR";
