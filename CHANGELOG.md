@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   now tries to link accounts based on account info if AccountLinking is enabled
 -   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
 
+## [18.0.1] - 2024-06-19
+
+### Fixes
+
+-   Fix a bug that was preventing errors from being caught in the fetch function, thus bypassing our error handling.
+
 ## [18.0.0] - 2024-05-23
 
 ### Breaking change
