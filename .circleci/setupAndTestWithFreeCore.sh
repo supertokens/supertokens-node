@@ -79,7 +79,7 @@ frontendDriverVersion=`echo $frontendDriverArray | jq ".[-1]" | tr -d '"'`
 cd ../
 git clone git@github.com:supertokens/backend-sdk-testing.git
 cd backend-sdk-testing
-git checkout v$frontendDriverVersion
+git checkout $frontendDriverVersion
 npm install
 npm run build
 
