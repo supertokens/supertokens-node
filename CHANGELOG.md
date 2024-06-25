@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Defined the entry points of the library using the "exports" field in package.json to make ESM imports more comfortable. This can cause some issues for applications using directory imports from the `lib/build` directory. In those cases we recommend adding `index.js` to the import path.
 
+-   The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
+
 ### Changes
 
 -   `passwordResetPOST`:
