@@ -43,6 +43,7 @@ import passwordlessRoutes from "./passwordless";
 import sessionRoutes, { getSessionVars, resetSessionVars } from "./session";
 import supertokensRoutes from "./supertokens";
 import thirdPartyRoutes from "./thirdparty";
+import userMetadataRoutes from "./usermetadata";
 import TOTPRoutes from "./totp";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
@@ -302,8 +303,12 @@ app.get("/test/ping", async (req, res, next) => {
 });
 
 app.post("/test/init", async (req, res, next) => {
-    initST(req.body.config);
-    res.json({ ok: true });
+    try {
+        initST(req.body.config);
+        res.json({ ok: true });
+    } catch (err) {
+        next(err);
+    }
 });
 
 app.get("/test/overrideparams", async (req, res, next) => {
@@ -370,6 +375,7 @@ app.use("/test/passwordless", passwordlessRoutes);
 app.use("/test/multifactorauth", multiFactorAuthRoutes);
 app.use("/test/thirdparty", thirdPartyRoutes);
 app.use("/test/totp", TOTPRoutes);
+app.use("/test/usermetadata", userMetadataRoutes);
 
 // *** Custom routes to help with session tests ***
 app.post("/create", async (req, res, next) => {
