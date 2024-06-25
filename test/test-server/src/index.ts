@@ -18,6 +18,7 @@ import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { TypeInput as SessionTypeInput } from "../../../lib/build/recipe/session/types";
 import ThirdPartyRecipe from "../../../lib/build/recipe/thirdparty/recipe";
 import { TypeInput as ThirdPartyTypeInput } from "../../../lib/build/recipe/thirdparty/types";
+import { TypeInput as MFATypeInput } from "../../../lib/build/recipe/multifactorauth/types";
 import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
 import UserMetadataRecipe from "../../../lib/build/recipe/usermetadata/recipe";
 import SuperTokensRecipe from "../../../lib/build/supertokens";
@@ -248,7 +249,22 @@ function initST(config: any) {
             recipeList.push(Passwordless.init(init));
         }
         if (recipe.recipeId === "multifactorauth") {
-            recipeList.push(MultiFactorAuth.init(config));
+            let initConfig: MFATypeInput = {
+                ...config,
+            };
+            if (initConfig.override?.functions) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    functions: eval(`${initConfig.override.functions}`),
+                };
+            }
+            if (initConfig.override?.apis) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    apis: eval(`${initConfig.override.apis}`),
+                };
+            }
+            recipeList.push(MultiFactorAuth.init(initConfig));
         }
         if (recipe.recipeId === "totp") {
             recipeList.push(TOTP.init(config));
