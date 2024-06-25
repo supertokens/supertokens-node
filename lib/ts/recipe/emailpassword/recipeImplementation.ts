@@ -275,14 +275,16 @@ export default function getRecipeInterface(
                     user,
                     isVerified: isEmailVerified,
                     newEmail: input.email,
-                    session: undefined, // TODO: should this also get session?
+                    session: undefined,
                     userContext: input.userContext,
                 });
-                if (!isEmailChangeAllowed) {
+                if (!isEmailChangeAllowed.allowed) {
                     return {
                         status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                        // TODO: error code?
-                        reason: "New email cannot be applied to existing account because of account takeover risks.",
+                        reason:
+                            isEmailChangeAllowed.reason === "ACCOUNT_TAKEOVER_RISK"
+                                ? "New email cannot be applied to existing account because of account takeover risks."
+                                : "New email cannot be applied to existing account because of there is another primary user with the same email address.",
                     };
                 }
             }

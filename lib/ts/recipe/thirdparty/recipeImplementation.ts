@@ -33,12 +33,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     session,
                     userContext: userContext,
                 });
-                if (!isEmailChangeAllowed) {
+                if (!isEmailChangeAllowed.allowed) {
                     return {
                         status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                        // TODO: error code? In this case reason is overwritten by ERR_CODE_005 by the wrapping function
-                        // if called by our build-in APIs
-                        reason: "New email cannot be applied to existing account because of account takeover risks.",
+                        reason:
+                            isEmailChangeAllowed.reason === "PRIMARY_USER_CONFLICT"
+                                ? "Email already associated with another primary user."
+                                : "New email cannot be applied to existing account because of account takeover risks.",
                     };
                 }
             }
@@ -141,7 +142,9 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 return {
                     status: "SIGN_IN_UP_NOT_ALLOWED",
                     reason:
-                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
+                        response.reason === "Email already associated with another primary user."
+                            ? "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)"
+                            : "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_024)",
                 };
             }
 
