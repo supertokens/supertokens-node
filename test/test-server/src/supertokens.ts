@@ -50,6 +50,15 @@ const router = Router()
         } catch (e) {
             next(e);
         }
+    })
+    .post("/getusersoldestfirst", async (req, res, next) => {
+        try {
+            logDebugMessage("SuperTokens:getUsersOldestFirst %j", req.body);
+            const response = await supertokens.getUsersOldestFirst(req.body);
+            res.json({ ...response, users: response.users.map((user) => user.toJson()) });
+        } catch (e) {
+            next(e);
+        }
     });
 
 export default router;

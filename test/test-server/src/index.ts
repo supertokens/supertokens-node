@@ -271,6 +271,12 @@ function initST(config: any) {
                     },
                 };
             }
+            if (config?.override?.apis) {
+                init.override = {
+                    ...init.override,
+                    ...(config?.override.apis ? { apis: eval(`${config?.override.apis}`) } : {}),
+                };
+            }
             recipeList.push(Passwordless.init(init));
         }
         if (recipe.recipeId === "multifactorauth") {
