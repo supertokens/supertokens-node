@@ -1,13 +1,16 @@
 import Session from "../../../recipe/session";
 import * as supertokens from "../../../lib/build";
 
-export async function handleSession(
+export async function convertRequestSessionToSessionObject(
     session: { [key: string]: any } | undefined
 ): Promise<Session.SessionContainer | undefined> {
     if (session !== undefined) {
         return await Session.getSessionWithoutRequestResponse(
             session.accessToken,
-            session.userDataInAccessToken?.antiCsrfToken
+            session.userDataInAccessToken?.antiCsrfToken,
+            {
+                overrideGlobalClaimValidators: () => [],
+            }
         );
     }
     return session;

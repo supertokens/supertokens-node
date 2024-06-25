@@ -18,6 +18,7 @@ import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { TypeInput as SessionTypeInput } from "../../../lib/build/recipe/session/types";
 import ThirdPartyRecipe from "../../../lib/build/recipe/thirdparty/recipe";
 import { TypeInput as ThirdPartyTypeInput } from "../../../lib/build/recipe/thirdparty/types";
+import { TypeInput as MFATypeInput } from "../../../lib/build/recipe/multifactorauth/types";
 import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
 import UserMetadataRecipe from "../../../lib/build/recipe/usermetadata/recipe";
 import SuperTokensRecipe from "../../../lib/build/supertokens";
@@ -42,19 +43,12 @@ import passwordlessRoutes from "./passwordless";
 import sessionRoutes, { getSessionVars, resetSessionVars } from "./session";
 import supertokensRoutes from "./supertokens";
 import thirdPartyRoutes from "./thirdparty";
+import userMetadataRoutes from "./usermetadata";
 import TOTPRoutes from "./totp";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
 const API_PORT = Number(process.env.API_PORT || 3030);
-
-const defaultConfig = {
-    appInfo: {
-        apiDomain: "api.supertokens.io",
-        appName: "SuperTokens",
-        origin: (input) => input.request?.getHeaderValue("origin") || "localhost:3000",
-    },
-};
 
 export type OverrideParamsType = {
     sendEmailToUserId: string | undefined;
@@ -74,6 +68,8 @@ export type OverrideParamsType = {
         coreCallCount: number;
     };
     store: any;
+    sendEmailInputs: any[]; // for passwordless sendEmail override
+    sendSmsInputs: any[]; // for passwordless sendSms override
 };
 
 let sendEmailToUserId = undefined;
@@ -82,6 +78,8 @@ let userPostPasswordReset = undefined;
 let emailPostPasswordReset = undefined;
 let sendEmailCallbackCalled = false;
 let sendEmailToUserEmail = undefined;
+let sendEmailInputs = [];
+let sendSmsInputs = [];
 let sendEmailToRecipeUserId = undefined;
 let userInCallback = undefined;
 let email = undefined;
@@ -94,6 +92,23 @@ const info = {
 };
 let store;
 
+function defaultSTInit() {
+    STReset();
+    supertokens.init({
+        appInfo: {
+            apiDomain: "api.supertokens.io",
+            appName: "SuperTokens",
+            origin: (input) => input.request?.getHeaderValue("origin") || "localhost:3000",
+        },
+        supertokens: {
+            connectionURI: process.env.ST_CONNECTION_URI || "http://localhost:8080",
+        },
+        recipeList: [Session.init()],
+    });
+}
+
+defaultSTInit();
+
 function resetOverrideParams() {
     sendEmailToUserId = undefined;
     token = undefined;
@@ -102,6 +117,8 @@ function resetOverrideParams() {
     sendEmailCallbackCalled = false;
     sendEmailToUserEmail = undefined;
     sendEmailToRecipeUserId = undefined;
+    sendEmailInputs = [];
+    sendSmsInputs = [];
     userInCallback = undefined;
     email = undefined;
     newAccountInfoInCallback = undefined;
@@ -245,10 +262,40 @@ function initST(config: any) {
                     },
                 };
             }
+            if (config?.smsDelivery?.service?.sendSms) {
+                init.smsDelivery = {
+                    ...config?.smsDelivery,
+                    service: {
+                        ...config?.smsDelivery?.service,
+                        sendSms: eval(`${config?.smsDelivery?.service?.sendSms}`),
+                    },
+                };
+            }
+            if (config?.override?.apis) {
+                init.override = {
+                    ...init.override,
+                    ...(config?.override.apis ? { apis: eval(`${config?.override.apis}`) } : {}),
+                };
+            }
             recipeList.push(Passwordless.init(init));
         }
         if (recipe.recipeId === "multifactorauth") {
-            recipeList.push(MultiFactorAuth.init(config));
+            let initConfig: MFATypeInput = {
+                ...config,
+            };
+            if (initConfig.override?.functions) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    functions: eval(`${initConfig.override.functions}`),
+                };
+            }
+            if (initConfig.override?.apis) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    apis: eval(`${initConfig.override.apis}`),
+                };
+            }
+            recipeList.push(MultiFactorAuth.init(initConfig));
         }
         if (recipe.recipeId === "totp") {
             recipeList.push(TOTP.init(config));
@@ -264,14 +311,6 @@ function initST(config: any) {
     supertokens.init(settings);
 }
 
-supertokens.init({
-    ...defaultConfig,
-    supertokens: {
-        connectionURI: process.env.ST_CONNECTION_URI || "http://localhost:8080",
-    },
-    recipeList: [Session.init()],
-});
-
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
@@ -279,15 +318,19 @@ app.use((req, res, next) => {
     next();
 });
 app.use(middleware());
-app.use(errorHandler());
 
 app.get("/test/ping", async (req, res, next) => {
     res.json({ ok: true });
 });
 
 app.post("/test/init", async (req, res, next) => {
-    initST(req.body.config);
-    res.json({ ok: true });
+    try {
+        initST(req.body.config);
+        res.json({ ok: true });
+    } catch (err) {
+        defaultSTInit();
+        next(err);
+    }
 });
 
 app.get("/test/overrideparams", async (req, res, next) => {
@@ -299,6 +342,8 @@ app.get("/test/overrideparams", async (req, res, next) => {
         emailPostPasswordReset,
         sendEmailCallbackCalled,
         sendEmailToUserEmail,
+        sendEmailInputs,
+        sendSmsInputs,
         sendEmailToRecipeUserId,
         userInCallback,
         email,
@@ -354,6 +399,7 @@ app.use("/test/passwordless", passwordlessRoutes);
 app.use("/test/multifactorauth", multiFactorAuthRoutes);
 app.use("/test/thirdparty", thirdPartyRoutes);
 app.use("/test/totp", TOTPRoutes);
+app.use("/test/usermetadata", userMetadataRoutes);
 
 // *** Custom routes to help with session tests ***
 app.post("/create", async (req, res, next) => {
@@ -390,16 +436,18 @@ app.post("/refreshsession", async (req, res, next) => {
 app.get("/verify", verifySession(), (req, res) => res.send({ status: "OK" }));
 // *** End of custom routes ***
 
-app.use((err, req, res, next) => {
-    logDebugMessage(err);
-    res.status(500).json({ ...err, message: err.message });
-});
-
 app.use((req, res, next) => {
     res.status(404).send(`node-test-server: route not found ${req.method} ${req.path}`);
     if (process.env.NODE_ENV === "development") {
         throw new Error(`node-test-server: route not found ${req.method} ${req.path}`);
     }
+});
+
+app.use(errorHandler());
+
+app.use((err, req, res, next) => {
+    logDebugMessage(err);
+    res.status(500).json({ ...err, message: err.message });
 });
 
 app.listen(API_PORT, "localhost", () => {

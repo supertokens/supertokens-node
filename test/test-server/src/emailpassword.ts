@@ -1,6 +1,6 @@
 import { Router } from "express";
 import EmailPassword from "../../../recipe/emailpassword";
-import { handleSession, serializeRecipeUserId, serializeUser } from "./utils";
+import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
 
@@ -11,7 +11,7 @@ const router = Router()
     .post("/signup", async (req, res, next) => {
         try {
             logDebugMessage("EmailPassword:signup %j", req.body);
-            let session = req.body.session && (await handleSession(req.body.session));
+            let session = req.body.session && (await convertRequestSessionToSessionObject(req.body.session));
             const response = await EmailPassword.signUp(
                 req.body.tenantId || "public",
                 req.body.email,
@@ -31,7 +31,7 @@ const router = Router()
     .post("/signin", async (req, res, next) => {
         try {
             logDebugMessage("EmailPassword:signin %j", req.body);
-            let session = req.body.session && (await handleSession(req.body.session));
+            let session = req.body.session && (await convertRequestSessionToSessionObject(req.body.session));
             const response = await EmailPassword.signIn(
                 req.body.tenantId || "public",
                 req.body.email,

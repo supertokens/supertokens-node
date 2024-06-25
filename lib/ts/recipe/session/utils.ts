@@ -25,7 +25,7 @@ import {
 } from "./types";
 import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
 import SessionRecipe from "./recipe";
-import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
+import { REFRESH_API_PATH, oneYearInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { isAnIpAddress, send200Response } from "../../utils";
@@ -331,11 +331,11 @@ export function setAccessTokenInResponse(
         res,
         "access",
         accessToken,
-        // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+        // We set the expiration to 1 year, because we can't really access the expiration of the refresh token everywhere we are setting it.
         // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
-        // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
-        Date.now() + hundredYearsInMs,
+        // Some browsers now cap the maximum expiry at 400 days, so we set it to 1 year, which should suffice.
+        Date.now() + oneYearInMs,
         transferMethod,
         req,
         userContext
@@ -347,11 +347,11 @@ export function setAccessTokenInResponse(
             res,
             "access",
             accessToken,
-            // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+            // We set the expiration to 1 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
             // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
             // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
-            // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
-            Date.now() + hundredYearsInMs,
+            // Some browsers now cap the maximum expiry at 400 days, so we set it to 1 year, which should suffice.
+            Date.now() + oneYearInMs,
             "header",
             req,
             userContext

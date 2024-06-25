@@ -15,12 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `isEmailChangeAllowed` now returns false for unverified addresses if input user is a primary user and there exists another user with the same email address and linking requires verification
 -   Account linking based on emails now require the email to be verified in both users if `shouldRequireVerification` is set to `true` instead of only requiring it for the recipe user.
 
+-   The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
+
 ### Changes
 
 -   `passwordResetPOST`:
     -   now verifies the email address in all cases if the EmailVerification recipe is initialized
     -   now tries to link accounts based on account info if AccountLinking is enabled
 -   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
+
+## [18.0.1] - 2024-06-19
+
+### Fixes
+
+-   Fix a bug that was preventing errors from being caught in the fetch function, thus bypassing our error handling.
 
 ## [18.0.0] - 2024-05-23
 
