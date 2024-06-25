@@ -50,14 +50,6 @@ const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
 const API_PORT = Number(process.env.API_PORT || 3030);
 
-const defaultConfig = {
-    appInfo: {
-        apiDomain: "api.supertokens.io",
-        appName: "SuperTokens",
-        origin: (input) => input.request?.getHeaderValue("origin") || "localhost:3000",
-    },
-};
-
 export type OverrideParamsType = {
     sendEmailToUserId: string | undefined;
     token: string | undefined;
@@ -99,6 +91,23 @@ const info = {
     coreCallCount: 0,
 };
 let store;
+
+function defaultSTInit() {
+    STReset();
+    supertokens.init({
+        appInfo: {
+            apiDomain: "api.supertokens.io",
+            appName: "SuperTokens",
+            origin: (input) => input.request?.getHeaderValue("origin") || "localhost:3000",
+        },
+        supertokens: {
+            connectionURI: process.env.ST_CONNECTION_URI || "http://localhost:8080",
+        },
+        recipeList: [Session.init()],
+    });
+}
+
+defaultSTInit();
 
 function resetOverrideParams() {
     sendEmailToUserId = undefined;
@@ -296,14 +305,6 @@ function initST(config: any) {
     supertokens.init(settings);
 }
 
-supertokens.init({
-    ...defaultConfig,
-    supertokens: {
-        connectionURI: process.env.ST_CONNECTION_URI || "http://localhost:8080",
-    },
-    recipeList: [Session.init()],
-});
-
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
@@ -311,7 +312,6 @@ app.use((req, res, next) => {
     next();
 });
 app.use(middleware());
-app.use(errorHandler());
 
 app.get("/test/ping", async (req, res, next) => {
     res.json({ ok: true });
@@ -322,6 +322,7 @@ app.post("/test/init", async (req, res, next) => {
         initST(req.body.config);
         res.json({ ok: true });
     } catch (err) {
+        defaultSTInit();
         next(err);
     }
 });
@@ -429,16 +430,18 @@ app.post("/refreshsession", async (req, res, next) => {
 app.get("/verify", verifySession(), (req, res) => res.send({ status: "OK" }));
 // *** End of custom routes ***
 
-app.use((err, req, res, next) => {
-    logDebugMessage(err);
-    res.status(500).json({ ...err, message: err.message });
-});
-
 app.use((req, res, next) => {
     res.status(404).send(`node-test-server: route not found ${req.method} ${req.path}`);
     if (process.env.NODE_ENV === "development") {
         throw new Error(`node-test-server: route not found ${req.method} ${req.path}`);
     }
+});
+
+app.use(errorHandler());
+
+app.use((err, req, res, next) => {
+    logDebugMessage(err);
+    res.status(500).json({ ...err, message: err.message });
 });
 
 app.listen(API_PORT, "localhost", () => {

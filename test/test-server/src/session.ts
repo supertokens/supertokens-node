@@ -89,7 +89,9 @@ const router = Router()
             );
             res.json(response);
         } catch (e) {
-            next(e);
+            // we do not call next(e) here so that the proper error response is sent back to the client
+            // otherwise the supertokens error handler will send a different type of response.
+            res.status(500).json({ ...e, message: e.message });
         }
     })
     .post("/revokeallsessionsforuser", async (req, res, next) => {
