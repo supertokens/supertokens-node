@@ -3,7 +3,7 @@ import EmailVerificationRecipe from "../../../lib/build/recipe/emailverification
 import EmailVerification from "../../../recipe/emailverification";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
-import { handleSession } from "./utils";
+import { convertRequestSessionToSessionObject } from "./utils";
 
 const namespace = "com.supertokens:node-test-server:emailverification";
 const { logDebugMessage } = logger(namespace);
@@ -68,7 +68,7 @@ const router = Router()
             const recipeUserIdWhoseEmailGotVerified = supertokens.convertToRecipeUserId(
                 req.body.recipeUserIdWhoseEmailGotVerified.recipeUserId
             );
-            const session = req.body.session && (await handleSession(req.body.session));
+            const session = req.body.session && (await convertRequestSessionToSessionObject(req.body.session));
             const response = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                 {
                     ...req.body,

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import UserMetadata from "../../../recipe/usermetadata";
-import { handleSession, serializeRecipeUserId, serializeUser } from "./utils";
+import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
 

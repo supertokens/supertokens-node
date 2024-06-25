@@ -1,6 +1,6 @@
 import { Router } from "express";
 import Passwordless from "../../../recipe/passwordless";
-import { handleSession, serializeRecipeUserId, serializeUser } from "./utils";
+import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
 import { logger } from "./logger";
 
 const namespace = "com.supertokens:node-test-server:passwordless";
@@ -19,7 +19,7 @@ const router = Router()
                           phoneNumber: req.body.phoneNumber,
                       }),
                 tenantId: req.body.tenantId || "public",
-                session: req.body.session && (await handleSession(req.body.session)),
+                session: req.body.session && (await convertRequestSessionToSessionObject(req.body.session)),
                 userContext: req.body.userContext,
             });
             res.json({
@@ -38,7 +38,7 @@ const router = Router()
                 email: req.body.email,
                 phoneNumber: req.body.phoneNumber,
                 tenantId: req.body.tenantId || "public",
-                session: req.body.session && (await handleSession(req.body.session)),
+                session: req.body.session && (await convertRequestSessionToSessionObject(req.body.session)),
                 userContext: req.body.userContext,
                 userInputCode: req.body.userInputCode,
             });
@@ -56,7 +56,7 @@ const router = Router()
                 preAuthSessionId: req.body.preAuthSessionId,
                 tenantId: req.body.tenantId || "public",
                 userInputCode: req.body.userInputCode,
-                session: req.body.session && (await handleSession(req.body.session)),
+                session: req.body.session && (await convertRequestSessionToSessionObject(req.body.session)),
                 userContext: req.body.userContext,
             });
             res.json({
