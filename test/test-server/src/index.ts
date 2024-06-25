@@ -76,6 +76,8 @@ export type OverrideParamsType = {
         coreCallCount: number;
     };
     store: any;
+    sendEmailInputs: any[]; // for passwordless sendEmail override
+    sendSmsInputs: any[]; // for passwordless sendSms override
 };
 
 let sendEmailToUserId = undefined;
@@ -84,6 +86,8 @@ let userPostPasswordReset = undefined;
 let emailPostPasswordReset = undefined;
 let sendEmailCallbackCalled = false;
 let sendEmailToUserEmail = undefined;
+let sendEmailInputs = [];
+let sendSmsInputs = [];
 let sendEmailToRecipeUserId = undefined;
 let userInCallback = undefined;
 let email = undefined;
@@ -104,6 +108,8 @@ function resetOverrideParams() {
     sendEmailCallbackCalled = false;
     sendEmailToUserEmail = undefined;
     sendEmailToRecipeUserId = undefined;
+    sendEmailInputs = [];
+    sendSmsInputs = [];
     userInCallback = undefined;
     email = undefined;
     newAccountInfoInCallback = undefined;
@@ -247,6 +253,15 @@ function initST(config: any) {
                     },
                 };
             }
+            if (config?.smsDelivery?.service?.sendSms) {
+                init.smsDelivery = {
+                    ...config?.smsDelivery,
+                    service: {
+                        ...config?.smsDelivery?.service,
+                        sendSms: eval(`${config?.smsDelivery?.service?.sendSms}`),
+                    },
+                };
+            }
             recipeList.push(Passwordless.init(init));
         }
         if (recipe.recipeId === "multifactorauth") {
@@ -320,6 +335,8 @@ app.get("/test/overrideparams", async (req, res, next) => {
         emailPostPasswordReset,
         sendEmailCallbackCalled,
         sendEmailToUserEmail,
+        sendEmailInputs,
+        sendSmsInputs,
         sendEmailToRecipeUserId,
         userInCallback,
         email,
