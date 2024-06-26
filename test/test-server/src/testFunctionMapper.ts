@@ -117,6 +117,9 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
     if (evalStr.startsWith("accountlinking.init.shouldDoAutomaticAccountLinking")) {
         return async (i, l, o, u, a) => {
             // Handle specific user context cases
+            if (evalStr.includes("()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!1})")) {
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+            }
             if (
                 evalStr.includes(
                     "(i,l,o,u,a)=>a.DO_LINK?{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}:{shouldAutomaticallyLink:!1}"
@@ -221,41 +224,14 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
                 return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
             }
 
-            if (a.DO_NOT_LINK) {
-                return { shouldAutomaticallyLink: false };
-            }
-            if (a.DO_LINK) {
+            if (
+                evalStr.includes("async()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!0})") ||
+                evalStr.includes("()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!0})")
+            ) {
                 return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
             }
-            if (a.DO_LINK_WITHOUT_VERIFICATION) {
-                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
-            }
 
-            // Handle specific email case
-            if (i.email === "test2@example.com" && l === undefined) {
-                return { shouldAutomaticallyLink: false };
-            }
-
-            // Handle user id comparison case
-            if (l !== undefined && l.id === o.getUserId()) {
-                return { shouldAutomaticallyLink: false };
-            }
-
-            // Handle emailpassword specific case
-            if (i.recipeId === "emailpassword") {
-                return { shouldAutomaticallyLink: false };
-            }
-
-            // Default behaviors based on the specific function
-            if (evalStr.includes("shouldRequireVerification:!1")) {
-                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
-            }
-            if (evalStr.includes("shouldAutomaticallyLink:!1")) {
-                return { shouldAutomaticallyLink: false };
-            }
-
-            // Default case
-            return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+            return { shouldAutomaticallyLink: false };
         };
     }
 
@@ -372,15 +348,12 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
 
     if (evalStr.startsWith("multifactorauth.init.override.functions")) {
         return (e) => {
-            const { userContext, ...rest } = e;
-
-            if (store && store.emailInputs) {
-                store.emailInputs.push(rest);
-            } else {
-                store = { ...store, emailInputs: [rest] };
-            }
-
-            sendEmailInputs.push(rest);
+            return {
+                ...e,
+                getMFARequirementsForAuth: (e) => {
+                    return e.userContext.requireFactor ? ["otp-phone"] : [];
+                },
+            };
         };
     }
 
@@ -488,6 +461,16 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
                 e.exchangeAuthCodeForOAuthTokens = async (e) => e.redirectURIInfo.redirectURIQueryParams;
                 e.getUserInfo = async (e) => ({
                     thirdPartyUserId: "custom2" + e.oAuthTokens.email,
+                    email: { id: e.oAuthTokens.email, isVerified: true },
+                });
+                return e;
+            };
+        }
+        if (evalStr.includes("custom3")) {
+            return (e) => {
+                e.exchangeAuthCodeForOAuthTokens = async (e) => e.redirectURIInfo.redirectURIQueryParams;
+                e.getUserInfo = async (e) => ({
+                    thirdPartyUserId: e.oAuthTokens.email,
                     email: { id: e.oAuthTokens.email, isVerified: true },
                 });
                 return e;
