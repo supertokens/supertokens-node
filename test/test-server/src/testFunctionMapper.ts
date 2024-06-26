@@ -1,23 +1,415 @@
+import { User } from "../../../lib/build";
+import supertokens from "../../../";
+import { RecipeLevelUser } from "../../../lib/build/recipe/accountlinking/types";
+
+export type OverrideParamsType = {
+    sendEmailToUserId: string | undefined;
+    token: string | undefined;
+    userPostPasswordReset: User | undefined;
+    emailPostPasswordReset: string | undefined;
+    sendEmailCallbackCalled: boolean | undefined;
+    sendEmailToUserEmail: string | undefined;
+    sendEmailToRecipeUserId: any | undefined;
+    userInCallback: { id: string; email: string; recipeUserId: supertokens.RecipeUserId } | undefined;
+    email: string | undefined;
+    newAccountInfoInCallback: RecipeLevelUser | undefined;
+    primaryUserInCallback: User | undefined;
+    userIdInCallback: string | undefined;
+    recipeUserIdInCallback: supertokens.RecipeUserId | string | undefined;
+    info: {
+        coreCallCount: number;
+    };
+    store: any;
+    sendEmailInputs: any[]; // for passwordless sendEmail override
+    sendSmsInputs: any[]; // for passwordless sendSms override
+};
+
+let sendEmailToUserId = undefined;
+let token = undefined;
+let userPostPasswordReset = undefined;
+let emailPostPasswordReset = undefined;
+let sendEmailCallbackCalled = false;
+let sendEmailToUserEmail = undefined;
+let sendEmailInputs: string[] = [];
+let sendSmsInputs: string[] = [];
+let sendEmailToRecipeUserId = undefined;
+let userInCallback = undefined;
+let email = undefined;
+let primaryUserInCallback;
+let newAccountInfoInCallback;
 let userIdInCallback;
 let recipeUserIdInCallback;
+const info = {
+    coreCallCount: 0,
+};
+let store;
 
-export function getSessionVars() {
+export function getOverrideParams(): OverrideParamsType {
+    let sessionVars = getSessionVars();
+    return {
+        sendEmailToUserId,
+        token,
+        userPostPasswordReset,
+        emailPostPasswordReset,
+        sendEmailCallbackCalled,
+        sendEmailToUserEmail,
+        sendEmailInputs,
+        sendSmsInputs,
+        sendEmailToRecipeUserId,
+        userInCallback,
+        email,
+        newAccountInfoInCallback,
+        primaryUserInCallback: primaryUserInCallback?.toJson(),
+        userIdInCallback: userIdInCallback ?? sessionVars.userIdInCallback,
+        recipeUserIdInCallback:
+            recipeUserIdInCallback?.getAsString() ??
+            recipeUserIdInCallback ??
+            sessionVars.recipeUserIdInCallback?.getAsString(),
+        info,
+        store,
+    };
+}
+
+export function resetOverrideParams() {
+    sendEmailToUserId = undefined;
+    token = undefined;
+    userPostPasswordReset = undefined;
+    emailPostPasswordReset = undefined;
+    sendEmailCallbackCalled = false;
+    sendEmailToUserEmail = undefined;
+    sendEmailToRecipeUserId = undefined;
+    sendEmailInputs = [];
+    sendSmsInputs = [];
+    userInCallback = undefined;
+    email = undefined;
+    newAccountInfoInCallback = undefined;
+    primaryUserInCallback = undefined;
+    userIdInCallback = undefined;
+    recipeUserIdInCallback = undefined;
+    info.coreCallCount = 0;
+    store = undefined;
+    userIdInCallback = undefined;
+    recipeUserIdInCallback = undefined;
+}
+
+function getSessionVars() {
     return {
         userIdInCallback,
         recipeUserIdInCallback,
     };
 }
 
-export function resetSessionVars() {
-    userIdInCallback = undefined;
-    recipeUserIdInCallback = undefined;
-}
-
 export function getFunc(evalStr: string): (...args: any[]) => any {
     if (evalStr.startsWith("session.fetchAndSetClaim")) {
         return async (a, c) => {
-            (userIdInCallback = a), (recipeUserIdInCallback = c);
+            userIdInCallback = a;
+            recipeUserIdInCallback = c;
         };
+    }
+
+    if (evalStr.startsWith("accountlinking.init.onAccountLinked")) {
+        return (a, n) => {
+            primaryUserInCallback = a;
+            newAccountInfoInCallback = n;
+        };
+    }
+
+    if (evalStr.startsWith("accountlinking.init.shouldDoAutomaticAccountLinking")) {
+        return (i, l, o, u, a) => {
+            // Handle specific user context cases
+            if (a.DO_NOT_LINK) {
+                return { shouldAutomaticallyLink: false };
+            }
+            if (
+                evalStr.includes(
+                    "(i,l,o,u,a)=>a.DO_NOT_LINK?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}"
+                )
+            ) {
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+            }
+            if (a.DO_LINK) {
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+            }
+            if (a.DO_LINK_WITHOUT_VERIFICATION) {
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+            }
+
+            // Handle specific email case
+            if (i.email === "test2@example.com" && l === undefined) {
+                return { shouldAutomaticallyLink: false };
+            }
+
+            // Handle user id comparison case
+            if (l !== undefined && l.id === o.getUserId()) {
+                return { shouldAutomaticallyLink: false };
+            }
+
+            // Handle emailpassword specific case
+            if (i.recipeId === "emailpassword") {
+                return { shouldAutomaticallyLink: false };
+            }
+
+            // Default behaviors based on the specific function
+            if (evalStr.includes("shouldRequireVerification:!1")) {
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+            }
+            if (evalStr.includes("shouldAutomaticallyLink:!1")) {
+                return { shouldAutomaticallyLink: false };
+            }
+
+            // Default case
+            return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+        };
+    }
+
+    if (evalStr.startsWith("emailpassword.init.emailDelivery.override")) {
+        return (input) => ({
+            ...input,
+            sendEmail: async function (e) {
+                sendEmailCallbackCalled = true;
+
+                if (e.user) {
+                    sendEmailToUserId = e.user.id;
+
+                    if (e.user.email) {
+                        sendEmailToUserEmail = e.user.email;
+                    }
+
+                    if (e.user.recipeUserId) {
+                        sendEmailToRecipeUserId = e.user.recipeUserId;
+                    }
+                }
+
+                if (e.passwordResetLink) {
+                    token = e.passwordResetLink.split("?")[1].split("&")[0].split("=")[1];
+                }
+            },
+        });
+    }
+
+    if (evalStr.startsWith("emailpassword.init.override.apis")) {
+        return (s) => ({
+            ...s,
+            passwordResetPOST: async (e) => {
+                let modifiedE = e;
+                if (evalStr.includes("DO_NOT_LINK")) {
+                    modifiedE = {
+                        ...e,
+                        userContext: {
+                            ...e.userContext,
+                            DO_NOT_LINK: true,
+                        },
+                    };
+                }
+                let t = await s.passwordResetPOST(modifiedE);
+                if (t.status === "OK") {
+                    emailPostPasswordReset = t.email;
+                    userPostPasswordReset = t.user;
+                }
+                return t;
+            },
+            signUpPOST: async (e) => {
+                if (evalStr.includes("signUpPOST")) {
+                    let n = await e.options.req.getJSONBody();
+                    if (n.userContext && n.userContext.DO_LINK !== undefined) {
+                        e.userContext.DO_LINK = n.userContext.DO_LINK;
+                    }
+                    return s.signUpPOST(e);
+                }
+                return s.signUpPOST(e);
+            },
+        });
+    }
+
+    if (evalStr.startsWith("emailverification.init.emailDelivery.override")) {
+        return (input) => ({
+            ...input,
+            sendEmail: async function (a) {
+                if (a.user) {
+                    userInCallback = a.user;
+                }
+
+                if (a.emailVerifyLink) {
+                    token = a.emailVerifyLink.split("?token=")[1].split("&tenantId=")[0];
+                }
+            },
+        });
+    }
+
+    if (evalStr.startsWith("emailverification.init.getEmailForRecipeUserId")) {
+        return async (R) => {
+            if (evalStr.includes("random@example.com")) {
+                return { status: "OK", email: "random@example.com" };
+            }
+
+            if (R.getAsString && R.getAsString() === "random") {
+                return { status: "OK", email: "test@example.com" };
+            }
+
+            return { status: "UNKNOWN_USER_ID_ERROR" };
+        };
+    }
+
+    if (evalStr.startsWith("emailverification.init.override.functions")) {
+        return (i) => ({
+            ...i,
+            isEmailVerified: (e) => {
+                email = e.email;
+                return i.isEmailVerified(e);
+            },
+        });
+    }
+
+    if (evalStr.startsWith("multifactorauth.init.override.apis")) {
+        return (e) => ({
+            ...e,
+            resyncSessionAndFetchMFAInfoPUT: async (r) => {
+                let t = await r.options.req.getJSONBody();
+                if (t.userContext && t.userContext.requireFactor !== undefined) {
+                    r.userContext.requireFactor = t.userContext.requireFactor;
+                }
+                return e.resyncSessionAndFetchMFAInfoPUT(r);
+            },
+        });
+    }
+
+    if (evalStr.startsWith("multifactorauth.init.override.functions")) {
+        return (e) => {
+            const { userContext, ...rest } = e;
+
+            if (store && store.emailInputs) {
+                store.emailInputs.push(rest);
+            } else {
+                store = { ...store, emailInputs: [rest] };
+            }
+
+            sendEmailInputs.push(rest);
+        };
+    }
+
+    if (evalStr.startsWith("passwordless.init.emailDelivery.service.sendEmail")) {
+        return (e) => {
+            const { userContext, ...rest } = e;
+
+            if (store && store.emailInputs) {
+                store.emailInputs.push(rest);
+            } else {
+                store = { ...store, emailInputs: [rest] };
+            }
+
+            sendEmailInputs.push(rest);
+        };
+    }
+
+    if (evalStr.startsWith("passwordless.init.smsDelivery.service.sendSms")) {
+        return (e) => {
+            delete e.userContext;
+            sendSmsInputs.push(e);
+        };
+    }
+
+    if (evalStr.startsWith("passwordless.init.override.apis")) {
+        return (e) => ({
+            ...e,
+            consumeCodePOST: async (t) => {
+                let o = await t.options.req.getJSONBody();
+                if (o.userContext && o.userContext.DO_LINK !== undefined) {
+                    t.userContext.DO_LINK = o.userContext.DO_LINK;
+                }
+                return e.consumeCodePOST(t);
+            },
+        });
+    }
+
+    if (evalStr.startsWith("session.override.functions")) {
+        return (e) => ({
+            ...e,
+            createNewSession: async (s) => {
+                const { PrimitiveClaim } = require("../../../lib/build/recipe/session/claims");
+                let c = new PrimitiveClaim({
+                    key: "some-key",
+                    fetchValue: async (e, s) => {
+                        userIdInCallback = e;
+                        recipeUserIdInCallback = s;
+                    },
+                });
+                s.accessTokenPayload = { ...s.accessTokenPayload, ...c.build(s.userId, s.recipeUserId) };
+                return e.createNewSession(s);
+            },
+        });
+    }
+
+    if (evalStr.startsWith("supertokens.init.supertokens.networkInterceptor")) {
+        return (o, l) => {
+            info.coreCallCount += 1;
+            return o;
+        };
+    }
+
+    if (evalStr.startsWith("thirdparty.init.override.apis")) {
+        return (n) => ({
+            ...n,
+            signInUpPOST: async function (s) {
+                let o = await s.options.req.getJSONBody();
+                if (o.userContext && o.userContext.DO_LINK !== undefined) {
+                    s.userContext.DO_LINK = o.userContext.DO_LINK;
+                }
+                let a = await n.signInUpPOST(s);
+                if (a.status === "OK") {
+                    userInCallback = a.user;
+                }
+                return a;
+            },
+        });
+    }
+
+    if (evalStr.startsWith("thirdparty.init.signInAndUpFeature.providers")) {
+        if (evalStr.includes("custom-ev")) {
+            return (e) => ({
+                ...e,
+                exchangeAuthCodeForOAuthTokens: ({ redirectURIInfo: e }) => e,
+                getUserInfo: ({ oAuthTokens: e }) => ({
+                    thirdPartyUserId: e.userId ?? "user",
+                    email: { id: e.email ?? "email@test.com", isVerified: true },
+                    rawUserInfoFromProvider: {},
+                }),
+            });
+        }
+        if (evalStr.includes("custom-no-ev")) {
+            return (e) => ({
+                ...e,
+                exchangeAuthCodeForOAuthTokens: () => ({}),
+                getUserInfo: () => ({
+                    thirdPartyUserId: "user",
+                    email: { id: "email@test.com", isVerified: false },
+                    rawUserInfoFromProvider: {},
+                }),
+            });
+        }
+        if (evalStr.includes("custom2")) {
+            return (e) => {
+                e.exchangeAuthCodeForOAuthTokens = async (e) => e.redirectURIInfo.redirectURIQueryParams;
+                e.getUserInfo = async (e) => ({
+                    thirdPartyUserId: "custom2" + e.oAuthTokens.email,
+                    email: { id: e.oAuthTokens.email, isVerified: true },
+                });
+                return e;
+            };
+        }
+        if (evalStr.includes("custom")) {
+            return (r) => ({
+                ...r,
+                exchangeAuthCodeForOAuthTokens: ({ redirectURIInfo: r }) => r,
+                getUserInfo: ({ oAuthTokens: r }) => {
+                    if (r.error) throw new Error("Credentials error");
+                    return {
+                        thirdPartyUserId: r.userId ?? "userId",
+                        email: r.email && { id: r.email, isVerified: r.isVerified === true },
+                        rawUserInfoFromProvider: {},
+                    };
+                },
+            });
+        }
     }
 
     throw new Error("Unknown eval string");
