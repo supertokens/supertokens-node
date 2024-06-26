@@ -115,8 +115,18 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
     }
 
     if (evalStr.startsWith("accountlinking.init.shouldDoAutomaticAccountLinking")) {
-        return (i, l, o, u, a) => {
+        return async (i, l, o, u, a) => {
             // Handle specific user context cases
+            if (
+                evalStr.includes(
+                    "(i,l,o,u,a)=>a.DO_LINK?{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}:{shouldAutomaticallyLink:!1}"
+                )
+            ) {
+                if (a.DO_LINK) {
+                    return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+                }
+                return { shouldAutomaticallyLink: false };
+            }
             if (
                 evalStr.includes(
                     "(i,l,o,u,a)=>a.DO_NOT_LINK?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}"
@@ -194,6 +204,19 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
                 }
                 if (i.email === "test2@example.com" && l === undefined) {
                     return { shouldAutomaticallyLink: false };
+                }
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+            }
+
+            if (
+                evalStr.includes(
+                    'async(i,e)=>{if("emailpassword"===i.recipeId){if(!((await supertokens.listUsersByAccountInfo("public",{email:i.email})).length>1))return{shouldAutomaticallyLink:!1}}return{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}}'
+                )
+            ) {
+                if (i.recipeId === "emailpassword") {
+                    if ((await supertokens.listUsersByAccountInfo("public", { email: i.email })).length <= 1) {
+                        return { shouldAutomaticallyLink: false };
+                    }
                 }
                 return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
             }
