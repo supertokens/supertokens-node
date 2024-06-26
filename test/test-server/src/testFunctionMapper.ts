@@ -117,15 +117,75 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
     if (evalStr.startsWith("accountlinking.init.shouldDoAutomaticAccountLinking")) {
         return (i, l, o, u, a) => {
             // Handle specific user context cases
-            if (a.DO_NOT_LINK) {
-                return { shouldAutomaticallyLink: false };
-            }
             if (
                 evalStr.includes(
                     "(i,l,o,u,a)=>a.DO_NOT_LINK?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}"
                 )
             ) {
+                if (a.DO_NOT_LINK) {
+                    return { shouldAutomaticallyLink: false };
+                }
                 return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+            }
+
+            if (
+                evalStr.includes(
+                    "(i,l,o,u,a)=>a.DO_NOT_LINK?{shouldAutomaticallyLink:!1}:a.DO_LINK_WITHOUT_VERIFICATION?{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}"
+                )
+            ) {
+                if (a.DO_NOT_LINK) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                if (a.DO_LINK_WITHOUT_VERIFICATION) {
+                    return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+                }
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+            }
+
+            if (
+                evalStr.includes(
+                    '(i,l,o,a,e)=>e.DO_NOT_LINK||"test2@example.com"===i.email&&void 0===l?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}'
+                )
+            ) {
+                if (a.DO_NOT_LINK) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                if (i.email === "test2@example.com" && l === undefined) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+            }
+
+            if (
+                evalStr.includes(
+                    "(i,l,o,d,t)=>t.DO_NOT_LINK||void 0!==l&&l.id===o.getUserId()?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!1}"
+                )
+            ) {
+                if (a.DO_NOT_LINK) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                if (l !== undefined && l.id === o.getUserId()) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: false };
+            }
+
+            if (
+                evalStr.includes(
+                    "(i,l,o,d,t)=>t.DO_NOT_LINK||void 0!==l&&l.id===o.getUserId()?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}"
+                )
+            ) {
+                if (a.DO_NOT_LINK) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                if (l !== undefined && l.id === o.getUserId()) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+            }
+
+            if (a.DO_NOT_LINK) {
+                return { shouldAutomaticallyLink: false };
             }
             if (a.DO_LINK) {
                 return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
