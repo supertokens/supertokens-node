@@ -4,24 +4,10 @@ import * as supertokens from "../../../lib/build";
 import { PrimitiveClaim } from "../../../lib/build/recipe/session/claims";
 import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { logger } from "./logger";
+import { getFunc } from "./testFunctionMapper";
 
 const namespace = "com.supertokens:node-test-server:session";
 const { logDebugMessage } = logger(namespace);
-
-let userIdInCallback;
-let recipeUserIdInCallback;
-
-export function getSessionVars() {
-    return {
-        userIdInCallback,
-        recipeUserIdInCallback,
-    };
-}
-
-export function resetSessionVars() {
-    userIdInCallback = undefined;
-    recipeUserIdInCallback = undefined;
-}
 
 const router = Router()
     .post("/createnewsessionwithoutrequestresponse", async (req, res, next) => {
@@ -126,7 +112,7 @@ const router = Router()
             logDebugMessage("Session.fetchAndSetClaim %j", req.body);
             let claim = new PrimitiveClaim({
                 key: req.body.claim.key,
-                fetchValue: eval(`${req.body.claim.fetchValue}`),
+                fetchValue: getFunc(`${req.body.claim.fetchValue}`),
             });
             const response = await Session.fetchAndSetClaim(req.body.sessionHandle, claim, req.body.userContext);
             res.json(response);
@@ -139,7 +125,7 @@ const router = Router()
             logDebugMessage("Session.validateClaimsForSessionHandle %j", req.body);
 
             let overrideGlobalClaimValidators = req.body.overrideGlobalClaimValidators
-                ? eval(`${req.body.overrideGlobalClaimValidators}`)
+                ? getFunc(`${req.body.overrideGlobalClaimValidators}`)
                 : undefined;
             const response = await Session.validateClaimsForSessionHandle(
                 req.body.sessionHandle,
