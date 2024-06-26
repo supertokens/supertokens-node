@@ -184,6 +184,20 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
                 return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
             }
 
+            if (
+                evalStr.includes(
+                    '(i,l,o,a,e)=>e.DO_NOT_LINK||"test2@example.com"===i.email&&void 0===l?{shouldAutomaticallyLink:!1}:{shouldAutomaticallyLink:!0,shouldRequireVerification:!0}'
+                )
+            ) {
+                if (a.DO_NOT_LINK) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                if (i.email === "test2@example.com" && l === undefined) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                return { shouldAutomaticallyLink: true, shouldRequireVerification: true };
+            }
+
             if (a.DO_NOT_LINK) {
                 return { shouldAutomaticallyLink: false };
             }
