@@ -667,5 +667,5 @@ async function handleHydraAPICall(response: Response) {
         };
     }
 
-    return { body: { status: response.ok ? "OK" : "ERROR", headers: response.headers } };
+    return { body: { status: response.ok ? "OK" : "ERROR" }, headers: response.headers };
 }

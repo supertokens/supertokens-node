@@ -34,15 +34,15 @@ export default function getRecipeInterface(
             );
 
             return {
-                challenge: resp.challenge,
-                client: resp.client,
-                oidcContext: resp.oidc_context,
-                requestUrl: resp.request_url,
-                requestedAccessTokenAudience: resp.requested_access_token_audience,
-                requestedScope: resp.requested_scope,
-                sessionId: resp.session_id,
-                skip: resp.skip,
-                subject: resp.subject,
+                challenge: resp.data.challenge,
+                client: resp.data.client,
+                oidcContext: resp.data.oidc_context,
+                requestUrl: resp.data.request_url,
+                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
+                requestedScope: resp.data.requested_scope,
+                sessionId: resp.data.session_id,
+                skip: resp.data.skip,
+                subject: resp.data.subject,
             };
         },
         acceptLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
@@ -65,7 +65,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.redirect_to };
+            return { redirectTo: resp.data.redirect_to };
         },
         rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
@@ -83,7 +83,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.redirect_to };
+            return { redirectTo: resp.data.redirect_to };
         },
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
             const resp = await querier.sendGetRequest(
@@ -93,19 +93,19 @@ export default function getRecipeInterface(
             );
 
             return {
-                acr: resp.acr,
-                amr: resp.amr,
-                challenge: resp.challenge,
-                client: resp.client,
-                context: resp.context,
-                loginChallenge: resp.login_challenge,
-                loginSessionId: resp.login_session_id,
-                oidcContext: resp.oidc_context,
-                requestUrl: resp.request_url,
-                requestedAccessTokenAudience: resp.requested_access_token_audience,
-                requestedScope: resp.requested_scope,
-                skip: resp.skip,
-                subject: resp.subject,
+                acr: resp.data.acr,
+                amr: resp.data.amr,
+                challenge: resp.data.challenge,
+                client: resp.data.client,
+                context: resp.data.context,
+                loginChallenge: resp.data.login_challenge,
+                loginSessionId: resp.data.login_session_id,
+                oidcContext: resp.data.oidc_context,
+                requestUrl: resp.data.request_url,
+                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
+                requestedScope: resp.data.requested_scope,
+                skip: resp.data.skip,
+                subject: resp.data.subject,
             };
         },
         acceptConsentRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
@@ -126,7 +126,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.redirect_to };
+            return { redirectTo: resp.data.redirect_to };
         },
 
         rejectConsentRequest: async function (this: RecipeInterface, input) {
@@ -145,7 +145,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.redirect_to };
+            return { redirectTo: resp.data.redirect_to };
         },
 
         getLogoutRequest: async function (this: RecipeInterface, input): Promise<LogoutRequest> {
@@ -156,12 +156,12 @@ export default function getRecipeInterface(
             );
 
             return {
-                challenge: resp.challenge,
-                client: resp.client,
-                requestUrl: resp.request_url,
-                rpInitiated: resp.rp_initiated,
-                sid: resp.sid,
-                subject: resp.subject,
+                challenge: resp.data.challenge,
+                client: resp.data.client,
+                requestUrl: resp.data.request_url,
+                rpInitiated: resp.data.rp_initiated,
+                sid: resp.data.sid,
+                subject: resp.data.subject,
             };
         },
         acceptLogoutRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
@@ -174,7 +174,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.redirect_to };
+            return { redirectTo: resp.data.redirect_to };
         },
         rejectLogoutRequest: async function (this: RecipeInterface, input): Promise<void> {
             await querier.sendPutRequest(
