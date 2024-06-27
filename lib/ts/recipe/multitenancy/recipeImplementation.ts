@@ -16,6 +16,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     tenantId,
                     ...config,
                 },
+                {},
                 userContext
             );
 
@@ -68,6 +69,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     config,
                     skipValidation,
                 },
+                {},
                 userContext
             );
             return response;

@@ -164,6 +164,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             let response = await querier.sendPutRequest(
                 new NormalisedURLPath(`/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input),
+                {},
                 input.userContext
             );
             if (response.status !== "OK") {

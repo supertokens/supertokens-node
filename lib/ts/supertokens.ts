@@ -333,6 +333,7 @@ export default class SuperTokens {
                     userIdType: input.userIdType,
                     externalUserIdInfo: input.externalUserIdInfo,
                 },
+                {},
                 input.userContext
             );
         } else {

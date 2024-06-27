@@ -3,6 +3,8 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
+export declare const hydraPubDomain: string;
+export declare const hydraPubPathPrefix = "/recipe/oauth2/pub";
 export declare class Querier {
     private static initCalled;
     private static hosts;
@@ -44,12 +46,18 @@ export declare class Querier {
     sendGetRequestWithResponseHeaders: (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
+        inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ) => Promise<{
         body: any;
         headers: Headers;
     }>;
-    sendPutRequest: (path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<any>;
+    sendPutRequest: (
+        path: NormalisedURLPath,
+        body: any,
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: UserContext
+    ) => Promise<any>;
     sendPatchRequest: (path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<any>;
     invalidateCoreCallCache: (userContext: UserContext, updGlobalCacheTagIfNecessary?: boolean) => void;
     getAllCoreUrlsForPath(path: string): string[];

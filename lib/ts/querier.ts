@@ -22,9 +22,9 @@ import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 
-const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
+export const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
 const hydraAdmDomain = process.env.HYDRA_ADM ?? "http://localhost:4445"; // This will be used as a domain for paths starting with hydraAdmPathPrefix
-const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
+export const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
 const hydraAdmPathPrefix = "/recipe/oauth2/admin"; // Replaced with "/admin" when sending the request (/recipe/oauth2/admin/clients -> /admin/clients)
 
 export class Querier {
@@ -130,6 +130,8 @@ export class Querier {
     // path should start with "/"
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext): Promise<T> => {
         this.invalidateCoreCallCache(userContext);
+        // TODO: remove FormData
+        const isForm = body !== undefined && body instanceof FormData;
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -138,8 +140,10 @@ export class Querier {
                 let apiVersion = await this.getAPIVersion();
                 let headers: any = {
                     "cdi-version": apiVersion,
-                    "content-type": "application/json; charset=utf-8",
                 };
+                if (!isForm) {
+                    headers["content-type"] = "application/json; charset=utf-8";
+                }
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -170,7 +174,7 @@ export class Querier {
                 }
                 return doFetch(url, {
                     method: "POST",
-                    body: body !== undefined ? JSON.stringify(body) : undefined,
+                    body: isForm ? body : body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },
@@ -319,11 +323,14 @@ export class Querier {
                 finalURL.search = searchParams.toString();
 
                 // Update cache and return
-
                 let response = await doFetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
+
+                if (response.status === 302) {
+                    return response;
+                }
 
                 if (response.status === 200 && !Querier.disableCache) {
                     // If the request was successful, we save the result into the cache
@@ -349,6 +356,7 @@ export class Querier {
     sendGetRequestWithResponseHeaders = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
+        inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ): Promise<{ body: any; headers: Headers }> => {
         return await this.sendRequestHelper(
@@ -356,7 +364,9 @@ export class Querier {
             "GET",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion };
+                let headers: any = inpHeaders ?? {};
+                headers["cdi-version"] = apiVersion;
+
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -400,7 +410,12 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
+    sendPutRequest = async (
+        path: NormalisedURLPath,
+        body: any,
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: UserContext
+    ): Promise<any> => {
         this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
@@ -428,6 +443,7 @@ export class Querier {
                             method: "put",
                             headers: headers,
                             body: body,
+                            params: params,
                         },
                         userContext
                     );
@@ -438,7 +454,13 @@ export class Querier {
                     }
                 }
 
-                return doFetch(url, {
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
+                );
+                finalURL.search = searchParams.toString();
+
+                return doFetch(finalURL.toString(), {
                     method: "PUT",
                     body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
@@ -549,11 +571,13 @@ export class Querier {
 
         if (strPath.startsWith(hydraPubPathPrefix)) {
             currentDomain = hydraPubDomain;
+            currentBasePath = "";
             strPath = strPath.replace(hydraPubPathPrefix, "/oauth2");
         }
 
         if (strPath.startsWith(hydraAdmPathPrefix)) {
             currentDomain = hydraAdmDomain;
+            currentBasePath = "";
             strPath = strPath.replace(hydraAdmPathPrefix, "/admin");
         }
 
@@ -652,5 +676,5 @@ async function handleHydraAPICall(response: Response) {
         };
     }
 
-    return { body: { status: response.ok ? "OK" : "ERROR", headers: response.headers } };
+    return { body: { status: response.ok ? "OK" : "ERROR" }, headers: response.headers };
 }

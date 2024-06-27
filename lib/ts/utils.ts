@@ -18,11 +18,13 @@ export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: Req
         ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
         init = {
             cache: "no-cache",
+            redirect: "manual",
         };
     } else {
         if (init.cache === undefined) {
             ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
             init.cache = "no-cache";
+            init.redirect = "manual";
         }
     }
     const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;

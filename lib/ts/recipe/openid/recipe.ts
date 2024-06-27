@@ -44,7 +44,9 @@ export default class OpenIdRecipe extends RecipeModule {
             override: this.config.override.jwtFeature,
         });
 
-        let builder = new OverrideableBuilder(RecipeImplementation(this.config, this.jwtRecipe.recipeInterfaceImpl));
+        let builder = new OverrideableBuilder(
+            RecipeImplementation(this.config, this.jwtRecipe.recipeInterfaceImpl, appInfo)
+        );
 
         this.recipeImplementation = builder.override(this.config.override.functions).build();
 

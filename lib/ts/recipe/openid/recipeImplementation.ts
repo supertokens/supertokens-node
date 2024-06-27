@@ -16,26 +16,31 @@ import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
-import { UserContext } from "../../types";
+import { NormalisedAppinfo, UserContext } from "../../types";
+import { AUTH_PATH, TOKEN_PATH } from "../oauth2/constants";
 
 export default function getRecipeInterface(
     config: TypeNormalisedInput,
-    jwtRecipeImplementation: JWTRecipeInterface
+    jwtRecipeImplementation: JWTRecipeInterface,
+    appInfo: NormalisedAppinfo
 ): RecipeInterface {
     return {
-        getOpenIdDiscoveryConfiguration: async function (): Promise<{
-            status: "OK";
-            issuer: string;
-            jwks_uri: string;
-        }> {
+        getOpenIdDiscoveryConfiguration: async function () {
             let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
             let jwks_uri =
                 config.issuerDomain.getAsStringDangerous() +
                 config.issuerPath.appendPath(new NormalisedURLPath(GET_JWKS_API)).getAsStringDangerous();
+
+            const apiBasePath = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
             return {
                 status: "OK",
                 issuer,
                 jwks_uri,
+                authorization_endpoint: apiBasePath + AUTH_PATH,
+                token_endpoint: apiBasePath + TOKEN_PATH,
+                subject_types_supported: ["public"],
+                id_token_signing_alg_values_supported: ["RS256"],
+                response_types_supported: ["code", "id_token", "id_token token"],
             };
         },
         createJWT: async function ({

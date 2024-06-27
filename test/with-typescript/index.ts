@@ -1593,6 +1593,11 @@ Session.init({
                 getOpenIdDiscoveryConfiguration: async (input) => ({
                     issuer: "your issuer",
                     jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                    token_endpoint: "http://localhost:3000/auth/oauth2/token",
+                    authorization_endpoint: "http://localhost:3000/auth/oauth2/auth",
+                    id_token_signing_alg_values_supported: [],
+                    response_types_supported: [],
+                    subject_types_supported: [],
                     status: "OK",
                 }),
             }),

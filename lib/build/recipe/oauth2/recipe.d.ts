@@ -13,18 +13,19 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
+    static getInstance(): Recipe | undefined;
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
-        _id: string,
+        id: string,
         _tenantId: string | undefined,
-        _req: BaseRequest,
-        _res: BaseResponse,
+        req: BaseRequest,
+        res: BaseResponse,
         _path: NormalisedURLPath,
         _method: HTTPMethod,
-        _userContext: UserContext
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void>;
     getAllCORSHeaders(): string[];

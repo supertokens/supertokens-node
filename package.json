@@ -123,6 +123,7 @@
         "nodemailer": "^6.7.2",
         "pkce-challenge": "^3.0.0",
         "psl": "1.8.0",
+        "set-cookie-parser": "^2.6.0",
         "supertokens-js-override": "^0.0.4",
         "twilio": "^4.19.3"
     },
@@ -143,6 +144,7 @@
         "@types/koa-bodyparser": "^4.3.3",
         "@types/nodemailer": "^6.4.4",
         "@types/psl": "1.1.0",
+        "@types/set-cookie-parser": "^2.4.9",
         "@types/validator": "10.11.0",
         "aws-sdk-mock": "^5.4.0",
         "body-parser": "1.20.1",

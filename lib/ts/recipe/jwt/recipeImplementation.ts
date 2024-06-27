@@ -78,6 +78,7 @@ export default function getRecipeInterface(
             const { body, headers } = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath("/.well-known/jwks.json"),
                 {},
+                undefined,
                 userContext
             );
             let validityInSeconds = defaultJWKSMaxAge;
