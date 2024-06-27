@@ -2,7 +2,6 @@ import express from "express";
 import nock from "nock";
 import { errorHandler, middleware } from "../../../framework/express";
 import * as supertokens from "../../../lib/build";
-import { User } from "../../../lib/build";
 import { ProcessState } from "../../../lib/build/processState";
 import AccountLinkingRecipe from "../../../lib/build/recipe/accountlinking/recipe";
 import { TypeInput as AccountLinkingTypeInput, RecipeLevelUser } from "../../../lib/build/recipe/accountlinking/types";
@@ -40,57 +39,16 @@ import { logger } from "./logger";
 import multiFactorAuthRoutes from "./multifactorauth";
 import multitenancyRoutes from "./multitenancy";
 import passwordlessRoutes from "./passwordless";
-import sessionRoutes, { getSessionVars, resetSessionVars } from "./session";
+import sessionRoutes from "./session";
 import supertokensRoutes from "./supertokens";
 import thirdPartyRoutes from "./thirdparty";
 import userMetadataRoutes from "./usermetadata";
 import TOTPRoutes from "./totp";
+import { getFunc, resetOverrideParams, getOverrideParams } from "./testFunctionMapper";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
 const API_PORT = Number(process.env.API_PORT || 3030);
-
-export type OverrideParamsType = {
-    sendEmailToUserId: string | undefined;
-    token: string | undefined;
-    userPostPasswordReset: User | undefined;
-    emailPostPasswordReset: string | undefined;
-    sendEmailCallbackCalled: boolean | undefined;
-    sendEmailToUserEmail: string | undefined;
-    sendEmailToRecipeUserId: any | undefined;
-    userInCallback: { id: string; email: string; recipeUserId: supertokens.RecipeUserId } | undefined;
-    email: string | undefined;
-    newAccountInfoInCallback: RecipeLevelUser | undefined;
-    primaryUserInCallback: User | undefined;
-    userIdInCallback: string | undefined;
-    recipeUserIdInCallback: supertokens.RecipeUserId | string | undefined;
-    info: {
-        coreCallCount: number;
-    };
-    store: any;
-    sendEmailInputs: any[]; // for passwordless sendEmail override
-    sendSmsInputs: any[]; // for passwordless sendSms override
-};
-
-let sendEmailToUserId = undefined;
-let token = undefined;
-let userPostPasswordReset = undefined;
-let emailPostPasswordReset = undefined;
-let sendEmailCallbackCalled = false;
-let sendEmailToUserEmail = undefined;
-let sendEmailInputs = [];
-let sendSmsInputs = [];
-let sendEmailToRecipeUserId = undefined;
-let userInCallback = undefined;
-let email = undefined;
-let primaryUserInCallback;
-let newAccountInfoInCallback;
-let userIdInCallback;
-let recipeUserIdInCallback;
-const info = {
-    coreCallCount: 0,
-};
-let store;
 
 function defaultSTInit() {
     STReset();
@@ -108,27 +66,6 @@ function defaultSTInit() {
 }
 
 defaultSTInit();
-
-function resetOverrideParams() {
-    sendEmailToUserId = undefined;
-    token = undefined;
-    userPostPasswordReset = undefined;
-    emailPostPasswordReset = undefined;
-    sendEmailCallbackCalled = false;
-    sendEmailToUserEmail = undefined;
-    sendEmailToRecipeUserId = undefined;
-    sendEmailInputs = [];
-    sendSmsInputs = [];
-    userInCallback = undefined;
-    email = undefined;
-    newAccountInfoInCallback = undefined;
-    primaryUserInCallback = undefined;
-    userIdInCallback = undefined;
-    recipeUserIdInCallback = undefined;
-    info.coreCallCount = 0;
-    store = undefined;
-    resetSessionVars();
-}
 
 function STReset() {
     resetOverrideParams();
@@ -165,14 +102,14 @@ function initST(config: any) {
             if (config?.override?.apis) {
                 init.override = {
                     ...init.override,
-                    apis: eval(`${config?.override.apis}`),
+                    apis: getFunc(`${config?.override.apis}`),
                 };
             }
 
             if (config?.emailDelivery?.override) {
                 init.emailDelivery = {
                     ...config?.emailDelivery,
-                    override: eval(`${config?.emailDelivery.override}`),
+                    override: getFunc(`${config?.emailDelivery.override}`),
                 };
             }
 
@@ -185,7 +122,7 @@ function initST(config: any) {
             if (config?.override?.functions) {
                 init.override = {
                     ...init.override,
-                    functions: eval(`${config?.override.functions}`),
+                    functions: getFunc(`${config?.override.functions}`),
                 };
             }
             recipeList.push(Session.init(init));
@@ -195,10 +132,10 @@ function initST(config: any) {
                 ...config,
             };
             if (config?.shouldDoAutomaticAccountLinking) {
-                init.shouldDoAutomaticAccountLinking = eval(`${config.shouldDoAutomaticAccountLinking}`);
+                init.shouldDoAutomaticAccountLinking = getFunc(`${config.shouldDoAutomaticAccountLinking}`);
             }
             if (config?.onAccountLinked) {
-                init.onAccountLinked = eval(`${config.onAccountLinked}`);
+                init.onAccountLinked = getFunc(`${config.onAccountLinked}`);
             }
             recipeList.push(AccountLinking.init(init));
         }
@@ -211,14 +148,14 @@ function initST(config: any) {
                     ...config.signInAndUpFeature,
                     providers: config.signInAndUpFeature.providers.map((p) => ({
                         ...p,
-                        ...(p.override ? { override: eval(`${p.override}`) } : {}),
+                        ...(p.override ? { override: getFunc(`${p.override}`) } : {}),
                     })),
                 };
             }
             if (config?.override?.apis) {
                 init.override = {
                     ...init.override,
-                    ...(config?.override.apis ? { apis: eval(`${config?.override.apis}`) } : {}),
+                    ...(config?.override.apis ? { apis: getFunc(`${config?.override.apis}`) } : {}),
                 };
             }
 
@@ -231,16 +168,16 @@ function initST(config: any) {
             if (config?.emailDelivery?.override) {
                 init.emailDelivery = {
                     ...config?.emailDelivery,
-                    override: eval(`${config?.emailDelivery.override}`),
+                    override: getFunc(`${config?.emailDelivery.override}`),
                 };
             }
             if (config?.getEmailForRecipeUserId) {
-                init.getEmailForRecipeUserId = eval(`${config?.getEmailForRecipeUserId}`);
+                init.getEmailForRecipeUserId = getFunc(`${config?.getEmailForRecipeUserId}`);
             }
             if (config?.override?.functions) {
                 init.override = {
                     ...init.override,
-                    functions: eval(`${config?.override.functions}`),
+                    functions: getFunc(`${config?.override.functions}`),
                 };
             }
             recipeList.push(EmailVerification.init(init));
@@ -258,7 +195,7 @@ function initST(config: any) {
                     ...config?.emailDelivery,
                     service: {
                         ...config?.emailDelivery?.service,
-                        sendEmail: eval(`${config?.emailDelivery?.service?.sendEmail}`),
+                        sendEmail: getFunc(`${config?.emailDelivery?.service?.sendEmail}`),
                     },
                 };
             }
@@ -267,14 +204,14 @@ function initST(config: any) {
                     ...config?.smsDelivery,
                     service: {
                         ...config?.smsDelivery?.service,
-                        sendSms: eval(`${config?.smsDelivery?.service?.sendSms}`),
+                        sendSms: getFunc(`${config?.smsDelivery?.service?.sendSms}`),
                     },
                 };
             }
             if (config?.override?.apis) {
                 init.override = {
                     ...init.override,
-                    ...(config?.override.apis ? { apis: eval(`${config?.override.apis}`) } : {}),
+                    ...(config?.override.apis ? { apis: getFunc(`${config?.override.apis}`) } : {}),
                 };
             }
             recipeList.push(Passwordless.init(init));
@@ -286,13 +223,13 @@ function initST(config: any) {
             if (initConfig.override?.functions) {
                 initConfig.override = {
                     ...initConfig.override,
-                    functions: eval(`${initConfig.override.functions}`),
+                    functions: getFunc(`${initConfig.override.functions}`),
                 };
             }
             if (initConfig.override?.apis) {
                 initConfig.override = {
                     ...initConfig.override,
-                    apis: eval(`${initConfig.override.apis}`),
+                    apis: getFunc(`${initConfig.override.apis}`),
                 };
             }
             recipeList.push(MultiFactorAuth.init(initConfig));
@@ -305,7 +242,7 @@ function initST(config: any) {
     settings.recipeList = recipeList;
 
     if (settings.supertokens?.networkInterceptor) {
-        settings.supertokens.networkInterceptor = eval(`${settings.supertokens.networkInterceptor}`);
+        settings.supertokens.networkInterceptor = getFunc(`${settings.supertokens.networkInterceptor}`);
     }
 
     supertokens.init(settings);
@@ -334,30 +271,11 @@ app.post("/test/init", async (req, res, next) => {
 });
 
 app.get("/test/overrideparams", async (req, res, next) => {
-    let sessionVars = getSessionVars();
-    const overrideparams: OverrideParamsType = {
-        sendEmailToUserId,
-        token,
-        userPostPasswordReset,
-        emailPostPasswordReset,
-        sendEmailCallbackCalled,
-        sendEmailToUserEmail,
-        sendEmailInputs,
-        sendSmsInputs,
-        sendEmailToRecipeUserId,
-        userInCallback,
-        email,
-        newAccountInfoInCallback,
-        primaryUserInCallback: primaryUserInCallback?.toJson(),
-        userIdInCallback: userIdInCallback ?? sessionVars.userIdInCallback,
-        recipeUserIdInCallback:
-            recipeUserIdInCallback?.getAsString() ??
-            recipeUserIdInCallback ??
-            sessionVars.recipeUserIdInCallback?.getAsString(),
-        info,
-        store,
-    };
-    res.json(overrideparams);
+    res.json(getOverrideParams());
+});
+
+app.get("/test/featureflag", async (req, res, next) => {
+    res.json([]);
 });
 
 app.post("/test/resetoverrideparams", async (req, res, next) => {
