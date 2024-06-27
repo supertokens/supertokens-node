@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
+import setCookieParser from "set-cookie-parser";
 
 export default async function authGET(
     apiImplementation: APIInterface,
@@ -38,8 +39,19 @@ export default async function authGET(
     if ("redirectTo" in response) {
         // TODO:
         if (response.setCookie) {
-            for (const c of response.setCookie.replace(/, (\w+=)/, "\n$1").split("\n")) {
-                options.res.setHeader("set-cookie", c, true);
+            const cookieStr = setCookieParser.splitCookiesString(response.setCookie);
+            const cookies = setCookieParser.parse(cookieStr);
+            for (const cookie of cookies) {
+                options.res.setCookie(
+                    cookie.name,
+                    cookie.value,
+                    cookie.domain,
+                    !!cookie.secure,
+                    !!cookie.httpOnly,
+                    new Date(cookie.expires!).getTime(),
+                    cookie.path || "/",
+                    cookie.sameSite as any
+                );
             }
         }
         options.res.original.redirect(response.redirectTo);

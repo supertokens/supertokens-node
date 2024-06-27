@@ -19,6 +19,8 @@ import ThirdPartyRecipe from "../../../lib/build/recipe/thirdparty/recipe";
 import { TypeInput as ThirdPartyTypeInput } from "../../../lib/build/recipe/thirdparty/types";
 import { TypeInput as MFATypeInput } from "../../../lib/build/recipe/multifactorauth/types";
 import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
+import OAuth2Recipe from "../../../lib/build/recipe/oauth2/recipe";
+import { TypeInput as OAuth2TypeInput } from "../../../lib/build/recipe/oauth2/types";
 import UserMetadataRecipe from "../../../lib/build/recipe/usermetadata/recipe";
 import SuperTokensRecipe from "../../../lib/build/supertokens";
 import { RecipeListFunction } from "../../../lib/build/types";
@@ -32,6 +34,7 @@ import Session from "../../../recipe/session";
 import { verifySession } from "../../../recipe/session/framework/express";
 import ThirdParty from "../../../recipe/thirdparty";
 import TOTP from "../../../recipe/totp";
+import OAuth2 from "../../../recipe/oauth2";
 import accountlinkingRoutes from "./accountlinking";
 import emailpasswordRoutes from "./emailpassword";
 import emailverificationRoutes from "./emailverification";
@@ -39,6 +42,7 @@ import { logger } from "./logger";
 import multiFactorAuthRoutes from "./multifactorauth";
 import multitenancyRoutes from "./multitenancy";
 import passwordlessRoutes from "./passwordless";
+import oAuth2Routes from "./oauth2";
 import sessionRoutes from "./session";
 import supertokensRoutes from "./supertokens";
 import thirdPartyRoutes from "./thirdparty";
@@ -81,6 +85,7 @@ function STReset() {
     ProcessState.getInstance().reset();
     MultiFactorAuthRecipe.reset();
     TOTPRecipe.reset();
+    OAuth2Recipe.reset();
     SuperTokensRecipe.reset();
 }
 
@@ -237,6 +242,24 @@ function initST(config: any) {
         if (recipe.recipeId === "totp") {
             recipeList.push(TOTP.init(config));
         }
+        if (recipe.recipeId === "oauth2") {
+            let initConfig: OAuth2TypeInput = {
+                ...config,
+            };
+            if (initConfig.override?.functions) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    functions: getFunc(`${initConfig.override.functions}`),
+                };
+            }
+            if (initConfig.override?.apis) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    apis: getFunc(`${initConfig.override.apis}`),
+                };
+            }
+            recipeList.push(OAuth2.init(initConfig));
+        }
     });
 
     settings.recipeList = recipeList;
@@ -318,6 +341,7 @@ app.use("/test/multifactorauth", multiFactorAuthRoutes);
 app.use("/test/thirdparty", thirdPartyRoutes);
 app.use("/test/totp", TOTPRoutes);
 app.use("/test/usermetadata", userMetadataRoutes);
+app.use("/test/oauth2", oAuth2Routes);
 
 // *** Custom routes to help with session tests ***
 app.post("/create", async (req, res, next) => {
