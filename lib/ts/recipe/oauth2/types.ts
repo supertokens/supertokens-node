@@ -175,7 +175,11 @@ export type TokenInfo = {
 };
 
 export type RecipeInterface = {
-    authorization(input: { params: any; userContext: UserContext }): Promise<{ redirectTo: string }>;
+    authorization(input: {
+        params: any;
+        cookies: string | undefined;
+        userContext: UserContext;
+    }): Promise<{ redirectTo: string; setCookie: string | undefined }>;
     token(input: { body: any; userContext: UserContext }): Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>;
     getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
     acceptConsentRequest(input: {
@@ -377,9 +381,10 @@ export type APIInterface = {
         | undefined
         | ((input: {
               params: any;
+              cookie: string | undefined;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; setCookie: string | undefined } | ErrorOAuth2 | GeneralErrorResponse>);
     tokenPOST:
         | undefined
         | ((input: {

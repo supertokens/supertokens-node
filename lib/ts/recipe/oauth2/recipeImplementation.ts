@@ -14,7 +14,7 @@
  */
 
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
+import { Querier, hydraPubDomain } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
 import { RecipeInterface, TypeNormalisedInput, ConsentRequest, LoginRequest, LogoutRequest } from "./types";
 import { toSnakeCase, transformObjectKeys } from "../../utils";
@@ -35,7 +35,7 @@ export default function getRecipeInterface(
 
             return {
                 challenge: resp.data.challenge,
-                client: resp.data.client,
+                client: OAuth2Client.fromAPIResponse(resp.data.client),
                 oidcContext: resp.data.oidc_context,
                 requestUrl: resp.data.request_url,
                 requestedAccessTokenAudience: resp.data.requested_access_token_audience,
@@ -65,7 +65,13 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.data.redirect_to };
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
         },
         rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
@@ -83,7 +89,13 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.data.redirect_to };
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
         },
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
             const resp = await querier.sendGetRequest(
@@ -96,7 +108,7 @@ export default function getRecipeInterface(
                 acr: resp.data.acr,
                 amr: resp.data.amr,
                 challenge: resp.data.challenge,
-                client: resp.data.client,
+                client: OAuth2Client.fromAPIResponse(resp.data.client),
                 context: resp.data.context,
                 loginChallenge: resp.data.login_challenge,
                 loginSessionId: resp.data.login_session_id,
@@ -126,7 +138,13 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.data.redirect_to };
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
         },
 
         rejectConsentRequest: async function (this: RecipeInterface, input) {
@@ -145,7 +163,13 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.data.redirect_to };
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
         },
 
         getLogoutRequest: async function (this: RecipeInterface, input): Promise<LogoutRequest> {
@@ -157,7 +181,7 @@ export default function getRecipeInterface(
 
             return {
                 challenge: resp.data.challenge,
-                client: resp.data.client,
+                client: OAuth2Client.fromAPIResponse(resp.data.client),
                 requestUrl: resp.data.request_url,
                 rpInitiated: resp.data.rp_initiated,
                 sid: resp.data.sid,
@@ -174,7 +198,13 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return { redirectTo: resp.data.redirect_to };
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
         },
         rejectLogoutRequest: async function (this: RecipeInterface, input): Promise<void> {
             await querier.sendPutRequest(
@@ -190,6 +220,9 @@ export default function getRecipeInterface(
             const resp = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
                 input.params,
+                {
+                    Cookie: `${input.cookies}`,
+                },
                 input.userContext
             );
 
@@ -197,7 +230,29 @@ export default function getRecipeInterface(
             if (redirectTo === undefined) {
                 throw new Error(resp.body);
             }
-            return { redirectTo };
+            const redirectToURL = new URL(redirectTo);
+            const consentChallenge = redirectToURL.searchParams.get("consent_challenge");
+            if (consentChallenge !== null) {
+                const consentRequest = await this.getConsentRequest({
+                    challenge: consentChallenge,
+                    userContext: input.userContext,
+                });
+
+                if (consentRequest.skip || consentRequest.client?.skipConsent) {
+                    const consentRes = await this.acceptConsentRequest({
+                        ...input,
+                        challenge: consentRequest.challenge,
+                        grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
+                        grantScope: consentRequest.requestedScope,
+                    });
+
+                    return {
+                        redirectTo: consentRes.redirectTo,
+                        setCookie: resp.headers.get("set-cookie") ?? undefined,
+                    };
+                }
+            }
+            return { redirectTo, setCookie: resp.headers.get("set-cookie") ?? undefined };
         },
 
         token: async function (this: RecipeInterface, input) {

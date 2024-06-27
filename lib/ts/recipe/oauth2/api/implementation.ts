@@ -161,6 +161,7 @@ export default function getAPIImplementation(): APIInterface {
         authGET: async (input) => {
             const res = await input.options.recipeImplementation.authorization({
                 params: input.params,
+                cookies: input.cookie,
                 userContext: input.userContext,
             });
             return res;

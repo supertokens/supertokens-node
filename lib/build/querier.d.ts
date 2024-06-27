@@ -3,6 +3,8 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
+export declare const hydraPubDomain: string;
+export declare const hydraPubPathPrefix = "/recipe/oauth2/pub";
 export declare class Querier {
     private static initCalled;
     private static hosts;
@@ -44,6 +46,7 @@ export declare class Querier {
     sendGetRequestWithResponseHeaders: (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
+        inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ) => Promise<{
         body: any;
