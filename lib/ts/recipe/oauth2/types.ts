@@ -411,7 +411,7 @@ export type APIInterface = {
               loginChallenge: string;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<LoginInfo | GeneralErrorResponse>);
+          }) => Promise<{ status: "OK"; info: LoginInfo } | GeneralErrorResponse>);
 };
 
 export type OAuth2ClientOptions = {

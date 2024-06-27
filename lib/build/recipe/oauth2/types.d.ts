@@ -313,7 +313,13 @@ export declare type APIInterface = {
               loginChallenge: string;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<LoginInfo | GeneralErrorResponse>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    info: LoginInfo;
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;

@@ -176,11 +176,14 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             return {
-                clientName: client.clientName,
-                tosUri: client.tosUri,
-                policyUri: client.policyUri,
-                logoUri: client.logoUri,
-                metadata: client.metadata,
+                status: "OK",
+                info: {
+                    clientName: client.clientName,
+                    tosUri: client.tosUri,
+                    policyUri: client.policyUri,
+                    logoUri: client.logoUri,
+                    metadata: client.metadata,
+                },
             };
         },
     };
