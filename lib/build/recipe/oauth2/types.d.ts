@@ -79,6 +79,13 @@ export declare type TokenInfo = {
     scope: string;
     tokenType: string;
 };
+export declare type LoginInfo = {
+    clientName: string;
+    tosUri: string;
+    policyUri: string;
+    logoUri: string;
+    metadata?: Record<string, any> | null;
+};
 export declare type RecipeInterface = {
     authorization(input: {
         params: any;
@@ -300,6 +307,13 @@ export declare type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>);
+    loginInfoGET:
+        | undefined
+        | ((input: {
+              loginChallenge: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<LoginInfo | GeneralErrorResponse>);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;

@@ -169,5 +169,19 @@ export default function getAPIImplementation(): APIInterface {
         tokenPOST: async (input) => {
             return input.options.recipeImplementation.token({ body: input.body, userContext: input.userContext });
         },
+        loginInfoGET: async ({ loginChallenge, options, userContext }) => {
+            const { client } = await options.recipeImplementation.getLoginRequest({
+                challenge: loginChallenge,
+                userContext,
+            });
+
+            return {
+                clientName: client.clientName,
+                tosUri: client.tosUri,
+                policyUri: client.policyUri,
+                logoUri: client.logoUri,
+                metadata: client.metadata,
+            };
+        },
     };
 }

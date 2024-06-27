@@ -174,6 +174,19 @@ export type TokenInfo = {
     tokenType: string;
 };
 
+export type LoginInfo = {
+    // The name of the client.
+    clientName: string;
+    // The URI of the client's terms of service.
+    tosUri: string;
+    // The URI of the client's privacy policy.
+    policyUri: string;
+    // The URI of the client's logo.
+    logoUri: string;
+    // The metadata associated with the client.
+    metadata?: Record<string, any> | null;
+};
+
 export type RecipeInterface = {
     authorization(input: {
         params: any;
@@ -392,6 +405,13 @@ export type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>);
+    loginInfoGET:
+        | undefined
+        | ((input: {
+              loginChallenge: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<LoginInfo | GeneralErrorResponse>);
 };
 
 export type OAuth2ClientOptions = {
