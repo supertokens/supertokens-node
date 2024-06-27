@@ -265,23 +265,24 @@ export default function getRecipeInterface(
         },
 
         getOAuth2Clients: async function (input, userContext) {
-            let response = await querier.sendGetRequest(
+            let response = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
                 {
                     ...transformObjectKeys(input, "snake-case"),
                     page_token: input.paginationToken,
                 },
+                {},
                 userContext
             );
 
-            if (response.status === "OK") {
+            if (response.body.status === "OK") {
                 // Pagination info is in the Link header, containing comma-separated links:
                 // "first", "next" (if applicable).
                 // Example: Link: </admin/clients?page_size=5&page_token=token1>; rel="first", </admin/clients?page_size=5&page_token=token2>; rel="next"
 
                 // We parse the nextPaginationToken from the Link header using RegExp
                 let nextPaginationToken: string | undefined;
-                const linkHeader = response.headers.get("link");
+                const linkHeader = response.headers.get("link") ?? "";
 
                 const nextLinkMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
                 if (nextLinkMatch) {
@@ -292,14 +293,14 @@ export default function getRecipeInterface(
 
                 return {
                     status: "OK",
-                    clients: response.data.map((client: any) => OAuth2Client.fromAPIResponse(client)),
+                    clients: response.body.data.map((client: any) => OAuth2Client.fromAPIResponse(client)),
                     nextPaginationToken,
                 };
             } else {
                 return {
                     status: "ERROR",
-                    error: response.data.error,
-                    errorHint: response.data.errorHint,
+                    error: response.body.data.error,
+                    errorHint: response.body.data.errorHint,
                 };
             }
         },

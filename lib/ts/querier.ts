@@ -567,11 +567,13 @@ export class Querier {
 
         if (strPath.startsWith(hydraPubPathPrefix)) {
             currentDomain = hydraPubDomain;
+            currentBasePath = "";
             strPath = strPath.replace(hydraPubPathPrefix, "/oauth2");
         }
 
         if (strPath.startsWith(hydraAdmPathPrefix)) {
             currentDomain = hydraAdmDomain;
+            currentBasePath = "";
             strPath = strPath.replace(hydraAdmPathPrefix, "/admin");
         }
 
@@ -653,7 +655,6 @@ export class Querier {
 }
 
 async function handleHydraAPICall(response: Response) {
-    console.log({ hydraResponse: response, text: await response.clone().text() });
     const contentType = response.headers.get("Content-Type");
 
     if (contentType?.startsWith("application/json")) {
