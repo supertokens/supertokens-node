@@ -89,9 +89,11 @@ export declare type LoginInfo = {
 export declare type RecipeInterface = {
     authorization(input: {
         params: any;
+        cookies: string | undefined;
         userContext: UserContext;
     }): Promise<{
         redirectTo: string;
+        setCookie: string | undefined;
     }>;
     token(input: { body: any; userContext: UserContext }): Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>;
     getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
@@ -287,11 +289,13 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               params: any;
+              cookie: string | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<
               | {
                     redirectTo: string;
+                    setCookie: string | undefined;
                 }
               | ErrorOAuth2
               | GeneralErrorResponse

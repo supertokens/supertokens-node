@@ -130,6 +130,7 @@ export let assertAllowedToSetupFactorElseThrowInvalidClaimError =
 export let markFactorAsCompleteInSession = Wrapper.markFactorAsCompleteInSession;
 export let getFactorsSetupForUser = Wrapper.getFactorsSetupForUser;
 export let getRequiredSecondaryFactorsForUser = Wrapper.getRequiredSecondaryFactorsForUser;
+export let getMFARequirementsForAuth = Wrapper.getMFARequirementsForAuth;
 export const addToRequiredSecondaryFactorsForUser = Wrapper.addToRequiredSecondaryFactorsForUser;
 export const removeFromRequiredSecondaryFactorsForUser = Wrapper.removeFromRequiredSecondaryFactorsForUser;
 

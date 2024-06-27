@@ -32,9 +32,16 @@ export default async function authGET(
     let response = await apiImplementation.authGET({
         options,
         params: Object.fromEntries(params.entries()),
+        cookie: options.req.getHeaderValue("cookie"),
         userContext,
     });
     if ("redirectTo" in response) {
+        // TODO:
+        if (response.setCookie) {
+            for (const c of response.setCookie.replace(/, (\w+=)/, "\n$1").split("\n")) {
+                options.res.setHeader("set-cookie", c, true);
+            }
+        }
         options.res.original.redirect(response.redirectTo);
     } else {
         send200Response(options.res, response);

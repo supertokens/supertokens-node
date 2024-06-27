@@ -55,9 +55,7 @@ export default function getAPIImplementation(): APIInterface {
                 redirectTo:
                     websiteDomain +
                     websiteBasePath +
-                    `?hint=${request.oidcContext?.login_hint ?? ""}&redirectToPath=${encodeURIComponent(
-                        "/continue-/auth/oauth2/login?login_challenge=" + loginChallenge
-                    )}`,
+                    `?hint=${request.oidcContext?.login_hint ?? ""}&loginChallenge=${loginChallenge}`,
             };
         },
         loginPOST: async ({ loginChallenge, accept, options, session, userContext }) => {
@@ -163,6 +161,7 @@ export default function getAPIImplementation(): APIInterface {
         authGET: async (input) => {
             const res = await input.options.recipeImplementation.authorization({
                 params: input.params,
+                cookies: input.cookie,
                 userContext: input.userContext,
             });
             return res;

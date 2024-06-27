@@ -22,9 +22,9 @@ import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 
-const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
+export const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
 const hydraAdmDomain = process.env.HYDRA_ADM ?? "http://localhost:4445"; // This will be used as a domain for paths starting with hydraAdmPathPrefix
-const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
+export const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
 const hydraAdmPathPrefix = "/recipe/oauth2/admin"; // Replaced with "/admin" when sending the request (/recipe/oauth2/admin/clients -> /admin/clients)
 
 export class Querier {
@@ -352,6 +352,7 @@ export class Querier {
     sendGetRequestWithResponseHeaders = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
+        inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ): Promise<{ body: any; headers: Headers }> => {
         return await this.sendRequestHelper(
@@ -359,7 +360,9 @@ export class Querier {
             "GET",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion };
+                let headers: any = inpHeaders ?? {};
+                headers["cdi-version"] = apiVersion;
+
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -650,6 +653,7 @@ export class Querier {
 }
 
 async function handleHydraAPICall(response: Response) {
+    console.log({ hydraResponse: response, text: await response.clone().text() });
     const contentType = response.headers.get("Content-Type");
 
     if (contentType?.startsWith("application/json")) {
@@ -667,5 +671,5 @@ async function handleHydraAPICall(response: Response) {
         };
     }
 
-    return { body: { status: response.ok ? "OK" : "ERROR", headers: response.headers } };
+    return { body: { status: response.ok ? "OK" : "ERROR" }, headers: response.headers };
 }

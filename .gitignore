@@ -11,4 +11,6 @@ releasePassword
 .tmp
 .idea
 /test_report
+/temp_test_exports
+/temp_*
 /.nyc_output
