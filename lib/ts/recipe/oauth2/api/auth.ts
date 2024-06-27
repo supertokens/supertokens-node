@@ -17,6 +17,7 @@ import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import setCookieParser from "set-cookie-parser";
+import Session from "../../session";
 
 export default async function authGET(
     apiImplementation: APIInterface,
@@ -29,11 +30,19 @@ export default async function authGET(
     const origURL = options.req.getOriginalURL();
     const splitURL = origURL.split("?");
     const params = new URLSearchParams(splitURL[1]);
+    let session;
+    try {
+        session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
+    } catch {
+        // TODO: explain
+        // ignore
+    }
 
     let response = await apiImplementation.authGET({
         options,
         params: Object.fromEntries(params.entries()),
         cookie: options.req.getHeaderValue("cookie"),
+        session,
         userContext,
     });
     if ("redirectTo" in response) {

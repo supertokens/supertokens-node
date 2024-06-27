@@ -160,18 +160,18 @@ export type LogoutRequest = {
 
 export type TokenInfo = {
     // The access token issued by the authorization server.
-    accessToken: string;
+    access_token: string;
     // The lifetime in seconds of the access token. For example, the value "3600" denotes that the access token will expire in one hour from the time the response was generated.
     // integer <int64>
-    expiresIn: number;
+    expires_in: number;
     // To retrieve a refresh token request the id_token scope.
-    idToken: string;
+    id_token: string;
     // The refresh token, which can be used to obtain new access tokens. To retrieve it add the scope "offline" to your access token request.
-    refreshToken: string;
+    refresh_token: string;
     // The scope of the access token
     scope: string;
     // The type of the token issued
-    tokenType: string;
+    token_type: string;
 };
 
 export type LoginInfo = {
@@ -191,6 +191,7 @@ export type RecipeInterface = {
     authorization(input: {
         params: any;
         cookies: string | undefined;
+        session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }): Promise<{ redirectTo: string; setCookie: string | undefined }>;
     token(input: { body: any; userContext: UserContext }): Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>;
@@ -395,6 +396,7 @@ export type APIInterface = {
         | ((input: {
               params: any;
               cookie: string | undefined;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<{ redirectTo: string; setCookie: string | undefined } | ErrorOAuth2 | GeneralErrorResponse>);

@@ -38,6 +38,7 @@ export default function getAPIImplementation(): APIInterface {
                 const accept = await options.recipeImplementation.acceptLoginRequest({
                     challenge: loginChallenge,
                     subject: session.getUserId(),
+                    identityProviderSessionId: session.getHandle(),
                     userContext,
                 });
                 return { redirectTo: accept.redirectTo };
@@ -162,6 +163,7 @@ export default function getAPIImplementation(): APIInterface {
             const res = await input.options.recipeImplementation.authorization({
                 params: input.params,
                 cookies: input.cookie,
+                session: input.session,
                 userContext: input.userContext,
             });
             return res;

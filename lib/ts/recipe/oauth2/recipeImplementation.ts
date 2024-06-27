@@ -19,6 +19,7 @@ import { NormalisedAppinfo } from "../../types";
 import { RecipeInterface, TypeNormalisedInput, ConsentRequest, LoginRequest, LogoutRequest } from "./types";
 import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
+import { getUser } from "../..";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -232,18 +233,38 @@ export default function getRecipeInterface(
             }
             const redirectToURL = new URL(redirectTo);
             const consentChallenge = redirectToURL.searchParams.get("consent_challenge");
-            if (consentChallenge !== null) {
+            if (consentChallenge !== null && input.session !== undefined) {
                 const consentRequest = await this.getConsentRequest({
                     challenge: consentChallenge,
                     userContext: input.userContext,
                 });
 
+                const user = await getUser(input.session.getUserId());
+                if (!user) {
+                    throw new Error("Should not happen");
+                }
                 if (consentRequest.skip || consentRequest.client?.skipConsent) {
+                    const idToken: any = {};
+                    if (consentRequest.requestedScope?.includes("email")) {
+                        idToken.email = user?.emails[0];
+                        idToken.email_verified = user.loginMethods.some(
+                            (lm) => lm.hasSameEmailAs(idToken.email) && lm.verified
+                        );
+                    }
+                    if (consentRequest.requestedScope?.includes("phoneNumber")) {
+                        idToken.phoneNumber = user?.phoneNumbers[0];
+                        idToken.phoneNumber_verified = user.loginMethods.some(
+                            (lm) => lm.hasSamePhoneNumberAs(idToken.phoneNumber) && lm.verified
+                        );
+                    }
                     const consentRes = await this.acceptConsentRequest({
                         ...input,
                         challenge: consentRequest.challenge,
                         grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
                         grantScope: consentRequest.requestedScope,
+                        session: {
+                            id_token: idToken,
+                        },
                     });
 
                     return {
@@ -256,12 +277,17 @@ export default function getRecipeInterface(
         },
 
         token: async function (this: RecipeInterface, input) {
-            // TODO: Untested and suspicios
-            return querier.sendGetRequest(
+            const body = new FormData(); // TODO: we ideally want to avoid using formdata, the core can do the translation
+            for (const key in input.body) {
+                body.append(key, input.body[key]);
+            }
+            const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/pub/token`),
-                input.body,
+                body,
                 input.userContext
             );
+
+            return res.data;
         },
 
         getOAuth2Clients: async function (input, userContext) {

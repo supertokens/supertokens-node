@@ -72,12 +72,12 @@ export declare type LogoutRequest = {
     subject: string;
 };
 export declare type TokenInfo = {
-    accessToken: string;
-    expiresIn: number;
-    idToken: string;
-    refreshToken: string;
+    access_token: string;
+    expires_in: number;
+    id_token: string;
+    refresh_token: string;
     scope: string;
-    tokenType: string;
+    token_type: string;
 };
 export declare type LoginInfo = {
     clientName: string;
@@ -90,6 +90,7 @@ export declare type RecipeInterface = {
     authorization(input: {
         params: any;
         cookies: string | undefined;
+        session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }): Promise<{
         redirectTo: string;
@@ -290,6 +291,7 @@ export declare type APIInterface = {
         | ((input: {
               params: any;
               cookie: string | undefined;
+              session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

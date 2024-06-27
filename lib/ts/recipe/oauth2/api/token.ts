@@ -28,7 +28,7 @@ export default async function tokenPOST(
 
     let response = await apiImplementation.tokenPOST({
         options,
-        body: options.req.getFormData(),
+        body: await options.req.getFormData(),
         userContext,
     });
 

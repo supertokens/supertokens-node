@@ -130,6 +130,8 @@ export class Querier {
     // path should start with "/"
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext): Promise<T> => {
         this.invalidateCoreCallCache(userContext);
+        // TODO: remove FormData
+        const isForm = body !== undefined && body instanceof FormData;
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -138,8 +140,10 @@ export class Querier {
                 let apiVersion = await this.getAPIVersion();
                 let headers: any = {
                     "cdi-version": apiVersion,
-                    "content-type": "application/json; charset=utf-8",
                 };
+                if (!isForm) {
+                    headers["content-type"] = "application/json; charset=utf-8";
+                }
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -170,7 +174,7 @@ export class Querier {
                 }
                 return doFetch(url, {
                     method: "POST",
-                    body: body !== undefined ? JSON.stringify(body) : undefined,
+                    body: isForm ? body : body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },
