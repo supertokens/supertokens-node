@@ -48,7 +48,7 @@ else
 fi
 
 echo "$(tput setaf 3)* Does not cntain .only in tests?$(tput sgr 0)"
-grep -ri --exclude-dir=with-typescript "\.only" ./test
+grep -ri --exclude-dir=with-typescript --exclude-dir=test-server "\.only" ./test
 dotOnly=$?
 
 if [ $dotOnly -eq 1 ]
