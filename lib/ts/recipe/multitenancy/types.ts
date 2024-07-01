@@ -176,8 +176,14 @@ export type APIInterface = {
     }) => Promise<
         | {
               status: "OK";
+              emailPassword: {
+                  enabled: boolean;
+              };
               thirdParty: {
                   providers: { id: string; name?: string }[];
+              };
+              passwordless: {
+                  enabled: boolean;
               };
               firstFactors: string[];
           }

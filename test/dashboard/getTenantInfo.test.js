@@ -17,7 +17,8 @@ const { printPath, killAllST, setupST, cleanST, startSTWithMultitenancy } = requ
 let STExpress = require("../../");
 let Dashboard = require("../../recipe/dashboard");
 let Multitenancy = require("../../recipe/multitenancy");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+let ThirdParty = require("../../lib/build/recipe/thirdparty");
+let EmailPassword = require("../../lib/build/recipe/emailpassword");
 const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
 const request = require("supertest");
@@ -51,7 +52,8 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
                 Dashboard.init({
                     apiKey: "testapikey",
                 }),
-                ThirdPartyEmailPassword.init(),
+                ThirdParty.init(),
+                EmailPassword.init(),
                 Session.init(),
             ],
         });
@@ -79,7 +81,7 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
             ],
         });
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp(tenantName, "test@supertokens.com", "abcd1235");
+        await EmailPassword.signUp(tenantName, "test@supertokens.com", "abcd1235");
 
         const getTenantInfoURL = `/auth/${tenantName}/dashboard/api/tenant`;
 
@@ -122,7 +124,8 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
                 Dashboard.init({
                     apiKey: "testapikey",
                 }),
-                ThirdPartyEmailPassword.init(),
+                ThirdParty.init(),
+                EmailPassword.init(),
                 Session.init(),
             ],
         });
@@ -168,7 +171,8 @@ describe(`User Dashboard getTenantInfo: ${printPath("[test/dashboard/getTenantIn
                 Dashboard.init({
                     apiKey: "testapikey",
                 }),
-                ThirdPartyEmailPassword.init(),
+                ThirdParty.init(),
+                EmailPassword.init(),
                 Session.init(),
             ],
         });
