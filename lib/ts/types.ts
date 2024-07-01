@@ -248,6 +248,18 @@ export type SecurityFunctions = {
         }[];
         userContext: UserContext;
     }) => Promise<boolean>;
+
+    banUser: (input: {
+        userId: string; // can be a primary or recipe user id, either way, the primary user id is banned
+    }) => Promise<void>;
+
+    isUserBanned: (input: {
+        userId: string; // can be a primary or recipe user id, either way, the primary user id is banned
+    }) => Promise<boolean>;
+
+    unbanUser: (input: {
+        userId: string; // can be a primary or recipe user id, either way, the primary user id is unbanned
+    }) => Promise<void>;
 };
 
 export type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;

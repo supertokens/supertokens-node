@@ -121,23 +121,44 @@ export type RecipeInterface = {
             session: SessionContainerInterface | undefined;
             tenantId: string;
             userContext: UserContext;
+            securityOptions?: {
+                enforceEmailBan?: boolean;
+                enforcePhoneNumberBan?: boolean;
+                ipBan?: {
+                    enabled?: boolean;
+                    ipAddress?: string;
+                };
+            };
         }
-    ) => Promise<{
-        status: "OK";
-        preAuthSessionId: string;
-        codeId: string;
-        deviceId: string;
-        userInputCode: string;
-        linkCode: string;
-        codeLifetime: number;
-        timeCreated: number;
-    }>;
+    ) => Promise<
+        | {
+              status: "OK";
+              preAuthSessionId: string;
+              codeId: string;
+              deviceId: string;
+              userInputCode: string;
+              linkCode: string;
+              codeLifetime: number;
+              timeCreated: number;
+          }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "PHONE_NUMBER_BANNED" | "IP_BANNED_ERROR";
+          }
+    >;
 
     createNewCodeForDevice: (input: {
         deviceId: string;
         userInputCode?: string;
         tenantId: string;
         userContext: UserContext;
+        securityOptions?: {
+            enforceEmailBan?: boolean;
+            enforcePhoneNumberBan?: boolean;
+            ipBan?: {
+                enabled?: boolean;
+                ipAddress?: string;
+            };
+        };
     }) => Promise<
         | {
               status: "OK";
@@ -150,6 +171,9 @@ export type RecipeInterface = {
               timeCreated: number;
           }
         | { status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR" }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "PHONE_NUMBER_BANNED" | "IP_BANNED_ERROR";
+          }
     >;
     consumeCode: (
         input:
@@ -160,6 +184,15 @@ export type RecipeInterface = {
                   session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
+                  securityOptions?: {
+                      enforceUserBan?: boolean;
+                      enforceEmailBan?: boolean;
+                      enforcePhoneNumberBan?: boolean;
+                      ipBan?: {
+                          enabled?: boolean;
+                          ipAddress?: string;
+                      };
+                  };
               }
             | {
                   linkCode: string;
@@ -167,6 +200,15 @@ export type RecipeInterface = {
                   session: SessionContainerInterface | undefined;
                   tenantId: string;
                   userContext: UserContext;
+                  securityOptions?: {
+                      enforceUserBan?: boolean;
+                      enforceEmailBan?: boolean;
+                      enforcePhoneNumberBan?: boolean;
+                      ipBan?: {
+                          enabled?: boolean;
+                          ipAddress?: string;
+                      };
+                  };
               }
     ) => Promise<
         | {
@@ -194,6 +236,14 @@ export type RecipeInterface = {
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "PHONE_NUMBER_BANNED" | "IP_BANNED_ERROR";
+          }
+        | {
+              status: "USER_BANNED_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
           }
     >;
 
@@ -336,6 +386,7 @@ export type APIInterface = {
             session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
+            googleRecaptchaToken?: string;
         }
     ) => Promise<
         | {
@@ -357,6 +408,7 @@ export type APIInterface = {
             session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
+            googleRecaptchaToken?: string;
         }
     ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 

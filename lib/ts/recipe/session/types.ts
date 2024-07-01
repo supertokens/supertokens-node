@@ -224,7 +224,15 @@ export type RecipeInterface = {
         disableAntiCsrf?: boolean;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<SessionContainerInterface>;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+        };
+    }): Promise<
+        | { status: "OK"; session: SessionContainerInterface }
+        | {
+              status: "USER_BANNED_ERROR"; // this will be the case if the primary user id is banned, and not just the recipe user id
+          }
+    >;
 
     getGlobalClaimValidators(input: {
         tenantId: string;
@@ -241,11 +249,17 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<SessionContainerInterface | undefined>;
 
+    // this function will throw unauthorised error in case the user is
+    // banned - since this function is only to be called with the
+    // current user's session.
     refreshSession(input: {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+        };
     }): Promise<SessionContainerInterface>;
 
     /**
