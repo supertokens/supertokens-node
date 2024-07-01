@@ -337,6 +337,7 @@ export type APIInterface = {
     generatePasswordResetTokenPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
               formFields: {
                   id: string;
                   value: string;
@@ -358,6 +359,7 @@ export type APIInterface = {
     passwordResetPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
               formFields: {
                   id: string;
                   value: string;
@@ -382,6 +384,7 @@ export type APIInterface = {
     signInPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
               formFields: {
                   id: string;
                   value: string;
@@ -409,6 +412,7 @@ export type APIInterface = {
     signUpPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
               formFields: {
                   id: string;
                   value: string;

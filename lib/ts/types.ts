@@ -19,6 +19,8 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
+import OverrideableBuilder from "supertokens-js-override";
+import { SessionContainer } from "./recipe/session";
 declare const __brand: unique symbol;
 type Brand<B> = { [__brand]: B };
 
@@ -65,6 +67,183 @@ export type TypeInput = {
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
     debug?: boolean;
+    security?: {
+        anomalyServiceAPIKey?: string; // this will be provided by us on our supertokens.com dashboard
+        rateLimitServiceApiKey?: string; // this will be provided by us on our supertokens.com dashboard (cache wrapper)
+        googleRecaptcha?: {
+            // if the user provides both, we will use v2
+            v2SecretKey?: string;
+            v1SecretKey?: string;
+        };
+        override?: (
+            originalImplementation: SecurityFunctions,
+            builder?: OverrideableBuilder<SecurityFunctions>
+        ) => SecurityFunctions;
+    };
+};
+
+export type InfoFromRequest = {
+    ipAddress?: string;
+    userAgent?: string;
+};
+
+export type AnomalyServiceActionTypes =
+    | "sign-in"
+    | "sign-up"
+    | "session-refresh"
+    | "password-reset"
+    | "send-email"
+    | "send-sms"
+    | "mfa-verify"
+    | "mfa-setup";
+
+export type RiskScores = {
+    // all values are between 0 and 1, with 1 being highest risk
+    ipRisk: number;
+    phoneNumberRisk?: number;
+    emailRisk?: number;
+    sessionRisk?: number;
+    userIdRisk?: number;
+};
+
+export type SecurityFunctions = {
+    getInfoFromRequest: (input: { request: BaseRequest; userContext: UserContext }) => InfoFromRequest;
+
+    performGoogleRecaptchaV2: (input: {
+        infoFromRequest: InfoFromRequest;
+        clientResponseToken: string;
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
+    performGoogleRecaptchaV1: (input: {
+        infoFromRequest: InfoFromRequest;
+        clientResponseToken: string;
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
+    calculateRiskScoreUsingAnomalyService: (input: {
+        infoFromRequest: InfoFromRequest;
+        email?: string;
+        phoneNumber?: string;
+        sessionHandle?: string;
+        tenantId: string;
+        userId?: string;
+        actionType: AnomalyServiceActionTypes;
+        userContext: UserContext;
+    }) => Promise<RiskScores>;
+
+    logToAnomalyService: (input: {
+        infoFromRequest: InfoFromRequest;
+        email?: string;
+        phoneNumber?: string;
+        sessionHandle?: string;
+        tenantId: string;
+        userId?: string;
+        action: AnomalyServiceActionTypes;
+        success: boolean; // this input is what differentiates this function from the one that generates the risk score.
+        userContext: UserContext;
+    }) => void; // we intentionally do not return a promise cause this should be non blocking
+
+    // these are all here and not in the respective recipes cause they are to be applied
+    // only in the APIs and not in the recipe function. We still can't put them in the API
+    // cause for third party, we do not have the thirdPartyInfo in the api args in the input.
+
+    // Note that for passwordless, we will call this during createCode.
+    getRateLimitForEmailPasswordSignIn: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        email: string;
+        infoFromRequest: InfoFromRequest;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              millisecondsIntervalBetweenAttempts: number;
+          }
+        | undefined; // undefined means no rate limit
+    getRateLimitForEmailPasswordSignUp: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        email: string;
+        infoFromRequest: InfoFromRequest;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              millisecondsIntervalBetweenAttempts: number;
+          }
+        | undefined;
+    getRateLimitForThirdPartySignInUp: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        thirdPartyId: string; // we intentionally do not give thirdPartyUserId because if we did, we'd have to query the thirdParty provider first
+        infoFromRequest: InfoFromRequest;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              millisecondsIntervalBetweenAttempts: number;
+          }
+        | undefined;
+    getRateLimitForSendingPasswordlessEmail: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        email: string;
+        infoFromRequest: InfoFromRequest;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              millisecondsIntervalBetweenAttempts: number;
+          }
+        | undefined;
+    getRateLimitForSendingPasswordlessSms: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        phoneNumber: string;
+        infoFromRequest: InfoFromRequest;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              millisecondsIntervalBetweenAttempts: number;
+          }
+        | undefined;
+    getRateLimitForResetPassword: (input: {
+        tenantId: string;
+        email: string;
+        infoFromRequest: InfoFromRequest;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              millisecondsIntervalBetweenAttempts: number;
+          }
+        | undefined;
+    getRateLimitForVerifyEmail: (input: {
+        tenantId: string;
+        session: SessionContainer;
+        // we intentionally do not pass in the email here cause to fetch that, we'd need to query the core first
+        infoFromRequest: InfoFromRequest;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              millisecondsIntervalBetweenAttempts: number;
+          }
+        | undefined;
+
+    // these are functions to actually query the rate limit service
+    setRateLimitForKey: (input: {
+        key: string;
+        millisecondsIntervalBetweenAttempts: number;
+        userContext: UserContext;
+    }) => Promise<void>;
+    isKeyRateLimited: (input: {
+        key: string;
+        millisecondsIntervalBetweenAttempts: number;
+        userContext: UserContext;
+    }) => Promise<boolean>;
 };
 
 export type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;
