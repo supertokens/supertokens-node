@@ -67,7 +67,6 @@ export function validateAndNormaliseUserInput(
 export function getEmailVerifyLink(input: {
     appInfo: NormalisedAppinfo;
     token: string;
-    recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
     userContext: UserContext;
@@ -83,8 +82,6 @@ export function getEmailVerifyLink(input: {
         "/verify-email" +
         "?token=" +
         input.token +
-        "&rid=" +
-        input.recipeId +
         "&tenantId=" +
         input.tenantId
     );

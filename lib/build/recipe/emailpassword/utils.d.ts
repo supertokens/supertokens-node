@@ -25,7 +25,6 @@ export declare function defaultEmailValidator(
 export declare function getPasswordResetLink(input: {
     appInfo: NormalisedAppinfo;
     token: string;
-    recipeId: string;
     tenantId: string;
     request: BaseRequest | undefined;
     userContext: UserContext;

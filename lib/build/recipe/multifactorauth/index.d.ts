@@ -48,6 +48,7 @@ export declare let assertAllowedToSetupFactorElseThrowInvalidClaimError: typeof 
 export declare let markFactorAsCompleteInSession: typeof Wrapper.markFactorAsCompleteInSession;
 export declare let getFactorsSetupForUser: typeof Wrapper.getFactorsSetupForUser;
 export declare let getRequiredSecondaryFactorsForUser: typeof Wrapper.getRequiredSecondaryFactorsForUser;
+export declare let getMFARequirementsForAuth: typeof Wrapper.getMFARequirementsForAuth;
 export declare const addToRequiredSecondaryFactorsForUser: typeof Wrapper.addToRequiredSecondaryFactorsForUser;
 export declare const removeFromRequiredSecondaryFactorsForUser: typeof Wrapper.removeFromRequiredSecondaryFactorsForUser;
 export { MultiFactorAuthClaim };

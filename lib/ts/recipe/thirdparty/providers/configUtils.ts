@@ -37,41 +37,57 @@ export function getProviderConfigForClient(
 async function fetchAndSetConfig(provider: TypeProvider, clientType: string | undefined, userContext: UserContext) {
     let config = await provider.getConfigForClientType({ clientType, userContext });
 
-    config = await discoverOIDCEndpoints(config);
+    await discoverOIDCEndpoints(config);
 
-    provider.config = config;
+    // We are doing Object.assign here to retain the reference to the provider.config which originally came from
+    // the impl object in the `custom.ts`. We are doing this because if we replace the provider.config with the
+    // new config object, then when the user overrides a provider function, and access the `originalImplementaion.config`,
+    // it will not receive the updated config, since the user's override would have returned a new provider object and
+    // the config is being set on to it. By doing Object.assign, we retain the original reference and the config is
+    // consistently available in the override as well as the implementation.
+    Object.assign(provider.config, config);
 }
 
 function createProvider(input: ProviderInput): TypeProvider {
-    if (input.config.thirdPartyId.startsWith("active-directory")) {
-        return ActiveDirectory(input);
-    } else if (input.config.thirdPartyId.startsWith("apple")) {
-        return Apple(input);
-    } else if (input.config.thirdPartyId.startsWith("bitbucket")) {
-        return Bitbucket(input);
-    } else if (input.config.thirdPartyId.startsWith("discord")) {
-        return Discord(input);
-    } else if (input.config.thirdPartyId.startsWith("facebook")) {
-        return Facebook(input);
-    } else if (input.config.thirdPartyId.startsWith("github")) {
-        return Github(input);
-    } else if (input.config.thirdPartyId.startsWith("gitlab")) {
-        return Gitlab(input);
-    } else if (input.config.thirdPartyId.startsWith("google-workspaces")) {
-        return GoogleWorkspaces(input);
-    } else if (input.config.thirdPartyId.startsWith("google")) {
-        return Google(input);
-    } else if (input.config.thirdPartyId.startsWith("okta")) {
-        return Okta(input);
-    } else if (input.config.thirdPartyId.startsWith("linkedin")) {
-        return Linkedin(input);
-    } else if (input.config.thirdPartyId.startsWith("twitter")) {
-        return Twitter(input);
-    } else if (input.config.thirdPartyId.startsWith("boxy-saml")) {
-        return BoxySAML(input);
+    // We are cloning the input object because the built-in providers modify the `override` in the input
+    // object, and we don't want to modify the original input object. If we do not clone the input object,
+    // we add a new function for override and then call the override from the input object, and this way,
+    // the override call stack keeps increasing over time. After a certain number of calls, the call stack
+    // will overflow and the thirdparty provider will start failing.
+    // We are only doing a shallow clone because the `override` is in the top level of the input object,
+    // and other properties are just used for reading. The input object is also not exposed by any of the
+    // interface for modification.
+    const clonedInput = { ...input };
+
+    if (clonedInput.config.thirdPartyId.startsWith("active-directory")) {
+        return ActiveDirectory(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("apple")) {
+        return Apple(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("bitbucket")) {
+        return Bitbucket(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("discord")) {
+        return Discord(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("facebook")) {
+        return Facebook(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("github")) {
+        return Github(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("gitlab")) {
+        return Gitlab(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("google-workspaces")) {
+        return GoogleWorkspaces(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("google")) {
+        return Google(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("okta")) {
+        return Okta(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("linkedin")) {
+        return Linkedin(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("twitter")) {
+        return Twitter(clonedInput);
+    } else if (clonedInput.config.thirdPartyId.startsWith("boxy-saml")) {
+        return BoxySAML(clonedInput);
     }
 
-    return NewProvider(input);
+    return NewProvider(clonedInput);
 }
 
 export async function findAndCreateProviderInstance(

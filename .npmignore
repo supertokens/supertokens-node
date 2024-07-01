@@ -19,3 +19,4 @@ add-ts-no-check.js
 docs/
 .prettierignore
 updateLibInExample
+testExports.sh

@@ -32,6 +32,7 @@ let EmailPassword = require("../recipe/emailpassword");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let { middleware, errorHandler } = require("../framework/express");
 let { verifySession } = require("../recipe/session/framework/express");
+let Passwordless = require("../recipe/passwordless");
 
 describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () {
     beforeEach(async function () {
@@ -45,7 +46,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         await cleanST();
     });
 
-    it("test rid with session and non existant API in session recipe gives 404", async function () {
+    it("test rid with session and non existant API in session recipe still works if the other recipe is initialized", async function () {
         const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
@@ -76,7 +77,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                     }
                 })
         );
-        assert(response.status === 404);
+        assert(response.status === 400);
     });
 
     it("test no rid with existent API does not give 404", async function () {
@@ -110,6 +111,164 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 })
         );
         assert(response.status === 400);
+    });
+
+    it("test wrong rid with existent API works", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                EmailPassword.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("rid", "passwordless")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "test123!",
+                        },
+                        {
+                            id: "email",
+                            value: "user@test.com",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 200);
+    });
+
+    it("test random rid with existent API works", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                EmailPassword.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("rid", "random")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "test123!",
+                        },
+                        {
+                            id: "email",
+                            value: "user@test.com",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 200);
+    });
+
+    it("test wrong rid returns 404 if recipe missing", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .set("rid", "passwordless")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "test123!",
+                        },
+                        {
+                            id: "email",
+                            value: "user@test.com",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 404);
     });
 
     it("test rid as anti-csrf with existent API does not give 404", async function () {
@@ -146,7 +305,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         assert(response.status === 400);
     });
 
-    it("test random rid with existent API gives 404", async function () {
+    it("test random rid with existent API still works", async function () {
         const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
@@ -177,7 +336,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                     }
                 })
         );
-        assert(response.status === 404);
+        assert(response.status === 400);
     });
 
     it("custom response express", async function () {

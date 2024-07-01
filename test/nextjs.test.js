@@ -24,7 +24,7 @@ if (major >= 18) {
     const Session = require("../lib/build/recipe/session");
     const EmailPassword = require("../lib/build/recipe/emailpassword");
     const EmailVerification = require("../lib/build/recipe/emailverification");
-    const ThirdPartyEmailPassword = require("../lib/build/recipe/thirdpartyemailpassword");
+    const ThirdParty = require("../lib/build/recipe/thirdparty");
     const {
         superTokensNextWrapper,
         withSession,
@@ -452,20 +452,22 @@ if (major >= 18) {
                                 },
                             },
                         }),
-                        ThirdPartyEmailPassword.init({
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
+                        ThirdParty.init({
+                            signInAndUpFeature: {
+                                providers: [
+                                    {
+                                        config: {
+                                            thirdPartyId: "google",
+                                            clients: [
+                                                {
+                                                    clientId: "",
+                                                    clientSecret: "",
+                                                },
+                                            ],
+                                        },
                                     },
-                                },
-                            ],
+                                ],
+                            },
                         }),
                         Session.init({
                             getTokenTransferMethod: () => "cookie",
@@ -524,7 +526,7 @@ if (major >= 18) {
                         const res = await fetch({
                             method: "POST",
                             headers: {
-                                rid: "thirdpartyemailpassword",
+                                rid: "thirdparty",
                                 "content-type": "application/x-www-form-urlencoded",
                             },
                             body: encodedData,

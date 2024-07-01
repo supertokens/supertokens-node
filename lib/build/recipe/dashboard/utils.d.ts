@@ -12,15 +12,8 @@ export declare function getUserForRecipeId(
     userContext: UserContext
 ): Promise<{
     user: UserWithFirstAndLastName | undefined;
-    recipe:
-        | "emailpassword"
-        | "thirdparty"
-        | "passwordless"
-        | "thirdpartyemailpassword"
-        | "thirdpartypasswordless"
-        | undefined;
+    recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
 }>;
-export declare function isRecipeInitialised(recipeId: RecipeIdForUser): boolean;
 export declare function validateApiKey(input: {
     req: BaseRequest;
     config: TypeNormalisedInput;

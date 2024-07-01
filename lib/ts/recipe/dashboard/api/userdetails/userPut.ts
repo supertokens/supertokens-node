@@ -1,13 +1,9 @@
 import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailPasswordRecipe from "../../../emailpassword/recipe";
-import ThirdPartyEmailPasswordRecipe from "../../../thirdpartyemailpassword/recipe";
 import PasswordlessRecipe from "../../../passwordless/recipe";
-import ThirdPartyPasswordlessRecipe from "../../../thirdpartypasswordless/recipe";
 import EmailPassword from "../../../emailpassword";
 import Passwordless from "../../../passwordless";
-import ThirdPartyEmailPassword from "../../../thirdpartyemailpassword";
-import ThirdPartyPasswordless from "../../../thirdpartypasswordless";
 import { isValidRecipeId, getUserForRecipeId } from "../../utils";
 import UserMetadataRecipe from "../../../usermetadata/recipe";
 import UserMetadata from "../../../usermetadata";
@@ -44,7 +40,7 @@ type Response =
       };
 
 const updateEmailForRecipeId = async (
-    recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
+    recipeId: "emailpassword" | "passwordless" | "thirdparty",
     recipeUserId: RecipeUserId,
     email: string,
     tenantId: string,
@@ -80,44 +76,6 @@ const updateEmailForRecipeId = async (
         }
 
         const emailUpdateResponse = await EmailPassword.updateEmailOrPassword({
-            recipeUserId,
-            email,
-            userContext,
-        });
-
-        if (emailUpdateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-            return {
-                status: "EMAIL_ALREADY_EXISTS_ERROR",
-            };
-        } else if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
-            return {
-                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                reason: emailUpdateResponse.reason,
-            };
-        } else if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
-            throw new Error("Should never come here");
-        }
-
-        return {
-            status: "OK",
-        };
-    }
-
-    if (recipeId === "thirdpartyemailpassword") {
-        let emailFormFields = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError().config.signUpFeature.formFields.filter(
-            (field) => field.id === FORM_FIELD_EMAIL_ID
-        );
-
-        let validationError = await emailFormFields[0].validate(email, tenantId, userContext);
-
-        if (validationError !== undefined) {
-            return {
-                status: "INVALID_EMAIL_ERROR",
-                error: validationError,
-            };
-        }
-
-        const emailUpdateResponse = await ThirdPartyEmailPassword.updateEmailOrPassword({
             recipeUserId,
             email,
             userContext,
@@ -201,56 +159,6 @@ const updateEmailForRecipeId = async (
         };
     }
 
-    if (recipeId === "thirdpartypasswordless") {
-        let isValidEmail = true;
-        let validationError = "";
-
-        const passwordlessConfig = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().passwordlessRecipe.config;
-
-        if (passwordlessConfig.contactMethod === "PHONE") {
-            const validationResult = await defaultValidateEmail(email);
-
-            if (validationResult !== undefined) {
-                isValidEmail = false;
-                validationError = validationResult;
-            }
-        } else {
-            const validationResult = await passwordlessConfig.validateEmailAddress(email, tenantId);
-
-            if (validationResult !== undefined) {
-                isValidEmail = false;
-                validationError = validationResult;
-            }
-        }
-
-        if (!isValidEmail) {
-            return {
-                status: "INVALID_EMAIL_ERROR",
-                error: validationError,
-            };
-        }
-
-        const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            recipeUserId,
-            email,
-            userContext,
-        });
-
-        if (updateResult.status === "UNKNOWN_USER_ID_ERROR") {
-            throw new Error("Should never come here");
-        }
-
-        if (updateResult.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-            return {
-                status: "EMAIL_ALREADY_EXISTS_ERROR",
-            };
-        }
-
-        return {
-            status: "OK",
-        };
-    }
-
     /**
      * If it comes here then the user is a third party user in which case the UI should not have allowed this
      */
@@ -258,7 +166,6 @@ const updateEmailForRecipeId = async (
 };
 
 const updatePhoneForRecipeId = async (
-    recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
     recipeUserId: RecipeUserId,
     phone: string,
     tenantId: string,
@@ -279,116 +186,59 @@ const updatePhoneForRecipeId = async (
           reason: string;
       }
 > => {
-    if (recipeId === "passwordless") {
-        let isValidPhone = true;
-        let validationError = "";
+    let isValidPhone = true;
+    let validationError = "";
 
-        const passwordlessConfig = PasswordlessRecipe.getInstanceOrThrowError().config;
+    const passwordlessConfig = PasswordlessRecipe.getInstanceOrThrowError().config;
 
-        if (passwordlessConfig.contactMethod === "EMAIL") {
-            const validationResult = await defaultValidatePhoneNumber(phone);
+    if (passwordlessConfig.contactMethod === "EMAIL") {
+        const validationResult = await defaultValidatePhoneNumber(phone);
 
-            if (validationResult !== undefined) {
-                isValidPhone = false;
-                validationError = validationResult;
-            }
-        } else {
-            const validationResult = await passwordlessConfig.validatePhoneNumber(phone, tenantId);
-
-            if (validationResult !== undefined) {
-                isValidPhone = false;
-                validationError = validationResult;
-            }
+        if (validationResult !== undefined) {
+            isValidPhone = false;
+            validationError = validationResult;
         }
+    } else {
+        const validationResult = await passwordlessConfig.validatePhoneNumber(phone, tenantId);
 
-        if (!isValidPhone) {
-            return {
-                status: "INVALID_PHONE_ERROR",
-                error: validationError,
-            };
+        if (validationResult !== undefined) {
+            isValidPhone = false;
+            validationError = validationResult;
         }
+    }
 
-        const updateResult = await Passwordless.updateUser({
-            recipeUserId,
-            phoneNumber: phone,
-            userContext,
-        });
-
-        if (updateResult.status === "UNKNOWN_USER_ID_ERROR") {
-            throw new Error("Should never come here");
-        }
-
-        if (updateResult.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR") {
-            return {
-                status: "PHONE_ALREADY_EXISTS_ERROR",
-            };
-        }
-        if (updateResult.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR") {
-            return {
-                status: updateResult.status,
-                reason: updateResult.reason,
-            };
-        }
-
+    if (!isValidPhone) {
         return {
-            status: "OK",
+            status: "INVALID_PHONE_ERROR",
+            error: validationError,
         };
     }
 
-    if (recipeId === "thirdpartypasswordless") {
-        let isValidPhone = true;
-        let validationError = "";
+    const updateResult = await Passwordless.updateUser({
+        recipeUserId,
+        phoneNumber: phone,
+        userContext,
+    });
 
-        const passwordlessConfig = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().passwordlessRecipe.config;
+    if (updateResult.status === "UNKNOWN_USER_ID_ERROR") {
+        throw new Error("Should never come here");
+    }
 
-        if (passwordlessConfig.contactMethod === "EMAIL") {
-            const validationResult = await defaultValidatePhoneNumber(phone);
-
-            if (validationResult !== undefined) {
-                isValidPhone = false;
-                validationError = validationResult;
-            }
-        } else {
-            const validationResult = await passwordlessConfig.validatePhoneNumber(phone, tenantId);
-
-            if (validationResult !== undefined) {
-                isValidPhone = false;
-                validationError = validationResult;
-            }
-        }
-
-        if (!isValidPhone) {
-            return {
-                status: "INVALID_PHONE_ERROR",
-                error: validationError,
-            };
-        }
-
-        const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            recipeUserId,
-            phoneNumber: phone,
-            userContext,
-        });
-
-        if (updateResult.status === "UNKNOWN_USER_ID_ERROR") {
-            throw new Error("Should never come here");
-        }
-
-        if (updateResult.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR") {
-            return {
-                status: "PHONE_ALREADY_EXISTS_ERROR",
-            };
-        }
-
+    if (updateResult.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR") {
         return {
-            status: "OK",
+            status: "PHONE_ALREADY_EXISTS_ERROR",
+        };
+    }
+    if (updateResult.status === "PHONE_NUMBER_CHANGE_NOT_ALLOWED_ERROR") {
+        return {
+            status: updateResult.status,
+            reason: updateResult.reason,
         };
     }
 
-    /**
-     * If it comes here then the user is a not a passwordless user in which case the UI should not have allowed this
-     */
-    throw new Error("Should never come here");
+    return {
+        status: "OK",
+    };
 };
 
 export const userPut = async (
@@ -507,7 +357,6 @@ export const userPut = async (
 
     if (phone.trim() !== "") {
         const phoneUpdateResponse = await updatePhoneForRecipeId(
-            userResponse.recipe,
             new RecipeUserId(recipeUserId),
             phone.trim(),
             tenantId,

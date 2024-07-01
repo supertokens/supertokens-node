@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [19.0.0] - 2024-06-10
+
+### Breaking changes
+
+-   Defined the entry points of the library using the "exports" field in package.json to make ESM imports more comfortable. This can cause some issues for applications using directory imports from the `lib/build` directory. In those cases we recommend adding `index.js` to the import path.
+
+-   The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
+
+### Changes
+
 -   Add Multitenancy APIs dashboard APIs for:
+
     -   Fetching a tenant's info
     -   Deleting a tenant
     -   Listing all tenants with their user counts
@@ -15,6 +26,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Associating and disassociating a user from a tenant
     -   Creating or updating third party config for a tenant
     -   Deleting third party config for a tenant
+
+-   `passwordResetPOST`:
+    -   now verifies the email address in all cases if the EmailVerification recipe is initialized
+    -   now tries to link accounts based on account info if AccountLinking is enabled
+-   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
+
+## [18.0.1] - 2024-06-19
+
+### Fixes
+
+-   Fix a bug that was preventing errors from being caught in the fetch function, thus bypassing our error handling.
+
+## [18.0.0] - 2024-05-23
+
+### Breaking change
+
+-   Removed ThirdPartyEmailPassword and ThirdPartyPasswordless recipes. Instead, you should use ThirdParty + EmailPassword or ThirdParty + Passwordless recipes separately in your recipe list.
+-   Removed `rid` query param from:
+    -   email verification links
+    -   passwordless magic links
+    -   password reset links
+-   The API for checking if an email exists in the passwordless recipe has changed to return true only if there exists a user with that email as a passwordless user. So for example, earlier, if a user existed with email `test@example.com` as an emailpassword user (and not passwordless user), the passwordless API for does email exist would return true, but now, it won't.
+
+### Changes
+
+-   Even if the `rid` header is present in an API call, the routing now not only depends on that. If the SDK cannot resolve a request handler based on the `rid`, request path and method, it will try to resolve a request handler only based on the request path and method (therefore ignoring the `rid` header).
+-   New API handlers are:
+    -   `GET /emailpassword/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `emailpassword` or `thirdpartyemailpassword` which is now deprecated)
+    -   `GET /passwordless/email/exists` => email password, does email exist API (used to be `GET /signup/email/exists` with `rid` of `passwordless` or `thirdpartypasswordless` which is now deprecated)
+    -   `GET /passwordless/phonenumber/exists` => email password, does email exist API (used to be `GET /signup/phonenumber/exists` which is now deprecated)
+-   Support for FDI 2.0 and 3.0
+
+### Migration guide
+
+-   If you were using `ThirdPartyEmailPassword`, you should now init `ThirdParty` and `EmailPassword` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [EmailPassword](https://supertokens.com/docs/emailpassword/introduction) for more information.
+
+-   If you were using `ThirdPartyPasswordless`, you should now init `ThirdParty` and `Passwordless` recipes separately. The config for the individual recipes are mostly the same, except the syntax may be different. Check our recipe guides for [ThirdParty](https://supertokens.com/docs/thirdparty/introduction) and [Passwordless](https://supertokens.com/docs/passwordless/introduction) for more information.
+
+### Fixes
+
+-   Fixes override recursion build-up in built-in providers due to the modification of the `input.override` object in the ThirdParty providers list.
+-   Fixes issue with reference to `config` object in `TypeProvider` in the provider override. The issue was the `originalImplementation.config` object did not have the updated `config` values that was being used in the provider implementation.
+
+## [17.1.2] - 2024-05-21
+
+### Fixes
+
+-   Add workaround for unsupported 'cache' field in Cloudflare Workers. We retry fetch requests without the 'cache' field if they fail due to it not being implemented.
+
+## [17.1.1] - 2024-05-16
+
+### Fixes
+
+-   Fixed an issue when using Apple as a third party provider with our NextJs integration.
+-   Added a compatibility layer into `BaseRequest` to handle the form data parser returning `FormData` instead of the raw parsed object. This is to address/fix the above issues, possibly present in other frameworks.
 
 ## [17.1.0] - 2024-04-25
 
@@ -46,7 +112,7 @@ With this update, verifySession will return a 401 error if it detects multiple a
 3. An API call requiring session with an expired access token (cookie with `domain=api.example.com`) results in a 401 response.
 4. The frontend attempts to refresh the session, generating a new access token saved with `domain=.example.com`.
 5. The original API call is retried, but because it sends both the old and new cookies, it again results in a 401 response.
-6. # The frontend tries to refresh the session with multiple access tokens: - If `olderCookieDomain` is not set, the refresh fails with a 500 error. - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set. - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response. - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
+6. The frontend tries to refresh the session with multiple access tokens: - If `olderCookieDomain` is not set, the refresh fails with a 500 error. - The user remains stuck until they clear cookies manually or `olderCookieDomain` is set. - If `olderCookieDomain` is set, the refresh clears the older cookie, returning a 200 response. - The frontend retries the original API call, sending only the new cookie (`domain=.example.com`), resulting in a successful request.
 
 ## [17.0.7] - 2024-05-03
 

@@ -165,6 +165,9 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
+                }),
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -174,7 +177,6 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                         },
                     },
                 }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

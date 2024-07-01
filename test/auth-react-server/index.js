@@ -17,7 +17,6 @@ let SuperTokens = require("../../");
 let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let ThirdParty = require("../../recipe/thirdparty");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
@@ -31,18 +30,15 @@ let UserRolesRaw = require("../../lib/build/recipe/userroles/recipe").default;
 let UserRoles = require("../../recipe/userroles");
 let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").default;
 let Passwordless = require("../../recipe/passwordless");
-let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
 let { default: SuperTokensRaw } = require("../../lib/build/supertokens");
 const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassword/recipe");
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
-const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
 const { default: DashboardRaw } = require("../../lib/build/recipe/dashboard/recipe");
 const { default: MultitenancyRaw } = require("../../lib/build/recipe/multitenancy/recipe");
 const Multitenancy = require("../../lib/build/recipe/multitenancy");
 const AccountLinking = require("../../lib/build/recipe/accountlinking");
 const { default: AccountLinkingRaw } = require("../../lib/build/recipe/accountlinking/recipe");
 
-const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
 
 const UserMetadataRaw = require("../../lib/build/recipe/usermetadata/recipe").default;
@@ -102,7 +98,10 @@ function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userI
         codes: [],
     };
     device.codes.push({
-        urlWithLinkCode,
+        // We add an extra item to the start of the querystring, because there was a bug in older auth-react tests
+        // that only worked because we used to have an `rid` query param before the preAuthSessionId.
+        // This is strictly a test fix, the extra queryparam makes no difference to the actual SDK code.
+        urlWithLinkCode: urlWithLinkCode?.replace("?preAuthSessionId", "?test=fix&preAuthSessionId"),
         userInputCode,
     });
     deviceStore.set(preAuthSessionId, device);
@@ -482,6 +481,14 @@ app.post("/test/setAccountLinkingConfig", (req, res) => {
 
 app.post("/test/setEnabledRecipes", (req, res) => {
     enabledRecipes = req.body.enabledRecipes;
+    if (enabledRecipes.includes("thirdpartyemailpassword")) {
+        enabledRecipes.push("thirdparty");
+        enabledRecipes.push("emailpassword");
+    }
+    if (enabledRecipes.includes("thirdpartypasswordless")) {
+        enabledRecipes.push("thirdparty");
+        enabledRecipes.push("passwordless");
+    }
     enabledProviders = req.body.enabledProviders;
     initST();
     res.sendStatus(200);
@@ -550,12 +557,10 @@ function initST({ passwordlessConfig } = {}) {
     mfaInfo = {};
 
     UserRolesRaw.reset();
-    ThirdPartyPasswordlessRaw.reset();
     PasswordlessRaw.reset();
     EmailVerificationRaw.reset();
     EmailPasswordRaw.reset();
     ThirdPartyRaw.reset();
-    ThirdPartyEmailPasswordRaw.reset();
     SessionRaw.reset();
     MultitenancyRaw.reset();
     AccountLinkingRaw.reset();
@@ -739,109 +744,6 @@ function initST({ passwordlessConfig } = {}) {
             }),
         ],
         [
-            "thirdpartyemailpassword",
-            ThirdPartyEmailPassword.init({
-                signUpFeature: {
-                    formFields,
-                },
-                emailDelivery: {
-                    override: (oI) => {
-                        return {
-                            ...oI,
-                            sendEmail: async (input) => {
-                                console.log(input.passwordResetLink);
-                                latestURLWithToken = input.passwordResetLink;
-                            },
-                        };
-                    },
-                },
-                providers:
-                    enabledProviders !== undefined
-                        ? fullProviderList.filter((config) => enabledProviders.includes(config.config))
-                        : fullProviderList,
-                override: {
-                    apis: (originalImplementation) => {
-                        return {
-                            ...originalImplementation,
-                            emailPasswordSignUpPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API sign up",
-                                    };
-                                }
-
-                                return originalImplementation.emailPasswordSignUpPOST(input);
-                            },
-                            passwordResetPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API reset password consume",
-                                    };
-                                }
-                                return originalImplementation.passwordResetPOST(input);
-                            },
-                            generatePasswordResetTokenPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API reset password",
-                                    };
-                                }
-                                return originalImplementation.generatePasswordResetTokenPOST(input);
-                            },
-                            emailPasswordEmailExistsGET: async function (input) {
-                                let generalError = input.options.req.getKeyValueFromQuery("generalError");
-                                if (generalError === "true") {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API email exists",
-                                    };
-                                }
-                                return originalImplementation.emailPasswordEmailExistsGET(input);
-                            },
-                            emailPasswordSignInPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API sign in",
-                                    };
-                                }
-                                return originalImplementation.emailPasswordSignInPOST(input);
-                            },
-                            authorisationUrlGET: async function (input) {
-                                let generalErrorFromQuery = input.options.req.getKeyValueFromQuery("generalError");
-                                if (generalErrorFromQuery === "true") {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API authorisation url get",
-                                    };
-                                }
-
-                                return originalImplementation.authorisationUrlGET(input);
-                            },
-                            thirdPartySignInUpPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API sign in up",
-                                    };
-                                }
-
-                                return originalImplementation.thirdPartySignInUpPOST(input);
-                            },
-                        };
-                    },
-                },
-            }),
-        ],
-        [
             "session",
             Session.init({
                 overwriteSessionDuringSignIn: true,
@@ -896,76 +798,6 @@ function initST({ passwordlessConfig } = {}) {
                 apis: (originalImplementation) => {
                     return {
                         ...originalImplementation,
-                        createCodePOST: async function (input) {
-                            let body = await input.options.req.getJSONBody();
-                            if (body.generalError === true) {
-                                return {
-                                    status: "GENERAL_ERROR",
-                                    message: "general error from API create code",
-                                };
-                            }
-                            return originalImplementation.createCodePOST(input);
-                        },
-                        resendCodePOST: async function (input) {
-                            let body = await input.options.req.getJSONBody();
-                            if (body.generalError === true) {
-                                return {
-                                    status: "GENERAL_ERROR",
-                                    message: "general error from API resend code",
-                                };
-                            }
-                            return originalImplementation.resendCodePOST(input);
-                        },
-                        consumeCodePOST: async function (input) {
-                            let body = await input.options.req.getJSONBody();
-                            if (body.generalError === true) {
-                                return {
-                                    status: "GENERAL_ERROR",
-                                    message: "general error from API consume code",
-                                };
-                            }
-                            return originalImplementation.consumeCodePOST(input);
-                        },
-                    };
-                },
-            },
-        }),
-    ]);
-
-    recipeList.push([
-        "thirdpartypasswordless",
-        ThirdPartyPasswordless.init({
-            ...passwordlessConfig,
-            providers:
-                enabledProviders !== undefined
-                    ? fullProviderList.filter((config) => enabledProviders.includes(config.config))
-                    : fullProviderList,
-            override: {
-                apis: (originalImplementation) => {
-                    return {
-                        ...originalImplementation,
-                        authorisationUrlGET: async function (input) {
-                            let generalErrorFromQuery = input.options.req.getKeyValueFromQuery("generalError");
-                            if (generalErrorFromQuery === "true") {
-                                return {
-                                    status: "GENERAL_ERROR",
-                                    message: "general error from API authorisation url get",
-                                };
-                            }
-
-                            return originalImplementation.authorisationUrlGET(input);
-                        },
-                        thirdPartySignInUpPOST: async function (input) {
-                            let body = await input.options.req.getJSONBody();
-                            if (body.generalError === true) {
-                                return {
-                                    status: "GENERAL_ERROR",
-                                    message: "general error from API sign in up",
-                                };
-                            }
-
-                            return originalImplementation.thirdPartySignInUpPOST(input);
-                        },
                         createCodePOST: async function (input) {
                             let body = await input.options.req.getJSONBody();
                             if (body.generalError === true) {

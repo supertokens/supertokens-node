@@ -11,7 +11,7 @@ import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
 import { ProcessState, PROCESS_STATE } from "./processState";
 
-export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
+export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
     // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
     // we don't want that because it may lead to weird behaviour when querying the core.
     if (init === undefined) {
@@ -25,10 +25,26 @@ export const doFetch: typeof fetch = (input: RequestInfo | URL, init?: RequestIn
             init.cache = "no-cache";
         }
     }
-    if (typeof fetch !== "undefined") {
-        return fetch(input, init);
+    const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;
+    try {
+        return await fetchFunction(input, init);
+    } catch (e) {
+        // Cloudflare Workers don't support the 'cache' field in RequestInit.
+        // To work around this, we delete the 'cache' field and retry the fetch if the error is due to the missing 'cache' field.
+        // Remove this workaround once the 'cache' field is supported.
+        // More info: https://github.com/cloudflare/workerd/issues/698
+        const unimplementedCacheError =
+            e &&
+            typeof e === "object" &&
+            "message" in e &&
+            e.message === "The 'cache' field on 'RequestInitializerDict' is not implemented.";
+        if (!unimplementedCacheError) throw e;
+
+        const newOpts = { ...init };
+        delete newOpts.cache;
+
+        return await fetchFunction(input, newOpts);
     }
-    return crossFetch(input, init);
 };
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -187,7 +203,12 @@ export function getBackwardsCompatibleUserInfo(
     userContext: UserContext
 ) {
     let resp: JSONObject;
-    if (doesRequestSupportFDI(req, "1.18")) {
+    // (>= 1.18 && < 2.0) || >= 3.0: This is because before 1.18, and between 2 and 3, FDI does not
+    // support account linking.
+    if (
+        (hasGreaterThanEqualToFDI(req, "1.18") && !hasGreaterThanEqualToFDI(req, "2.0")) ||
+        hasGreaterThanEqualToFDI(req, "3.0")
+    ) {
         resp = {
             user: result.user.toJson(),
         };
@@ -252,7 +273,7 @@ export function getLatestFDIVersionFromFDIList(fdiHeaderValue: string): string {
     return maxVersionStr;
 }
 
-export function doesRequestSupportFDI(req: BaseRequest, version: string) {
+export function hasGreaterThanEqualToFDI(req: BaseRequest, version: string) {
     let requestFDI = req.getHeaderValue(HEADER_FDI);
     if (requestFDI === undefined) {
         // By default we assume they want to use the latest FDI, this also helps with tests
