@@ -159,7 +159,7 @@ export type SecurityFunctions = {
         | {
               key: string;
               millisecondsIntervalBetweenAttempts: number;
-          }
+          }[] // is an array so that we can have multiple checks and fail the api if any one of them fail
         | undefined; // undefined means no rate limit
     getRateLimitForEmailPasswordSignUp: (input: {
         tenantId: string;
@@ -171,7 +171,7 @@ export type SecurityFunctions = {
         | {
               key: string;
               millisecondsIntervalBetweenAttempts: number;
-          }
+          }[]
         | undefined;
     getRateLimitForThirdPartySignInUp: (input: {
         tenantId: string;
@@ -183,7 +183,7 @@ export type SecurityFunctions = {
         | {
               key: string;
               millisecondsIntervalBetweenAttempts: number;
-          }
+          }[]
         | undefined;
     getRateLimitForSendingPasswordlessEmail: (input: {
         tenantId: string;
@@ -195,7 +195,7 @@ export type SecurityFunctions = {
         | {
               key: string;
               millisecondsIntervalBetweenAttempts: number;
-          }
+          }[]
         | undefined;
     getRateLimitForSendingPasswordlessSms: (input: {
         tenantId: string;
@@ -207,7 +207,7 @@ export type SecurityFunctions = {
         | {
               key: string;
               millisecondsIntervalBetweenAttempts: number;
-          }
+          }[]
         | undefined;
     getRateLimitForResetPassword: (input: {
         tenantId: string;
@@ -218,7 +218,7 @@ export type SecurityFunctions = {
         | {
               key: string;
               millisecondsIntervalBetweenAttempts: number;
-          }
+          }[]
         | undefined;
     getRateLimitForVerifyEmail: (input: {
         tenantId: string;
@@ -230,18 +230,22 @@ export type SecurityFunctions = {
         | {
               key: string;
               millisecondsIntervalBetweenAttempts: number;
-          }
+          }[]
         | undefined;
 
     // these are functions to actually query the rate limit service
     setRateLimitForKey: (input: {
-        key: string;
-        millisecondsIntervalBetweenAttempts: number;
+        keys: {
+            key: string;
+            millisecondsIntervalBetweenAttempts: number;
+        }[];
         userContext: UserContext;
-    }) => Promise<void>;
-    isKeyRateLimited: (input: {
-        key: string;
-        millisecondsIntervalBetweenAttempts: number;
+    }) => void; // should be non blocking, so we do not return a Promise
+    areAnyKeysRateLimited: (input: {
+        keys: {
+            key: string;
+            millisecondsIntervalBetweenAttempts: number;
+        }[];
         userContext: UserContext;
     }) => Promise<boolean>;
 };
