@@ -528,7 +528,7 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<boolean> => {
+    }): Promise<{ allowed: true } | { allowed: false; reason: "PRIMARY_USER_CONFLICT" | "ACCOUNT_TAKEOVER_RISK" }> => {
         /**
          * The purpose of this function is to check that if a recipe user ID's email
          * can be changed or not. There are two conditions for when it can't be changed:
@@ -544,15 +544,15 @@ export default class Recipe extends RecipeModule {
          * in account take over if this recipe user is malicious.
          */
 
-        let user = input.user;
+        let inputUser = input.user;
 
-        if (user === undefined) {
+        if (inputUser === undefined) {
             throw new Error("Passed in recipe user id does not exist");
         }
 
-        for (const tenantId of user.tenantIds) {
+        for (const tenantId of inputUser.tenantIds) {
             let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: user.tenantIds[0],
+                tenantId: inputUser.tenantIds[0],
                 accountInfo: {
                     email: input.newEmail,
                 },
@@ -560,23 +560,62 @@ export default class Recipe extends RecipeModule {
                 userContext: input.userContext,
             });
 
-            let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
-            if (primaryUserForNewEmail.length > 1) {
+            let otherUsersWithNewEmail = existingUsersWithNewEmail.filter((u) => u.id !== inputUser!.id);
+
+            let otherPrimaryUserForNewEmail = otherUsersWithNewEmail.filter((u) => u.isPrimaryUser);
+            if (otherPrimaryUserForNewEmail.length > 1) {
                 throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
             }
 
-            if (user.isPrimaryUser) {
+            if (inputUser.isPrimaryUser) {
                 // this is condition one from the above comment.
-                if (primaryUserForNewEmail.length === 1 && primaryUserForNewEmail[0].id !== user.id) {
+                if (otherPrimaryUserForNewEmail.length !== 0) {
                     logDebugMessage(
-                        "isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email"
+                        `isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email on ${tenantId}`
                     );
-                    return false;
+                    return { allowed: false, reason: "PRIMARY_USER_CONFLICT" };
+                }
+                if (input.isVerified) {
+                    logDebugMessage(
+                        `isEmailChangeAllowed: can change on ${tenantId} cause input user is primary, new email is verified and doesn't belong to any other primary user`
+                    );
+                    continue;
+                }
+                if (inputUser.loginMethods.some((lm) => lm.hasSameEmailAs(input.newEmail) && lm.verified)) {
+                    logDebugMessage(
+                        `isEmailChangeAllowed: can change on ${tenantId} cause input user is primary, new email is verified in another login method and doesn't belong to any other primary user`
+                    );
+                    continue;
+                }
+                if (otherUsersWithNewEmail.length === 0) {
+                    logDebugMessage(
+                        `isEmailChangeAllowed: can change on ${tenantId} cause input user is primary and the new email doesn't belong to any other user (primary or non-primary)`
+                    );
+                    continue;
+                }
+
+                const shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                    otherUsersWithNewEmail[0].loginMethods[0],
+                    inputUser,
+                    input.session,
+                    tenantId,
+                    input.userContext
+                );
+                if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                    logDebugMessage(`isEmailChangeAllowed: can change on ${tenantId} cause linking is disabled`);
+                    continue;
+                }
+
+                if (!shouldDoAccountLinking.shouldRequireVerification) {
+                    logDebugMessage(
+                        `isEmailChangeAllowed: can change on ${tenantId} cause linking is doesn't require email verification`
+                    );
+                    continue;
                 }
                 logDebugMessage(
-                    `isEmailChangeAllowed: can change on ${tenantId} cause input user is primary and new email doesn't belong to any other primary user`
+                    `isEmailChangeAllowed: returning false because the user hasn't verified the new email address and there exists another user with it on ${tenantId} and linking requires verification`
                 );
-                continue;
+                return { allowed: false, reason: "ACCOUNT_TAKEOVER_RISK" };
             } else {
                 if (input.isVerified) {
                     logDebugMessage(
@@ -585,17 +624,17 @@ export default class Recipe extends RecipeModule {
                     continue;
                 }
 
-                if (user.loginMethods[0].hasSameEmailAs(input.newEmail)) {
+                if (inputUser.loginMethods[0].hasSameEmailAs(input.newEmail)) {
                     logDebugMessage(
                         `isEmailChangeAllowed: can change on ${tenantId} cause input user is not a primary and new email is same as the older one`
                     );
                     continue;
                 }
 
-                if (primaryUserForNewEmail.length === 1) {
+                if (otherPrimaryUserForNewEmail.length === 1) {
                     let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
-                        user.loginMethods[0],
-                        primaryUserForNewEmail[0],
+                        inputUser.loginMethods[0],
+                        otherPrimaryUserForNewEmail[0],
                         input.session,
                         tenantId,
                         input.userContext
@@ -618,7 +657,7 @@ export default class Recipe extends RecipeModule {
                     logDebugMessage(
                         "isEmailChangeAllowed: returning false cause input user is not a primary there exists a primary user exists with the new email."
                     );
-                    return false;
+                    return { allowed: false, reason: "ACCOUNT_TAKEOVER_RISK" };
                 }
 
                 logDebugMessage(
@@ -630,7 +669,7 @@ export default class Recipe extends RecipeModule {
         logDebugMessage(
             "isEmailChangeAllowed: returning true cause email change can happen on all tenants the user is part of"
         );
-        return true;
+        return { allowed: true };
     };
 
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified = async (input: {
@@ -780,9 +819,20 @@ export default class Recipe extends RecipeModule {
                         return { status: "NO_LINK" };
                     }
 
-                    if (shouldDoAccountLinking.shouldRequireVerification && !inputUser.loginMethods[0].verified) {
+                    const accountInfoVerifiedInPrimUser = primaryUserThatCanBeLinkedToTheInputUser.loginMethods.some(
+                        (lm) =>
+                            (inputUser.loginMethods[0].email !== undefined &&
+                                lm.hasSameEmailAs(inputUser.loginMethods[0].email)) ||
+                            (inputUser.loginMethods[0].phoneNumber !== undefined &&
+                                lm.hasSamePhoneNumberAs(inputUser.loginMethods[0].phoneNumber) &&
+                                lm.verified)
+                    );
+                    if (
+                        shouldDoAccountLinking.shouldRequireVerification &&
+                        (!inputUser.loginMethods[0].verified || !accountInfoVerifiedInPrimUser)
+                    ) {
                         logDebugMessage(
-                            "tryLinkingByAccountInfoOrCreatePrimaryUser: not linking because shouldRequireVerification is true but the login method is not verified"
+                            "tryLinkingByAccountInfoOrCreatePrimaryUser: not linking because shouldRequireVerification is true but the login method is not verified in the new or the primary user"
                         );
                         return { status: "NO_LINK" };
                     }

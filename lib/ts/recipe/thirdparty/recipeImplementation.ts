@@ -5,7 +5,7 @@ import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "
 import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { getUser } from "../..";
+import { getUser, listUsersByAccountInfo } from "../..";
 import { User as UserType } from "../../types";
 import { User } from "../../user";
 import { AuthUtils } from "../../authUtils";
@@ -16,6 +16,33 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             this: RecipeInterface,
             { thirdPartyId, thirdPartyUserId, email, isVerified, tenantId, session, userContext }
         ) {
+            const accountLinking = AccountLinking.getInstance();
+            const users = await listUsersByAccountInfo(
+                tenantId,
+                { thirdParty: { id: thirdPartyId, userId: thirdPartyUserId } },
+                false,
+                userContext
+            );
+
+            const user = users[0];
+            if (user !== undefined) {
+                const isEmailChangeAllowed = await accountLinking.isEmailChangeAllowed({
+                    user,
+                    isVerified: isVerified,
+                    newEmail: email,
+                    session,
+                    userContext: userContext,
+                });
+                if (!isEmailChangeAllowed.allowed) {
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        reason:
+                            isEmailChangeAllowed.reason === "PRIMARY_USER_CONFLICT"
+                                ? "Email already associated with another primary user."
+                                : "New email cannot be applied to existing account because of account takeover risks.",
+                    };
+                }
+            }
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/signinup`),
                 {
@@ -115,7 +142,9 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 return {
                     status: "SIGN_IN_UP_NOT_ALLOWED",
                     reason:
-                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
+                        response.reason === "Email already associated with another primary user."
+                            ? "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)"
+                            : "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_024)",
                 };
             }
 
