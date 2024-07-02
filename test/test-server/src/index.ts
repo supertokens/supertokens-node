@@ -45,6 +45,8 @@ import thirdPartyRoutes from "./thirdparty";
 import userMetadataRoutes from "./usermetadata";
 import TOTPRoutes from "./totp";
 import { getFunc, resetOverrideParams, getOverrideParams } from "./testFunctionMapper";
+import OverrideableBuilder from "supertokens-js-override";
+import { resetOverrideLogs, logOverrideEvent, getOverrideLogs } from "./overrideLogging";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
@@ -69,6 +71,7 @@ defaultSTInit();
 
 function STReset() {
     resetOverrideParams();
+    resetOverrideLogs();
 
     EmailPasswordRecipe.reset();
     SessionRecipe.reset();
@@ -89,55 +92,73 @@ function initST(config: any) {
 
     const recipeList: RecipeListFunction[] = [];
 
-    const settings = JSON.parse(config);
-    logDebugMessage("initST %j", settings);
+    const parsedConfig = JSON.parse(config);
+    const init = {
+        ...parsedConfig,
+    };
+    logDebugMessage("initST %j", init);
 
-    settings.recipeList.forEach((recipe) => {
+    init.recipeList.forEach((recipe) => {
         const config = recipe.config ? JSON.parse(recipe.config) : undefined;
         if (recipe.recipeId === "emailpassword") {
             let init: EmailPasswordTypeInput = {
                 ...config,
             };
 
-            if (config?.override?.apis) {
-                init.override = {
-                    ...init.override,
-                    apis: getFunc(`${config?.override.apis}`),
-                };
-            }
-
-            if (config?.emailDelivery?.override) {
-                init.emailDelivery = {
-                    ...config?.emailDelivery,
-                    override: getFunc(`${config?.emailDelivery.override}`),
-                };
-            }
-
-            recipeList.push(EmailPassword.init(init));
+            recipeList.push(
+                EmailPassword.init({
+                    ...init,
+                    emailDelivery: {
+                        ...config?.emailDelivery,
+                        override: overrideBuilderWithLogging(
+                            "EmailPassword.emailDelivery.override",
+                            config?.emailDelivery?.override
+                        ),
+                    },
+                    override: {
+                        apis: overrideBuilderWithLogging("EmailPassword.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "EmailPassword.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "session") {
-            let init: SessionTypeInput = {
-                ...config,
-            };
-            if (config?.override?.functions) {
-                init.override = {
-                    ...init.override,
-                    functions: getFunc(`${config?.override.functions}`),
-                };
-            }
-            recipeList.push(Session.init(init));
+            recipeList.push(
+                Session.init({
+                    ...config,
+                    override: {
+                        apis: overrideBuilderWithLogging("Session.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "Session.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "accountlinking") {
-            let init: AccountLinkingTypeInput = {
-                ...config,
-            };
-            if (config?.shouldDoAutomaticAccountLinking) {
-                init.shouldDoAutomaticAccountLinking = getFunc(`${config.shouldDoAutomaticAccountLinking}`);
-            }
-            if (config?.onAccountLinked) {
-                init.onAccountLinked = getFunc(`${config.onAccountLinked}`);
-            }
-            recipeList.push(AccountLinking.init(init));
+            recipeList.push(
+                AccountLinking.init({
+                    ...config,
+                    shouldDoAutomaticAccountLinking: callbackWithLog(
+                        "AccountLinking.shouldDoAutomaticAccountLinking",
+                        config.shouldDoAutomaticAccountLinking,
+                        {
+                            shouldAutomaticallyLink: false,
+                        }
+                    ),
+                    onAccountLinked: callbackWithLog("AccountLinking.onAccountLinked", config.onAccountLinked),
+                    override: {
+                        functions: overrideBuilderWithLogging(
+                            "AccountLinking.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "thirdparty") {
             let init: ThirdPartyTypeInput = {
@@ -148,104 +169,139 @@ function initST(config: any) {
                     ...config.signInAndUpFeature,
                     providers: config.signInAndUpFeature.providers.map((p) => ({
                         ...p,
-                        ...(p.override ? { override: getFunc(`${p.override}`) } : {}),
+                        override: p.override && getFunc(p.override),
                     })),
                 };
             }
-            if (config?.override?.apis) {
-                init.override = {
-                    ...init.override,
-                    ...(config?.override.apis ? { apis: getFunc(`${config?.override.apis}`) } : {}),
-                };
-            }
 
-            recipeList.push(ThirdParty.init(init));
+            recipeList.push(
+                ThirdParty.init({
+                    ...init,
+                    override: {
+                        apis: overrideBuilderWithLogging("ThirdParty.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "ThirdParty.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "emailverification") {
-            let init: EmailVerificationTypeInput = {
-                ...config,
-            };
-            if (config?.emailDelivery?.override) {
-                init.emailDelivery = {
-                    ...config?.emailDelivery,
-                    override: getFunc(`${config?.emailDelivery.override}`),
-                };
-            }
-            if (config?.getEmailForRecipeUserId) {
-                init.getEmailForRecipeUserId = getFunc(`${config?.getEmailForRecipeUserId}`);
-            }
-            if (config?.override?.functions) {
-                init.override = {
-                    ...init.override,
-                    functions: getFunc(`${config?.override.functions}`),
-                };
-            }
-            recipeList.push(EmailVerification.init(init));
+            recipeList.push(
+                EmailVerification.init({
+                    ...config,
+                    emailDelivery: {
+                        ...config?.emailDelivery,
+                        override: overrideBuilderWithLogging(
+                            "EmailVerification.emailDelivery",
+                            config?.emailDelivery?.override
+                        ),
+                    },
+                    getEmailForRecipeUserId: callbackWithLog(
+                        "EmailVerification.getEmailForRecipeUserId",
+                        config?.getEmailForRecipeUserId,
+                        { status: "UNKNOWN_USER_ID_ERROR" }
+                    ),
+                    override: {
+                        apis: overrideBuilderWithLogging("EmailVerification.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "EmailVerification.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "multitenancy") {
-            recipeList.push(Multitenancy.init(config));
+            recipeList.push(
+                Multitenancy.init({
+                    ...config,
+                    override: {
+                        apis: overrideBuilderWithLogging("Multitenancy.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "Multitenancy.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "passwordless") {
-            let init: PasswordlessTypeInput = {
-                ...config,
-            };
-
-            if (config?.emailDelivery?.service?.sendEmail) {
-                init.emailDelivery = {
-                    ...config?.emailDelivery,
-                    service: {
-                        ...config?.emailDelivery?.service,
-                        sendEmail: getFunc(`${config?.emailDelivery?.service?.sendEmail}`),
+            recipeList.push(
+                Passwordless.init({
+                    ...config,
+                    emailDelivery: {
+                        ...config?.emailDelivery,
+                        override: overrideBuilderWithLogging("Passwordless.emailDelivery", undefined),
+                        service: {
+                            ...config?.emailDelivery?.service,
+                            sendEmail:
+                                config?.emailDelivery?.service?.sendEmail &&
+                                getFunc(config?.emailDelivery?.service?.sendEmail),
+                        },
                     },
-                };
-            }
-            if (config?.smsDelivery?.service?.sendSms) {
-                init.smsDelivery = {
-                    ...config?.smsDelivery,
-                    service: {
-                        ...config?.smsDelivery?.service,
-                        sendSms: getFunc(`${config?.smsDelivery?.service?.sendSms}`),
+                    smsDelivery: {
+                        ...config?.smsDelivery,
+                        override: overrideBuilderWithLogging("Passwordless.smsDelivery", undefined),
+                        service: {
+                            ...config?.smsDelivery?.service,
+                            sendSms:
+                                config?.smsDelivery?.service?.sendSms && getFunc(config?.smsDelivery?.service?.sendSms),
+                        },
                     },
-                };
-            }
-            if (config?.override?.apis) {
-                init.override = {
-                    ...init.override,
-                    ...(config?.override.apis ? { apis: getFunc(`${config?.override.apis}`) } : {}),
-                };
-            }
-            recipeList.push(Passwordless.init(init));
+                    override: {
+                        apis: overrideBuilderWithLogging("Passwordless.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "Passwordless.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "multifactorauth") {
-            let initConfig: MFATypeInput = {
-                ...config,
-            };
-            if (initConfig.override?.functions) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    functions: getFunc(`${initConfig.override.functions}`),
-                };
-            }
-            if (initConfig.override?.apis) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    apis: getFunc(`${initConfig.override.apis}`),
-                };
-            }
-            recipeList.push(MultiFactorAuth.init(initConfig));
+            recipeList.push(
+                MultiFactorAuth.init({
+                    ...config,
+                    override: {
+                        apis: overrideBuilderWithLogging("MultiFactorAuth.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "MultiFactorAuth.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
         if (recipe.recipeId === "totp") {
-            recipeList.push(TOTP.init(config));
+            recipeList.push(
+                TOTP.init({
+                    ...config,
+                    override: {
+                        apis: overrideBuilderWithLogging("Multitenancy.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "Multitenancy.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
     });
 
-    settings.recipeList = recipeList;
+    init.recipeList = recipeList;
 
-    if (settings.supertokens?.networkInterceptor) {
-        settings.supertokens.networkInterceptor = getFunc(`${settings.supertokens.networkInterceptor}`);
-    }
+    const interceptor =
+        parsedConfig?.supertokens?.networkInterceptor && getFunc(parsedConfig.supertokens.networkInterceptor);
+    init.supertokens.networkInterceptor = loggingOverrideFuncSync("networkInterceptor", (req, userContext) => {
+        if (interceptor) {
+            return interceptor(req, userContext);
+        }
+        return req;
+    });
 
-    supertokens.init(settings);
+    supertokens.init(init);
 }
 
 const app = express();
@@ -287,6 +343,10 @@ app.post("/test/mockexternalapi", async (req, res, next) => {
     const { url, status, body, path, method } = req.body;
     nock(url)[method](path).reply(status, body);
     res.json({ ok: true });
+});
+
+app.get("/test/getoverridelogs", async (req, res, next) => {
+    res.json({ logs: getOverrideLogs() });
 });
 
 app.get("/test/waitforevent", async (req, res, next) => {
@@ -371,3 +431,59 @@ app.use((err, req, res, next) => {
 app.listen(API_PORT, "localhost", () => {
     logDebugMessage(`node-test-server-server started on localhost:${API_PORT}`);
 });
+
+function loggingOverrideFuncSync<T>(name: string, originalImpl: (...args: any[]) => Promise<T>) {
+    return function (...args: any[]) {
+        logOverrideEvent(name, "CALL", args);
+        try {
+            const res = originalImpl(...args);
+            logOverrideEvent(name, "RES", res);
+            return res;
+        } catch (err) {
+            logOverrideEvent(name, "REJ", err);
+            throw err;
+        }
+    };
+}
+function loggingOverrideFunc<T>(name: string, originalImpl: (...args: any[]) => Promise<T>) {
+    return async function (...args: any[]) {
+        logOverrideEvent(name, "CALL", args);
+        try {
+            const res = await originalImpl(...args);
+            logOverrideEvent(name, "RES", res);
+            return res;
+        } catch (err) {
+            logOverrideEvent(name, "REJ", err);
+            throw err;
+        }
+    };
+}
+
+function callbackWithLog<T = undefined>(name: string, overrideName: string, defaultValue?: T) {
+    const impl = overrideName ? getFunc(overrideName) : () => defaultValue;
+    return loggingOverrideFunc<T>(name, impl);
+}
+
+function overrideBuilderWithLogging<T extends Record<string, ((...args: any[]) => any) | undefined>>(
+    name: string,
+    overrideName?: string
+) {
+    return (originalImpl: T, builder: OverrideableBuilder<T>) => {
+        builder.override((oI) => {
+            const keys = Object.keys(oI);
+            // this would be hard to type (and ultimately not worth it) because it is a generic type
+            // and writing to those through an index is not allowed by default
+            const ret: any = {}; // Partial<T>
+
+            for (const k of keys) {
+                ret[k] = loggingOverrideFunc(`${name}.${k}`, oI[k]!.bind(oI));
+            }
+            return ret;
+        });
+
+        if (overrideName !== undefined) {
+            builder.override(getFunc(overrideName));
+        }
+        return originalImpl;
+    };
+}
