@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Recipe functions that update the email address of users now call `isEmailChangeAllowed` to check if the email update should be allowed or not.
     -   This only has an effect if account linking is turned on.
     -   This is aimed to help you avoid security issues.
+    -   `isEmailChangeAllowed` is now called in functions:
+        -   `updateUser` (Passwordless recipe)
+        -   `updateEmailOrPassword` (EmailPassword recipe)
+        -   `manuallyCreateOrUpdateUser` (ThirdParty recipe)
 
 ### Changes
 
