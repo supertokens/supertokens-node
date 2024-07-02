@@ -62,6 +62,13 @@ export type RecipeInterface = {
         skew?: number;
         period?: number;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            ipBan?: {
+                enabled?: boolean;
+                ipAddress?: string;
+            };
+        };
     }) => Promise<
         | {
               status: "OK";
@@ -74,6 +81,9 @@ export type RecipeInterface = {
           }
         | {
               status: "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "IP_BANNED_ERROR" | "USER_BANNED_ERROR";
           }
     >;
     updateDevice: (input: {
@@ -110,6 +120,13 @@ export type RecipeInterface = {
         deviceName: string;
         totp: string;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            ipBan?: {
+                enabled?: boolean;
+                ipAddress?: string;
+            };
+        };
     }) => Promise<
         | {
               status: "OK";
@@ -127,12 +144,22 @@ export type RecipeInterface = {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
           }
+        | {
+              status: "IP_BANNED_ERROR" | "USER_BANNED_ERROR";
+          }
     >;
     verifyTOTP: (input: {
         tenantId: string;
         userId: string;
         totp: string;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            ipBan?: {
+                enabled?: boolean;
+                ipAddress?: string;
+            };
+        };
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
@@ -145,6 +172,9 @@ export type RecipeInterface = {
         | {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
+          }
+        | {
+              status: "IP_BANNED_ERROR" | "USER_BANNED_ERROR";
           }
     >;
 };
@@ -162,6 +192,7 @@ export type APIInterface = {
     createDevicePOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
               deviceName?: string;
               options: APIOptions;
               session: SessionContainerInterface;
@@ -216,6 +247,7 @@ export type APIInterface = {
     verifyDevicePOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
               deviceName: string;
               totp: string;
               options: APIOptions;
@@ -244,6 +276,7 @@ export type APIInterface = {
     verifyTOTPPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
               totp: string;
               options: APIOptions;
               session: SessionContainerInterface;
