@@ -22,7 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Recipe functions that update the email address of users now call `isEmailChangeAllowed` to check if the email update should be allowed or not.
     -   This only has an effect if account linking is turned on.
     -   This is aimed to help you avoid security issues.
-    -   You can "bypass" this check by verifying the email address for the user using the `EmailVerification` recipe. See [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/email-verification/changing-email-verification-status) for more details.
 
 ### Changes
 
