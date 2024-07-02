@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   the user has another email address or phone number associated with it
 -   Account linking based on emails now require the email to be verified in both users if `shouldRequireVerification` is set to `true` instead of only requiring it for the recipe user.
 -   The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
+-   Recipe functions that update the email address of users now call `isEmailChangeAllowed` to check if the email update should be allowed or not.
+    -   This only has an effect if account linking is turned on.
+    -   This is aimed to help you avoid security issues.
+    -   You can "bypass" this check by verifying the email address for the user using the `EmailVerification` recipe. See [here](https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/email-verification/changing-email-verification-status) for more details.
 
 ### Changes
 
