@@ -68,8 +68,6 @@ export type TypeInput = {
     isInServerlessEnv?: boolean;
     debug?: boolean;
     security?: {
-        anomalyServiceAPIKey?: string; // this will be provided by us on our supertokens.com dashboard
-        rateLimitServiceApiKey?: string; // this will be provided by us on our supertokens.com dashboard (cache wrapper)
         googleRecaptcha?: {
             // if the user provides both, we will use v2
             v2SecretKey?: string;
@@ -121,6 +119,10 @@ export type SecurityFunctions = {
         userContext: UserContext;
     }) => Promise<boolean>;
 
+    // The apiKey for this will be fetched from the core during the /apiversion API call, and will be saved in memory for use.
+    // In case /apiversion has not yet been called, this function will call that API first. In case it has been called, but there
+    // is no API key for this, it means this function will not do anything and return undefined. This also means that if the user
+    // has added the license key in the core to enable this feature, they will have to restart the backend process once.
     calculateRiskScoreUsingAnomalyService: (input: {
         infoFromRequest: InfoFromRequest;
         email?: string;
@@ -130,7 +132,7 @@ export type SecurityFunctions = {
         userId?: string;
         actionType: AnomalyServiceActionTypes;
         userContext: UserContext;
-    }) => Promise<RiskScores>;
+    }) => Promise<RiskScores | undefined>; // undefined means we have nothing to return, and we completely ignore this.
 
     logToAnomalyService: (input: {
         infoFromRequest: InfoFromRequest;
@@ -233,7 +235,8 @@ export type SecurityFunctions = {
           }[]
         | undefined;
 
-    // these are functions to actually query the rate limit service
+    // these are functions to actually query the rate limit service. The api key for this
+    // will be fetched from the /apiversion API call, similar to the api key for the anomaly service.
     setRateLimitForKey: (input: {
         keys: {
             key: string;

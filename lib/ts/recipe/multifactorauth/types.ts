@@ -22,6 +22,7 @@ import { SessionContainerInterface } from "../session/types";
 import Recipe from "./recipe";
 import { TenantConfig } from "../multitenancy/types";
 import RecipeUserId from "../../recipeUserId";
+import { RiskScores } from "../../types";
 
 export type MFARequirementList = (
     | {
@@ -80,6 +81,7 @@ export type RecipeInterface = {
         requiredSecondaryFactorsForUser: Promise<string[]>;
         requiredSecondaryFactorsForTenant: Promise<string[]>;
         userContext: UserContext;
+        riskScores?: RiskScores;
     }) => Promise<MFARequirementList> | MFARequirementList;
 
     markFactorAsCompleteInSession: (input: {
