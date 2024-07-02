@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
+import { APIInterface, APIOptions, CoreConfigFieldInfo } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokens from "../../../../supertokens";
@@ -21,7 +21,6 @@ import {
     findAndCreateProviderInstance,
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
-import { CoreConfigFieldInfo } from "../../../multitenancy/types";
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { Querier } from "../../../../querier";
 

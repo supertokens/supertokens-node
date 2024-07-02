@@ -34,18 +34,6 @@ export declare type TenantConfig = {
         [key: string]: any;
     };
 };
-export declare type CoreConfigFieldInfo = {
-    key: string;
-    valueType: "string" | "boolean" | "number";
-    value: string | number | boolean | null;
-    description: string;
-    isDifferentAcrossTenants: boolean;
-    possibleValues?: string[];
-    isNullable: boolean;
-    defaultValue: string | number | boolean | null;
-    isPluginProperty: boolean;
-    isPluginPropertyEditable: boolean;
-};
 export declare type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
     createOrUpdateTenant: (input: {

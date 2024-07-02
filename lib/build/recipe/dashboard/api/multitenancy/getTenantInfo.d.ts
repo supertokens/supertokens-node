@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../../types";
-import { CoreConfigFieldInfo } from "../../../multitenancy/types";
+import { APIInterface, APIOptions, CoreConfigFieldInfo } from "../../types";
 export declare type Response =
     | {
           status: "OK";

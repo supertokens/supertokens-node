@@ -16,6 +16,7 @@ import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokensError from "../../../../error";
+import { FactorIds } from "../../../multifactorauth";
 
 export type Response =
     | {
@@ -48,12 +49,9 @@ export default async function deleteThirdPartyConfig(
         };
     }
 
-    const thirdPartyIdsFromCore =
-        tenantRes.thirdParty.providers === undefined
-            ? undefined
-            : tenantRes.thirdParty.providers.map((provider) => provider.thirdPartyId);
+    const thirdPartyIdsFromCore = tenantRes.thirdParty.providers.map((provider) => provider.thirdPartyId);
 
-    if (thirdPartyIdsFromCore === undefined) {
+    if (thirdPartyIdsFromCore.length === 0) {
         // this means that the tenant was using the static list of providers, we need to add them all before deleting one
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
@@ -68,6 +66,25 @@ export default async function deleteThirdPartyConfig(
                 undefined,
                 userContext
             );
+        }
+    } else if (thirdPartyIdsFromCore.length === 1 && thirdPartyIdsFromCore[0] === thirdPartyId) {
+        if (tenantRes.firstFactors === undefined) {
+            // add all static first factors except thirdparty
+            await Multitenancy.createOrUpdateTenant(tenantId, {
+                firstFactors: [
+                    FactorIds.EMAILPASSWORD,
+                    FactorIds.OTP_PHONE,
+                    FactorIds.OTP_EMAIL,
+                    FactorIds.LINK_PHONE,
+                    FactorIds.LINK_EMAIL,
+                ],
+            });
+        } else if (tenantRes.firstFactors.includes("thirdparty")) {
+            // add all static first factors except thirdparty
+            const newFirstFactors = tenantRes.firstFactors.filter((factor) => factor !== "thirdparty");
+            await Multitenancy.createOrUpdateTenant(tenantId, {
+                firstFactors: newFirstFactors,
+            });
         }
     }
 
