@@ -26,7 +26,7 @@ export declare type TypeNormalisedInput = {
 };
 export declare type TenantConfig = {
     thirdParty: {
-        providers?: ProviderConfig[];
+        providers: ProviderConfig[];
     };
     firstFactors?: string[];
     requiredSecondaryFactors?: string[];

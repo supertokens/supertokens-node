@@ -45,7 +45,7 @@ export type TypeNormalisedInput = {
 
 export type TenantConfig = {
     thirdParty: {
-        providers?: ProviderConfig[];
+        providers: ProviderConfig[];
     };
     firstFactors?: string[];
     requiredSecondaryFactors?: string[];
