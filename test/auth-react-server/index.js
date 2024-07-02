@@ -406,9 +406,13 @@ app.post("/test/setFlow", (req, res) => {
 app.post("/setupTenant", async (req, res) => {
     const { tenantId, loginMethods, coreConfig } = req.body;
     let coreResp = await Multitenancy.createOrUpdateTenant(tenantId, {
-        emailPasswordEnabled: loginMethods.emailPassword?.enabled === true,
-        thirdPartyEnabled: loginMethods.thirdParty?.enabled === true,
-        passwordlessEnabled: loginMethods.passwordless?.enabled === true,
+        firstFactors: [
+            ...(loginMethods.emailPassword?.enabled === true ? ["emailpassword"] : []),
+            ...(loginMethods.thirdParty?.enabled === true ? ["thirdparty"] : []),
+            ...(loginMethods.passwordless?.enabled === true
+                ? ["otp-phone", "otp-email", "link-phone", "link-email"]
+                : []),
+        ],
         coreConfig,
     });
 

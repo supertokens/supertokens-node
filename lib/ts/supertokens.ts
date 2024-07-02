@@ -199,7 +199,7 @@ export default class SuperTokens {
         userContext: UserContext
     ): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
+        let apiVersion = await querier.getAPIVersion(userContext);
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             throw new Error(
                 "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())"
@@ -238,7 +238,7 @@ export default class SuperTokens {
           }
     > {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let cdiVersion = await querier.getAPIVersion();
+        let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
             return await querier.sendPostRequest(
@@ -272,7 +272,7 @@ export default class SuperTokens {
           }
     > {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let cdiVersion = await querier.getAPIVersion();
+        let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             // create userId mapping is only available >= CDI 2.15
             let response = await querier.sendGetRequest(
@@ -299,7 +299,7 @@ export default class SuperTokens {
         didMappingExist: boolean;
     }> {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let cdiVersion = await querier.getAPIVersion();
+        let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             return await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/userid/map/remove"),
@@ -324,7 +324,7 @@ export default class SuperTokens {
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }> {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let cdiVersion = await querier.getAPIVersion();
+        let cdiVersion = await querier.getAPIVersion(input.userContext);
         if (maxVersion("2.15", cdiVersion) === cdiVersion) {
             return await querier.sendPutRequest(
                 new NormalisedURLPath("/recipe/userid/external-user-id-info"),

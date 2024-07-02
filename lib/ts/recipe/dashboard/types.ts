@@ -80,3 +80,16 @@ export type UserWithFirstAndLastName = User & {
     firstName?: string;
     lastName?: string;
 };
+
+export type CoreConfigFieldInfo = {
+    key: string;
+    valueType: "string" | "boolean" | "number";
+    value: string | number | boolean | null;
+    description: string;
+    isDifferentAcrossTenants: boolean;
+    possibleValues?: string[];
+    isNullable: boolean;
+    defaultValue: string | number | boolean | null;
+    isPluginProperty: boolean;
+    isPluginPropertyEditable: boolean;
+};

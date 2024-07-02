@@ -56,9 +56,9 @@ describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t2", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["emailpassword"] });
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password1");
         const userId = user.user.id;

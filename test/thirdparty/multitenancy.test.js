@@ -47,9 +47,9 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
             recipeList: [ThirdParty.init()],
         });
 
-        await Multitenancy.createOrUpdateTenant("t1", { thirdPartyEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { thirdPartyEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["thirdparty"] });
+        await Multitenancy.createOrUpdateTenant("t2", { firstFactors: ["thirdparty"] });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["thirdparty"] });
 
         // Sign up
         let user1a = await ThirdParty.manuallyCreateOrUpdateUser(
@@ -114,9 +114,9 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
             recipeList: [ThirdParty.init()],
         });
 
-        await Multitenancy.createOrUpdateTenant("t1", { thirdPartyEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { thirdPartyEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["thirdparty"] });
+        await Multitenancy.createOrUpdateTenant("t2", { firstFactors: ["thirdparty"] });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["thirdparty"] });
 
         await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
             thirdPartyId: "google",

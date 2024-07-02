@@ -97,7 +97,6 @@ export const isValidFirstFactor = async function (
 };
 
 export function isFactorConfiguredForTenant({
-    tenantConfig,
     allAvailableFirstFactors,
     firstFactors,
     factorId,
@@ -115,24 +114,24 @@ export function isFactorConfiguredForTenant({
             allAvailableFirstFactors.includes(factorId) || !Object.values(FactorIds).includes(factorId)
     );
 
-    // Filter based on enabled recipes in the core
-    if (tenantConfig.emailPassword.enabled === false) {
-        configuredFirstFactors = configuredFirstFactors.filter(
-            (factorId: string) => factorId !== FactorIds.EMAILPASSWORD
-        );
-    }
+    // Filter based on enabled recipes in the core is no more required
+    // if (tenantConfig.emailPassword.enabled === false) {
+    //     configuredFirstFactors = configuredFirstFactors.filter(
+    //         (factorId: string) => factorId !== FactorIds.EMAILPASSWORD
+    //     );
+    // }
 
-    if (tenantConfig.passwordless.enabled === false) {
-        configuredFirstFactors = configuredFirstFactors.filter(
-            (factorId: string) =>
-                ![FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(
-                    factorId
-                )
-        );
-    }
-    if (tenantConfig.thirdParty.enabled === false) {
-        configuredFirstFactors = configuredFirstFactors.filter((factorId: string) => factorId !== FactorIds.THIRDPARTY);
-    }
+    // if (tenantConfig.passwordless.enabled === false) {
+    //     configuredFirstFactors = configuredFirstFactors.filter(
+    //         (factorId: string) =>
+    //             ![FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE].includes(
+    //                 factorId
+    //             )
+    //     );
+    // }
+    // if (tenantConfig.thirdParty.enabled === false) {
+    //     configuredFirstFactors = configuredFirstFactors.filter((factorId: string) => factorId !== FactorIds.THIRDPARTY);
+    // }
 
     return configuredFirstFactors.includes(factorId);
 }

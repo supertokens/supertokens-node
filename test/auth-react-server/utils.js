@@ -170,16 +170,13 @@ module.exports.startST = async function (config = {}) {
                         });
 
                         // Create app
-                        const createAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app`, {
+                        const createAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app/v2`, {
                             method: "PUT",
                             headers: {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
                                 appId,
-                                emailPasswordEnabled: true,
-                                thirdPartyEnabled: true,
-                                passwordlessEnabled: true,
                                 coreConfig: config.coreConfig,
                             }),
                         });
@@ -202,7 +199,7 @@ module.exports.startST = async function (config = {}) {
 module.exports.removeAppAndTenants = async function (host, port, appId) {
     const tenantsResp = await fetch(`http://${host}:${port}/appid-${appId}/recipe/multitenancy/tenant/list`);
     if (tenantsResp.status === 401) {
-        const updateAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app`, {
+        const updateAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app/v2`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

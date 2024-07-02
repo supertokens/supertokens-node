@@ -58,9 +58,15 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
             ],
         });
 
-        await Multitenancy.createOrUpdateTenant("t1", { passwordlessEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { passwordlessEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
+        await Multitenancy.createOrUpdateTenant("t2", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
+        await Multitenancy.createOrUpdateTenant("t3", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
 
         let code1 = await Passwordless.createCode({
             email: "test@example.com",

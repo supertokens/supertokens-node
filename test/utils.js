@@ -357,16 +357,13 @@ module.exports.startST = async function (config = {}) {
                         });
 
                         // Create app
-                        const createAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app`, {
+                        const createAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app/v2`, {
                             method: "PUT",
                             headers: {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
                                 appId,
-                                emailPasswordEnabled: true,
-                                thirdPartyEnabled: true,
-                                passwordlessEnabled: true,
                                 coreConfig: config.coreConfig,
                             }),
                         });
@@ -425,7 +422,7 @@ module.exports.startSTWithMultitenancyAndAccountLinking = async function (config
 module.exports.removeAppAndTenants = async function (appId) {
     const tenantsResp = await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/list`);
     if (tenantsResp.status === 401) {
-        const updateAppResp = await fetch(`http://localhost:8080/recipe/multitenancy/app`, {
+        const updateAppResp = await fetch(`http://localhost:8080/recipe/multitenancy/app/v2`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

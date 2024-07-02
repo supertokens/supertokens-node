@@ -478,16 +478,13 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         await removeAppAndTenants("a1");
 
         // Create app
-        await fetch(`http://localhost:8080/recipe/multitenancy/app`, {
+        await fetch(`http://localhost:8080/recipe/multitenancy/app/v2`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 appId: "a1",
-                emailPasswordEnabled: true,
-                thirdPartyEnabled: true,
-                passwordlessEnabled: true,
             }),
         });
 
@@ -566,9 +563,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         await Multitenancy.createOrUpdateTenant("t1", {
-            emailPasswordEnabled: true,
-            passwordlessEnabled: true,
-            thirdPartyEnabled: true,
+            firstFactors: null,
         });
 
         await Multitenancy.createOrUpdateThirdPartyConfig("t1", {

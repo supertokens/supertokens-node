@@ -118,7 +118,9 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
         assert(Object.keys(response).length === 1);
         assert(response.keys !== undefined);
         assert(response.keys.length > 0);
-        assert.strictEqual(headers["cache-control"], "max-age=60, must-revalidate");
+        assert(headers["cache-control"].includes(", must-revalidate"));
+        assert(headers["cache-control"].includes("max-age="));
+        assert(!headers["cache-control"].includes("max-age=60,"));
     });
 
     it("Test that we can override the Cache-Control header through the function", async function () {
