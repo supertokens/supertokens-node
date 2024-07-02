@@ -22,6 +22,7 @@ import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 import { QuerierError } from "./QuerierError";
+import SuperTokens from "./supertokens";
 
 export class Querier {
     private static initCalled = false;
@@ -49,11 +50,26 @@ export class Querier {
         this.rIdToCore = rIdToCore;
     }
 
-    getAPIVersion = async (): Promise<string> => {
+    getAPIVersion = async (userContext: UserContext): Promise<string> => {
         if (Querier.apiVersion !== undefined) {
             return Querier.apiVersion;
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
+        const st = SuperTokens.getInstanceOrThrowError();
+        const appInfo = st.appInfo;
+
+        const queryParamsObj: {
+            apiDomain: string;
+            websiteDomain?: string;
+        } = {
+            apiDomain: appInfo.apiDomain.getAsStringDangerous(),
+        };
+        const request = st.getRequestFromUserContext(userContext);
+        if (request !== undefined) {
+            queryParamsObj.websiteDomain = appInfo.getOrigin({ request, userContext }).getAsStringDangerous();
+        }
+        const queryParams = new URLSearchParams(queryParamsObj).toString();
+
         let { body: response } = await this.sendRequestHelper(
             new NormalisedURLPath("/apiversion"),
             "GET",
@@ -64,7 +80,7 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                let response = await doFetch(url, {
+                let response = await doFetch(url + `?${queryParams}`, {
                     method: "GET",
                     headers,
                 });
@@ -131,7 +147,7 @@ export class Querier {
             path,
             "POST",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = {
                     "cdi-version": apiVersion,
                     "content-type": "application/json; charset=utf-8",
@@ -188,7 +204,7 @@ export class Querier {
             path,
             "DELETE",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
                 if (Querier.apiKey !== undefined) {
                     headers = {
@@ -248,7 +264,7 @@ export class Querier {
             path,
             "GET",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion };
                 if (Querier.apiKey !== undefined) {
                     headers = {
@@ -351,7 +367,7 @@ export class Querier {
             path,
             "GET",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion };
                 if (Querier.apiKey !== undefined) {
                     headers = {
@@ -403,7 +419,7 @@ export class Querier {
             path,
             "PUT",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
                 if (Querier.apiKey !== undefined) {
                     headers = {

@@ -286,7 +286,7 @@ export async function getSessionInformation(
     sessionHandle: string,
     userContext: UserContext
 ): Promise<SessionInformation | undefined> {
-    let apiVersion = await helpers.querier.getAPIVersion();
+    let apiVersion = await helpers.querier.getAPIVersion(userContext);
 
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");
