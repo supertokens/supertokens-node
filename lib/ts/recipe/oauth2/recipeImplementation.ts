@@ -16,7 +16,14 @@
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier, hydraPubDomain } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
-import { RecipeInterface, TypeNormalisedInput, ConsentRequest, LoginRequest, LogoutRequest } from "./types";
+import {
+    RecipeInterface,
+    TypeNormalisedInput,
+    ConsentRequest,
+    LoginRequest,
+    LogoutRequest,
+    PayloadBuilderFunction,
+} from "./types";
 import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
@@ -24,7 +31,8 @@ import { getUser } from "../..";
 export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
-    _appInfo: NormalisedAppinfo
+    _appInfo: NormalisedAppinfo,
+    getDefaultIdTokenPayload: PayloadBuilderFunction
 ): RecipeInterface {
     return {
         getLoginRequest: async function (this: RecipeInterface, input): Promise<LoginRequest> {
@@ -244,19 +252,26 @@ export default function getRecipeInterface(
                     throw new Error("Should not happen");
                 }
                 if (consentRequest.skip || consentRequest.client?.skipConsent) {
-                    const idToken: any = {};
-                    if (consentRequest.requestedScope?.includes("email")) {
-                        idToken.email = user?.emails[0];
-                        idToken.email_verified = user.loginMethods.some(
-                            (lm) => lm.hasSameEmailAs(idToken.email) && lm.verified
-                        );
-                    }
-                    if (consentRequest.requestedScope?.includes("phoneNumber")) {
-                        idToken.phoneNumber = user?.phoneNumbers[0];
-                        idToken.phoneNumber_verified = user.loginMethods.some(
-                            (lm) => lm.hasSamePhoneNumberAs(idToken.phoneNumber) && lm.verified
-                        );
-                    }
+                    const idToken = this.buildIdTokenPayload({
+                        user,
+                        session: input.session,
+                        defaultPayload: await getDefaultIdTokenPayload(
+                            user,
+                            consentRequest.requestedScope ?? [],
+                            input.userContext
+                        ),
+                        scopes: consentRequest.requestedScope || [],
+                        userContext: input.userContext,
+                    });
+
+                    const accessTokenPayload = this.buildAccessTokenPayload({
+                        user,
+                        session: input.session,
+                        defaultPayload: input.session.getAccessTokenPayload(input.userContext), // TODO: validate
+                        userContext: input.userContext,
+                        scopes: consentRequest.requestedScope || [],
+                    });
+
                     const consentRes = await this.acceptConsentRequest({
                         ...input,
                         challenge: consentRequest.challenge,
@@ -264,6 +279,7 @@ export default function getRecipeInterface(
                         grantScope: consentRequest.requestedScope,
                         session: {
                             id_token: idToken,
+                            access_token: accessTokenPayload,
                         },
                     });
 
@@ -400,6 +416,15 @@ export default function getRecipeInterface(
                     errorHint: response.data.errorHint,
                 };
             }
+        },
+        buildAccessTokenPayload: async function (input) {
+            return input.defaultPayload;
+        },
+        buildIdTokenPayload: async function (input) {
+            return input.defaultPayload;
+        },
+        buildUserInfo: async function (input) {
+            return input.user.toJson(); // Proper impl
         },
     };
 }
