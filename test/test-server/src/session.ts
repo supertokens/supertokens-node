@@ -1,10 +1,11 @@
 import { Router } from "express";
 import Session from "../../../recipe/session";
 import * as supertokens from "../../../lib/build";
-import { PrimitiveClaim } from "../../../lib/build/recipe/session/claims";
 import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { logger } from "./logger";
 import { getFunc } from "./testFunctionMapper";
+import { convertRequestSessionToSessionObject, deserializeClaim, deserializeValidator } from "./utils";
+import { logOverrideEvent } from "./overrideLogging";
 
 const namespace = "com.supertokens:node-test-server:session";
 const { logDebugMessage } = logger(namespace);
@@ -110,10 +111,7 @@ const router = Router()
     .post("/fetchandsetclaim", async (req, res, next) => {
         try {
             logDebugMessage("Session.fetchAndSetClaim %j", req.body);
-            let claim = new PrimitiveClaim({
-                key: req.body.claim.key,
-                fetchValue: getFunc(`${req.body.claim.fetchValue}`),
-            });
+            let claim = deserializeClaim(req.body.claim);
             const response = await Session.fetchAndSetClaim(req.body.sessionHandle, claim, req.body.userContext);
             res.json(response);
         } catch (e) {
@@ -147,6 +145,328 @@ const router = Router()
         } catch (e) {
             next(e);
         }
+    })
+    .post("/sessionobject/revokesession", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.revokesession %j", req.body);
+        logOverrideEvent("sessionobject.revokesession", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.revokeSession(req.body.userContext); // : Promise<void>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.revokesession", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.revokesession", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getsessiondatafromdatabase", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getsessiondatafromdatabase %j", req.body);
+        logOverrideEvent("sessionobject.getsessiondatafromdatabase", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getSessionDataFromDatabase(req.body.userContext); // : Promise<any>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getsessiondatafromdatabase", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getsessiondatafromdatabase", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/updatesessiondataindatabase", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.updatesessiondataindatabase %j", req.body);
+        logOverrideEvent("sessionobject.updatesessiondataindatabase", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.updateSessionDataInDatabase(req.body.newSessionData, req.body.userContext); // : Promise<any>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.updatesessiondataindatabase", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.updatesessiondataindatabase", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getuserid", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getuserid %j", req.body);
+        logOverrideEvent("sessionobject.getuserid", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getUserId(req.body.userContext); // : string;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getuserid", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getuserid", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getrecipeuserid", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getrecipeuserid %j", req.body);
+        logOverrideEvent("sessionobject.getrecipeuserid", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getRecipeUserId(req.body.userContext); // : RecipeUserId;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getrecipeuserid", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getrecipeuserid", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/gettenantid", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.gettenantid %j", req.body);
+        logOverrideEvent("sessionobject.gettenantid", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getTenantId(req.body.userContext); // : string;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.gettenantid", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.gettenantid", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getaccesstokenpayload", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getaccesstokenpayload %j", req.body);
+        logOverrideEvent("sessionobject.getaccesstokenpayload", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getAccessTokenPayload(req.body.userContext); // : any;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getaccesstokenpayload", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getaccesstokenpayload", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/gethandle", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.gethandle %j", req.body);
+        logOverrideEvent("sessionobject.gethandle", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getHandle(req.body.userContext); // : string;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.gethandle", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.gethandle", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getallsessiontokensdangerously", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getallsessiontokensdangerously %j", req.body);
+        logOverrideEvent("sessionobject.getallsessiontokensdangerously", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getAllSessionTokensDangerously(); // : Promise<{}>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getallsessiontokensdangerously", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getallsessiontokensdangerously", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getaccesstoken", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getaccesstoken %j", req.body);
+        logOverrideEvent("sessionobject.getaccesstoken", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getAccessToken(req.body.userContext); // : string;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getaccesstoken", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getaccesstoken", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/mergeintoaccesstokenpayload", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.mergeintoaccesstokenpayload %j", req.body);
+        logOverrideEvent("sessionobject.mergeintoaccesstokenpayload", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.mergeIntoAccessTokenPayload(
+                req.body.accessTokenPayloadUpdate,
+                req.body.userContext
+            ); // : Promise<void>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.mergeintoaccesstokenpayload", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.mergeintoaccesstokenpayload", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/gettimecreated", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.gettimecreated %j", req.body);
+        logOverrideEvent("sessionobject.gettimecreated", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getTimeCreated(req.body.userContext); // : Promise<number>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.gettimecreated", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.gettimecreated", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getexpiry", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getexpiry %j", req.body);
+        logOverrideEvent("sessionobject.getexpiry", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getExpiry(req.body.userContext); // : Promise<number>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getexpiry", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getexpiry", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/assertclaims", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.assertclaims %j", req.body);
+        logOverrideEvent("sessionobject.assertclaims", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.assertClaims(
+                req.body.claimValidators.map(deserializeValidator),
+                req.body.userContext
+            ); // : Promise<void>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.assertclaims", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.assertclaims", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/fetchandsetclaim", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.fetchandsetclaim %j", req.body);
+        logOverrideEvent("sessionobject.fetchandsetclaim", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+
+            const retVal = await session.fetchAndSetClaim(deserializeClaim(req.body.claim), req.body.userContext); // : Promise<void>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.fetchandsetclaim", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.fetchandsetclaim", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/setclaimvalue", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.setclaimvalue %j", req.body);
+        logOverrideEvent("sessionobject.setclaimvalue", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.setClaimValue(
+                deserializeClaim(req.body.claim),
+                req.body.value,
+                req.body.userContext
+            ); // : Promise<void>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.setclaimvalue", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.setclaimvalue", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/removeclaim", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.removeClaim %j", req.body);
+        logOverrideEvent("sessionobject.removeClaim", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            await session.removeClaim(deserializeClaim(req.body.claim), req.body.userContext); // : Promise<void>;
+            res.json({ updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.removeClaim", "RES", undefined);
+        } catch (e) {
+            logOverrideEvent("sessionobject.removeClaim", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/getclaimvalue", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.getclaimvalue %j", req.body);
+        logOverrideEvent("sessionobject.getclaimvalue", "CALL", req.body);
+        try {
+            const session = await convertRequestSessionToSessionObject(req.body.session);
+            if (!session) {
+                throw new Error("This should never happen: failed to deserialize session");
+            }
+            const retVal = await session.getClaimValue(deserializeClaim(req.body.claim), req.body.userContext); // : Promise<void>;
+            res.json({ retVal, updatedSession: { ...session } });
+
+            logOverrideEvent("sessionobject.getclaimvalue", "RES", retVal);
+        } catch (e) {
+            logOverrideEvent("sessionobject.getclaimvalue", "REJ", e);
+            next(e);
+        }
+    })
+    .post("/sessionobject/attachtorequestresponse", async (req, res, next) => {
+        logDebugMessage("Session.sessionobject.attachtorequestresponse %j", req.body);
+        logOverrideEvent("sessionobject.attachtorequestresponse", "CALL", req.body);
+        throw new Error("This should never happen: attachToRequestResponse called on remote-test session obj");
     });
 
 export default router;
