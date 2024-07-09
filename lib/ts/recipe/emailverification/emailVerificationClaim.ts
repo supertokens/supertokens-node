@@ -44,13 +44,23 @@ export class EmailVerificationClaimClass extends BooleanClaim {
                     // If the value is not true, set maxAgeInSeconds to 300 seconds by default if not already set.
                     maxAgeInSeconds = maxAgeInSeconds ?? 300;
 
-                    return (
-                        value === undefined ||
-                        this.getLastRefetchTime(payload, userContext)! < Date.now() - maxAgeInSeconds * 1000 ||
-                        (value === false &&
-                            this.getLastRefetchTime(payload, userContext)! <
-                                Date.now() - refetchTimeOnFalseInSeconds * 1000)
-                    );
+                    const currentTime = Date.now();
+                    const lastRefetchTime = this.getLastRefetchTime(payload, userContext)!;
+                    const refetchTimeOnMaxAge = currentTime - maxAgeInSeconds * 1000;
+                    const refetchTimeOnFalse = currentTime - refetchTimeOnFalseInSeconds * 1000;
+
+                    // If the value is undefined, refetch is needed.
+                    if (value === undefined) {
+                        return true;
+                    }
+
+                    // If the value is false, refetch if lastRefetchTime is older than either refetchTimeOnFalse or refetchTimeOnMaxAge.
+                    if (value === false) {
+                        return lastRefetchTime < refetchTimeOnFalse || lastRefetchTime < refetchTimeOnMaxAge;
+                    }
+
+                    // If the value is true, refetch if the last refetch time is older than refetchTimeOnMaxAge.
+                    return lastRefetchTime < refetchTimeOnMaxAge;
                 },
             }),
         };
