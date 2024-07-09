@@ -25,6 +25,5 @@ export declare const TENANT_API = "/api/tenant";
 export declare const UPDATE_TENANT_FIRST_FACTOR_API = "/api/tenant/first-factor";
 export declare const UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API = "/api/tenant/required-secondary-factor";
 export declare const UPDATE_TENANT_CORE_CONFIG_API = "/api/tenant/core-config";
-export declare const TENANT_THIRD_PARTY = "/api/tenants/third-party";
 export declare const TENANT_THIRD_PARTY_CONFIG_API = "/api/thirdparty/config";
 export declare const UNLINK_USER = "/api/user/unlink";

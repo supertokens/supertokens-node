@@ -45,7 +45,6 @@ import {
     CREATE_PASSWORDLESS_USER,
     LIST_TENANTS_WITH_LOGIN_METHODS as LIST_ALL_TENANTS_WITH_LOGIN_METHODS,
     TENANT_API,
-    TENANT_THIRD_PARTY,
     UPDATE_TENANT_FIRST_FACTOR_API,
     UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
     UPDATE_TENANT_CORE_CONFIG_API,
@@ -410,12 +409,6 @@ export default class Recipe extends RecipeModule {
                 method: "put",
             },
             {
-                id: TENANT_THIRD_PARTY,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
-                disabled: false,
-                method: "put",
-            },
-            {
                 id: TENANT_THIRD_PARTY_CONFIG_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(
                     getApiPathWithDashboardBase(TENANT_THIRD_PARTY_CONFIG_API)
@@ -436,12 +429,6 @@ export default class Recipe extends RecipeModule {
                 pathWithoutApiBasePath: new NormalisedURLPath(
                     getApiPathWithDashboardBase(TENANT_THIRD_PARTY_CONFIG_API)
                 ),
-                disabled: false,
-                method: "delete",
-            },
-            {
-                id: TENANT_THIRD_PARTY,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_THIRD_PARTY)),
                 disabled: false,
                 method: "delete",
             },
@@ -588,13 +575,6 @@ export default class Recipe extends RecipeModule {
             apiFunction = updateTenantSecondaryFactor;
         } else if (id === UPDATE_TENANT_CORE_CONFIG_API) {
             apiFunction = updateTenantCoreConfig;
-        } else if (id === TENANT_THIRD_PARTY) {
-            if (req.getMethod() === "delete") {
-                apiFunction = deleteThirdPartyConfig;
-            }
-            if (req.getMethod() === "put") {
-                apiFunction = createOrUpdateThirdPartyConfig;
-            }
         } else if (id === TENANT_THIRD_PARTY_CONFIG_API) {
             if (req.getMethod() === "get") {
                 apiFunction = getThirdPartyConfig;

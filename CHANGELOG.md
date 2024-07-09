@@ -15,22 +15,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
 
+-   In the multitenancy recipe,
+    -   Removes `emailPasswordEnabled`, `passwordlessEnabled`, `thirdPartyEnabled` inputs from `createOrUpdateTenant` functions.
+    -   Recipe implementation uses v2 APIs for creating, fetching and listing tenants. Refer CDI spec for more information.
+
 ### Changes
 
--   Add Multitenancy APIs dashboard APIs for:
-
-    -   Fetching a tenant's info
-    -   Deleting a tenant
-    -   Listing all tenants with their user counts
-    -   Creating or updating an existing tenant
-    -   Associating and disassociating a user from a tenant
-    -   Creating or updating third party config for a tenant
-    -   Deleting third party config for a tenant
-
+-   Adds Multitenancy and Multifactor auth related APIs for dashboard:
+    -   GET `/api/tenants`
+    -   GET `/api/tenant`
+    -   POST `/api/tenant`
+    -   DELETE `/api/tenant`
+    -   PUT `/api/tenant/first-factor`
+    -   PUT `/api/tenant/required-secondary-factor`
+    -   PUT `/api/tenant/core-config`
+    -   GET `/api/thirdparty/config`
+    -   PUT `/api/thirdparty/config`
+    -   DELETE `/api/thirdparty/config`
 -   `passwordResetPOST`:
     -   now verifies the email address in all cases if the EmailVerification recipe is initialized
     -   now tries to link accounts based on account info if AccountLinking is enabled
 -   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
+-   Sends `websiteDomain` and `apiDomain` to core for telemetry.
+-   `boxyURL` is no more mandatory input in `additionalConfig` while adding boxy-saml provider in thirdParty.
+-   Fixes issue with OIDC discover when the input url already contains `.well-known/openid-configuration`.
 
 ## [18.0.1] - 2024-06-19
 
