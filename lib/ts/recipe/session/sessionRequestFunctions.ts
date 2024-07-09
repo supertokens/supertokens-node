@@ -314,7 +314,7 @@ export async function refreshSessionInRequest({
         throw new SessionError({
             message: "Refresh token not found. Are you sending the refresh token in the request?",
             payload: {
-                clearTokens: false,
+                clearTokens: true,
             },
             type: SessionError.UNAUTHORISED,
         });
@@ -338,7 +338,7 @@ export async function refreshSessionInRequest({
                 message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
                 type: SessionError.UNAUTHORISED,
                 payload: {
-                    clearTokens: false, // see https://github.com/supertokens/supertokens-node/issues/141
+                    clearTokens: true, // see https://github.com/supertokens/supertokens-node/issues/141
                 },
             });
         }

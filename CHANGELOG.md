@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [17.1.4] - 2024-07-09
+
+### Changes
+
+-   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
+
 ## [17.1.3] - 2024-05-28
 
 -   Fixes override recursion issue with inbuilt providers
