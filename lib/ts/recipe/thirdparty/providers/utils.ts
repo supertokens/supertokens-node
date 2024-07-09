@@ -104,26 +104,37 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     const wellKnownIncluded = issuer.endsWith("/.well-known/openid-configuration");
     const normalizedDomain = new NormalisedURLDomain(issuer);
     let normalizedPath = new NormalisedURLPath(issuer);
-    const openIdConfigPath = new NormalisedURLPath("/.well-known/openid-configuration");
-
-    if (!wellKnownIncluded) {
-        normalizedPath = normalizedPath.appendPath(openIdConfigPath);
-    }
 
     if (oidcInfoMap[issuer] !== undefined) {
         return oidcInfoMap[issuer];
     }
-    const oidcInfo = await doGetRequest(
-        normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()
-    );
 
-    if (oidcInfo.status >= 400) {
-        logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
-        throw new Error(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
+    const urlsToTry = [
+        normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous(), // input url as is
+    ];
+
+    if (!wellKnownIncluded) {
+        const openIdConfigPath = new NormalisedURLPath("/.well-known/openid-configuration");
+        normalizedPath = normalizedPath.appendPath(openIdConfigPath);
+        urlsToTry.push(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous());
     }
 
-    oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
-    return oidcInfo.jsonResponse!;
+    let oidcInfo: {
+        jsonResponse: Record<string, any> | undefined;
+        status: number;
+        stringResponse: string;
+    };
+
+    for (const oidcUrl of urlsToTry) {
+        oidcInfo = await doGetRequest(oidcUrl);
+        if (oidcInfo.status >= 200 && oidcInfo.status < 300) {
+            oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
+            return oidcInfo.jsonResponse!;
+        } else {
+            logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
+        }
+    }
+    throw new Error(`Received response with status ${oidcInfo!.status} and body ${oidcInfo!.stringResponse}`);
 }
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void> {

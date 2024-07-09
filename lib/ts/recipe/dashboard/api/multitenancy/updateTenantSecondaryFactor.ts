@@ -15,7 +15,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
-import { factorIdToRecipe, normaliseTenantSecondaryFactors } from "./utils";
+import { factorIdToRecipe, getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigAndSDKInit } from "./utils";
 import { UserContext } from "../../../../types";
 
 export type Response =
@@ -61,7 +61,7 @@ export default async function updateTenantSecondaryFactor(
         }
     }
 
-    let secondaryFactors = normaliseTenantSecondaryFactors(tenantRes);
+    let secondaryFactors = getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigAndSDKInit(tenantRes);
 
     if (enable === true) {
         if (!secondaryFactors.includes(factorId)) {

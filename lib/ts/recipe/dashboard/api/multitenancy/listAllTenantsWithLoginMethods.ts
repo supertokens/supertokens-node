@@ -15,7 +15,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import { UserContext } from "../../../../types";
-import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
+import { getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
 
 type TenantWithLoginMethods = {
     tenantId: string;
@@ -41,7 +41,7 @@ export default async function listAllTenantsWithLoginMethods(
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         const currentTenant = tenantsRes.tenants[i];
 
-        const loginMethods = normaliseTenantLoginMethodsWithInitConfig(currentTenant);
+        const loginMethods = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(currentTenant);
 
         finalTenants.push({
             tenantId: currentTenant.tenantId,

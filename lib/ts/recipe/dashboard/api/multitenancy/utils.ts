@@ -3,7 +3,9 @@ import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
 import { isFactorConfiguredForTenant } from "../../../multitenancy/utils";
 import { TenantConfig } from "../../../multitenancy/types";
 
-export function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: TenantConfig): string[] {
+export function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(
+    tenantDetailsFromCore: TenantConfig
+): string[] {
     let firstFactors: string[];
 
     let mtInstance = MultitenancyRecipe.getInstanceOrThrowError();
@@ -38,7 +40,9 @@ export function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore:
     return validFirstFactors;
 }
 
-export function normaliseTenantSecondaryFactors(tenantDetailsFromCore: TenantConfig): string[] {
+export function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigAndSDKInit(
+    tenantDetailsFromCore: TenantConfig
+): string[] {
     const mfaInstance = MultifactorAuthRecipe.getInstance();
 
     if (mfaInstance === undefined) {
@@ -55,12 +59,12 @@ export function normaliseTenantSecondaryFactors(tenantDetailsFromCore: TenantCon
 
 export function factorIdToRecipe(factorId: string): string {
     const factorIdToRecipe: Record<string, string> = {
-        emailpassword: "Emailpassword or ThirdPartyEmailpassword",
-        thirdparty: "ThirdParty, ThirdPartyEmailpassword or ThirdPartyPasswordless",
-        "otp-email": "Passwordless or ThirdPartyPasswordless",
-        "otp-phone": "Passwordless or ThirdPartyPasswordless",
-        "link-email": "Passwordless or ThirdPartyPasswordless",
-        "link-phone": "Passwordless or ThirdPartyPasswordless",
+        emailpassword: "Emailpassword",
+        thirdparty: "ThirdParty",
+        "otp-email": "Passwordless",
+        "otp-phone": "Passwordless",
+        "link-email": "Passwordless",
+        "link-phone": "Passwordless",
         totp: "Totp",
     };
 

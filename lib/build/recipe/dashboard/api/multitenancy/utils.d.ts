@@ -1,5 +1,9 @@
 // @ts-nocheck
 import { TenantConfig } from "../../../multitenancy/types";
-export declare function normaliseTenantLoginMethodsWithInitConfig(tenantDetailsFromCore: TenantConfig): string[];
-export declare function normaliseTenantSecondaryFactors(tenantDetailsFromCore: TenantConfig): string[];
+export declare function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(
+    tenantDetailsFromCore: TenantConfig
+): string[];
+export declare function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigAndSDKInit(
+    tenantDetailsFromCore: TenantConfig
+): string[];
 export declare function factorIdToRecipe(factorId: string): string;

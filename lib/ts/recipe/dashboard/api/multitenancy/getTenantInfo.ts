@@ -16,7 +16,7 @@ import { APIInterface, APIOptions, CoreConfigFieldInfo } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokens from "../../../../supertokens";
-import { normaliseTenantLoginMethodsWithInitConfig } from "./utils";
+import { getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
 import {
     findAndCreateProviderInstance,
     mergeProvidersFromCoreAndStatic,
@@ -59,7 +59,7 @@ export default async function getTenantInfo(
 
     let { status, ...tenantConfig } = tenantRes;
 
-    let firstFactors = normaliseTenantLoginMethodsWithInitConfig(tenantConfig);
+    let firstFactors = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(tenantConfig);
 
     if (tenantRes === undefined) {
         return {

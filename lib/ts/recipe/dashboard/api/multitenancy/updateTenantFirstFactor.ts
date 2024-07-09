@@ -14,7 +14,7 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { factorIdToRecipe, normaliseTenantLoginMethodsWithInitConfig } from "./utils";
+import { factorIdToRecipe, getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
 import { UserContext } from "../../../../types";
 
 export type Response =
@@ -50,7 +50,7 @@ export default async function updateTenantFirstFactor(
         };
     }
 
-    let firstFactors = normaliseTenantLoginMethodsWithInitConfig(tenantRes);
+    let firstFactors = getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(tenantRes);
 
     if (enable === true) {
         if (!firstFactors.includes(factorId)) {
