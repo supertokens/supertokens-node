@@ -80,6 +80,21 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
+
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "get",
+                            headers: headers,
+                            params: queryParamsObj,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                }
+
                 let response = await doFetch(url + `?${queryParams}`, {
                     method: "GET",
                     headers,
@@ -104,6 +119,7 @@ export class Querier {
             throw Error("calling testing function in non testing env");
         }
         Querier.initCalled = false;
+        Querier.apiVersion = undefined;
     }
 
     getHostsAliveForTesting = () => {
