@@ -359,6 +359,7 @@ app.get("/test/featureflag", async (req, res, next) => {
 
 app.post("/test/resetoverrideparams", async (req, res, next) => {
     resetOverrideParams();
+    resetOverrideLogs();
     res.json({ ok: true });
 });
 
