@@ -1,5 +1,4 @@
 import { APIInterface } from "../";
-import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
@@ -35,7 +34,7 @@ export default function getAPIInterface(): APIInterface {
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_023)",
                 },
             };
-            const { provider, tenantId, options, session, userContext } = input;
+            const { provider, tenantId, options, userContext } = input;
 
             let oAuthTokensToUse: any = {};
 
@@ -99,9 +98,9 @@ export default function getAPIInterface(): APIInterface {
                 // recipe function checks to a minimum so that the dev has complete control of
                 // what they can do.
 
-                // The isEmailChangeAllowed function takes in a isVerified boolean. Now, even though
-                // we already have that from the input, that's just what the provider says. If the
-                // provider says that the email is NOT verified, it could have been that the email
+                // The isEmailChangeAllowed and preAuthChecks functions take an isVerified boolean.
+                // Now, even though we already have that from the input, that's just what the provider says.
+                // If the provider says that the email is NOT verified, it could have been that the email
                 // is verified on the user's account via supertokens on a previous sign in / up.
                 // So we just check that as well before calling isEmailChangeAllowed
 
@@ -113,74 +112,6 @@ export default function getAPIInterface(): APIInterface {
                         emailInfo.id,
                         userContext
                     );
-                }
-
-                /**
-                 * In this API, during only a sign in, we check for isEmailChangeAllowed first, then
-                 * change the email by calling the recipe function, then check if is sign in allowed.
-                 * This may result in a few states where email change is allowed, but still, sign in
-                 * is not allowed:
-                 *
-                 * Various outcomes of isSignInAllowed vs isEmailChangeAllowed
-                 * isSignInAllowed result:
-                 * - is primary user -> TRUE
-                 * - is recipe user
-                 *      - other recipe user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verified -> TRUE
-                 *              - email unverified -> FALSE
-                 *      - other primary user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verification status
-                 *                  - this && primary -> TRUE
-                 *                  - !this && !primary -> FALSE
-                 *                  - this && !primary -> FALSE
-                 *                  - !this && primary -> FALSE
-                 *
-                 * isEmailChangeAllowed result:
-                 * - is primary user -> TRUE
-                 * - is recipe user
-                 *      - other recipe user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verified -> TRUE
-                 *              - email unverified -> TRUE
-                 *      - other primary user exists
-                 *          - no -> TRUE
-                 *          - yes
-                 *              - email verification status
-                 *                  - this && primary -> TRUE
-                 *                  - !this && !primary -> FALSE
-                 *                  - this && !primary -> TRUE
-                 *                  - !this && primary -> FALSE
-                 *
-                 * Based on the above, isEmailChangeAllowed can return true, but isSignInAllowed will return false
-                 * in the following situations:
-                 * - If a recipe user is signing in with a new email, other recipe users with the same email exist,
-                 * and one of them is unverfied. In this case, the email change will happen in the social login
-                 * recipe, but the user will not be able to login anyway.
-                 *
-                 * - If the recipe user is signing in with a new email, there exists a primary user with the same
-                 * email, but this new email is verified for the recipe user already, but the primary user's email
-                 * is not verified.
-                 */
-
-                let isEmailChangeAllowed = await AccountLinking.getInstance().isEmailChangeAllowed({
-                    user: authenticatingUser.user,
-                    isVerified: emailInfo.isVerified,
-                    newEmail: emailInfo.id,
-                    session,
-                    userContext,
-                });
-
-                if (!isEmailChangeAllowed) {
-                    return {
-                        status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason:
-                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
-                    };
                 }
             }
 
@@ -231,6 +162,11 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
                 userContext,
             });
+
+            if (response.status === "SIGN_IN_UP_NOT_ALLOWED") {
+                // In this case we do not need to do mapping, since the recipe function already has the right response shape.
+                return response;
+            }
 
             if (response.status !== "OK") {
                 logDebugMessage("signInUpPOST: erroring out because signInUp returned " + response.status);
