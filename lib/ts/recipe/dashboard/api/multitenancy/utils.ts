@@ -40,7 +40,7 @@ export function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(
     return validFirstFactors;
 }
 
-export function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigAndSDKInit(
+export function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit(
     tenantDetailsFromCore: TenantConfig
 ): string[] {
     const mfaInstance = MultifactorAuthRecipe.getInstance();

@@ -3,7 +3,7 @@ import { TenantConfig } from "../../../multitenancy/types";
 export declare function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(
     tenantDetailsFromCore: TenantConfig
 ): string[];
-export declare function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigAndSDKInit(
+export declare function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit(
     tenantDetailsFromCore: TenantConfig
 ): string[];
 export declare function factorIdToRecipe(factorId: string): string;
