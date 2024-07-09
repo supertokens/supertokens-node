@@ -17,7 +17,7 @@ import { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import EmailPassword from "../../../../emailpassword";
 import EmailPasswordRecipe from "../../../../emailpassword/recipe";
-import { User } from "../../../../../types";
+import { User, UserContext } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 
 type Response =
@@ -42,7 +42,7 @@ export const createEmailPasswordUser = async (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> => {
     let emailPassword: EmailPasswordRecipe | undefined = undefined;
     try {

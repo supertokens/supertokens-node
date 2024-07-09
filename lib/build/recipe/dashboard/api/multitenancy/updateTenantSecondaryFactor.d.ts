@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
+import { UserContext } from "../../../../types";
 export declare type Response =
     | {
           status: "OK";
@@ -19,5 +20,5 @@ export default function updateTenantSecondaryFactor(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response>;

@@ -23,6 +23,7 @@ import {
 } from "../../../thirdparty/providers/configUtils";
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { Querier } from "../../../../querier";
+import { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -46,7 +47,7 @@ export default async function getTenantInfo(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
 
@@ -76,7 +77,7 @@ export default async function getTenantInfo(
 
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
     let coreConfig = await querier.sendGetRequest(
-        new NormalisedURLPath("/recipe/dashboard/tenant/core-config"),
+        new NormalisedURLPath(`/${tenantId}/recipe/dashboard/tenant/core-config`),
         {},
         userContext
     );

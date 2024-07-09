@@ -108,7 +108,7 @@ export default class Recipe extends RecipeModule {
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
         user: User;
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: UserContext;
     }) => Promise<void>;
     private shouldBecomePrimaryUser;
     tryLinkingByAccountInfoOrCreatePrimaryUser({

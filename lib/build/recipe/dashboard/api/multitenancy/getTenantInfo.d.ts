@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions, CoreConfigFieldInfo } from "../../types";
+import { UserContext } from "../../../../types";
 export declare type Response =
     | {
           status: "OK";
@@ -24,5 +25,5 @@ export default function getTenantInfo(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response>;

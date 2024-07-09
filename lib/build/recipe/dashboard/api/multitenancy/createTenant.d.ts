@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
+import { UserContext } from "../../../../types";
 export declare type Response =
     | {
           status: "OK";
@@ -16,5 +17,5 @@ export default function createTenant(
     _: APIInterface,
     __: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response>;

@@ -20,6 +20,7 @@ import {
     mergeProvidersFromCoreAndStatic,
 } from "../../../thirdparty/providers/configUtils";
 import { ProviderConfig } from "../../../thirdparty/types";
+import { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -38,7 +39,7 @@ export default async function getThirdPartyConfig(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     let tenantRes = await Multitenancy.getTenant(tenantId, userContext);
 

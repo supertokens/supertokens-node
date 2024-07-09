@@ -14,6 +14,7 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
+import { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -28,7 +29,7 @@ export default async function deleteTenant(
     _: APIInterface,
     tenantId: string,
     __: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     try {
         const deleteTenantRes = await Multitenancy.deleteTenant(tenantId, userContext);

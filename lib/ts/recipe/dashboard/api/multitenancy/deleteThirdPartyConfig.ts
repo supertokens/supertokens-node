@@ -17,6 +17,7 @@ import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokensError from "../../../../error";
 import { FactorIds } from "../../../multifactorauth";
+import { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -31,7 +32,7 @@ export default async function deleteThirdPartyConfig(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     const thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
 

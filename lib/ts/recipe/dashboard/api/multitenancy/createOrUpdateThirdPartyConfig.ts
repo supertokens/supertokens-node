@@ -15,6 +15,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
+import { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -27,7 +28,7 @@ export default async function createOrUpdateThirdPartyConfig(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { providerConfig } = requestBody;

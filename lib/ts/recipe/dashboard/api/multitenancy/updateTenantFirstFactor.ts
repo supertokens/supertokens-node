@@ -15,6 +15,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import { factorIdToRecipe, normaliseTenantLoginMethodsWithInitConfig } from "./utils";
+import { UserContext } from "../../../../types";
 
 export type Response =
     | { status: "OK" }
@@ -25,7 +26,7 @@ export default async function updateTenantFirstFactor(
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ): Promise<Response> {
     const requestBody = await options.req.getJSONBody();
     const { factorId, enable } = requestBody;
