@@ -893,15 +893,15 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
             describe("from behaviour table", () => {
                 // prettier-ignore
                 const behaviourTable = [
-                    { getTokenTransferMethodRes: "any", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "any", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "both" },
+                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "both" },
+                    { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "both" },
                     { getTokenTransferMethodRes: "any", authHeader: false, authCookie: true, output: "validatecookie", setTokens: "cookies", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: true, output: "unauthorised", setTokens: "none", clearedTokens: "none" }, // 5
+                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: true, output: "unauthorised", setTokens: "none", clearedTokens: "both" }, // 5
                     { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: true, output: "validatecookie", setTokens: "cookies", clearedTokens: "none" },
                     { getTokenTransferMethodRes: "any", authHeader: true, authCookie: false, output: "validateheader", setTokens: "headers", clearedTokens: "none" },
                     { getTokenTransferMethodRes: "header", authHeader: true, authCookie: false, output: "validateheader", setTokens: "headers", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "cookie", authHeader: true, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" }, // 9
+                    { getTokenTransferMethodRes: "cookie", authHeader: true, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "both" }, // 9
                     { getTokenTransferMethodRes: "any", authHeader: true, authCookie: true, output: "validateheader", setTokens: "headers", clearedTokens: "cookies" },
                     { getTokenTransferMethodRes: "header", authHeader: true, authCookie: true, output: "validateheader", setTokens: "headers", clearedTokens: "cookies" },
                     { getTokenTransferMethodRes: "cookie", authHeader: true, authCookie: true, output: "validatecookie", setTokens: "cookies", clearedTokens: "headers" }, // 12
@@ -964,6 +964,13 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                             assert.strictEqual(refreshRes.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
                             assert.strictEqual(refreshRes.refreshToken, "");
                             assert.strictEqual(refreshRes.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                        } else if (conf.clearedTokens === "both") {
+                            assert.strictEqual(refreshRes.accessTokenFromHeader, "");
+                            assert.strictEqual(refreshRes.refreshTokenFromHeader, "");
+                            assert.strictEqual(refreshRes.accessToken, "");
+                            assert.strictEqual(refreshRes.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                            assert.strictEqual(refreshRes.refreshToken, "");
+                            assert.strictEqual(refreshRes.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
                         }
 
                         switch (conf.setTokens) {
@@ -985,15 +992,17 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                                 }
                                 break;
                         }
-                        if (conf.setTokens !== "cookies" && conf.clearedTokens !== "cookies") {
-                            assert.strictEqual(refreshRes.accessToken, undefined);
-                            assert.strictEqual(refreshRes.accessTokenExpiry, undefined);
-                            assert.strictEqual(refreshRes.refreshToken, undefined);
-                            assert.strictEqual(refreshRes.refreshTokenExpiry, undefined);
-                        }
-                        if (conf.setTokens !== "headers" && conf.clearedTokens !== "headers") {
-                            assert.strictEqual(refreshRes.accessTokenFromHeader, undefined);
-                            assert.strictEqual(refreshRes.refreshTokenFromHeader, undefined);
+                        if (conf.clearedTokens !== "both") {
+                            if (conf.setTokens !== "cookies" && conf.clearedTokens !== "cookies") {
+                                assert.strictEqual(refreshRes.accessToken, undefined);
+                                assert.strictEqual(refreshRes.accessTokenExpiry, undefined);
+                                assert.strictEqual(refreshRes.refreshToken, undefined);
+                                assert.strictEqual(refreshRes.refreshTokenExpiry, undefined);
+                            }
+                            if (conf.setTokens !== "headers" && conf.clearedTokens !== "headers") {
+                                assert.strictEqual(refreshRes.accessTokenFromHeader, undefined);
+                                assert.strictEqual(refreshRes.refreshTokenFromHeader, undefined);
+                            }
                         }
                     });
                 }
