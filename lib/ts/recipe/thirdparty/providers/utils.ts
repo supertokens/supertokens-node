@@ -126,7 +126,13 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     };
 
     for (const oidcUrl of urlsToTry) {
-        oidcInfo = await doGetRequest(oidcUrl);
+        try {
+            oidcInfo = await doGetRequest(oidcUrl);
+        } catch (err) {
+            logDebugMessage(`Error while fetching ${oidcUrl} - ${err}`);
+            continue;
+        }
+
         if (oidcInfo.status >= 200 && oidcInfo.status < 300) {
             oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
             return oidcInfo.jsonResponse!;
