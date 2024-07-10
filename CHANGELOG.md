@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [19.0.0] - 2024-06-10
+## [19.0.0] - 2024-07-10
 
 ### Breaking changes
 
@@ -52,6 +52,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Sends `websiteDomain` and `apiDomain` to core for telemetry.
 -   `boxyURL` is no more mandatory input in `additionalConfig` while adding boxy-saml provider in thirdParty.
 -   Fixes issue with OIDC discover when the input url already contains `.well-known/openid-configuration`.
+-   Removes the default `maxAgeInSeconds` value in EmailVerification Claim when the claim value is true. Now, the SDK won't refetch the claim value if `maxAgeInSeconds` is not provided and claim value is true.
+
+## [18.0.2] - 2024-07-09
+
+-   `refreshPOST` and `refreshSession` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
 
 ## [18.0.1] - 2024-06-19
 
