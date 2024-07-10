@@ -43,13 +43,15 @@ export class EmailVerificationClaimClass extends BooleanClaim {
                     const lastRefetchTime = this.getLastRefetchTime(payload, userContext)!;
 
                     if (maxAgeInSeconds !== undefined) {
-                        const refetchTimeOnMaxAge = currentTime - maxAgeInSeconds * 1000;
-                        return lastRefetchTime < refetchTimeOnMaxAge;
+                        if (lastRefetchTime < currentTime - maxAgeInSeconds * 1000) {
+                            return true;
+                        }
                     }
 
                     if (value === false) {
-                        const refetchTimeOnFalse = currentTime - refetchTimeOnFalseInSeconds * 1000;
-                        return lastRefetchTime < refetchTimeOnFalse;
+                        if (lastRefetchTime < currentTime - refetchTimeOnFalseInSeconds * 1000) {
+                            return true;
+                        }
                     }
 
                     return false;
