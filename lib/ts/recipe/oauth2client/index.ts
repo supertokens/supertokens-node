@@ -14,12 +14,37 @@
  */
 
 import Recipe from "./recipe";
-import { RecipeInterface, APIInterface, APIOptions } from "./types";
+import { RecipeInterface, APIInterface, APIOptions, ProviderConfigWithOIDCInfo, OAuthTokens } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
+
+    static async getAuthorisationRedirectURL(input: { redirectURIOnProviderDashboard: string }) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAuthorisationRedirectURL(input);
+    }
+
+    static async exchangeAuthCodeForOAuthTokens(input: {
+        providerConfig: ProviderConfigWithOIDCInfo;
+        redirectURIInfo: {
+            redirectURIOnProviderDashboard: string;
+            redirectURIQueryParams: any;
+            pkceCodeVerifier?: string | undefined;
+        };
+    }) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens(input);
+    }
+
+    static async getUserInfo(input: { providerConfig: ProviderConfigWithOIDCInfo; oAuthTokens: OAuthTokens }) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo(input);
+    }
 }
 
 export let init = Wrapper.init;
+
+export let getAuthorisationRedirectURL = Wrapper.getAuthorisationRedirectURL;
+
+export let exchangeAuthCodeForOAuthTokens = Wrapper.exchangeAuthCodeForOAuthTokens;
+
+export let getUserInfo = Wrapper.getUserInfo;
 
 export type { RecipeInterface, APIInterface, APIOptions };

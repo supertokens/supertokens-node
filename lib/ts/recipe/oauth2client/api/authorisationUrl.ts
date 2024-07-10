@@ -28,6 +28,7 @@ export default async function authorisationUrlAPI(
         return false;
     }
 
+    // TODO: Check if we can rename `redirectURIOnProviderDashboard` to a more suitable name
     const redirectURIOnProviderDashboard = options.req.getKeyValueFromQuery("redirectURIOnProviderDashboard");
 
     if (redirectURIOnProviderDashboard === undefined || typeof redirectURIOnProviderDashboard !== "string") {

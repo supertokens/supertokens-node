@@ -1,5 +1,6 @@
 import { APIInterface } from "../";
 import Session from "../../session";
+import { OAuthTokens } from "../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -17,7 +18,7 @@ export default function getAPIInterface(): APIInterface {
 
             const providerConfig = await options.recipeImplementation.getProviderConfig({ userContext });
 
-            let oAuthTokensToUse: any = {};
+            let oAuthTokensToUse: OAuthTokens = {};
 
             if ("redirectURIInfo" in input && input.redirectURIInfo !== undefined) {
                 oAuthTokensToUse = await options.recipeImplementation.exchangeAuthCodeForOAuthTokens({

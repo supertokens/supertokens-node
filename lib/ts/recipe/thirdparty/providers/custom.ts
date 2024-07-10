@@ -1,5 +1,5 @@
 import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
-import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
+import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "../../utils";
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
 import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";

@@ -41,6 +41,20 @@ export type ProviderConfigWithOIDCInfo = ProviderConfigInput & {
     jwksURI: string;
 };
 
+export type OAuthTokens = {
+    access_token?: string;
+    id_token?: string;
+};
+
+export type OAuthTokenResponse = {
+    access_token: string;
+    id_token?: string;
+    refresh_token?: string;
+    expires_in: number;
+    scope?: string;
+    token_type: string;
+};
+
 export type TypeInput = {
     providerConfig: ProviderConfigInput;
     override?: {
@@ -74,7 +88,7 @@ export type RecipeInterface = {
 
     signIn(input: {
         userId: string;
-        oAuthTokens: { [key: string]: any };
+        oAuthTokens: OAuthTokens;
         rawUserInfoFromProvider: {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
@@ -85,7 +99,7 @@ export type RecipeInterface = {
         status: "OK";
         recipeUserId: RecipeUserId;
         user: User;
-        oAuthTokens: { [key: string]: any };
+        oAuthTokens: OAuthTokens;
         rawUserInfoFromProvider: {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
@@ -98,8 +112,8 @@ export type RecipeInterface = {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
         };
-    }): Promise<Record<string, any> | undefined>;
-    getUserInfo(input: { providerConfig: ProviderConfigWithOIDCInfo; oAuthTokens: any }): Promise<UserInfo>;
+    }): Promise<OAuthTokenResponse>;
+    getUserInfo(input: { providerConfig: ProviderConfigWithOIDCInfo; oAuthTokens: OAuthTokens }): Promise<UserInfo>;
 };
 
 export type APIOptions = {

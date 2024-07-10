@@ -1,8 +1,20 @@
-import { ProviderConfigWithOIDCInfo, RecipeInterface, TypeNormalisedInput, UserInfo } from "./types";
+import {
+    OAuthTokenResponse,
+    OAuthTokens,
+    ProviderConfigWithOIDCInfo,
+    RecipeInterface,
+    TypeNormalisedInput,
+    UserInfo,
+} from "./types";
 import { Querier } from "../../querier";
 import RecipeUserId from "../../recipeUserId";
 import { User as UserType } from "../../types";
-import { doGetRequest, doPostRequest, getOIDCDiscoveryInfo, verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
+import {
+    doGetRequest,
+    doPostRequest,
+    getOIDCDiscoveryInfo,
+    verifyIdTokenFromJWKSEndpointAndGetPayload,
+} from "../utils";
 import pkceChallenge from "pkce-challenge";
 import { getUser } from "../..";
 import { logDebugMessage } from "../../logger";
@@ -52,7 +64,7 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
             status: "OK";
             user: UserType;
             recipeUserId: RecipeUserId;
-            oAuthTokens: { [key: string]: any };
+            oAuthTokens: OAuthTokens;
             rawUserInfoFromProvider: {
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
@@ -140,14 +152,14 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
                 );
             }
 
-            return tokenResponse.jsonResponse;
+            return tokenResponse.jsonResponse as OAuthTokenResponse;
         },
         getUserInfo: async function ({
             providerConfig,
             oAuthTokens,
         }: {
             providerConfig: ProviderConfigWithOIDCInfo;
-            oAuthTokens: any;
+            oAuthTokens: OAuthTokens;
         }): Promise<UserInfo> {
             let jwks: JWTVerifyGetKey | undefined;
 
