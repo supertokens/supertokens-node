@@ -57,16 +57,14 @@ export class Querier {
         const st = SuperTokens.getInstanceOrThrowError();
         const appInfo = st.appInfo;
 
+        const request = st.getRequestFromUserContext(userContext);
         const queryParamsObj: {
             apiDomain: string;
-            websiteDomain?: string;
+            websiteDomain: string;
         } = {
             apiDomain: appInfo.apiDomain.getAsStringDangerous(),
+            websiteDomain: appInfo.getOrigin({ request, userContext }).getAsStringDangerous(),
         };
-        const request = st.getRequestFromUserContext(userContext);
-        if (request !== undefined) {
-            queryParamsObj.websiteDomain = appInfo.getOrigin({ request, userContext }).getAsStringDangerous();
-        }
         const queryParams = new URLSearchParams(queryParamsObj).toString();
 
         let { body: response } = await this.sendRequestHelper(
