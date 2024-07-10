@@ -9,9 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [17.1.4] - 2024-07-09
 
-### Changes
-
--   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
+-   `refreshPOST` and `refreshSession` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
 
 ## [17.1.3] - 2024-05-28
 
