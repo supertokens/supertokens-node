@@ -21,7 +21,6 @@ import { RATE_LIMIT_STATUS_CODE } from "./constants";
 import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
-import { QuerierError } from "./QuerierError";
 import SuperTokens from "./supertokens";
 
 export class Querier {
@@ -575,19 +574,16 @@ export class Querier {
                     }
                 }
 
-                const errorMessageFromCore = await err.text();
-
-                const errorText =
+                throw new Error(
                     "SuperTokens core threw an error for a " +
-                    method +
-                    " request to path: '" +
-                    path.getAsStringDangerous() +
-                    "' with status code: " +
-                    err.status +
-                    " and message: " +
-                    errorMessageFromCore;
-
-                throw new QuerierError(errorText, err.status as number, errorMessageFromCore);
+                        method +
+                        " request to path: '" +
+                        path.getAsStringDangerous() +
+                        "' with status code: " +
+                        err.status +
+                        " and message: " +
+                        (await err.text())
+                );
             }
 
             throw err;

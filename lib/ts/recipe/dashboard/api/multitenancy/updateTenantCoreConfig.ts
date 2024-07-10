@@ -14,7 +14,6 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { QuerierError } from "../../../../QuerierError";
 import { UserContext } from "../../../../types";
 
 export type Response =
@@ -51,11 +50,12 @@ export default async function updateTenantCoreConfig(
             userContext,
         });
     } catch (err) {
-        if (err instanceof QuerierError) {
+        const errMsg: string = err.message;
+        if (errMsg.includes("SuperTokens core threw an error for a ") && errMsg.includes("with status code: 400")) {
             if (err.statusCodeFromCore === 400) {
                 return {
                     status: "INVALID_CONFIG_ERROR",
-                    message: err.errorMessageFromCore,
+                    message: errMsg.split(" and message: ")[1],
                 };
             }
         }

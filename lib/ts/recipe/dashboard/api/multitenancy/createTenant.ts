@@ -15,7 +15,6 @@
 import { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
-import { QuerierError } from "../../../../QuerierError";
 import { UserContext } from "../../../../types";
 
 export type Response =
@@ -51,16 +50,18 @@ export default async function createTenant(
     try {
         tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
     } catch (err) {
-        const error = err as QuerierError;
-        if (error.statusCodeFromCore === 402) {
+        const errMsg: string = err.message;
+        if (errMsg.includes("SuperTokens core threw an error for a ")) {
+        }
+        if (errMsg.includes("with status code: 402")) {
             return {
                 status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR",
             };
         }
-        if (error.statusCodeFromCore === 400) {
+        if (errMsg.includes("with status code: 400")) {
             return {
                 status: "INVALID_TENANT_ID_ERROR",
-                message: error.errorMessageFromCore,
+                message: errMsg.split(" and message: ")[1],
             };
         }
         throw err;
