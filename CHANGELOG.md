@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `updateUser` (Passwordless recipe)
         -   `updateEmailOrPassword` (EmailPassword recipe)
         -   `manuallyCreateOrUpdateUser` (ThirdParty recipe)
+-   Removes the default `maxAgeInSeconds` value (previously 300 seconds) in EmailVerification Claim. If the claim value is true and `maxAgeInSeconds` is not provided, it will not be refetched.
 
 ### Changes
 
@@ -33,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   now verifies the email address in all cases if the EmailVerification recipe is initialized
     -   now tries to link accounts based on account info if AccountLinking is enabled
 -   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
--   Removes the default `maxAgeInSeconds` value in EmailVerification Claim when the claim value is true. Now, the SDK won't refetch the claim value if `maxAgeInSeconds` is not provided and claim value is true.
 
 ## [18.0.2] - 2024-07-09
 
