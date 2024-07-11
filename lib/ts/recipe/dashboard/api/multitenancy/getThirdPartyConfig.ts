@@ -55,131 +55,113 @@ export default async function getThirdPartyConfig(
         throw new Error("Please provide thirdPartyId");
     }
 
-    // This API is called when creating a new thirdparty config
-    // 1. we fetch providers from core
-    // 2. if we find a matching provider, we update it with the additional input. for example, oktaDomain for okta
-    //    if we don't find a matching provider, we add to this list
-    //    we modify provider list from core because, it's always prioritised over static list
-    //    also, we set authUrl, tokenUrl, etc to undefined while setting oidcDiscoveryEndpoint to ensure that they are populated from the discovery endpoint
-    // 3. we mergee the modified provider list from core with the static provider
-    // 4. we find and create instance for the given thirdPartyId to fetch the computed config (based on OIDC discovery)
-    // 5. we return the final provider config
-
     let providersFromCore = tenantRes?.thirdParty?.providers;
     const mtRecipe = MultitenancyRecipe.getInstance();
-    const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
+    let staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
     let additionalConfig = null;
 
-    let found = false;
-    for (let i = 0; i < providersFromCore.length; i++) {
-        if (providersFromCore[i].thirdPartyId === thirdPartyId) {
-            found = true;
-            if (thirdPartyId === "okta") {
-                const oktaDomain = options.req.getKeyValueFromQuery("oktaDomain");
-                if (oktaDomain !== undefined) {
-                    providersFromCore[i].oidcDiscoveryEndpoint = oktaDomain;
-                    providersFromCore[i].authorizationEndpoint = undefined;
-                    providersFromCore[i].tokenEndpoint = undefined;
-                    providersFromCore[i].userInfoEndpoint = undefined;
-                    additionalConfig = { oktaDomain };
-                }
-            } else if (thirdPartyId === "active-directory") {
-                const directoryId = options.req.getKeyValueFromQuery("directoryId");
-                if (directoryId !== undefined) {
-                    providersFromCore[
-                        i
-                    ].oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${directoryId}/v2.0/`;
-                    providersFromCore[i].authorizationEndpoint = undefined;
-                    providersFromCore[i].tokenEndpoint = undefined;
-                    providersFromCore[i].userInfoEndpoint = undefined;
+    // filter out providers that is not matching thirdPartyId
+    providersFromCore = providersFromCore.filter((provider) => provider.thirdPartyId === thirdPartyId);
 
-                    additionalConfig = { directoryId };
-                }
-            } else if (thirdPartyId === "boxy-saml") {
-                let boxyURL = options.req.getKeyValueFromQuery("boxyUrl");
-                if (boxyURL !== undefined) {
-                    providersFromCore[i].oidcDiscoveryEndpoint = undefined;
-                    providersFromCore[i].authorizationEndpoint = `${boxyURL}/api/oauth/authorize`;
-                    providersFromCore[i].tokenEndpoint = `${boxyURL}/api/oauth/token`;
-                    providersFromCore[i].userInfoEndpoint = `${boxyURL}/api/oauth/userinfo`;
+    // if none left, add one to this list so that it takes priority while merging
+    if (providersFromCore.length === 0) {
+        providersFromCore.push({
+            thirdPartyId,
+        });
+    }
 
-                    additionalConfig = { boxyURL };
-                }
-            } else if (thirdPartyId === "google-workspaces") {
-                const hd = options.req.getKeyValueFromQuery("hd");
-                if (providersFromCore[i].clients !== undefined) {
-                    for (let j = 0; j < providersFromCore[i].clients!.length; j++) {
-                        if (hd !== undefined) {
-                            providersFromCore[i].clients![j].additionalConfig = {
-                                hd,
-                            };
-                        }
-                    }
-                }
+    // At this point, providersFromCore.length === 1
+
+    if (providersFromCore[0].clients === undefined) {
+        providersFromCore[0].clients = [
+            {
+                clientId: "nonguessable-temporary-client-id",
+            },
+        ];
+
+        if (thirdPartyId === "apple") {
+            providersFromCore[0].clients[0].additionalConfig = {
+                teamId: "team-id",
+                keyId: "key-id",
+
+                // we need a proper private key otherwise creating of the provider instance fails in signing the key
+                privateKey:
+                    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+            };
+            additionalConfig = {
+                teamId: "",
+                keyId: "",
+                privateKey: "",
+            };
+        }
+    }
+
+    // query param may be passed if we are creating a new third party config, check and update accordingly
+
+    if (["okta", "active-directory", "boxy-saml", "google-workspaces"].includes(thirdPartyId)) {
+        if (thirdPartyId === "okta") {
+            const oktaDomain = options.req.getKeyValueFromQuery("oktaDomain");
+            if (oktaDomain !== undefined) {
+                additionalConfig = { oktaDomain };
+            }
+        } else if (thirdPartyId === "active-directory") {
+            const directoryId = options.req.getKeyValueFromQuery("directoryId");
+            if (directoryId !== undefined) {
+                additionalConfig = { directoryId };
+            }
+        } else if (thirdPartyId === "boxy-saml") {
+            let boxyURL = options.req.getKeyValueFromQuery("boxyUrl");
+            if (boxyURL !== undefined) {
+                additionalConfig = { boxyURL };
+            }
+        } else if (thirdPartyId === "google-workspaces") {
+            const hd = options.req.getKeyValueFromQuery("hd");
+            if (hd !== undefined) {
+                additionalConfig = { hd };
+            }
+        }
+
+        if (additionalConfig !== null) {
+            providersFromCore[0].oidcDiscoveryEndpoint = undefined;
+            providersFromCore[0].authorizationEndpoint = undefined;
+            providersFromCore[0].tokenEndpoint = undefined;
+            providersFromCore[0].userInfoEndpoint = undefined;
+
+            for (let j = 0; j < (providersFromCore[0].clients ?? []).length; j++) {
+                providersFromCore[0].clients![j].additionalConfig = {
+                    ...providersFromCore[0].clients![j].additionalConfig,
+                    ...additionalConfig,
+                };
             }
         }
     }
 
-    if (!found) {
-        if (thirdPartyId === "okta") {
-            providersFromCore.push({
-                thirdPartyId,
-                oidcDiscoveryEndpoint: options.req.getKeyValueFromQuery("oktaDomain"),
-            });
-            additionalConfig = { oktaDomain: options.req.getKeyValueFromQuery("oktaDomain") };
-        } else if (thirdPartyId === "active-directory") {
-            providersFromCore.push({
-                thirdPartyId,
-                oidcDiscoveryEndpoint: `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
-                    "directoryId"
-                )}/v2.0/`,
-            });
-            additionalConfig = { directoryId: options.req.getKeyValueFromQuery("directoryId") };
-        } else if (thirdPartyId === "boxy-saml") {
-            providersFromCore.push({
-                thirdPartyId,
-                authorizationEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/authorize`,
-                tokenEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/token`,
-                userInfoEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/userinfo`,
-            });
-            additionalConfig = { boxyURL: options.req.getKeyValueFromQuery("boxyUrl") };
-        } else if (thirdPartyId === "apple") {
-            providersFromCore.push({
-                thirdPartyId,
-                clients: [
-                    {
-                        clientId: "nonguessable-temporary-client-id",
-                        additionalConfig: {
-                            teamId: "team-id",
-                            keyId: "key-id",
-                            privateKey:
-                                "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                        },
-                    },
-                ],
-            });
-        } else if (thirdPartyId === "google-workspaces") {
-            providersFromCore.push({
-                thirdPartyId,
-                clients: [
-                    {
-                        clientId: "nonguessable-temporary-client-id",
-                        additionalConfig: {
-                            hd: options.req.getKeyValueFromQuery("hd"),
-                        },
-                    },
-                ],
-            });
-            additionalConfig = { hd: options.req.getKeyValueFromQuery("hd") };
-        } else {
-            providersFromCore.push({
-                thirdPartyId,
-            });
+    // filter out other providers from static
+    staticProviders = staticProviders.filter((provider) => provider.config.thirdPartyId === thirdPartyId);
+    if (staticProviders.length === 1) {
+        // modify additional config if query param is passed
+        if (additionalConfig !== null) {
+            // we set these to undefined so that these can be computed using the query param that was provided
+            staticProviders[0].config.oidcDiscoveryEndpoint = undefined;
+            staticProviders[0].config.authorizationEndpoint = undefined;
+            staticProviders[0].config.tokenEndpoint = undefined;
+            staticProviders[0].config.userInfoEndpoint = undefined;
+
+            for (let j = 0; j < (staticProviders[0].config.clients ?? []).length; j++) {
+                staticProviders[0].config.clients![j].additionalConfig = {
+                    ...staticProviders[0].config.clients![j].additionalConfig,
+                    ...additionalConfig,
+                };
+            }
         }
     }
 
     let mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
+
+    if (mergedProvidersFromCoreAndStatic.length !== 1) {
+        throw new Error("should never come here!");
+    }
 
     for (const mergedProvider of mergedProvidersFromCoreAndStatic) {
         if (mergedProvider.config.thirdPartyId === thirdPartyId) {
