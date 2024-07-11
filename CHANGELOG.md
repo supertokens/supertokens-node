@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `updateEmailOrPassword` (EmailPassword recipe)
         -   `manuallyCreateOrUpdateUser` (ThirdParty recipe)
 
+-   Removes the default `maxAgeInSeconds` value (previously 300 seconds) in EmailVerification Claim. If the claim value is true and `maxAgeInSeconds` is not provided, it will not be refetched.
+
 -   In the multitenancy recipe,
     -   Removes `emailPasswordEnabled`, `passwordlessEnabled`, `thirdPartyEnabled` inputs from `createOrUpdateTenant` functions.
     -   Recipe implementation uses v2 APIs for creating, fetching and listing tenants. Refer CDI spec for more information.
