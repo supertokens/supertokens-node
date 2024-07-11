@@ -230,9 +230,7 @@ export default async function getThirdPartyConfig(
 
                     foundCorrectConfig = true;
                 } catch (err) {
-                    console.log(err);
                     // ignore the error
-                    console.log(client);
                     clients.push(client);
                 }
             }
