@@ -167,6 +167,7 @@ export type APIInterface = {
                   enabled: boolean;
               };
               thirdParty: {
+                  enabled: boolean;
                   providers: { id: string; name?: string }[];
               };
               passwordless: {

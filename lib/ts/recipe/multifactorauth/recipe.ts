@@ -75,11 +75,8 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(originalImpl);
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
 
-            // @ts-ignore
-            let layers = builder.layers;
-
-            if (Object.keys(layers[1]).includes("getMFARequirementsForAuth")) {
-                this.isGetMfaRequirementsForAuthOverridden = true;
+            if (config?.override?.functions !== undefined) {
+                this.isGetMfaRequirementsForAuthOverridden = true; // assuming that's what most people will override
             }
         }
 
