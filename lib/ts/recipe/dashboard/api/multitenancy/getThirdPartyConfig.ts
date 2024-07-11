@@ -69,39 +69,52 @@ export default async function getThirdPartyConfig(
     const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
+    let additionalConfig = null;
+
     let found = false;
     for (let i = 0; i < providersFromCore.length; i++) {
         if (providersFromCore[i].thirdPartyId === thirdPartyId) {
             found = true;
             if (thirdPartyId === "okta") {
-                providersFromCore[i].oidcDiscoveryEndpoint = options.req.getKeyValueFromQuery("oktaDomain");
-                providersFromCore[i].authorizationEndpoint = undefined;
-                providersFromCore[i].tokenEndpoint = undefined;
-                providersFromCore[i].userInfoEndpoint = undefined;
+                const oktaDomain = options.req.getKeyValueFromQuery("oktaDomain");
+                if (oktaDomain !== undefined) {
+                    providersFromCore[i].oidcDiscoveryEndpoint = oktaDomain;
+                    providersFromCore[i].authorizationEndpoint = undefined;
+                    providersFromCore[i].tokenEndpoint = undefined;
+                    providersFromCore[i].userInfoEndpoint = undefined;
+                    additionalConfig = { oktaDomain };
+                }
             } else if (thirdPartyId === "active-directory") {
-                providersFromCore[
-                    i
-                ].oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${options.req.getKeyValueFromQuery(
-                    "directoryId"
-                )}/v2.0/`;
-                providersFromCore[i].authorizationEndpoint = undefined;
-                providersFromCore[i].tokenEndpoint = undefined;
-                providersFromCore[i].userInfoEndpoint = undefined;
+                const directoryId = options.req.getKeyValueFromQuery("directoryId");
+                if (directoryId !== undefined) {
+                    providersFromCore[
+                        i
+                    ].oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${directoryId}/v2.0/`;
+                    providersFromCore[i].authorizationEndpoint = undefined;
+                    providersFromCore[i].tokenEndpoint = undefined;
+                    providersFromCore[i].userInfoEndpoint = undefined;
+
+                    additionalConfig = { directoryId };
+                }
             } else if (thirdPartyId === "boxy-saml") {
-                providersFromCore[i].oidcDiscoveryEndpoint = undefined;
-                providersFromCore[i].authorizationEndpoint = `${options.req.getKeyValueFromQuery(
-                    "boxyUrl"
-                )}/api/oauth/authorize`;
-                providersFromCore[i].tokenEndpoint = `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/token`;
-                providersFromCore[i].userInfoEndpoint = `${options.req.getKeyValueFromQuery(
-                    "boxyUrl"
-                )}/api/oauth/userinfo`;
+                let boxyURL = options.req.getKeyValueFromQuery("boxyUrl");
+                if (boxyURL !== undefined) {
+                    providersFromCore[i].oidcDiscoveryEndpoint = undefined;
+                    providersFromCore[i].authorizationEndpoint = `${boxyURL}/api/oauth/authorize`;
+                    providersFromCore[i].tokenEndpoint = `${boxyURL}/api/oauth/token`;
+                    providersFromCore[i].userInfoEndpoint = `${boxyURL}/api/oauth/userinfo`;
+
+                    additionalConfig = { boxyURL };
+                }
             } else if (thirdPartyId === "google-workspaces") {
+                const hd = options.req.getKeyValueFromQuery("hd");
                 if (providersFromCore[i].clients !== undefined) {
                     for (let j = 0; j < providersFromCore[i].clients!.length; j++) {
-                        providersFromCore[i].clients![j].additionalConfig = {
-                            hd: options.req.getKeyValueFromQuery("hd"),
-                        };
+                        if (hd !== undefined) {
+                            providersFromCore[i].clients![j].additionalConfig = {
+                                hd,
+                            };
+                        }
                     }
                 }
             }
@@ -114,6 +127,7 @@ export default async function getThirdPartyConfig(
                 thirdPartyId,
                 oidcDiscoveryEndpoint: options.req.getKeyValueFromQuery("oktaDomain"),
             });
+            additionalConfig = { oktaDomain: options.req.getKeyValueFromQuery("oktaDomain") };
         } else if (thirdPartyId === "active-directory") {
             providersFromCore.push({
                 thirdPartyId,
@@ -121,6 +135,7 @@ export default async function getThirdPartyConfig(
                     "directoryId"
                 )}/v2.0/`,
             });
+            additionalConfig = { directoryId: options.req.getKeyValueFromQuery("directoryId") };
         } else if (thirdPartyId === "boxy-saml") {
             providersFromCore.push({
                 thirdPartyId,
@@ -128,6 +143,7 @@ export default async function getThirdPartyConfig(
                 tokenEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/token`,
                 userInfoEndpoint: `${options.req.getKeyValueFromQuery("boxyUrl")}/api/oauth/userinfo`,
             });
+            additionalConfig = { boxyURL: options.req.getKeyValueFromQuery("boxyUrl") };
         } else if (thirdPartyId === "apple") {
             providersFromCore.push({
                 thirdPartyId,
@@ -155,6 +171,7 @@ export default async function getThirdPartyConfig(
                     },
                 ],
             });
+            additionalConfig = { hd: options.req.getKeyValueFromQuery("hd") };
         } else {
             providersFromCore.push({
                 thirdPartyId,
@@ -247,11 +264,19 @@ export default async function getThirdPartyConfig(
         }
     }
 
+    const finalClients = clients.filter((client) => client.clientId !== "nonguessable-temporary-client-id");
+    if (finalClients.length === 0) {
+        finalClients.push({
+            clientId: "",
+            additionalConfig: additionalConfig === null ? undefined : additionalConfig,
+        });
+    }
+
     return {
         status: "OK",
         providerConfig: {
             ...commonProviderConfig,
-            clients: clients.filter((client) => client.clientId !== "nonguessable-temporary-client-id"),
+            clients: finalClients,
             isGetAuthorisationRedirectUrlOverridden,
             isExchangeAuthCodeForOAuthTokensOverridden,
             isGetUserInfoOverridden,
