@@ -56,6 +56,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Fixes issue with OIDC discover when the input url already contains `.well-known/openid-configuration`.
 -   Removes the default `maxAgeInSeconds` value in EmailVerification Claim when the claim value is true. Now, the SDK won't refetch the claim value if `maxAgeInSeconds` is not provided and claim value is true.
 
+### Migration
+
+If you were using Multitenancy.createOrUpdateTenant, you should remove the `emailPasswordEnabled`, `passwordlessEnabled`, `thirdPartyEnabled` inputs from the function call, and just use the `firstFactors` and `requiredSecondaryFactors` as applicable.
+
+Here are some examples:
+
+1.  Enabling emailpassword and thirdparty
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["emailpassword", "thirdparty"],
+    });
+    ```
+
+2.  Enabling emailpassword, thirdparty for firstFactors and passwordless for secondary factors
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+        passwordlessEnabled: true,
+        firstFactors: ["emailpassword", "thirdparty"],
+        requiredSecondaryFactors: ["otp-phone"],
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["emailpassword", "thirdparty"],
+        requiredSecondaryFactors: ["otp-phone"],
+    });
+    ```
+
 ## [18.0.2] - 2024-07-09
 
 -   `refreshPOST` and `refreshSession` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
