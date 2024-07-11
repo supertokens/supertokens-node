@@ -101,46 +101,21 @@ export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
 var oidcInfoMap: { [key: string]: any } = {};
 
 async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
-    const wellKnownIncluded = issuer.endsWith("/.well-known/openid-configuration");
-    const normalizedDomain = new NormalisedURLDomain(issuer);
-    let normalizedPath = new NormalisedURLPath(issuer);
-
     if (oidcInfoMap[issuer] !== undefined) {
         return oidcInfoMap[issuer];
     }
 
-    const urlsToTry = [
-        normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous(), // input url as is
-    ];
+    const normalizedDomain = new NormalisedURLDomain(issuer);
+    const normalizedPath = new NormalisedURLPath(issuer);
 
-    if (!wellKnownIncluded) {
-        const openIdConfigPath = new NormalisedURLPath("/.well-known/openid-configuration");
-        normalizedPath = normalizedPath.appendPath(openIdConfigPath);
-        urlsToTry.push(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous());
+    let oidcInfo = await doGetRequest(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous());
+    if (oidcInfo.status > 400) {
+        logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
+        throw new Error(`Received response with status ${oidcInfo!.status} and body ${oidcInfo!.stringResponse}`);
     }
 
-    let oidcInfo: {
-        jsonResponse: Record<string, any> | undefined;
-        status: number;
-        stringResponse: string;
-    };
-
-    for (const oidcUrl of urlsToTry) {
-        try {
-            oidcInfo = await doGetRequest(oidcUrl);
-        } catch (err) {
-            logDebugMessage(`Error while fetching ${oidcUrl} - ${err}`);
-            continue;
-        }
-
-        if (oidcInfo.status >= 200 && oidcInfo.status < 300) {
-            oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
-            return oidcInfo.jsonResponse!;
-        } else {
-            logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
-        }
-    }
-    throw new Error(`Received response with status ${oidcInfo!.status} and body ${oidcInfo!.stringResponse}`);
+    oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
+    return oidcInfo.jsonResponse!;
 }
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void> {

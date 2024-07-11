@@ -34,7 +34,7 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
                         "Please provide the directoryId in the additionalConfig of the Active Directory provider."
                     );
                 }
-                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/`;
+                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/.well-known/openid-configuration`;
             }
 
             if (config.scope === undefined) {

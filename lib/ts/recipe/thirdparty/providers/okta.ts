@@ -12,6 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import NormalisedURLDomain from "../../../normalisedURLDomain";
+import NormalisedURLPath from "../../../normalisedURLPath";
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 
@@ -32,7 +34,10 @@ export default function Okta(input: ProviderInput): TypeProvider {
                     throw new Error("Please provide the oktaDomain in the additionalConfig of the Okta provider.");
                 }
 
-                config.oidcDiscoveryEndpoint = `${config.additionalConfig.oktaDomain}`;
+                const oidcDomain = new NormalisedURLDomain(config.additionalConfig.oktaDomain);
+                const oidcPath = new NormalisedURLPath("/.well-known/openid-configuration");
+
+                config.oidcDiscoveryEndpoint = oidcDomain.getAsStringDangerous() + oidcPath.getAsStringDangerous();
             }
 
             if (config.scope === undefined) {

@@ -31,8 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removes the default `maxAgeInSeconds` value (previously 300 seconds) in EmailVerification Claim. If the claim value is true and `maxAgeInSeconds` is not provided, it will not be refetched.
 
 -   In the multitenancy recipe,
+
     -   Removes `emailPasswordEnabled`, `passwordlessEnabled`, `thirdPartyEnabled` inputs from `createOrUpdateTenant` functions.
     -   Recipe implementation uses v2 APIs for creating, fetching and listing tenants. Refer CDI spec for more information.
+
+-   SDK will no longer add `.well-known/openid-configuration` to the `oidcDiscoveryEndpoint` config in thirdParty providers. If you have specified any custom `oidcDiscoveryEndpoint` in the ThirdParty.init or added to the core, please make sure to update them to include `.well-known/openid-configuration`.
 
 ### Changes
 
@@ -57,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removes the default `maxAgeInSeconds` value in EmailVerification Claim when the claim value is true. Now, the SDK won't refetch the claim value if `maxAgeInSeconds` is not provided and claim value is true.
 
 ### Migration
+
+#### Create or update tenant
 
 If you were using Multitenancy.createOrUpdateTenant, you should remove the `emailPasswordEnabled`, `passwordlessEnabled`, `thirdPartyEnabled` inputs from the function call, and just use the `firstFactors` and `requiredSecondaryFactors` as applicable.
 
@@ -103,6 +108,76 @@ Here are some examples:
         requiredSecondaryFactors: ["otp-phone"],
     });
     ```
+
+#### Migrating `oidcDiscoveryEndpoint` in ThirdParty.init:
+
+Before:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "custom",
+                    clients: [
+                        // ...
+                    ],
+                    oidcDiscoveryEndpoint: "https://auth.example.com",
+                },
+            },
+        ],
+    },
+});
+```
+
+After:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "custom",
+                    clients: [
+                        // ...
+                    ],
+                    oidcDiscoveryEndpoint: "https://auth.example.com/.well-known/openid-configuration",
+                },
+            },
+        ],
+    },
+});
+```
+
+#### Migrating `oidcDiscoveryEndpoint` in core:
+
+For each tenant, do the following
+
+1.  GET `/appid-<appId>/<tenantId>/recipe/multitenancy/tenant/v2`
+
+    You should see the thirdParty providers in the response using `response.thirdParty.providers`
+
+2.  For each config in providers list, if you have `oidcDiscoveryEndpoint` in the config, update it to include `.well-known/openid-configuration` at the end.
+
+Here's a sample code snippet to update the `oidcDiscoveryEndpoint`:
+
+```ts
+import Multitenancy from "supertokens-node/recipe/multitenancy";
+
+const tenantsRes = await Multitenancy.listAllTenants();
+
+for (const tenant of tenantsRes.tenants) {
+    for (const provider of tenant.thirdParty.providers) {
+        if (provider.oidcDiscoveryEndpoint !== undefined) {
+            provider.oidcDiscoveryEndpoint = `${provider.config.oidcDiscoveryEndpoint}/.well-known/openid-configuration`;
+
+            await Multitenancy.createOrUpdateThirdPartyConfig(tenant.tenantId, provider);
+        }
+    }
+}
+```
 
 ## [18.0.2] - 2024-07-09
 
