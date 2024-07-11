@@ -106,7 +106,10 @@ export default async function getTenantInfo(
 
                         return { thirdPartyId: provider.config.thirdPartyId, name: providerInstance?.config.name! };
                     } catch (_) {
-                        return { thirdPartyId: provider.config.thirdPartyId, name: provider.config.thirdPartyId }; // TODO fix the name
+                        return {
+                            thirdPartyId: provider.config.thirdPartyId,
+                            name: provider.config.thirdPartyId,
+                        };
                     }
                 })
             ),

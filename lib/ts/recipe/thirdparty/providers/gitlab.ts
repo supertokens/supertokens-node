@@ -35,15 +35,12 @@ export default function Gitlab(input: ProviderInput): TypeProvider {
                 config.scope = ["openid", "email"];
             }
 
-            if (config.oidcDiscoveryEndpoint === undefined) {
-                if (config.additionalConfig !== undefined && config.additionalConfig.gitlabBaseUrl !== undefined) {
-                    const oidcDomain = new NormalisedURLDomain(config.additionalConfig.gitlabBaseUrl);
-                    const oidcPath = new NormalisedURLPath("/.well-known/openid-configuration");
-
-                    config.oidcDiscoveryEndpoint = oidcDomain.getAsStringDangerous() + oidcPath.getAsStringDangerous();
-                } else {
-                    config.oidcDiscoveryEndpoint = "https://gitlab.com/.well-known/openid-configuration";
-                }
+            if (config.additionalConfig !== undefined && config.additionalConfig.gitlabBaseUrl !== undefined) {
+                const oidcDomain = new NormalisedURLDomain(config.additionalConfig.gitlabBaseUrl);
+                const oidcPath = new NormalisedURLPath("/.well-known/openid-configuration");
+                config.oidcDiscoveryEndpoint = oidcDomain.getAsStringDangerous() + oidcPath.getAsStringDangerous();
+            } else if (config.oidcDiscoveryEndpoint === undefined) {
+                config.oidcDiscoveryEndpoint = "https://gitlab.com/.well-known/openid-configuration";
             }
 
             return config;

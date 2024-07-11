@@ -29,11 +29,11 @@ export default function Okta(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function (input) {
             const config = await oGetConfig(input);
 
-            if (config.oidcDiscoveryEndpoint === undefined) {
-                if (config.additionalConfig == undefined || config.additionalConfig.oktaDomain == undefined) {
+            if (config.additionalConfig == undefined || config.additionalConfig.oktaDomain == undefined) {
+                if (config.oidcDiscoveryEndpoint === undefined) {
                     throw new Error("Please provide the oktaDomain in the additionalConfig of the Okta provider.");
                 }
-
+            } else {
                 const oidcDomain = new NormalisedURLDomain(config.additionalConfig.oktaDomain);
                 const oidcPath = new NormalisedURLPath("/.well-known/openid-configuration");
 
