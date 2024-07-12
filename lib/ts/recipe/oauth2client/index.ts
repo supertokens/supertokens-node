@@ -13,29 +13,36 @@
  * under the License.
  */
 
+import { UserContext } from "../../types";
 import Recipe from "./recipe";
-import { RecipeInterface, APIInterface, APIOptions, ProviderConfigWithOIDCInfo, OAuthTokens } from "./types";
+import { RecipeInterface, APIInterface, APIOptions, OAuthTokens } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getAuthorisationRedirectURL(input: { redirectURIOnProviderDashboard: string }) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAuthorisationRedirectURL(input);
+    static async getAuthorisationRedirectURL(redirectURIOnProviderDashboard: string, userContext: UserContext) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAuthorisationRedirectURL(
+            redirectURIOnProviderDashboard,
+            userContext
+        );
     }
 
-    static async exchangeAuthCodeForOAuthTokens(input: {
-        providerConfig: ProviderConfigWithOIDCInfo;
+    static async exchangeAuthCodeForOAuthTokens(
         redirectURIInfo: {
             redirectURIOnProviderDashboard: string;
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
-        };
-    }) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens(input);
+        },
+        userContext: UserContext
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens(
+            redirectURIInfo,
+            userContext
+        );
     }
 
-    static async getUserInfo(input: { providerConfig: ProviderConfigWithOIDCInfo; oAuthTokens: OAuthTokens }) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo(input);
+    static async getUserInfo(oAuthTokens: OAuthTokens, userContext: UserContext) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo(oAuthTokens, userContext);
     }
 }
 

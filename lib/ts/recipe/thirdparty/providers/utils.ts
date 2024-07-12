@@ -1,5 +1,5 @@
 import { ProviderConfigForClientType } from "../types";
-import { getOIDCDiscoveryInfo } from "../../utils";
+import { getOIDCDiscoveryInfo } from "../../../thirdpartyUtils";
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void> {
     if (config.oidcDiscoveryEndpoint !== undefined) {

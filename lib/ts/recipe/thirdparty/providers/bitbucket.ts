@@ -14,7 +14,7 @@
  */
 
 import { ProviderInput, TypeProvider } from "../types";
-import { doGetRequest } from "../../utils";
+import { doGetRequest } from "../../../thirdpartyUtils";
 
 import NewProvider from "./custom";
 import { logDebugMessage } from "../../../logger";

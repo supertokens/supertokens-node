@@ -1,8 +1,8 @@
 import * as jose from "jose";
-import { logDebugMessage } from "../logger";
-import { doFetch } from "../utils";
-import NormalisedURLDomain from "../normalisedURLDomain";
-import NormalisedURLPath from "../normalisedURLPath";
+import { logDebugMessage } from "./logger";
+import { doFetch } from "./utils";
+import NormalisedURLDomain from "./normalisedURLDomain";
+import NormalisedURLPath from "./normalisedURLPath";
 
 export async function doGetRequest(
     url: string,
