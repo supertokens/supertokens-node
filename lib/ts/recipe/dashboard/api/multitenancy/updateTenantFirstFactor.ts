@@ -14,7 +14,7 @@
  */
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
-import { factorIdToRecipe, getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
+import { getFactorNotAvailableMessage, getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
 import { UserContext } from "../../../../types";
 
 export type Response =
@@ -37,7 +37,7 @@ export default async function updateTenantFirstFactor(
         if (!mtRecipe?.allAvailableFirstFactors.includes(factorId)) {
             return {
                 status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR",
-                message: `Please initialise ${factorIdToRecipe(factorId)} recipe to be able to use this login method`,
+                message: getFactorNotAvailableMessage(factorId, mtRecipe!.allAvailableFirstFactors),
             };
         }
     }

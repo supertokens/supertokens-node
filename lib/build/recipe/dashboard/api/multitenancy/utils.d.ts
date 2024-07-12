@@ -7,3 +7,4 @@ export declare function getNormalisedRequiredSecondaryFactorsBasedOnTenantConfig
     tenantDetailsFromCore: TenantConfig
 ): string[];
 export declare function factorIdToRecipe(factorId: string): string;
+export declare function getFactorNotAvailableMessage(factorId: string, availableFactors: string[]): string;

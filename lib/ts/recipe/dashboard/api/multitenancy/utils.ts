@@ -2,6 +2,7 @@ import MultitenancyRecipe from "../../../multitenancy/recipe";
 import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
 import { isFactorConfiguredForTenant } from "../../../multitenancy/utils";
 import { TenantConfig } from "../../../multitenancy/types";
+import { FactorIds } from "../../../multifactorauth";
 
 export function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(
     tenantDetailsFromCore: TenantConfig
@@ -69,4 +70,23 @@ export function factorIdToRecipe(factorId: string): string {
     };
 
     return factorIdToRecipe[factorId];
+}
+
+export function getFactorNotAvailableMessage(factorId: string, availableFactors: string[]): string {
+    const recipeName = factorIdToRecipe(factorId);
+    if (recipeName !== "Passwordless") {
+        return `Please initialise ${recipeName} recipe to be able to use this login method`;
+    }
+
+    const passwordlessFactors = [FactorIds.LINK_EMAIL, FactorIds.LINK_PHONE, FactorIds.OTP_EMAIL, FactorIds.OTP_PHONE];
+    const passwordlessFactorsNotAvailable = passwordlessFactors.filter((f) => !availableFactors.includes(f));
+
+    if (passwordlessFactorsNotAvailable.length === 4) {
+        return `Please initialise Passwordless recipe to be able to use this login method`;
+    }
+
+    const [flowType, contactMethod] = factorId.split("-");
+    return `Please ensure that Passwordless recipe is initialised with contactMethod: ${contactMethod.toUpperCase()} and flowType: ${
+        flowType === "otp" ? "USER_INPUT_CODE" : "MAGIC_LINK"
+    }`;
 }

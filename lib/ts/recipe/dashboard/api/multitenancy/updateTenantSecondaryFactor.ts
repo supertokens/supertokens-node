@@ -15,7 +15,10 @@
 import { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
-import { factorIdToRecipe, getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
+import {
+    getFactorNotAvailableMessage,
+    getNormalisedRequiredSecondaryFactorsBasedOnTenantConfigFromCoreAndSDKInit,
+} from "./utils";
 import { UserContext } from "../../../../types";
 
 export type Response =
@@ -56,7 +59,7 @@ export default async function updateTenantSecondaryFactor(
         if (!allAvailableSecondaryFactors.includes(factorId)) {
             return {
                 status: "RECIPE_NOT_CONFIGURED_ON_BACKEND_SDK_ERROR",
-                message: `Please initialise ${factorIdToRecipe(factorId)} recipe to be able to use this login method`,
+                message: getFactorNotAvailableMessage(factorId, allAvailableSecondaryFactors),
             };
         }
     }
