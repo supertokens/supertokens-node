@@ -67,6 +67,8 @@ export default async function deleteThirdPartyConfig(
                 undefined,
                 userContext
             );
+            // delay after each provider to avoid rate limiting
+            await new Promise((r) => setTimeout(r, 500)); // 500ms
         }
     } else if (thirdPartyIdsFromCore.length === 1 && thirdPartyIdsFromCore[0] === thirdPartyId) {
         if (tenantRes.firstFactors === undefined) {

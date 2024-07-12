@@ -54,6 +54,8 @@ export default async function createOrUpdateThirdPartyConfig(
                 undefined,
                 userContext
             );
+            // delay after each provider to avoid rate limiting
+            await new Promise((r) => setTimeout(r, 500)); // 500ms
         }
     }
 
