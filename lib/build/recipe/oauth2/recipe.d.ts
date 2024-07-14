@@ -3,30 +3,34 @@ import error from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
+import { APIHandled, HTTPMethod, JSONObject, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { User } from "../../user";
 export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     private static instance;
+    private idTokenBuilders;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
+    static getInstance(): Recipe | undefined;
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
-        _id: string,
+        id: string,
         _tenantId: string | undefined,
-        _req: BaseRequest,
-        _res: BaseResponse,
+        req: BaseRequest,
+        res: BaseResponse,
         _path: NormalisedURLPath,
         _method: HTTPMethod,
-        _userContext: UserContext
+        userContext: UserContext
     ) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
+    getDefaultIdTokenPayload(user: User, scopes: string[], userContext: UserContext): Promise<JSONObject>;
 }

@@ -14,36 +14,317 @@
  */
 
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
+import { Querier, hydraPubDomain } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
+import {
+    RecipeInterface,
+    TypeNormalisedInput,
+    ConsentRequest,
+    LoginRequest,
+    LogoutRequest,
+    PayloadBuilderFunction,
+} from "./types";
 import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
-import { RecipeInterface, TypeNormalisedInput } from "./types";
+import { getUser } from "../..";
 
 export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
-    _appInfo: NormalisedAppinfo
+    _appInfo: NormalisedAppinfo,
+    getDefaultIdTokenPayload: PayloadBuilderFunction
 ): RecipeInterface {
     return {
+        getLoginRequest: async function (this: RecipeInterface, input): Promise<LoginRequest> {
+            const resp = await querier.sendGetRequest(
+                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/login"),
+                { login_challenge: input.challenge },
+                input.userContext
+            );
+
+            return {
+                challenge: resp.data.challenge,
+                client: OAuth2Client.fromAPIResponse(resp.data.client),
+                oidcContext: resp.data.oidc_context,
+                requestUrl: resp.data.request_url,
+                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
+                requestedScope: resp.data.requested_scope,
+                sessionId: resp.data.session_id,
+                skip: resp.data.skip,
+                subject: resp.data.subject,
+            };
+        },
+        acceptLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
+            const resp = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/login/accept`),
+                {
+                    acr: input.acr,
+                    amr: input.amr,
+                    context: input.context,
+                    extend_session_lifespan: input.extendSessionLifespan,
+                    force_subject_identifier: input.forceSubjectIdentifier,
+                    identity_provider_session_id: input.identityProviderSessionId,
+                    remember: input.remember,
+                    remember_for: input.rememberFor,
+                    subject: input.subject,
+                },
+                {
+                    login_challenge: input.challenge,
+                },
+                input.userContext
+            );
+
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
+        },
+        rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
+            const resp = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/login/reject`),
+                {
+                    error: input.error.error,
+                    error_debug: input.error.errorDebug,
+                    error_description: input.error.errorDescription,
+                    error_hint: input.error.errorHint,
+                    status_code: input.error.statusCode,
+                },
+                {
+                    login_challenge: input.challenge,
+                },
+                input.userContext
+            );
+
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
+        },
+        getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
+            const resp = await querier.sendGetRequest(
+                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/consent"),
+                { consent_challenge: input.challenge },
+                input.userContext
+            );
+
+            return {
+                acr: resp.data.acr,
+                amr: resp.data.amr,
+                challenge: resp.data.challenge,
+                client: OAuth2Client.fromAPIResponse(resp.data.client),
+                context: resp.data.context,
+                loginChallenge: resp.data.login_challenge,
+                loginSessionId: resp.data.login_session_id,
+                oidcContext: resp.data.oidc_context,
+                requestUrl: resp.data.request_url,
+                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
+                requestedScope: resp.data.requested_scope,
+                skip: resp.data.skip,
+                subject: resp.data.subject,
+            };
+        },
+        acceptConsentRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
+            const resp = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/accept`),
+                {
+                    context: input.context,
+                    grant_access_token_audience: input.grantAccessTokenAudience,
+                    grant_scope: input.grantScope,
+                    handled_at: input.handledAt,
+                    remember: input.remember,
+                    remember_for: input.rememberFor,
+                    session: input.session,
+                },
+                {
+                    consent_challenge: input.challenge,
+                },
+                input.userContext
+            );
+
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
+        },
+
+        rejectConsentRequest: async function (this: RecipeInterface, input) {
+            const resp = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/reject`),
+                {
+                    error: input.error.error,
+                    error_debug: input.error.errorDebug,
+                    error_description: input.error.errorDescription,
+                    error_hint: input.error.errorHint,
+                    status_code: input.error.statusCode,
+                },
+                {
+                    consent_challenge: input.challenge,
+                },
+                input.userContext
+            );
+
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
+        },
+
+        getLogoutRequest: async function (this: RecipeInterface, input): Promise<LogoutRequest> {
+            const resp = await querier.sendGetRequest(
+                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/logout"),
+                { logout_challenge: input.challenge },
+                input.userContext
+            );
+
+            return {
+                challenge: resp.data.challenge,
+                client: OAuth2Client.fromAPIResponse(resp.data.client),
+                requestUrl: resp.data.request_url,
+                rpInitiated: resp.data.rp_initiated,
+                sid: resp.data.sid,
+                subject: resp.data.subject,
+            };
+        },
+        acceptLogoutRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
+            const resp = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/logout/accept`),
+                {},
+                {
+                    logout_challenge: input.challenge,
+                },
+                input.userContext
+            );
+
+            return {
+                // TODO: FIXME!!!
+                redirectTo: resp.data.redirect_to.replace(
+                    hydraPubDomain,
+                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                ),
+            };
+        },
+        rejectLogoutRequest: async function (this: RecipeInterface, input): Promise<void> {
+            await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/logout/reject`),
+                {},
+                {
+                    logout_challenge: input.challenge,
+                },
+                input.userContext
+            );
+        },
+        authorization: async function (this: RecipeInterface, input) {
+            const resp = await querier.sendGetRequestWithResponseHeaders(
+                new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
+                input.params,
+                {
+                    Cookie: `${input.cookies}`,
+                },
+                input.userContext
+            );
+
+            const redirectTo = resp.headers.get("Location")!;
+            if (redirectTo === undefined) {
+                throw new Error(resp.body);
+            }
+            const redirectToURL = new URL(redirectTo);
+            const consentChallenge = redirectToURL.searchParams.get("consent_challenge");
+            if (consentChallenge !== null && input.session !== undefined) {
+                const consentRequest = await this.getConsentRequest({
+                    challenge: consentChallenge,
+                    userContext: input.userContext,
+                });
+
+                const user = await getUser(input.session.getUserId());
+                if (!user) {
+                    throw new Error("Should not happen");
+                }
+                if (consentRequest.skip || consentRequest.client?.skipConsent) {
+                    const idToken = this.buildIdTokenPayload({
+                        user,
+                        session: input.session,
+                        defaultPayload: await getDefaultIdTokenPayload(
+                            user,
+                            consentRequest.requestedScope ?? [],
+                            input.userContext
+                        ),
+                        scopes: consentRequest.requestedScope || [],
+                        userContext: input.userContext,
+                    });
+
+                    const accessTokenPayload = this.buildAccessTokenPayload({
+                        user,
+                        session: input.session,
+                        defaultPayload: input.session.getAccessTokenPayload(input.userContext), // TODO: validate
+                        userContext: input.userContext,
+                        scopes: consentRequest.requestedScope || [],
+                    });
+
+                    const consentRes = await this.acceptConsentRequest({
+                        ...input,
+                        challenge: consentRequest.challenge,
+                        grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
+                        grantScope: consentRequest.requestedScope,
+                        session: {
+                            id_token: idToken,
+                            access_token: accessTokenPayload,
+                        },
+                    });
+
+                    return {
+                        redirectTo: consentRes.redirectTo,
+                        setCookie: resp.headers.get("set-cookie") ?? undefined,
+                    };
+                }
+            }
+            return { redirectTo, setCookie: resp.headers.get("set-cookie") ?? undefined };
+        },
+
+        token: async function (this: RecipeInterface, input) {
+            const body = new FormData(); // TODO: we ideally want to avoid using formdata, the core can do the translation
+            for (const key in input.body) {
+                body.append(key, input.body[key]);
+            }
+            const res = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth2/pub/token`),
+                body,
+                input.userContext
+            );
+
+            return res.data;
+        },
+
         getOAuth2Clients: async function (input, userContext) {
-            let response = await querier.sendGetRequest(
+            let response = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
                 {
                     ...transformObjectKeys(input, "snake-case"),
                     page_token: input.paginationToken,
                 },
+                {},
                 userContext
             );
 
-            if (response.status === "OK") {
+            if (response.body.status === "OK") {
                 // Pagination info is in the Link header, containing comma-separated links:
                 // "first", "next" (if applicable).
                 // Example: Link: </admin/clients?page_size=5&page_token=token1>; rel="first", </admin/clients?page_size=5&page_token=token2>; rel="next"
 
                 // We parse the nextPaginationToken from the Link header using RegExp
                 let nextPaginationToken: string | undefined;
-                const linkHeader = response.headers.get("link");
+                const linkHeader = response.headers.get("link") ?? "";
 
                 const nextLinkMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
                 if (nextLinkMatch) {
@@ -54,14 +335,14 @@ export default function getRecipeInterface(
 
                 return {
                     status: "OK",
-                    clients: response.data.map((client: any) => OAuth2Client.fromAPIResponse(client)),
+                    clients: response.body.data.map((client: any) => OAuth2Client.fromAPIResponse(client)),
                     nextPaginationToken,
                 };
             } else {
                 return {
                     status: "ERROR",
-                    error: response.data.error,
-                    errorHint: response.data.errorHint,
+                    error: response.body.data.error,
+                    errorHint: response.body.data.errorHint,
                 };
             }
         },
@@ -135,6 +416,15 @@ export default function getRecipeInterface(
                     errorHint: response.data.errorHint,
                 };
             }
+        },
+        buildAccessTokenPayload: async function (input) {
+            return input.defaultPayload;
+        },
+        buildIdTokenPayload: async function (input) {
+            return input.defaultPayload;
+        },
+        buildUserInfo: async function (input) {
+            return input.user.toJson(); // Proper impl
         },
     };
 }

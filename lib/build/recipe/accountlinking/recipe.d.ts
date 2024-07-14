@@ -104,7 +104,15 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }) => Promise<boolean>;
+    }) => Promise<
+        | {
+              allowed: true;
+          }
+        | {
+              allowed: false;
+              reason: "PRIMARY_USER_CONFLICT" | "ACCOUNT_TAKEOVER_RISK";
+          }
+    >;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
         user: User;
         recipeUserId: RecipeUserId;

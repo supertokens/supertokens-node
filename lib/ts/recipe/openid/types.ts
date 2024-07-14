@@ -83,6 +83,11 @@ export type APIInterface = {
                     status: "OK";
                     issuer: string;
                     jwks_uri: string;
+                    authorization_endpoint: string;
+                    token_endpoint: string;
+                    subject_types_supported: string[];
+                    id_token_signing_alg_values_supported: string[];
+                    response_types_supported: string[];
                 }
               | GeneralErrorResponse
           >);
@@ -95,6 +100,11 @@ export type RecipeInterface = {
         status: "OK";
         issuer: string;
         jwks_uri: string;
+        authorization_endpoint: string;
+        token_endpoint: string;
+        subject_types_supported: string[];
+        id_token_signing_alg_values_supported: string[];
+        response_types_supported: string[];
     }>;
     createJWT(input: {
         payload?: any;

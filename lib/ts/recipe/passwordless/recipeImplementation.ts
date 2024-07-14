@@ -1,6 +1,7 @@
 import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import AccountLinking from "../accountlinking/recipe";
+import EmailVerification from "../emailverification/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { logDebugMessage } from "../../logger";
 import { User } from "../../user";
@@ -161,9 +162,45 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return { status: "OK" };
         },
         updateUser: async function (input) {
+            const accountLinking = AccountLinking.getInstance();
+            if (input.email) {
+                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+
+                if (user === undefined) {
+                    return { status: "UNKNOWN_USER_ID_ERROR" };
+                }
+
+                const evInstance = EmailVerification.getInstance();
+
+                let isEmailVerified = false;
+                if (evInstance) {
+                    isEmailVerified = await evInstance.recipeInterfaceImpl.isEmailVerified({
+                        recipeUserId: input.recipeUserId,
+                        email: input.email,
+                        userContext: input.userContext,
+                    });
+                }
+                const isEmailChangeAllowed = await accountLinking.isEmailChangeAllowed({
+                    user,
+                    isVerified: isEmailVerified,
+                    newEmail: input.email,
+                    session: undefined,
+                    userContext: input.userContext,
+                });
+                if (!isEmailChangeAllowed.allowed) {
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        reason:
+                            isEmailChangeAllowed.reason === "ACCOUNT_TAKEOVER_RISK"
+                                ? "New email cannot be applied to existing account because of account takeover risks."
+                                : "New email cannot be applied to existing account because of there is another primary user with the same email address.",
+                    };
+                }
+            }
             let response = await querier.sendPutRequest(
                 new NormalisedURLPath(`/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input),
+                {},
                 input.userContext
             );
             if (response.status !== "OK") {

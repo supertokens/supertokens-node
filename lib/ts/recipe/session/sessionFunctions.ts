@@ -500,6 +500,7 @@ export async function updateSessionDataInDatabase(
             sessionHandle,
             userDataInDatabase: newSessionData,
         },
+        {},
         userContext
     );
     if (response.status === "UNAUTHORISED") {
@@ -522,6 +523,7 @@ export async function updateAccessTokenPayload(
             sessionHandle,
             userDataInJWT: newAccessTokenPayload,
         },
+        {},
         userContext
     );
     if (response.status === "UNAUTHORISED") {

@@ -193,7 +193,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(await q.sendPostRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
-        assert.equal(await q.sendPutRequest(new NormalisedURLPath("/hello"), {}, {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendPutRequest(new NormalisedURLPath("/hello"), {}, {}, {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
         assert.equal(hostsAlive.has(connectionURI), true);
