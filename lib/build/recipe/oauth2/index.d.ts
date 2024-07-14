@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { UserContext } from "../../types";
 import Recipe from "./recipe";
 import {
     APIInterface,
@@ -14,7 +13,7 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static getOAuth2Clients(
         input: GetOAuth2ClientsInput,
-        userContext: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -29,7 +28,7 @@ export default class Wrapper {
     >;
     static createOAuth2Client(
         input: CreateOAuth2ClientInput,
-        userContext: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -43,7 +42,7 @@ export default class Wrapper {
     >;
     static updateOAuth2Client(
         input: UpdateOAuth2ClientInput,
-        userContext: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";
@@ -57,7 +56,7 @@ export default class Wrapper {
     >;
     static deleteOAuth2Client(
         input: DeleteOAuth2ClientInput,
-        userContext: UserContext
+        userContext?: Record<string, any>
     ): Promise<
         | {
               status: "OK";

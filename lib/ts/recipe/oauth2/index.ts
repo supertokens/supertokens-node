@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { UserContext } from "../../types";
+import { getUserContext } from "../../utils";
 import Recipe from "./recipe";
 import {
     APIInterface,
@@ -28,17 +28,29 @@ import {
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getOAuth2Clients(input: GetOAuth2ClientsInput, userContext: UserContext) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Clients(input, userContext);
+    static async getOAuth2Clients(input: GetOAuth2ClientsInput, userContext?: Record<string, any>) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Clients(
+            input,
+            getUserContext(userContext)
+        );
     }
-    static async createOAuth2Client(input: CreateOAuth2ClientInput, userContext: UserContext) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createOAuth2Client(input, userContext);
+    static async createOAuth2Client(input: CreateOAuth2ClientInput, userContext?: Record<string, any>) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createOAuth2Client(
+            input,
+            getUserContext(userContext)
+        );
     }
-    static async updateOAuth2Client(input: UpdateOAuth2ClientInput, userContext: UserContext) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateOAuth2Client(input, userContext);
+    static async updateOAuth2Client(input: UpdateOAuth2ClientInput, userContext?: Record<string, any>) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateOAuth2Client(
+            input,
+            getUserContext(userContext)
+        );
     }
-    static async deleteOAuth2Client(input: DeleteOAuth2ClientInput, userContext: UserContext) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteOAuth2Client(input, userContext);
+    static async deleteOAuth2Client(input: DeleteOAuth2ClientInput, userContext?: Record<string, any>) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteOAuth2Client(
+            input,
+            getUserContext(userContext)
+        );
     }
 }
 

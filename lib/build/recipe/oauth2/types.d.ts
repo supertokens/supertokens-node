@@ -4,6 +4,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, JSONObject, NonNullableProperties, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 import { OAuth2Client } from "./OAuth2Client";
+import { User } from "../../user";
 export declare type TypeInput = {
     override?: {
         functions?: (
@@ -205,6 +206,27 @@ export declare type RecipeInterface = {
               errorHint: string;
           }
     >;
+    buildAccessTokenPayload(input: {
+        user: User;
+        session: SessionContainerInterface;
+        scopes: string[];
+        defaultPayload: JSONObject;
+        userContext: UserContext;
+    }): Promise<JSONObject>;
+    buildIdTokenPayload(input: {
+        user: User;
+        session: SessionContainerInterface;
+        scopes: string[];
+        defaultPayload: JSONObject;
+        userContext: UserContext;
+    }): Promise<JSONObject>;
+    buildUserInfo(input: {
+        user: User;
+        accessTokenPayload: JSONObject;
+        scopes: string[];
+        defaultInfo: JSONObject;
+        userContext: UserContext;
+    }): Promise<JSONObject>;
 };
 export declare type APIInterface = {
     loginGET:
@@ -418,3 +440,8 @@ export declare type UpdateOAuth2ClientInput = NonNullableProperties<
 export declare type DeleteOAuth2ClientInput = {
     clientId: string;
 };
+export declare type PayloadBuilderFunction = (
+    user: User,
+    scopes: string[],
+    userContext: UserContext
+) => Promise<JSONObject>;

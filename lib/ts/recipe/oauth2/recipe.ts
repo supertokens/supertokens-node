@@ -19,7 +19,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
+import { APIHandled, HTTPMethod, JSONObject, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import authGET from "./api/auth";
 import consentAPI from "./api/consent";
 import APIImplementation from "./api/implementation";
@@ -29,13 +29,15 @@ import tokenPOST from "./api/token";
 import loginInfoGET from "./api/loginInfo";
 import { AUTH_PATH, CONSENT_PATH, LOGIN_INFO_PATH, LOGIN_PATH, LOGOUT_PATH, TOKEN_PATH } from "./constants";
 import RecipeImplementation from "./recipeImplementation";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { APIInterface, PayloadBuilderFunction, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
+import { User } from "../../user";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2";
     private static instance: Recipe | undefined = undefined;
+    private idTokenBuilders: PayloadBuilderFunction[] = [];
 
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
@@ -49,7 +51,12 @@ export default class Recipe extends RecipeModule {
 
         {
             let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, appInfo)
+                RecipeImplementation(
+                    Querier.getNewInstanceOrThrowError(recipeId),
+                    this.config,
+                    appInfo,
+                    this.getDefaultIdTokenPayload
+                )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
@@ -199,5 +206,28 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe(err: any): err is error {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
+    }
+
+    async getDefaultIdTokenPayload(user: User, scopes: string[], userContext: UserContext) {
+        let payload: JSONObject = {};
+        if (scopes.includes("email")) {
+            payload.email = user?.emails[0];
+            payload.email_verified = user.loginMethods.some((lm) => lm.hasSameEmailAs(user?.emails[0]) && lm.verified);
+        }
+        if (scopes.includes("phoneNumber")) {
+            payload.phoneNumber = user?.phoneNumbers[0];
+            payload.phoneNumber_verified = user.loginMethods.some(
+                (lm) => lm.hasSamePhoneNumberAs(user?.phoneNumbers[0]) && lm.verified
+            );
+        }
+
+        for (const fn of this.idTokenBuilders) {
+            payload = {
+                ...payload,
+                ...(await fn(user, scopes, userContext)),
+            };
+        }
+
+        return payload;
     }
 }

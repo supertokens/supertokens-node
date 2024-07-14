@@ -1,4 +1,5 @@
 import { Router } from "express";
+import SuperTokens from "../../..";
 import Passwordless from "../../../recipe/passwordless";
 import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
 import { logger } from "./logger";
@@ -57,6 +58,24 @@ const router = Router()
                 tenantId: req.body.tenantId || "public",
                 userInputCode: req.body.userInputCode,
                 session: req.body.session && (await convertRequestSessionToSessionObject(req.body.session)),
+                userContext: req.body.userContext,
+            });
+            res.json({
+                ...response,
+                ...serializeUser(response),
+                ...serializeRecipeUserId(response),
+            });
+        } catch (e) {
+            next(e);
+        }
+    })
+    .post("/updateuser", async (req, res, next) => {
+        try {
+            logDebugMessage("Passwordless:updateUser %j", req.body);
+            const response = await Passwordless.updateUser({
+                recipeUserId: SuperTokens.convertToRecipeUserId(req.body.recipeUserId),
+                email: req.body.email,
+                phoneNumber: req.body.phoneNumber,
                 userContext: req.body.userContext,
             });
             res.json({

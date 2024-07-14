@@ -165,13 +165,14 @@ export default class Wrapper {
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
 
-        return await Recipe.getInstance().isEmailChangeAllowed({
+        const res = await Recipe.getInstance().isEmailChangeAllowed({
             user,
             newEmail,
             isVerified,
             session,
             userContext: getUserContext(userContext),
         });
+        return res.allowed;
     }
 }
 
