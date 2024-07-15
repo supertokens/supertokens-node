@@ -152,7 +152,7 @@ ThirdParty.init({
 });
 ```
 
-#### Migrating `oidcDiscoveryEndpoint` in core:
+#### Migrating `oidcDiscoveryEndpoint` in core (for custom providers only):
 
 For each tenant, do the following
 
@@ -169,9 +169,20 @@ import Multitenancy from "supertokens-node/recipe/multitenancy";
 
 const tenantsRes = await Multitenancy.listAllTenants();
 
+function isCustomProvider(thirdPartyId: string): boolean {
+    const customProviders = [
+        "custom",
+        //... all your custom thirdPartyIds
+    ];
+    return customProviders.includes(thirdPartyId);
+}
+
 for (const tenant of tenantsRes.tenants) {
     for (const provider of tenant.thirdParty.providers) {
-        if (provider.oidcDiscoveryEndpoint !== undefined) {
+        if (isCustomProvider(provider.thirdPartyId) && provider.oidcDiscoveryEndpoint !== undefined) {
+            if (provider.oidcDiscoveryEndpoint.endsWith("/")) {
+                provider.oidcDiscoveryEndpoint = provider.oidcDiscoveryEndpoint.slice(0, -1);
+            }
             provider.oidcDiscoveryEndpoint = `${provider.config.oidcDiscoveryEndpoint}/.well-known/openid-configuration`;
 
             await Multitenancy.createOrUpdateThirdPartyConfig(tenant.tenantId, provider);

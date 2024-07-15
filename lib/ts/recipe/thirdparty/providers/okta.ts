@@ -16,6 +16,7 @@ import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 
 export default function Okta(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -39,6 +40,8 @@ export default function Okta(input: ProviderInput): TypeProvider {
 
                 config.oidcDiscoveryEndpoint = oidcDomain.getAsStringDangerous() + oidcPath.getAsStringDangerous();
             }
+
+            config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint);
 
             if (config.scope === undefined) {
                 config.scope = ["openid", "email"];

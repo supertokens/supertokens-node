@@ -139,3 +139,19 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
         }
     }
 }
+
+export function normaliseOIDCEndpointToIncludeWellKnown(url: string): string {
+    if (url.endsWith("/.well-known/openid-configuration") === true) {
+        return url;
+    }
+
+    const normalisedDomain = new NormalisedURLDomain(url);
+    const normalisedPath = new NormalisedURLPath(url);
+    const normalisedWellKnownPath = new NormalisedURLPath("/.well-known/openid-configuration");
+
+    return (
+        normalisedDomain.getAsStringDangerous() +
+        normalisedPath.getAsStringDangerous() +
+        normalisedWellKnownPath.getAsStringDangerous()
+    );
+}

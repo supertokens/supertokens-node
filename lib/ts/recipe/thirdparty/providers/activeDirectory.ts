@@ -15,6 +15,7 @@
 
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 
 export default function ActiveDirectory(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -37,6 +38,8 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
             } else {
                 config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/.well-known/openid-configuration`;
             }
+
+            config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint);
 
             if (config.scope === undefined) {
                 config.scope = ["openid", "email"];

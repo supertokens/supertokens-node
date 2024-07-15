@@ -14,6 +14,7 @@
  */
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 
 export default function Google(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -40,6 +41,8 @@ export default function Google(input: ProviderInput): TypeProvider {
             if (config.scope === undefined) {
                 config.scope = ["openid", "email"];
             }
+
+            config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint!);
 
             return config;
         };
