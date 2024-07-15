@@ -101,22 +101,17 @@ export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
 var oidcInfoMap: { [key: string]: any } = {};
 
 async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
-    const normalizedDomain = new NormalisedURLDomain(issuer);
-    let normalizedPath = new NormalisedURLPath(issuer);
-    const openIdConfigPath = new NormalisedURLPath("/.well-known/openid-configuration");
-
-    normalizedPath = normalizedPath.appendPath(openIdConfigPath);
-
     if (oidcInfoMap[issuer] !== undefined) {
         return oidcInfoMap[issuer];
     }
-    const oidcInfo = await doGetRequest(
-        normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()
-    );
 
-    if (oidcInfo.status >= 400) {
+    const normalizedDomain = new NormalisedURLDomain(issuer);
+    const normalizedPath = new NormalisedURLPath(issuer);
+
+    let oidcInfo = await doGetRequest(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous());
+    if (oidcInfo.status > 400) {
         logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
-        throw new Error(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
+        throw new Error(`Received response with status ${oidcInfo!.status} and body ${oidcInfo!.stringResponse}`);
     }
 
     oidcInfoMap[issuer] = oidcInfo.jsonResponse!;

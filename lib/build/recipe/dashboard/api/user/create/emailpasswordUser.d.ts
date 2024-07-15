@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../../../types";
-import { User } from "../../../../../types";
+import { User, UserContext } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 declare type Response =
     | {
@@ -23,6 +23,6 @@ export declare const createEmailPasswordUser: (
     _: APIInterface,
     tenantId: string,
     options: APIOptions,
-    userContext: any
+    userContext: UserContext
 ) => Promise<Response>;
 export {};

@@ -22,7 +22,7 @@ import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { JWKCacheCooldownInMs, JWKCacheMaxAgeInMs, protectedProps } from "./constants";
+import { JWKCacheCooldownInMs, protectedProps } from "./constants";
 
 export type Helpers = {
     querier: Querier;
@@ -43,7 +43,7 @@ export default function getRecipeInterface(
         .map((url) =>
             createRemoteJWKSet(new URL(url), {
                 cooldownDuration: JWKCacheCooldownInMs,
-                cacheMaxAge: JWKCacheMaxAgeInMs,
+                cacheMaxAge: config.jwksRefreshIntervalSec * 1000,
             })
         );
 
@@ -196,6 +196,7 @@ export default function getRecipeInterface(
                 antiCsrfToken,
                 options?.antiCsrfCheck !== false,
                 options?.checkDatabase === true,
+                config,
                 userContext
             );
 

@@ -21,7 +21,7 @@ export default function Google(input: ProviderInput): TypeProvider {
     }
 
     if (input.config.oidcDiscoveryEndpoint === undefined) {
-        input.config.oidcDiscoveryEndpoint = "https://accounts.google.com/";
+        input.config.oidcDiscoveryEndpoint = "https://accounts.google.com/.well-known/openid-configuration";
     }
 
     input.config.authorizationEndpointQueryParams = {

@@ -37,7 +37,7 @@ export default function Apple(input: ProviderInput): TypeProvider {
     }
 
     if (input.config.oidcDiscoveryEndpoint === undefined) {
-        input.config.oidcDiscoveryEndpoint = "https://appleid.apple.com/";
+        input.config.oidcDiscoveryEndpoint = "https://appleid.apple.com/.well-known/openid-configuration";
     }
 
     input.config.authorizationEndpointQueryParams = {

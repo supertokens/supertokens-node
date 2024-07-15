@@ -199,7 +199,11 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    jwksRefreshIntervalSec: 20,
+                }),
+            ],
         });
 
         const createRes = await Session.createNewSessionWithoutRequestResponse(
@@ -215,8 +219,8 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         // This should be done using the cache
         assert.ok(await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken));
         assert.strictEqual(requestMock.callCount, 1);
-        // we "wait" for 61 seconds to make the cache out-of-date
-        clock.tick(61000);
+        // we "wait" for 3 seconds to make the cache out-of-date
+        clock.tick(20000);
         // This should re-fetch from the core
         assert.ok(await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken));
         assert.strictEqual(requestMock.callCount, 2);

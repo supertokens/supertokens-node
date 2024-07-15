@@ -25,14 +25,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type TenantConfig = {
-    emailPassword: {
-        enabled: boolean;
-    };
-    passwordless: {
-        enabled: boolean;
-    };
     thirdParty: {
-        enabled: boolean;
         providers: ProviderConfig[];
     };
     firstFactors?: string[];
@@ -46,11 +39,8 @@ export declare type RecipeInterface = {
     createOrUpdateTenant: (input: {
         tenantId: string;
         config?: {
-            emailPasswordEnabled?: boolean;
-            passwordlessEnabled?: boolean;
-            thirdPartyEnabled?: boolean;
-            firstFactors?: string[];
-            requiredSecondaryFactors?: string[];
+            firstFactors?: string[] | null;
+            requiredSecondaryFactors?: string[] | null;
             coreConfig?: {
                 [key: string]: any;
             };
@@ -154,15 +144,15 @@ export declare type APIInterface = {
               emailPassword: {
                   enabled: boolean;
               };
-              passwordless: {
-                  enabled: boolean;
-              };
               thirdParty: {
                   enabled: boolean;
                   providers: {
                       id: string;
                       name?: string;
                   }[];
+              };
+              passwordless: {
+                  enabled: boolean;
               };
               firstFactors: string[];
           }

@@ -16,14 +16,13 @@ import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
 import { ParsedJWTInfo } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation, TypeNormalisedInput } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { JWKCacheMaxAgeInMs } from "./constants";
 import { UserContext } from "../../types";
 
 /**
@@ -87,6 +86,7 @@ export async function getSession(
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     alwaysCheckCore: boolean,
+    config: TypeNormalisedInput,
     userContext: UserContext
 ): Promise<{
     session: {
@@ -156,7 +156,7 @@ export async function getSession(
             }
             // We check if the token was created since the last time we refreshed the keys from the core
             // Since we do not know the exact timing of the last refresh, we check against the max age
-            if (timeCreated <= Date.now() - JWKCacheMaxAgeInMs) {
+            if (timeCreated <= Date.now() - config.jwksRefreshIntervalSec * 1000) {
                 throw err;
             }
         } else {
@@ -286,7 +286,7 @@ export async function getSessionInformation(
     sessionHandle: string,
     userContext: UserContext
 ): Promise<SessionInformation | undefined> {
-    let apiVersion = await helpers.querier.getAPIVersion();
+    let apiVersion = await helpers.querier.getAPIVersion(userContext);
 
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");

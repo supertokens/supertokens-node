@@ -13,6 +13,8 @@
  * under the License.
  */
 
+import NormalisedURLDomain from "../../../normalisedURLDomain";
+import NormalisedURLPath from "../../../normalisedURLPath";
 import { TypeProvider, ProviderInput } from "../types";
 import NewProvider from "./custom";
 // import NormalisedURLDomain from "../../../normalisedURLDomain";
@@ -20,10 +22,6 @@ import NewProvider from "./custom";
 export default function Gitlab(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
         input.config.name = "Gitlab";
-    }
-
-    if (input.config.oidcDiscoveryEndpoint === undefined) {
-        input.config.oidcDiscoveryEndpoint = "https://gitlab.com";
     }
 
     const oOverride = input.override;
@@ -37,12 +35,12 @@ export default function Gitlab(input: ProviderInput): TypeProvider {
                 config.scope = ["openid", "email"];
             }
 
-            if (config.oidcDiscoveryEndpoint === undefined) {
-                if (config.additionalConfig !== undefined && config.additionalConfig.gitlabBaseUrl !== undefined) {
-                    config.oidcDiscoveryEndpoint = config.additionalConfig.gitlabBaseUrl;
-                } else {
-                    config.oidcDiscoveryEndpoint = "https://gitlab.com";
-                }
+            if (config.additionalConfig !== undefined && config.additionalConfig.gitlabBaseUrl !== undefined) {
+                const oidcDomain = new NormalisedURLDomain(config.additionalConfig.gitlabBaseUrl);
+                const oidcPath = new NormalisedURLPath("/.well-known/openid-configuration");
+                config.oidcDiscoveryEndpoint = oidcDomain.getAsStringDangerous() + oidcPath.getAsStringDangerous();
+            } else if (config.oidcDiscoveryEndpoint === undefined) {
+                config.oidcDiscoveryEndpoint = "https://gitlab.com/.well-known/openid-configuration";
             }
 
             return config;
