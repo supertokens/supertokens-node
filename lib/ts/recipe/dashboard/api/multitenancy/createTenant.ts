@@ -52,18 +52,19 @@ export default async function createTenant(
     } catch (err) {
         const errMsg: string = err.message;
         if (errMsg.includes("SuperTokens core threw an error for a ")) {
+            if (errMsg.includes("with status code: 402")) {
+                return {
+                    status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR",
+                };
+            }
+            if (errMsg.includes("with status code: 400")) {
+                return {
+                    status: "INVALID_TENANT_ID_ERROR",
+                    message: errMsg.split(" and message: ")[1],
+                };
+            }
         }
-        if (errMsg.includes("with status code: 402")) {
-            return {
-                status: "MULTITENANCY_NOT_ENABLED_IN_CORE_ERROR",
-            };
-        }
-        if (errMsg.includes("with status code: 400")) {
-            return {
-                status: "INVALID_TENANT_ID_ERROR",
-                message: errMsg.split(" and message: ")[1],
-            };
-        }
+
         throw err;
     }
 

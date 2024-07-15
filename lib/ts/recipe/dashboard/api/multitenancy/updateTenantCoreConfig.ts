@@ -52,12 +52,10 @@ export default async function updateTenantCoreConfig(
     } catch (err) {
         const errMsg: string = err.message;
         if (errMsg.includes("SuperTokens core threw an error for a ") && errMsg.includes("with status code: 400")) {
-            if (err.statusCodeFromCore === 400) {
-                return {
-                    status: "INVALID_CONFIG_ERROR",
-                    message: errMsg.split(" and message: ")[1],
-                };
-            }
+            return {
+                status: "INVALID_CONFIG_ERROR",
+                message: errMsg.split(" and message: ")[1],
+            };
         }
         throw err;
     }
