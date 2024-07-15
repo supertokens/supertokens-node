@@ -5,10 +5,13 @@ import { OAuthTokens } from "../types";
 export default function getAPIInterface(): APIInterface {
     return {
         authorisationUrlGET: async function ({ options, redirectURIOnProviderDashboard, userContext }) {
-            const authUrl = await options.recipeImplementation.getAuthorisationRedirectURL(
+            const providerConfig = await options.recipeImplementation.getProviderConfig({ userContext });
+
+            const authUrl = await options.recipeImplementation.getAuthorisationRedirectURL({
+                providerConfig,
                 redirectURIOnProviderDashboard,
-                userContext
-            );
+                userContext,
+            });
             return {
                 status: "OK",
                 ...authUrl,
@@ -17,31 +20,35 @@ export default function getAPIInterface(): APIInterface {
         signInPOST: async function (input) {
             const { options, tenantId, userContext } = input;
 
+            const providerConfig = await options.recipeImplementation.getProviderConfig({ userContext });
+
             let oAuthTokensToUse: OAuthTokens = {};
 
             if ("redirectURIInfo" in input && input.redirectURIInfo !== undefined) {
-                oAuthTokensToUse = await options.recipeImplementation.exchangeAuthCodeForOAuthTokens(
-                    input.redirectURIInfo,
-                    userContext
-                );
+                oAuthTokensToUse = await options.recipeImplementation.exchangeAuthCodeForOAuthTokens({
+                    providerConfig,
+                    redirectURIInfo: input.redirectURIInfo,
+                    userContext,
+                });
             } else if ("oAuthTokens" in input && input.oAuthTokens !== undefined) {
                 oAuthTokensToUse = input.oAuthTokens;
             } else {
                 throw Error("should never come here");
             }
 
-            const { userId, rawUserInfoFromProvider } = await options.recipeImplementation.getUserInfo(
-                oAuthTokensToUse,
-                userContext
-            );
+            const { userId, rawUserInfoFromProvider } = await options.recipeImplementation.getUserInfo({
+                providerConfig,
+                oAuthTokens: oAuthTokensToUse,
+                userContext,
+            });
 
-            const { user, recipeUserId } = await options.recipeImplementation.signIn(
+            const { user, recipeUserId } = await options.recipeImplementation.signIn({
                 userId,
-                oAuthTokensToUse,
-                rawUserInfoFromProvider,
                 tenantId,
-                userContext
-            );
+                rawUserInfoFromProvider,
+                oAuthTokens: oAuthTokensToUse,
+                userContext,
+            });
 
             const session = await Session.createNewSession(
                 options.req,

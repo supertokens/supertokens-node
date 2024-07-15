@@ -316,24 +316,6 @@ function initST(config: any) {
             }
             recipeList.push(OAuth2.init(initConfig));
         }
-        if (recipe.recipeId === "oauth2") {
-            let initConfig: OAuth2TypeInput = {
-                ...config,
-            };
-            if (initConfig.override?.functions) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    functions: getFunc(`${initConfig.override.functions}`),
-                };
-            }
-            if (initConfig.override?.apis) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    apis: getFunc(`${initConfig.override.apis}`),
-                };
-            }
-            recipeList.push(OAuth2.init(initConfig));
-        }
         if (recipe.recipeId === "oauth2client") {
             let initConfig: OAuth2ClientTypeInput = {
                 ...config,

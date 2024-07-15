@@ -65,17 +65,18 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getAuthorisationRedirectURL(
-        redirectURIOnProviderDashboard: string,
-        userContext: UserContext
-    ): Promise<{
+    getAuthorisationRedirectURL(input: {
+        providerConfig: ProviderConfigWithOIDCInfo;
+        redirectURIOnProviderDashboard: string;
+        userContext: UserContext;
+    }): Promise<{
         urlWithQueryParams: string;
         pkceCodeVerifier?: string;
     }>;
-    getProviderConfig(userContext: UserContext): Promise<ProviderConfigWithOIDCInfo>;
-    signIn(
-        userId: string,
-        oAuthTokens: OAuthTokens,
+    getProviderConfig(input: { userContext: UserContext }): Promise<ProviderConfigWithOIDCInfo>;
+    signIn(input: {
+        userId: string;
+        oAuthTokens: OAuthTokens;
         rawUserInfoFromProvider: {
             fromIdTokenPayload?: {
                 [key: string]: any;
@@ -83,10 +84,10 @@ export declare type RecipeInterface = {
             fromUserInfoAPI?: {
                 [key: string]: any;
             };
-        },
-        tenantId: string,
-        userContext: UserContext
-    ): Promise<{
+        };
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<{
         status: "OK";
         recipeUserId: RecipeUserId;
         user: User;
@@ -100,15 +101,20 @@ export declare type RecipeInterface = {
             };
         };
     }>;
-    exchangeAuthCodeForOAuthTokens(
+    exchangeAuthCodeForOAuthTokens(input: {
+        providerConfig: ProviderConfigWithOIDCInfo;
         redirectURIInfo: {
             redirectURIOnProviderDashboard: string;
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
-        },
-        userContext: UserContext
-    ): Promise<OAuthTokenResponse>;
-    getUserInfo(oAuthTokens: OAuthTokens, userContext: UserContext): Promise<UserInfo>;
+        };
+        userContext: UserContext;
+    }): Promise<OAuthTokenResponse>;
+    getUserInfo(input: {
+        providerConfig: ProviderConfigWithOIDCInfo;
+        oAuthTokens: OAuthTokens;
+        userContext: UserContext;
+    }): Promise<UserInfo>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

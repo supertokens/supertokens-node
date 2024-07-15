@@ -21,10 +21,13 @@ export default class Wrapper {
     static init = Recipe.init;
 
     static async getAuthorisationRedirectURL(redirectURIOnProviderDashboard: string, userContext: UserContext) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAuthorisationRedirectURL(
+        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const providerConfig = await recipeInterfaceImpl.getProviderConfig({ userContext });
+        return await recipeInterfaceImpl.getAuthorisationRedirectURL({
+            providerConfig,
             redirectURIOnProviderDashboard,
-            userContext
-        );
+            userContext,
+        });
     }
 
     static async exchangeAuthCodeForOAuthTokens(
@@ -35,14 +38,23 @@ export default class Wrapper {
         },
         userContext: UserContext
     ) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens(
+        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const providerConfig = await recipeInterfaceImpl.getProviderConfig({ userContext });
+        return await recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens({
+            providerConfig,
             redirectURIInfo,
-            userContext
-        );
+            userContext,
+        });
     }
 
     static async getUserInfo(oAuthTokens: OAuthTokens, userContext: UserContext) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo(oAuthTokens, userContext);
+        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const providerConfig = await recipeInterfaceImpl.getProviderConfig({ userContext });
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo({
+            providerConfig,
+            oAuthTokens,
+            userContext,
+        });
     }
 }
 

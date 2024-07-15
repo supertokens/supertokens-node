@@ -8,7 +8,7 @@ import {
 } from "./types";
 import { Querier } from "../../querier";
 import RecipeUserId from "../../recipeUserId";
-import { UserContext, User as UserType } from "../../types";
+import { User as UserType } from "../../types";
 import {
     doGetRequest,
     doPostRequest,
@@ -26,11 +26,8 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
     return {
         getAuthorisationRedirectURL: async function (
             this: RecipeInterface,
-            redirectURIOnProviderDashboard,
-            userContext
+            { providerConfig, redirectURIOnProviderDashboard }
         ) {
-            const providerConfig = await this.getProviderConfig(userContext);
-
             const queryParams: { [key: string]: string } = {
                 client_id: providerConfig.clientId,
                 redirect_uri: redirectURIOnProviderDashboard,
@@ -61,16 +58,13 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
                 pkceCodeVerifier: pkceCodeVerifier,
             };
         },
-        signIn: async function (
-            userId: string,
-            oAuthTokens: OAuthTokens,
-            rawUserInfoFromProvider: {
-                fromIdTokenPayload?: { [key: string]: any };
-                fromUserInfoAPI?: { [key: string]: any };
-            },
-            tenantId: string,
-            userContext: UserContext
-        ): Promise<{
+        signIn: async function ({
+            userId,
+            tenantId,
+            userContext,
+            oAuthTokens,
+            rawUserInfoFromProvider,
+        }): Promise<{
             status: "OK";
             user: UserType;
             recipeUserId: RecipeUserId;
@@ -123,17 +117,7 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
             };
             return providerConfigWithOIDCInfo;
         },
-        exchangeAuthCodeForOAuthTokens: async function (
-            this: RecipeInterface,
-            redirectURIInfo: {
-                redirectURIOnProviderDashboard: string;
-                redirectURIQueryParams: any;
-                pkceCodeVerifier?: string | undefined;
-            },
-            userContext: UserContext
-        ) {
-            const providerConfig = await this.getProviderConfig(userContext);
-
+        exchangeAuthCodeForOAuthTokens: async function (this: RecipeInterface, { providerConfig, redirectURIInfo }) {
             if (providerConfig.tokenEndpoint === undefined) {
                 throw new Error("OAuth2Client provider's tokenEndpoint is not configured.");
             }
@@ -164,9 +148,7 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
 
             return tokenResponse.jsonResponse as OAuthTokenResponse;
         },
-        getUserInfo: async function (oAuthTokens: OAuthTokens, userContext: UserContext): Promise<UserInfo> {
-            const providerConfig = await this.getProviderConfig(userContext);
-
+        getUserInfo: async function ({ providerConfig, oAuthTokens }): Promise<UserInfo> {
             let jwks: JWTVerifyGetKey | undefined;
 
             const accessToken = oAuthTokens["access_token"];
