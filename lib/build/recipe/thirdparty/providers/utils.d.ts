@@ -33,3 +33,4 @@ export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     otherOptions: jose.JWTVerifyOptions
 ): Promise<any>;
 export declare function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void>;
+export declare function normaliseOIDCEndpointToIncludeWellKnown(url: string): string;

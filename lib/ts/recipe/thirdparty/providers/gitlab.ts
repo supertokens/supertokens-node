@@ -17,6 +17,7 @@ import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { TypeProvider, ProviderInput } from "../types";
 import NewProvider from "./custom";
+import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 // import NormalisedURLDomain from "../../../normalisedURLDomain";
 
 export default function Gitlab(input: ProviderInput): TypeProvider {
@@ -42,6 +43,9 @@ export default function Gitlab(input: ProviderInput): TypeProvider {
             } else if (config.oidcDiscoveryEndpoint === undefined) {
                 config.oidcDiscoveryEndpoint = "https://gitlab.com/.well-known/openid-configuration";
             }
+
+            // The config could be coming from core where we didn't add the well-known previously
+            config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint);
 
             return config;
         };
