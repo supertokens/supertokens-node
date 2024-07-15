@@ -59,7 +59,7 @@ export default async function getThirdPartyConfig(
     const mtRecipe = MultitenancyRecipe.getInstance();
     let staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
-    let additionalConfig = null;
+    let additionalConfig = undefined;
 
     // filter out providers that is not matching thirdPartyId
     providersFromCore = providersFromCore.filter((provider) => provider.thirdPartyId === thirdPartyId);
@@ -166,6 +166,7 @@ export default async function getThirdPartyConfig(
                 mergedProvider.config.clients = [
                     {
                         clientId: "nonguessable-temporary-client-id",
+                        ...(additionalConfig !== undefined ? { additionalConfig } : {}),
                     },
                 ];
             }
@@ -198,6 +199,7 @@ export default async function getThirdPartyConfig(
                         clientType,
                         scope,
                         additionalConfig,
+                        forcePKCE,
                         ...commonConfig
                     } = providerInstance!.config;
 
@@ -207,6 +209,7 @@ export default async function getThirdPartyConfig(
                         scope,
                         clientType,
                         additionalConfig,
+                        forcePKCE,
                     });
                     commonProviderConfig = commonConfig;
 
@@ -247,11 +250,14 @@ export default async function getThirdPartyConfig(
         additionalConfig.privateKey = "";
     }
 
+    const tempClients = clients.filter((client) => client.clientId === "nonguessable-temporary-client-id");
     const finalClients = clients.filter((client) => client.clientId !== "nonguessable-temporary-client-id");
     if (finalClients.length === 0) {
         finalClients.push({
+            ...tempClients[0],
             clientId: "",
-            additionalConfig: additionalConfig === null ? undefined : additionalConfig,
+            clientSecret: "",
+            ...(additionalConfig !== undefined ? { additionalConfig } : {}),
         });
     }
 
