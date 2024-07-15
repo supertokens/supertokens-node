@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `boxyURL` is no more mandatory input in `additionalConfig` while adding boxy-saml provider in thirdParty.
 -   Fixes issue with OIDC discover when the input url already contains `.well-known/openid-configuration`.
 -   Removes the default `maxAgeInSeconds` value in EmailVerification Claim when the claim value is true. Now, the SDK won't refetch the claim value if `maxAgeInSeconds` is not provided and claim value is true.
+-   Adds `jwksRefreshIntervalSec` config to `session.init` to set the default JWKS cache duration. The default is 4 hours.
 
 ### Migration
 
