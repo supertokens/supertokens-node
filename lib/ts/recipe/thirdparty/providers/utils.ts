@@ -141,6 +141,7 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
 }
 
 export function normaliseOIDCEndpointToIncludeWellKnown(url: string): string {
+    // we call this only for built-in providers that use OIDC. We no longer generically add well-known in the custom provider
     if (url.endsWith("/.well-known/openid-configuration") === true) {
         return url;
     }

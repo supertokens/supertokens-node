@@ -42,6 +42,7 @@ export default function Google(input: ProviderInput): TypeProvider {
                 config.scope = ["openid", "email"];
             }
 
+            // The config could be coming from core where we didn't add the well-known previously
             config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint!);
 
             return config;

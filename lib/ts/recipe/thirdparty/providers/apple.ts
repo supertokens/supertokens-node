@@ -77,6 +77,7 @@ export default function Apple(input: ProviderInput): TypeProvider {
                 );
             }
 
+            // The config could be coming from core where we didn't add the well-known previously
             config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint!);
 
             return config;
