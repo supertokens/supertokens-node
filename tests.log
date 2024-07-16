@@ -1,0 +1,290 @@
+
+> supertokens-node@19.0.0 test
+> TEST_MODE=testing npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000
+
+
+
+  auth-modes: [33;3;2m[test/auth-modes.test.js][0m
+    with default getTokenTransferMethod
+      createNewSession
+        with default getTokenTransferMethod
+          ✔ should default to header based session w/ no auth-mode header
+          ✔ should default to header based session w/ bad auth-mode header
+          ✔ should use headers if auth-mode specifies it
+          ✔ should use cookies if auth-mode specifies it
+        with user provided getTokenTransferMethod
+          ✔ should use headers if getTokenTransferMethod returns any and there is no st-auth-mode header
+          ✔ should use cookies if getTokenTransferMethod returns any and st-auth-mode is set to cookie
+          ✔ should use headers if getTokenTransferMethod returns any and st-auth-mode is set to header
+          ✔ should use headers if getTokenTransferMethod returns header
+          ✔ should use clear cookies (if present) if getTokenTransferMethod returns header
+          ✔ should use cookies if getTokenTransferMethod returns cookie
+          ✔ should clear headers (if present) if getTokenTransferMethod returns cookie
+      verifySession
+        ✔ should reject requests with sIdRefreshToken
+        from behaviour table
+          ✔ should match line 1 with a valid token
+          ✔ should match line 1 with a expired token
+          ✔ should match line 2 with a valid token
+          ✔ should match line 2 with a expired token
+          ✔ should match line 3 with a valid token
+          ✔ should match line 3 with a expired token
+          ✔ should match line 4 with a valid token
+          ✔ should match line 4 with a expired token
+          ✔ should match line 5 with a valid token
+          ✔ should match line 5 with a expired token
+          ✔ should match line 6 with a valid token
+          ✔ should match line 6 with a expired token
+          ✔ should match line 7 with a valid token
+          ✔ should match line 7 with a expired token
+          ✔ should match line 8 with a valid token
+          ✔ should match line 8 with a expired token (5002ms)
+          ✔ should match line 9 with a valid token
+          ✔ should match line 9 with a expired token
+          ✔ should match line 10 with a valid token
+          ✔ should match line 10 with a expired token
+          ✔ should match line 11 with a valid token
+          ✔ should match line 11 with a expired token (5374ms)
+          ✔ should match line 12 with a valid token
+          ✔ should match line 12 with a expired token
+          ✔ should match line 13 with a valid token
+          ✔ should match line 13 with a expired token
+          ✔ should match line 14 with a valid token
+          ✔ should match line 14 with a expired token
+          ✔ should match line 15 with a valid token
+          ✔ should match line 15 with a expired token
+          ✔ should match line 16 with a valid token
+          ✔ should match line 16 with a expired token
+          ✔ should match line 17 with a valid token
+          ✔ should match line 17 with a expired token
+          ✔ should match line 18 with a valid token
+          ✔ should match line 18 with a expired token
+          ✔ should match line 19 with a valid token
+          ✔ should match line 19 with a expired token
+          ✔ should match line 20 with a valid token
+          ✔ should match line 20 with a expired token
+          ✔ should match line 21 with a valid token
+          ✔ should match line 21 with a expired token
+          ✔ should match line 22 with a valid token
+          ✔ should match line 22 with a expired token
+          ✔ should match line 23 with a valid token
+          ✔ should match line 23 with a expired token
+          ✔ should match line 24 with a valid token
+          ✔ should match line 24 with a expired token
+        with access tokens in both headers and cookies
+          ✔ should use the value from headers if getTokenTransferMethod returns any
+          ✔ should use the value from headers if getTokenTransferMethod returns header
+          ✔ should use the value from cookies if getTokenTransferMethod returns cookie
+        with non ST in Authorize header
+          ✔ should use the value from cookies if present and getTokenTransferMethod returns any
+          ✔ should reject with UNAUTHORISED if getTokenTransferMethod returns header
+          ✔ should reject with UNAUTHORISED if cookies are not present
+      mergeIntoAccessTokenPayload
+        ✔ should update cookies if the session was cookie based
+        ✔ should allow headers if the session was header based
+      refreshSession
+        from behaviour table
+          ✔ should match line 1 with a valid token
+          ✔ should match line 2 with a valid token
+          ✔ should match line 3 with a valid token
+          ✔ should match line 4 with a valid token
+          ✔ should match line 5 with a valid token
+          ✔ should match line 6 with a valid token
+          ✔ should match line 7 with a valid token
+          ✔ should match line 8 with a valid token
+          ✔ should match line 9 with a valid token
+          ✔ should match line 10 with a valid token
+          ✔ should match line 11 with a valid token
+          ✔ should match line 12 with a valid token
+          ✔ should match line 1 with a invalid token
+          ✔ should match line 2 with a invalid token
+          ✔ should match line 3 with a invalid token
+          ✔ should match line 4 with a invalid token
+          ✔ should match line 5 with a invalid token
+          ✔ should match line 6 with a invalid token
+          ✔ should match line 7 with a invalid token
+          ✔ should match line 8 with a invalid token
+          ✔ should match line 9 with a invalid token
+          ✔ should match line 10 with a invalid token
+          ✔ should match line 11 with a invalid token
+          ✔ should match line 12 with a invalid token
+
+  configTest: [33;3;2m[test/config.test.js][0m
+    ✔ test values for optional inputs for appInfo
+    ✔ testing .local tld
+    ✔ test values for compulsory inputs for appInfo
+    ✔ test using zero, one and two recipe modules
+    ✔ test config for session module
+    ✔ various sameSite values
+    ✔ sameSite none invalid domain values
+    ✔ sameSite none valid domain values
+    ✔ testing sessionScope normalisation
+    ✔ testing URL path normalisation
+    ✔ testing URL domain normalisation
+    ✔ various config values
+
+
+
+
+
+
+
+
+
+
+
+    ✔ testing that the debug mode is set
+
+
+
+
+
+
+
+
+
+
+
+    ✔ testing that the debug mode is set via env var
+    ✔ checking for default cookie config
+    ✔ Test that the JWKS and OpenId endpoints are exposed by Session
+    ✔ testing getTopLevelDomainForSameSiteResolution function
+    ✔ should work well with ec2 public urls
+    ✔ apiGatewayPath test
+    ✔ checking for empty item in recipeList config
+    ✔ Check that telemetry is set to true properly
+    ✔ Check that telemetry is set to false by default
+    ✔ Check that telemetry is set to false properly
+    ✔ Test that init throws if both website domain and origin is undefined
+    ✔ Test that init works fine when using origin
+    ✔ Test that init works fine when using a function for origin
+    ✔ Test that origin function returns correctly
+    ✔ Test that if both website domain and origin are provided, origin is used
+
+  dashboard: [33;3;2m[test/dashboard.test.js][0m
+    ✔ Test that normalised config is generated correctly
+    with account linking
+      ✔ should get user info with first&last names
+      ✔ should reset password of linked user
+      ✔ should link accounts after verification
+      ✔ should delete all linked users if removeAllLinkedAccounts is true
+      ✔ should not delete all linked users if removeAllLinkedAccounts is false when deleting the primary user
+      ✔ should not delete all linked users if removeAllLinkedAccounts is false when deleting the recipe user
+    deleteUser
+      ✔ should respond with error if userId is missing
+      ✔ should respond with error if userId is empty
+    userPut
+      ✔ should respond with error if another user exists with the same email
+
+  User Dashboard createOrUpdateThirdPartyConfig: [33;3;2m[test/dashboard/createOrUpdateThirdPartyConfig.test.js][0m
+{"status":"OK","createdNew":true}
+    ✔ Test that API creates a new third party config for the given tenant
+
+  User Dashboard get: [33;3;2m[test/dashboard/dashboardGet.test.js][0m
+    Test connectionURI
+      ✔ Test connectionURI contains http protocol
+      ✔ Test connectionURI contains https protocol
+      ✔ Test multiple connection URIs
+
+  User Dashboard deleteTenant: [33;3;2m[test/dashboard/deleteTenant.test.js][0m
+    ✔ Test that API successfully deletes a tenant
+    ✔ Test that API throws error when tenantId is missing
+
+  User Dashboard deleteThirdPartyConfig: [33;3;2m[test/dashboard/deleteThirdPartyConfig.test.js][0m
+    ✔ Test that API successfully deletes third party config for a tenant
+    ✔ Test that API throws error when tenantId or thirdPartyId is missing
+
+  User Dashboard getTenantInfo: [33;3;2m[test/dashboard/getTenantInfo.test.js][0m
+    ✔ Test that API returns all the info for the given tenant id
+    ✔ Test that API returns error if tenant does not exist
+    ✔ Test that API returns public tenant if tenant id is not provided
+
+  User Dashboard listTenants: [33;3;2m[test/dashboard/listTenants.test.js][0m
+    ✔ Test that API returns all the tenants
+
+  User Dashboard userEmailVerifyGet: [33;3;2m[test/dashboard/userEmailVerifyGet.test.js][0m
+    ✔ Test that api returns correct value for email verification
+
+  configTest: [33;3;2m[test/emailpassword/config.test.js][0m
+    ✔ test default config for emailpassword module
+    ✔ test config for emailpassword module
+    ✔ test that no email/password validators given should add them
+    ✔ test that giving optional true in email / password field should be ignored
+    ✔ test that default password and email validators work fine
+
+  deleteUser: [33;3;2m[test/emailpassword/deleteUser.test.js][0m
+    ✔ test deleteUser
+
+  emailDelivery: [33;3;2m[test/emailpassword/emailDelivery.test.js][0m
+    ✔ test default backward compatibility api being called: reset password
+    ✔ test default backward compatibility api being called, error message not sent back to user: reset password
+    ✔ test backward compatibility: reset password
+    ✔ test backward compatibility: reset password (non existent user) (5778ms)
+    ✔ test custom override: reset password
+    ✔ test smtp service: reset password
+    ✔ test default backward compatibility api being called: email verify
+    ✔ test default backward compatibility api being called, error message not sent back to user: email verify
+    ✔ test backward compatibility: email verify
+    ✔ test custom override: email verify
+    ✔ test smtp service: email verify
+    ✔ Test the reset password link
+    ✔ Test the reset password link for invalid input
+    ✔ test sendResetPasswordEmail
+    ✔ test sendResetPasswordEmail: invalid input
+
+  emailExists: [33;3;2m[test/emailpassword/emailExists.test.js][0m
+    ✔ test good input, email exists with new path
+    ✔ test that if disabling api, the default email exists API does not work
+    ✔ test good input, email exists
+    ✔ test good input, email does not exists
+    ✔ test email exists a syntactically invalid email
+    ✔ test sending an unnormalised email and you get exists is true
+    ✔ test bad input, do not pass email
+    ✔ test passing an array instead of a string in the email
+    ✔ test good input, email exists, with bodyParser applied before
+    ✔ test good input, email exists, with bodyParser applied after
+
+  emailverify: [33;3;2m[test/emailpassword/emailverify.test.js][0m
+    ✔ test the generate token api with valid input, email not verified
+    ✔ test the generate token api with valid input, email verified and test error
+    ✔ test the generate token api with valid input, no session and check output
+    ✔ test the generate token api with an expired access token and see that try refresh token is returned (7820ms)
+    ✔ test that providing your own email callback and make sure it is called
+    ✔ test the email verify API with valid input
+    ✔ test the email verify API with invalid token and check error
+    ✔ test the email verify API with token of not type string
+    ✔ test that the handlePostEmailVerification callback is called on successfull verification, if given
+    ✔ test the email verify with valid input, using the get method
+    ✔ test the email verify with no session, using the get method
+    ✔ test the email verify with an expired access token, using the get method (7291ms)
+    ✔ test the email verify API with valid input, overriding apis
+    ✔ test the email verify API with valid input, overriding functions
+    ✔ test the email verify API with valid input, overriding apis throws error
+    ✔ test the email verify API with valid input, overriding functions throws error
+    ✔ test the generate token api with valid input, and then remove token
+    ✔ test the generate token api with valid input, verify and then unverify email
+    ✔ test the email verify API with deleted user
+    ✔ test that generate email verification token API updates session claims
+    ✔ test that generate email verification token API updates session claims
+
+  formFieldValidator: [33;3;2m[test/emailpassword/formFieldValidator.test.js][0m
+    ✔ checking email validator
+    ✔ checking password validator
+
+  multitenancy: [33;3;2m[test/emailpassword/multitenancy.test.js][0m
+    ✔ test recipe functions (5876ms)
+
+  overrideTest: [33;3;2m[test/emailpassword/override.test.js][0m
+    ✔ overriding functions tests
+    ✔ overriding api tests
+    ✔ overriding functions tests, throws error
+    ✔ overriding api tests, throws error
+
+  passwordreset: [33;3;2m[test/emailpassword/passwordreset.test.js][0m
+    ✔ test email validation checks in generate token API
+    ✔ test that generated password link is correct
+    ✔ test password validation
+    ✔ test token missing from input
+    ✔ test invalid token input
+    ✔ test valid token input and passoword has changed with email verification
+    ✔ test valid token input and passoword has changed without email verification
