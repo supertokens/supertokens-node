@@ -18,6 +18,6 @@ jobs:
               uses: actions/setup-node@v1
               with:
                   node-version: 16
-            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
+            - run: rm -rf .git && git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
             - run: npm i --force &&  cd test/with-typescript && npm i --force
             - run: ./hooks/pre-commit.sh
