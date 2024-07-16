@@ -68,7 +68,7 @@ If you were using Multitenancy.createOrUpdateTenant, you should remove the `emai
 
 Here are some examples:
 
-1.  Enabling emailpassword and thirdparty
+1.  Using Emailpassword and ThirdParty login methods
 
     Before:
 
@@ -87,7 +87,26 @@ Here are some examples:
     });
     ```
 
-2.  Enabling emailpassword, thirdparty for firstFactors and passwordless for secondary factors
+2.  Using Passwordless and ThirdParty login methods. Note that for passwordless, you need to specify all the passwordless factorIds you wish to use.
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        passwordlessEnabled: true,
+        thirdPartyEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["otp-email", "otp-phone", "link-email", "link-phone", "thirdparty"],
+    });
+    ```
+
+3.  Using EmailPassword, ThirdParty for first factor and phone OTP, TOTP for secondary factors
 
     Before:
 
@@ -97,7 +116,7 @@ Here are some examples:
         thirdPartyEnabled: true,
         passwordlessEnabled: true,
         firstFactors: ["emailpassword", "thirdparty"],
-        requiredSecondaryFactors: ["otp-phone"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
     });
     ```
 
@@ -106,7 +125,28 @@ Here are some examples:
     ```ts
     Multitenancy.createOrUpdateTenant("tenantId", {
         firstFactors: ["emailpassword", "thirdparty"],
-        requiredSecondaryFactors: ["otp-phone"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
+    });
+    ```
+
+4.  Enable everything in core so that SDK can configure the required login methods and required secondary factors
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+        passwordlessEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: null,
+        requiredSecondaryFactors: null,
     });
     ```
 
