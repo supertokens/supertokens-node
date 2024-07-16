@@ -73,6 +73,7 @@ export type TypeInput = {
             v2SecretKey?: string;
             v1SecretKey?: string;
         };
+        securityServiceApiKey?: string; // this will be used for bruteforce, anomaly, and breached password detection services.
         override?: (
             originalImplementation: SecurityFunctions,
             builder?: OverrideableBuilder<SecurityFunctions>
@@ -80,85 +81,361 @@ export type TypeInput = {
     };
 };
 
-export type InfoFromRequest = {
+export type InfoFromRequestHeaders = {
     ipAddress?: string;
     userAgent?: string;
 };
 
-export type AnomalyServiceActionTypes =
-    | "sign-in"
-    | "sign-up"
-    | "session-refresh"
-    | "password-reset"
-    | "send-email"
-    | "send-sms"
-    | "mfa-verify"
-    | "mfa-setup";
+export type SecurityChecksActionTypes =
+    | "emailpassword-sign-in"
+    | "emailpassword-sign-up"
+    | "send-password-reset-email"
+    | "passwordless-send-email"
+    | "passwordless-send-sms"
+    | "totp-verify-device"
+    | "totp-verify-totp"
+    | "thirdparty-login"
+    | "emailverification-send-email";
 
 export type RiskScores = {
     // all values are between 0 and 1, with 1 being highest risk
-    ipRisk: number;
+    requestIdInfo?:
+        | {
+              valid: true;
+              identification: {
+                  data: {
+                      visitorId: string;
+                      requestId: string;
+                      incognito: boolean;
+                      linkedId: string;
+                      tag: Record<string, unknown>;
+                      time: string;
+                      timestamp: number;
+                      url: string;
+                      ip: string;
+                      ipLocation: {
+                          accuracyRadius: number;
+                          latitude: number;
+                          longitude: number;
+                          postalCode: string;
+                          timezone: string;
+                          city: {
+                              name: string;
+                          };
+                          country: {
+                              code: string;
+                              name: string;
+                          };
+                          continent: {
+                              code: string;
+                              name: string;
+                          };
+                          subdivisions: Array<{
+                              isoCode: string;
+                              name: string;
+                          }>;
+                      };
+                      browserDetails: {
+                          browserName: string;
+                          browserMajorVersion: string;
+                          browserFullVersion: string;
+                          os: string;
+                          osVersion: string;
+                          device: string;
+                          userAgent: string;
+                      };
+                      confidence: {
+                          score: number;
+                      };
+                      visitorFound: boolean;
+                      firstSeenAt: {
+                          global: string;
+                          subscription: string;
+                      };
+                      lastSeenAt: {
+                          global: string | null;
+                          subscription: string | null;
+                      };
+                  };
+              };
+              botd: {
+                  data: {
+                      bot: {
+                          result: string;
+                      };
+                      url: string;
+                      ip: string;
+                      time: string;
+                      userAgent: string;
+                      requestId: string;
+                  };
+              };
+              rootApps: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              emulator: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              ipInfo: {
+                  data: {
+                      v4: {
+                          address: string;
+                          geolocation: {
+                              accuracyRadius: number;
+                              latitude: number;
+                              longitude: number;
+                              postalCode: string;
+                              timezone: string;
+                              city: {
+                                  name: string;
+                              };
+                              country: {
+                                  code: string;
+                                  name: string;
+                              };
+                              continent: {
+                                  code: string;
+                                  name: string;
+                              };
+                              subdivisions: Array<{
+                                  isoCode: string;
+                                  name: string;
+                              }>;
+                          };
+                          asn: {
+                              asn: string;
+                              name: string;
+                              network: string;
+                          };
+                          datacenter: {
+                              result: boolean;
+                              name: string;
+                          };
+                      };
+                      v6: {
+                          address: string;
+                          geolocation: {
+                              accuracyRadius: number;
+                              latitude: number;
+                              longitude: number;
+                              postalCode: string;
+                              timezone: string;
+                              city: {
+                                  name: string;
+                              };
+                              country: {
+                                  code: string;
+                                  name: string;
+                              };
+                              continent: {
+                                  code: string;
+                                  name: string;
+                              };
+                              subdivisions: Array<{
+                                  isoCode: string;
+                                  name: string;
+                              }>;
+                          };
+                          asn: {
+                              asn: string;
+                              name: string;
+                              network: string;
+                          };
+                          datacenter: {
+                              result: boolean;
+                              name: string;
+                          };
+                      };
+                  };
+              };
+              ipBlocklist: {
+                  data: {
+                      result: boolean;
+                      details: {
+                          emailSpam: boolean;
+                          attackSource: boolean;
+                      };
+                  };
+              };
+              tor: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              vpn: {
+                  data: {
+                      result: boolean;
+                      originTimezone: string;
+                      originCountry: string;
+                      methods: {
+                          timezoneMismatch: boolean;
+                          publicVPN: boolean;
+                          auxiliaryMobile: boolean;
+                          osMismatch: boolean;
+                      };
+                  };
+              };
+              proxy: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              incognito: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              tampering: {
+                  data: {
+                      result: boolean;
+                      anomalyScore: number;
+                  };
+              };
+              clonedApp: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              factoryReset: {
+                  data: {
+                      time: string;
+                      timestamp: number;
+                  };
+              };
+              jailbroken: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              frida: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              privacySettings: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              virtualMachine: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              rawDeviceAttributes: {
+                  data: {
+                      architecture: {
+                          value: number;
+                      };
+                      audio: {
+                          value: number;
+                      };
+                      canvas: {
+                          value: {
+                              Winding: boolean;
+                              Geometry: string;
+                              Text: string;
+                          };
+                      };
+                      colorDepth: {
+                          value: number;
+                      };
+                      colorGamut: {
+                          value: string;
+                      };
+                      contrast: {
+                          value: number;
+                      };
+                      cookiesEnabled: {
+                          value: boolean;
+                      };
+                      cpuClass: Record<string, unknown>;
+                      fonts: {
+                          value: string[];
+                      };
+                  };
+              };
+              highActivity: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              locationSpoofing: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+              remoteControl: {
+                  data: {
+                      result: boolean;
+                  };
+              };
+          }
+        | {
+              valid: false;
+          };
     phoneNumberRisk?: number;
     emailRisk?: number;
-    sessionRisk?: number;
-    userIdRisk?: number;
+    isBreachedPassword?: boolean;
+    bruteForce?:
+        | {
+              detected: false;
+          }
+        | {
+              detected: true;
+              key: string;
+          };
 };
 
 export type SecurityFunctions = {
-    getInfoFromRequest: (input: { request: BaseRequest; userContext: UserContext }) => InfoFromRequest;
+    getInfoFromRequest: (input: { request: BaseRequest; userContext: UserContext }) => InfoFromRequestHeaders;
 
     // this function will return hasProvidedV2SecretKey || hasProvidedV1SecretKey by default.
-    shouldPerformGoogleRecaptcha: (input: {
-        hasProvidedV2SecretKey: boolean;
-        hasProvidedV1SecretKey: boolean;
-        api:
-            | "password-reset-code-generation"
-            | "emailpassword-signin"
-            | "emailpassword-signup"
-            | "passwordless-create-code"
-            | "totp-verify-device"
-            | "totp-verify-totp";
+    shouldEnforceGoogleRecaptchaTokenPresentInRequest: (input: {
+        tenantId: string;
+        actionType: SecurityChecksActionTypes;
         userContext: UserContext;
     }) => Promise<boolean>;
 
     performGoogleRecaptchaV2: (input: {
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         clientResponseToken: string;
         userContext: UserContext;
     }) => Promise<boolean>;
 
     performGoogleRecaptchaV1: (input: {
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         clientResponseToken: string;
         userContext: UserContext;
     }) => Promise<boolean>;
 
-    // The apiKey for this will be fetched from the core during the /apiversion API call, and will be saved in memory for use.
-    // In case /apiversion has not yet been called, this function will call that API first. In case it has been called, but there
-    // is no API key for this, it means this function will not do anything and return undefined. This also means that if the user
-    // has added the license key in the core to enable this feature, they will have to restart the backend process once.
-    calculateRiskScoreUsingAnomalyService: (input: {
-        infoFromRequest: InfoFromRequest;
+    // this will return true if securityServiceApiKey is present in the config.
+    shouldEnforceSecurityServiceRequestIdPresentInRequest: (input: {
+        tenantId: string;
+        actionType: SecurityChecksActionTypes;
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
+    doSecurityChecks: (input: {
+        infoFromRequestHeaders?: InfoFromRequestHeaders;
+        passwordHash?: string; // to check against breached password
+        securityServiceRequestId?: string;
         email?: string;
         phoneNumber?: string;
-        sessionHandle?: string;
-        tenantId: string;
-        userId?: string;
-        actionType: AnomalyServiceActionTypes;
+        bruteForce?: {
+            key: string;
+            maxRequests: {
+                limit: number;
+                perTimeIntervalMS: number;
+            }[];
+        }[];
+        actionType?: SecurityChecksActionTypes;
         userContext: UserContext;
     }) => Promise<RiskScores | undefined>; // undefined means we have nothing to return, and we completely ignore this.
-
-    logToAnomalyService: (input: {
-        infoFromRequest: InfoFromRequest;
-        email?: string;
-        phoneNumber?: string;
-        sessionHandle?: string;
-        tenantId: string;
-        userId?: string;
-        action: AnomalyServiceActionTypes;
-        success: boolean; // this input is what differentiates this function from the one that generates the risk score.
-        userContext: UserContext;
-    }) => void; // we intentionally do not return a promise cause this should be non blocking
 
     // these are all here and not in the respective recipes cause they are to be applied
     // only in the APIs and not in the recipe function. We still can't put them in the API
@@ -169,113 +446,166 @@ export type SecurityFunctions = {
         tenantId: string;
         session?: SessionContainer;
         email: string;
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
     }) =>
         | {
               key: string;
-              millisecondsIntervalBetweenAttempts: number;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
           }[] // is an array so that we can have multiple checks and fail the api if any one of them fail
         | undefined; // undefined means no rate limit
     getRateLimitForEmailPasswordSignUp: (input: {
         tenantId: string;
         session?: SessionContainer;
         email: string;
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
     }) =>
         | {
               key: string;
-              millisecondsIntervalBetweenAttempts: number;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
           }[]
         | undefined;
     getRateLimitForThirdPartySignInUp: (input: {
         tenantId: string;
         session?: SessionContainer;
         thirdPartyId: string; // we intentionally do not give thirdPartyUserId because if we did, we'd have to query the thirdParty provider first
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
     }) =>
         | {
               key: string;
-              millisecondsIntervalBetweenAttempts: number;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
           }[]
         | undefined;
     getRateLimitForSendingPasswordlessEmail: (input: {
         tenantId: string;
         session?: SessionContainer;
         email: string;
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
     }) =>
         | {
               key: string;
-              millisecondsIntervalBetweenAttempts: number;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
           }[]
         | undefined;
     getRateLimitForSendingPasswordlessSms: (input: {
         tenantId: string;
         session?: SessionContainer;
         phoneNumber: string;
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
     }) =>
         | {
               key: string;
-              millisecondsIntervalBetweenAttempts: number;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
           }[]
         | undefined;
     getRateLimitForResetPassword: (input: {
         tenantId: string;
         email: string;
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
     }) =>
         | {
               key: string;
-              millisecondsIntervalBetweenAttempts: number;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
           }[]
         | undefined;
     getRateLimitForVerifyEmail: (input: {
         tenantId: string;
         session: SessionContainer;
         // we intentionally do not pass in the email here cause to fetch that, we'd need to query the core first
-        infoFromRequest: InfoFromRequest;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
     }) =>
         | {
               key: string;
-              millisecondsIntervalBetweenAttempts: number;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
           }[]
         | undefined;
 
-    // these are functions to actually query the rate limit service. The api key for this
-    // will be fetched from the /apiversion API call, similar to the api key for the anomaly service.
-    setRateLimitForKey: (input: {
-        keys: {
-            key: string;
-            millisecondsIntervalBetweenAttempts: number;
-        }[];
+    getRateLimitForTotpDeviceVerify: (input: {
+        tenantId: string;
+        session: SessionContainer;
+        deviceName: string;
+        infoFromRequest: InfoFromRequestHeaders;
         userContext: UserContext;
-    }) => void; // should be non blocking, so we do not return a Promise
-    areAnyKeysRateLimited: (input: {
-        keys: {
-            key: string;
-            millisecondsIntervalBetweenAttempts: number;
-        }[];
-        userContext: UserContext;
-    }) => Promise<boolean>;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
 
-    banUser: (input: {
-        userId: string; // can be a primary or recipe user id, either way, the primary user id is banned
+    getRateLimitForTotpVerify: (input: {
+        tenantId: string;
+        session: SessionContainer;
+        deviceName: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+
+    ban: (input: {
+        userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
+        ipAddress?: string;
+        email?: string;
+        phoneNumber?: string;
+        userContext: UserContext;
     }) => Promise<void>;
 
-    isUserBanned: (input: {
-        userId: string; // can be a primary or recipe user id, either way, the primary user id is banned
-    }) => Promise<boolean>;
+    getIsBanned: (input: {
+        userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
+        ipAddress?: string;
+        email?: string;
+        phoneNumber?: string;
+        userContext: UserContext;
+    }) => Promise<{
+        userIdBanned?: boolean;
+        ipAddressBanned?: boolean;
+        emailBanned?: boolean;
+        phoneNumberBanned?: boolean;
+    }>;
 
-    unbanUser: (input: {
-        userId: string; // can be a primary or recipe user id, either way, the primary user id is unbanned
+    unban: (input: {
+        userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
+        ipAddress?: string;
+        email?: string;
+        phoneNumber?: string;
+        userContext: UserContext;
     }) => Promise<void>;
 };
 

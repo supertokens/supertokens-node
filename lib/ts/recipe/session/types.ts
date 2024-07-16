@@ -210,6 +210,12 @@ export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
     checkDatabase?: boolean;
+    securityChecks?: {
+        // should be checked only if checkDatabase is true.
+        enforceUserBan?: boolean;
+        enforceIpBan?: boolean;
+        ipAddress?: string;
+    };
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
@@ -261,6 +267,8 @@ export type RecipeInterface = {
         userContext: UserContext;
         securityOptions?: {
             enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
     }): Promise<SessionContainerInterface>;
 
@@ -296,25 +304,40 @@ export type RecipeInterface = {
 
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: UserContext }): Promise<string[]>;
 
-    // Returns false if the sessionHandle does not exist
+    // Returns false if the sessionHandle does not exist or security options deny this session
     updateSessionDataInDatabase(input: {
         sessionHandle: string;
         newSessionData: any;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
         userContext: UserContext;
     }): Promise<boolean>;
 
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
         userContext: UserContext;
     }): Promise<boolean>;
 
     /**
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
+     * Returns undefined if the sessionHandle does not exist or security options deny this session
      */
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
         userContext: UserContext;
     }): Promise<
         | {
@@ -379,7 +402,15 @@ export interface SessionContainerInterface {
 
     getSessionDataFromDatabase(userContext?: Record<string, any>): Promise<any>;
 
-    updateSessionDataInDatabase(newSessionData: any, userContext?: Record<string, any>): Promise<any>;
+    updateSessionDataInDatabase(input?: {
+        newSessionData: any;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
+        userContext?: Record<string, any>;
+    }): Promise<any>;
 
     getUserId(userContext?: Record<string, any>): string;
 
@@ -400,7 +431,15 @@ export interface SessionContainerInterface {
 
     getAccessToken(userContext?: Record<string, any>): string;
 
-    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: Record<string, any>): Promise<void>;
+    mergeIntoAccessTokenPayload(input?: {
+        accessTokenPayloadUpdate: JSONObject;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
+        userContext?: Record<string, any>;
+    }): Promise<void>;
 
     getTimeCreated(userContext?: Record<string, any>): Promise<number>;
 

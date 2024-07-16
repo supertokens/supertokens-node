@@ -64,10 +64,8 @@ export type RecipeInterface = {
         userContext: UserContext;
         securityOptions?: {
             enforceUserBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
     }) => Promise<
         | {
@@ -122,10 +120,8 @@ export type RecipeInterface = {
         userContext: UserContext;
         securityOptions?: {
             enforceUserBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
     }) => Promise<
         | {
@@ -155,10 +151,8 @@ export type RecipeInterface = {
         userContext: UserContext;
         securityOptions?: {
             enforceUserBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
     }) => Promise<
         | {
@@ -247,6 +241,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               deviceName: string;
               totp: string;
               options: APIOptions;
@@ -276,6 +271,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               totp: string;
               options: APIOptions;
               session: SessionContainerInterface;

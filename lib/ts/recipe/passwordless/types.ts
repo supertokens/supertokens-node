@@ -125,10 +125,8 @@ export type RecipeInterface = {
                 enforceUserBan?: boolean; // in case this is a sign in and not a sign up
                 enforceEmailBan?: boolean;
                 enforcePhoneNumberBan?: boolean;
-                ipBan?: {
-                    enabled?: boolean;
-                    ipAddress?: string;
-                };
+                enforceIpBan?: boolean;
+                ipAddress?: string;
             };
         }
     ) => Promise<
@@ -160,10 +158,8 @@ export type RecipeInterface = {
         securityOptions?: {
             enforceEmailBan?: boolean;
             enforcePhoneNumberBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
     }) => Promise<
         | {
@@ -194,10 +190,8 @@ export type RecipeInterface = {
                       enforceUserBan?: boolean;
                       enforceEmailBan?: boolean;
                       enforcePhoneNumberBan?: boolean;
-                      ipBan?: {
-                          enabled?: boolean;
-                          ipAddress?: string;
-                      };
+                      enforceIpBan?: boolean;
+                      ipAddress?: string;
                   };
               }
             | {
@@ -210,10 +204,8 @@ export type RecipeInterface = {
                       enforceUserBan?: boolean;
                       enforceEmailBan?: boolean;
                       enforcePhoneNumberBan?: boolean;
-                      ipBan?: {
-                          enabled?: boolean;
-                          ipAddress?: string;
-                      };
+                      enforceIpBan?: boolean;
+                      ipAddress?: string;
                   };
               }
     ) => Promise<
@@ -393,6 +385,7 @@ export type APIInterface = {
             options: APIOptions;
             userContext: UserContext;
             googleRecaptchaToken?: string;
+            securityServiceRequestId?: string;
         }
     ) => Promise<
         | {
@@ -408,7 +401,7 @@ export type APIInterface = {
         | GeneralErrorResponse
     >;
 
-    // we intentionally do not add googleRecaptcha in here cause
+    // we intentionally do not add googleRecaptcha or securityServiceRequestId in here cause
     // it's the same device that generates the code during createCode, and if
     // that's not a bot, nor is this.
     resendCodePOST?: (

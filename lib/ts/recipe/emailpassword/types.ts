@@ -91,11 +91,8 @@ export type RecipeInterface = {
         tenantId: string;
         securityOptions?: {
             enforceEmailBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
-            checkBreachedPassword?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
         userContext: UserContext;
     }): Promise<
@@ -114,7 +111,7 @@ export type RecipeInterface = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
         | {
-              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR" | "IP_BANNED_ERROR";
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
           }
         | {
               // this can happen during account linking, if the primary user that this is going to be linked to is banned.
@@ -132,11 +129,8 @@ export type RecipeInterface = {
         tenantId: string;
         securityOptions?: {
             enforceEmailBan?: boolean;
-            checkBreachedPassword?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
         userContext: UserContext;
     }): Promise<
@@ -147,7 +141,7 @@ export type RecipeInterface = {
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         | {
-              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR" | "IP_BANNED_ERROR";
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
           }
     >;
 
@@ -159,11 +153,8 @@ export type RecipeInterface = {
         securityOptions?: {
             enforceUserBan?: boolean;
             enforceEmailBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
-            checkBreachedPassword?: boolean; // will be false here by default even if users want to check breached password
+            enforceIpBan?: boolean;
+            ipAddress?: string;
             limitWrongCredentialsAttempt?: {
                 enabled?: boolean;
                 counterKey?: string; // by default, it is just email ID
@@ -184,7 +175,7 @@ export type RecipeInterface = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
         | {
-              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR" | "IP_BANNED_ERROR";
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
           }
         | {
               status: "USER_BANNED_ERROR";
@@ -205,11 +196,8 @@ export type RecipeInterface = {
         securityOptions?: {
             enforceUserBan?: boolean;
             enforceEmailBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
-            checkBreachedPassword?: boolean; // will be false here by default even if users want to check breached password
+            enforceIpBan?: boolean;
+            ipAddress?: string;
             limitWrongCredentialsAttempt?: {
                 enabled?: boolean;
                 counterKey?: string; // by default, it is just email ID
@@ -221,7 +209,7 @@ export type RecipeInterface = {
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
         | {
-              status: "EMAIL_BANNED_ERROR" | "BREACHED_PASSWORD_ERROR" | "IP_BANNED_ERROR";
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
           }
         | {
               status: "USER_BANNED_ERROR";
@@ -246,10 +234,8 @@ export type RecipeInterface = {
         securityOptions?: {
             enforceUserBan?: boolean;
             enforceEmailBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
         userContext: UserContext;
     }): Promise<
@@ -287,7 +273,6 @@ export type RecipeInterface = {
         userContext: UserContext;
         applyPasswordPolicy?: boolean;
         securityOptions?: {
-            checkBreachedPassword?: boolean;
             limitOldPasswordReuse?: {
                 enabled?: boolean;
                 numberOfOldPasswordsToCheck?: number;
@@ -303,7 +288,7 @@ export type RecipeInterface = {
               reason: string;
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
-        | { status: "BREACHED_PASSWORD_ERROR" | "OLD_PASSWORD_REUSED_ERROR" }
+        | { status: "OLD_PASSWORD_REUSED_ERROR" }
     >;
 };
 
@@ -338,6 +323,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               formFields: {
                   id: string;
                   value: string;
@@ -384,6 +370,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               formFields: {
                   id: string;
                   value: string;
@@ -412,6 +399,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               formFields: {
                   id: string;
                   value: string;

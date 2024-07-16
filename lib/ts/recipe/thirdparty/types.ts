@@ -178,10 +178,8 @@ export type RecipeInterface = {
         securityOptions?: {
             enforceUserBan?: boolean;
             enforceEmailBan?: boolean;
-            ipBan?: {
-                enabled?: boolean;
-                ipAddress?: string;
-            };
+            enforceIpBan?: boolean;
+            ipAddress?: string;
         };
     }): Promise<
         | {
