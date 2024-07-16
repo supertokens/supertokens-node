@@ -392,7 +392,11 @@ export type RiskScores = {
 };
 
 export type SecurityFunctions = {
-    getInfoFromRequest: (input: { request: BaseRequest; userContext: UserContext }) => InfoFromRequestHeaders;
+    getInfoFromRequest: (input: {
+        tenantId: string;
+        request: BaseRequest;
+        userContext: UserContext;
+    }) => InfoFromRequestHeaders;
 
     // this function will return hasProvidedV2SecretKey || hasProvidedV1SecretKey by default.
     shouldEnforceGoogleRecaptchaTokenPresentInRequest: (input: {
@@ -402,14 +406,16 @@ export type SecurityFunctions = {
     }) => Promise<boolean>;
 
     performGoogleRecaptchaV2: (input: {
+        tenantId: string;
         infoFromRequest: InfoFromRequestHeaders;
-        clientResponseToken: string;
+        googleRecaptchaToken: string;
         userContext: UserContext;
     }) => Promise<boolean>;
 
     performGoogleRecaptchaV1: (input: {
+        tenantId: string;
         infoFromRequest: InfoFromRequestHeaders;
-        clientResponseToken: string;
+        googleRecaptchaToken: string;
         userContext: UserContext;
     }) => Promise<boolean>;
 
@@ -420,7 +426,8 @@ export type SecurityFunctions = {
         userContext: UserContext;
     }) => Promise<boolean>;
 
-    doSecurityChecks: (input: {
+    getRiskScoresFromSecurityService: (input: {
+        tenantId: string;
         infoFromRequestHeaders?: InfoFromRequestHeaders;
         passwordHash?: string; // to check against breached password
         securityServiceRequestId?: string;
@@ -436,6 +443,22 @@ export type SecurityFunctions = {
         actionType?: SecurityChecksActionTypes;
         userContext: UserContext;
     }) => Promise<RiskScores | undefined>; // undefined means we have nothing to return, and we completely ignore this.
+
+    shouldRejectRequestBasedOnRiskScores: (input: {
+        tenantId: string;
+        riskScores: RiskScores;
+        actionType: SecurityChecksActionTypes;
+        userContext: UserContext;
+    }) => Promise<{
+        rejectBasedOnBruteForce?: boolean;
+        rejectBasedOnBreachedPassword?: boolean;
+        rejectBasedOnBotDetection?: boolean;
+        rejectBasedOnSuspiciousIPOrLocation?: boolean;
+        rejectBasedOnVPNBeingUsed?: boolean;
+        rejectBasedOnPhoneNumberRisk?: boolean;
+        rejectBasedOnEmailRisk?: boolean;
+        otherReasonForRejection?: string;
+    }>;
 
     // these are all here and not in the respective recipes cause they are to be applied
     // only in the APIs and not in the recipe function. We still can't put them in the API
@@ -579,7 +602,9 @@ export type SecurityFunctions = {
           }[]
         | undefined;
 
+    // if tenant id is not provided, then we ban across all tenants.
     ban: (input: {
+        tenantId?: string;
         userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
         ipAddress?: string;
         email?: string;
@@ -588,6 +613,7 @@ export type SecurityFunctions = {
     }) => Promise<void>;
 
     getIsBanned: (input: {
+        tenantId?: string;
         userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
         ipAddress?: string;
         email?: string;
@@ -601,6 +627,7 @@ export type SecurityFunctions = {
     }>;
 
     unban: (input: {
+        tenantId?: string;
         userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
         ipAddress?: string;
         email?: string;
