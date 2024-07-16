@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { ParsedJWTInfo } from "./jwt";
-import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation, TypeNormalisedInput } from "./types";
 import { Helpers } from "./recipeImplementation";
 import RecipeUserId from "../../recipeUserId";
 import { UserContext } from "../../types";
@@ -25,6 +25,7 @@ export declare function getSession(
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     alwaysCheckCore: boolean,
+    config: TypeNormalisedInput,
     userContext: UserContext
 ): Promise<{
     session: {

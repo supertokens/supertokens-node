@@ -55,9 +55,9 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
             recipeList: [EmailPassword.init()],
         });
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t2", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["emailpassword"] });
 
         // Sign up
         let user1 = await EmailPassword.signUp("t1", "test@example.com", "password1");

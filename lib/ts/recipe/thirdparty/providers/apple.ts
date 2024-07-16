@@ -16,6 +16,7 @@
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider, { getActualClientIdFromDevelopmentClientId } from "./custom";
 import * as jose from "jose";
+import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 
 async function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): Promise<string> {
     const alg = "ES256";
@@ -37,7 +38,7 @@ export default function Apple(input: ProviderInput): TypeProvider {
     }
 
     if (input.config.oidcDiscoveryEndpoint === undefined) {
-        input.config.oidcDiscoveryEndpoint = "https://appleid.apple.com/";
+        input.config.oidcDiscoveryEndpoint = "https://appleid.apple.com/.well-known/openid-configuration";
     }
 
     input.config.authorizationEndpointQueryParams = {
@@ -75,6 +76,9 @@ export default function Apple(input: ProviderInput): TypeProvider {
                     config.additionalConfig.privateKey
                 );
             }
+
+            // The config could be coming from core where we didn't add the well-known previously
+            config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint!);
 
             return config;
         };

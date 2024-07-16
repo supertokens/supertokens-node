@@ -304,6 +304,7 @@ export function validateAndNormaliseUserInput(
         override,
         invalidClaimStatusCode,
         overwriteSessionDuringSignInUp: config?.overwriteSessionDuringSignInUp ?? false,
+        jwksRefreshIntervalSec: config?.jwksRefreshIntervalSec ?? 3600 * 4,
     };
 }
 

@@ -18,7 +18,6 @@ export declare const isValidFirstFactor: (
       }
 >;
 export declare function isFactorConfiguredForTenant({
-    tenantConfig,
     allAvailableFirstFactors,
     firstFactors,
     factorId,

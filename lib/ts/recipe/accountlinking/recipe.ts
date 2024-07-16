@@ -675,7 +675,7 @@ export default class Recipe extends RecipeModule {
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified = async (input: {
         user: User;
         recipeUserId: RecipeUserId;
-        userContext: any;
+        userContext: UserContext;
     }) => {
         try {
             EmailVerificationRecipe.getInstanceOrThrowError();

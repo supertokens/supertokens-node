@@ -14,6 +14,7 @@
  */
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 
 export default function Google(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -21,7 +22,7 @@ export default function Google(input: ProviderInput): TypeProvider {
     }
 
     if (input.config.oidcDiscoveryEndpoint === undefined) {
-        input.config.oidcDiscoveryEndpoint = "https://accounts.google.com/";
+        input.config.oidcDiscoveryEndpoint = "https://accounts.google.com/.well-known/openid-configuration";
     }
 
     input.config.authorizationEndpointQueryParams = {
@@ -40,6 +41,9 @@ export default function Google(input: ProviderInput): TypeProvider {
             if (config.scope === undefined) {
                 config.scope = ["openid", "email"];
             }
+
+            // The config could be coming from core where we didn't add the well-known previously
+            config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint!);
 
             return config;
         };
