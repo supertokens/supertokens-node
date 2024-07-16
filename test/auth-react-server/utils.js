@@ -197,7 +197,7 @@ module.exports.startST = async function (config = {}) {
 };
 
 module.exports.removeAppAndTenants = async function (host, port, appId) {
-    const tenantsResp = await fetch(`http://${host}:${port}/appid-${appId}/recipe/multitenancy/tenant/list`);
+    const tenantsResp = await fetch(`http://${host}:${port}/appid-${appId}/recipe/multitenancy/tenant/list/v2`);
     if (tenantsResp.status === 401) {
         const updateAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app/v2`, {
             method: "PUT",

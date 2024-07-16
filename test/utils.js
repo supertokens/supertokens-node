@@ -420,7 +420,7 @@ module.exports.startSTWithMultitenancyAndAccountLinking = async function (config
 };
 
 module.exports.removeAppAndTenants = async function (appId) {
-    const tenantsResp = await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/list`);
+    const tenantsResp = await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/list/v2`);
     if (tenantsResp.status === 401) {
         const updateAppResp = await fetch(`http://localhost:8080/recipe/multitenancy/app/v2`, {
             method: "PUT",

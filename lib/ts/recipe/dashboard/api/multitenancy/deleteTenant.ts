@@ -36,7 +36,8 @@ export default async function deleteTenant(
 
         return deleteTenantRes;
     } catch (err) {
-        if (err.statusCodeFromCore === 403 && err.errorMessageFromCore.includes("Cannot delete public tenant")) {
+        const errMsg: string = err.message;
+        if (errMsg.includes("SuperTokens core threw an error for a ") && errMsg.includes("with status code: 403")) {
             return {
                 status: "CANNOT_DELETE_PUBLIC_TENANT_ERROR",
             };
