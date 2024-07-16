@@ -426,10 +426,12 @@ export type SecurityFunctions = {
         userContext: UserContext;
     }) => Promise<boolean>;
 
+    // we pass in password instead of passwordHash cause maybe users want to use a different way to
+    // check for breached password.
     getRiskScoresFromSecurityService: (input: {
         tenantId: string;
         infoFromRequestHeaders?: InfoFromRequestHeaders;
-        passwordHash?: string; // to check against breached password
+        password?: string; // to check against breached password
         securityServiceRequestId?: string;
         email?: string;
         phoneNumber?: string;

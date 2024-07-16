@@ -278,7 +278,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    // no google recaptcha here cause we reply on the provider to detect bots
+    // no google recaptcha or no securityservicetoken here cause we reply on the provider to detect bots and other issues.
     signInUpPOST:
         | undefined
         | ((
