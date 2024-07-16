@@ -359,7 +359,6 @@ export type APIInterface = {
     passwordResetPOST:
         | undefined
         | ((input: {
-              googleRecaptchaToken?: string;
               formFields: {
                   id: string;
                   value: string;

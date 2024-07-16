@@ -192,7 +192,6 @@ export type APIInterface = {
     createDevicePOST:
         | undefined
         | ((input: {
-              googleRecaptchaToken?: string;
               deviceName?: string;
               options: APIOptions;
               session: SessionContainerInterface;

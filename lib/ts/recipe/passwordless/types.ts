@@ -122,6 +122,7 @@ export type RecipeInterface = {
             tenantId: string;
             userContext: UserContext;
             securityOptions?: {
+                enforceUserBan?: boolean; // in case this is a sign in and not a sign up
                 enforceEmailBan?: boolean;
                 enforcePhoneNumberBan?: boolean;
                 ipBan?: {
@@ -143,6 +144,11 @@ export type RecipeInterface = {
           }
         | {
               status: "EMAIL_BANNED_ERROR" | "PHONE_NUMBER_BANNED" | "IP_BANNED_ERROR";
+          }
+        | {
+              status: "USER_BANNED_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
           }
     >;
 
@@ -402,13 +408,15 @@ export type APIInterface = {
         | GeneralErrorResponse
     >;
 
+    // we intentionally do not add googleRecaptcha in here cause
+    // it's the same device that generates the code during createCode, and if
+    // that's not a bot, nor is this.
     resendCodePOST?: (
         input: { deviceId: string; preAuthSessionId: string } & {
             tenantId: string;
             session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
-            googleRecaptchaToken?: string;
         }
     ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 

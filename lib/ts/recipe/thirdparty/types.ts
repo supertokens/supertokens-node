@@ -280,11 +280,11 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
+    // no google recaptcha here cause we reply on the provider to detect bots
     signInUpPOST:
         | undefined
         | ((
               input: {
-                  googleRecaptchaToken?: string;
                   provider: TypeProvider;
                   tenantId: string;
                   session: SessionContainerInterface | undefined;

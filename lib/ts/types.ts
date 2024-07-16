@@ -107,6 +107,20 @@ export type RiskScores = {
 export type SecurityFunctions = {
     getInfoFromRequest: (input: { request: BaseRequest; userContext: UserContext }) => InfoFromRequest;
 
+    // this function will return hasProvidedV2SecretKey || hasProvidedV1SecretKey by default.
+    shouldPerformGoogleRecaptcha: (input: {
+        hasProvidedV2SecretKey: boolean;
+        hasProvidedV1SecretKey: boolean;
+        api:
+            | "password-reset-code-generation"
+            | "emailpassword-signin"
+            | "emailpassword-signup"
+            | "passwordless-create-code"
+            | "totp-verify-device"
+            | "totp-verify-totp";
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
     performGoogleRecaptchaV2: (input: {
         infoFromRequest: InfoFromRequest;
         clientResponseToken: string;
