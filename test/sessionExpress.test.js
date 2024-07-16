@@ -3263,7 +3263,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
                 origin: ({ request }) => {
-                    if (request.getHeaderValue("origin") !== undefined) {
+                    if (request !== undefined && request.getHeaderValue("origin") !== undefined) {
                         return request.getHeaderValue("origin");
                     }
 
