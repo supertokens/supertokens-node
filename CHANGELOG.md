@@ -106,7 +106,7 @@ Here are some examples:
     });
     ```
 
-3.  Enabling emailpassword, thirdparty for firstFactors and otp-phone, totp for secondary factors
+3.  Using EmailPassword, ThirdParty for first factor and phone OTP, TOTP for secondary factors
 
     Before:
 
@@ -129,30 +129,7 @@ Here are some examples:
     });
     ```
 
-4.  Using EmailPassword, ThirdParty for first factor and phone OTP, TOTP for secondary factors
-
-    Before:
-
-    ```ts
-    Multitenancy.createOrUpdateTenant("tenantId", {
-        emailPasswordEnabled: true,
-        thirdPartyEnabled: true,
-        passwordlessEnabled: true,
-        firstFactors: ["emailpassword", "thirdparty"],
-        requiredSecondaryFactors: ["otp-phone", "totp"],
-    });
-    ```
-
-    After:
-
-    ```ts
-    Multitenancy.createOrUpdateTenant("tenantId", {
-        firstFactors: ["emailpassword", "thirdparty"],
-        requiredSecondaryFactors: ["otp-phone", "totp"],
-    });
-    ```
-
-5.  Enable everything in core so that SDK can configure the required login methods and required secondary factors
+4.  Enable everything in core so that SDK can configure the required login methods and required secondary factors
 
     Before:
 
