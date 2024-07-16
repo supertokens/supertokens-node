@@ -68,7 +68,7 @@ If you were using Multitenancy.createOrUpdateTenant, you should remove the `emai
 
 Here are some examples:
 
-1.  Enabling emailpassword and thirdparty
+1.  Using Emailpassword and ThirdParty login methods
 
     Before:
 
@@ -87,7 +87,7 @@ Here are some examples:
     });
     ```
 
-2.  Enabling passwordless and thirdparty
+2.  Using Passwordless and ThirdParty login methods. Note that for passwordless, you need to specify all the passwordless factorIds you wish to use.
 
     Before:
 
@@ -126,6 +126,50 @@ Here are some examples:
     Multitenancy.createOrUpdateTenant("tenantId", {
         firstFactors: ["emailpassword", "thirdparty"],
         requiredSecondaryFactors: ["otp-phone", "totp"],
+    });
+    ```
+
+4.  Using EmailPassword, ThirdParty for first factor and phone OTP, TOTP for secondary factors
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+        passwordlessEnabled: true,
+        firstFactors: ["emailpassword", "thirdparty"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["emailpassword", "thirdparty"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
+    });
+    ```
+
+5.  Enable everything in core so that SDK can configure the required login methods and required secondary factors
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+        passwordlessEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: null,
+        requiredSecondaryFactors: null,
     });
     ```
 
