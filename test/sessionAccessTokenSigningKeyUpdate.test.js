@@ -102,6 +102,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 response.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -125,6 +126,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 response.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
         } catch (err) {
@@ -169,6 +171,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             response2.antiCsrfToken,
             true,
             false,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
 
@@ -192,7 +195,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             parseJWTWithoutSignatureVerification(response3.accessToken.token),
             response2.antiCsrfToken,
             true,
-            false
+            false,
+            SessionRecipe.getInstanceOrThrowError().config,
+            {}
         );
 
         assert.strictEqual(response4.accessToken, undefined);
@@ -263,6 +268,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 newSession.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -284,7 +290,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(oldSession.accessToken.token),
                 oldSession.antiCsrfToken,
                 true,
-                false
+                false,
+                SessionRecipe.getInstanceOrThrowError().config,
+                {}
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -341,6 +349,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 response.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -361,6 +370,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     response2.antiCsrfToken,
                     true,
                     false,
+                    SessionRecipe.getInstanceOrThrowError().config,
                     {}
                 );
                 // Old core versions should throw here because the signing key was updated
@@ -429,6 +439,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 response.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -450,7 +461,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     parseJWTWithoutSignatureVerification(response2.accessToken.token),
                     response2.antiCsrfToken,
                     true,
-                    false
+                    false,
+                    SessionRecipe.getInstanceOrThrowError().config,
+                    {}
                 );
             } catch (err) {
                 if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
@@ -507,6 +520,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 session.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -536,6 +550,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 session.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -565,6 +580,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 session2.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -589,6 +605,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 session2.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -610,6 +627,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     session.antiCsrfToken,
                     true,
                     false,
+                    SessionRecipe.getInstanceOrThrowError().config,
                     {}
                 );
                 fail();
@@ -673,6 +691,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 session.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
@@ -694,6 +713,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 session.antiCsrfToken,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
 
