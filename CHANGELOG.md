@@ -87,7 +87,26 @@ Here are some examples:
     });
     ```
 
-2.  Enabling emailpassword, thirdparty for firstFactors and passwordless for secondary factors
+2.  Enabling passwordless and thirdparty
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        passwordlessEnabled: true,
+        thirdPartyEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["otp-email", "otp-phone", "link-email", "link-phone", "thirdparty"],
+    });
+    ```
+
+3.  Enabling emailpassword, thirdparty for firstFactors and otp-phone, totp for secondary factors
 
     Before:
 
@@ -97,7 +116,7 @@ Here are some examples:
         thirdPartyEnabled: true,
         passwordlessEnabled: true,
         firstFactors: ["emailpassword", "thirdparty"],
-        requiredSecondaryFactors: ["otp-phone"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
     });
     ```
 
@@ -106,7 +125,7 @@ Here are some examples:
     ```ts
     Multitenancy.createOrUpdateTenant("tenantId", {
         firstFactors: ["emailpassword", "thirdparty"],
-        requiredSecondaryFactors: ["otp-phone"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
     });
     ```
 
