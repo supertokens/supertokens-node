@@ -237,11 +237,11 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
+    // we don't need to pass google recaptcha or security service request id here because the device is already verified
+    // since this only happens after you have a session token.
     verifyDevicePOST:
         | undefined
         | ((input: {
-              googleRecaptchaToken?: string;
-              securityServiceRequestId?: string;
               deviceName: string;
               totp: string;
               options: APIOptions;
@@ -267,11 +267,11 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
+    // we don't need to pass google recaptcha or security service request id here because the device is already verified
+    // since this only happens after you have a session token.
     verifyTOTPPOST:
         | undefined
         | ((input: {
-              googleRecaptchaToken?: string;
-              securityServiceRequestId?: string;
               totp: string;
               options: APIOptions;
               session: SessionContainerInterface;
