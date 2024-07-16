@@ -34,7 +34,7 @@ jobs:
                   aws-region: ${{ secrets.AWS_REGION }}
                   role-duration-seconds: 1200
                   role-session-name: Github-action
-            - run: echo $GITHUB_REF_NAME
+            - run: echo $GITHUB_SHA
             - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
             - run: npm install
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0

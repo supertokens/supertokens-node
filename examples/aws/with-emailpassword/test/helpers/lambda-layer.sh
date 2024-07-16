@@ -1,7 +1,7 @@
 mkdir lambda && cd lambda
 npm init -y
 npm i -s @middy/core @middy/http-cors
-npm i --save git+ssh://git@github.com:supertokens/supertokens-node.git#$GITHUB_REF_NAME
+npm i --save git+ssh://git@github.com:supertokens/supertokens-node.git#$GITHUB_SHA
 mkdir nodejs
 cp -r node_modules nodejs
 cp package.json nodejs
