@@ -752,6 +752,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response2.antiCsrfToken,
             true,
             false,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
 
@@ -812,6 +813,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response2.antiCsrfToken,
             true,
             false,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
 
@@ -897,6 +899,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response.antiCsrfToken,
             true,
             false,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
         let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
@@ -922,6 +925,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response2.antiCsrfToken,
             true,
             false,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
         let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
@@ -938,6 +942,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response2.antiCsrfToken,
             true,
             false,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
@@ -987,6 +992,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response.antiCsrfToken,
             true,
             true,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
         assert(response2.session != undefined);
@@ -998,6 +1004,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response.antiCsrfToken,
             false,
             true,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
         assert(response3.session != undefined);
@@ -1038,6 +1045,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             undefined,
             false,
             false,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
 
@@ -1052,6 +1060,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 undefined,
                 true,
                 false,
+                SessionRecipe.getInstanceOrThrowError().config,
                 {}
             );
             throw new Error("should not have come here");
@@ -1579,6 +1588,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             undefined,
             false,
             true,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
         assert(response2.session != undefined);
@@ -1591,6 +1601,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             undefined,
             true,
             true,
+            SessionRecipe.getInstanceOrThrowError().config,
             {}
         );
         assert(response3.session != undefined);

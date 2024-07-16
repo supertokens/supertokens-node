@@ -4,7 +4,8 @@ const privateKey =
     "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----";
 const configsForVerification = {
     "active-directory": {
-        oidcDiscoveryEndpoint: "https://login.microsoftonline.com/97f9a564-fcee-4b88-ae34-a1fbc4656593/v2.0/",
+        oidcDiscoveryEndpoint:
+            "https://login.microsoftonline.com/97f9a564-fcee-4b88-ae34-a1fbc4656593/v2.0/.well-known/openid-configuration",
         scope: ["openid", "email"],
         authorizationEndpoint:
             "https://login.microsoftonline.com/97f9a564-fcee-4b88-ae34-a1fbc4656593/oauth2/v2.0/authorize",
