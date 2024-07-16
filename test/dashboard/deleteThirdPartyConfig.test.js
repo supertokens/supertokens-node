@@ -81,7 +81,7 @@ describe(`User Dashboard deleteThirdPartyConfig: ${printPath(
             ],
         });
 
-        const deleteThirdPartyConfigURL = `/auth/${tenantName}/dashboard/api/tenants/third-party?thirdPartyId=google`;
+        const deleteThirdPartyConfigURL = `/auth/${tenantName}/dashboard/api/thirdparty/config?thirdPartyId=google`;
 
         let tenantInfoResponse = await new Promise((res) => {
             request(app)
@@ -128,7 +128,7 @@ describe(`User Dashboard deleteThirdPartyConfig: ${printPath(
 
         app.use(errorHandler());
 
-        const deleteThirdPartyConfigURL = `/auth/dashboard/api/tenants/third-party`;
+        const deleteThirdPartyConfigURL = `/auth/dashboard/api/thirdparty/config`;
 
         let responseStatus = 200;
         let deleteThirdPartyConfigResponse = await new Promise((res) => {

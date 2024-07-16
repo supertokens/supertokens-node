@@ -1441,7 +1441,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                origin: ({ userContext }) => userContext.url,
+                origin: ({ userContext }) => userContext.url || "http://localhost:1234",
             },
             recipeList: [
                 EmailPassword.init(),
