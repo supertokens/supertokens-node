@@ -381,6 +381,9 @@ export type RiskScores = {
     phoneNumberRisk?: number;
     emailRisk?: number;
     isBreachedPassword?: boolean;
+    isImpossibleTravel?: boolean; // only during sign in or sign up, based on email / phone number
+    isNewDevice?: boolean; // based on visitorId being different for the email / phone number
+    numberOfUniqueDevicesForUser?: number; // based on number of visitorIds mapped to the input email / phone number
     bruteForce?:
         | {
               detected: false;
@@ -459,6 +462,9 @@ export type SecurityFunctions = {
         rejectBasedOnVPNBeingUsed?: boolean;
         rejectBasedOnPhoneNumberRisk?: boolean;
         rejectBasedOnEmailRisk?: boolean;
+        rejectBasedOnImpossibleTravel?: boolean;
+        rejectBasedOnNewDevice?: boolean;
+        rejectBasedOnNumberOfUniqueDevicesForUser?: boolean;
         otherReasonForRejection?: string;
     }>;
 
