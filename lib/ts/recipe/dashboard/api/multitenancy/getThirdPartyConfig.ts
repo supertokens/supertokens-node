@@ -98,7 +98,7 @@ export default async function getThirdPartyConfig(
             }
         }
 
-        if (additionalConfig !== null) {
+        if (additionalConfig !== undefined) {
             providersFromCore[0].oidcDiscoveryEndpoint = undefined;
             providersFromCore[0].authorizationEndpoint = undefined;
             providersFromCore[0].tokenEndpoint = undefined;
@@ -138,7 +138,7 @@ export default async function getThirdPartyConfig(
 
     if (staticProviders.length === 1) {
         // modify additional config if query param is passed
-        if (additionalConfig !== null) {
+        if (additionalConfig !== undefined) {
             // we set these to undefined so that these can be computed using the query param that was provided
             staticProviders[0].config.oidcDiscoveryEndpoint = undefined;
             staticProviders[0].config.authorizationEndpoint = undefined;
