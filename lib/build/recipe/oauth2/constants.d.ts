@@ -6,3 +6,4 @@ export declare const CONSENT_PATH = "/oauth2/consent";
 export declare const AUTH_PATH = "/oauth2/auth";
 export declare const TOKEN_PATH = "/oauth2/token";
 export declare const LOGIN_INFO_PATH = "/oauth2/login/info";
+export declare const USER_INFO_PATH = "/oauth2/userinfo";

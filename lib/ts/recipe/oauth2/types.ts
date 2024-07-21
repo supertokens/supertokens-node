@@ -188,6 +188,15 @@ export type LoginInfo = {
     metadata?: Record<string, any> | null;
 };
 
+export type UserInfo = {
+    sub: string;
+    email?: string;
+    email_verified?: boolean;
+    phoneNumber?: string;
+    phoneNumber_verified?: boolean;
+    [key: string]: any;
+};
+
 export type RecipeInterface = {
     authorization(input: {
         params: any;
@@ -353,7 +362,6 @@ export type RecipeInterface = {
         user: User;
         accessTokenPayload: JSONObject;
         scopes: string[];
-        defaultInfo: JSONObject;
         userContext: UserContext;
     }): Promise<JSONObject>;
 };
@@ -437,6 +445,15 @@ export type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<{ status: "OK"; info: LoginInfo } | GeneralErrorResponse>);
+    userInfoGET:
+        | undefined
+        | ((input: {
+              accessTokenPayload: JSONObject;
+              user: User;
+              scopes: string[];
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<{ status: "OK"; info: JSONObject } | GeneralErrorResponse>);
 };
 
 export type OAuth2ClientOptions = {
@@ -547,3 +564,9 @@ export type DeleteOAuth2ClientInput = {
 };
 
 export type PayloadBuilderFunction = (user: User, scopes: string[], userContext: UserContext) => Promise<JSONObject>;
+export type UserInfoBuilderFunction = (
+    user: User,
+    accessTokenPayload: JSONObject,
+    scopes: string[],
+    userContext: UserContext
+) => Promise<UserInfo>;

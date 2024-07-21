@@ -188,5 +188,18 @@ export default function getAPIImplementation(): APIInterface {
                 },
             };
         },
+        userInfoGET: async ({ accessTokenPayload, user, scopes, options, userContext }) => {
+            const userInfo = await options.recipeImplementation.buildUserInfo({
+                user,
+                accessTokenPayload,
+                scopes,
+                userContext,
+            });
+
+            return {
+                status: "OK",
+                info: userInfo,
+            };
+        },
     };
 }

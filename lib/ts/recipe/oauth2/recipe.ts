@@ -27,17 +27,35 @@ import loginAPI from "./api/login";
 import logoutAPI from "./api/logout";
 import tokenPOST from "./api/token";
 import loginInfoGET from "./api/loginInfo";
-import { AUTH_PATH, CONSENT_PATH, LOGIN_INFO_PATH, LOGIN_PATH, LOGOUT_PATH, TOKEN_PATH } from "./constants";
+import {
+    AUTH_PATH,
+    CONSENT_PATH,
+    LOGIN_INFO_PATH,
+    LOGIN_PATH,
+    LOGOUT_PATH,
+    TOKEN_PATH,
+    USER_INFO_PATH,
+} from "./constants";
 import RecipeImplementation from "./recipeImplementation";
-import { APIInterface, PayloadBuilderFunction, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import {
+    APIInterface,
+    PayloadBuilderFunction,
+    RecipeInterface,
+    TypeInput,
+    TypeNormalisedInput,
+    UserInfo,
+    UserInfoBuilderFunction,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import { User } from "../../user";
+import userInfoGET from "./api/userInfo";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2";
     private static instance: Recipe | undefined = undefined;
     private idTokenBuilders: PayloadBuilderFunction[] = [];
+    private userInfoBuilders: UserInfoBuilderFunction[] = [];
 
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
@@ -55,7 +73,8 @@ export default class Recipe extends RecipeModule {
                     Querier.getNewInstanceOrThrowError(recipeId),
                     this.config,
                     appInfo,
-                    this.getDefaultIdTokenPayload.bind(this)
+                    this.getDefaultIdTokenPayload.bind(this),
+                    this.getDefaultUserInfoPayload.bind(this)
                 )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
@@ -95,6 +114,10 @@ export default class Recipe extends RecipeModule {
         }
         Recipe.instance = undefined;
     }
+
+    addUserInfoBuilderFromOtherRecipe = (userInfoBuilderFn: UserInfoBuilderFunction) => {
+        this.userInfoBuilders.push(userInfoBuilderFn);
+    };
 
     /* RecipeModule functions */
 
@@ -154,6 +177,12 @@ export default class Recipe extends RecipeModule {
                 id: LOGIN_INFO_PATH,
                 disabled: this.apiImpl.loginInfoGET === undefined,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(USER_INFO_PATH),
+                id: USER_INFO_PATH,
+                disabled: this.apiImpl.userInfoGET === undefined,
+            },
         ];
     }
 
@@ -193,6 +222,9 @@ export default class Recipe extends RecipeModule {
         if (id === LOGIN_INFO_PATH) {
             return loginInfoGET(this.apiImpl, options, userContext);
         }
+        if (id === USER_INFO_PATH) {
+            return userInfoGET(this.apiImpl, options, userContext);
+        }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };
 
@@ -229,5 +261,35 @@ export default class Recipe extends RecipeModule {
         }
 
         return payload;
+    }
+
+    async getDefaultUserInfoPayload(
+        user: User,
+        accessTokenPayload: JSONObject,
+        scopes: string[],
+        userContext: UserContext
+    ) {
+        let payload: JSONObject = {
+            sub: accessTokenPayload.sub,
+        };
+        if (scopes.includes("email")) {
+            payload.email = user?.emails[0];
+            payload.email_verified = user.loginMethods.some((lm) => lm.hasSameEmailAs(user?.emails[0]) && lm.verified);
+        }
+        if (scopes.includes("phoneNumber")) {
+            payload.phoneNumber = user?.phoneNumbers[0];
+            payload.phoneNumber_verified = user.loginMethods.some(
+                (lm) => lm.hasSamePhoneNumberAs(user?.phoneNumbers[0]) && lm.verified
+            );
+        }
+
+        for (const fn of this.userInfoBuilders) {
+            payload = {
+                ...payload,
+                ...(await fn(user, accessTokenPayload, scopes, userContext)),
+            };
+        }
+
+        return payload as UserInfo;
     }
 }
