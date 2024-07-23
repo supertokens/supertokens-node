@@ -437,16 +437,6 @@ export type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<{ status: "OK"; info: LoginInfo } | GeneralErrorResponse>);
-    //   userInfoGET:
-    //       | undefined
-    //       | ((input: {
-    //         accessTokenPayload: JSONObject; // after validating the access token passed to the endpoint
-    //         user: User; // ge
-    //         scopes: string[];
-    //         defaultInfo: JSONObject;
-    //         options: APIOptions;
-    //         userContext: UserContext;
-    //     }) => Promise<{ status: "OK"; info: LoginInfo } | GeneralErrorResponse>);
 };
 
 export type OAuth2ClientOptions = {

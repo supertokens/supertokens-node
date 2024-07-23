@@ -55,7 +55,7 @@ export default class Recipe extends RecipeModule {
                     Querier.getNewInstanceOrThrowError(recipeId),
                     this.config,
                     appInfo,
-                    this.getDefaultIdTokenPayload
+                    this.getDefaultIdTokenPayload.bind(this)
                 )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();

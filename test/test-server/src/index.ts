@@ -21,6 +21,9 @@ import { TypeInput as MFATypeInput } from "../../../lib/build/recipe/multifactor
 import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
 import OAuth2Recipe from "../../../lib/build/recipe/oauth2/recipe";
 import { TypeInput as OAuth2TypeInput } from "../../../lib/build/recipe/oauth2/types";
+import OAuth2ClientRecipe from "../../../lib/build/recipe/oauth2client/recipe";
+import { TypeInput as OAuth2ClientTypeInput } from "../../../lib/build/recipe/oauth2client/types";
+import { TypeInput as OpenIdRecipeTypeInput } from "../../../lib/build/recipe/openid/types";
 import UserMetadataRecipe from "../../../lib/build/recipe/usermetadata/recipe";
 import SuperTokensRecipe from "../../../lib/build/supertokens";
 import { RecipeListFunction } from "../../../lib/build/types";
@@ -35,6 +38,7 @@ import { verifySession } from "../../../recipe/session/framework/express";
 import ThirdParty from "../../../recipe/thirdparty";
 import TOTP from "../../../recipe/totp";
 import OAuth2 from "../../../recipe/oauth2";
+import OAuth2Client from "../../../recipe/oauth2client";
 import accountlinkingRoutes from "./accountlinking";
 import emailpasswordRoutes from "./emailpassword";
 import emailverificationRoutes from "./emailverification";
@@ -89,6 +93,7 @@ function STReset() {
     MultiFactorAuthRecipe.reset();
     TOTPRecipe.reset();
     OAuth2Recipe.reset();
+    OAuth2ClientRecipe.reset();
     SuperTokensRecipe.reset();
 }
 
@@ -310,6 +315,24 @@ function initST(config: any) {
                 };
             }
             recipeList.push(OAuth2.init(initConfig));
+        }
+        if (recipe.recipeId === "oauth2client") {
+            let initConfig: OAuth2ClientTypeInput = {
+                ...config,
+            };
+            if (initConfig.override?.functions) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    functions: getFunc(`${initConfig.override.functions}`),
+                };
+            }
+            if (initConfig.override?.apis) {
+                initConfig.override = {
+                    ...initConfig.override,
+                    apis: getFunc(`${initConfig.override.apis}`),
+                };
+            }
+            recipeList.push(OAuth2Client.init(initConfig));
         }
     });
 
