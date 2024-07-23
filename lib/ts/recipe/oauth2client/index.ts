@@ -13,20 +13,25 @@
  * under the License.
  */
 
-import { UserContext } from "../../types";
+import { getUserContext } from "../../utils";
 import Recipe from "./recipe";
 import { RecipeInterface, APIInterface, APIOptions, OAuthTokens } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getAuthorisationRedirectURL(redirectURIOnProviderDashboard: string, userContext: UserContext) {
+    static async getAuthorisationRedirectURL(
+        redirectURIOnProviderDashboard: string,
+        userContext?: Record<string, any>
+    ) {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const providerConfig = await recipeInterfaceImpl.getProviderConfig({ userContext });
+        const providerConfig = await recipeInterfaceImpl.getProviderConfig({
+            userContext: getUserContext(userContext),
+        });
         return await recipeInterfaceImpl.getAuthorisationRedirectURL({
             providerConfig,
             redirectURIOnProviderDashboard,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
@@ -36,24 +41,28 @@ export default class Wrapper {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
         },
-        userContext: UserContext
+        userContext?: Record<string, any>
     ) {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const providerConfig = await recipeInterfaceImpl.getProviderConfig({ userContext });
+        const providerConfig = await recipeInterfaceImpl.getProviderConfig({
+            userContext: getUserContext(userContext),
+        });
         return await recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens({
             providerConfig,
             redirectURIInfo,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 
-    static async getUserInfo(oAuthTokens: OAuthTokens, userContext: UserContext) {
+    static async getUserInfo(oAuthTokens: OAuthTokens, userContext?: Record<string, any>) {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const providerConfig = await recipeInterfaceImpl.getProviderConfig({ userContext });
+        const providerConfig = await recipeInterfaceImpl.getProviderConfig({
+            userContext: getUserContext(userContext),
+        });
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo({
             providerConfig,
             oAuthTokens,
-            userContext,
+            userContext: getUserContext(userContext),
         });
     }
 }

@@ -1,12 +1,11 @@
 // @ts-nocheck
-import { UserContext } from "../../types";
 import Recipe from "./recipe";
 import { RecipeInterface, APIInterface, APIOptions, OAuthTokens } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static getAuthorisationRedirectURL(
         redirectURIOnProviderDashboard: string,
-        userContext: UserContext
+        userContext?: Record<string, any>
     ): Promise<{
         urlWithQueryParams: string;
         pkceCodeVerifier?: string | undefined;
@@ -17,9 +16,12 @@ export default class Wrapper {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
         },
-        userContext: UserContext
+        userContext?: Record<string, any>
     ): Promise<import("./types").OAuthTokenResponse>;
-    static getUserInfo(oAuthTokens: OAuthTokens, userContext: UserContext): Promise<import("./types").UserInfo>;
+    static getUserInfo(
+        oAuthTokens: OAuthTokens,
+        userContext?: Record<string, any>
+    ): Promise<import("./types").UserInfo>;
 }
 export declare let init: typeof Recipe.init;
 export declare let getAuthorisationRedirectURL: typeof Wrapper.getAuthorisationRedirectURL;
