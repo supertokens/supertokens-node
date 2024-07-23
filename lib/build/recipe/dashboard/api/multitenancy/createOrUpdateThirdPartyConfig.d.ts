@@ -8,6 +8,10 @@ export declare type Response =
       }
     | {
           status: "UNKNOWN_TENANT_ERROR";
+      }
+    | {
+          status: "BOXY_ERROR";
+          message: string;
       };
 export default function createOrUpdateThirdPartyConfig(
     _: APIInterface,

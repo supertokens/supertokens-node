@@ -126,10 +126,18 @@ export type ProviderInput = {
 
 export type TypeInputSignInAndUp = {
     providers?: ProviderInput[];
+    boxy?: {
+        url: string;
+        apiKey: string;
+    };
 };
 
 export type TypeNormalisedInputSignInAndUp = {
     providers: ProviderInput[];
+    boxy?: {
+        url: string;
+        apiKey: string;
+    };
 };
 
 export type TypeInput = {
