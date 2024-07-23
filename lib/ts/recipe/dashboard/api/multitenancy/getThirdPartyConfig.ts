@@ -21,6 +21,9 @@ import {
 } from "../../../thirdparty/providers/configUtils";
 import { ProviderConfig } from "../../../thirdparty/types";
 import { UserContext } from "../../../../types";
+import NormalisedURLDomain from "../../../../normalisedURLDomain";
+import NormalisedURLPath from "../../../../normalisedURLPath";
+import { doGetRequest } from "../../../thirdparty/providers/utils";
 
 export type Response =
     | {
@@ -167,7 +170,7 @@ export default async function getThirdPartyConfig(
         }
     }
 
-    let mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
+    let mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders, true);
 
     if (mergedProvidersFromCoreAndStatic.length !== 1) {
         throw new Error("should never come here!");
@@ -264,6 +267,7 @@ export default async function getThirdPartyConfig(
     }
 
     const tempClients = clients.filter((client) => client.clientId === "nonguessable-temporary-client-id");
+
     const finalClients = clients.filter((client) => client.clientId !== "nonguessable-temporary-client-id");
     if (finalClients.length === 0) {
         finalClients.push({
@@ -272,6 +276,45 @@ export default async function getThirdPartyConfig(
             clientSecret: "",
             ...(additionalConfig !== undefined ? { additionalConfig } : {}),
         });
+    }
+
+    // fill in boxy info from boxy instance
+    if (thirdPartyId.startsWith("boxy-saml")) {
+        const boxyAPIKey = options.req.getKeyValueFromQuery("boxyAPIKey");
+        if (boxyAPIKey) {
+            if (finalClients[0].clientId !== "") {
+                const boxyURL: string = finalClients[0].additionalConfig?.boxyURL!;
+
+                const normalisedDomain = new NormalisedURLDomain(boxyURL);
+                const normalisedBasePath = new NormalisedURLPath(boxyURL);
+                const connectionsPath = new NormalisedURLPath("/api/v1/saml/config");
+
+                const resp = await doGetRequest(
+                    normalisedDomain.getAsStringDangerous() +
+                        normalisedBasePath.getAsStringDangerous() +
+                        connectionsPath.getAsStringDangerous(),
+                    {
+                        clientID: finalClients[0].clientId,
+                    },
+                    {
+                        Authorization: `Api-Key ${boxyAPIKey}`,
+                    }
+                );
+
+                if (resp.status === 200) {
+                    if (resp.jsonResponse === undefined) {
+                        throw new Error("should never happen");
+                    }
+
+                    finalClients[0].additionalConfig = {
+                        ...finalClients[0].additionalConfig,
+                        redirectURLs: resp.jsonResponse.redirectUrl,
+                        boxyTenant: resp.jsonResponse.tenant,
+                        boxyProduct: resp.jsonResponse.product,
+                    };
+                }
+            }
+        }
     }
 
     return {

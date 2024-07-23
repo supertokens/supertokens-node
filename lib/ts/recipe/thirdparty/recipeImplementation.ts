@@ -9,6 +9,7 @@ import { getUser, listUsersByAccountInfo } from "../..";
 import { User as UserType } from "../../types";
 import { User } from "../../user";
 import { AuthUtils } from "../../authUtils";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
@@ -169,7 +170,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
             const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
                 tenantConfig.thirdParty.providers,
-                providers
+                providers,
+                tenantId === DEFAULT_TENANT_ID
             );
 
             const provider = await findAndCreateProviderInstance(

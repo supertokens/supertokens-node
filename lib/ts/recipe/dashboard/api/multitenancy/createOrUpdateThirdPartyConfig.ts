@@ -49,7 +49,9 @@ export default async function createOrUpdateThirdPartyConfig(
         // This means that the tenant was using the static list of providers, we need to add them all before adding the new one
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
-        for (const provider of staticProviders) {
+        for (const provider of staticProviders.filter(
+            (provider) => provider.includeInNonPublicTenantsByDefault === true
+        )) {
             await Multitenancy.createOrUpdateThirdPartyConfig(
                 tenantId,
                 {
@@ -64,67 +66,62 @@ export default async function createOrUpdateThirdPartyConfig(
     }
 
     if (providerConfig.thirdPartyId.startsWith("boxy-saml")) {
-        // boxy stuff here
         const boxyURL: string = providerConfig.clients[0].additionalConfig.boxyURL;
         const boxyAPIKey: string = providerConfig.clients[0].additionalConfig.boxyAPIKey;
-
         providerConfig.clients[0].additionalConfig.boxyAPIKey = undefined;
 
-        const requestBody = {
-            name: "",
-            label: "",
-            description: "",
-            tenant: `${tenantId}-providerConfig.thirdPartyId`,
-            product: "supertokens",
-            defaultRedirectUrl: providerConfig.clients[0].additionalConfig.redirectURLs[0],
-            forceAuthn: false,
-            encodedRawMetadata: "",
-            redirectUrl: JSON.stringify(providerConfig.clients[0].additionalConfig.redirectURLs),
-            metadataUrl: providerConfig.clients[0].additionalConfig.samlURL || "",
-        };
+        if (boxyAPIKey) {
+            const requestBody = {
+                name: "",
+                label: "",
+                description: "",
+                tenant:
+                    providerConfig.clients[0].additionalConfig.boxyTenant ||
+                    `${tenantId}-${providerConfig.thirdPartyId}`,
+                product: providerConfig.clients[0].additionalConfig.boxyProduct || "supertokens",
+                defaultRedirectUrl: providerConfig.clients[0].additionalConfig.redirectURLs[0],
+                forceAuthn: false,
+                encodedRawMetadata: providerConfig.clients[0].additionalConfig.samlXML
+                    ? Buffer.from(providerConfig.clients[0].additionalConfig.samlXML).toString("base64")
+                    : "",
+                redirectUrl: JSON.stringify(providerConfig.clients[0].additionalConfig.redirectURLs),
+                metadataUrl: providerConfig.clients[0].additionalConfig.samlURL || "",
+            };
 
-        const normalisedDomain = new NormalisedURLDomain(boxyURL);
-        const normalisedBasePath = new NormalisedURLPath(boxyURL);
-        const connectionsPath = new NormalisedURLPath("/api/v1/saml/config");
+            const normalisedDomain = new NormalisedURLDomain(boxyURL);
+            const normalisedBasePath = new NormalisedURLPath(boxyURL);
+            const connectionsPath = new NormalisedURLPath("/api/v1/saml/config");
 
-        const resp = await doPostRequest(
-            normalisedDomain.getAsStringDangerous() +
-                normalisedBasePath.getAsStringDangerous() +
-                connectionsPath.getAsStringDangerous(),
-            requestBody,
-            {
-                Authorization: `Api-Key ${boxyAPIKey}`,
-            }
-        );
+            const resp = await doPostRequest(
+                normalisedDomain.getAsStringDangerous() +
+                    normalisedBasePath.getAsStringDangerous() +
+                    connectionsPath.getAsStringDangerous(),
+                requestBody,
+                {
+                    Authorization: `Api-Key ${boxyAPIKey}`,
+                }
+            );
 
-        if (resp.status !== 200) {
-            if (resp.status === 401) {
+            if (resp.status !== 200) {
+                if (resp.status === 401) {
+                    return {
+                        status: "BOXY_ERROR",
+                        message: "Invalid API Key",
+                    };
+                }
                 return {
                     status: "BOXY_ERROR",
-                    message: "Invalid API Key",
+                    message: resp.stringResponse,
                 };
             }
-            return {
-                status: "BOXY_ERROR",
-                message: resp.stringResponse,
-            };
+
+            if (resp.jsonResponse === undefined) {
+                throw new Error("should never happen");
+            }
+
+            providerConfig.clients[0].clientId = resp.jsonResponse.clientID;
+            providerConfig.clients[0].clientSecret = resp.jsonResponse.clientSecret;
         }
-
-        if (resp.jsonResponse === undefined) {
-            throw new Error("should never happen");
-        }
-
-        providerConfig.clients[0].clientId = resp.jsonResponse.clientID;
-        providerConfig.clients[0].clientSecret = resp.jsonResponse.clientSecret;
-
-        const thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
-            tenantId,
-            providerConfig,
-            undefined,
-            userContext
-        );
-
-        return thirdPartyRes;
     }
 
     const thirdPartyRes = await Multitenancy.createOrUpdateThirdPartyConfig(
