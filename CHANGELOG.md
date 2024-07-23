@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [19.0.2] - 2024-07-23
+
+-   Fixes an issue where `isEmailChangeAllowed` was not checking across all tenants
+
 ## [19.0.1] - 2024-07-18
 
 -   Fixes issue in fetching `thirdPartyConfig` for dashboard when OIDC discovery endpoint is added in core.
