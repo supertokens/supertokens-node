@@ -24,6 +24,7 @@ import {
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { Querier } from "../../../../querier";
 import { UserContext } from "../../../../types";
+import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
 
 export type Response =
     | {
@@ -73,7 +74,11 @@ export default async function getTenantInfo(
     const mtRecipe = MultitenancyRecipe.getInstance();
     const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
 
-    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
+    const mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(
+        providersFromCore,
+        staticProviders,
+        tenantId === DEFAULT_TENANT_ID
+    );
 
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
     let coreConfig = await querier.sendGetRequest(
