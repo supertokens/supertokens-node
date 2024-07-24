@@ -1,6 +1,7 @@
 import { APIInterface } from "../";
 import { isValidFirstFactor } from "../../multitenancy/utils";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
+import { DEFAULT_TENANT_ID } from "../constants";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -17,7 +18,11 @@ export default function getAPIInterface(): APIInterface {
             const providerInputsFromStatic = options.staticThirdPartyProviders;
             const providerConfigsFromCore = tenantConfigRes.thirdParty.providers;
 
-            const mergedProviders = mergeProvidersFromCoreAndStatic(providerConfigsFromCore, providerInputsFromStatic);
+            const mergedProviders = mergeProvidersFromCoreAndStatic(
+                providerConfigsFromCore,
+                providerInputsFromStatic,
+                tenantId === DEFAULT_TENANT_ID
+            );
 
             const finalProviderList: {
                 id: string;

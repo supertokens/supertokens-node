@@ -7,9 +7,174 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [19.0.2] - 2024-07-23
+## [20.0.0] - 2024-07-24
 
+### Changes
+
+-   Updates `createOrUpdateThirdPartyConfig` and `getThirdPartyConfig` dashboard APIs to handle boxy SAML inputs.
 -   Fixes an issue where `isEmailChangeAllowed` was not checking across all tenants
+
+### Breaking changes
+
+-   The static list of providers added in ThirdParty.init are now not available for non-public tenants by default. You could however make it available by setting `includeInNonPublicTenantsByDefault` for each of the providers. See the migration section below.
+
+### Migration
+
+To make all the providers added in the ThirdParty.init available for non-public tenants by default,
+
+Before:
+
+```ts
+SuperTokens.init({
+    supertokens: {
+        connectionURI: "localhost:3567",
+    },
+    appInfo: {
+        appName: "SuperTokens Demo App",
+        apiDomain: getApiDomain(),
+        websiteDomain: getWebsiteDomain(),
+    },
+    recipeList: [
+        EmailPassword.init(),
+        ThirdParty.init({
+            signInAndUpFeature: {
+                providers: [
+                    {
+                        config: {
+                            thirdPartyId: "google",
+                            clients: [
+                                {
+                                    clientId:
+                                        "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                    clientSecret: "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",
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        config: {
+                            thirdPartyId: "github",
+                            clients: [
+                                {
+                                    clientId: "467101b197249757c71f",
+                                    clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        config: {
+                            thirdPartyId: "apple",
+                            clients: [
+                                {
+                                    clientId: "4398792-io.supertokens.example.service",
+                                    additionalConfig: {
+                                        keyId: "7M48Y4RYDL",
+                                        privateKey:
+                                            "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                        teamId: "YWQCXGJRJL",
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        config: {
+                            thirdPartyId: "twitter",
+                            clients: [
+                                {
+                                    clientId: "4398792-WXpqVXRiazdRMGNJdEZIa3RVQXc6MTpjaQ",
+                                    clientSecret: "BivMbtwmcygbRLNQ0zk45yxvW246tnYnTFFq-LH39NwZMxFpdC",
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        }),
+        Session.init(),
+    ],
+});
+```
+
+After:
+
+```ts
+SuperTokens.init({
+    supertokens: {
+        connectionURI: "localhost:3567",
+    },
+    appInfo: {
+        appName: "SuperTokens Demo App",
+        apiDomain: getApiDomain(),
+        websiteDomain: getWebsiteDomain(),
+    },
+    recipeList: [
+        EmailPassword.init(),
+        ThirdParty.init({
+            signInAndUpFeature: {
+                providers: [
+                    {
+                        config: {
+                            thirdPartyId: "google",
+                            clients: [
+                                {
+                                    clientId:
+                                        "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                    clientSecret: "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",
+                                },
+                            ],
+                        },
+                        includeInNonPublicTenantsByDefault: true,
+                    },
+                    {
+                        config: {
+                            thirdPartyId: "github",
+                            clients: [
+                                {
+                                    clientId: "467101b197249757c71f",
+                                    clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                },
+                            ],
+                        },
+                        includeInNonPublicTenantsByDefault: true,
+                    },
+                    {
+                        config: {
+                            thirdPartyId: "apple",
+                            clients: [
+                                {
+                                    clientId: "4398792-io.supertokens.example.service",
+                                    additionalConfig: {
+                                        keyId: "7M48Y4RYDL",
+                                        privateKey:
+                                            "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                        teamId: "YWQCXGJRJL",
+                                    },
+                                },
+                            ],
+                        },
+                        includeInNonPublicTenantsByDefault: true,
+                    },
+                    {
+                        config: {
+                            thirdPartyId: "twitter",
+                            clients: [
+                                {
+                                    clientId: "4398792-WXpqVXRiazdRMGNJdEZIa3RVQXc6MTpjaQ",
+                                    clientSecret: "BivMbtwmcygbRLNQ0zk45yxvW246tnYnTFFq-LH39NwZMxFpdC",
+                                },
+                            ],
+                        },
+                        includeInNonPublicTenantsByDefault: true,
+                    },
+                ],
+            },
+        }),
+        Session.init(),
+    ],
+});
+```
 
 ## [19.0.1] - 2024-07-18
 

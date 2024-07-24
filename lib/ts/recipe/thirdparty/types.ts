@@ -121,6 +121,7 @@ export type ProviderConfig = CommonProviderConfig & {
 
 export type ProviderInput = {
     config: ProviderConfig;
+    includeInNonPublicTenantsByDefault?: boolean;
     override?: (originalImplementation: TypeProvider) => TypeProvider;
 };
 
