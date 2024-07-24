@@ -53,7 +53,6 @@ function validateAndNormaliseSignInAndUpConfig(
 
     return {
         providers: config.providers,
-        boxy: config.boxy,
     };
 }
 
