@@ -291,8 +291,7 @@ export default async function getThirdPartyConfig(
 
                 const resp = await doGetRequest(
                     normalisedDomain.getAsStringDangerous() +
-                        normalisedBasePath.getAsStringDangerous() +
-                        connectionsPath.getAsStringDangerous(),
+                        normalisedBasePath.appendPath(connectionsPath).getAsStringDangerous(),
                     {
                         clientID: finalClients[0].clientId,
                     },
@@ -302,6 +301,8 @@ export default async function getThirdPartyConfig(
                 );
 
                 if (resp.status === 200) {
+                    // we don't care about non 200 status codes since we are just trying to populate whatever possible
+
                     if (resp.jsonResponse === undefined) {
                         throw new Error("should never happen");
                     }

@@ -70,7 +70,11 @@ export default async function createOrUpdateThirdPartyConfig(
         const boxyAPIKey: string = providerConfig.clients[0].additionalConfig.boxyAPIKey;
         providerConfig.clients[0].additionalConfig.boxyAPIKey = undefined;
 
-        if (boxyAPIKey) {
+        if (
+            boxyAPIKey &&
+            (providerConfig.clients[0].additionalConfig.samlInputType === "xml" ||
+                providerConfig.clients[0].additionalConfig.samlInputType === "url")
+        ) {
             const requestBody = {
                 name: "",
                 label: "",
@@ -94,8 +98,7 @@ export default async function createOrUpdateThirdPartyConfig(
 
             const resp = await doPostRequest(
                 normalisedDomain.getAsStringDangerous() +
-                    normalisedBasePath.getAsStringDangerous() +
-                    connectionsPath.getAsStringDangerous(),
+                    normalisedBasePath.appendPath(connectionsPath).getAsStringDangerous(),
                 requestBody,
                 {
                     Authorization: `Api-Key ${boxyAPIKey}`,
