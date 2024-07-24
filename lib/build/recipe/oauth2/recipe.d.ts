@@ -31,7 +31,7 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
         id: string,
-        _tenantId: string | undefined,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
@@ -46,6 +46,7 @@ export default class Recipe extends RecipeModule {
         user: User,
         accessTokenPayload: JSONObject,
         scopes: string[],
+        tenantId: string,
         userContext: UserContext
     ): Promise<UserInfo>;
 }

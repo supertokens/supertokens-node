@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, JSONObject, NonNullableProperties, UserContext } from "../../types";
+import { GeneralErrorResponse, JSONObject, JSONValue, NonNullableProperties, UserContext } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 import { OAuth2Client } from "./OAuth2Client";
 import { User } from "../../user";
@@ -93,7 +93,7 @@ export declare type UserInfo = {
     email_verified?: boolean;
     phoneNumber?: string;
     phoneNumber_verified?: boolean;
-    [key: string]: any;
+    [key: string]: JSONValue;
 };
 export declare type RecipeInterface = {
     authorization(input: {
@@ -232,6 +232,7 @@ export declare type RecipeInterface = {
         user: User;
         accessTokenPayload: JSONObject;
         scopes: string[];
+        tenantId: string;
         userContext: UserContext;
     }): Promise<JSONObject>;
 };
@@ -357,6 +358,7 @@ export declare type APIInterface = {
               accessTokenPayload: JSONObject;
               user: User;
               scopes: string[];
+              tenantId: string;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<
@@ -471,5 +473,6 @@ export declare type UserInfoBuilderFunction = (
     user: User,
     accessTokenPayload: JSONObject,
     scopes: string[],
+    tenantId: string,
     userContext: UserContext
-) => Promise<UserInfo>;
+) => Promise<JSONObject>;

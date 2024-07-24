@@ -32,6 +32,7 @@ async function validateOAuth2AccessToken(accessToken: string) {
 
 export default async function userInfoGET(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
@@ -42,7 +43,9 @@ export default async function userInfoGET(
     const authHeader = options.req.getHeaderValue("authorization") || options.req.getHeaderValue("Authorization");
 
     if (authHeader === undefined || !authHeader.startsWith("Bearer ")) {
-        sendNon200ResponseWithMessage(options.res, "Missing or invalid Authorization header", 401);
+        // TODO: Returning a 400 instead of a 401 to prevent a potential refresh loop in the client SDK.
+        // When addressing this TODO, review other response codes in this function as well.
+        sendNon200ResponseWithMessage(options.res, "Missing or invalid Authorization header", 400);
         return true;
     }
 
@@ -53,23 +56,37 @@ export default async function userInfoGET(
     try {
         accessTokenPayload = await validateOAuth2AccessToken(accessToken);
     } catch (error) {
-        sendNon200ResponseWithMessage(options.res, "Invalid or expired OAuth2 access token!", 401);
+        options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
+        sendNon200ResponseWithMessage(options.res, "Invalid or expired OAuth2 access token", 400);
         return true;
     }
 
-    const userId = accessTokenPayload.sub as string;
+    if (
+        accessTokenPayload === null ||
+        typeof accessTokenPayload !== "object" ||
+        typeof accessTokenPayload.sub !== "string" ||
+        typeof accessTokenPayload.scope !== "string"
+    ) {
+        options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
+        sendNon200ResponseWithMessage(options.res, "Malformed access token payload", 400);
+        return true;
+    }
+
+    const userId = accessTokenPayload.sub;
 
     const user = await getUser(userId, userContext);
 
     if (user === undefined) {
-        sendNon200ResponseWithMessage(options.res, "Couldn't find any user associated with the access token", 401);
+        options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
+        sendNon200ResponseWithMessage(options.res, "Couldn't find any user associated with the access token", 400);
         return true;
     }
 
     const response = await apiImplementation.userInfoGET({
         accessTokenPayload,
         user,
-        scopes: ((accessTokenPayload.scope as string) ?? "").split(" "),
+        tenantId,
+        scopes: accessTokenPayload.scope.split(" "),
         options,
         userContext,
     });

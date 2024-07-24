@@ -100,10 +100,9 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
             if (oidcInfo.token_endpoint === undefined) {
                 throw new Error("Failed to token_endpoint from the oidcDiscoveryEndpoint.");
             }
-            // TODO: We currently don't have this
-            // if (oidcInfo.userinfo_endpoint === undefined) {
-            //     throw new Error("Failed to userinfo_endpoint from the oidcDiscoveryEndpoint.");
-            // }
+            if (oidcInfo.userinfo_endpoint === undefined) {
+                throw new Error("Failed to userinfo_endpoint from the oidcDiscoveryEndpoint.");
+            }
             if (oidcInfo.jwks_uri === undefined) {
                 throw new Error("Failed to jwks_uri from the oidcDiscoveryEndpoint.");
             }

@@ -188,7 +188,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        _tenantId: string | undefined,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
@@ -223,7 +223,7 @@ export default class Recipe extends RecipeModule {
             return loginInfoGET(this.apiImpl, options, userContext);
         }
         if (id === USER_INFO_PATH) {
-            return userInfoGET(this.apiImpl, options, userContext);
+            return userInfoGET(this.apiImpl, tenantId, options, userContext);
         }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };
@@ -267,6 +267,7 @@ export default class Recipe extends RecipeModule {
         user: User,
         accessTokenPayload: JSONObject,
         scopes: string[],
+        tenantId: string,
         userContext: UserContext
     ) {
         let payload: JSONObject = {
@@ -286,7 +287,7 @@ export default class Recipe extends RecipeModule {
         for (const fn of this.userInfoBuilders) {
             payload = {
                 ...payload,
-                ...(await fn(user, accessTokenPayload, scopes, userContext)),
+                ...(await fn(user, accessTokenPayload, scopes, tenantId, userContext)),
             };
         }
 

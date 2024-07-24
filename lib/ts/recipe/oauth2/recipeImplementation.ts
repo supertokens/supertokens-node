@@ -425,8 +425,8 @@ export default function getRecipeInterface(
         buildIdTokenPayload: async function (input) {
             return input.defaultPayload;
         },
-        buildUserInfo: async function ({ user, accessTokenPayload, scopes, userContext }) {
-            return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, userContext);
+        buildUserInfo: async function ({ user, accessTokenPayload, scopes, tenantId, userContext }) {
+            return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, tenantId, userContext);
         },
     };
 }
