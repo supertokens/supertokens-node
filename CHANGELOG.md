@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changes
 
 -   Updates `createOrUpdateThirdPartyConfig` and `getThirdPartyConfig` dashboard APIs to handle boxy SAML inputs.
+-   Fixes an issue where `isEmailChangeAllowed` was not checking across all tenants
 
 ### Breaking changes
 

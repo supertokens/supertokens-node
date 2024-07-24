@@ -552,7 +552,7 @@ export default class Recipe extends RecipeModule {
 
         for (const tenantId of inputUser.tenantIds) {
             let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-                tenantId: inputUser.tenantIds[0],
+                tenantId,
                 accountInfo: {
                     email: input.newEmail,
                 },
