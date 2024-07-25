@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
--   The static list of providers added in ThirdParty.init are now not available for non-public tenants by default. You could however make it available by setting `includeInNonPublicTenantsByDefault` for each of the providers. See the migration section below.
+-   For a non-public tenant, when there are no providers added in the core, the SDK used to fallback to the providers added in the ThirdParty.init. Now, the SDK will not fallback to the providers added in the ThirdParty.init by default. If you require a thirdparty provider to be available for non-public tenants, you can make it available by setting `includeInNonPublicTenantsByDefault` for each of the providers. See the migration section below to see how to do this. Note that this only affects non-public tenants when there are no providers added in core.
 
 ### Migration
 
@@ -25,154 +25,52 @@ To make all the providers added in the ThirdParty.init available for non-public 
 Before:
 
 ```ts
-SuperTokens.init({
-    supertokens: {
-        connectionURI: "localhost:3567",
-    },
-    appInfo: {
-        appName: "SuperTokens Demo App",
-        apiDomain: getApiDomain(),
-        websiteDomain: getWebsiteDomain(),
-    },
-    recipeList: [
-        EmailPassword.init(),
-        ThirdParty.init({
-            signInAndUpFeature: {
-                providers: [
-                    {
-                        config: {
-                            thirdPartyId: "google",
-                            clients: [
-                                {
-                                    clientId:
-                                        "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                    clientSecret: "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",
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        config: {
-                            thirdPartyId: "github",
-                            clients: [
-                                {
-                                    clientId: "467101b197249757c71f",
-                                    clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        config: {
-                            thirdPartyId: "apple",
-                            clients: [
-                                {
-                                    clientId: "4398792-io.supertokens.example.service",
-                                    additionalConfig: {
-                                        keyId: "7M48Y4RYDL",
-                                        privateKey:
-                                            "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                        teamId: "YWQCXGJRJL",
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        config: {
-                            thirdPartyId: "twitter",
-                            clients: [
-                                {
-                                    clientId: "4398792-WXpqVXRiazdRMGNJdEZIa3RVQXc6MTpjaQ",
-                                    clientSecret: "BivMbtwmcygbRLNQ0zk45yxvW246tnYnTFFq-LH39NwZMxFpdC",
-                                },
-                            ],
-                        },
-                    },
-                ],
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "google",
+                    // ... rest of the config
+                },
             },
-        }),
-        Session.init(),
-    ],
+            {
+                config: {
+                    thirdPartyId: "github",
+                    // ... rest of the config
+                },
+            },
+        ],
+    },
 });
 ```
 
 After:
 
 ```ts
-SuperTokens.init({
-    supertokens: {
-        connectionURI: "localhost:3567",
-    },
-    appInfo: {
-        appName: "SuperTokens Demo App",
-        apiDomain: getApiDomain(),
-        websiteDomain: getWebsiteDomain(),
-    },
-    recipeList: [
-        EmailPassword.init(),
-        ThirdParty.init({
-            signInAndUpFeature: {
-                providers: [
-                    {
-                        config: {
-                            thirdPartyId: "google",
-                            clients: [
-                                {
-                                    clientId:
-                                        "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                    clientSecret: "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",
-                                },
-                            ],
-                        },
-                        includeInNonPublicTenantsByDefault: true,
-                    },
-                    {
-                        config: {
-                            thirdPartyId: "github",
-                            clients: [
-                                {
-                                    clientId: "467101b197249757c71f",
-                                    clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                                },
-                            ],
-                        },
-                        includeInNonPublicTenantsByDefault: true,
-                    },
-                    {
-                        config: {
-                            thirdPartyId: "apple",
-                            clients: [
-                                {
-                                    clientId: "4398792-io.supertokens.example.service",
-                                    additionalConfig: {
-                                        keyId: "7M48Y4RYDL",
-                                        privateKey:
-                                            "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                        teamId: "YWQCXGJRJL",
-                                    },
-                                },
-                            ],
-                        },
-                        includeInNonPublicTenantsByDefault: true,
-                    },
-                    {
-                        config: {
-                            thirdPartyId: "twitter",
-                            clients: [
-                                {
-                                    clientId: "4398792-WXpqVXRiazdRMGNJdEZIa3RVQXc6MTpjaQ",
-                                    clientSecret: "BivMbtwmcygbRLNQ0zk45yxvW246tnYnTFFq-LH39NwZMxFpdC",
-                                },
-                            ],
-                        },
-                        includeInNonPublicTenantsByDefault: true,
-                    },
-                ],
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "google",
+                    // ... rest of the config
+                },
+
+                // Add the following line to make this provider available in non-public tenants by default
+                includeInNonPublicTenantsByDefault: true,
             },
-        }),
-        Session.init(),
-    ],
+            {
+                config: {
+                    thirdPartyId: "github",
+                    // ... rest of the config
+                },
+
+                // Add the following line to make this provider available in non-public tenants by default
+                includeInNonPublicTenantsByDefault: true,
+            },
+        ],
+    },
 });
 ```
 
