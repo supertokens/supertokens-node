@@ -15,49 +15,24 @@
 
 import SuperTokens from "../../../supertokens";
 import { APIInterface } from "../types";
+import { handleInternalRedirects, loginGET } from "./utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         loginGET: async ({ loginChallenge, options, session, userContext }) => {
-            const request = await options.recipeImplementation.getLoginRequest({
-                challenge: loginChallenge,
+            const response = await loginGET({
+                recipeImplementation: options.recipeImplementation,
+                loginChallenge,
+                session,
                 userContext,
             });
-
-            if (request.skip) {
-                const accept = await options.recipeImplementation.acceptLoginRequest({
-                    challenge: loginChallenge,
-                    subject: request.subject,
-                    userContext,
-                });
-                return { redirectTo: accept.redirectTo };
-            } else if (session) {
-                if (session.getUserId() !== request.subject) {
-                    // TODO?
-                }
-                const accept = await options.recipeImplementation.acceptLoginRequest({
-                    challenge: loginChallenge,
-                    subject: session.getUserId(),
-                    identityProviderSessionId: session.getHandle(),
-                    userContext,
-                });
-                return { redirectTo: accept.redirectTo };
-            }
-            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-            const websiteDomain = appInfo
-                .getOrigin({
-                    request: options.req,
-                    userContext: userContext,
-                })
-                .getAsStringDangerous();
-            const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
-            // TODO:
-            return {
-                redirectTo:
-                    websiteDomain +
-                    websiteBasePath +
-                    `?hint=${request.oidcContext?.login_hint ?? ""}&loginChallenge=${loginChallenge}`,
-            };
+            return handleInternalRedirects({
+                response,
+                cookie: options.req.getHeaderValue("cookie"),
+                recipeImplementation: options.recipeImplementation,
+                session,
+                userContext,
+            });
         },
         loginPOST: async ({ loginChallenge, accept, options, session, userContext }) => {
             const res = accept
@@ -159,14 +134,21 @@ export default function getAPIImplementation(): APIInterface {
                   });
             return { redirectTo: res.redirectTo };
         },
-        authGET: async (input) => {
-            const res = await input.options.recipeImplementation.authorization({
-                params: input.params,
-                cookies: input.cookie,
-                session: input.session,
-                userContext: input.userContext,
+        authGET: async ({ options, params, cookie, session, userContext }) => {
+            const response = await options.recipeImplementation.authorization({
+                params,
+                cookies: cookie,
+                session,
+                userContext,
             });
-            return res;
+
+            return handleInternalRedirects({
+                response,
+                recipeImplementation: options.recipeImplementation,
+                cookie,
+                session,
+                userContext,
+            });
         },
         tokenPOST: async (input) => {
             return input.options.recipeImplementation.token({ body: input.body, userContext: input.userContext });
