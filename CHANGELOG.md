@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
--   The static list of providers added in ThirdParty.init are now not available for non-public tenants by default. You could however make it available by setting `includeInNonPublicTenantsByDefault` for each of the providers. See the migration section below.
+-   For a non-public tenant, when there are no providers added in the core, the SDK used to fallback to the providers added in the ThirdParty.init. Now, the SDK will not fallback to the providers added in the ThirdParty.init by default. If you require a thirdparty provider to be available for non-public tenants, you can make it available by setting `includeInNonPublicTenantsByDefault` for each of the providers. See the migration section below to see how to do this. Note that this only affects non-public tenants when there are no providers added in core.
 
 ### Migration
 
