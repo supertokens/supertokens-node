@@ -9,6 +9,8 @@ const { logDebugMessage } = logger(namespace);
 
 const router = Router()
     .post("/signup", async (req, res, next) => {
+        const fdiVersion: string = req.headers["fdi-version"] as string;
+
         try {
             logDebugMessage("EmailPassword:signup %j", req.body);
             let session = req.body.session && (await convertRequestSessionToSessionObject(req.body.session));
@@ -21,8 +23,8 @@ const router = Router()
             );
             res.json({
                 ...response,
-                ...serializeUser(response),
-                ...serializeRecipeUserId(response),
+                ...serializeUser(response, fdiVersion),
+                ...serializeRecipeUserId(response, fdiVersion),
             });
         } catch (e) {
             next(e);

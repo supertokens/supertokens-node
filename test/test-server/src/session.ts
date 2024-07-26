@@ -12,9 +12,16 @@ const { logDebugMessage } = logger(namespace);
 
 const router = Router()
     .post("/createnewsessionwithoutrequestresponse", async (req, res, next) => {
+        const fdiVersion = req.headers["fdi-version"] as string;
+
         try {
             logDebugMessage("Session.createNewSessionWithoutRequestResponse %j", req.body);
-            const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
+            let recipeUserId;
+            if (["1.17", "2.0"].includes(fdiVersion)) {
+                recipeUserId = supertokens.convertToRecipeUserId(req.body.userId);
+            } else {
+                recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
+            }
             const response = await Session.createNewSessionWithoutRequestResponse(
                 req.body.tenantId || "public",
                 recipeUserId,

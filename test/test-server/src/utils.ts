@@ -137,7 +137,21 @@ export async function convertRequestSessionToSessionObject(
     return tokens;
 }
 
-export function serializeUser(response) {
+export function serializeUser(response, fdiVersion: string) {
+    if (["1.17", "2.0"].includes(fdiVersion)) {
+        return {
+            ...("user" in response && response.user instanceof supertokens.User
+                ? {
+                      user: {
+                          id: (response.user as supertokens.User).id,
+                          email: (response.user as supertokens.User).emails[0],
+                          timeJoined: (response.user as supertokens.User).timeJoined,
+                          tenantIds: (response.user as supertokens.User).tenantIds,
+                      },
+                  }
+                : {}),
+        };
+    }
     return {
         ...("user" in response && response.user instanceof supertokens.User
             ? {
@@ -147,7 +161,10 @@ export function serializeUser(response) {
     };
 }
 
-export function serializeRecipeUserId(response) {
+export function serializeRecipeUserId(response, fdiVersion: string) {
+    if (["1.17", "2.0"].includes(fdiVersion)) {
+        return {};
+    }
     return {
         ...("recipeUserId" in response && response.recipeUserId instanceof supertokens.RecipeUserId
             ? {
