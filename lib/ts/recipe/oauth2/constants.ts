@@ -21,3 +21,4 @@ export const CONSENT_PATH = "/oauth2/consent";
 export const AUTH_PATH = "/oauth2/auth";
 export const TOKEN_PATH = "/oauth2/token";
 export const LOGIN_INFO_PATH = "/oauth2/login/info";
+export const USER_INFO_PATH = "/oauth2/userinfo";

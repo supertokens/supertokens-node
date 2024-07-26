@@ -25,13 +25,14 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ) {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const normalisedUserContext = getUserContext(userContext);
         const providerConfig = await recipeInterfaceImpl.getProviderConfig({
-            userContext: getUserContext(userContext),
+            userContext: normalisedUserContext,
         });
         return await recipeInterfaceImpl.getAuthorisationRedirectURL({
             providerConfig,
             redirectURIOnProviderDashboard,
-            userContext: getUserContext(userContext),
+            userContext: normalisedUserContext,
         });
     }
 
@@ -44,25 +45,27 @@ export default class Wrapper {
         userContext?: Record<string, any>
     ) {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const normalisedUserContext = getUserContext(userContext);
         const providerConfig = await recipeInterfaceImpl.getProviderConfig({
-            userContext: getUserContext(userContext),
+            userContext: normalisedUserContext,
         });
         return await recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens({
             providerConfig,
             redirectURIInfo,
-            userContext: getUserContext(userContext),
+            userContext: normalisedUserContext,
         });
     }
 
     static async getUserInfo(oAuthTokens: OAuthTokens, userContext?: Record<string, any>) {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const normalisedUserContext = getUserContext(userContext);
         const providerConfig = await recipeInterfaceImpl.getProviderConfig({
-            userContext: getUserContext(userContext),
+            userContext: normalisedUserContext,
         });
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo({
             providerConfig,
             oAuthTokens,
-            userContext: getUserContext(userContext),
+            userContext: normalisedUserContext,
         });
     }
 }

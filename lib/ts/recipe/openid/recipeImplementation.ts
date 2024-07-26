@@ -17,7 +17,7 @@ import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types"
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
 import { NormalisedAppinfo, UserContext } from "../../types";
-import { AUTH_PATH, TOKEN_PATH } from "../oauth2/constants";
+import { AUTH_PATH, TOKEN_PATH, USER_INFO_PATH } from "../oauth2/constants";
 
 export default function getRecipeInterface(
     config: TypeNormalisedInput,
@@ -38,6 +38,7 @@ export default function getRecipeInterface(
                 jwks_uri,
                 authorization_endpoint: apiBasePath + AUTH_PATH,
                 token_endpoint: apiBasePath + TOKEN_PATH,
+                userinfo_endpoint: apiBasePath + USER_INFO_PATH,
                 subject_types_supported: ["public"],
                 id_token_signing_alg_values_supported: ["RS256"],
                 response_types_supported: ["code", "id_token", "id_token token"],

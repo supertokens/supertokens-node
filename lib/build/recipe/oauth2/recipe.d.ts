@@ -4,12 +4,20 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, JSONObject, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import {
+    APIInterface,
+    RecipeInterface,
+    TypeInput,
+    TypeNormalisedInput,
+    UserInfo,
+    UserInfoBuilderFunction,
+} from "./types";
 import { User } from "../../user";
 export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     private static instance;
     private idTokenBuilders;
+    private userInfoBuilders;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
@@ -19,10 +27,11 @@ export default class Recipe extends RecipeModule {
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
+    addUserInfoBuilderFromOtherRecipe: (userInfoBuilderFn: UserInfoBuilderFunction) => void;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
         id: string,
-        _tenantId: string | undefined,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
@@ -33,4 +42,11 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
     getDefaultIdTokenPayload(user: User, scopes: string[], userContext: UserContext): Promise<JSONObject>;
+    getDefaultUserInfoPayload(
+        user: User,
+        accessTokenPayload: JSONObject,
+        scopes: string[],
+        tenantId: string,
+        userContext: UserContext
+    ): Promise<UserInfo>;
 }

@@ -23,6 +23,7 @@ import {
     LoginRequest,
     LogoutRequest,
     PayloadBuilderFunction,
+    UserInfoBuilderFunction,
 } from "./types";
 import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
@@ -32,7 +33,8 @@ export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
     _appInfo: NormalisedAppinfo,
-    getDefaultIdTokenPayload: PayloadBuilderFunction
+    getDefaultIdTokenPayload: PayloadBuilderFunction,
+    getDefaultUserInfoPayload: UserInfoBuilderFunction
 ): RecipeInterface {
     return {
         getLoginRequest: async function (this: RecipeInterface, input): Promise<LoginRequest> {
@@ -423,8 +425,8 @@ export default function getRecipeInterface(
         buildIdTokenPayload: async function (input) {
             return input.defaultPayload;
         },
-        buildUserInfo: async function (input) {
-            return input.user.toJson(); // Proper impl
+        buildUserInfo: async function ({ user, accessTokenPayload, scopes, tenantId, userContext }) {
+            return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, tenantId, userContext);
         },
     };
 }
