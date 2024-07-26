@@ -99,21 +99,36 @@ export type SecurityChecksActionTypes =
 
 export type RiskScores = {
     // all values are between 0 and 1, with 1 being highest risk
-    requestIdInfo?:
+    requestIdInfo:
         | {
               valid: true;
               identification: {
-                  data: {
-                      visitorId: string;
-                      requestId: string;
-                      incognito: boolean;
-                      linkedId: string;
-                      tag: Record<string, unknown>;
-                      time: string;
-                      timestamp: number;
-                      url: string;
-                      ip: string;
-                      ipLocation: {
+                  visitorId: string;
+                  requestId: string;
+                  incognito: boolean;
+                  linkedId: string;
+                  tag: Record<string, unknown>;
+                  timeInMS: number;
+                  url: string;
+                  browserDetails: {
+                      browserName: string;
+                      browserMajorVersion: string;
+                      browserFullVersion: string;
+                      os: string;
+                      osVersion: string;
+                      device: string;
+                      userAgent: string;
+                  };
+                  confidence: {
+                      score: number;
+                  };
+              };
+              botDetected: boolean;
+              isEmulator: boolean;
+              ipInfo: {
+                  v4: {
+                      address: string;
+                      geolocation: {
                           accuracyRadius: number;
                           latitude: number;
                           longitude: number;
@@ -135,263 +150,139 @@ export type RiskScores = {
                               name: string;
                           }>;
                       };
-                      browserDetails: {
-                          browserName: string;
-                          browserMajorVersion: string;
-                          browserFullVersion: string;
-                          os: string;
-                          osVersion: string;
-                          device: string;
-                          userAgent: string;
+                      asn: {
+                          asn: string;
+                          name: string;
+                          network: string;
                       };
-                      confidence: {
-                          score: number;
-                      };
-                      visitorFound: boolean;
-                      firstSeenAt: {
-                          global: string;
-                          subscription: string;
-                      };
-                      lastSeenAt: {
-                          global: string | null;
-                          subscription: string | null;
+                      datacenter: {
+                          result: boolean;
+                          name: string;
                       };
                   };
-              };
-              botd: {
-                  data: {
-                      bot: {
-                          result: string;
+                  v6: {
+                      address: string;
+                      geolocation: {
+                          accuracyRadius: number;
+                          latitude: number;
+                          longitude: number;
+                          postalCode: string;
+                          timezone: string;
+                          city: {
+                              name: string;
+                          };
+                          country: {
+                              code: string;
+                              name: string;
+                          };
+                          continent: {
+                              code: string;
+                              name: string;
+                          };
+                          subdivisions: Array<{
+                              isoCode: string;
+                              name: string;
+                          }>;
                       };
-                      url: string;
-                      ip: string;
-                      time: string;
-                      userAgent: string;
-                      requestId: string;
-                  };
-              };
-              rootApps: {
-                  data: {
-                      result: boolean;
-                  };
-              };
-              emulator: {
-                  data: {
-                      result: boolean;
-                  };
-              };
-              ipInfo: {
-                  data: {
-                      v4: {
-                          address: string;
-                          geolocation: {
-                              accuracyRadius: number;
-                              latitude: number;
-                              longitude: number;
-                              postalCode: string;
-                              timezone: string;
-                              city: {
-                                  name: string;
-                              };
-                              country: {
-                                  code: string;
-                                  name: string;
-                              };
-                              continent: {
-                                  code: string;
-                                  name: string;
-                              };
-                              subdivisions: Array<{
-                                  isoCode: string;
-                                  name: string;
-                              }>;
-                          };
-                          asn: {
-                              asn: string;
-                              name: string;
-                              network: string;
-                          };
-                          datacenter: {
-                              result: boolean;
-                              name: string;
-                          };
+                      asn: {
+                          asn: string;
+                          name: string;
+                          network: string;
                       };
-                      v6: {
-                          address: string;
-                          geolocation: {
-                              accuracyRadius: number;
-                              latitude: number;
-                              longitude: number;
-                              postalCode: string;
-                              timezone: string;
-                              city: {
-                                  name: string;
-                              };
-                              country: {
-                                  code: string;
-                                  name: string;
-                              };
-                              continent: {
-                                  code: string;
-                                  name: string;
-                              };
-                              subdivisions: Array<{
-                                  isoCode: string;
-                                  name: string;
-                              }>;
-                          };
-                          asn: {
-                              asn: string;
-                              name: string;
-                              network: string;
-                          };
-                          datacenter: {
-                              result: boolean;
-                              name: string;
-                          };
+                      datacenter: {
+                          result: boolean;
+                          name: string;
                       };
                   };
               };
               ipBlocklist: {
-                  data: {
-                      result: boolean;
-                      details: {
-                          emailSpam: boolean;
-                          attackSource: boolean;
-                      };
+                  result: boolean;
+                  details: {
+                      emailSpam: boolean;
+                      attackSource: boolean;
                   };
               };
-              tor: {
-                  data: {
-                      result: boolean;
-                  };
-              };
+              isUsingTor: boolean;
               vpn: {
-                  data: {
-                      result: boolean;
-                      originTimezone: string;
-                      originCountry: string;
-                      methods: {
-                          timezoneMismatch: boolean;
-                          publicVPN: boolean;
-                          auxiliaryMobile: boolean;
-                          osMismatch: boolean;
-                      };
+                  result: boolean;
+                  originTimezone: string;
+                  originCountry: string;
+                  methods: {
+                      timezoneMismatch: boolean;
+                      publicVPN: boolean;
+                      auxiliaryMobile: boolean;
+                      osMismatch: boolean;
                   };
               };
-              proxy: {
-                  data: {
-                      result: boolean;
-                  };
-              };
-              incognito: {
-                  data: {
-                      result: boolean;
-                  };
-              };
+              proxy: boolean;
+              incognito: boolean;
               tampering: {
-                  data: {
-                      result: boolean;
-                      anomalyScore: number;
-                  };
+                  result: boolean;
+                  anomalyScore: number;
               };
-              clonedApp: {
-                  data: {
-                      result: boolean;
-                  };
-              };
+              clonedApp: boolean;
               factoryReset: {
-                  data: {
-                      time: string;
-                      timestamp: number;
-                  };
+                  time: string;
+                  timestamp: number;
               };
-              jailbroken: {
-                  data: {
-                      result: boolean;
-                  };
-              };
-              frida: {
-                  data: {
-                      result: boolean;
-                  };
-              };
-              privacySettings: {
-                  data: {
-                      result: boolean;
-                  };
-              };
-              virtualMachine: {
-                  data: {
-                      result: boolean;
-                  };
-              };
+              jailbroken: boolean;
+              frida: boolean;
+              privacySettings: boolean;
+              virtualMachine: boolean;
               rawDeviceAttributes: {
-                  data: {
-                      architecture: {
-                          value: number;
-                      };
-                      audio: {
-                          value: number;
-                      };
-                      canvas: {
-                          value: {
-                              Winding: boolean;
-                              Geometry: string;
-                              Text: string;
-                          };
-                      };
-                      colorDepth: {
-                          value: number;
-                      };
-                      colorGamut: {
-                          value: string;
-                      };
-                      contrast: {
-                          value: number;
-                      };
-                      cookiesEnabled: {
-                          value: boolean;
-                      };
-                      cpuClass: Record<string, unknown>;
-                      fonts: {
-                          value: string[];
+                  architecture: {
+                      value: number;
+                  };
+                  audio: {
+                      value: number;
+                  };
+                  canvas: {
+                      value: {
+                          Winding: boolean;
+                          Geometry: string;
+                          Text: string;
                       };
                   };
-              };
-              highActivity: {
-                  data: {
-                      result: boolean;
+                  colorDepth: {
+                      value: number;
+                  };
+                  colorGamut: {
+                      value: string;
+                  };
+                  contrast: {
+                      value: number;
+                  };
+                  cookiesEnabled: {
+                      value: boolean;
+                  };
+                  cpuClass: Record<string, unknown>;
+                  fonts: {
+                      value: string[];
                   };
               };
-              locationSpoofing: {
-                  data: {
-                      result: boolean;
-                  };
-              };
-              remoteControl: {
-                  data: {
-                      result: boolean;
-                  };
-              };
+              highActivity: boolean;
+              locationSpoofing: boolean;
+              remoteControl: boolean;
           }
         | {
               valid: false;
-          };
-    phoneNumberRisk?: number;
-    emailRisk?: number;
-    isBreachedPassword?: boolean;
-    isImpossibleTravel?: boolean; // only during sign in or sign up, based on email / phone number
-    isNewDevice?: boolean; // based on visitorId being different for the email / phone number
-    numberOfUniqueDevicesForUser?: number; // based on number of visitorIds mapped to the input email / phone number
-    bruteForce?:
+          }
+        | null;
+    phoneNumberRisk: number | null;
+    emailRisk: number | null;
+    isBreachedPassword: boolean | null;
+    isImpossibleTravel: boolean | null; // only during sign in or sign up, based on email / phone number
+    isNewDevice: boolean | null; // based on visitorId being different for the email / phone number
+    numberOfUniqueDevicesForUser: number | null; // based on number of visitorIds mapped to the input email / phone number
+    bruteForce:
         | {
               detected: false;
           }
         | {
               detected: true;
               key: string;
-          };
+          }
+        | null;
 };
 
 export type SecurityFunctions = {
