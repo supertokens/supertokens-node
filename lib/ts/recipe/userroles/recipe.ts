@@ -64,7 +64,9 @@ export default class Recipe extends RecipeModule {
                         permissons?: string[];
                     } = {};
 
-                    if (scopes.includes("roles")) {
+                    let userRoles: string[] = [];
+
+                    if (scopes.includes("roles") || scopes.includes("permissions")) {
                         const res = await this.recipeInterfaceImpl.getRolesForUser({
                             userId: user.id,
                             tenantId,
@@ -74,28 +76,31 @@ export default class Recipe extends RecipeModule {
                         if (res.status !== "OK") {
                             throw new Error("Failed to fetch roles for the user");
                         }
+                        userRoles = res.roles;
+                    }
 
-                        userInfo.roles = res.roles;
+                    if (scopes.includes("roles")) {
+                        userInfo.roles = userRoles;
+                    }
 
-                        if (scopes.includes("permissions")) {
-                            const userPermissions = new Set<string>();
-                            for (const role of userInfo.roles) {
-                                const rolePermissions = await this.recipeInterfaceImpl.getPermissionsForRole({
-                                    role,
-                                    userContext,
-                                });
+                    if (scopes.includes("permissions")) {
+                        const userPermissions = new Set<string>();
+                        for (const role of userRoles) {
+                            const rolePermissions = await this.recipeInterfaceImpl.getPermissionsForRole({
+                                role,
+                                userContext,
+                            });
 
-                                if (rolePermissions.status !== "OK") {
-                                    throw new Error("Failed to fetch permissions for the role");
-                                }
-
-                                for (const perm of rolePermissions.permissions) {
-                                    userPermissions.add(perm);
-                                }
+                            if (rolePermissions.status !== "OK") {
+                                throw new Error("Failed to fetch permissions for the role");
                             }
 
-                            userInfo.permissons = Array.from(userPermissions);
+                            for (const perm of rolePermissions.permissions) {
+                                userPermissions.add(perm);
+                            }
                         }
+
+                        userInfo.permissons = Array.from(userPermissions);
                     }
 
                     return userInfo;
