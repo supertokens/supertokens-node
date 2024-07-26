@@ -363,6 +363,13 @@ export default class SuperTokens {
         }
 
         async function handleWithoutRid(recipeModules: RecipeModule[]) {
+            let bestMatch:
+                | {
+                      recipeModule: RecipeModule;
+                      idResult: { id: string; tenantId: string; exactMatch: boolean };
+                  }
+                | undefined = undefined;
+
             for (let i = 0; i < recipeModules.length; i++) {
                 logDebugMessage(
                     "middleware: Checking recipe ID for match: " +
@@ -374,23 +381,39 @@ export default class SuperTokens {
                 );
                 let idResult = await recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
                 if (idResult !== undefined) {
-                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
-                    let requestHandled = await recipeModules[i].handleAPIRequest(
-                        idResult.id,
-                        idResult.tenantId,
-                        request,
-                        response,
-                        path,
-                        method,
-                        userContext
-                    );
-                    if (!requestHandled) {
-                        logDebugMessage("middleware: Not handled because API returned requestHandled as false");
-                        return false;
+                    // The request path may or may not include the tenantId. `returnAPIIdIfCanHandleRequest` handles both cases.
+                    // If one recipe matches with tenantId and another matches exactly, we prefer the exact match.
+                    if (bestMatch === undefined || idResult.exactMatch) {
+                        bestMatch = {
+                            recipeModule: recipeModules[i],
+                            idResult: idResult,
+                        };
                     }
-                    logDebugMessage("middleware: Ended");
-                    return true;
+
+                    if (idResult.exactMatch) {
+                        break;
+                    }
                 }
+            }
+
+            if (bestMatch !== undefined) {
+                const { idResult, recipeModule } = bestMatch;
+                logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
+                let requestHandled = await recipeModule.handleAPIRequest(
+                    idResult.id,
+                    idResult.tenantId,
+                    request,
+                    response,
+                    path,
+                    method,
+                    userContext
+                );
+                if (!requestHandled) {
+                    logDebugMessage("middleware: Not handled because API returned requestHandled as false");
+                    return false;
+                }
+                logDebugMessage("middleware: Ended");
+                return true;
             }
             logDebugMessage("middleware: Not handling because no recipe matched");
             return false;
@@ -435,6 +458,7 @@ export default class SuperTokens {
                 | {
                       id: string;
                       tenantId: string;
+                      exactMatch: boolean;
                   }
                 | undefined = undefined;
 
@@ -444,13 +468,18 @@ export default class SuperTokens {
                 // the path and methods of the APIs exposed via those recipes is unique.
                 let currIdResult = await matchedRecipe[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
                 if (currIdResult !== undefined) {
-                    if (idResult !== undefined) {
+                    if (
+                        idResult === undefined ||
+                        // The request path may or may not include the tenantId. `returnAPIIdIfCanHandleRequest` handles both cases.
+                        // If one recipe matches with tenantId and another matches exactly, we prefer the exact match.
+                        (currIdResult.exactMatch === true && idResult.exactMatch === false)
+                    ) {
+                        finalMatchedRecipe = matchedRecipe[i];
+                        idResult = currIdResult;
+                    } else {
                         throw new Error(
                             "Two recipes have matched the same API path and method! This is a bug in the SDK. Please contact support."
                         );
-                    } else {
-                        finalMatchedRecipe = matchedRecipe[i];
-                        idResult = currIdResult;
                     }
                 }
             }

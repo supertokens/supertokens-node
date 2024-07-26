@@ -41,7 +41,7 @@ export default abstract class RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod,
         userContext: UserContext
-    ): Promise<{ id: string; tenantId: string } | undefined> => {
+    ): Promise<{ id: string; tenantId: string; exactMatch: boolean } | undefined> => {
         let apisHandled = this.getAPIsHandled();
 
         const basePathStr = this.appInfo.apiBasePath.getAsStringDangerous();
@@ -71,7 +71,7 @@ export default abstract class RecipeModule {
                         tenantIdFromFrontend: DEFAULT_TENANT_ID,
                         userContext,
                     });
-                    return { id: currAPI.id, tenantId: finalTenantId };
+                    return { id: currAPI.id, tenantId: finalTenantId, exactMatch: true };
                 } else if (
                     remainingPath !== undefined &&
                     this.appInfo.apiBasePath
@@ -82,7 +82,7 @@ export default abstract class RecipeModule {
                         tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
                         userContext,
                     });
-                    return { id: currAPI.id, tenantId: finalTenantId };
+                    return { id: currAPI.id, tenantId: finalTenantId, exactMatch: false };
                 }
             }
         }
