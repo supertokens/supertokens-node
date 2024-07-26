@@ -13,15 +13,15 @@
  * under the License.
  */
 
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
+import type { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import Twilio from "twilio/lib/rest/Twilio";
-import {
+import type {
     ServiceInterface,
     TypeInputSendRawSms,
     GetContentResult,
 } from "../../../../../ingredients/smsdelivery/services/twilio";
 import getPasswordlessLoginSmsContent from "./passwordlessLogin";
-import { UserContext } from "../../../../../types";
+import type { UserContext } from "../../../../../types";
 
 export function getServiceImplementation(twilioClient: Twilio): ServiceInterface<TypePasswordlessSmsDeliveryInput> {
     return {

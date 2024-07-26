@@ -15,9 +15,9 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { UserContext, User as UserType } from "./types";
+import type { UserContext, User as UserType } from "./types";
 import AccountLinking from "./recipe/accountlinking/recipe";
-import { AccountInfo } from "./recipe/accountlinking/types";
+import type { AccountInfo } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
 import { getUserContext } from "./utils";

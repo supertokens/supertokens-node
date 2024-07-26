@@ -14,7 +14,7 @@
  */
 
 import Recipe from "./recipe";
-import {
+import type {
     TypeInput,
     TypeNormalisedInput,
     TypeInputSignUp,
@@ -24,9 +24,9 @@ import {
     NormalisedFormField,
     TypeInputFormField,
 } from "./types";
-import { NormalisedAppinfo, UserContext } from "../../types";
+import type { NormalisedAppinfo, UserContext } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
-import { RecipeInterface, APIInterface } from "./types";
+import type { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 import { BaseRequest } from "../../framework";
 

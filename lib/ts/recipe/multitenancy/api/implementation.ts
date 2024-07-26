@@ -1,4 +1,4 @@
-import { APIInterface } from "../";
+import type { APIInterface } from "../";
 import { isValidFirstFactor } from "../../multitenancy/utils";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
 import { DEFAULT_TENANT_ID } from "../constants";
@@ -47,7 +47,7 @@ export default function getAPIInterface(): APIInterface {
                         name: providerInstance.config.name,
                     });
                 } catch (err) {
-                    if (err.type === "CLIENT_TYPE_NOT_FOUND_ERROR") {
+                    if ((err as any)?.type === "CLIENT_TYPE_NOT_FOUND_ERROR") {
                         continue;
                     }
                     throw err;

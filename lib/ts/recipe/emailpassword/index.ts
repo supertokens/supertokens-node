@@ -15,14 +15,14 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
+import type { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "./utils";
 import { getRequestFromUserContext, getUser } from "../..";
 import { getUserContext } from "../../utils";
-import { SessionContainerInterface } from "../session/types";
-import { User } from "../../types";
+import type { SessionContainerInterface } from "../session/types";
+import type { User } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;

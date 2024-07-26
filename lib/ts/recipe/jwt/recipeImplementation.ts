@@ -15,8 +15,8 @@
 
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
-import { NormalisedAppinfo, UserContext } from "../../types";
-import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
+import type { NormalisedAppinfo, UserContext } from "../../types";
+import type { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
 
 const defaultJWKSMaxAge = 60; // This corresponds to the dynamicSigningKeyOverlapMS in the core
 

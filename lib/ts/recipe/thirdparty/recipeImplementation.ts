@@ -1,4 +1,4 @@
-import { RecipeInterface, ProviderInput } from "./types";
+import type { RecipeInterface, ProviderInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
@@ -6,7 +6,7 @@ import AccountLinking from "../accountlinking/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
 import { getUser, listUsersByAccountInfo } from "../..";
-import { User as UserType } from "../../types";
+import type { User as UserType } from "../../types";
 import { User } from "../../user";
 import { AuthUtils } from "../../authUtils";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";

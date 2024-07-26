@@ -1,7 +1,7 @@
-import { APIFunction, APIInterface, APIOptions } from "../../types";
+import type { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import Session from "../../../session";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type SessionType = {
     sessionDataInDatabase: any;

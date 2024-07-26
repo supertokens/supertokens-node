@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
+    "type": "module",
     "scripts": {
         "build": "sh ./build.sh"
     },
@@ -10,6 +11,6 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "typescript": "^5.3.3"
+        "typescript": "^5.5"
     }
 }

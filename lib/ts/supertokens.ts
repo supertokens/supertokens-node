@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
+import type { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -32,6 +32,11 @@ import STError from "./error";
 import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
+import { env } from "node:process";
+import MultitenancyRecipe from "./recipe/multitenancy/recipe";
+import UserMetadataRecipe from "./recipe/usermetadata/recipe";
+import MultiFactorAuthRecipe from "./recipe/multifactorauth/recipe";
+import TotpRecipe from "./recipe/totp/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -104,14 +109,6 @@ export default class SuperTokens {
         let userMetadataFound = false;
         let multiFactorAuthFound = false;
 
-        // Multitenancy recipe is an always initialized recipe and needs to be imported this way
-        // so that there is no circular dependency. Otherwise there would be cyclic dependency
-        // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
-        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
-        let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
-        let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
-        let TotpRecipe = require("./recipe/totp/recipe").default;
-
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
@@ -142,7 +139,7 @@ export default class SuperTokens {
         // To let those cases function without initializing account linking we do not check it here, but when
         // the authentication endpoints are called.
 
-        this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
+        this.telemetryEnabled = config.telemetry === undefined ? env.TEST_MODE !== "testing" : config.telemetry;
     }
 
     static init(config: TypeInput) {
@@ -153,7 +150,7 @@ export default class SuperTokens {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         Querier.reset();

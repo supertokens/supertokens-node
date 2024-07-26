@@ -14,9 +14,9 @@
  */
 
 import Recipe from "./recipe";
-import { RecipeInterface, APIOptions, APIInterface } from "./types";
+import type { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
-import { SessionContainerInterface } from "../session/types";
+import type { SessionContainerInterface } from "../session/types";
 import { getUser } from "../..";
 import { getUserContext } from "../../utils";
 import { updateAndGetMFARelatedInfoInSession } from "./utils";

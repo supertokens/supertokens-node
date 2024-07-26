@@ -1,4 +1,4 @@
-import { RecipeInterface } from "./";
+import type { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { DEFAULT_TENANT_ID } from "./constants";

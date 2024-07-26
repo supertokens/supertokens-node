@@ -4,7 +4,8 @@
 test/
 hooks/
 .circleci/
-lib/tsconfig.json
+tsconfig.json
+tsup.config.json
 .mocharc.yml
 .prettierrc
 lib/tslint.json
@@ -15,7 +16,7 @@ coreDriverInterfaceSupported.json
 .github/
 .gitattributes
 examples/
-add-ts-no-check.js
+add-ts-no-check.cjs
 docs/
 .prettierignore
 updateLibInExample

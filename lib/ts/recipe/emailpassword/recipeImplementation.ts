@@ -1,4 +1,4 @@
-import { RecipeInterface, TypeNormalisedInput } from "./types";
+import type { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import EmailVerification from "../emailverification/recipe";
 import { Querier } from "../../querier";
@@ -7,7 +7,7 @@ import { getUser } from "../..";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { UserContext, User as UserType } from "../../types";
+import type { UserContext, User as UserType } from "../../types";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
 

@@ -13,15 +13,15 @@
  * under the License.
  */
 
-import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
-import { Transporter } from "nodemailer";
-import {
+import type { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
+import type { Transporter } from "nodemailer";
+import type {
     ServiceInterface,
     TypeInputSendRawEmail,
     GetContentResult,
 } from "../../../../../ingredients/emaildelivery/services/smtp";
 import getEmailVerifyEmailContent from "./emailVerify";
-import { UserContext } from "../../../../../types";
+import type { UserContext } from "../../../../../types";
 
 export function getServiceImplementation(
     transporter: Transporter,

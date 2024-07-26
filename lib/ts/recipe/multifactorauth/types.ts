@@ -15,12 +15,12 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, JSONObject, UserContext } from "../../types";
+import type { GeneralErrorResponse, JSONObject, UserContext } from "../../types";
 import { User } from "../../user";
-import { SessionContainer } from "../session";
-import { SessionContainerInterface } from "../session/types";
+import type { SessionContainer } from "../session";
+import type { SessionContainerInterface } from "../session/types";
 import Recipe from "./recipe";
-import { TenantConfig } from "../multitenancy/types";
+import type { TenantConfig } from "../multitenancy/types";
 import RecipeUserId from "../../recipeUserId";
 
 export type MFARequirementList = (

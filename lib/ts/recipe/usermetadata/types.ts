@@ -14,7 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { JSONObject, UserContext } from "../../types";
+import type { JSONObject, UserContext } from "../../types";
 
 export type TypeInput = {
     override?: {

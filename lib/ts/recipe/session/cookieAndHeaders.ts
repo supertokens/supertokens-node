@@ -15,10 +15,11 @@
 import { HEADER_RID } from "../../constants";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
-import { UserContext } from "../../types";
+import type { UserContext } from "../../types";
 import { availableTokenTransferMethods } from "./constants";
 import SessionError from "./error";
-import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
+import type { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
+import { Buffer } from "node:buffer";
 
 const authorizationHeaderKey = "authorization";
 const accessTokenCookieKey = "sAccessToken";

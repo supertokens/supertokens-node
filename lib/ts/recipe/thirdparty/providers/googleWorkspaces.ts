@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { ProviderInput, TypeProvider } from "../types";
+import type { ProviderInput, TypeProvider } from "../types";
 import Google from "./google";
 
 export default function GoogleWorkspaces(input: ProviderInput): TypeProvider {

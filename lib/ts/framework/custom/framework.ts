@@ -18,7 +18,7 @@ import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils"
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import SuperTokens from "../../supertokens";
-import { SessionContainerInterface } from "../../recipe/session/types";
+import type { SessionContainerInterface } from "../../recipe/session/types";
 import NodeHeaders from "./nodeHeaders";
 
 type RequestInfo = {

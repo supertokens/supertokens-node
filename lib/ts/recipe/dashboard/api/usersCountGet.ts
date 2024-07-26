@@ -13,9 +13,9 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
+import type { APIInterface, APIOptions } from "../types";
 import SuperTokens from "../../../supertokens";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 
 export type Response = {
     status: "OK";

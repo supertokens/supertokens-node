@@ -20,16 +20,17 @@ import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import STError from "../../error";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import SessionRecipe from "../session/recipe";
-import { ProviderInput } from "../thirdparty/types";
+import type { ProviderInput } from "../thirdparty/types";
 import { LOGIN_METHODS_API } from "./constants";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import loginMethodsAPI from "./api/loginMethods";
+import { env } from "node:process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -102,7 +103,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;

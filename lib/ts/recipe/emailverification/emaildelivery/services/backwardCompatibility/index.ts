@@ -12,10 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
+import type { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
 import { createAndSendEmailUsingSupertokensService } from "../../../emailVerificationFunctions";
-import { NormalisedAppinfo, UserContext } from "../../../../../types";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import type { NormalisedAppinfo, UserContext } from "../../../../../types";
+import type { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailVerificationEmailDeliveryInput> {

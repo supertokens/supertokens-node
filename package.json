@@ -1,174 +1,282 @@
 {
-    "name": "supertokens-node",
-    "version": "20.0.0",
-    "description": "NodeJS driver for SuperTokens core",
-    "main": "index.js",
-    "scripts": {
-        "test": "TEST_MODE=testing npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000",
-        "test-exports": "./test/testExports.sh",
-        "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npm run build",
-        "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npm run build && cd ../.. && npm run post-build",
-        "pretty": "npx pretty-quick .",
-        "post-build": "node add-ts-no-check.js",
-        "build-pretty": "npm run build && npm run pretty && npm run pretty",
-        "pretty-check": "npx pretty-quick --check .",
-        "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
-        "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./lib/tsconfig.json ./lib/ts/index.ts ./lib/ts/**/index.ts ./lib/ts/**/*/index.ts"
+  "name": "supertokens-node",
+  "description": "NodeJS driver for SuperTokens core",
+  "version": "20.0.0",
+  "author": "rishabhpoddar",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/supertokens/supertokens-node#readme",
+  "bugs": {
+    "url": "https://github.com/supertokens/supertokens-node/issues"
+  },
+  "scripts": {
+    "test": "TEST_MODE=testing npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000",
+    "test-exports": "./test/testExports.sh",
+    "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npm run build",
+    "build-dts": "npx tsc -p tsconfig.json --emitDeclarationOnly",
+    "build-files": "npx tsup --config tsup.config.ts",
+    "build": "rm -rf lib/build && npm run build-files && npm run build-dts && cd ./test/with-typescript && npm run build && cd ../.. && npm run post-build",
+    "pretty": "npx pretty-quick .",
+    "post-build": "node add-ts-no-check.cjs",
+    "build-pretty": "npm run build && npm run pretty",
+    "pretty-check": "npx pretty-quick --check .",
+    "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
+    "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./tsconfig.json ./lib/ts/index.ts ./lib/ts/**/index.ts ./lib/ts/**/*/index.ts"
+  },
+  "keywords": [
+    "auth",
+    "authentication",
+    "authorisation",
+    "nodejs",
+    "supertokens",
+    "jwt",
+    "refresh tokens"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supertokens/supertokens-node.git"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "types": "./types.d.ts",
+  "exports": {
+    ".": {
+      "require": "./lib/build/index.cjs",
+      "import": "./lib/build/index.js",
+      "types": "./lib/build/index.d.ts"
     },
-    "keywords": [
-        "auth",
-        "authentication",
-        "authorisation",
-        "nodejs",
-        "supertokens",
-        "jwt",
-        "refresh tokens"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/supertokens/supertokens-node.git"
+    "./nextjs": {
+      "require": "./lib/build/nextjs.cjs",
+      "import": "./lib/build/nextjs.js",
+      "types": "./lib/build/nextjs.d.ts"
     },
-    "exports": {
-        ".": {
-            "types": "./index.d.ts",
-            "default": "./index.js"
-        },
-        "./index": {
-            "types": "./index.d.ts",
-            "default": "./index.js"
-        },
-        "./index.js": {
-            "types": "./index.d.ts",
-            "default": "./index.js"
-        },
-        "./framework/*": {
-            "types": "./framework/*/index.d.ts",
-            "default": "./framework/*/index.js"
-        },
-        "./framework/*/index": {
-            "types": "./framework/*/index.d.ts",
-            "default": "./framework/*/index.js"
-        },
-        "./framework/*/index.js": {
-            "types": "./framework/*/index.d.ts",
-            "default": "./framework/*/index.js"
-        },
-        "./nextjs": {
-            "types": "./nextjs/index.d.ts",
-            "default": "./nextjs/index.js"
-        },
-        "./nextjs/index": {
-            "types": "./nextjs/index.d.ts",
-            "default": "./nextjs/index.js"
-        },
-        "./nextjs/index.js": {
-            "types": "./nextjs/index.d.ts",
-            "default": "./nextjs/index.js"
-        },
-        "./types": {
-            "types": "./types/index.d.ts",
-            "default": "./types/index.js"
-        },
-        "./types/index": {
-            "types": "./types/index.d.ts",
-            "default": "./types/index.js"
-        },
-        "./types/index.js": {
-            "types": "./types/index.d.ts",
-            "default": "./types/index.js"
-        },
-        "./lib/*": {
-            "types": "./lib/*.d.ts",
-            "default": "./lib/*.js"
-        },
-        "./lib/*.js": {
-            "types": "./lib/*.d.ts",
-            "default": "./lib/*.js"
-        },
-        "./recipe/*": {
-            "types": "./recipe/*/index.d.ts",
-            "default": "./recipe/*/index.js"
-        },
-        "./recipe/*/index": {
-            "types": "./recipe/*/index.d.ts",
-            "default": "./recipe/*/index.js"
-        },
-        "./recipe/*/index.js": {
-            "types": "./recipe/*/index.d.ts",
-            "default": "./recipe/*/index.js"
-        },
-        "./recipe/session/claims": {
-            "types": "./recipe/session/claims.d.ts",
-            "default": "./recipe/session/claims.js"
-        },
-        "./recipe/session/claims.js": {
-            "types": "./recipe/session/claims.d.ts",
-            "default": "./recipe/session/claims.js"
-        }
+    "./framework/awsLambda": {
+      "require": "./lib/build/framework/awsLambda/index.cjs",
+      "import": "./lib/build/framework/awsLambda/index.js",
+      "types": "./lib/build/framework/awsLambda/index.d.ts"
     },
-    "author": "rishabhpoddar",
-    "license": "Apache-2.0",
-    "bugs": {
-        "url": "https://github.com/supertokens/supertokens-node/issues"
+    "./framework/express": {
+      "require": "./lib/build/framework/express/index.cjs",
+      "import": "./lib/build/framework/express/index.js",
+      "types": "./lib/build/framework/express/index.d.ts"
     },
-    "homepage": "https://github.com/supertokens/supertokens-node#readme",
-    "dependencies": {
-        "content-type": "^1.0.5",
-        "cookie": "0.4.0",
-        "cross-fetch": "^3.1.6",
-        "debug": "^4.3.3",
-        "inflation": "^2.0.0",
-        "jose": "^4.13.1",
-        "libphonenumber-js": "^1.9.44",
-        "nodemailer": "^6.7.2",
-        "pkce-challenge": "^3.0.0",
-        "psl": "1.8.0",
-        "supertokens-js-override": "^0.0.4",
-        "twilio": "^4.19.3"
+    "./framework/fastify": {
+      "require": "./lib/build/framework/fastify/index.cjs",
+      "import": "./lib/build/framework/fastify/index.js",
+      "types": "./lib/build/framework/fastify/index.d.ts"
     },
-    "devDependencies": {
-        "@hapi/hapi": "^20.2.0",
-        "@koa/router": "^10.1.1",
-        "@loopback/core": "2.16.2",
-        "@loopback/repository": "3.7.1",
-        "@loopback/rest": "9.3.0",
-        "@types/aws-lambda": "8.10.77",
-        "@types/co-body": "^5.1.1",
-        "@types/content-type": "^1.1.5",
-        "@types/cookie": "0.3.3",
-        "@types/express": "4.16.1",
-        "@types/hapi__hapi": "20.0.8",
-        "@types/inflation": "^2.0.1",
-        "@types/koa": "^2.13.4",
-        "@types/koa-bodyparser": "^4.3.3",
-        "@types/nodemailer": "^6.4.4",
-        "@types/psl": "1.1.0",
-        "@types/validator": "10.11.0",
-        "aws-sdk-mock": "^5.4.0",
-        "body-parser": "1.20.1",
-        "cookie-parser": "^1.4.5",
-        "express": "^4.18.2",
-        "fastify": "3.18.1",
-        "glob": "7.1.7",
-        "koa": "^2.13.3",
-        "lambda-tester": "^4.0.1",
-        "loopback-datasource-juggler": "^4.26.0",
-        "mocha": "^10.2.0",
-        "mocha-split-tests": "github:rishabhpoddar/mocha-split-tests",
-        "next": "^14.0.4",
-        "next-test-api-route-handler": "^3.1.10",
-        "nock": "11.7.0",
-        "nyc": "^15.1.0",
-        "otpauth": "9.1.5",
-        "prettier": "2.0.5",
-        "pretty-quick": "^3.1.1",
-        "react": "^18.2.0",
-        "sinon": "^14.0.0",
-        "supertest": "4.0.2",
-        "typedoc": "^0.22.5",
-        "typescript": "4.2"
+    "./framework/hapi": {
+      "require": "./lib/build/framework/hapi/index.cjs",
+      "import": "./lib/build/framework/hapi/index.js",
+      "types": "./lib/build/framework/hapi/index.d.ts"
     },
-    "browser": {
-        "fs": false
-    }
+    "./framework/koa": {
+      "require": "./lib/build/framework/koa/index.cjs",
+      "import": "./lib/build/framework/koa/index.js",
+      "types": "./lib/build/framework/koa/index.d.ts"
+    },
+    "./framework/loopback": {
+      "require": "./lib/build/framework/loopback/index.cjs",
+      "import": "./lib/build/framework/loopback/index.js",
+      "types": "./lib/build/framework/loopback/index.d.ts"
+    },
+    "./recipe/dashboard": {
+      "require": "./lib/build/recipe/dashboard/index.cjs",
+      "import": "./lib/build/recipe/dashboard/index.js",
+      "types": "./lib/build/recipe/dashboard/index.d.ts"
+    },
+    "./recipe/emailpassword": {
+      "require": "./lib/build/recipe/emailpassword/index.cjs",
+      "import": "./lib/build/recipe/emailpassword/index.js",
+      "types": "./lib/build/recipe/emailpassword/index.d.ts"
+    },
+    "./recipe/emailpassword/emaildelivery": {
+      "require": "./lib/build/recipe/emailpassword/emaildelivery/services/index.cjs",
+      "import": "./lib/build/recipe/emailpassword/emaildelivery/services/index.js",
+      "types": "./lib/build/recipe/emailpassword/emaildelivery/services/index.d.ts"
+    },
+    "./recipe/emailverification": {
+      "require": "./lib/build/recipe/emailverification/index.cjs",
+      "import": "./lib/build/recipe/emailverification/index.js",
+      "types": "./lib/build/recipe/emailverification/index.d.ts"
+    },
+    "./recipe/emailverification/emaildelivery": {
+      "require": "./lib/build/recipe/emailverification/emaildelivery/services/index.cjs",
+      "import": "./lib/build/recipe/emailverification/emaildelivery/services/index.js",
+      "types": "./lib/build/recipe/emailverification/emaildelivery/services/index.d.ts"
+    },
+    "./recipe/jwt": {
+      "require": "./lib/build/recipe/jwt/index.cjs",
+      "import": "./lib/build/recipe/jwt/index.js",
+      "types": "./lib/build/recipe/jwt/index.d.ts"
+    },
+    "./recipe/passwordless": {
+      "require": "./lib/build/recipe/passwordless/index.cjs",
+      "import": "./lib/build/recipe/passwordless/index.js",
+      "types": "./lib/build/recipe/passwordless/index.d.ts"
+    },
+    "./recipe/passwordless/emaildelivery": {
+      "require": "./lib/build/recipe/passwordless/emaildelivery/services/index.cjs",
+      "import": "./lib/build/recipe/passwordless/emaildelivery/services/index.js",
+      "types": "./lib/build/recipe/passwordless/emaildelivery/services/index.d.ts"
+    },
+    "./recipe/passwordless/smsdelivery": {
+      "require": "./lib/build/recipe/passwordless/smsdelivery/services/index.cjs",
+      "import": "./lib/build/recipe/passwordless/smsdelivery/services/index.js",
+      "types": "./lib/build/recipe/passwordless/smsdelivery/services/index.d.ts"
+    },
+    "./recipe/session": {
+      "require": "./lib/build/recipe/session/index.cjs",
+      "import": "./lib/build/recipe/session/index.js",
+      "types": "./lib/build/recipe/session/index.d.ts"
+    },
+    "./recipe/session/framework/awsLambda": {
+      "require": "./lib/build/recipe/session/framework/awsLambda.cjs",
+      "import": "./lib/build/recipe/session/framework/awsLambda.js",
+      "types": "./lib/build/recipe/session/framework/awsLambda.d.ts"
+    },
+    "./recipe/session/framework/express": {
+      "require": "./lib/build/recipe/session/framework/express.cjs",
+      "import": "./lib/build/recipe/session/framework/express.js",
+      "types": "./lib/build/recipe/session/framework/express.d.ts"
+    },
+    "./recipe/session/framework/fastify": {
+      "require": "./lib/build/recipe/session/framework/fastify.cjs",
+      "import": "./lib/build/recipe/session/framework/fastify.js",
+      "types": "./lib/build/recipe/session/framework/fastify.d.ts"
+    },
+    "./recipe/session/framework/hapi": {
+      "require": "./lib/build/recipe/session/framework/hapi.cjs",
+      "import": "./lib/build/recipe/session/framework/hapi.js",
+      "types": "./lib/build/recipe/session/framework/hapi.d.ts"
+    },
+    "./recipe/session/framework/koa": {
+      "require": "./lib/build/recipe/session/framework/koa.cjs",
+      "import": "./lib/build/recipe/session/framework/koa.js",
+      "types": "./lib/build/recipe/session/framework/koa.d.ts"
+    },
+    "./recipe/session/framework/loopback": {
+      "require": "./lib/build/recipe/session/framework/loopback.cjs",
+      "import": "./lib/build/recipe/session/framework/loopback.js",
+      "types": "./lib/build/recipe/session/framework/loopback.d.ts"
+    },
+    "./recipe/thirdparty": {
+      "require": "./lib/build/recipe/thirdparty/index.cjs",
+      "import": "./lib/build/recipe/thirdparty/index.js",
+      "types": "./lib/build/recipe/thirdparty/index.d.ts"
+    },
+    "./recipe/thirdparty/emaildelivery": {
+      "require": "./lib/build/recipe/thirdparty/emaildelivery/services/index.cjs",
+      "import": "./lib/build/recipe/thirdparty/emaildelivery/services/index.js",
+      "types": "./lib/build/recipe/thirdparty/emaildelivery/services/index.d.ts"
+    },
+    "./recipe/thirdpartyemailpassword": {
+      "require": "./lib/build/recipe/thirdpartyemailpassword/index.cjs",
+      "import": "./lib/build/recipe/thirdpartyemailpassword/index.js",
+      "types": "./lib/build/recipe/thirdpartyemailpassword/index.d.ts"
+    },
+    "./recipe/thirdpartyemailpassword/emaildelivery": {
+      "require": "./lib/build/recipe/thirdpartyemailpassword/emaildelivery/services/index.cjs",
+      "import": "./lib/build/recipe/thirdpartyemailpassword/emaildelivery/services/index.js",
+      "types": "./lib/build/recipe/thirdpartyemailpassword/emaildelivery/services/index.d.ts"
+    },
+    "./recipe/thirdpartypasswordless": {
+      "require": "./lib/build/recipe/thirdpartypasswordless/index.cjs",
+      "import": "./lib/build/recipe/thirdpartypasswordless/index.js",
+      "types": "./lib/build/recipe/thirdpartypasswordless/index.d.ts"
+    },
+    "./recipe/thirdpartypasswordless/emaildelivery": {
+      "require": "./lib/build/recipe/thirdpartypasswordless/emaildelivery/services/index.cjs",
+      "import": "./lib/build/recipe/thirdpartypasswordless/emaildelivery/services/index.js",
+      "types": "./lib/build/recipe/thirdpartypasswordless/emaildelivery/services/index.d.ts"
+    },
+    "./recipe/thirdpartysmspasswordless/smsdelivery": {
+      "require": "./lib/build/recipe/thirdpartysmspasswordless/smsdelivery/services/index.cjs",
+      "import": "./lib/build/recipe/thirdpartysmspasswordless/smsdelivery/services/index.js",
+      "types": "./lib/build/recipe/thirdpartysmspasswordless/smsdelivery/services/index.d.ts"
+    },
+    "./recipe/usermetadata": {
+      "require": "./lib/build/recipe/usermetadata/index.cjs",
+      "import": "./lib/build/recipe/usermetadata/index.js",
+      "types": "./lib/build/recipe/usermetadata/index.d.ts"
+    },
+    "./recipe/userroles": {
+      "require": "./lib/build/recipe/userroles/index.cjs",
+      "import": "./lib/build/recipe/userroles/index.js",
+      "types": "./lib/build/recipe/userroles/index.d.ts"
+    },
+    "./types": {
+      "require": "./lib/build/types.cjs",
+      "import": "./lib/build/types.js",
+      "types": "./lib/build/types.d.ts"
+    },
+    "./*": "./lib/build/*"
+  },
+  "files": [
+    "lib/build",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "content-type": "^1.0.5",
+    "cookie": "0.4.0",
+    "cross-fetch": "^3.1.6",
+    "debug": "^4.3.3",
+    "jose": "^5.6.3",
+    "libphonenumber-js": "^1.9.44",
+    "nodemailer": "^6.7.2",
+    "pako": "^2.1.0",
+    "pkce-challenge": "^3.0.0",
+    "querystringify": "^2.2.0",
+    "supertokens-js-override": "^0.0.4",
+    "tldts": "^6.1.32",
+    "twilio": "^4.19.3"
+  },
+  "devDependencies": {
+    "@hapi/hapi": "^20.2.0",
+    "@koa/router": "^10.1.1",
+    "@loopback/core": "2.16.2",
+    "@loopback/repository": "3.7.1",
+    "@loopback/rest": "9.3.0",
+    "@types/aws-lambda": "8.10.77",
+    "@types/co-body": "^5.1.1",
+    "@types/content-type": "^1.1.5",
+    "@types/cookie": "0.3.3",
+    "@types/express": "4.16.1",
+    "@types/hapi__hapi": "20.0.8",
+    "@types/inflation": "^2.0.1",
+    "@types/koa": "^2.13.4",
+    "@types/koa-bodyparser": "^4.3.3",
+    "@types/nodemailer": "^6.4.4",
+    "@types/pako": "^2.0.3",
+    "@types/querystringify": "^2.0.2",
+    "@types/validator": "10.11.0",
+    "aws-sdk-mock": "^5.4.0",
+    "body-parser": "1.20.1",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.18.2",
+    "fastify": "3.18.1",
+    "glob": "7.1.7",
+    "koa": "^2.13.3",
+    "lambda-tester": "^4.0.1",
+    "loopback-datasource-juggler": "^4.26.0",
+    "mocha": "^10.2.0",
+    "mocha-split-tests": "github:rishabhpoddar/mocha-split-tests",
+    "next": "^14.0.4",
+    "next-test-api-route-handler": "^3.1.10",
+    "nock": "11.7.0",
+    "nyc": "^15.1.0",
+    "otpauth": "9.1.5",
+    "prettier": "2.0.5",
+    "pretty-quick": "^3.1.1",
+    "react": "^18.2.0",
+    "sinon": "^14.0.0",
+    "supertest": "4.0.2",
+    "tsup": "^6.6",
+    "typedoc": "^0.22.5",
+    "typescript": "4.2"
+  },
+  "browser": {
+    "fs": false
+  }
 }

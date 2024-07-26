@@ -1,5 +1,5 @@
 import Recipe from "./recipe";
-import {
+import type {
     VerifySessionOptions,
     RecipeInterface,
     TokenTransferMethod,
@@ -21,9 +21,10 @@ import {
     hasMultipleCookiesForTokenType,
     setCookie,
 } from "./cookieAndHeaders";
-import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
+import type { ParsedJWTInfo } from "./jwt";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
-import { NormalisedAppinfo, UserContext } from "../../types";
+import type { NormalisedAppinfo, UserContext } from "../../types";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 

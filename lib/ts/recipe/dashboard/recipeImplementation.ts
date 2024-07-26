@@ -20,7 +20,7 @@ import { Querier } from "../../querier";
 import { normaliseHttpMethod } from "../../utils";
 import { dashboardVersion } from "../../version";
 import { DASHBOARD_ANALYTICS_API, SIGN_OUT_API } from "./constants";
-import { RecipeInterface } from "./types";
+import type { RecipeInterface } from "./types";
 import { validateApiKey } from "./utils";
 
 export default function getRecipeImplementation(): RecipeInterface {

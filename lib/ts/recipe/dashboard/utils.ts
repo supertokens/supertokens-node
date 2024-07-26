@@ -16,7 +16,7 @@
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { normaliseEmail, sendNon200ResponseWithMessage } from "../../utils";
 import { DASHBOARD_API } from "./constants";
-import {
+import type {
     APIInterface,
     RecipeIdForUser,
     RecipeInterface,
@@ -29,7 +29,7 @@ import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import PasswordlessRecipe from "../passwordless/recipe";
 import RecipeUserId from "../../recipeUserId";
-import { User, UserContext } from "../../types";
+import type { User, UserContext } from "../../types";
 import { logDebugMessage } from "../../logger";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {

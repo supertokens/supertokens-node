@@ -14,8 +14,8 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
+import type { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserContext } from "../../types";
+import type { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import STError from "./error";
@@ -32,6 +32,7 @@ import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { FactorIds } from "../multifactorauth";
+import { env } from "node:process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -110,7 +111,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;

@@ -1,8 +1,8 @@
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailPassword from "../../../emailpassword";
 import RecipeUserId from "../../../../recipeUserId";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type Response =
     | {

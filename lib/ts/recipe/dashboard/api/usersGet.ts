@@ -12,12 +12,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
+import type { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
 import STError from "../../../error";
 import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 
 export type Response = {
     status: "OK";

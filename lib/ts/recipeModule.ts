@@ -14,10 +14,11 @@
  */
 
 import STError from "./error";
-import { NormalisedAppinfo, APIHandled, HTTPMethod, UserContext } from "./types";
+import type { NormalisedAppinfo, APIHandled, HTTPMethod, UserContext } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
+import MultitenancyRecipe from "./recipe/multitenancy/recipe";
 
 export default abstract class RecipeModule {
     private recipeId: string;
@@ -57,10 +58,6 @@ export default abstract class RecipeModule {
             remainingPath = new NormalisedURLPath(match[2]);
         }
 
-        // Multitenancy recipe is an always initialized recipe and needs to be imported this way
-        // so that there is no circular dependency. Otherwise there would be cyclic dependency
-        // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
-        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
 
         for (let i = 0; i < apisHandled.length; i++) {

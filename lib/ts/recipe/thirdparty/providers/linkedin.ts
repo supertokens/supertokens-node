@@ -13,7 +13,7 @@
  * under the License.
  */
 import { logDebugMessage } from "../../../logger";
-import { ProviderInput, TypeProvider } from "../types";
+import type { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 import { doGetRequest } from "./utils";
 

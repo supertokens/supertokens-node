@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { ProviderInput, TypeProvider } from "../types";
+import type { ProviderInput, TypeProvider } from "../types";
 import NewProvider, { getActualClientIdFromDevelopmentClientId } from "./custom";
 import * as jose from "jose";
 import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";

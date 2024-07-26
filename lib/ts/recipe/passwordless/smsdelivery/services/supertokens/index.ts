@@ -13,8 +13,8 @@
  * under the License.
  */
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
+import type { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
+import type { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import Supertokens from "../../../../../supertokens";
 import { postWithFetch } from "../../../../../utils";
 

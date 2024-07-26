@@ -14,8 +14,9 @@
  */
 import { buildFrontToken, clearSession, setAntiCsrfTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
-import { Helpers } from "./recipeImplementation";
+import type { SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
+import { SessionClaim } from "./types";
+import type { Helpers } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
 import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { logDebugMessage } from "../../logger";

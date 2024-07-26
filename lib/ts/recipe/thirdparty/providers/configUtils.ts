@@ -13,8 +13,8 @@ import {
     Okta,
     Twitter,
 } from ".";
-import { UserContext } from "../../../types";
-import {
+import type { UserContext } from "../../../types";
+import type {
     ProviderClientConfig,
     ProviderConfig,
     ProviderConfigForClientType,

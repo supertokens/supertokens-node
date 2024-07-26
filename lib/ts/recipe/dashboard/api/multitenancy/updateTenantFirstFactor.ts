@@ -12,10 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import { getFactorNotAvailableMessage, getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit } from "./utils";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 export type Response =
     | { status: "OK" }

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { APIInterface } from "../";
+import type { APIInterface } from "../";
 import { MultiFactorAuthClaim } from "../multiFactorAuthClaim";
 import SessionError from "../../session/error";
 import { updateAndGetMFARelatedInfoInSession } from "../utils";

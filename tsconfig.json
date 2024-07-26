@@ -4,7 +4,7 @@
         "strictNullChecks": true,
         "declaration": true,
         "module": "commonJS",
-        "outDir": "build",
+        "outDir": "./lib/build",
         "moduleResolution": "Node",
         "noImplicitAny": true,
         "sourceMap": false,
@@ -15,10 +15,10 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "lib": ["ES2017"],
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "lib": ["ES2017", "dom"]
     },
-    "include": ["ts/**/*"],
+    "include": ["./lib/ts/**/*"],
     "exclude": ["build"],
     "compileOnSave": true
 }

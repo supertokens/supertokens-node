@@ -29,6 +29,7 @@ import {
 import type { Framework } from "../types";
 import SuperTokens from "../../supertokens";
 import type { SessionContainerInterface } from "../../recipe/session/types";
+import { Buffer } from "node:buffer";
 
 export class ExpressRequest extends BaseRequest {
     private request: Request;

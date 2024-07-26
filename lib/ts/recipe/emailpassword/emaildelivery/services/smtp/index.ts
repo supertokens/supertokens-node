@@ -12,13 +12,13 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
-import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import type { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
+import type { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
+import type { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import { createTransport } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 import { getServiceImplementation } from "./serviceImplementation";
-import { UserContext } from "../../../../../types";
+import type { UserContext } from "../../../../../types";
 
 export default class SMTPService implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;

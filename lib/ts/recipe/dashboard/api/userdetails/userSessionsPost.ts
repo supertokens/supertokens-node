@@ -1,7 +1,7 @@
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import Session from "../../../session";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";

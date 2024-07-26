@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { env } from "node:process";
 
 export enum PROCESS_STATE {
     CALLING_SERVICE_IN_VERIFY,
@@ -41,7 +42,7 @@ export class ProcessState {
     }
 
     addState = (state: PROCESS_STATE) => {
-        if (process.env.TEST_MODE === "testing") {
+        if (env.TEST_MODE === "testing") {
             this.history.push(state);
         }
     };

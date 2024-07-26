@@ -12,12 +12,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
+import type { TypePasswordlessSmsDeliveryInput } from "../../../types";
+import type { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import Supertokens from "../../../../../supertokens";
 import { postWithFetch } from "../../../../../utils";
-import { UserContext } from "../../../../../types";
+import type { UserContext } from "../../../../../types";
 
 async function createAndSendSmsUsingSupertokensService(input: {
     // Where the message should be delivered.

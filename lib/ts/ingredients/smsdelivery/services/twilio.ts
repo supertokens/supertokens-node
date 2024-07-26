@@ -13,8 +13,8 @@
  * under the License.
  */
 import OverrideableBuilder from "supertokens-js-override";
-import { ClientOpts } from "twilio/lib/base/BaseTwilio";
-import { UserContext } from "../../../types";
+import type { ClientOpts } from "twilio/lib/base/BaseTwilio";
+import type { UserContext } from "../../../types";
 
 /**
  * only one of "from" and "messagingServiceSid" should be passed.

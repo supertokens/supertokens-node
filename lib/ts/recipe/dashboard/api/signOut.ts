@@ -13,11 +13,11 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
+import type { APIInterface, APIOptions } from "../types";
 import { send200Response } from "../../../utils";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 
 export default async function signOut(
     _: APIInterface,

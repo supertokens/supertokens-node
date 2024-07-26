@@ -15,7 +15,7 @@
 
 import STError from "../../error";
 import RecipeUserId from "../../recipeUserId";
-import { ClaimValidationError } from "./types";
+import type { ClaimValidationError } from "./types";
 
 export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED" = "UNAUTHORISED";

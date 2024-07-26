@@ -13,10 +13,10 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import { Querier } from "../../../../querier";
 import NormalisedURLPath from "../../../../normalisedURLPath";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type TagsResponse = { status: "OK"; tags: string[] };
 

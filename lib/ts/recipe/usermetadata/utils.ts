@@ -13,9 +13,9 @@
  * under the License.
  */
 
-import { NormalisedAppinfo } from "../../types";
+import type { NormalisedAppinfo } from "../../types";
 import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,

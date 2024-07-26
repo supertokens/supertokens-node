@@ -12,10 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { NormalisedFormField } from "../types";
+import type { NormalisedFormField } from "../types";
 import STError from "../error";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 
 export async function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],

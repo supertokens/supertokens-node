@@ -30,7 +30,8 @@ import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import { LoginMethod } from "../../user";
-import { SessionContainerInterface } from "../session/types";
+import type { SessionContainerInterface } from "../session/types";
+import { env } from "node:process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -125,7 +126,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;

@@ -13,11 +13,11 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../../../types";
+import type { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import EmailPassword from "../../../../emailpassword";
 import EmailPasswordRecipe from "../../../../emailpassword/recipe";
-import { User, UserContext } from "../../../../../types";
+import type { User, UserContext } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 
 type Response =

@@ -1,8 +1,8 @@
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import UserMetadaRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
 import STError from "../../../../error";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type Response = {
     status: "OK";

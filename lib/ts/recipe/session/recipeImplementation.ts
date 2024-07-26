@@ -1,5 +1,6 @@
-import { createRemoteJWKSet, JWTVerifyGetKey } from "jose";
-import {
+import { createRemoteJWKSet } from "jose";
+import type { JWTVerifyGetKey } from "jose";
+import type {
     RecipeInterface,
     VerifySessionOptions,
     TypeNormalisedInput,
@@ -15,14 +16,16 @@ import { validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { JSONObject, NormalisedAppinfo, UserContext } from "../../types";
+import type { JSONObject, NormalisedAppinfo, UserContext } from "../../types";
 import { logDebugMessage } from "../../logger";
-import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
+import type { ParsedJWTInfo } from "./jwt";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { JWKCacheCooldownInMs, protectedProps } from "./constants";
+import { env } from "node:process";
 
 export type Helpers = {
     querier: Querier;
@@ -54,7 +57,7 @@ export default function getRecipeInterface(
         Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
         token verification. Otherwise, the result of session verification would depend on which core is currently available.
     */
-    const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
+    const combinedJWKS: JWTVerifyGetKey = async (...args) => {
         let lastError = undefined;
         if (JWKS.length === 0) {
             throw Error(
@@ -607,7 +610,7 @@ export default function getRecipeInterface(
         getRecipeImpl: getRecipeImplAfterOverrides,
     };
 
-    if (process.env.TEST_MODE === "testing") {
+    if (env.TEST_MODE === "testing") {
         // testing mode, we add some of the help functions to the obj
         (obj as any).helpers = helpers;
     }

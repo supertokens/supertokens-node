@@ -14,11 +14,11 @@
  */
 
 import RecipeUserId from "../../recipeUserId";
-import { SessionClaimValidator } from "../session";
+import type { SessionClaimValidator } from "../session";
 import { SessionClaim } from "../session/claims";
-import { JSONObject } from "../usermetadata";
-import { MFAClaimValue, MFARequirementList } from "./types";
-import { UserContext } from "../../types";
+import type { JSONObject } from "../usermetadata";
+import type { MFAClaimValue, MFARequirementList } from "./types";
+import type { UserContext } from "../../types";
 import { updateAndGetMFARelatedInfoInSession } from "./utils";
 
 /**

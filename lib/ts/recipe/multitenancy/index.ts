@@ -14,8 +14,8 @@
  */
 
 import Recipe from "./recipe";
-import { RecipeInterface, APIOptions, APIInterface, TenantConfig } from "./types";
-import { ProviderConfig } from "../thirdparty/types";
+import type { RecipeInterface, APIOptions, APIInterface, TenantConfig } from "./types";
+import type { ProviderConfig } from "../thirdparty/types";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import RecipeUserId from "../../recipeUserId";
 import { getUserContext } from "../../utils";

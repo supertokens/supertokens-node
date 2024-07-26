@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import {
+import type {
     TypeInput,
     TypeNormalisedInput,
     RecipeInterface,
@@ -25,7 +25,7 @@ import {
 } from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
-import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod, UserContext } from "../../types";
+import type { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod, UserContext } from "../../types";
 import handleRefreshAPI from "./api/refresh";
 import signOutAPI from "./api/signout";
 import { REFRESH_API_PATH, SIGNOUT_API_PATH } from "./constants";
@@ -39,9 +39,10 @@ import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { APIOptions } from ".";
+import type { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
+import { env } from "node:process";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -121,7 +122,7 @@ export default class SessionRecipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         SessionRecipe.instance = undefined;

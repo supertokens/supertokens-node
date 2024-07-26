@@ -1,9 +1,9 @@
-import { APIFunction, APIInterface, APIOptions, UserWithFirstAndLastName } from "../../types";
+import type { APIFunction, APIInterface, APIOptions, UserWithFirstAndLastName } from "../../types";
 import STError from "../../../../error";
 import UserMetaDataRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
 import { getUser } from "../../../..";
-import { User, UserContext } from "../../../../types";
+import type { User, UserContext } from "../../../../types";
 
 type Response =
     | {

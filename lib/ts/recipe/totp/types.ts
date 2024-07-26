@@ -15,8 +15,8 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, UserContext } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+import type { GeneralErrorResponse, UserContext } from "../../types";
+import type { SessionContainerInterface } from "../session/types";
 
 export type TypeInput = {
     issuer?: string;

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { ProviderInput, TypeProvider } from "../types";
+import type { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 
 export default function BoxySAML(input: ProviderInput): TypeProvider {

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { ProviderInput, TypeProvider } from "../types";
+import type { ProviderInput, TypeProvider } from "../types";
 import { doGetRequest } from "./utils";
 
 import NewProvider from "./custom";

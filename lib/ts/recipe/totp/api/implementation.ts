@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { APIInterface } from "../";
+import type { APIInterface } from "../";
 import MultiFactorAuth from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import SessionError from "../../session/error";

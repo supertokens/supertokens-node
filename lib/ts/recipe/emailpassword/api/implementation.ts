@@ -1,11 +1,11 @@
-import { APIInterface, APIOptions } from "../";
+import type { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
-import { SessionContainerInterface } from "../../session/types";
-import { GeneralErrorResponse, User, UserContext } from "../../../types";
+import type { SessionContainerInterface } from "../../session/types";
+import type { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
-import { RecipeLevelUser } from "../../accountlinking/types";
+import type { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import { AuthUtils } from "../../../authUtils";

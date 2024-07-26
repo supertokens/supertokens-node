@@ -12,9 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 import { send200Response } from "../../../utils";
-import { APIInterface, APIOptions } from "../types";
+import type { APIInterface, APIOptions } from "../types";
 
 export default async function getOpenIdDiscoveryConfiguration(
     apiImplementation: APIInterface,

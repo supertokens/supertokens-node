@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailPasswordPasswordResetEmailDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
+import type { TypeEmailPasswordPasswordResetEmailDeliveryInput } from "../../../types";
+import type { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
 export default function getPasswordResetEmailContent(
     input: TypeEmailPasswordPasswordResetEmailDeliveryInput
@@ -34,13 +34,13 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
             xmlns:o="urn:schemas-microsoft-com:office:office">
-        
+
         <head>
             <meta charset="UTF-8">
             <meta http-equiv="X-UA-Compatible" content="IE=edge">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>*|MC:SUBJECT|*</title>
-        
+
             <style type="text/css">
                 body {
                     max-width: 100vw;
@@ -50,11 +50,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     margin: 10px 0;
                     padding: 0;
                 }
-        
+
                 table {
                     border-collapse: collapse;
                 }
-        
+
                 h1,
                 h2,
                 h3,
@@ -65,7 +65,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     margin: 0;
                     padding: 0;
                 }
-        
+
                 img,
                 a img {
                     border: 0;
@@ -73,7 +73,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     outline: none;
                     text-decoration: none;
                 }
-        
+
                 body,
                 #bodyTable,
                 #bodyCell {
@@ -82,32 +82,32 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     padding: 0;
                     width: 100%;
                 }
-        
+
                 .mcnPreviewText {
                     display: none !important;
                 }
-        
+
                 #outlook a {
                     padding: 0;
                 }
-        
+
                 img {
                     -ms-interpolation-mode: bicubic;
                 }
-        
+
                 table {
                     mso-table-lspace: 0pt;
                     mso-table-rspace: 0pt;
                 }
-        
+
                 .ReadMsgBody {
                     width: 100%;
                 }
-        
+
                 .ExternalClass {
                     width: 100%;
                 }
-        
+
                 p,
                 a,
                 li,
@@ -115,14 +115,14 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                 blockquote {
                     mso-line-height-rule: exactly;
                 }
-        
+
                 a[href^=tel],
                 a[href^=sms] {
                     color: inherit;
                     cursor: default;
                     text-decoration: none;
                 }
-        
+
                 p,
                 a,
                 li,
@@ -133,7 +133,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     -ms-text-size-adjust: 100%;
                     -webkit-text-size-adjust: 100%;
                 }
-        
+
                 .ExternalClass,
                 .ExternalClass p,
                 .ExternalClass td,
@@ -142,7 +142,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                 .ExternalClass font {
                     line-height: 100%;
                 }
-        
+
                 a[x-apple-data-detectors] {
                     color: inherit !important;
                     text-decoration: none !important;
@@ -151,32 +151,32 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     font-weight: inherit !important;
                     line-height: inherit !important;
                 }
-        
+
                 .templateContainer {
                     max-width: 600px !important;
                 }
-        
+
                 a.mcnButton {
                     display: block;
                 }
-        
+
                 .mcnImage,
                 .mcnRetinaImage {
                     vertical-align: bottom;
                 }
-        
+
                 .mcnTextContent {
                     word-break: break-word;
                 }
-        
+
                 .mcnTextContent img {
                     height: auto !important;
                 }
-        
+
                 .mcnDividerBlock {
                     table-layout: fixed !important;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 1
@@ -200,7 +200,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-align: center;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 2
@@ -224,7 +224,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 3
@@ -248,7 +248,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 4
@@ -272,7 +272,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Header
             @section Header Container Style
@@ -297,7 +297,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     padding-bottom: 0px;
                 }
-        
+
                 /*
             @tab Header
             @section Header Interior Style
@@ -322,7 +322,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     padding-bottom: 0;
                 }
-        
+
                 /*
             @tab Header
             @section Header Text
@@ -340,7 +340,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Header
             @section Header Link
@@ -354,7 +354,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-decoration: underline;
                 }
-        
+
                 /*
             @tab Body
             @section Body Container Style
@@ -379,7 +379,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     padding-bottom: 20px;
                 }
-        
+
                 /*
             @tab Body
             @section Body Interior Style
@@ -404,7 +404,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     padding-bottom: 10px;
                 }
-        
+
                 /*
             @tab Body
             @section Body Text
@@ -422,7 +422,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Body
             @section Body Link
@@ -436,7 +436,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-decoration: underline;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Style
@@ -461,7 +461,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     padding-bottom: 20px;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Interior Style
@@ -486,7 +486,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     padding-bottom: 0;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Text
@@ -504,7 +504,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-align: center;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Link
@@ -518,9 +518,9 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     /*@editable*/
                     text-decoration: underline;
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     body,
                     table,
                     td,
@@ -530,33 +530,33 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     blockquote {
                         -webkit-text-size-adjust: none !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     body {
                         width: 100% !important;
                         min-width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnRetinaImage {
                         max-width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImage {
                         width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnCartContainer,
                     .mcnCaptionTopContent,
                     .mcnRecContentContainer,
@@ -575,96 +575,96 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         max-width: 100% !important;
                         width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnBoxedTextContentContainer {
                         min-width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageGroupContent {
                         padding: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnCaptionLeftContentOuter .mcnTextContent,
                     .mcnCaptionRightContentOuter .mcnTextContent {
                         padding-top: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnImageCardTopImageContent,
                     .mcnCaptionBottomContent:last-child .mcnCaptionBottomImageContent,
                     .mcnCaptionBlockInner .mcnCaptionTopContent:last-child .mcnTextContent {
                         padding-top: 18px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageCardBottomImageContent {
                         padding-bottom: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageGroupBlockInner {
                         padding-top: 0 !important;
                         padding-bottom: 0 !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageGroupBlockOuter {
                         padding-top: 9px !important;
                         padding-bottom: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnTextContent,
                     .mcnBoxedTextContentColumn {
                         padding-right: 18px !important;
                         padding-left: 18px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnImageCardLeftImageContent,
                     .mcnImageCardRightImageContent {
                         padding-right: 18px !important;
                         padding-bottom: 0 !important;
                         padding-left: 18px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcpreview-image-uploader {
                         display: none !important;
                         width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 1
@@ -676,11 +676,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 125% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 2
@@ -692,11 +692,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 125% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 3
@@ -708,11 +708,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 4
@@ -724,11 +724,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Boxed Text
@@ -741,11 +741,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Header Text
@@ -758,11 +758,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Body Text
@@ -775,11 +775,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Footer Text
@@ -792,11 +792,11 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
             </style>
         </head>
-        
+
         <body>
             <!--*|IF:MC_PREVIEW_TEXT|*-->
             <!--[if !gte mso 9]><!----><span class="mcnPreviewText"
@@ -845,18 +845,18 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                                                         <tbody class="mcnTextBlockOuter">
                                                             <tr>
                                                                 <td valign="top" class="mcnTextBlockInner">
-        
-        
+
+
                                                                     <div
                                                                         style="background-color:#fff; margin-left: 3%; margin-right: 3%; border: 1px solid #ddd; margin-top: 40px; border-radius: 6px;">
                                                                         <div style="padding-left: 15%; padding-right: 15%;">
-        
+
                                                                             <p
                                                                                 style="font-family:'Helvetica'; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 8%; padding-right: 8%; ">
                                                                                 A password reset request for your account on
                                                                                 ${appName} has been received.
                                                                             </p>
-        
+
                                                                             <div class="button-td button-td-primary"
                                                                                 style="border-radius: 6px; margin-bottom: 50px; display: block; text-align: center;">
                                                                                 <a class="button-a button-a-primary"
@@ -877,10 +877,10 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                                                                             </p>
                                                                         </div>
                                                                     </div>
-        
-        
-        
-        
+
+
+
+
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -938,7 +938,7 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                 </table>
             </center>
         </body>
-        
+
         </html>
     `;
 }

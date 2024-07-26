@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { RecipeInterface } from ".";
+import type { RecipeInterface } from ".";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 

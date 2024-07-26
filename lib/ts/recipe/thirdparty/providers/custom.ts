@@ -1,8 +1,9 @@
-import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
+import type { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
-import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
+import type { JWTVerifyGetKey } from "jose";
+import { createRemoteJWKSet } from "jose";
 import { logDebugMessage } from "../../../logger";
 
 const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";

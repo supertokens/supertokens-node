@@ -14,8 +14,8 @@
  */
 
 import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, UserContext } from "../../types";
+import type { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import type { NormalisedAppinfo, UserContext } from "../../types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 import { BaseRequest } from "../../framework";
 

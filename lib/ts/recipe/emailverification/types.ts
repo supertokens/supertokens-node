@@ -15,15 +15,15 @@
 
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import {
+import type {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo, UserContext } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+import type { GeneralErrorResponse, NormalisedAppinfo, UserContext } from "../../types";
+import type { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
-import { User } from "../../types";
+import type { User } from "../../types";
 
 export type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";

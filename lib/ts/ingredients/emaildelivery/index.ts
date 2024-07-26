@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeInputWithService, EmailDeliveryInterface } from "./types";
+import type { TypeInputWithService, EmailDeliveryInterface } from "./types";
 import OverrideableBuilder from "supertokens-js-override";
 
 export default class EmailDelivery<T> {

@@ -15,8 +15,8 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
-import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
+import type { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { getApiPathWithDashboardBase, validateAndNormaliseUserInput } from "./utils";
@@ -94,6 +94,7 @@ import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor"
 import updateTenantSecondaryFactor from "./api/multitenancy/updateTenantSecondaryFactor";
 import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
 import getThirdPartyConfig from "./api/multitenancy/getThirdPartyConfig";
+import { env } from "node:process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -142,7 +143,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;

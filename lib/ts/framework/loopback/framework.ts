@@ -15,8 +15,8 @@
 
 import type { MiddlewareContext, Request, Response, Middleware } from "@loopback/rest";
 import type { Next } from "@loopback/core";
-import { SessionContainerInterface } from "../../recipe/session/types";
-import { HTTPMethod } from "../../types";
+import type { SessionContainerInterface } from "../../recipe/session/types";
+import type { HTTPMethod } from "../../types";
 import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
@@ -30,6 +30,7 @@ import {
 } from "../utils";
 import SuperTokens from "../../supertokens";
 import type { Framework } from "../types";
+import { Buffer } from "node:buffer";
 
 export class LoopbackRequest extends BaseRequest {
     private request: Request;

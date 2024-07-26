@@ -1,7 +1,7 @@
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import MultifactorAuthRecipe from "../../../multifactorauth/recipe";
 import { isFactorConfiguredForTenant } from "../../../multitenancy/utils";
-import { TenantConfig } from "../../../multitenancy/types";
+import type { TenantConfig } from "../../../multitenancy/types";
 import { FactorIds } from "../../../multifactorauth";
 
 export function getNormalisedFirstFactorsBasedOnTenantConfigFromCoreAndSDKInit(

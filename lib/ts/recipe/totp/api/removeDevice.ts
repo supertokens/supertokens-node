@@ -14,9 +14,9 @@
  */
 
 import { send200Response } from "../../../utils";
-import { APIInterface, APIOptions } from "..";
+import type { APIInterface, APIOptions } from "..";
 import Session from "../../session";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 
 export default async function removeDeviceAPI(
     apiImplementation: APIInterface,

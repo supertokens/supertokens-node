@@ -19,16 +19,17 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 
 import RecipeImplementation from "./recipeImplementation";
-import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import SessionRecipe from "../session/recipe";
 import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
+import { env } from "node:process";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "userroles";
@@ -81,7 +82,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;

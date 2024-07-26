@@ -14,7 +14,7 @@
  */
 
 import SuperTokensError from "./error";
-import {
+import type {
     VerifySessionOptions,
     SessionContainerInterface as SessionContainer,
     SessionInformation,
@@ -26,7 +26,7 @@ import {
     RecipeInterface,
 } from "./types";
 import Recipe from "./recipe";
-import { JSONObject, UserContext } from "../../types";
+import type { JSONObject, UserContext } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 import RecipeUserId from "../../recipeUserId";

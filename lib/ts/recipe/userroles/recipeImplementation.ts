@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { RecipeInterface } from "./types";
+import type { RecipeInterface } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";

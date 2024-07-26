@@ -12,9 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 import RecipeError from "../error";
-import { APIFunction, APIInterface, APIOptions } from "../types";
+import type { APIFunction, APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess } from "../utils";
 
 export default async function apiKeyProtector(
