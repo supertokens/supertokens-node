@@ -21,6 +21,9 @@ import {
 } from "../../../thirdparty/providers/configUtils";
 import { ProviderConfig } from "../../../thirdparty/types";
 import { UserContext } from "../../../../types";
+import NormalisedURLDomain from "../../../../normalisedURLDomain";
+import NormalisedURLPath from "../../../../normalisedURLPath";
+import { doGetRequest } from "../../../thirdparty/providers/utils";
 
 export type Response =
     | {
@@ -57,9 +60,11 @@ export default async function getThirdPartyConfig(
 
     let providersFromCore = tenantRes?.thirdParty?.providers;
     const mtRecipe = MultitenancyRecipe.getInstance();
-    let staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
+    let staticProviders = mtRecipe?.staticThirdPartyProviders
+        ? mtRecipe.staticThirdPartyProviders.map((provider) => ({ ...provider }))
+        : [];
 
-    let additionalConfig = undefined;
+    let additionalConfig: Record<string, any> | undefined = undefined;
 
     // filter out providers that is not matching thirdPartyId
     providersFromCore = providersFromCore.filter((provider) => provider.thirdPartyId === thirdPartyId);
@@ -88,8 +93,12 @@ export default async function getThirdPartyConfig(
             }
         } else if (thirdPartyId === "boxy-saml") {
             let boxyURL = options.req.getKeyValueFromQuery("boxyUrl");
+            let boxyAPIKey = options.req.getKeyValueFromQuery("boxyAPIKey");
             if (boxyURL !== undefined) {
                 additionalConfig = { boxyURL };
+                if (boxyAPIKey !== undefined) {
+                    additionalConfig = { ...additionalConfig, boxyAPIKey };
+                }
             }
         } else if (thirdPartyId === "google-workspaces") {
             const hd = options.req.getKeyValueFromQuery("hd");
@@ -98,18 +107,19 @@ export default async function getThirdPartyConfig(
             }
         }
 
-        if (additionalConfig !== null) {
+        if (additionalConfig !== undefined) {
             providersFromCore[0].oidcDiscoveryEndpoint = undefined;
             providersFromCore[0].authorizationEndpoint = undefined;
             providersFromCore[0].tokenEndpoint = undefined;
             providersFromCore[0].userInfoEndpoint = undefined;
 
-            for (let j = 0; j < (providersFromCore[0].clients ?? []).length; j++) {
-                providersFromCore[0].clients![j].additionalConfig = {
-                    ...providersFromCore[0].clients![j].additionalConfig,
+            providersFromCore[0].clients = (providersFromCore[0].clients ?? []).map((client) => ({
+                ...client,
+                additionalConfig: {
+                    ...client.additionalConfig,
                     ...additionalConfig,
-                };
-            }
+                },
+            }));
         }
     }
 
@@ -138,23 +148,29 @@ export default async function getThirdPartyConfig(
 
     if (staticProviders.length === 1) {
         // modify additional config if query param is passed
-        if (additionalConfig !== null) {
+        if (additionalConfig !== undefined) {
             // we set these to undefined so that these can be computed using the query param that was provided
-            staticProviders[0].config.oidcDiscoveryEndpoint = undefined;
-            staticProviders[0].config.authorizationEndpoint = undefined;
-            staticProviders[0].config.tokenEndpoint = undefined;
-            staticProviders[0].config.userInfoEndpoint = undefined;
-
-            for (let j = 0; j < (staticProviders[0].config.clients ?? []).length; j++) {
-                staticProviders[0].config.clients![j].additionalConfig = {
-                    ...staticProviders[0].config.clients![j].additionalConfig,
-                    ...additionalConfig,
-                };
-            }
+            staticProviders[0] = {
+                ...staticProviders[0],
+                config: {
+                    ...staticProviders[0].config,
+                    oidcDiscoveryEndpoint: undefined,
+                    authorizationEndpoint: undefined,
+                    tokenEndpoint: undefined,
+                    userInfoEndpoint: undefined,
+                    clients: (staticProviders[0].config.clients ?? []).map((client) => ({
+                        ...client,
+                        additionalConfig: {
+                            ...client.additionalConfig,
+                            ...additionalConfig,
+                        },
+                    })),
+                },
+            };
         }
     }
 
-    let mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders);
+    let mergedProvidersFromCoreAndStatic = mergeProvidersFromCoreAndStatic(providersFromCore, staticProviders, true);
 
     if (mergedProvidersFromCoreAndStatic.length !== 1) {
         throw new Error("should never come here!");
@@ -251,6 +267,7 @@ export default async function getThirdPartyConfig(
     }
 
     const tempClients = clients.filter((client) => client.clientId === "nonguessable-temporary-client-id");
+
     const finalClients = clients.filter((client) => client.clientId !== "nonguessable-temporary-client-id");
     if (finalClients.length === 0) {
         finalClients.push({
@@ -259,6 +276,46 @@ export default async function getThirdPartyConfig(
             clientSecret: "",
             ...(additionalConfig !== undefined ? { additionalConfig } : {}),
         });
+    }
+
+    // fill in boxy info from boxy instance
+    if (thirdPartyId.startsWith("boxy-saml")) {
+        const boxyAPIKey = options.req.getKeyValueFromQuery("boxyAPIKey");
+        if (boxyAPIKey) {
+            if (finalClients[0].clientId !== "") {
+                const boxyURL: string = finalClients[0].additionalConfig?.boxyURL!;
+
+                const normalisedDomain = new NormalisedURLDomain(boxyURL);
+                const normalisedBasePath = new NormalisedURLPath(boxyURL);
+                const connectionsPath = new NormalisedURLPath("/api/v1/saml/config");
+
+                const resp = await doGetRequest(
+                    normalisedDomain.getAsStringDangerous() +
+                        normalisedBasePath.appendPath(connectionsPath).getAsStringDangerous(),
+                    {
+                        clientID: finalClients[0].clientId,
+                    },
+                    {
+                        Authorization: `Api-Key ${boxyAPIKey}`,
+                    }
+                );
+
+                if (resp.status === 200) {
+                    // we don't care about non 200 status codes since we are just trying to populate whatever possible
+
+                    if (resp.jsonResponse === undefined) {
+                        throw new Error("should never happen");
+                    }
+
+                    finalClients[0].additionalConfig = {
+                        ...finalClients[0].additionalConfig,
+                        redirectURLs: resp.jsonResponse.redirectUrl,
+                        boxyTenant: resp.jsonResponse.tenant,
+                        boxyProduct: resp.jsonResponse.product,
+                    };
+                }
+            }
+        }
     }
 
     return {

@@ -7,6 +7,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [20.0.0] - 2024-07-24
+
+### Changes
+
+-   Updates `createOrUpdateThirdPartyConfig` and `getThirdPartyConfig` dashboard APIs to handle boxy SAML inputs.
+-   Fixes an issue where `isEmailChangeAllowed` was not checking across all tenants
+
+### Breaking changes
+
+-   For a non-public tenant, when there are no providers added in the core, the SDK used to fallback to the providers added in the ThirdParty.init. Now, the SDK will not fallback to the providers added in the ThirdParty.init by default. If you require a thirdparty provider to be available for non-public tenants, you can make it available by setting `includeInNonPublicTenantsByDefault` for each of the providers. See the migration section below to see how to do this. Note that this only affects non-public tenants when there are no providers added in core.
+
+### Migration
+
+To make all the providers added in the ThirdParty.init available for non-public tenants by default,
+
+Before:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "google",
+                    // ... rest of the config
+                },
+            },
+            {
+                config: {
+                    thirdPartyId: "github",
+                    // ... rest of the config
+                },
+            },
+        ],
+    },
+});
+```
+
+After:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "google",
+                    // ... rest of the config
+                },
+
+                // Add the following line to make this provider available in non-public tenants by default
+                includeInNonPublicTenantsByDefault: true,
+            },
+            {
+                config: {
+                    thirdPartyId: "github",
+                    // ... rest of the config
+                },
+
+                // Add the following line to make this provider available in non-public tenants by default
+                includeInNonPublicTenantsByDefault: true,
+            },
+        ],
+    },
+});
+```
+
+## [19.0.1] - 2024-07-18
+
+-   Fixes issue in fetching `thirdPartyConfig` for dashboard when OIDC discovery endpoint is added in core.
+
 ## [19.0.0] - 2024-07-10
 
 ### Breaking changes

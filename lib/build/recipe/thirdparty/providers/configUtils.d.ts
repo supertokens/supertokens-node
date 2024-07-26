@@ -20,5 +20,6 @@ export declare function findAndCreateProviderInstance(
 export declare function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderConfig): ProviderConfig;
 export declare function mergeProvidersFromCoreAndStatic(
     providerConfigsFromCore: ProviderConfig[],
-    providerInputsFromStatic: ProviderInput[]
+    providerInputsFromStatic: ProviderInput[],
+    includeAllProviders: boolean
 ): ProviderInput[];
