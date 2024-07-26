@@ -17,6 +17,7 @@ export default abstract class RecipeModule {
         | {
               id: string;
               tenantId: string;
+              exactMatch: boolean;
           }
         | undefined
     >;
