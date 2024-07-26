@@ -63,12 +63,29 @@ export async function loginGET({
     };
 }
 
-function getCookieStringFromSetCookieString(setCookie?: string): string {
+function getMergedCookies({ cookie = "", setCookie }: { cookie?: string; setCookie?: string }): string {
     if (!setCookie) {
-        return "";
+        return cookie;
     }
-    const cookies = setCookieParser.parse(setCookieParser.splitCookiesString(setCookie));
-    return cookies.map(({ name, value }) => `${name}=${value};`).join("");
+
+    const cookieMap = cookie.split(";").reduce((acc, curr) => {
+        const [name, value] = curr.split("=");
+        return { ...acc, [name.trim()]: value };
+    }, {} as Record<string, string>);
+
+    const setCookies = setCookieParser.parse(setCookieParser.splitCookiesString(setCookie));
+
+    for (const { name, value, expires } of setCookies) {
+        if (expires && new Date(expires) < new Date()) {
+            delete cookieMap[name];
+        } else {
+            cookieMap[name] = value;
+        }
+    }
+
+    return Object.entries(cookieMap)
+        .map(([key, value]) => `${key}=${value}`)
+        .join(";");
 }
 
 function mergeSetCookieHeaders(setCookie1?: string, setCookie2?: string): string {
@@ -108,13 +125,13 @@ export async function handleInternalRedirects({
         return response;
     }
 
-    // Typically, there are no more than 2 internal redirects per API call.
-    // This safety net prevents infinite redirect loops in case of unexpected issues.
-    const maxRedirects = 2;
+    // Typically, there are no more than 2 internal redirects per API call but we are allowing upto 10.
+    // This safety net prevents infinite redirect loops in case there are more redirects than expected.
+    const maxRedirects = 10;
     let redirectCount = 0;
 
     while (redirectCount < maxRedirects && isInternalRedirect(response.redirectTo)) {
-        cookie += getCookieStringFromSetCookieString(response.setCookie);
+        cookie = getMergedCookies({ cookie, setCookie: response.setCookie });
 
         const queryString = response.redirectTo.split("?")[1];
         const params = new URLSearchParams(queryString);
