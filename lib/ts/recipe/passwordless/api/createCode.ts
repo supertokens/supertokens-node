@@ -15,9 +15,9 @@
 
 import { send200Response } from "../../../utils";
 import STError from "../error";
-import { APIInterface, APIOptions } from "..";
+import type { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 import Session from "../../session";
 
 export default async function createCode(

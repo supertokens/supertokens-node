@@ -19,9 +19,9 @@ import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils"
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { getHeaderValueFromIncomingMessage, parseJSONBodyFromRequest, parseURLEncodedFormData } from "../utils";
-import { SessionContainerInterface } from "../../recipe/session/types";
+import type { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
-import { Framework } from "../types";
+import type { Framework } from "../types";
 
 export class KoaRequest extends BaseRequest {
     private ctx: Context;

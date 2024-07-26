@@ -1,11 +1,11 @@
-import { APIInterface, UserEmailInfo } from "../";
+import type { APIInterface, UserEmailInfo } from "../";
 import { logDebugMessage } from "../../../logger";
 import EmailVerificationRecipe from "../recipe";
-import { GeneralErrorResponse } from "../../../types";
+import type { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
-import { SessionContainerInterface } from "../../session/types";
+import type { SessionContainerInterface } from "../../session/types";
 
 export default function getAPIInterface(): APIInterface {
     return {

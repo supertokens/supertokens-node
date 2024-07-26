@@ -13,8 +13,8 @@
  * under the License.
  */
 
-import { UserContext } from "../../../types";
-import { APIInterface, APIOptions } from "../types";
+import type { UserContext } from "../../../types";
+import type { APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess, validateApiKey } from "../utils";
 
 export default async function validateKey(

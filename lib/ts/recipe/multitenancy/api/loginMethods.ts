@@ -14,8 +14,8 @@
  */
 
 import { send200Response } from "../../../utils";
-import { APIInterface, APIOptions } from "../";
-import { UserContext } from "../../../types";
+import type { APIInterface, APIOptions } from "../";
+import type { UserContext } from "../../../types";
 
 export default async function loginMethodsAPI(
     apiImplementation: APIInterface,

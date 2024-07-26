@@ -13,10 +13,10 @@
  * under the License.
  */
 
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, TenantConfig } from "./types";
+import type { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, TenantConfig } from "./types";
 import MultitenancyRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
-import { UserContext } from "../../types";
+import type { UserContext } from "../../types";
 import { FactorIds } from "../multifactorauth/types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {

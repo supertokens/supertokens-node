@@ -1,9 +1,9 @@
-import { APIFunction, APIInterface, APIOptions } from "../../types";
+import type { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
 import EmailVerificationRecipe from "../../../emailverification/recipe";
 import RecipeUserId from "../../../../recipeUserId";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type Response =
     | {

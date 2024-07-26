@@ -15,9 +15,9 @@
 
 import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
-import { APIInterface, APIOptions } from "../";
+import type { APIInterface, APIOptions } from "../";
 import STError from "../error";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 import Session from "../../session";
 
 export default async function signUpAPI(

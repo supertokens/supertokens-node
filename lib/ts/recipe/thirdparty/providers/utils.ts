@@ -1,6 +1,6 @@
 import * as jose from "jose";
 
-import { ProviderConfigForClientType } from "../types";
+import type { ProviderConfigForClientType } from "../types";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { logDebugMessage } from "../../../logger";

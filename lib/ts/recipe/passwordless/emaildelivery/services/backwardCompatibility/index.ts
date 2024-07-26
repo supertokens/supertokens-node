@@ -12,10 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessEmailDeliveryInput } from "../../../types";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import { NormalisedAppinfo, UserContext } from "../../../../../types";
+import type { TypePasswordlessEmailDeliveryInput } from "../../../types";
+import type { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import type { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { postWithFetch } from "../../../../../utils";
+import { env } from "node:process";
 
 async function createAndSendEmailUsingSupertokensService(input: {
     appInfo: NormalisedAppinfo;
@@ -28,7 +29,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
     codeLifetime: number;
     isFirstFactor: boolean;
 }): Promise<void> {
-    if (process.env.TEST_MODE === "testing") {
+    if (env.TEST_MODE === "testing") {
         return;
     }
     const result = await postWithFetch(

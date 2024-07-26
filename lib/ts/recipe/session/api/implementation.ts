@@ -1,8 +1,8 @@
-import { APIInterface, APIOptions, VerifySessionOptions } from "../";
+import type { APIInterface, APIOptions, VerifySessionOptions } from "../";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
-import { SessionContainerInterface } from "../types";
-import { GeneralErrorResponse, UserContext } from "../../../types";
+import type { SessionContainerInterface } from "../types";
+import type { GeneralErrorResponse, UserContext } from "../../../types";
 import { getSessionFromRequest, refreshSessionInRequest } from "../sessionRequestFunctions";
 
 export default function getAPIInterface(): APIInterface {

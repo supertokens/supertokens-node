@@ -21,8 +21,9 @@ import {
     middleware,
     errorHandler as customErrorHandler,
 } from "./framework/custom";
-import { HTTPMethod, UserContext } from "./types";
-import Session, { SessionContainer, VerifySessionOptions } from "./recipe/session";
+import type { HTTPMethod, UserContext } from "./types";
+import type { SessionContainer, VerifySessionOptions } from "./recipe/session";
+import Session from "./recipe/session";
 import SessionRecipe from "./recipe/session/recipe";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { availableTokenTransferMethods } from "./recipe/session/constants";

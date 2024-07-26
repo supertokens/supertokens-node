@@ -12,11 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { RecipeInterface, TypeNormalisedInput } from "./types";
-import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
+import type { RecipeInterface, TypeNormalisedInput } from "./types";
+import type { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
-import { UserContext } from "../../types";
+import type { UserContext } from "../../types";
 
 export default function getRecipeInterface(
     config: TypeNormalisedInput,

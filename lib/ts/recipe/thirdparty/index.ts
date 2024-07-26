@@ -15,11 +15,11 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
+import type { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getUserContext } from "../../utils";
-import { SessionContainerInterface } from "../session/types";
-import { User } from "../../types";
+import type { SessionContainerInterface } from "../session/types";
+import type { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {

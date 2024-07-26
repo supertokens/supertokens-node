@@ -15,7 +15,7 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import {
+import type {
     RecipeInterface,
     APIOptions,
     APIInterface,

@@ -13,17 +13,36 @@
  * under the License.
  */
 
-import { Readable } from "stream";
 import { parse, serialize } from "cookie";
 import type { Request, Response } from "express";
-import type { IncomingMessage } from "http";
-import { ServerResponse } from "http";
+import type { IncomingMessage } from "node:http";
+import { ServerResponse } from "node:http";
 import STError from "../error";
 import type { HTTPMethod } from "../types";
 import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
-import inflate from "inflation";
+import pako from "pako";
+import { Buffer } from "node:buffer";
+
+async function inflate(stream: IncomingMessage): Promise<string> {
+    if (!stream) {
+        throw new TypeError("argument stream is required");
+    }
+
+    const encoding = stream.headers && stream.headers["content-encoding"];
+
+    let i = new pako.Inflate();
+    for await (const chunk of stream) {
+        i.push(Buffer.from(chunk));
+    }
+
+    if (typeof i.result === "string") {
+        return i.result;
+    } else {
+        return new TextDecoder(encoding).decode(i.result, { stream: true });
+    }
+}
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
     if (headers === undefined || headers === null) {
@@ -123,8 +142,7 @@ export async function parseJSONBodyFromRequest(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const buffer = await getBody(inflate(req));
-    const str = buffer.toString(encoding as BufferEncoding);
+    const str = await inflate(req);
 
     if (str.length === 0) {
         return {};
@@ -137,8 +155,7 @@ export async function parseURLEncodedFormData(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const buffer = await getBody(inflate(req));
-    const str = buffer.toString(encoding as BufferEncoding);
+    const str = await inflate(req);
 
     let body: any = {};
     for (const [key, val] of new URLSearchParams(str).entries()) {
@@ -234,10 +251,10 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
             }
         } else if (allowDuplicateKey) {
             /**
-                We only want to append if it does not already exist
-                For example if the caller is trying to add front token to the access control exposed headers property
-                we do not want to append if something else had already added it
-            */
+    We only want to append if it does not already exist
+    For example if the caller is trying to add front token to the access control exposed headers property
+    we do not want to append if something else had already added it
+*/
             if (typeof existingValue !== "string" || !existingValue.includes(value)) {
                 if (res.header !== undefined) {
                     res.header(key, existingValue + ", " + value);
@@ -255,7 +272,12 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
         }
     } catch (err) {
         throw new Error(
-            "Error while setting header with key: " + key + " and value: " + value + "\nError: " + (err.message ?? err)
+            "Error while setting header with key: " +
+                key +
+                " and value: " +
+                value +
+                "\nError: " +
+                ((err as any)?.message ?? err)
         );
     }
 }
@@ -359,18 +381,4 @@ export function serializeCookieValue(
     };
 
     return serialize(key, value, opts);
-}
-
-// based on https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction
-function getBody(request: Readable) {
-    return new Promise<Buffer>((resolve) => {
-        const bodyParts: Uint8Array[] = [];
-        request
-            .on("data", (chunk) => {
-                bodyParts.push(chunk);
-            })
-            .on("end", () => {
-                resolve(Buffer.concat(bodyParts));
-            });
-    });
 }

@@ -18,7 +18,7 @@ import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
 import { getUserContext } from "../../utils";
-import { SessionContainerInterface } from "../session/types";
+import type { SessionContainerInterface } from "../session/types";
 
 export default class Wrapper {
     static init = Recipe.init;

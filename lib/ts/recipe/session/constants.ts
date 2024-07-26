@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TokenTransferMethod } from "./types";
+import type { TokenTransferMethod } from "./types";
 
 export const REFRESH_API_PATH = "/session/refresh";
 export const SIGNOUT_API_PATH = "/signout";

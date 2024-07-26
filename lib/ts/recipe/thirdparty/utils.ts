@@ -13,9 +13,9 @@
  * under the License.
  */
 
-import { NormalisedAppinfo } from "../../types";
-import { RecipeInterface, APIInterface } from "./types";
-import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
+import type { NormalisedAppinfo } from "../../types";
+import type { RecipeInterface, APIInterface } from "./types";
+import type { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config?.signInAndUpFeature);

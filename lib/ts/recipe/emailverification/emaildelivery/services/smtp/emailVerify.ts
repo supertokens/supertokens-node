@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
+import type { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
+import type { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
 
 export default function getEmailVerifyEmailContent(input: TypeEmailVerificationEmailDeliveryInput): GetContentResult {
@@ -45,7 +45,7 @@ export function getEmailVerifyEmailHTML(appName: string, email: string, verifica
                     max-width: 100vw;
                     overflow: hidden;
                 }
-        
+
                 p {
                     margin: 10px 0;
                     padding: 0;
@@ -794,7 +794,7 @@ export function getEmailVerifyEmailHTML(appName: string, email: string, verifica
                     }
 
                 }
-                
+
                 @media only screen and (max-width: 480px) {
                     #meant-for {
                         padding: 20px;

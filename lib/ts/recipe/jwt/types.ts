@@ -15,7 +15,7 @@
 
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { GeneralErrorResponse, UserContext } from "../../types";
+import type { GeneralErrorResponse, UserContext } from "../../types";
 
 export type JsonWebKey = {
     kty: string;

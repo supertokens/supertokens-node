@@ -12,9 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -36,7 +36,7 @@ export default async function deleteTenant(
 
         return deleteTenantRes;
     } catch (err) {
-        const errMsg: string = err.message;
+        const errMsg: string = (err as any)?.message;
         if (errMsg.includes("SuperTokens core threw an error for a ") && errMsg.includes("with status code: 403")) {
             return {
                 status: "CANNOT_DELETE_PUBLIC_TENANT_ERROR",

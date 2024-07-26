@@ -14,8 +14,8 @@
  */
 
 import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo } from "../../types";
+import type { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import type { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
 import BackwardCompatibilityEmailService from "./emaildelivery/services/backwardCompatibility";
 import BackwardCompatibilitySmsService from "./smsdelivery/services/backwardCompatibility";

@@ -14,8 +14,8 @@
  */
 import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
-import { VerifySessionOptions } from "..";
-import { InterceptorOrKey, InvocationContext, Next } from "@loopback/core";
+import type { VerifySessionOptions } from "..";
+import type { InterceptorOrKey, InvocationContext, Next } from "@loopback/core";
 import { MiddlewareContext } from "@loopback/rest";
 import type { SessionContext as Context } from "../../../framework/loopback/framework";
 import { LoopbackRequest, LoopbackResponse } from "../../../framework/loopback/framework";

@@ -16,7 +16,7 @@
 import { getUserContext } from "../../utils";
 import { PermissionClaim } from "./permissionClaim";
 import Recipe from "./recipe";
-import { RecipeInterface } from "./types";
+import type { RecipeInterface } from "./types";
 import { UserRoleClaim } from "./userRoleClaim";
 
 export default class Wrapper {

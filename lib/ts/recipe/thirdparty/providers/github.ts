@@ -12,9 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { ProviderInput, TypeProvider, UserInfo } from "../types";
+import type { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
 import { doGetRequest, doPostRequest } from "./utils";
+import { Buffer } from "node:buffer";
 
 function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoResponse: {
     fromIdTokenPayload?: any;

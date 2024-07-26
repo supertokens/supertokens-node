@@ -12,10 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import SuperTokensError from "../../../../error";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 export type Response =
     | {
@@ -50,7 +50,7 @@ export default async function createTenant(
     try {
         tenantRes = await Multitenancy.createOrUpdateTenant(tenantId, config, userContext);
     } catch (err) {
-        const errMsg: string = err.message;
+        const errMsg: string = (err as any)?.message;
         if (errMsg.includes("SuperTokens core threw an error for a ")) {
             if (errMsg.includes("with status code: 402")) {
                 return {

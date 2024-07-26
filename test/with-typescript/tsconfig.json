@@ -8,10 +8,12 @@
         "sourceMap": true,
         "skipLibCheck": true,
         "noFallthroughCasesInSwitch": true,
-        "lib": ["ES2017", "DOM"], // "DOM" is required for Request and Response types
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "lib": ["ES2017", "DOM"],
         "noEmit": true
     },
     "include": ["./**/*"],
-    "exclude": ["build"],
+    "exclude": ["./lib/build"],
     "compileOnSave": true
 }

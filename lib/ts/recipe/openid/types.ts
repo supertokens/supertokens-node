@@ -16,8 +16,8 @@ import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLDomain from "../../normalisedURLDomain";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface, JsonWebKey } from "../jwt/types";
-import { GeneralErrorResponse, UserContext } from "../../types";
+import type { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface, JsonWebKey } from "../jwt/types";
+import type { GeneralErrorResponse, UserContext } from "../../types";
 
 export type TypeInput = {
     issuer?: string;

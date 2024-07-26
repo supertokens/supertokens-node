@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import {
+import type {
     TypeInput,
     TypeNormalisedInput,
     NormalisedErrorHandlers,
@@ -27,9 +27,9 @@ import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cooki
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, oneYearInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { NormalisedAppinfo, UserContext } from "../../types";
+import type { NormalisedAppinfo, UserContext } from "../../types";
 import { isAnIpAddress, send200Response } from "../../utils";
-import { RecipeInterface, APIInterface } from "./types";
+import type { RecipeInterface, APIInterface } from "./types";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";

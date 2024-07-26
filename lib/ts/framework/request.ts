@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { HTTPMethod } from "../types";
+import type { HTTPMethod } from "../types";
 
 export abstract class BaseRequest {
     private parsedJSONBody: any;

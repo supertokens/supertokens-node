@@ -13,11 +13,11 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../../../types";
+import type { APIInterface, APIOptions } from "../../../types";
 import STError from "../../../../../error";
 import Passwordless from "../../../../passwordless";
 import PasswordlessRecipe from "../../../../passwordless/recipe";
-import { User } from "../../../../../types";
+import type { User } from "../../../../../types";
 import RecipeUserId from "../../../../../recipeUserId";
 import { parsePhoneNumber } from "libphonenumber-js/max";
 

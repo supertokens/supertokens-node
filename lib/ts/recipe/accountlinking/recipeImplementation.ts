@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { AccountInfo, RecipeInterface, TypeNormalisedInput } from "./types";
+import type { AccountInfo, RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";

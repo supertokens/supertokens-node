@@ -14,6 +14,7 @@
  */
 
 import { logDebugMessage } from "../../logger";
+import { Buffer } from "node:buffer";
 
 const HEADERS = new Set([
     Buffer.from(

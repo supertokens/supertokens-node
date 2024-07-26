@@ -1,36 +1,36 @@
-import * as express from "express";
+import express from "express";
 import { NextApiRequest, NextApiResponse } from "next";
-import Supertokens, { RecipeUserId, User, getUser } from "../..";
-import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
-import EmailVerification from "../../recipe/emailverification";
-import EmailPassword from "../../recipe/emailpassword";
-import { verifySession } from "../../recipe/session/framework/express";
-import { middleware, errorHandler, SessionRequest } from "../../framework/express";
-import customFramework, { CollectingResponse, PreParsedRequest } from "../../framework/custom";
-import NextJS from "../../nextjs";
-import ThirdParty from "../../recipe/thirdparty";
-import Multitenancy from "../../recipe/multitenancy";
-import Passwordless from "../../recipe/passwordless";
-import { SMTPService as SMTPServiceTPP } from "../../recipe/passwordless/emaildelivery";
-import { SMTPService as SMTPServiceP } from "../../recipe/passwordless/emaildelivery";
-import { SMTPService as SMTPServiceTPEP } from "../../recipe/emailpassword/emaildelivery";
-import { SMTPService as SMTPServiceEP } from "../../recipe/emailpassword/emaildelivery";
+import Supertokens, { RecipeUserId, getUser, User } from "../../lib/build";
+import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../lib/build/recipe/session";
+import EmailVerification from "../../lib/build/recipe/emailverification";
+import EmailPassword from "../../lib/build/recipe/emailpassword";
+import { verifySession } from "../../lib/build/recipe/session/framework/express";
+import { middleware, errorHandler, SessionRequest } from "../../lib/build/framework/express";
+import customFramework, { CollectingResponse, PreParsedRequest } from "../../lib/build/framework/custom";
+import NextJS from "../../lib/build/nextjs";
+import ThirdParty from "../../lib/build/recipe/thirdparty";
+import Multitenancy from "../../lib/build/recipe/multitenancy";
+import Passwordless from "../../lib/build/recipe/passwordless";
+import { SMTPService as SMTPServiceTPP } from "../../lib/build/recipe/passwordless/emaildelivery/services";
+import { SMTPService as SMTPServiceP } from "../../lib/build/recipe/passwordless/emaildelivery/services";
+import { SMTPService as SMTPServiceTPEP } from "../../lib/build/recipe/emailpassword/emaildelivery/services";
+import { SMTPService as SMTPServiceEP } from "../../lib/build/recipe/emailpassword/emaildelivery/services";
 import {
     TwilioService as TwilioServiceTPP,
     SupertokensService as SupertokensServiceTPP,
-} from "../../recipe/passwordless/smsdelivery";
+} from "../../lib/build/recipe/passwordless/smsdelivery/services";
 import {
     TwilioService as TwilioServiceP,
     SupertokensService as SupertokensServiceP,
-} from "../../recipe/passwordless/smsdelivery";
-import UserMetadata from "../../recipe/usermetadata";
-import { BooleanClaim, PrimitiveClaim } from "../../recipe/session/claims";
-import UserRoles from "../../recipe/userroles";
-import Dashboard from "../../recipe/dashboard";
-import JWT from "../../recipe/jwt";
-import AccountLinking from "../../recipe/accountlinking";
-import MultiFactorAuth from "../../recipe/multifactorauth";
-import { verifySession as customVerifySession } from "../../recipe/session/framework/custom";
+} from "../../lib/build/recipe/passwordless/smsdelivery/services";
+import UserMetadata from "../../lib/build/recipe/usermetadata";
+import { BooleanClaim, PrimitiveClaim } from "../../lib/build/recipe/session/claims";
+import UserRoles from "../../lib/build/recipe/userroles";
+import Dashboard from "../../lib/build/recipe/dashboard";
+import JWT from "../../lib/build/recipe/jwt";
+import AccountLinking from "../../lib/build/recipe/accountlinking";
+import MultiFactorAuth from "../../lib/build/recipe/multifactorauth";
+import { verifySession as customVerifySession } from "../../lib/build/recipe/session/framework/custom";
 import { NextRequest, NextResponse } from "next/server";
 
 UserRoles.init({
@@ -946,9 +946,9 @@ Multitenancy.init({
     },
 });
 
-import { HTTPMethod, TypeInput, UserContext } from "../../types";
-import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
-import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
+import type { HTTPMethod, TypeInput, UserContext } from "../../lib/build/types";
+import { TypeInput as SessionTypeInput } from "../../lib/build/recipe/session/types";
+import { TypeInput as EPTypeInput } from "../../lib/build/recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
 import { serialize } from "cookie";
 import { Response } from "express";

@@ -16,7 +16,7 @@
 import OverrideableBuilder from "supertokens-js-override";
 import type { User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-import { SessionContainerInterface } from "../session/types";
+import type { SessionContainerInterface } from "../session/types";
 
 export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: UserContext) => Promise<void>;

@@ -13,17 +13,18 @@
  * under the License.
  */
 import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
-import { ParsedJWTInfo } from "./jwt";
+import type { ParsedJWTInfo } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, SessionInformation, TypeNormalisedInput } from "./types";
+import type { CreateOrRefreshAPIResponse, SessionInformation, TypeNormalisedInput } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Helpers } from "./recipeImplementation";
+import type { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { UserContext } from "../../types";
+import type { UserContext } from "../../types";
+import SuperTokensError from "../../error";
 
 /**
  * @description call this to "login" a user.
@@ -119,7 +120,7 @@ export async function getSession(
          * if error type is not TRY_REFRESH_TOKEN, we return the
          * error to the user
          */
-        if (err.type !== STError.TRY_REFRESH_TOKEN) {
+        if (err instanceof SuperTokensError && err.type !== STError.TRY_REFRESH_TOKEN) {
             throw err;
         }
         /**

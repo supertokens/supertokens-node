@@ -14,7 +14,7 @@
  */
 
 import STError from "./error";
-import { ParsedJWTInfo } from "./jwt";
+import type { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import RecipeUserId from "../../recipeUserId";
@@ -42,7 +42,8 @@ export async function getInfoFromAccessToken(
         let payload = undefined;
         try {
             payload = (await jose.jwtVerify(jwtInfo.rawTokenString, jwks)).payload;
-        } catch (error) {
+        } catch (err) {
+            const error = err as any;
             // We only want to opt-into this for V2 access tokens
             if (jwtInfo.version === 2 && error?.code === "ERR_JWKS_MULTIPLE_MATCHING_KEYS") {
                 ProcessState.getInstance().addState(PROCESS_STATE.MULTI_JWKS_VALIDATION);
@@ -53,7 +54,7 @@ export async function getInfoFromAccessToken(
                         payload = (await jose.jwtVerify(jwtInfo.rawTokenString, publicKey)).payload;
                         break;
                     } catch (innerError) {
-                        if (innerError?.code === "ERR_JWS_SIGNATURE_VERIFICATION_FAILED") {
+                        if ((innerError as any)?.code === "ERR_JWS_SIGNATURE_VERIFICATION_FAILED") {
                             continue;
                         }
                         throw innerError;
@@ -114,7 +115,7 @@ export async function getInfoFromAccessToken(
     } catch (err) {
         logDebugMessage(
             "getInfoFromAccessToken: Returning TRY_REFRESH_TOKEN because access token validation failed - " +
-                err.message
+                (err as any)?.message
         );
         throw new STError({
             message: "Failed to verify access token",

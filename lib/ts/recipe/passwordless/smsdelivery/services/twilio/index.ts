@@ -12,17 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import {
-    ServiceInterface,
-    TypeInput,
-    normaliseUserInputConfig,
-} from "../../../../../ingredients/smsdelivery/services/twilio";
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
+import type { ServiceInterface, TypeInput } from "../../../../../ingredients/smsdelivery/services/twilio";
+import { normaliseUserInputConfig } from "../../../../../ingredients/smsdelivery/services/twilio";
+import type { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import Twilio from "twilio";
 import OverrideableBuilder from "supertokens-js-override";
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
+import type { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { getServiceImplementation } from "./serviceImplementation";
-import { UserContext } from "../../../../../types";
+import type { UserContext } from "../../../../../types";
 
 export default class TwilioService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     serviceImpl: ServiceInterface<TypePasswordlessSmsDeliveryInput>;

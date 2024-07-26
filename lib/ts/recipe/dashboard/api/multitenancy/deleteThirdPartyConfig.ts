@@ -12,12 +12,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import Multitenancy from "../../../multitenancy";
 import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokensError from "../../../../error";
 import { FactorIds } from "../../../multifactorauth";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 export type Response =
     | {

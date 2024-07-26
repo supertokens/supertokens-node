@@ -17,7 +17,7 @@ import { AWSRequest, AWSResponse } from "../../../framework/awsLambda/framework"
 import type { SessionEvent, SessionEventV2 } from "../../../framework/awsLambda/framework";
 import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
-import { VerifySessionOptions } from "..";
+import type { VerifySessionOptions } from "..";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(handler: Handler, verifySessionOptions?: VerifySessionOptions): Handler {

@@ -1,8 +1,8 @@
-import { APIFunction, APIInterface, APIOptions } from "../../types";
+import type { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import UserMetaDataRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type Response =
     | {

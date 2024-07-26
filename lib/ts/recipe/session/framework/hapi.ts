@@ -14,9 +14,10 @@
  */
 import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
-import { VerifySessionOptions } from "..";
-import { ResponseToolkit } from "@hapi/hapi";
-import { ExtendedResponseToolkit, HapiRequest, HapiResponse, SessionRequest } from "../../../framework/hapi/framework";
+import type { VerifySessionOptions } from "..";
+import type { ResponseToolkit } from "@hapi/hapi";
+import type { ExtendedResponseToolkit, SessionRequest } from "../../../framework/hapi/framework";
+import { HapiRequest, HapiResponse } from "../../../framework/hapi/framework";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(options?: VerifySessionOptions) {

@@ -1,7 +1,7 @@
 import UserRoles from "../../../../userroles";
 import UserRolesRecipe from "../../../../userroles/recipe";
 
-import { APIFunction, APIInterface } from "../../../types";
+import type { APIFunction, APIInterface } from "../../../types";
 
 type Response =
     | {

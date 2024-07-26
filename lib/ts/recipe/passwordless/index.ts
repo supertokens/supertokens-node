@@ -15,7 +15,7 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import {
+import type {
     RecipeInterface,
     APIOptions,
     APIInterface,
@@ -25,8 +25,8 @@ import {
 import RecipeUserId from "../../recipeUserId";
 import { getRequestFromUserContext } from "../..";
 import { getUserContext } from "../../utils";
-import { SessionContainerInterface } from "../session/types";
-import { User } from "../../types";
+import type { SessionContainerInterface } from "../session/types";
+import type { User } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;

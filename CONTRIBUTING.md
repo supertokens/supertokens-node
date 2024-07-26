@@ -14,7 +14,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 
 ## Development Setup
 
-You will need to setup the `supertokens-core` in order to to run the `supertokens-node` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)  
+You will need to setup the `supertokens-core` in order to to run the `supertokens-node` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)
 **Note: If you are not contributing to the `supertokens-core` you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.**
 
 ### Prerequisites
@@ -26,36 +26,36 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 ### Project Setup
 
 1. Fork the [supertokens-node](https://github.com/supertokens/supertokens-node) repository
-2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`.  
+2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`.
    `supertokens-node` and `supertokens-root` should exist side by side within the same parent directory
 3. `cd supertokens-node`
-4. Install the project dependencies  
+4. Install the project dependencies
    `npm i -d`
-5. Install the dependencies inside `test/with-typescript`  
+5. Install the dependencies inside `test/with-typescript`
    `cd test/with-typescript && npm i && cd ../..`
-6. Add git pre-commit hooks  
+6. Add git pre-commit hooks
    `npm run set-up-hooks`
 
 ## Modifying Code
 
 1. Open the `supertokens-node` project in your IDE and you can start modifying the code
-2. After modifying the code, build your project to implement your changes  
+2. After modifying the code, build your project to implement your changes
    `npm run build-pretty`
 
 ## Testing
 
 1. Navigate to the `supertokens-root` repository
-2. Start the testing environment  
+2. Start the testing environment
    `./startTestingEnv --wait`
-3. Navigate to the `supertokens-node` repository  
+3. Navigate to the `supertokens-node` repository
    `cd ../supertokens-node/`
 4. Run all tests (make sure to have node version >= 16.20.0 and < 17.0.0)
    `INSTALL_PATH=../supertokens-root npm test`
-5. If all tests pass the output should be:  
+5. If all tests pass the output should be:
    ![node tests passing](https://github.com/supertokens/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png)
 6. Navigate to the `test-server` folder within the `supertokens-node` project:
    `cd ./test/test-server/`
-7. Install the project dependencies:  
+7. Install the project dependencies:
    `npm install`
 8. Start the server:
    `npm run start`
@@ -84,7 +84,7 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
         }
     }
     ```
-3. In `lib/tsconfig.json`, change `"sourceMap"` to `true`
+3. In `tsconfig.json`, change `"sourceMap"` to `true`
 4. Run `npm run build`
 
 You should now be able to see tests on the VSCode's testing panel and run/debug from there.

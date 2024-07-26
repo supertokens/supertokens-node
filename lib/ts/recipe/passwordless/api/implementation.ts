@@ -1,4 +1,4 @@
-import { APIInterface, RecipeInterface } from "../";
+import type { APIInterface, RecipeInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import { AuthUtils } from "../../../authUtils";
 import { FactorIds } from "../../multifactorauth";
@@ -6,8 +6,8 @@ import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { getEnabledPwlessFactors } from "../utils";
 import { getUser, listUsersByAccountInfo } from "../../..";
-import { SessionContainerInterface } from "../../session/types";
-import { UserContext } from "../../../types";
+import type { SessionContainerInterface } from "../../session/types";
+import type { UserContext } from "../../../types";
 import { LoginMethod, User } from "../../../user";
 import SessionError from "../../session/error";
 

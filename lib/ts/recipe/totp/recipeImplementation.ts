@@ -13,11 +13,11 @@
  * under the License.
  */
 
-import { RecipeInterface } from "./";
+import type { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { TypeNormalisedInput } from "./types";
-import { UserContext } from "../../types";
+import type { TypeNormalisedInput } from "./types";
+import type { UserContext } from "../../types";
 import { getUser } from "../..";
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {

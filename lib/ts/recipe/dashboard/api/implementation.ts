@@ -19,7 +19,7 @@ import { Querier } from "../../../querier";
 import SuperTokens from "../../../supertokens";
 import { maxVersion } from "../../../utils";
 import { DASHBOARD_API } from "../constants";
-import { APIInterface, AuthMode } from "../types";
+import type { APIInterface, AuthMode } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -84,7 +84,7 @@ export default function getAPIImplementation(): APIInterface {
                         window.authMode = "${authMode}"
                         window.isSearchEnabled = "${isSearchEnabled}"
                     </script>
-                    
+
                     <style>
                         .csp-screen-container{
                             display: flex;

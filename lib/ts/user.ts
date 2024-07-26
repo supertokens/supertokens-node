@@ -1,7 +1,7 @@
-import { RecipeLevelUser } from "./recipe/accountlinking/types";
+import type { RecipeLevelUser } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { JSONObject, User as UserType } from "./types";
+import type { JSONObject, User as UserType } from "./types";
 
 export class LoginMethod implements RecipeLevelUser {
     public readonly recipeId: RecipeLevelUser["recipeId"];

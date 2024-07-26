@@ -13,16 +13,17 @@
  * under the License.
  */
 
-import { UserEmailInfo } from "./types";
-import { NormalisedAppinfo } from "../../types";
+import type { UserEmailInfo } from "./types";
+import type { NormalisedAppinfo } from "../../types";
 import { postWithFetch } from "../../utils";
+import { env } from "node:process";
 
 export async function createAndSendEmailUsingSupertokensService(
     appInfo: NormalisedAppinfo,
     user: UserEmailInfo,
     emailVerifyURLWithToken: string
 ) {
-    if (process.env.TEST_MODE === "testing") {
+    if (env.TEST_MODE === "testing") {
         return;
     }
     await postWithFetch(

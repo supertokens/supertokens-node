@@ -15,7 +15,7 @@
 
 import { getUserContext } from "../../utils";
 import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
+import type { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;

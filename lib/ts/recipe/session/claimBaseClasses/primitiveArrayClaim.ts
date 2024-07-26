@@ -1,6 +1,7 @@
 import RecipeUserId from "../../../recipeUserId";
-import { JSONObject, JSONPrimitive, UserContext } from "../../../types";
-import { SessionClaim, SessionClaimValidator } from "../types";
+import type { JSONObject, JSONPrimitive, UserContext } from "../../../types";
+import type { SessionClaimValidator } from "../types";
+import { SessionClaim } from "../types";
 
 export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
     public readonly fetchValue: (

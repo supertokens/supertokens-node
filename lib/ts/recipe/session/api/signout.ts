@@ -14,9 +14,9 @@
  */
 
 import { send200Response } from "../../../utils";
-import { APIInterface, APIOptions } from "../";
+import type { APIInterface, APIOptions } from "../";
 import { getSessionFromRequest } from "../sessionRequestFunctions";
-import { UserContext } from "../../../types";
+import type { UserContext } from "../../../types";
 
 export default async function signOutAPI(
     apiImplementation: APIInterface,

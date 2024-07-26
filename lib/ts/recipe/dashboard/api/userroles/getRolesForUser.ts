@@ -1,4 +1,4 @@
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import UserRoles from "../../../userroles";
 import UserRolesRecipe from "../../../userroles/recipe";
 

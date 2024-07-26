@@ -13,13 +13,14 @@
  * under the License.
  */
 import { logDebugMessage } from "../../../logger";
-import { ProviderInput, TypeProvider } from "../types";
+import type { ProviderInput, TypeProvider } from "../types";
 import NewProvider, {
     DEV_OAUTH_REDIRECT_URL,
     getActualClientIdFromDevelopmentClientId,
     isUsingDevelopmentClientId,
 } from "./custom";
 import { doPostRequest } from "./utils";
+import { Buffer } from "node:buffer";
 
 export default function Twitter(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {

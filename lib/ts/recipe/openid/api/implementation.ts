@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
-import { GeneralErrorResponse, UserContext } from "../../../types";
+import type { APIInterface, APIOptions } from "../types";
+import type { GeneralErrorResponse, UserContext } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {

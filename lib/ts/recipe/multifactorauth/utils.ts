@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import {
+import type {
     TypeInput,
     TypeNormalisedInput,
     RecipeInterface,
@@ -22,8 +22,8 @@ import {
     MFARequirementList,
 } from "./types";
 import Multitenancy from "../multitenancy";
-import { User, UserContext } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+import type { User, UserContext } from "../../types";
+import type { SessionContainerInterface } from "../session/types";
 import { RecipeUserId, getUser } from "../..";
 import Recipe from "./recipe";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";

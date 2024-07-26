@@ -16,8 +16,8 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { TypeFramework } from "./framework/types";
-import { RecipeLevelUser } from "./recipe/accountlinking/types";
+import type { TypeFramework } from "./framework/types";
+import type { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
 declare const __brand: unique symbol;
 type Brand<B> = { [__brand]: B };

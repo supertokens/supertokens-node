@@ -1,4 +1,4 @@
-import * as psl from "psl";
+import { parse } from "tldts";
 
 import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
@@ -8,7 +8,7 @@ import { logDebugMessage } from "./logger";
 import { HEADER_FDI, HEADER_RID } from "./constants";
 import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
-import { SessionContainer } from "./recipe/session";
+import type { SessionContainer } from "./recipe/session";
 import { ProcessState, PROCESS_STATE } from "./processState";
 
 export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
@@ -37,7 +37,7 @@ export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: Req
             e &&
             typeof e === "object" &&
             "message" in e &&
-            e.message === "The 'cache' field on 'RequestInitializerDict' is not implemented.";
+            (e as any).message === "The 'cache' field on 'RequestInitializerDict' is not implemented.";
         if (!unimplementedCacheError) throw e;
 
         const newOpts = { ...init };
@@ -345,13 +345,13 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         return "localhost";
     }
 
-    let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
+    let parsedURL = parse(hostname);
     if (parsedURL.domain === null) {
-        if (hostname.endsWith(".amazonaws.com") && parsedURL.tld === hostname) {
+        if (hostname.endsWith(".amazonaws.com") && parsedURL.publicSuffix === hostname) {
             return hostname;
         }
         // support for .local domain
-        if (hostname.endsWith(".local") && parsedURL.tld === null) {
+        if (hostname.endsWith(".local") && parsedURL.publicSuffix === null) {
             return hostname;
         }
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");

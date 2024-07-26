@@ -1,4 +1,4 @@
-import { APIInterface, APIOptions } from "../../types";
+import type { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailPasswordRecipe from "../../../emailpassword/recipe";
 import PasswordlessRecipe from "../../../passwordless/recipe";
@@ -10,7 +10,7 @@ import UserMetadata from "../../../usermetadata";
 import { FORM_FIELD_EMAIL_ID } from "../../../emailpassword/constants";
 import { defaultValidateEmail, defaultValidatePhoneNumber } from "../../../passwordless/utils";
 import RecipeUserId from "../../../../recipeUserId";
-import { UserContext } from "../../../../types";
+import type { UserContext } from "../../../../types";
 
 type Response =
     | {

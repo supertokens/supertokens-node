@@ -13,8 +13,8 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions, JsonWebKey } from "../types";
-import { GeneralErrorResponse, UserContext } from "../../../types";
+import type { APIInterface, APIOptions, JsonWebKey } from "../types";
+import type { GeneralErrorResponse, UserContext } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {

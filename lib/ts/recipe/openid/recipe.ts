@@ -16,8 +16,8 @@ import STError from "../../error";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
-import { APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
+import type { APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import JWTRecipe from "../jwt/recipe";
 import OverrideableBuilder from "supertokens-js-override";
@@ -26,6 +26,7 @@ import APIImplementation from "./api/implementation";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_DISCOVERY_CONFIG_URL } from "./constants";
 import getOpenIdDiscoveryConfiguration from "./api/getOpenIdDiscoveryConfiguration";
+import { env } from "node:process";
 
 export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID = "openid";
@@ -72,7 +73,7 @@ export default class OpenIdRecipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
         OpenIdRecipe.instance = undefined;

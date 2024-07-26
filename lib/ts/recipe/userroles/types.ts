@@ -14,7 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { UserContext } from "../../types";
+import type { UserContext } from "../../types";
 
 export type TypeInput = {
     skipAddingRolesToAccessToken?: boolean;

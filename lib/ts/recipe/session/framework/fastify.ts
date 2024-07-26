@@ -13,9 +13,10 @@
  * under the License.
  */
 import Session from "../recipe";
-import { VerifySessionOptions } from "..";
-import { FastifyRequest, FastifyResponse, SessionRequest } from "../../../framework/fastify/framework";
-import { FastifyReply, FastifyRequest as OriginalFastifyRequest } from "fastify";
+import type { VerifySessionOptions } from "..";
+import type { SessionRequest } from "../../../framework/fastify/framework";
+import { FastifyRequest, FastifyResponse } from "../../../framework/fastify/framework";
+import type { FastifyReply, FastifyRequest as OriginalFastifyRequest } from "fastify";
 import SuperTokens from "../../../supertokens";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 

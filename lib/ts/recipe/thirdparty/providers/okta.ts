@@ -14,7 +14,7 @@
  */
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
-import { ProviderInput, TypeProvider } from "../types";
+import type { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
 import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 

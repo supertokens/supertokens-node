@@ -15,8 +15,8 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { ProviderConfig, ProviderInput } from "../thirdparty/types";
-import { GeneralErrorResponse, UserContext } from "../../types";
+import type { ProviderConfig, ProviderInput } from "../thirdparty/types";
+import type { GeneralErrorResponse, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {

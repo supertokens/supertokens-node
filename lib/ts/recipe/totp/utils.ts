@@ -13,8 +13,8 @@
  * under the License.
  */
 
-import { NormalisedAppinfo } from "../../types";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import type { NormalisedAppinfo } from "../../types";
+import type { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
     let override = {

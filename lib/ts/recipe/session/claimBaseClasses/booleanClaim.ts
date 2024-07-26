@@ -1,4 +1,5 @@
-import { SessionClaim, SessionClaimValidator } from "../types";
+import type { SessionClaimValidator } from "../types";
+import { SessionClaim } from "../types";
 import { PrimitiveClaim } from "./primitiveClaim";
 
 export class BooleanClaim extends PrimitiveClaim<boolean> {
@@ -17,7 +18,7 @@ export class BooleanClaim extends PrimitiveClaim<boolean> {
         };
     }
 
-    validators!: PrimitiveClaim<boolean>["validators"] & {
+    declare validators: PrimitiveClaim<boolean>["validators"] & {
         isTrue: (maxAge?: number, id?: string) => SessionClaimValidator;
         isFalse: (maxAge?: number, id?: string) => SessionClaimValidator;
     };

@@ -1,4 +1,4 @@
-import { RecipeInterface } from "./types";
+import type { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import AccountLinking from "../accountlinking/recipe";
 import EmailVerification from "../emailverification/recipe";

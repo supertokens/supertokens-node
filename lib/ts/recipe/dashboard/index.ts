@@ -13,7 +13,7 @@
  * under the License.
  */
 import Recipe from "./recipe";
-import { RecipeInterface, APIOptions, APIInterface } from "./types";
+import type { RecipeInterface, APIOptions, APIInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;

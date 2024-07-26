@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeInputWithService, SmsDeliveryInterface } from "./types";
+import type { TypeInputWithService, SmsDeliveryInterface } from "./types";
 import OverrideableBuilder from "supertokens-js-override";
 
 export default class SmsDelivery<T> {

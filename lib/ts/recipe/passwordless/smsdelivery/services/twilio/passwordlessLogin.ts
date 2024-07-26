@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../../ingredients/smsdelivery/services/twilio";
+import type { TypePasswordlessSmsDeliveryInput } from "../../../types";
+import type { GetContentResult } from "../../../../../ingredients/smsdelivery/services/twilio";
 import { humaniseMilliseconds } from "../../../../../utils";
 import Supertokens from "../../../../../supertokens";
 

@@ -13,12 +13,12 @@
  * under the License.
  */
 
-import { RecipeInterface } from "./";
+import type { RecipeInterface } from "./";
 import UserMetadata from "../usermetadata";
 import { MultiFactorAuthClaim } from "./multiFactorAuthClaim";
 import type MultiFactorAuthRecipe from "./recipe";
 import { logDebugMessage } from "../../logger";
-import { SessionClaimValidator } from "../session";
+import type { SessionClaimValidator } from "../session";
 import { updateAndGetMFARelatedInfoInSession } from "./utils";
 
 export default function getRecipeInterface(recipeInstance: MultiFactorAuthRecipe): RecipeInterface {

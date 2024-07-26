@@ -1,8 +1,9 @@
-import { APIInterface } from "../";
+import type { APIInterface } from "../";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
 import { logDebugMessage } from "../../../logger";
+import { Buffer } from "node:buffer";
 
 export default function getAPIInterface(): APIInterface {
     return {

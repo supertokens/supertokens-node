@@ -14,10 +14,10 @@
  */
 
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo, UserContext } from "../../types";
+import type { NormalisedAppinfo, UserContext } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
-import { SessionContainerInterface } from "../session/types";
-import { GeneralErrorResponse, User } from "../../types";
+import type { SessionContainerInterface } from "../session/types";
+import type { GeneralErrorResponse, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type UserInfo = {
