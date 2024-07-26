@@ -137,6 +137,16 @@ export async function convertRequestSessionToSessionObject(
     return tokens;
 }
 
+export async function serializeResponse(req, res, response) {
+    const fdiVersion: string = req.headers["fdi-version"] as string;
+
+    await res.json({
+        ...response,
+        ...serializeUser(response, fdiVersion),
+        ...serializeRecipeUserId(response, fdiVersion),
+    });
+}
+
 export function serializeUser(response, fdiVersion: string) {
     if (["1.17", "2.0"].includes(fdiVersion)) {
         return {

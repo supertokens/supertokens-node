@@ -1,6 +1,6 @@
 import { Router } from "express";
 import EmailPassword from "../../../recipe/emailpassword";
-import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
+import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeResponse, serializeUser } from "./utils";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
 
@@ -9,8 +9,6 @@ const { logDebugMessage } = logger(namespace);
 
 const router = Router()
     .post("/signup", async (req, res, next) => {
-        const fdiVersion: string = req.headers["fdi-version"] as string;
-
         try {
             logDebugMessage("EmailPassword:signup %j", req.body);
             let session = req.body.session && (await convertRequestSessionToSessionObject(req.body.session));
@@ -21,11 +19,7 @@ const router = Router()
                 session,
                 req.body.userContext
             );
-            res.json({
-                ...response,
-                ...serializeUser(response, fdiVersion),
-                ...serializeRecipeUserId(response, fdiVersion),
-            });
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }
@@ -41,11 +35,7 @@ const router = Router()
                 session,
                 req.body.userContext
             );
-            res.json({
-                ...response,
-                ...serializeUser(response),
-                ...serializeRecipeUserId(response),
-            });
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }
