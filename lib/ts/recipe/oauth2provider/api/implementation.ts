@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import SuperTokens from "../../../supertokens";
 import { APIInterface } from "../types";
 import { handleInternalRedirects, loginGET } from "./utils";
 
@@ -49,91 +48,6 @@ export default function getAPIImplementation(): APIInterface {
             return { redirectTo: res.redirectTo };
         },
 
-        logoutGET: async ({ logoutChallenge, options, userContext }) => {
-            const request = await options.recipeImplementation.getLogoutRequest({
-                challenge: logoutChallenge,
-                userContext,
-            });
-
-            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-            return {
-                redirectTo:
-                    appInfo
-                        .getOrigin({
-                            request: options.req,
-                            userContext: userContext,
-                        })
-                        .getAsStringDangerous() +
-                    appInfo.websiteBasePath.getAsStringDangerous() +
-                    `/logout?challenge=${request.challenge}`,
-            };
-        },
-
-        logoutPOST: async ({ logoutChallenge, accept, options, userContext }) => {
-            if (accept) {
-                const res = await options.recipeImplementation.acceptLogoutRequest({
-                    challenge: logoutChallenge,
-                    userContext,
-                });
-                return { redirectTo: res.redirectTo };
-            }
-            await options.recipeImplementation.rejectLogoutRequest({
-                challenge: logoutChallenge,
-                //   error: { error: "access_denied", errorDescription: "The resource owner denied the request" },
-                userContext,
-            });
-            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-            return {
-                redirectTo:
-                    appInfo
-                        .getOrigin({
-                            request: options.req,
-                            userContext: userContext,
-                        })
-                        .getAsStringDangerous() + appInfo.websiteBasePath.getAsStringDangerous(),
-            };
-        },
-
-        consentGET: async ({ consentChallenge, options, userContext }) => {
-            const request = await options.recipeImplementation.getConsentRequest({
-                challenge: consentChallenge,
-                userContext,
-            });
-
-            const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-            return {
-                redirectTo:
-                    appInfo
-                        .getOrigin({
-                            request: options.req,
-                            userContext: userContext,
-                        })
-                        .getAsStringDangerous() +
-                    appInfo.websiteBasePath.getAsStringDangerous() +
-                    `/consent?challenge=${request.challenge}&scopes=${request.requestedScope}&client=${request.client}&`,
-            };
-        },
-
-        consentPOST: async ({ consentChallenge, accept, remember, grantScope, options, userContext }) => {
-            const request = await options.recipeImplementation.getConsentRequest({
-                challenge: consentChallenge,
-                userContext,
-            });
-            const res = accept
-                ? await options.recipeImplementation.acceptConsentRequest({
-                      challenge: consentChallenge,
-                      grantAccessTokenAudience: request.requestedAccessTokenAudience,
-                      remember,
-                      grantScope,
-                      userContext,
-                  })
-                : await options.recipeImplementation.rejectConsentRequest({
-                      challenge: consentChallenge,
-                      error: { error: "access_denied", errorDescription: "The resource owner denied the request" },
-                      userContext,
-                  });
-            return { redirectTo: res.redirectTo };
-        },
         authGET: async ({ options, params, cookie, session, userContext }) => {
             const response = await options.recipeImplementation.authorization({
                 params,

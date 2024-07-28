@@ -47,7 +47,6 @@ export declare type ConsentRequest = {
     loginChallenge?: string;
     loginSessionId?: string;
     oidcContext?: any;
-    requestUrl?: string;
     requestedAccessTokenAudience?: string[];
     requestedScope?: string[];
     skip?: boolean;
@@ -62,14 +61,6 @@ export declare type LoginRequest = {
     requestedScope?: string[];
     sessionId?: string;
     skip: boolean;
-    subject: string;
-};
-export declare type LogoutRequest = {
-    challenge: string;
-    client: OAuth2Client;
-    requestUrl: string;
-    rpInitiated: boolean;
-    sid: string;
     subject: string;
 };
 export declare type TokenInfo = {
@@ -150,14 +141,6 @@ export declare type RecipeInterface = {
     }): Promise<{
         redirectTo: string;
     }>;
-    getLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<LogoutRequest>;
-    acceptLogoutRequest(input: {
-        challenge: string;
-        userContext: UserContext;
-    }): Promise<{
-        redirectTo: string;
-    }>;
-    rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<void>;
     getOAuth2Clients(
         input: GetOAuth2ClientsInput,
         userContext: UserContext
@@ -280,58 +263,6 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
-    logoutGET:
-        | undefined
-        | ((input: {
-              logoutChallenge: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    redirectTo: string;
-                }
-              | GeneralErrorResponse
-          >);
-    logoutPOST:
-        | undefined
-        | ((input: {
-              logoutChallenge: string;
-              accept: boolean;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    redirectTo: string;
-                }
-              | GeneralErrorResponse
-          >);
-    consentGET:
-        | undefined
-        | ((input: {
-              consentChallenge: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    redirectTo: string;
-                }
-              | GeneralErrorResponse
-          >);
-    consentPOST:
-        | undefined
-        | ((input: {
-              consentChallenge: string;
-              accept: boolean;
-              grantScope: string[];
-              remember: boolean;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    redirectTo: string;
-                }
-              | GeneralErrorResponse
-          >);
     authGET:
         | undefined
         | ((input: {
@@ -388,50 +319,30 @@ export declare type APIInterface = {
 export declare type OAuth2ClientOptions = {
     clientId: string;
     clientSecret: string;
+    createdAt: string;
+    updatedAt: string;
     clientName: string;
     scope: string;
     redirectUris?: string[] | null;
+    allowedCorsOrigins?: string[];
     authorizationCodeGrantAccessTokenLifespan?: string | null;
     authorizationCodeGrantIdTokenLifespan?: string | null;
     authorizationCodeGrantRefreshTokenLifespan?: string | null;
     clientCredentialsGrantAccessTokenLifespan?: string | null;
     implicitGrantAccessTokenLifespan?: string | null;
     implicitGrantIdTokenLifespan?: string | null;
-    jwtBearerGrantAccessTokenLifespan?: string | null;
     refreshTokenGrantAccessTokenLifespan?: string | null;
     refreshTokenGrantIdTokenLifespan?: string | null;
     refreshTokenGrantRefreshTokenLifespan?: string | null;
     tokenEndpointAuthMethod: string;
-    tokenEndpointAuthSigningAlg?: string;
     accessTokenStrategy?: "jwt" | "opaque";
-    backchannelLogoutSessionRequired?: boolean;
-    backchannelLogoutUri?: string;
-    frontchannelLogoutSessionRequired?: boolean;
-    frontchannelLogoutUri?: string;
-    requestObjectSigningAlg?: string;
-    sectorIdentifierUri?: string;
-    userinfoSignedResponseAlg: string;
-    jwks?: Record<any, any>;
-    jwksUri?: string;
-    owner?: string;
-    clientUri?: string;
-    allowedCorsOrigins?: string[];
     audience?: string[];
     grantTypes?: string[] | null;
-    postLogoutRedirectUris?: string[];
-    requestUris?: string[];
     responseTypes?: string[] | null;
-    contacts?: string[] | null;
+    clientUri?: string;
     logoUri?: string;
     policyUri?: string;
     tosUri?: string;
-    skipConsent?: boolean;
-    skipLogoutConsent?: boolean | null;
-    subjectType: string;
-    createdAt: string;
-    updatedAt: string;
-    registrationAccessToken: string;
-    registrationClientUri: string;
     metadata?: Record<string, any>;
 };
 export declare type GetOAuth2ClientsInput = {
@@ -452,29 +363,16 @@ export declare type GetOAuth2ClientsInput = {
      */
     owner?: string;
 };
-export declare type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
+export declare type CreateOAuth2ClientInput = Partial<
+    Omit<OAuth2ClientOptions, "createdAt" | "updatedAt" | "clientId" | "clientSecret">
+>;
 export declare type UpdateOAuth2ClientInput = NonNullableProperties<
-    Omit<
-        CreateOAuth2ClientInput,
-        | "redirectUris"
-        | "grantTypes"
-        | "postLogoutRedirectUris"
-        | "requestUris"
-        | "responseTypes"
-        | "contacts"
-        | "registrationAccessToken"
-        | "registrationClientUri"
-        | "metadata"
-    >
+    Omit<CreateOAuth2ClientInput, "redirectUris" | "grantTypes" | "responseTypes" | "metadata">
 > & {
+    clientId: string;
     redirectUris?: string[] | null;
     grantTypes?: string[] | null;
-    postLogoutRedirectUris?: string[] | null;
-    requestUris?: string[] | null;
     responseTypes?: string[] | null;
-    contacts?: string[] | null;
-    registrationAccessToken?: string | null;
-    registrationClientUri?: string | null;
     metadata?: Record<string, any> | null;
 };
 export declare type DeleteOAuth2ClientInput = {

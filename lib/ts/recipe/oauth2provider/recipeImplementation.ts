@@ -22,7 +22,6 @@ import {
     TypeNormalisedInput,
     ConsentRequest,
     LoginRequest,
-    LogoutRequest,
     PayloadBuilderFunction,
     UserInfoBuilderFunction,
 } from "./types";
@@ -127,7 +126,6 @@ export default function getRecipeInterface(
                 loginChallenge: resp.data.login_challenge,
                 loginSessionId: resp.data.login_session_id,
                 oidcContext: resp.data.oidc_context,
-                requestUrl: resp.data.request_url,
                 requestedAccessTokenAudience: resp.data.requested_access_token_audience,
                 requestedScope: resp.data.requested_scope,
                 skip: resp.data.skip,
@@ -185,51 +183,6 @@ export default function getRecipeInterface(
                 ),
             };
         },
-
-        getLogoutRequest: async function (this: RecipeInterface, input): Promise<LogoutRequest> {
-            const resp = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/logout"),
-                { logout_challenge: input.challenge },
-                input.userContext
-            );
-
-            return {
-                challenge: resp.data.challenge,
-                client: OAuth2Client.fromAPIResponse(resp.data.client),
-                requestUrl: resp.data.request_url,
-                rpInitiated: resp.data.rp_initiated,
-                sid: resp.data.sid,
-                subject: resp.data.subject,
-            };
-        },
-        acceptLogoutRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
-            const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/logout/accept`),
-                {},
-                {
-                    logout_challenge: input.challenge,
-                },
-                input.userContext
-            );
-
-            return {
-                // TODO: FIXME!!!
-                redirectTo: resp.data.redirect_to.replace(
-                    hydraPubDomain,
-                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
-                ),
-            };
-        },
-        rejectLogoutRequest: async function (this: RecipeInterface, input): Promise<void> {
-            await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/logout/reject`),
-                {},
-                {
-                    logout_challenge: input.challenge,
-                },
-                input.userContext
-            );
-        },
         authorization: async function (this: RecipeInterface, input) {
             const resp = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
@@ -256,43 +209,41 @@ export default function getRecipeInterface(
                 if (!user) {
                     throw new Error("Should not happen");
                 }
-                if (consentRequest.skip || consentRequest.client?.skipConsent) {
-                    const idToken = this.buildIdTokenPayload({
+                const idToken = this.buildIdTokenPayload({
+                    user,
+                    session: input.session,
+                    defaultPayload: await getDefaultIdTokenPayload(
                         user,
-                        session: input.session,
-                        defaultPayload: await getDefaultIdTokenPayload(
-                            user,
-                            consentRequest.requestedScope ?? [],
-                            input.userContext
-                        ),
-                        scopes: consentRequest.requestedScope || [],
-                        userContext: input.userContext,
-                    });
+                        consentRequest.requestedScope ?? [],
+                        input.userContext
+                    ),
+                    scopes: consentRequest.requestedScope || [],
+                    userContext: input.userContext,
+                });
 
-                    const accessTokenPayload = this.buildAccessTokenPayload({
-                        user,
-                        session: input.session,
-                        defaultPayload: input.session.getAccessTokenPayload(input.userContext), // TODO: validate
-                        userContext: input.userContext,
-                        scopes: consentRequest.requestedScope || [],
-                    });
+                const accessTokenPayload = this.buildAccessTokenPayload({
+                    user,
+                    session: input.session,
+                    defaultPayload: input.session.getAccessTokenPayload(input.userContext), // TODO: validate
+                    userContext: input.userContext,
+                    scopes: consentRequest.requestedScope || [],
+                });
 
-                    const consentRes = await this.acceptConsentRequest({
-                        ...input,
-                        challenge: consentRequest.challenge,
-                        grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
-                        grantScope: consentRequest.requestedScope,
-                        session: {
-                            id_token: idToken,
-                            access_token: accessTokenPayload,
-                        },
-                    });
+                const consentRes = await this.acceptConsentRequest({
+                    ...input,
+                    challenge: consentRequest.challenge,
+                    grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
+                    grantScope: consentRequest.requestedScope,
+                    session: {
+                        id_token: idToken,
+                        access_token: accessTokenPayload,
+                    },
+                });
 
-                    return {
-                        redirectTo: consentRes.redirectTo,
-                        setCookie: resp.headers.get("set-cookie") ?? undefined,
-                    };
-                }
+                return {
+                    redirectTo: consentRes.redirectTo,
+                    setCookie: resp.headers.get("set-cookie") ?? undefined,
+                };
             }
             return { redirectTo, setCookie: resp.headers.get("set-cookie") ?? undefined };
         },
@@ -354,7 +305,13 @@ export default function getRecipeInterface(
         createOAuth2Client: async function (input, userContext) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
-                transformObjectKeys(input, "snake-case"),
+                {
+                    ...transformObjectKeys(input, "snake-case"),
+                    // TODO: these defaults should be set/enforced on the core side
+                    accessTokenStrategy: "jwt",
+                    skipConsent: true,
+                    subjectType: "public",
+                },
                 userContext
             );
 

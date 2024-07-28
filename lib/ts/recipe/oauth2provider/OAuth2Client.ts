@@ -86,12 +86,6 @@ export class OAuth2Client {
     implicitGrantIdTokenLifespan: string | null;
 
     /**
-     * JWT Bearer Grant Access Token Lifespan
-     * NullDuration - ^[0-9]+(ns|us|ms|s|m|h)$
-     */
-    jwtBearerGrantAccessTokenLifespan: string | null;
-
-    /**
      * Refresh Token Grant Access Token Lifespan
      * NullDuration - ^[0-9]+(ns|us|ms|s|m|h)$
      */
@@ -116,84 +110,11 @@ export class OAuth2Client {
     tokenEndpointAuthMethod: string;
 
     /**
-     * OAuth 2.0 Token Endpoint Signing Algorithm
-     * Requested Client Authentication signing algorithm for the Token Endpoint.
-     */
-    tokenEndpointAuthSigningAlg?: string;
-
-    /**
      * OAuth 2.0 Access Token Strategy
      * AccessTokenStrategy is the strategy used to generate access tokens.
      * Valid options are jwt and opaque.
      */
     accessTokenStrategy?: "jwt" | "opaque";
-
-    /**
-     * OpenID Connect Back-Channel Logout Session Required
-     * Boolean value specifying whether the RP requires that a sid (session ID) Claim be included in the Logout
-     * Token to identify the RP session with the OP when the backchannel_logout_uri is used.
-     * If omitted, the default value is false.
-     */
-    backchannelLogoutSessionRequired?: boolean;
-
-    /**
-     * OpenID Connect Back-Channel Logout URI
-     * RP URL that will cause the RP to log itself out when sent a Logout Token by the OP.
-     */
-    backchannelLogoutUri?: string;
-
-    /**
-     * OpenID Connect Front-Channel Logout Session Required
-     * Boolean value specifying whether the RP requires that iss (issuer) and sid (session ID) query parameters be
-     * included to identify the RP session with the OP when the frontchannel_logout_uri is used.
-     * If omitted, the default value is false.
-     */
-    frontchannelLogoutSessionRequired?: boolean;
-
-    /**
-     * OpenID Connect Front-Channel Logout URI
-     * RP URL that will cause the RP to log itself out when rendered in an iframe by the OP.
-     */
-    frontchannelLogoutUri?: string;
-
-    /**
-     * OpenID Connect Request Object Signing Algorithm
-     * JWS alg algorithm that MUST be used for signing Request Objects sent to the OP. All Request Objects
-     * from this Client MUST be rejected, if not signed with this algorithm.
-     */
-    requestObjectSigningAlg?: string;
-
-    /**
-     * OpenID Connect Sector Identifier URI
-     * URL using the https scheme to be used in calculating Pseudonymous Identifiers by the OP. The URL references a
-     * file with a single JSON array of redirect_uri values.
-     */
-    sectorIdentifierUri?: string;
-
-    /**
-     * OpenID Connect Request Userinfo Signed Response Algorithm
-     * JWS alg algorithm REQUIRED for signing UserInfo Responses. If this is specified, the response will be JWT
-     * serialized, and signed using JWS.
-     */
-    userinfoSignedResponseAlg: string;
-
-    /**
-     * OAuth 2.0 Client JSON Web Key Set
-     * Client's JSON Web Key Set [JWK] document, passed by value.
-     */
-    jwks: Record<any, any>;
-
-    /**
-     * OAuth 2.0 Client JSON Web Key Set URL
-     * URL for the Client's JSON Web Key Set [JWK] document.
-     */
-    jwksUri?: string;
-
-    /**
-     * OAuth 2.0 Client Owner
-     * Owner is a string identifying the owner of the OAuth 2.0 Client.
-     */
-    owner: string;
 
     /**
      * OAuth 2.0 Client URI
@@ -220,28 +141,10 @@ export class OAuth2Client {
     grantTypes: string[] | null;
 
     /**
-     * Array of post-logout redirect URIs
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
-     */
-    postLogoutRedirectUris?: string[];
-
-    /**
-     * Array of request URIs
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
-     */
-    requestUris?: string[];
-
-    /**
      * Array of response types
      * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
     responseTypes: string[] | null;
-
-    /**
-     * Array of contacts
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
-     */
-    contacts: string[] | null;
 
     /**
      * OAuth 2.0 Client Logo URI
@@ -267,24 +170,6 @@ export class OAuth2Client {
     tosUri: string;
 
     /**
-     * SkipConsent skips the consent screen for this client. This field can only
-     * be set from the admin API.
-     */
-    skipConsent: boolean;
-
-    /**
-     * SkipLogoutConsent skips the logout consent screen for this client. This field can only
-     * be set from the admin API.
-     */
-    skipLogoutConsent: boolean | null;
-
-    /**
-     * OpenID Connect Subject Type
-     * Valid types include pairwise and public.
-     */
-    subjectType: string;
-
-    /**
      * OAuth 2.0 Client Creation Date
      * CreatedAt returns the timestamp of the client's creation.
      */
@@ -295,19 +180,6 @@ export class OAuth2Client {
      * UpdatedAt returns the timestamp of the last update.
      */
     updatedAt: string;
-
-    /**
-     * OpenID Connect Dynamic Client Registration Access Token
-     * RegistrationAccessToken can be used to update, get, or delete the OAuth2 Client. It is sent when creating a client
-     * using Dynamic Client Registration.
-     */
-    registrationAccessToken: string;
-
-    /**
-     * OpenID Connect Dynamic Client Registration URL
-     * RegistrationClientURI is the URL used to update, get, or delete the OAuth2 Client.
-     */
-    registrationClientUri: string;
 
     /**
      * Metadata - JSON object
@@ -327,41 +199,21 @@ export class OAuth2Client {
         clientCredentialsGrantAccessTokenLifespan = null,
         implicitGrantAccessTokenLifespan = null,
         implicitGrantIdTokenLifespan = null,
-        jwtBearerGrantAccessTokenLifespan = null,
         refreshTokenGrantAccessTokenLifespan = null,
         refreshTokenGrantIdTokenLifespan = null,
         refreshTokenGrantRefreshTokenLifespan = null,
         tokenEndpointAuthMethod,
-        tokenEndpointAuthSigningAlg,
         accessTokenStrategy,
-        backchannelLogoutSessionRequired = false,
-        backchannelLogoutUri,
-        frontchannelLogoutSessionRequired = false,
-        frontchannelLogoutUri,
-        requestObjectSigningAlg,
-        sectorIdentifierUri,
-        userinfoSignedResponseAlg,
-        jwks = {},
-        jwksUri,
-        owner = "",
         clientUri = "",
         allowedCorsOrigins = [],
         audience = [],
         grantTypes = null,
-        postLogoutRedirectUris,
-        requestUris,
         responseTypes = null,
-        contacts = null,
         logoUri = "",
         policyUri = "",
         tosUri = "",
-        skipConsent = false,
-        skipLogoutConsent = null,
-        subjectType,
         createdAt,
         updatedAt,
-        registrationAccessToken,
-        registrationClientUri,
         metadata = {},
     }: OAuth2ClientOptions) {
         this.clientId = clientId;
@@ -375,41 +227,21 @@ export class OAuth2Client {
         this.clientCredentialsGrantAccessTokenLifespan = clientCredentialsGrantAccessTokenLifespan;
         this.implicitGrantAccessTokenLifespan = implicitGrantAccessTokenLifespan;
         this.implicitGrantIdTokenLifespan = implicitGrantIdTokenLifespan;
-        this.jwtBearerGrantAccessTokenLifespan = jwtBearerGrantAccessTokenLifespan;
         this.refreshTokenGrantAccessTokenLifespan = refreshTokenGrantAccessTokenLifespan;
         this.refreshTokenGrantIdTokenLifespan = refreshTokenGrantIdTokenLifespan;
         this.refreshTokenGrantRefreshTokenLifespan = refreshTokenGrantRefreshTokenLifespan;
         this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
-        this.tokenEndpointAuthSigningAlg = tokenEndpointAuthSigningAlg;
         this.accessTokenStrategy = accessTokenStrategy;
-        this.backchannelLogoutSessionRequired = backchannelLogoutSessionRequired;
-        this.backchannelLogoutUri = backchannelLogoutUri;
-        this.frontchannelLogoutSessionRequired = frontchannelLogoutSessionRequired;
-        this.frontchannelLogoutUri = frontchannelLogoutUri;
-        this.requestObjectSigningAlg = requestObjectSigningAlg;
-        this.sectorIdentifierUri = sectorIdentifierUri;
-        this.userinfoSignedResponseAlg = userinfoSignedResponseAlg;
-        this.jwks = jwks;
-        this.jwksUri = jwksUri;
-        this.owner = owner;
         this.clientUri = clientUri;
         this.allowedCorsOrigins = allowedCorsOrigins;
         this.audience = audience;
         this.grantTypes = grantTypes;
-        this.postLogoutRedirectUris = postLogoutRedirectUris;
-        this.requestUris = requestUris;
         this.responseTypes = responseTypes;
-        this.contacts = contacts;
         this.logoUri = logoUri;
         this.policyUri = policyUri;
         this.tosUri = tosUri;
-        this.skipConsent = skipConsent;
-        this.skipLogoutConsent = skipLogoutConsent;
-        this.subjectType = subjectType;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.registrationAccessToken = registrationAccessToken;
-        this.registrationClientUri = registrationClientUri;
         this.metadata = metadata;
     }
 

@@ -93,9 +93,6 @@ export type ConsentRequest = {
     // object (Contains optional information about the OpenID Connect request.)
     oidcContext?: any;
 
-    // RequestURL is the original OAuth 2.0 Authorization URL requested by the OAuth 2.0 client. It is the URL which initiates the OAuth 2.0 Authorization Code or OAuth 2.0 Implicit flow. This URL is typically not needed, but might come in handy if you want to deal with additional request parameters.
-    requestUrl?: string;
-
     // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
     requestedAccessTokenAudience?: string[];
 
@@ -136,26 +133,6 @@ export type LoginRequest = {
     skip: boolean;
 
     // Subject is the user ID of the end-user that authenticated. Now, that end user needs to grant or deny the scope requested by the OAuth 2.0 client. If this value is set and skip is true, you MUST include this subject type when accepting the login request, or the request will fail.
-    subject: string;
-};
-
-export type LogoutRequest = {
-    // Challenge is the identifier ("logout challenge") of the logout authentication request. It is used to identify the session.
-    challenge: string;
-
-    // OAuth 2.0 Clients are used to perform OAuth 2.0 and OpenID Connect flows. Usually, OAuth 2.0 clients are generated for applications which want to consume your OAuth 2.0 or OpenID Connect capabilities.
-    client: OAuth2Client;
-
-    // RequestURL is the original Logout URL requested.
-    requestUrl: string;
-
-    // RPInitiated is set to true if the request was initiated by a Relying Party (RP), also known as an OAuth 2.0 Client.
-    rpInitiated: boolean;
-
-    // SessionID is the login session ID that was requested to log out.
-    sid: string;
-
-    // Subject is the user for whom the logout was request.
     subject: string;
 };
 
@@ -279,10 +256,6 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ redirectTo: string }>;
 
-    getLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<LogoutRequest>;
-    acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
-    rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<void>;
-
     getOAuth2Clients(
         input: GetOAuth2ClientsInput,
         userContext: UserContext
@@ -379,7 +352,6 @@ export type RecipeInterface = {
 };
 
 export type APIInterface = {
-    // TODO: add json versions?
     loginGET:
         | undefined
         | ((input: {
@@ -399,41 +371,6 @@ export type APIInterface = {
               userContext: UserContext;
           }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
 
-    logoutGET:
-        | undefined
-        | ((input: {
-              logoutChallenge: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
-
-    logoutPOST:
-        | undefined
-        | ((input: {
-              logoutChallenge: string;
-              accept: boolean;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
-
-    consentGET:
-        | undefined
-        | ((input: {
-              consentChallenge: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
-
-    consentPOST:
-        | undefined
-        | ((input: {
-              consentChallenge: string;
-              accept: boolean;
-              grantScope: string[];
-              remember: boolean;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
     authGET:
         | undefined
         | ((input: {
@@ -472,9 +409,14 @@ export type APIInterface = {
 export type OAuth2ClientOptions = {
     clientId: string;
     clientSecret: string;
+    createdAt: string;
+    updatedAt: string;
+
     clientName: string;
+
     scope: string;
     redirectUris?: string[] | null;
+    allowedCorsOrigins?: string[];
 
     authorizationCodeGrantAccessTokenLifespan?: string | null;
     authorizationCodeGrantIdTokenLifespan?: string | null;
@@ -482,44 +424,21 @@ export type OAuth2ClientOptions = {
     clientCredentialsGrantAccessTokenLifespan?: string | null;
     implicitGrantAccessTokenLifespan?: string | null;
     implicitGrantIdTokenLifespan?: string | null;
-    jwtBearerGrantAccessTokenLifespan?: string | null;
     refreshTokenGrantAccessTokenLifespan?: string | null;
     refreshTokenGrantIdTokenLifespan?: string | null;
     refreshTokenGrantRefreshTokenLifespan?: string | null;
 
     tokenEndpointAuthMethod: string;
-    tokenEndpointAuthSigningAlg?: string;
     accessTokenStrategy?: "jwt" | "opaque";
 
-    backchannelLogoutSessionRequired?: boolean;
-    backchannelLogoutUri?: string;
-    frontchannelLogoutSessionRequired?: boolean;
-    frontchannelLogoutUri?: string;
-    requestObjectSigningAlg?: string;
-    sectorIdentifierUri?: string;
-    userinfoSignedResponseAlg: string;
-
-    jwks?: Record<any, any>;
-    jwksUri?: string;
-    owner?: string;
-    clientUri?: string;
-    allowedCorsOrigins?: string[];
     audience?: string[];
     grantTypes?: string[] | null;
-    postLogoutRedirectUris?: string[];
-    requestUris?: string[];
     responseTypes?: string[] | null;
-    contacts?: string[] | null;
+
+    clientUri?: string;
     logoUri?: string;
     policyUri?: string;
     tosUri?: string;
-    skipConsent?: boolean;
-    skipLogoutConsent?: boolean | null;
-    subjectType: string;
-    createdAt: string;
-    updatedAt: string;
-    registrationAccessToken: string;
-    registrationClientUri: string;
     metadata?: Record<string, any>;
 };
 
@@ -545,30 +464,17 @@ export type GetOAuth2ClientsInput = {
     owner?: string;
 };
 
-export type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
+export type CreateOAuth2ClientInput = Partial<
+    Omit<OAuth2ClientOptions, "createdAt" | "updatedAt" | "clientId" | "clientSecret">
+>;
 
 export type UpdateOAuth2ClientInput = NonNullableProperties<
-    Omit<
-        CreateOAuth2ClientInput,
-        | "redirectUris"
-        | "grantTypes"
-        | "postLogoutRedirectUris"
-        | "requestUris"
-        | "responseTypes"
-        | "contacts"
-        | "registrationAccessToken"
-        | "registrationClientUri"
-        | "metadata"
-    >
+    Omit<CreateOAuth2ClientInput, "redirectUris" | "grantTypes" | "responseTypes" | "metadata">
 > & {
+    clientId: string;
     redirectUris?: string[] | null;
     grantTypes?: string[] | null;
-    postLogoutRedirectUris?: string[] | null;
-    requestUris?: string[] | null;
     responseTypes?: string[] | null;
-    contacts?: string[] | null;
-    registrationAccessToken?: string | null;
-    registrationClientUri?: string | null;
     metadata?: Record<string, any> | null;
 };
 
