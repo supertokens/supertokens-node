@@ -52,6 +52,22 @@ export default class Wrapper {
             getUserContext(userContext)
         );
     }
+
+    static validateOAuth2AccessToken(token: string, expectedAudience?: string, userContext?: Record<string, any>) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
+            token,
+            expectedAudience,
+            userContext: getUserContext(userContext),
+        });
+    }
+
+    static validateOAuth2IdToken(token: string, expectedAudience?: string, userContext?: Record<string, any>) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2IdToken({
+            token,
+            expectedAudience,
+            userContext: getUserContext(userContext),
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -63,5 +79,9 @@ export let createOAuth2Client = Wrapper.createOAuth2Client;
 export let updateOAuth2Client = Wrapper.updateOAuth2Client;
 
 export let deleteOAuth2Client = Wrapper.deleteOAuth2Client;
+
+export let validateOAuth2AccessToken = Wrapper.validateOAuth2AccessToken;
+
+export let validateOAuth2IdToken = Wrapper.validateOAuth2IdToken;
 
 export type { APIInterface, APIOptions, RecipeInterface };
