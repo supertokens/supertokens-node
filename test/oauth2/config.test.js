@@ -3,7 +3,7 @@ let assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
-const OAuth2Recipe = require("../../lib/build/recipe/oauth2/recipe").default;
+const OAuth2ProviderRecipe = require("../../lib/build/recipe/oauth2provider/recipe").default;
 let { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 
@@ -30,7 +30,7 @@ describe(`configTest: ${printPath("[test/oauth2/config.test.js]")}`, function ()
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [OAuth2Recipe.init()],
+            recipeList: [OAuth2ProviderRecipe.init()],
         });
 
         // Only run for version >= 2.9
@@ -40,6 +40,6 @@ describe(`configTest: ${printPath("[test/oauth2/config.test.js]")}`, function ()
             return;
         }
 
-        OAuth2Recipe.getInstanceOrThrowError();
+        OAuth2ProviderRecipe.getInstanceOrThrowError();
     });
 });
