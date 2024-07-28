@@ -13,22 +13,11 @@
  * under the License.
  */
 
+import OAuth2ProviderRecipe from "../recipe";
 import { send200Response, sendNon200ResponseWithMessage } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { JSONObject, UserContext } from "../../../types";
 import { getUser } from "../../..";
-
-// TODO: Replace stub implementation by the actual implementation
-async function validateOAuth2AccessToken(accessToken: string) {
-    const resp = await fetch(`http://localhost:4445/admin/oauth2/introspect`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({ token: accessToken }),
-    });
-    return await resp.json();
-}
 
 export default async function userInfoGET(
     apiImplementation: APIInterface,
@@ -54,7 +43,13 @@ export default async function userInfoGET(
     let accessTokenPayload: JSONObject;
 
     try {
-        accessTokenPayload = await validateOAuth2AccessToken(accessToken);
+        accessTokenPayload = await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken(
+            {
+                token: accessToken,
+                // TODO: expectedAudience?
+                userContext,
+            }
+        );
     } catch (error) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
         sendNon200ResponseWithMessage(options.res, "Invalid or expired OAuth2 access token", 400);

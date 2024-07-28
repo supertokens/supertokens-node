@@ -3,7 +3,7 @@ let assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
-let OAuth2Recipe = require("../../recipe/oauth2");
+let OAuth2Recipe = require("../../recipe/oauth2provider");
 
 describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`, function () {
     beforeEach(async function () {

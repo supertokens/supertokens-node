@@ -1,4 +1,4 @@
-export * from "../../lib/build/recipe/oauth2";
+export * from "../../../lib/build/recipe/oauth2provider/types";
 /**
  * 'export *' does not re-export a default.
  * import NextJS from "supertokens-node/nextjs";
@@ -6,5 +6,5 @@ export * from "../../lib/build/recipe/oauth2";
  * - user add "esModuleInterop": true in their tsconfig.json file
  * - we do the following change:
  */
-import * as _default from "../../lib/build/recipe/oauth2";
+import * as _default from "../../../lib/build/recipe/oauth2provider/types";
 export default _default;

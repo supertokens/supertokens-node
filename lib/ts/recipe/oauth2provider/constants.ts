@@ -13,12 +13,12 @@
  * under the License.
  */
 
-export const OAUTH2_BASE_PATH = "/oauth2/";
+export const OAUTH2_BASE_PATH = "/oauth2provider/";
 
-export const LOGIN_PATH = "/oauth2/login";
-export const LOGOUT_PATH = "/oauth2/logout";
-export const CONSENT_PATH = "/oauth2/consent";
-export const AUTH_PATH = "/oauth2/auth";
-export const TOKEN_PATH = "/oauth2/token";
-export const LOGIN_INFO_PATH = "/oauth2/login/info";
-export const USER_INFO_PATH = "/oauth2/userinfo";
+export const LOGIN_PATH = "/oauth2provider/login";
+export const LOGOUT_PATH = "/oauth2provider/logout";
+export const CONSENT_PATH = "/oauth2provider/consent";
+export const AUTH_PATH = "/oauth2provider/auth";
+export const TOKEN_PATH = "/oauth2provider/token";
+export const LOGIN_INFO_PATH = "/oauth2provider/login/info";
+export const USER_INFO_PATH = "/oauth2provider/userinfo";

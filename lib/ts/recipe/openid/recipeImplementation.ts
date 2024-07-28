@@ -17,7 +17,7 @@ import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types"
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
 import { NormalisedAppinfo, UserContext } from "../../types";
-import { AUTH_PATH, TOKEN_PATH, USER_INFO_PATH } from "../oauth2/constants";
+import { AUTH_PATH, TOKEN_PATH, USER_INFO_PATH } from "../oauth2provider/constants";
 
 export default function getRecipeInterface(
     config: TypeNormalisedInput,

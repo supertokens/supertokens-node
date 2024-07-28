@@ -53,7 +53,7 @@ import userInfoGET from "./api/userInfo";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID = "oauth2";
+    static RECIPE_ID = "oauth2provider";
     private static instance: Recipe | undefined = undefined;
     private idTokenBuilders: PayloadBuilderFunction[] = [];
     private userInfoBuilders: UserInfoBuilderFunction[] = [];
@@ -104,7 +104,7 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new Error("OAuth2 recipe has already been initialised. Please check your code for bugs.");
+                throw new Error("OAuth2Provider recipe has already been initialised. Please check your code for bugs.");
             }
         };
     }

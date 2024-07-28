@@ -112,7 +112,7 @@ export default class SuperTokens {
         let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
         let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
         let TotpRecipe = require("./recipe/totp/recipe").default;
-        let OAuth2ProviderRecipe = require("./recipe/oauth2/recipe").default;
+        let OAuth2ProviderRecipe = require("./recipe/oauth2provider/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);

@@ -31,10 +31,10 @@ export default function getAPIImplementation(): APIInterface {
                 options.res.setHeader("Cache-Control", `max-age=${resp.validityInSeconds}, must-revalidate`, false);
             }
 
-            const oauth2 = require("../../oauth2/recipe").default.getInstance();
+            const oauth2Provider = require("../../oauth2provider/recipe").default.getInstance();
 
             // TODO: dirty hack until we get core support
-            if (oauth2 !== undefined) {
+            if (oauth2Provider !== undefined) {
                 const oauth2JWKSRes = await fetch("http://localhost:4444/.well-known/jwks.json");
                 if (oauth2JWKSRes.ok) {
                     const oauth2RespBody = await oauth2JWKSRes.json();

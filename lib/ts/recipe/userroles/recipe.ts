@@ -27,7 +27,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import SessionRecipe from "../session/recipe";
-import OAuth2Recipe from "../oauth2/recipe";
+import OAuth2Recipe from "../oauth2provider/recipe";
 import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
 

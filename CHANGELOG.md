@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## UNRELEASED
 
--   Added OAuth2 recipe
+-   Added OAuth2Provider recipe
 
 ## [19.0.0] - 2024-06-10
 

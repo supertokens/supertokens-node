@@ -2,7 +2,7 @@
 /**
  * We need this to reset the combinedJWKS in tests because we need to create a new instance of the combinedJWKS
  * for each test to avoid caching issues.
- * This is called when the session recipe is reset and when the oauth2 recipe is reset.
+ * This is called when the session recipe is reset and when the oauth2provider recipe is reset.
  * Calling this multiple times doesn't cause an issue.
  */
 export declare function resetCombinedJWKS(): void;
