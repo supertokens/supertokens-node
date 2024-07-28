@@ -3,7 +3,7 @@ let assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
-const OAuth2Recipe = require("../../lib/build/recipe/OAuth2/recipe").default;
+const OAuth2Recipe = require("../../lib/build/recipe/oauth2/recipe").default;
 let { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 
@@ -40,6 +40,6 @@ describe(`configTest: ${printPath("[test/oauth2/config.test.js]")}`, function ()
             return;
         }
 
-        let OAuth2Recipe = await OAuth2Recipe.getInstanceOrThrowError();
+        OAuth2Recipe.getInstanceOrThrowError();
     });
 });

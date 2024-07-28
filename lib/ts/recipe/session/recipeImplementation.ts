@@ -1,4 +1,3 @@
-import { createRemoteJWKSet, JWTVerifyGetKey } from "jose";
 import {
     RecipeInterface,
     VerifySessionOptions,
@@ -22,11 +21,10 @@ import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { JWKCacheCooldownInMs, JWKCacheMaxAgeInMs, protectedProps } from "./constants";
+import { protectedProps } from "./constants";
 
 export type Helpers = {
     querier: Querier;
-    JWKS: JWTVerifyGetKey;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
@@ -38,40 +36,6 @@ export default function getRecipeInterface(
     appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface {
-    const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier
-        .getAllCoreUrlsForPath("/.well-known/jwks.json")
-        .map((url) =>
-            createRemoteJWKSet(new URL(url), {
-                cooldownDuration: JWKCacheCooldownInMs,
-                cacheMaxAge: JWKCacheMaxAgeInMs,
-            })
-        );
-
-    /**
-        This function fetches all JWKs from the first available core instance. This combines the other JWKS functions to become
-        error resistant.
-
-        Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
-        token verification. Otherwise, the result of session verification would depend on which core is currently available.
-    */
-    const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
-        let lastError = undefined;
-        if (JWKS.length === 0) {
-            throw Error(
-                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
-            );
-        }
-        for (const jwks of JWKS) {
-            try {
-                // We await before returning to make sure we catch the error
-                return await jwks(...args);
-            } catch (ex) {
-                lastError = ex;
-            }
-        }
-        throw lastError;
-    };
-
     let obj: RecipeInterface = {
         createNewSession: async function ({
             recipeUserId,
@@ -600,7 +564,6 @@ export default function getRecipeInterface(
 
     let helpers: Helpers = {
         querier,
-        JWKS: combinedJWKS,
         config,
         appInfo,
         getRecipeImpl: getRecipeImplAfterOverrides,

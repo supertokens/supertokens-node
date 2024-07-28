@@ -131,7 +131,10 @@ export class Querier {
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext): Promise<T> => {
         this.invalidateCoreCallCache(userContext);
         // TODO: remove FormData
-        const isForm = body !== undefined && body instanceof FormData;
+        const isForm = body !== undefined && body["$isFormData"];
+        if (isForm) {
+            delete body["$isFormData"];
+        }
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -174,7 +177,11 @@ export class Querier {
                 }
                 return doFetch(url, {
                     method: "POST",
-                    body: isForm ? body : body !== undefined ? JSON.stringify(body) : undefined,
+                    body: isForm
+                        ? new URLSearchParams(Object.entries(body)).toString()
+                        : body !== undefined
+                        ? JSON.stringify(body)
+                        : undefined,
                     headers,
                 });
             },

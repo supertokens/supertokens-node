@@ -5,7 +5,7 @@ import { RecipeInterface, TypeNormalisedInput, PayloadBuilderFunction, UserInfoB
 export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
-    _appInfo: NormalisedAppinfo,
+    appInfo: NormalisedAppinfo,
     getDefaultIdTokenPayload: PayloadBuilderFunction,
     getDefaultUserInfoPayload: UserInfoBuilderFunction
 ): RecipeInterface;

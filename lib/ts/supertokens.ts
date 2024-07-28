@@ -103,6 +103,7 @@ export default class SuperTokens {
         let totpFound = false;
         let userMetadataFound = false;
         let multiFactorAuthFound = false;
+        let oauth2Found = false;
 
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
@@ -111,6 +112,7 @@ export default class SuperTokens {
         let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
         let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
         let TotpRecipe = require("./recipe/totp/recipe").default;
+        let OAuth2ProviderRecipe = require("./recipe/oauth2/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
@@ -122,6 +124,8 @@ export default class SuperTokens {
                 multiFactorAuthFound = true;
             } else if (recipeModule.getRecipeId() === TotpRecipe.RECIPE_ID) {
                 totpFound = true;
+            } else if (recipeModule.getRecipeId() === OAuth2ProviderRecipe.RECIPE_ID) {
+                oauth2Found = true;
             }
             return recipeModule;
         });
@@ -142,6 +146,10 @@ export default class SuperTokens {
         // To let those cases function without initializing account linking we do not check it here, but when
         // the authentication endpoints are called.
 
+        // We've decided to always initialize the OAuth2Provider recipe
+        if (!oauth2Found) {
+            this.recipeModules.push(OAuth2ProviderRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }
 

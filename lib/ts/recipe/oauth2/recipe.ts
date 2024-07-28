@@ -50,6 +50,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import { User } from "../../user";
 import userInfoGET from "./api/userInfo";
+import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2";
@@ -112,6 +113,7 @@ export default class Recipe extends RecipeModule {
         if (process.env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
+        resetCombinedJWKS();
         Recipe.instance = undefined;
     }
 

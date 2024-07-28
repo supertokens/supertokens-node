@@ -25,6 +25,7 @@ import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { JWKCacheMaxAgeInMs } from "./constants";
 import { UserContext } from "../../types";
+import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 
 /**
  * @description call this to "login" a user.
@@ -111,7 +112,7 @@ export async function getSession(
          */
         accessTokenInfo = await getInfoFromAccessToken(
             parsedAccessToken,
-            helpers.JWKS,
+            getCombinedJWKS(),
             helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN" && doAntiCsrfCheck
         );
     } catch (err) {

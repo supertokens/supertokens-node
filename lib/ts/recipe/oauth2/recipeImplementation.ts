@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import * as jose from "jose";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier, hydraPubDomain } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
@@ -28,11 +29,13 @@ import {
 import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
+import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
+import { JSONObject } from "@loopback/core";
 
 export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
-    _appInfo: NormalisedAppinfo,
+    appInfo: NormalisedAppinfo,
     getDefaultIdTokenPayload: PayloadBuilderFunction,
     getDefaultUserInfoPayload: UserInfoBuilderFunction
 ): RecipeInterface {
@@ -80,7 +83,7 @@ export default function getRecipeInterface(
                 // TODO: FIXME!!!
                 redirectTo: resp.data.redirect_to.replace(
                     hydraPubDomain,
-                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
                 ),
             };
         },
@@ -104,7 +107,7 @@ export default function getRecipeInterface(
                 // TODO: FIXME!!!
                 redirectTo: resp.data.redirect_to.replace(
                     hydraPubDomain,
-                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
                 ),
             };
         },
@@ -153,7 +156,7 @@ export default function getRecipeInterface(
                 // TODO: FIXME!!!
                 redirectTo: resp.data.redirect_to.replace(
                     hydraPubDomain,
-                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
                 ),
             };
         },
@@ -178,7 +181,7 @@ export default function getRecipeInterface(
                 // TODO: FIXME!!!
                 redirectTo: resp.data.redirect_to.replace(
                     hydraPubDomain,
-                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
                 ),
             };
         },
@@ -213,7 +216,7 @@ export default function getRecipeInterface(
                 // TODO: FIXME!!!
                 redirectTo: resp.data.redirect_to.replace(
                     hydraPubDomain,
-                    _appInfo.apiDomain.getAsStringDangerous() + _appInfo.apiBasePath.getAsStringDangerous()
+                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
                 ),
             };
         },
@@ -295,9 +298,9 @@ export default function getRecipeInterface(
         },
 
         token: async function (this: RecipeInterface, input) {
-            const body = new FormData(); // TODO: we ideally want to avoid using formdata, the core can do the translation
+            const body: any = { $isFormData: true }; // TODO: we ideally want to avoid using formdata, the core can do the translation
             for (const key in input.body) {
-                body.append(key, input.body[key]);
+                body[key] = input.body[key];
             }
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/pub/token`),
@@ -427,6 +430,42 @@ export default function getRecipeInterface(
         },
         buildUserInfo: async function ({ user, accessTokenPayload, scopes, tenantId, userContext }) {
             return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, tenantId, userContext);
+        },
+        validateOAuth2AccessToken: async function (input) {
+            const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
+
+            // TODO: make this configurable?
+            const expectedIssuer =
+                appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+            if (payload.iss !== expectedIssuer) {
+                throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
+            }
+
+            if (input.expectedAudience !== undefined && payload.aud !== input.expectedAudience) {
+                throw new Error("Audience mismatch: this token doesn't belong to the specified client");
+            }
+
+            // TODO: add a check to make sure this is the right token type as they can be signed with the same key
+
+            return { status: "OK", payload: payload as JSONObject };
+        },
+        validateOAuth2IdToken: async function (input) {
+            const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
+
+            // TODO: make this configurable?
+            const expectedIssuer =
+                appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+            if (input.expectedAudience !== undefined && payload.iss !== expectedIssuer) {
+                throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
+            }
+
+            if (input.expectedAudience !== undefined && payload.aud !== input.expectedAudience) {
+                throw new Error("Audience mismatch: this token doesn't belong to the specified client");
+            }
+
+            // TODO: add a check to make sure this is the right token type as they can be signed with the same key
+
+            return { status: "OK", payload: payload as JSONObject };
         },
     };
 }

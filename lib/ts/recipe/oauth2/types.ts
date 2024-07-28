@@ -344,6 +344,17 @@ export type RecipeInterface = {
           }
     >;
 
+    validateOAuth2AccessToken(input: {
+        token: string;
+        expectedAudience?: string;
+        userContext: UserContext;
+    }): Promise<{ status: "OK"; payload: JSONObject }>;
+    validateOAuth2IdToken(input: {
+        token: string;
+        expectedAudience?: string;
+        userContext: UserContext;
+    }): Promise<{ status: "OK"; payload: JSONObject }>;
+
     buildAccessTokenPayload(input: {
         user: User;
         session: SessionContainerInterface;
