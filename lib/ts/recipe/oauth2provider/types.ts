@@ -403,7 +403,7 @@ export type APIInterface = {
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ status: "OK"; info: JSONObject } | GeneralErrorResponse>);
+          }) => Promise<JSONObject | GeneralErrorResponse>);
 };
 
 export type OAuth2ClientOptions = {
