@@ -14,6 +14,11 @@ export function resetCombinedJWKS() {
     combinedJWKS = undefined;
 }
 
+// TODO: remove this after proper core support
+const hydraJWKS = createRemoteJWKSet(new URL("http://localhost:4444/.well-known/jwks.json"), {
+    cooldownDuration: JWKCacheCooldownInMs,
+    cacheMaxAge: JWKCacheMaxAgeInMs,
+});
 /**
     The function returned by this getter fetches all JWKs from the first available core instance. 
     This combines the other JWKS functions to become error resistant.
@@ -34,6 +39,11 @@ export function getCombinedJWKS() {
 
         combinedJWKS = async (...args) => {
             let lastError = undefined;
+
+            if (!args[0]?.kid?.startsWith("s-") && !args[0]?.kid?.startsWith("d-")) {
+                return hydraJWKS(...args);
+            }
+
             if (JWKS.length === 0) {
                 throw Error(
                     "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."

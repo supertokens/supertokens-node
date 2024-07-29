@@ -41,6 +41,32 @@ const router = Router()
         } catch (e) {
             next(e);
         }
+    })
+    .post("/validateoauth2accesstoken", async (req, res, next) => {
+        try {
+            logDebugMessage("OAuth2Provider:validateOAuth2AccessToken %j", req.body);
+            const response = await OAuth2Provider.validateOAuth2AccessToken(
+                req.body.token,
+                req.body.expectedAudience,
+                req.body.userContext
+            );
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
+    })
+    .post("/validateoauth2idtoken", async (req, res, next) => {
+        try {
+            logDebugMessage("OAuth2Provider:validateOAuth2IdToken %j", req.body);
+            const response = await OAuth2Provider.validateOAuth2IdToken(
+                req.body.token,
+                req.body.expectedAudience,
+                req.body.userContext
+            );
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
     });
 
 export default router;

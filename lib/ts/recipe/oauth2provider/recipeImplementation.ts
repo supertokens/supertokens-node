@@ -221,10 +221,15 @@ export default function getRecipeInterface(
                     userContext: input.userContext,
                 });
 
-                const accessTokenPayload = this.buildAccessTokenPayload({
+                const accessTokenPayload = await this.buildAccessTokenPayload({
                     user,
                     session: input.session,
-                    defaultPayload: input.session.getAccessTokenPayload(input.userContext), // TODO: validate
+                    defaultPayload: {
+                        ...input.session.getAccessTokenPayload(input.userContext), // TODO: validate based on access token structure rfc
+                        iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
+                        scope: consentRequest.requestedScope?.join(" ") ?? "",
+                        aud: [consentRequest.client!.clientId],
+                    },
                     userContext: input.userContext,
                     scopes: consentRequest.requestedScope || [],
                 });
@@ -308,9 +313,9 @@ export default function getRecipeInterface(
                 {
                     ...transformObjectKeys(input, "snake-case"),
                     // TODO: these defaults should be set/enforced on the core side
-                    accessTokenStrategy: "jwt",
-                    skipConsent: true,
-                    subjectType: "public",
+                    access_token_strategy: "jwt",
+                    skip_consent: true,
+                    subject_type: "public",
                 },
                 userContext
             );
@@ -392,13 +397,17 @@ export default function getRecipeInterface(
             const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
 
             // TODO: make this configurable?
-            const expectedIssuer =
-                appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
-            if (payload.iss !== expectedIssuer) {
-                throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
-            }
+            // const expectedIssuer =
+            //     appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+            // if (payload.iss !== expectedIssuer) {
+            //     throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
+            // }
 
-            if (input.expectedAudience !== undefined && payload.aud !== input.expectedAudience) {
+            // TODO: Fix this
+            const aud =
+                (payload.ext as any)?.aud ??
+                (payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? []);
+            if (input.expectedAudience !== undefined && !aud.includes(input.expectedAudience)) {
                 throw new Error("Audience mismatch: this token doesn't belong to the specified client");
             }
 
@@ -410,13 +419,13 @@ export default function getRecipeInterface(
             const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
 
             // TODO: make this configurable?
-            const expectedIssuer =
-                appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
-            if (input.expectedAudience !== undefined && payload.iss !== expectedIssuer) {
-                throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
-            }
-
-            if (input.expectedAudience !== undefined && payload.aud !== input.expectedAudience) {
+            // const expectedIssuer =
+            //     appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+            // if (input.expectedAudience !== undefined && payload.iss !== expectedIssuer) {
+            //     throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
+            // }
+            const aud = payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? [];
+            if (input.expectedAudience !== undefined && !aud.includes(input.expectedAudience)) {
                 throw new Error("Audience mismatch: this token doesn't belong to the specified client");
             }
 
