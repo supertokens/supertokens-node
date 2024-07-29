@@ -201,9 +201,9 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
 
             let userId: string | undefined = undefined;
 
-            if (rawUserInfoFromProvider.fromIdTokenPayload !== undefined) {
+            if (rawUserInfoFromProvider.fromIdTokenPayload?.sub !== undefined) {
                 userId = rawUserInfoFromProvider.fromIdTokenPayload["sub"];
-            } else if (rawUserInfoFromProvider.fromUserInfoAPI !== undefined) {
+            } else if (rawUserInfoFromProvider.fromUserInfoAPI?.sub !== undefined) {
                 userId = rawUserInfoFromProvider.fromUserInfoAPI["sub"];
             }
 

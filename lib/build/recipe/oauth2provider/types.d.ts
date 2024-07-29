@@ -308,13 +308,7 @@ export declare type APIInterface = {
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    info: JSONObject;
-                }
-              | GeneralErrorResponse
-          >);
+          }) => Promise<JSONObject | GeneralErrorResponse>);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;

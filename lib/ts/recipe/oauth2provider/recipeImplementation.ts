@@ -31,6 +31,13 @@ import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { JSONObject } from "@loopback/core";
 
+// TODO: Remove this core changes are done
+function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
+    return redirectTo
+        .replace(hydraPubDomain, appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous())
+        .replace("oauth2", "oauth2provider");
+}
+
 export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
@@ -80,10 +87,7 @@ export default function getRecipeInterface(
 
             return {
                 // TODO: FIXME!!!
-                redirectTo: resp.data.redirect_to.replace(
-                    hydraPubDomain,
-                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
-                ),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
             };
         },
         rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
@@ -104,10 +108,7 @@ export default function getRecipeInterface(
 
             return {
                 // TODO: FIXME!!!
-                redirectTo: resp.data.redirect_to.replace(
-                    hydraPubDomain,
-                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
-                ),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
             };
         },
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
@@ -152,10 +153,7 @@ export default function getRecipeInterface(
 
             return {
                 // TODO: FIXME!!!
-                redirectTo: resp.data.redirect_to.replace(
-                    hydraPubDomain,
-                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
-                ),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
             };
         },
 
@@ -177,10 +175,7 @@ export default function getRecipeInterface(
 
             return {
                 // TODO: FIXME!!!
-                redirectTo: resp.data.redirect_to.replace(
-                    hydraPubDomain,
-                    appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
-                ),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
             };
         },
         authorization: async function (this: RecipeInterface, input) {
