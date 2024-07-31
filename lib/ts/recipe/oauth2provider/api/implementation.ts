@@ -93,5 +93,12 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
         },
+        revokeTokenPOST: async (input) => {
+            return input.options.recipeImplementation.revokeToken({
+                token: input.body.token,
+                tokenTypeHint: input.body.tokenTypeHint,
+                userContext: input.userContext,
+            });
+        },
     };
 }

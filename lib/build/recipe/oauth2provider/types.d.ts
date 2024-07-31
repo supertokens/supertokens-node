@@ -234,6 +234,16 @@ export declare type RecipeInterface = {
         tenantId: string;
         userContext: UserContext;
     }): Promise<JSONObject>;
+    revokeToken(input: {
+        token: string;
+        tokenTypeHint?: "access_token" | "refresh_token";
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+          }
+        | GeneralErrorResponse
+    >;
 };
 export declare type APIInterface = {
     loginGET:
@@ -309,6 +319,21 @@ export declare type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<JSONObject | GeneralErrorResponse>);
+    revokeTokenPOST:
+        | undefined
+        | ((input: {
+              body: {
+                  token: string;
+                  tokenTypeHint?: "access_token" | "refresh_token";
+              };
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;

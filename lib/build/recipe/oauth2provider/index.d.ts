@@ -83,6 +83,16 @@ export default class Wrapper {
         status: "OK";
         payload: import("../usermetadata").JSONObject;
     }>;
+    static revokeToken(
+        token: string,
+        tokenTypeHint?: "access_token" | "refresh_token",
+        userContext?: Record<string, any>
+    ): Promise<
+        | import("../../types").GeneralErrorResponse
+        | {
+              status: "OK";
+          }
+    >;
 }
 export declare let init: typeof Recipe.init;
 export declare let getOAuth2Clients: typeof Wrapper.getOAuth2Clients;

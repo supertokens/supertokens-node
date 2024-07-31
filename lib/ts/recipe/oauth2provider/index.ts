@@ -68,6 +68,18 @@ export default class Wrapper {
             userContext: getUserContext(userContext),
         });
     }
+
+    static revokeToken(
+        token: string,
+        tokenTypeHint?: "access_token" | "refresh_token",
+        userContext?: Record<string, any>
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeToken({
+            token,
+            tokenTypeHint,
+            userContext: getUserContext(userContext),
+        });
+    }
 }
 
 export let init = Wrapper.init;
