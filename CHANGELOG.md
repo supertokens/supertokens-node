@@ -11,7 +11,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Added OAuth2Provider recipe
 
-## [19.0.0] - 2024-06-10
+## [20.0.0] - 2024-07-24
+
+### Changes
+
+-   Updates `createOrUpdateThirdPartyConfig` and `getThirdPartyConfig` dashboard APIs to handle boxy SAML inputs.
+-   Fixes an issue where `isEmailChangeAllowed` was not checking across all tenants
+
+### Breaking changes
+
+-   For a non-public tenant, when there are no providers added in the core, the SDK used to fallback to the providers added in the ThirdParty.init. Now, the SDK will not fallback to the providers added in the ThirdParty.init by default. If you require a thirdparty provider to be available for non-public tenants, you can make it available by setting `includeInNonPublicTenantsByDefault` for each of the providers. See the migration section below to see how to do this. Note that this only affects non-public tenants when there are no providers added in core.
+
+### Migration
+
+To make all the providers added in the ThirdParty.init available for non-public tenants by default,
+
+Before:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "google",
+                    // ... rest of the config
+                },
+            },
+            {
+                config: {
+                    thirdPartyId: "github",
+                    // ... rest of the config
+                },
+            },
+        ],
+    },
+});
+```
+
+After:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "google",
+                    // ... rest of the config
+                },
+
+                // Add the following line to make this provider available in non-public tenants by default
+                includeInNonPublicTenantsByDefault: true,
+            },
+            {
+                config: {
+                    thirdPartyId: "github",
+                    // ... rest of the config
+                },
+
+                // Add the following line to make this provider available in non-public tenants by default
+                includeInNonPublicTenantsByDefault: true,
+            },
+        ],
+    },
+});
+```
+
+## [19.0.1] - 2024-07-18
+
+-   Fixes issue in fetching `thirdPartyConfig` for dashboard when OIDC discovery endpoint is added in core.
+
+## [19.0.0] - 2024-07-10
 
 ### Breaking changes
 
@@ -24,6 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Account linking based on emails now require the email to be verified in both users if `shouldRequireVerification` is set to `true` instead of only requiring it for the recipe user.
 -   The access token cookie expiry has been changed from 100 years to 1 year due to some browsers capping the maximum expiry at 400 days. No action is needed on your part.
 -   Recipe functions that update the email address of users now call `isEmailChangeAllowed` to check if the email update should be allowed or not.
+
     -   This only has an effect if account linking is turned on.
     -   This is aimed to help you avoid security issues.
     -   `isEmailChangeAllowed` is now called in functions:
@@ -31,12 +103,212 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `updateEmailOrPassword` (EmailPassword recipe)
         -   `manuallyCreateOrUpdateUser` (ThirdParty recipe)
 
+-   Removes the default `maxAgeInSeconds` value (previously 300 seconds) in EmailVerification Claim. If the claim value is true and `maxAgeInSeconds` is not provided, it will not be refetched.
+
+-   In the multitenancy recipe,
+
+    -   Removes `emailPasswordEnabled`, `passwordlessEnabled`, `thirdPartyEnabled` inputs from `createOrUpdateTenant` functions.
+    -   Recipe implementation uses v2 APIs for creating, fetching and listing tenants. Refer CDI spec for more information.
+
+-   SDK will no longer add `.well-known/openid-configuration` to the `oidcDiscoveryEndpoint` config in thirdParty providers. If you have specified any custom `oidcDiscoveryEndpoint` in the ThirdParty.init or added to the core, please make sure to update them to include `.well-known/openid-configuration`.
+
 ### Changes
 
+-   Adds Multitenancy and Multifactor auth related APIs for dashboard:
+    -   GET `/api/tenants`
+    -   GET `/api/tenant`
+    -   POST `/api/tenant`
+    -   DELETE `/api/tenant`
+    -   PUT `/api/tenant/first-factor`
+    -   PUT `/api/tenant/required-secondary-factor`
+    -   PUT `/api/tenant/core-config`
+    -   GET `/api/thirdparty/config`
+    -   PUT `/api/thirdparty/config`
+    -   DELETE `/api/thirdparty/config`
 -   `passwordResetPOST`:
     -   now verifies the email address in all cases if the EmailVerification recipe is initialized
     -   now tries to link accounts based on account info if AccountLinking is enabled
 -   Extracted some tests into a separate [backend-sdk-testing](https://github.com/supertokens/backend-sdk-testing/) repo, to reuse tests between our backend SDKs
+-   Sends `websiteDomain` and `apiDomain` to core for telemetry.
+-   `boxyURL` is no more mandatory input in `additionalConfig` while adding boxy-saml provider in thirdParty.
+-   Fixes issue with OIDC discover when the input url already contains `.well-known/openid-configuration`.
+-   Removes the default `maxAgeInSeconds` value in EmailVerification Claim when the claim value is true. Now, the SDK won't refetch the claim value if `maxAgeInSeconds` is not provided and claim value is true.
+-   Adds `jwksRefreshIntervalSec` config to `session.init` to set the default JWKS cache duration. The default is 4 hours.
+
+### Migration
+
+#### Create or update tenant
+
+If you were using Multitenancy.createOrUpdateTenant, you should remove the `emailPasswordEnabled`, `passwordlessEnabled`, `thirdPartyEnabled` inputs from the function call, and just use the `firstFactors` and `requiredSecondaryFactors` as applicable.
+
+Here are some examples:
+
+1.  Using Emailpassword and ThirdParty login methods
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["emailpassword", "thirdparty"],
+    });
+    ```
+
+2.  Using Passwordless and ThirdParty login methods. Note that for passwordless, you need to specify all the passwordless factorIds you wish to use.
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        passwordlessEnabled: true,
+        thirdPartyEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["otp-email", "otp-phone", "link-email", "link-phone", "thirdparty"],
+    });
+    ```
+
+3.  Using EmailPassword, ThirdParty for first factor and phone OTP, TOTP for secondary factors
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+        passwordlessEnabled: true,
+        firstFactors: ["emailpassword", "thirdparty"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: ["emailpassword", "thirdparty"],
+        requiredSecondaryFactors: ["otp-phone", "totp"],
+    });
+    ```
+
+4.  Enable everything in core so that SDK can configure the required login methods and required secondary factors
+
+    Before:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        emailPasswordEnabled: true,
+        thirdPartyEnabled: true,
+        passwordlessEnabled: true,
+    });
+    ```
+
+    After:
+
+    ```ts
+    Multitenancy.createOrUpdateTenant("tenantId", {
+        firstFactors: null,
+        requiredSecondaryFactors: null,
+    });
+    ```
+
+#### Migrating `oidcDiscoveryEndpoint` in ThirdParty.init:
+
+Before:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "custom",
+                    clients: [
+                        // ...
+                    ],
+                    oidcDiscoveryEndpoint: "https://auth.example.com",
+                },
+            },
+        ],
+    },
+});
+```
+
+After:
+
+```ts
+ThirdParty.init({
+    signInAndUpFeature: {
+        providers: [
+            {
+                config: {
+                    thirdPartyId: "custom",
+                    clients: [
+                        // ...
+                    ],
+                    oidcDiscoveryEndpoint: "https://auth.example.com/.well-known/openid-configuration",
+                },
+            },
+        ],
+    },
+});
+```
+
+#### Migrating `oidcDiscoveryEndpoint` in core (for custom providers only):
+
+For each tenant, do the following
+
+1.  GET `/appid-<appId>/<tenantId>/recipe/multitenancy/tenant/v2`
+
+    You should see the thirdParty providers in the response using `response.thirdParty.providers`
+
+2.  For each config in providers list, if you have `oidcDiscoveryEndpoint` in the config, update it to include `.well-known/openid-configuration` at the end.
+
+Here's a sample code snippet to update the `oidcDiscoveryEndpoint`:
+
+```ts
+import Multitenancy from "supertokens-node/recipe/multitenancy";
+
+const tenantsRes = await Multitenancy.listAllTenants();
+
+function isCustomProvider(thirdPartyId: string): boolean {
+    const customProviders = [
+        "custom",
+        //... all your custom thirdPartyIds
+    ];
+    return customProviders.includes(thirdPartyId);
+}
+
+for (const tenant of tenantsRes.tenants) {
+    for (const provider of tenant.thirdParty.providers) {
+        if (isCustomProvider(provider.thirdPartyId) && provider.oidcDiscoveryEndpoint !== undefined) {
+            if (provider.oidcDiscoveryEndpoint.endsWith("/")) {
+                provider.oidcDiscoveryEndpoint = provider.oidcDiscoveryEndpoint.slice(0, -1);
+            }
+            provider.oidcDiscoveryEndpoint = `${provider.config.oidcDiscoveryEndpoint}/.well-known/openid-configuration`;
+
+            await Multitenancy.createOrUpdateThirdPartyConfig(tenant.tenantId, provider);
+        }
+    }
+}
+```
+
+## [18.0.2] - 2024-07-09
+
+-   `refreshPOST` and `refreshSession` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
 
 ## [18.0.2] - 2024-07-09
 

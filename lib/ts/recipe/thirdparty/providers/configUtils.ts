@@ -142,12 +142,15 @@ export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderCo
 
 export function mergeProvidersFromCoreAndStatic(
     providerConfigsFromCore: ProviderConfig[],
-    providerInputsFromStatic: ProviderInput[]
+    providerInputsFromStatic: ProviderInput[],
+    includeAllProviders: boolean
 ): ProviderInput[] {
     const mergedProviders: ProviderInput[] = [];
 
     if (providerConfigsFromCore.length === 0) {
-        for (const config of providerInputsFromStatic) {
+        for (const config of providerInputsFromStatic.filter(
+            (config) => config.includeInNonPublicTenantsByDefault === true || includeAllProviders === true
+        )) {
             mergedProviders.push(config);
         }
     } else {

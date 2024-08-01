@@ -18,7 +18,7 @@ export declare class Querier {
     private __hosts;
     private rIdToCore;
     private constructor();
-    getAPIVersion: () => Promise<string>;
+    getAPIVersion: (userContext: UserContext) => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getNewInstanceOrThrowError(rIdToCore?: string): Querier;

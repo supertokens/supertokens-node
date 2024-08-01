@@ -43,7 +43,12 @@ import {
     USERROLES_USER_API,
     CREATE_EMAIL_PASSWORD_USER,
     CREATE_PASSWORDLESS_USER,
-    LIST_TENANT_LOGIN_METHODS,
+    LIST_TENANTS_WITH_LOGIN_METHODS as LIST_ALL_TENANTS_WITH_LOGIN_METHODS,
+    TENANT_API,
+    UPDATE_TENANT_FIRST_FACTOR_API,
+    UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
+    UPDATE_TENANT_CORE_CONFIG_API,
+    TENANT_THIRD_PARTY_CONFIG_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -79,7 +84,16 @@ import removeUserRole from "./api/userroles/removeUserRole";
 import createRoleOrAddPermissions from "./api/userroles/roles/createRoleOrAddPermissions";
 import { createEmailPasswordUser } from "./api/user/create/emailpasswordUser";
 import { createPasswordlessUser } from "./api/user/create/passwordlessUser";
-import getTenantLoginMethodsInfo from "./api/getTenantLoginMethodsInfo";
+import listAllTenantsWithLoginMethods from "./api/multitenancy/listAllTenantsWithLoginMethods";
+import getTenantInfo from "./api/multitenancy/getTenantInfo";
+import deleteTenant from "./api/multitenancy/deleteTenant";
+import createTenant from "./api/multitenancy/createTenant";
+import deleteThirdPartyConfig from "./api/multitenancy/deleteThirdPartyConfig";
+import createOrUpdateThirdPartyConfig from "./api/multitenancy/createOrUpdateThirdPartyConfig";
+import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor";
+import updateTenantSecondaryFactor from "./api/multitenancy/updateTenantSecondaryFactor";
+import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
+import getThirdPartyConfig from "./api/multitenancy/getThirdPartyConfig";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -147,6 +161,12 @@ export default class Recipe extends RecipeModule {
             {
                 id: DASHBOARD_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase("/roles")),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: DASHBOARD_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase("/tenants")),
                 disabled: false,
                 method: "get",
             },
@@ -339,10 +359,78 @@ export default class Recipe extends RecipeModule {
                 method: "post",
             },
             {
-                id: LIST_TENANT_LOGIN_METHODS,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(LIST_TENANT_LOGIN_METHODS)),
+                id: LIST_ALL_TENANTS_WITH_LOGIN_METHODS,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(LIST_ALL_TENANTS_WITH_LOGIN_METHODS)
+                ),
                 disabled: false,
                 method: "get",
+            },
+            {
+                id: TENANT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: TENANT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
+                disabled: false,
+                method: "delete",
+            },
+            {
+                id: TENANT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANT_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: UPDATE_TENANT_FIRST_FACTOR_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(UPDATE_TENANT_FIRST_FACTOR_API)
+                ),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API)
+                ),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: UPDATE_TENANT_CORE_CONFIG_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(UPDATE_TENANT_CORE_CONFIG_API)
+                ),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: TENANT_THIRD_PARTY_CONFIG_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: TENANT_THIRD_PARTY_CONFIG_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: TENANT_THIRD_PARTY_CONFIG_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(
+                    getApiPathWithDashboardBase(TENANT_THIRD_PARTY_CONFIG_API)
+                ),
+                disabled: false,
+                method: "delete",
             },
         ];
     };
@@ -467,9 +555,35 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "post") {
                 apiFunction = createPasswordlessUser;
             }
-        } else if (id === LIST_TENANT_LOGIN_METHODS) {
+        } else if (id === LIST_ALL_TENANTS_WITH_LOGIN_METHODS) {
             if (req.getMethod() === "get") {
-                apiFunction = getTenantLoginMethodsInfo;
+                apiFunction = listAllTenantsWithLoginMethods;
+            }
+        } else if (id === TENANT_API) {
+            if (req.getMethod() === "post") {
+                apiFunction = createTenant;
+            }
+            if (req.getMethod() === "get") {
+                apiFunction = getTenantInfo;
+            }
+            if (req.getMethod() === "delete") {
+                apiFunction = deleteTenant;
+            }
+        } else if (id === UPDATE_TENANT_FIRST_FACTOR_API) {
+            apiFunction = updateTenantFirstFactor;
+        } else if (id === UPDATE_TENANT_REQUIRED_SECONDARY_FACTOR_API) {
+            apiFunction = updateTenantSecondaryFactor;
+        } else if (id === UPDATE_TENANT_CORE_CONFIG_API) {
+            apiFunction = updateTenantCoreConfig;
+        } else if (id === TENANT_THIRD_PARTY_CONFIG_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = getThirdPartyConfig;
+            }
+            if (req.getMethod() === "put") {
+                apiFunction = createOrUpdateThirdPartyConfig;
+            }
+            if (req.getMethod() === "delete") {
+                apiFunction = deleteThirdPartyConfig;
             }
         }
 

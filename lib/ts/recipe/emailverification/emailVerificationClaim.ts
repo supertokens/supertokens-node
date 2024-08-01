@@ -26,22 +26,35 @@ export class EmailVerificationClaimClass extends BooleanClaim {
                     throw new Error("UNKNOWN_USER_ID");
                 }
             },
-            defaultMaxAgeInSeconds: 300,
         });
 
         this.validators = {
             ...this.validators,
-            isVerified: (refetchTimeOnFalseInSeconds: number = 10, maxAgeInSeconds: number = 300) => ({
+            isVerified: (refetchTimeOnFalseInSeconds: number = 10, maxAgeInSeconds?: number) => ({
                 ...this.validators.hasValue(true, maxAgeInSeconds),
                 shouldRefetch: (payload, userContext) => {
                     const value = this.getValueFromPayload(payload, userContext);
-                    return (
-                        value === undefined ||
-                        this.getLastRefetchTime(payload, userContext)! < Date.now() - maxAgeInSeconds * 1000 ||
-                        (value === false &&
-                            this.getLastRefetchTime(payload, userContext)! <
-                                Date.now() - refetchTimeOnFalseInSeconds * 1000)
-                    );
+
+                    if (value === undefined) {
+                        return true;
+                    }
+
+                    const currentTime = Date.now();
+                    const lastRefetchTime = this.getLastRefetchTime(payload, userContext)!;
+
+                    if (maxAgeInSeconds !== undefined) {
+                        if (lastRefetchTime < currentTime - maxAgeInSeconds * 1000) {
+                            return true;
+                        }
+                    }
+
+                    if (value === false) {
+                        if (lastRefetchTime < currentTime - refetchTimeOnFalseInSeconds * 1000) {
+                            return true;
+                        }
+                    }
+
+                    return false;
                 },
             }),
         };

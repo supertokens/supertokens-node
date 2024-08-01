@@ -1,5 +1,7 @@
 import { ProviderConfigForClientType } from "../types";
 import { getOIDCDiscoveryInfo } from "../../../thirdpartyUtils";
+import NormalisedURLDomain from "../../../normalisedURLDomain";
+import NormalisedURLPath from "../../../normalisedURLPath";
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void> {
     if (config.oidcDiscoveryEndpoint !== undefined) {
@@ -21,4 +23,21 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
             config.jwksURI = oidcInfo.jwks_uri;
         }
     }
+}
+
+export function normaliseOIDCEndpointToIncludeWellKnown(url: string): string {
+    // we call this only for built-in providers that use OIDC. We no longer generically add well-known in the custom provider
+    if (url.endsWith("/.well-known/openid-configuration") === true) {
+        return url;
+    }
+
+    const normalisedDomain = new NormalisedURLDomain(url);
+    const normalisedPath = new NormalisedURLPath(url);
+    const normalisedWellKnownPath = new NormalisedURLPath("/.well-known/openid-configuration");
+
+    return (
+        normalisedDomain.getAsStringDangerous() +
+        normalisedPath.getAsStringDangerous() +
+        normalisedWellKnownPath.getAsStringDangerous()
+    );
 }
