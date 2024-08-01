@@ -93,15 +93,20 @@ export default async function createCode(
         }
     }
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
+    const shouldTryLinkingWithSessionUser = body.shouldTryLinkingWithSessionUser;
+
+    let session =
+        shouldTryLinkingWithSessionUser !== false
+            ? await Session.getSession(
+                  options.req,
+                  options.res,
+                  {
+                      sessionRequired: shouldTryLinkingWithSessionUser === true,
+                      overrideGlobalClaimValidators: () => [],
+                  },
+                  userContext
+              )
+            : undefined;
 
     if (session !== undefined) {
         tenantId = session.getTenantId();
@@ -109,8 +114,8 @@ export default async function createCode(
 
     let result = await apiImplementation.createCodePOST(
         email !== undefined
-            ? { email, session, tenantId, options, userContext }
-            : { phoneNumber: phoneNumber!, session, tenantId, options, userContext }
+            ? { email, session, tenantId, shouldTryLinkingWithSessionUser, options, userContext }
+            : { phoneNumber: phoneNumber!, session, tenantId, shouldTryLinkingWithSessionUser, options, userContext }
     );
 
     send200Response(options.res, result);

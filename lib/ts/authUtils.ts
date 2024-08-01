@@ -82,6 +82,7 @@ export const AuthUtils = {
         factorIds,
         skipSessionUserUpdateInCore,
         session,
+        shouldTryLinkingWithSessionUser,
         userContext,
     }: {
         authenticatingAccountInfo: AccountInfoWithRecipeId;
@@ -93,6 +94,7 @@ export const AuthUtils = {
         signInVerifiesLoginMethod: boolean;
         skipSessionUserUpdateInCore: boolean;
         session?: SessionContainerInterface;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; validFactorIds: string[]; isFirstFactor: boolean }
@@ -118,6 +120,7 @@ export const AuthUtils = {
         // We also load the session user here if it is available.
         const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
             session,
+            shouldTryLinkingWithSessionUser,
             authenticatingAccountInfo,
             authenticatingUser,
             skipSessionUserUpdateInCore,
@@ -480,6 +483,7 @@ export const AuthUtils = {
      */
     checkAuthTypeAndLinkingStatus: async function (
         session: SessionContainerInterface | undefined,
+        shouldTryLinkingWithSessionUser: boolean | undefined,
         accountInfo: AccountInfoWithRecipeId,
         inputUser: User | undefined,
         skipSessionUserUpdateInCore: boolean,
@@ -503,17 +507,36 @@ export const AuthUtils = {
         logDebugMessage(`checkAuthTypeAndLinkingStatus called`);
         let sessionUser: User | undefined = undefined;
         if (session === undefined) {
+            if (shouldTryLinkingWithSessionUser === true) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session not found but shouldTryLinkingWithSessionUser is true",
+                });
+            }
             logDebugMessage(`checkAuthTypeAndLinkingStatus returning first factor because there is no session`);
             // If there is no active session we have nothing to link to - so this has to be a first factor sign in
             return { status: "OK", isFirstFactor: true };
         } else {
+            if (shouldTryLinkingWithSessionUser === false) {
+                // In our normal flows this should never happen - but some user overrides might do this.
+                // Anyway, since shouldTryLinkingWithSessionUser explicitly set to false, it's safe to consider this a firstFactor
+                return { status: "OK", isFirstFactor: true };
+            }
+
             if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config)) {
-                if (MultiFactorAuthRecipe.getInstance() !== undefined) {
+                if (shouldTryLinkingWithSessionUser === true) {
                     throw new Error(
                         "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
                     );
                 } else {
-                    return { status: "OK", isFirstFactor: true };
+                    // This is the legacy case where shouldTryLinkingWithSessionUser is undefined
+                    if (MultiFactorAuthRecipe.getInstance() !== undefined) {
+                        throw new Error(
+                            "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
+                        );
+                    } else {
+                        return { status: "OK", isFirstFactor: true };
+                    }
                 }
             }
 
@@ -542,6 +565,12 @@ export const AuthUtils = {
                 userContext
             );
             if (sessionUserResult.status === "SHOULD_AUTOMATICALLY_LINK_FALSE") {
+                if (shouldTryLinkingWithSessionUser === true) {
+                    throw new Error(
+                        "This should never happen: shouldDoAutomaticAccountLinking returned false when creating primary user but shouldTryLinkingWithSessionUser is true"
+                    );
+                }
+
                 return {
                     status: "OK",
                     isFirstFactor: true,
@@ -572,6 +601,11 @@ export const AuthUtils = {
             );
 
             if (shouldLink.shouldAutomaticallyLink === false) {
+                if (shouldTryLinkingWithSessionUser === true) {
+                    throw new Error(
+                        "This should never happen: shouldDoAutomaticAccountLinking returned false when linking to session user, but shouldTryLinkingWithSessionUser is true"
+                    );
+                }
                 return { status: "OK", isFirstFactor: true };
             } else {
                 return {
@@ -599,17 +633,19 @@ export const AuthUtils = {
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
-    linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo: async function ({
+    linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo: async function ({
         tenantId,
         inputUser,
         recipeUserId,
         session,
+        shouldTryLinkingWithSessionUser,
         userContext,
     }: {
         tenantId: string;
         inputUser: User;
         recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User }
@@ -625,10 +661,11 @@ export const AuthUtils = {
         logDebugMessage("linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo called");
         const retry = () => {
             logDebugMessage("linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo retrying....");
-            return AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+            return AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 inputUser: inputUser,
                 session,
+                shouldTryLinkingWithSessionUser,
                 recipeUserId,
                 userContext,
             });
@@ -647,6 +684,7 @@ export const AuthUtils = {
 
         const authTypeRes = await AuthUtils.checkAuthTypeAndLinkingStatus(
             session,
+            shouldTryLinkingWithSessionUser,
             authLoginMethod,
             inputUser,
             false,

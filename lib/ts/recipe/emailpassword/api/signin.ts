@@ -30,26 +30,32 @@ export default async function signInAPI(
         return false;
     }
 
+    const body = await options.req.getJSONBody();
     // step 1
     let formFields: {
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.signInFeature.formFields,
-        (await options.req.getJSONBody()).formFields,
+        body.formFields,
         tenantId,
         userContext
     );
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
+    const shouldTryLinkingWithSessionUser = body.shouldTryLinkingWithSessionUser;
+
+    let session =
+        shouldTryLinkingWithSessionUser !== false
+            ? await Session.getSession(
+                  options.req,
+                  options.res,
+                  {
+                      sessionRequired: shouldTryLinkingWithSessionUser === true,
+                      overrideGlobalClaimValidators: () => [],
+                  },
+                  userContext
+              )
+            : undefined;
 
     if (session !== undefined) {
         tenantId = session.getTenantId();
@@ -59,6 +65,7 @@ export default async function signInAPI(
         formFields,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext,
     });

@@ -54,6 +54,7 @@ export declare const AuthUtils: {
         factorIds,
         skipSessionUserUpdateInCore,
         session,
+        shouldTryLinkingWithSessionUser,
         userContext,
     }: {
         authenticatingAccountInfo: AccountInfoWithRecipeId;
@@ -65,6 +66,7 @@ export declare const AuthUtils: {
         signInVerifiesLoginMethod: boolean;
         skipSessionUserUpdateInCore: boolean;
         session?: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
     }) => Promise<
         | {
@@ -194,6 +196,7 @@ export declare const AuthUtils: {
      */
     checkAuthTypeAndLinkingStatus: (
         session: SessionContainerInterface | undefined,
+        shouldTryLinkingWithSessionUser: boolean | undefined,
         accountInfo: AccountInfoWithRecipeId,
         inputUser: User | undefined,
         skipSessionUserUpdateInCore: boolean,
@@ -235,17 +238,19 @@ export declare const AuthUtils: {
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
-    linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo: ({
+    linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo: ({
         tenantId,
         inputUser,
         recipeUserId,
         session,
+        shouldTryLinkingWithSessionUser,
         userContext,
     }: {
         tenantId: string;
         inputUser: User;
         recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
     }) => Promise<
         | {

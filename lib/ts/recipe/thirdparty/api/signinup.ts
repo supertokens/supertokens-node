@@ -82,15 +82,20 @@ export default async function signInUpAPI(
 
     const provider = providerResponse;
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
+    const shouldTryLinkingWithSessionUser = bodyParams.shouldTryLinkingWithSessionUser;
+
+    let session =
+        shouldTryLinkingWithSessionUser !== false
+            ? await Session.getSession(
+                  options.req,
+                  options.res,
+                  {
+                      sessionRequired: shouldTryLinkingWithSessionUser === true,
+                      overrideGlobalClaimValidators: () => [],
+                  },
+                  userContext
+              )
+            : undefined;
 
     if (session !== undefined) {
         tenantId = session.getTenantId();
@@ -102,6 +107,7 @@ export default async function signInUpAPI(
         oAuthTokens,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext,
     });

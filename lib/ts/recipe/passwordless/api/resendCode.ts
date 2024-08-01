@@ -47,25 +47,27 @@ export default async function resendCode(
         });
     }
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
+    const shouldTryLinkingWithSessionUser = body.shouldTryLinkingWithSessionUser;
 
-    if (session !== undefined) {
-        tenantId = session.getTenantId();
-    }
+    let session =
+        shouldTryLinkingWithSessionUser !== false
+            ? await Session.getSession(
+                  options.req,
+                  options.res,
+                  {
+                      sessionRequired: shouldTryLinkingWithSessionUser === true,
+                      overrideGlobalClaimValidators: () => [],
+                  },
+                  userContext
+              )
+            : undefined;
 
     let result = await apiImplementation.resendCodePOST({
         deviceId,
         preAuthSessionId,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext,
     });

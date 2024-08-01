@@ -136,6 +136,7 @@ export default class Wrapper {
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             isVerified,
             session,
+            shouldTryLinkingWithSessionUser: !!session,
             userContext: getUserContext(userContext),
         });
     }

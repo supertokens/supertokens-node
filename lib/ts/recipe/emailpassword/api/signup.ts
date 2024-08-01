@@ -45,16 +45,20 @@ export default async function signUpAPI(
         userContext
     );
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
+    const shouldTryLinkingWithSessionUser = requestBody.shouldTryLinkingWithSessionUser;
 
+    let session =
+        shouldTryLinkingWithSessionUser !== false
+            ? await Session.getSession(
+                  options.req,
+                  options.res,
+                  {
+                      sessionRequired: shouldTryLinkingWithSessionUser === true,
+                      overrideGlobalClaimValidators: () => [],
+                  },
+                  userContext
+              )
+            : undefined;
     if (session !== undefined) {
         tenantId = session.getTenantId();
     }
@@ -63,6 +67,7 @@ export default async function signUpAPI(
         formFields,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext: userContext,
     });

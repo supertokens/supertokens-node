@@ -577,6 +577,7 @@ export default class Recipe extends RecipeModule {
                       email: input.email,
                       userInputCode,
                       session: input.session,
+                      shouldTryLinkingWithSessionUser: !!input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -584,6 +585,7 @@ export default class Recipe extends RecipeModule {
                       phoneNumber: input.phoneNumber,
                       userInputCode,
                       session: input.session,
+                      shouldTryLinkingWithSessionUser: !!input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -635,12 +637,14 @@ export default class Recipe extends RecipeModule {
                       email: input.email,
                       tenantId: input.tenantId,
                       session: input.session,
+                      shouldTryLinkingWithSessionUser: !!input.session,
                       userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
                       tenantId: input.tenantId,
                       session: input.session,
+                      shouldTryLinkingWithSessionUser: !!input.session,
                       userContext: input.userContext,
                   }
         );
@@ -655,6 +659,7 @@ export default class Recipe extends RecipeModule {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
                       session: input.session,
+                      shouldTryLinkingWithSessionUser: !!input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
@@ -663,6 +668,7 @@ export default class Recipe extends RecipeModule {
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
                       session: input.session,
+                      shouldTryLinkingWithSessionUser: !!input.session,
                       tenantId: input.tenantId,
                       userContext: input.userContext,
                   }

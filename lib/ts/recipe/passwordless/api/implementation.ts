@@ -179,6 +179,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
+                shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
             });
 
             if (preAuthChecks.status !== "OK") {
@@ -207,6 +208,7 @@ export default function getAPIImplementation(): APIInterface {
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
                           session: input.session,
+                          shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                           tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
@@ -214,6 +216,7 @@ export default function getAPIImplementation(): APIInterface {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
                           session: input.session,
+                          shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                           tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
@@ -319,6 +322,7 @@ export default function getAPIImplementation(): APIInterface {
                 factorIds,
                 userContext: input.userContext,
                 session: input.session,
+                shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
             });
 
             if (preAuthChecks.status !== "OK") {
@@ -344,6 +348,7 @@ export default function getAPIImplementation(): APIInterface {
                                         input.userContext
                                     ),
                           session: input.session,
+                          shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                           tenantId: input.tenantId,
                       }
                     : {
@@ -357,6 +362,7 @@ export default function getAPIImplementation(): APIInterface {
                                         input.userContext
                                     ),
                           session: input.session,
+                          shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                           tenantId: input.tenantId,
                       }
             );
@@ -500,6 +506,7 @@ export default function getAPIImplementation(): APIInterface {
             });
             const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
                 input.session,
+                input.shouldTryLinkingWithSessionUser,
                 {
                     recipeId: "passwordless",
                     email: deviceInfo.email,
@@ -553,7 +560,7 @@ export default function getAPIImplementation(): APIInterface {
 
                     // This mirrors how we construct factorIds in createCodePOST
                     let factorIds;
-                    if (input.session !== undefined) {
+                    if (!authTypeInfo.isFirstFactor) {
                         if (deviceInfo.email !== undefined) {
                             factorIds = [FactorIds.OTP_EMAIL];
                         } else {

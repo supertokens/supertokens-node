@@ -92,6 +92,7 @@ export declare type RecipeInterface = {
         ) & {
             userInputCode?: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             tenantId: string;
             userContext: UserContext;
         }
@@ -132,6 +133,7 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   session: SessionContainerInterface | undefined;
+                  shouldTryLinkingWithSessionUser: boolean | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -139,6 +141,7 @@ export declare type RecipeInterface = {
                   linkCode: string;
                   preAuthSessionId: string;
                   session: SessionContainerInterface | undefined;
+                  shouldTryLinkingWithSessionUser: boolean | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -305,6 +308,7 @@ export declare type APIInterface = {
         ) & {
             tenantId: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -328,6 +332,7 @@ export declare type APIInterface = {
         } & {
             tenantId: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -351,6 +356,7 @@ export declare type APIInterface = {
         ) & {
             tenantId: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }

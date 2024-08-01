@@ -62,15 +62,20 @@ export default async function consumeCode(
         });
     }
 
-    let session = await Session.getSession(
-        options.req,
-        options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext
-    );
+    const shouldTryLinkingWithSessionUser = body.shouldTryLinkingWithSessionUser;
+
+    let session =
+        shouldTryLinkingWithSessionUser !== false
+            ? await Session.getSession(
+                  options.req,
+                  options.res,
+                  {
+                      sessionRequired: shouldTryLinkingWithSessionUser === true,
+                      overrideGlobalClaimValidators: () => [],
+                  },
+                  userContext
+              )
+            : undefined;
 
     if (session !== undefined) {
         tenantId = session.getTenantId();
@@ -84,6 +89,7 @@ export default async function consumeCode(
                   preAuthSessionId,
                   tenantId,
                   session,
+                  shouldTryLinkingWithSessionUser,
                   options,
                   userContext,
               }
@@ -93,6 +99,7 @@ export default async function consumeCode(
                   preAuthSessionId,
                   tenantId,
                   session,
+                  shouldTryLinkingWithSessionUser,
                   userContext,
               }
     );

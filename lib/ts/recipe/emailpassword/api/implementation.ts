@@ -591,17 +591,9 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             tenantId,
             session,
+            shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }: {
-            formFields: {
-                id: string;
-                value: string;
-            }[];
-            tenantId: string;
-            session?: SessionContainerInterface;
-            options: APIOptions;
-            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -683,6 +675,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
                 session,
+                shouldTryLinkingWithSessionUser,
             });
             if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
                 throw new Error("This should never happen: pre-auth checks should not fail for sign in");
@@ -702,6 +695,7 @@ export default function getAPIImplementation(): APIInterface {
                 email,
                 password,
                 session,
+                shouldTryLinkingWithSessionUser,
                 tenantId,
                 userContext,
             });
@@ -740,17 +734,9 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             tenantId,
             session,
+            shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }: {
-            formFields: {
-                id: string;
-                value: string;
-            }[];
-            tenantId: string;
-            session?: SessionContainerInterface;
-            options: APIOptions;
-            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -797,6 +783,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
                 session,
+                shouldTryLinkingWithSessionUser,
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
@@ -834,6 +821,7 @@ export default function getAPIImplementation(): APIInterface {
                 email,
                 password,
                 session,
+                shouldTryLinkingWithSessionUser,
                 userContext,
             });
 
