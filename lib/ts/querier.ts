@@ -174,7 +174,9 @@ export class Querier {
                 let headers: any = {
                     "cdi-version": apiVersion,
                 };
-                if (!isForm) {
+                if (isForm) {
+                    headers["content-type"] = "application/x-www-form-urlencoded";
+                } else {
                     headers["content-type"] = "application/json; charset=utf-8";
                 }
                 if (Querier.apiKey !== undefined) {

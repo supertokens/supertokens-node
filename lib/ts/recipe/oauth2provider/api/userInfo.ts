@@ -43,13 +43,14 @@ export default async function userInfoGET(
     let accessTokenPayload: JSONObject;
 
     try {
-        accessTokenPayload = await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken(
-            {
-                token: accessToken,
-                // TODO: expectedAudience?
-                userContext,
-            }
-        );
+        const {
+            payload,
+        } = await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
+            token: accessToken,
+            // TODO: expectedAudience?
+            userContext,
+        });
+        accessTokenPayload = payload;
     } catch (error) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
         sendNon200ResponseWithMessage(options.res, "Invalid or expired OAuth2 access token", 400);
@@ -60,7 +61,7 @@ export default async function userInfoGET(
         accessTokenPayload === null ||
         typeof accessTokenPayload !== "object" ||
         typeof accessTokenPayload.sub !== "string" ||
-        typeof accessTokenPayload.scope !== "string"
+        !Array.isArray(accessTokenPayload.scp)
     ) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
         sendNon200ResponseWithMessage(options.res, "Malformed access token payload", 400);
@@ -81,7 +82,7 @@ export default async function userInfoGET(
         accessTokenPayload,
         user,
         tenantId,
-        scopes: accessTokenPayload.scope.split(" "),
+        scopes: accessTokenPayload.scp as string[],
         options,
         userContext,
     });
