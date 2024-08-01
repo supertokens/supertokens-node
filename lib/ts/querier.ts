@@ -25,7 +25,7 @@ import SuperTokens from "./supertokens";
 
 export const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
 const hydraAdmDomain = process.env.HYDRA_ADM ?? "http://localhost:4445"; // This will be used as a domain for paths starting with hydraAdmPathPrefix
-export const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
+const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
 const hydraAdmPathPrefix = "/recipe/oauth2/admin"; // Replaced with "/admin" when sending the request (/recipe/oauth2/admin/clients -> /admin/clients)
 
 export class Querier {

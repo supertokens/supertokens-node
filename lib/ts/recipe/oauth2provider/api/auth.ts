@@ -34,8 +34,11 @@ export default async function authGET(
     try {
         session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
     } catch {
-        // TODO: explain
-        // ignore
+        // We ignore this here since the authGET is called from the auth endpoint which is used in full-page redirections
+        // Returning a 401 would break the sign-in flow.
+        // In theory we could serve some JS that handles refreshing and retrying, but this is not implemented.
+        // What we do is that the auth endpoint will redirect to the login page, and the login page handles refreshing and
+        // redirect to the auth endpoint again. This is not optimal, but it works for now.
     }
 
     let response = await apiImplementation.authGET({
@@ -46,7 +49,6 @@ export default async function authGET(
         userContext,
     });
     if ("redirectTo" in response) {
-        // TODO:
         if (response.setCookie) {
             const cookieStr = setCookieParser.splitCookiesString(response.setCookie);
             const cookies = setCookieParser.parse(cookieStr);

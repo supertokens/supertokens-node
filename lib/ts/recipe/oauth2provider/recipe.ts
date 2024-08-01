@@ -116,12 +116,6 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled(): APIHandled[] {
         return [
             {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(LOGIN_PATH),
-                id: LOGIN_PATH,
-                disabled: this.apiImpl.loginPOST === undefined,
-            },
-            {
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(LOGIN_PATH),
                 id: LOGIN_PATH,
@@ -203,7 +197,9 @@ export default class Recipe extends RecipeModule {
     }
 
     async getDefaultIdTokenPayload(user: User, scopes: string[], userContext: UserContext) {
-        let payload: JSONObject = {};
+        let payload: JSONObject = {
+            iss: this.appInfo.apiDomain.getAsStringDangerous() + this.appInfo.apiBasePath.getAsStringDangerous(),
+        };
         if (scopes.includes("email")) {
             payload.email = user?.emails[0];
             payload.email_verified = user.loginMethods.some((lm) => lm.hasSameEmailAs(user?.emails[0]) && lm.verified);

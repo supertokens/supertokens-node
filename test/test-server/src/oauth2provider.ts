@@ -47,7 +47,8 @@ const router = Router()
             logDebugMessage("OAuth2Provider:validateOAuth2AccessToken %j", req.body);
             const response = await OAuth2Provider.validateOAuth2AccessToken(
                 req.body.token,
-                req.body.expectedAudience,
+                req.body.requirements,
+                req.body.checkDatabase,
                 req.body.userContext
             );
             res.json(response);
@@ -61,6 +62,21 @@ const router = Router()
             const response = await OAuth2Provider.validateOAuth2IdToken(
                 req.body.token,
                 req.body.expectedAudience,
+                req.body.userContext
+            );
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
+    })
+    .post("/createtokenforclientcredentials", async (req, res, next) => {
+        try {
+            logDebugMessage("OAuth2Provider:createTokenForClientCredentials %j", req.body);
+            const response = await OAuth2Provider.createTokenForClientCredentials(
+                req.body.clientId,
+                req.body.clientSecret,
+                req.body.scope,
+                req.body.audience,
                 req.body.userContext
             );
             res.json(response);

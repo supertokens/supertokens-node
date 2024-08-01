@@ -5,7 +5,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 export default abstract class RecipeModule {
     private recipeId;
-    private appInfo;
+    protected appInfo: NormalisedAppinfo;
     constructor(recipeId: string, appInfo: NormalisedAppinfo);
     getRecipeId: () => string;
     getAppInfo: () => NormalisedAppinfo;

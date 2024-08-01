@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
+import SuperTokensError from "../../../error";
 
 export default async function loginInfoGET(
     apiImplementation: APIInterface,
@@ -30,7 +31,10 @@ export default async function loginInfoGET(
         options.req.getKeyValueFromQuery("login_challenge") ?? options.req.getKeyValueFromQuery("loginChallenge");
 
     if (loginChallenge === undefined) {
-        throw new Error("TODO");
+        throw new SuperTokensError({
+            type: SuperTokensError.BAD_INPUT_ERROR,
+            message: "Missing input param: loginChallenge",
+        });
     }
 
     let response = await apiImplementation.loginInfoGET({

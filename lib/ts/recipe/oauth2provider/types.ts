@@ -21,6 +21,7 @@ import { OAuth2Client } from "./OAuth2Client";
 import { User } from "../../user";
 
 export type TypeInput = {
+    // TODO: issuer?
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -56,12 +57,6 @@ export type ErrorOAuth2 = {
 
     // Description of the error in a human readable format.
     errorDescription: string;
-
-    // Debug contains information to help resolve the problem as a developer. Usually not exposed to the public but only in the server logs.
-    errorDebug?: string;
-
-    // Hint to help resolve the error.
-    errorHint?: string;
 
     // Represents the HTTP status code of the error (e.g. 401 or 403)
     // Defaults to 400
@@ -138,14 +133,14 @@ export type LoginRequest = {
 
 export type TokenInfo = {
     // The access token issued by the authorization server.
-    access_token: string;
+    access_token?: string;
     // The lifetime in seconds of the access token. For example, the value "3600" denotes that the access token will expire in one hour from the time the response was generated.
     // integer <int64>
     expires_in: number;
     // To retrieve a refresh token request the id_token scope.
-    id_token: string;
+    id_token?: string;
     // The refresh token, which can be used to obtain new access tokens. To retrieve it add the scope "offline" to your access token request.
-    refresh_token: string;
+    refresh_token?: string;
     // The scope of the access token
     scope: string;
     // The type of the token issued
@@ -156,11 +151,13 @@ export type LoginInfo = {
     // The name of the client.
     clientName: string;
     // The URI of the client's terms of service.
-    tosUri: string;
+    tosUri?: string;
     // The URI of the client's privacy policy.
-    policyUri: string;
+    policyUri?: string;
     // The URI of the client's logo.
-    logoUri: string;
+    logoUri?: string;
+    // The URI of the client
+    clientUri?: string;
     // The metadata associated with the client.
     metadata?: Record<string, any> | null;
 };
@@ -176,12 +173,15 @@ export type UserInfo = {
 
 export type RecipeInterface = {
     authorization(input: {
-        params: any;
+        params: Record<string, string>;
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
     }): Promise<{ redirectTo: string; setCookie: string | undefined }>;
-    token(input: { body: any; userContext: UserContext }): Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>;
+    tokenExchange(input: {
+        body: Record<string, string | undefined>;
+        userContext: UserContext;
+    }): Promise<TokenInfo | ErrorOAuth2>;
     getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
     acceptConsentRequest(input: {
         challenge: string;
@@ -193,7 +193,7 @@ export type RecipeInterface = {
         // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
         grantScope?: string[];
         // string <date-time> (NullTime implements sql.NullTime functionality.)
-        handledAt?: string[];
+        handledAt?: string;
         // Remember, if set to true, tells ORY Hydra to remember this consent authorization and reuse it if the same client asks the same user for the same, or a subset of, scope.
         remember?: boolean;
 
@@ -319,27 +319,36 @@ export type RecipeInterface = {
 
     validateOAuth2AccessToken(input: {
         token: string;
-        expectedAudience?: string;
+        requirements?: {
+            clientId?: string;
+            scopes?: string[];
+            audience?: string;
+        };
+        checkDatabase?: boolean;
         userContext: UserContext;
     }): Promise<{ status: "OK"; payload: JSONObject }>;
     validateOAuth2IdToken(input: {
         token: string;
-        expectedAudience?: string;
+        requirements?: {
+            clientId?: string;
+            scopes?: string[];
+            audience?: string;
+        };
         userContext: UserContext;
     }): Promise<{ status: "OK"; payload: JSONObject }>;
 
     buildAccessTokenPayload(input: {
         user: User;
+        client: OAuth2Client;
         session: SessionContainerInterface;
         scopes: string[];
-        defaultPayload: JSONObject;
         userContext: UserContext;
     }): Promise<JSONObject>;
     buildIdTokenPayload(input: {
         user: User;
+        client: OAuth2Client;
         session: SessionContainerInterface;
         scopes: string[];
-        defaultPayload: JSONObject;
         userContext: UserContext;
     }): Promise<JSONObject>;
     buildUserInfo(input: {
@@ -358,16 +367,6 @@ export type APIInterface = {
               loginChallenge: string;
               options: APIOptions;
               session?: SessionContainerInterface;
-              userContext: UserContext;
-          }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
-
-    loginPOST:
-        | undefined
-        | ((input: {
-              loginChallenge: string;
-              accept: boolean;
-              session: SessionContainerInterface;
-              options: APIOptions;
               userContext: UserContext;
           }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
 

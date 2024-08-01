@@ -53,18 +53,57 @@ export default class Wrapper {
         );
     }
 
-    static validateOAuth2AccessToken(token: string, expectedAudience?: string, userContext?: Record<string, any>) {
+    static validateOAuth2AccessToken(
+        token: string,
+        requirements?: {
+            clientId?: string;
+            scopes?: string[];
+            audience?: string;
+        },
+        checkDatabase?: boolean,
+        userContext?: Record<string, any>
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
             token,
-            expectedAudience,
+            requirements,
+            checkDatabase,
             userContext: getUserContext(userContext),
         });
     }
 
-    static validateOAuth2IdToken(token: string, expectedAudience?: string, userContext?: Record<string, any>) {
+    static validateOAuth2IdToken(
+        token: string,
+        requirements?: {
+            clientId?: string;
+            scopes?: string[];
+            audience?: string;
+        },
+        userContext?: Record<string, any>
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2IdToken({
             token,
-            expectedAudience,
+            requirements,
+            userContext: getUserContext(userContext),
+        });
+    }
+
+    // TODO: revokeToken
+
+    static createTokenForClientCredentials(
+        clientId: string,
+        clientSecret: string,
+        scope?: string[],
+        audience?: string,
+        userContext?: Record<string, any>
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.tokenExchange({
+            body: {
+                grant_type: "client_credentials",
+                client_id: clientId,
+                client_secret: clientSecret,
+                scope: scope?.join(" "),
+                audience: audience,
+            },
             userContext: getUserContext(userContext),
         });
     }
@@ -83,5 +122,7 @@ export let deleteOAuth2Client = Wrapper.deleteOAuth2Client;
 export let validateOAuth2AccessToken = Wrapper.validateOAuth2AccessToken;
 
 export let validateOAuth2IdToken = Wrapper.validateOAuth2IdToken;
+
+export let createTokenForClientCredentials = Wrapper.createTokenForClientCredentials;
 
 export type { APIInterface, APIOptions, RecipeInterface };

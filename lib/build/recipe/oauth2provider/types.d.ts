@@ -34,8 +34,6 @@ export declare type APIOptions = {
 export declare type ErrorOAuth2 = {
     error: string;
     errorDescription: string;
-    errorDebug?: string;
-    errorHint?: string;
     statusCode?: number;
 };
 export declare type ConsentRequest = {
@@ -64,18 +62,19 @@ export declare type LoginRequest = {
     subject: string;
 };
 export declare type TokenInfo = {
-    access_token: string;
+    access_token?: string;
     expires_in: number;
-    id_token: string;
-    refresh_token: string;
+    id_token?: string;
+    refresh_token?: string;
     scope: string;
     token_type: string;
 };
 export declare type LoginInfo = {
     clientName: string;
-    tosUri: string;
-    policyUri: string;
-    logoUri: string;
+    tosUri?: string;
+    policyUri?: string;
+    logoUri?: string;
+    clientUri?: string;
     metadata?: Record<string, any> | null;
 };
 export declare type UserInfo = {
@@ -88,7 +87,7 @@ export declare type UserInfo = {
 };
 export declare type RecipeInterface = {
     authorization(input: {
-        params: any;
+        params: Record<string, string>;
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
@@ -96,14 +95,17 @@ export declare type RecipeInterface = {
         redirectTo: string;
         setCookie: string | undefined;
     }>;
-    token(input: { body: any; userContext: UserContext }): Promise<TokenInfo | ErrorOAuth2 | GeneralErrorResponse>;
+    tokenExchange(input: {
+        body: Record<string, string | undefined>;
+        userContext: UserContext;
+    }): Promise<TokenInfo | ErrorOAuth2>;
     getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
     acceptConsentRequest(input: {
         challenge: string;
         context?: any;
         grantAccessTokenAudience?: string[];
         grantScope?: string[];
-        handledAt?: string[];
+        handledAt?: string;
         remember?: boolean;
         rememberFor?: number;
         session?: any;
@@ -199,7 +201,12 @@ export declare type RecipeInterface = {
     >;
     validateOAuth2AccessToken(input: {
         token: string;
-        expectedAudience?: string;
+        requirements?: {
+            clientId?: string;
+            scopes?: string[];
+            audience?: string;
+        };
+        checkDatabase?: boolean;
         userContext: UserContext;
     }): Promise<{
         status: "OK";
@@ -207,7 +214,11 @@ export declare type RecipeInterface = {
     }>;
     validateOAuth2IdToken(input: {
         token: string;
-        expectedAudience?: string;
+        requirements?: {
+            clientId?: string;
+            scopes?: string[];
+            audience?: string;
+        };
         userContext: UserContext;
     }): Promise<{
         status: "OK";
@@ -215,16 +226,16 @@ export declare type RecipeInterface = {
     }>;
     buildAccessTokenPayload(input: {
         user: User;
+        client: OAuth2Client;
         session: SessionContainerInterface;
         scopes: string[];
-        defaultPayload: JSONObject;
         userContext: UserContext;
     }): Promise<JSONObject>;
     buildIdTokenPayload(input: {
         user: User;
+        client: OAuth2Client;
         session: SessionContainerInterface;
         scopes: string[];
-        defaultPayload: JSONObject;
         userContext: UserContext;
     }): Promise<JSONObject>;
     buildUserInfo(input: {
@@ -242,20 +253,6 @@ export declare type APIInterface = {
               loginChallenge: string;
               options: APIOptions;
               session?: SessionContainerInterface;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    redirectTo: string;
-                }
-              | GeneralErrorResponse
-          >);
-    loginPOST:
-        | undefined
-        | ((input: {
-              loginChallenge: string;
-              accept: boolean;
-              session: SessionContainerInterface;
-              options: APIOptions;
               userContext: UserContext;
           }) => Promise<
               | {
