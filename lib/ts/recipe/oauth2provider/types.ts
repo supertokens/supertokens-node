@@ -428,7 +428,6 @@ export type OAuth2ClientOptions = {
     refreshTokenGrantRefreshTokenLifespan?: string | null;
 
     tokenEndpointAuthMethod: string;
-    accessTokenStrategy?: "jwt" | "opaque";
 
     audience?: string[];
     grantTypes?: string[] | null;

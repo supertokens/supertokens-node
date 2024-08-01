@@ -326,7 +326,6 @@ export declare type OAuth2ClientOptions = {
     refreshTokenGrantIdTokenLifespan?: string | null;
     refreshTokenGrantRefreshTokenLifespan?: string | null;
     tokenEndpointAuthMethod: string;
-    accessTokenStrategy?: "jwt" | "opaque";
     audience?: string[];
     grantTypes?: string[] | null;
     responseTypes?: string[] | null;
