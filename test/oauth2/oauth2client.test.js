@@ -31,7 +31,7 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             recipeList: [OAuth2Recipe.init()],
         });
 
-        const { client } = await OAuth2Recipe.createOAuth2Client({}, {});
+        const { client } = await OAuth2Recipe.createOAuth2Client({});
 
         assert(client.clientId !== undefined);
         assert(client.clientSecret !== undefined);
@@ -54,14 +54,12 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
 
         const { client } = await OAuth2Recipe.createOAuth2Client(
             {
-                client_id: "client_id",
-                client_secret: "client_secret",
+                clientName: "client_name",
             },
             {}
         );
 
-        assert.strictEqual(client.clientId, "client_id");
-        assert.strictEqual(client.clientSecret, "client_secret");
+        assert.strictEqual(client.clientName, "client_name");
     });
 
     it("should update the OAuth2Client", async function () {
@@ -81,16 +79,12 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
         // Create a client
         const { client } = await OAuth2Recipe.createOAuth2Client(
             {
-                client_id: "client_id",
-                client_secret: "client_secret",
                 scope: "offline_access offline",
                 redirectUris: ["http://localhost:3000"],
             },
             {}
         );
 
-        assert.strictEqual(client.clientId, "client_id");
-        assert.strictEqual(client.clientSecret, "client_secret");
         assert.strictEqual(client.scope, "offline_access offline");
         assert.strictEqual(JSON.stringify(client.redirectUris), JSON.stringify(["http://localhost:3000"]));
         assert.strictEqual(JSON.stringify(client.metadata), JSON.stringify({}));
@@ -128,16 +122,9 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
         });
 
         // Create a client
-        const { client } = await OAuth2Recipe.createOAuth2Client(
-            {
-                client_id: "client_id",
-                client_secret: "client_secret",
-            },
-            {}
-        );
+        const { client } = await OAuth2Recipe.createOAuth2Client({});
 
-        assert.strictEqual(client.clientId, "client_id");
-        assert.strictEqual(client.clientSecret, "client_secret");
+        assert.strictEqual(client.scope, "offline_access offline openid");
 
         // Delete the client
         const { status } = await OAuth2Recipe.deleteOAuth2Client(
@@ -164,14 +151,11 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             recipeList: [OAuth2Recipe.init()],
         });
 
+        let clientIds = new Set();
         // Create 10 clients
         for (let i = 0; i < 10; i++) {
-            await OAuth2Recipe.createOAuth2Client(
-                {
-                    client_id: `client_id_${i}`,
-                },
-                {}
-            );
+            const client = await OAuth2Recipe.createOAuth2Client({});
+            clientIds.add(client.clientId);
         }
 
         let allClients = [];
@@ -188,9 +172,10 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
             allClients.push(...result.clients);
         } while (nextPaginationToken);
 
+        assert.strictEqual(allClients.length, 10);
         // Check the client IDs
         for (let i = 0; i < 10; i++) {
-            assert.strictEqual(allClients[i].clientId, `client_id_${i}`);
+            assert(clientIds.has(allClients[i].clientId));
         }
     });
 
@@ -210,19 +195,10 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
 
         // Create 5 clients with clientName = "customClientName"
         for (let i = 0; i < 5; i++) {
-            await OAuth2Recipe.createOAuth2Client({ clientName: "customClientName" }, {});
+            await OAuth2Recipe.createOAuth2Client({ clientName: "customClientName" });
         }
 
-        // Create 5 clients with owner = "test"
-        for (let i = 0; i < 5; i++) {
-            await OAuth2Recipe.createOAuth2Client({ owner: "test" }, {});
-        }
-
-        let result = await OAuth2Recipe.getOAuth2Clients({ clientName: "customClientName" }, {});
-        assert.strictEqual(result.status, "OK");
-        assert.strictEqual(result.clients.length, 5);
-
-        result = await OAuth2Recipe.getOAuth2Clients({ owner: "test" }, {});
+        let result = await OAuth2Recipe.getOAuth2Clients({ clientName: "customClientName" });
         assert.strictEqual(result.status, "OK");
         assert.strictEqual(result.clients.length, 5);
     });

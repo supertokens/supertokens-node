@@ -110,13 +110,6 @@ export class OAuth2Client {
     tokenEndpointAuthMethod: string;
 
     /**
-     * OAuth 2.0 Access Token Strategy
-     * AccessTokenStrategy is the strategy used to generate access tokens.
-     * Valid options are jwt and opaque.
-     */
-    accessTokenStrategy?: "jwt" | "opaque";
-
-    /**
      * OAuth 2.0 Client URI
      * ClientURI is a URL string of a web page providing information about the client.
      */
@@ -203,7 +196,6 @@ export class OAuth2Client {
         refreshTokenGrantIdTokenLifespan = null,
         refreshTokenGrantRefreshTokenLifespan = null,
         tokenEndpointAuthMethod,
-        accessTokenStrategy,
         clientUri = "",
         allowedCorsOrigins = [],
         audience = [],
@@ -231,7 +223,6 @@ export class OAuth2Client {
         this.refreshTokenGrantIdTokenLifespan = refreshTokenGrantIdTokenLifespan;
         this.refreshTokenGrantRefreshTokenLifespan = refreshTokenGrantRefreshTokenLifespan;
         this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
-        this.accessTokenStrategy = accessTokenStrategy;
         this.clientUri = clientUri;
         this.allowedCorsOrigins = allowedCorsOrigins;
         this.audience = audience;
