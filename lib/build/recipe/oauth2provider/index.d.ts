@@ -85,7 +85,6 @@ export default class Wrapper {
     }>;
     static revokeToken(
         token: string,
-        tokenTypeHint?: "access_token" | "refresh_token",
         userContext?: Record<string, any>
     ): Promise<
         | import("../../types").GeneralErrorResponse

@@ -69,14 +69,9 @@ export default class Wrapper {
         });
     }
 
-    static revokeToken(
-        token: string,
-        tokenTypeHint?: "access_token" | "refresh_token",
-        userContext?: Record<string, any>
-    ) {
+    static revokeToken(token: string, userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeToken({
             token,
-            tokenTypeHint,
             userContext: getUserContext(userContext),
         });
     }

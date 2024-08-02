@@ -33,12 +33,13 @@ export default async function revokeTokenPOST(
         return true;
     }
 
+    const authorizationHeader =
+        options.req.getHeaderValue("authorization") || options.req.getHeaderValue("Authorization");
+
     let response = await apiImplementation.revokeTokenPOST({
         options,
-        body: {
-            token: body.token,
-            tokenTypeHint: body.token_type_hint,
-        },
+        authorizationHeader,
+        token: body.token,
         userContext,
     });
 

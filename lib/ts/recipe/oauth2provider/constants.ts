@@ -20,4 +20,4 @@ export const AUTH_PATH = "/oauth2provider/auth";
 export const TOKEN_PATH = "/oauth2provider/token";
 export const LOGIN_INFO_PATH = "/oauth2provider/login/info";
 export const USER_INFO_PATH = "/oauth2provider/userinfo";
-export const REVOKE_TOKEN_PATH = "/oauth2provider/token/revoke";
+export const REVOKE_TOKEN_PATH = "/oauth2provider/revoke";

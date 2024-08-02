@@ -149,6 +149,13 @@ export class Querier {
                 } else {
                     headers["content-type"] = "application/json; charset=utf-8";
                 }
+
+                // TODO: Remove this after core changes are done
+                if (body !== undefined && body["authorizationHeader"]) {
+                    headers["authorization"] = body["authorizationHeader"];
+                    delete body["authorizationHeader"];
+                }
+
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,

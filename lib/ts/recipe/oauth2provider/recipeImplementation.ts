@@ -429,13 +429,12 @@ export default function getRecipeInterface(
             return { status: "OK", payload: payload as JSONObject };
         },
 
-        revokeToken: async function (this: RecipeInterface, { token, tokenTypeHint, userContext }) {
-            // TODO: Update the endpoint to the correct token revocation endpoint
+        revokeToken: async function (this: RecipeInterface, { authorizationHeader, token, userContext }) {
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth2/revoke/token`),
+                new NormalisedURLPath(`/recipe/oauth2/pub/revoke`),
                 {
+                    authorizationHeader,
                     token,
-                    tokenTypeHint,
                 },
                 userContext
             );
