@@ -7,6 +7,7 @@ export declare function loginGET({
     loginChallenge,
     session,
     setCookie,
+    isDirectCall,
     userContext,
 }: {
     recipeImplementation: RecipeInterface;
@@ -14,6 +15,7 @@ export declare function loginGET({
     session?: SessionContainerInterface;
     setCookie?: string;
     userContext: UserContext;
+    isDirectCall: boolean;
 }): Promise<{
     redirectTo: string;
     setCookie: string | undefined;

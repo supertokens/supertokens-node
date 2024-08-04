@@ -368,7 +368,7 @@ export type APIInterface = {
               options: APIOptions;
               session?: SessionContainerInterface;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string } | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; setCookie: string | undefined } | GeneralErrorResponse>);
 
     authGET:
         | undefined

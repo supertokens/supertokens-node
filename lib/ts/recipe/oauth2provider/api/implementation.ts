@@ -23,6 +23,7 @@ export default function getAPIImplementation(): APIInterface {
                 recipeImplementation: options.recipeImplementation,
                 loginChallenge,
                 session,
+                isDirectCall: true,
                 userContext,
             });
             return handleInternalRedirects({

@@ -180,6 +180,7 @@ export default function getRecipeInterface(
                 new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
                 input.params,
                 {
+                    // TODO: if session is not set also clear the oauth2 cookie
                     Cookie: `${input.cookies}`,
                 },
                 input.userContext

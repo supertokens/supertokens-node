@@ -1,5 +1,6 @@
 import SuperTokens from "../../../supertokens";
 import { UserContext } from "../../../types";
+import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { AUTH_PATH, LOGIN_PATH } from "../constants";
 import { RecipeInterface } from "../types";
@@ -12,6 +13,7 @@ export async function loginGET({
     loginChallenge,
     session,
     setCookie,
+    isDirectCall,
     userContext,
 }: {
     recipeImplementation: RecipeInterface;
@@ -19,34 +21,44 @@ export async function loginGET({
     session?: SessionContainerInterface;
     setCookie?: string;
     userContext: UserContext;
+    isDirectCall: boolean;
 }) {
-    const request = await recipeImplementation.getLoginRequest({
+    const loginRequest = await recipeImplementation.getLoginRequest({
         challenge: loginChallenge,
         userContext,
     });
 
-    const queryParams = new URLSearchParams({
-        loginChallenge,
-    });
-
-    if (request.oidcContext?.login_hint) {
-        queryParams.set("hint", request.oidcContext.login_hint);
+    const sessionInfo = session !== undefined ? await getSessionInformation(session?.getHandle()) : undefined;
+    if (!sessionInfo) {
+        session = undefined;
     }
 
-    if (request.skip) {
+    const incomingAuthUrlQueryParams = new URLSearchParams(loginRequest.requestUrl.split("?")[1]);
+    const promptParam = incomingAuthUrlQueryParams.get("prompt");
+    const maxAgeParam = incomingAuthUrlQueryParams.get("max_age");
+    if (loginRequest.skip) {
         const accept = await recipeImplementation.acceptLoginRequest({
             challenge: loginChallenge,
             identityProviderSessionId: session?.getHandle(),
-            subject: request.subject,
+            subject: loginRequest.subject,
             userContext,
         });
 
         return { redirectTo: accept.redirectTo, setCookie };
-    } else if (session && (!request.subject || session.getUserId() === request.subject)) {
+    } else if (
+        session &&
+        (["", undefined].includes(loginRequest.subject) || session.getUserId() === loginRequest.subject) &&
+        (promptParam !== "login" || isDirectCall) &&
+        (maxAgeParam === null ||
+            (maxAgeParam === "0" && isDirectCall) ||
+            Number.parseInt(maxAgeParam) * 1000 > Date.now() - sessionInfo!.timeCreated)
+    ) {
         const accept = await recipeImplementation.acceptLoginRequest({
             challenge: loginChallenge,
             subject: session.getUserId(),
             identityProviderSessionId: session.getHandle(),
+            remember: true,
+            rememberFor: 3600,
             userContext,
         });
         return { redirectTo: accept.redirectTo, setCookie };
@@ -60,8 +72,20 @@ export async function loginGET({
         .getAsStringDangerous();
     const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
 
+    const queryParamsForAuthPage = new URLSearchParams({
+        loginChallenge,
+    });
+
+    if (loginRequest.oidcContext?.login_hint) {
+        queryParamsForAuthPage.set("hint", loginRequest.oidcContext.login_hint);
+    }
+
+    if (session !== undefined) {
+        queryParamsForAuthPage.set("forceFreshAuth", "true");
+    }
+
     return {
-        redirectTo: websiteDomain + websiteBasePath + `?${queryParams.toString()}`,
+        redirectTo: websiteDomain + websiteBasePath + `?${queryParamsForAuthPage.toString()}`,
         setCookie,
     };
 }
@@ -98,7 +122,7 @@ function mergeSetCookieHeaders(setCookie1?: string, setCookie2?: string): string
     if (!setCookie2 || setCookie1 === setCookie2) {
         return setCookie1;
     }
-    return `${setCookie1};${setCookie2}`;
+    return `${setCookie1}, ${setCookie2}`;
 }
 
 function isInternalRedirect(redirectTo: string): boolean {
@@ -154,6 +178,7 @@ export async function handleInternalRedirects({
                 loginChallenge,
                 session,
                 setCookie: response.setCookie,
+                isDirectCall: false,
                 userContext,
             });
 

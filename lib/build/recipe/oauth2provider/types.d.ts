@@ -257,6 +257,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     redirectTo: string;
+                    setCookie: string | undefined;
                 }
               | GeneralErrorResponse
           >);
