@@ -19,6 +19,8 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 import { RecipeLevelUser } from "./recipe/accountlinking/types";
 import { BaseRequest } from "./framework";
+import OverrideableBuilder from "supertokens-js-override";
+import { SessionContainer } from "./recipe/session";
 declare const __brand: unique symbol;
 type Brand<B> = { [__brand]: B };
 
@@ -65,6 +67,472 @@ export type TypeInput = {
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
     debug?: boolean;
+    security?: {
+        googleRecaptcha?: {
+            // if the user provides both, we will use v2
+            v2SecretKey?: string;
+            v1SecretKey?: string;
+        };
+        securityServiceApiKey?: string; // this will be used for bruteforce, anomaly, and breached password detection services.
+        override?: (
+            originalImplementation: SecurityFunctions,
+            builder?: OverrideableBuilder<SecurityFunctions>
+        ) => SecurityFunctions;
+    };
+};
+
+export type InfoFromRequestHeaders = {
+    ipAddress?: string;
+    userAgent?: string;
+};
+
+export type SecurityChecksActionTypes =
+    | "emailpassword-sign-in"
+    | "emailpassword-sign-up"
+    | "send-password-reset-email"
+    | "passwordless-send-email"
+    | "passwordless-send-sms"
+    | "totp-verify-device"
+    | "totp-verify-totp"
+    | "thirdparty-login"
+    | "emailverification-send-email";
+
+export type RiskScores = {
+    // all values are between 0 and 1, with 1 being highest risk
+    requestIdInfo:
+        | {
+              valid: true;
+              identification: {
+                  visitorId: string;
+                  requestId: string;
+                  incognito: boolean;
+                  linkedId: string;
+                  tag: Record<string, unknown>;
+                  timeInMS: number;
+                  url: string;
+                  browserDetails: {
+                      browserName: string;
+                      browserMajorVersion: string;
+                      browserFullVersion: string;
+                      os: string;
+                      osVersion: string;
+                      device: string;
+                      userAgent: string;
+                  };
+                  confidence: {
+                      score: number;
+                  };
+              };
+              botDetected: boolean;
+              isEmulator: boolean;
+              ipInfo: {
+                  v4: {
+                      address: string;
+                      geolocation: {
+                          accuracyRadius: number;
+                          latitude: number;
+                          longitude: number;
+                          postalCode: string;
+                          timezone: string;
+                          city: {
+                              name: string;
+                          };
+                          country: {
+                              code: string;
+                              name: string;
+                          };
+                          continent: {
+                              code: string;
+                              name: string;
+                          };
+                          subdivisions: Array<{
+                              isoCode: string;
+                              name: string;
+                          }>;
+                      };
+                      asn: {
+                          asn: string;
+                          name: string;
+                          network: string;
+                      };
+                      datacenter: {
+                          result: boolean;
+                          name: string;
+                      };
+                  };
+                  v6: {
+                      address: string;
+                      geolocation: {
+                          accuracyRadius: number;
+                          latitude: number;
+                          longitude: number;
+                          postalCode: string;
+                          timezone: string;
+                          city: {
+                              name: string;
+                          };
+                          country: {
+                              code: string;
+                              name: string;
+                          };
+                          continent: {
+                              code: string;
+                              name: string;
+                          };
+                          subdivisions: Array<{
+                              isoCode: string;
+                              name: string;
+                          }>;
+                      };
+                      asn: {
+                          asn: string;
+                          name: string;
+                          network: string;
+                      };
+                      datacenter: {
+                          result: boolean;
+                          name: string;
+                      };
+                  };
+              };
+              ipBlocklist: {
+                  result: boolean;
+                  details: {
+                      emailSpam: boolean;
+                      attackSource: boolean;
+                  };
+              };
+              isUsingTor: boolean;
+              vpn: {
+                  result: boolean;
+                  originTimezone: string;
+                  originCountry: string;
+                  methods: {
+                      timezoneMismatch: boolean;
+                      publicVPN: boolean;
+                      auxiliaryMobile: boolean;
+                      osMismatch: boolean;
+                  };
+              };
+              proxy: boolean;
+              incognito: boolean;
+              tampering: {
+                  result: boolean;
+                  anomalyScore: number;
+              };
+              clonedApp: boolean;
+              factoryReset: {
+                  time: string;
+                  timestamp: number;
+              };
+              jailbroken: boolean;
+              frida: boolean;
+              privacySettings: boolean;
+              virtualMachine: boolean;
+              rawDeviceAttributes: {
+                  architecture: {
+                      value: number;
+                  };
+                  audio: {
+                      value: number;
+                  };
+                  canvas: {
+                      value: {
+                          Winding: boolean;
+                          Geometry: string;
+                          Text: string;
+                      };
+                  };
+                  colorDepth: {
+                      value: number;
+                  };
+                  colorGamut: {
+                      value: string;
+                  };
+                  contrast: {
+                      value: number;
+                  };
+                  cookiesEnabled: {
+                      value: boolean;
+                  };
+                  cpuClass: Record<string, unknown>;
+                  fonts: {
+                      value: string[];
+                  };
+              };
+              highActivity: boolean;
+              locationSpoofing: boolean;
+              remoteControl: boolean;
+          }
+        | {
+              valid: false;
+          }
+        | null;
+    phoneNumberRisk: number | null;
+    emailRisk: number | null;
+    isBreachedPassword: boolean | null;
+    isImpossibleTravel: boolean | null; // only during sign in or sign up, based on email / phone number
+    isNewDevice: boolean | null; // based on visitorId being different for the email / phone number
+    numberOfUniqueDevicesForUser: number | null; // based on number of visitorIds mapped to the input email / phone number
+    bruteForce:
+        | {
+              detected: false;
+          }
+        | {
+              detected: true;
+              key: string;
+          }
+        | null;
+};
+
+export type SecurityFunctions = {
+    getInfoFromRequest: (input: {
+        tenantId: string;
+        request: BaseRequest;
+        userContext: UserContext;
+    }) => InfoFromRequestHeaders;
+
+    // this function will return hasProvidedV2SecretKey || hasProvidedV1SecretKey by default.
+    shouldEnforceGoogleRecaptchaTokenPresentInRequest: (input: {
+        tenantId: string;
+        actionType: SecurityChecksActionTypes;
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
+    performGoogleRecaptchaV2: (input: {
+        tenantId: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        googleRecaptchaToken: string;
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
+    performGoogleRecaptchaV1: (input: {
+        tenantId: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        googleRecaptchaToken: string;
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
+    // this will return true if securityServiceApiKey is present in the config.
+    shouldEnforceSecurityServiceRequestIdPresentInRequest: (input: {
+        tenantId: string;
+        actionType: SecurityChecksActionTypes;
+        userContext: UserContext;
+    }) => Promise<boolean>;
+
+    // we pass in password instead of passwordHash cause maybe users want to use a different way to
+    // check for breached password.
+    getRiskScoresFromSecurityService: (input: {
+        tenantId: string;
+        infoFromRequestHeaders?: InfoFromRequestHeaders;
+        password?: string; // to check against breached password
+        securityServiceRequestId?: string;
+        email?: string;
+        phoneNumber?: string;
+        bruteForce?: {
+            key: string;
+            maxRequests: {
+                limit: number;
+                perTimeIntervalMS: number;
+            }[];
+        }[];
+        actionType?: SecurityChecksActionTypes;
+        userContext: UserContext;
+    }) => Promise<RiskScores | undefined>; // undefined means we have nothing to return, and we completely ignore this.
+
+    shouldRejectRequestBasedOnRiskScores: (input: {
+        tenantId: string;
+        riskScores: RiskScores;
+        actionType: SecurityChecksActionTypes;
+        userContext: UserContext;
+    }) => Promise<{
+        rejectBasedOnBruteForce?: boolean;
+        rejectBasedOnBreachedPassword?: boolean;
+        rejectBasedOnBotDetection?: boolean;
+        rejectBasedOnSuspiciousIPOrLocation?: boolean;
+        rejectBasedOnVPNBeingUsed?: boolean;
+        rejectBasedOnPhoneNumberRisk?: boolean;
+        rejectBasedOnEmailRisk?: boolean;
+        rejectBasedOnImpossibleTravel?: boolean;
+        rejectBasedOnNewDevice?: boolean;
+        rejectBasedOnNumberOfUniqueDevicesForUser?: boolean;
+        otherReasonForRejection?: string;
+    }>;
+
+    // these are all here and not in the respective recipes cause they are to be applied
+    // only in the APIs and not in the recipe function. We still can't put them in the API
+    // cause for third party, we do not have the thirdPartyInfo in the api args in the input.
+
+    // Note that for passwordless, we will call this during createCode.
+    getRateLimitForEmailPasswordSignIn: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        email: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[] // is an array so that we can have multiple checks and fail the api if any one of them fail
+        | undefined; // undefined means no rate limit
+    getRateLimitForEmailPasswordSignUp: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        email: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+    getRateLimitForThirdPartySignInUp: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        thirdPartyId: string; // we intentionally do not give thirdPartyUserId because if we did, we'd have to query the thirdParty provider first
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+    getRateLimitForSendingPasswordlessEmail: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        email: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+    getRateLimitForSendingPasswordlessSms: (input: {
+        tenantId: string;
+        session?: SessionContainer;
+        phoneNumber: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+    getRateLimitForResetPassword: (input: {
+        tenantId: string;
+        email: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+    getRateLimitForVerifyEmail: (input: {
+        tenantId: string;
+        session: SessionContainer;
+        // we intentionally do not pass in the email here cause to fetch that, we'd need to query the core first
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+
+    getRateLimitForTotpDeviceVerify: (input: {
+        tenantId: string;
+        session: SessionContainer;
+        deviceName: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+
+    getRateLimitForTotpVerify: (input: {
+        tenantId: string;
+        session: SessionContainer;
+        deviceName: string;
+        infoFromRequest: InfoFromRequestHeaders;
+        userContext: UserContext;
+    }) =>
+        | {
+              key: string;
+              maxRequests: {
+                  limit: number;
+                  perTimeIntervalMS: number;
+              }[];
+          }[]
+        | undefined;
+
+    // if tenant id is not provided, then we ban across all tenants.
+    ban: (input: {
+        tenantId?: string;
+        userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
+        ipAddress?: string;
+        email?: string;
+        phoneNumber?: string;
+        userContext: UserContext;
+    }) => Promise<void>;
+
+    getIsBanned: (input: {
+        tenantId?: string;
+        userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
+        ipAddress?: string;
+        email?: string;
+        phoneNumber?: string;
+        userContext: UserContext;
+    }) => Promise<{
+        userIdBanned?: boolean;
+        ipAddressBanned?: boolean;
+        emailBanned?: boolean;
+        phoneNumberBanned?: boolean;
+    }>;
+
+    unban: (input: {
+        tenantId?: string;
+        userId?: string; // can be a primary or recipe user id, either way, the primary user id is banned
+        ipAddress?: string;
+        email?: string;
+        phoneNumber?: string;
+        userContext: UserContext;
+    }) => Promise<void>;
 };
 
 export type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;

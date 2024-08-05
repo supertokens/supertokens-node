@@ -176,6 +176,12 @@ export type RecipeInterface = {
         session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceEmailBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
     }): Promise<
         | {
               status: "OK";
@@ -199,6 +205,14 @@ export type RecipeInterface = {
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
+          }
+        | {
+              status: "USER_BANNED_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
           }
     >;
 
@@ -265,6 +279,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
+    // no google recaptcha or no securityservicetoken here cause we reply on the provider to detect bots and other issues.
     signInUpPOST:
         | undefined
         | ((
