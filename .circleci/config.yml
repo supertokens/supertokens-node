@@ -53,11 +53,12 @@ workflows:
                       branches:
                           ignore: /.*/
             - setup:
-                  filters:
-                      tags:
-                          only: /dev-v[0-9]+(\.[0-9]+)*/
-                      branches:
-                          only: /test-cicd\/.*/
+                  {}
+                  #   filters:
+                  #       tags:
+                  #           only: /dev-v[0-9]+(\.[0-9]+)*/
+                  #       branches:
+                  #           only: /test-cicd\/.*/
             - update-docs:
                   context:
                       - slack-notification
