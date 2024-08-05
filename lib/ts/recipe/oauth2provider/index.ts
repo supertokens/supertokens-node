@@ -108,9 +108,24 @@ export default class Wrapper {
         });
     }
 
-    static revokeToken(token: string, userContext?: Record<string, any>) {
+    static revokeToken(
+        token: string,
+        clientId: string,
+        clientSecret: string,
+        useBasicAuth = false,
+        userContext?: Record<string, any>
+    ) {
+        let authorizationHeader: string | undefined = undefined;
+
+        if (useBasicAuth) {
+            authorizationHeader = "Basic " + Buffer.from(clientId + ":" + clientSecret).toString("base64");
+        }
+
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeToken({
             token,
+            clientId,
+            clientSecret,
+            authorizationHeader,
             userContext: getUserContext(userContext),
         });
     }
@@ -131,5 +146,7 @@ export let validateOAuth2AccessToken = Wrapper.validateOAuth2AccessToken;
 export let validateOAuth2IdToken = Wrapper.validateOAuth2IdToken;
 
 export let createTokenForClientCredentials = Wrapper.createTokenForClientCredentials;
+
+export let revokeToken = Wrapper.revokeToken;
 
 export type { APIInterface, APIOptions, RecipeInterface };

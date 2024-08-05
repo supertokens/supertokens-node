@@ -101,6 +101,9 @@ export default class Wrapper {
     ): Promise<import("./types").ErrorOAuth2 | import("./types").TokenInfo>;
     static revokeToken(
         token: string,
+        clientId: string,
+        clientSecret: string,
+        useBasicAuth?: boolean,
         userContext?: Record<string, any>
     ): Promise<
         | import("../../types").GeneralErrorResponse
@@ -117,4 +120,5 @@ export declare let deleteOAuth2Client: typeof Wrapper.deleteOAuth2Client;
 export declare let validateOAuth2AccessToken: typeof Wrapper.validateOAuth2AccessToken;
 export declare let validateOAuth2IdToken: typeof Wrapper.validateOAuth2IdToken;
 export declare let createTokenForClientCredentials: typeof Wrapper.createTokenForClientCredentials;
+export declare let revokeToken: typeof Wrapper.revokeToken;
 export type { APIInterface, APIOptions, RecipeInterface };

@@ -40,6 +40,8 @@ export default async function revokeTokenPOST(
         options,
         authorizationHeader,
         token: body.token,
+        clientId: body.client_id,
+        clientSecret: body.client_secret,
         userContext,
     });
 

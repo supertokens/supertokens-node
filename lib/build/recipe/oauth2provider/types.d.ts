@@ -246,8 +246,10 @@ export declare type RecipeInterface = {
         userContext: UserContext;
     }): Promise<JSONObject>;
     revokeToken(input: {
-        authorizationHeader?: string;
         token: string;
+        clientId?: string;
+        clientSecret?: string;
+        authorizationHeader?: string;
         userContext: UserContext;
     }): Promise<
         | {
@@ -319,8 +321,10 @@ export declare type APIInterface = {
     revokeTokenPOST:
         | undefined
         | ((input: {
-              authorizationHeader?: string;
               token: string;
+              clientId?: string;
+              clientSecret?: string;
+              authorizationHeader?: string;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

@@ -474,11 +474,18 @@ export default function getRecipeInterface(
             return { status: "OK", payload: payload as JSONObject };
         },
 
-        revokeToken: async function (this: RecipeInterface, { authorizationHeader, token, userContext }) {
+        revokeToken: async function (
+            this: RecipeInterface,
+            { clientId, clientSecret, token, authorizationHeader, userContext }
+        ) {
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/pub/revoke`),
                 {
+                    $isFormData: true,
                     authorizationHeader,
+                    // NOTE: Send clientId and clientSecret only if authorizationHeader is undefined (token_endpoint_auth_method is client_secret_post).
+                    // Including them with authorizationHeader will result in an error.
+                    ...(authorizationHeader === undefined && { client_id: clientId, client_secret: clientSecret }),
                     token,
                 },
                 userContext
