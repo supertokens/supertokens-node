@@ -114,75 +114,69 @@ workflows:
     tagged-build:
         jobs:
             - test-dev-tag-as-not-passed:
-                  {}
-                  #   filters:
-                  #       tags:
-                  #           only: /dev-v[0-9]+(\.[0-9]+)*/
-                  #       branches:
-                  #           only: /test-cicd\/.*/
-            # - test-unit:
-            #       requires:
-            #           - test-dev-tag-as-not-passed
-            #       context:
-            #           - slack-notification
-            #       filters:
-            #           tags:
-            #               only: /dev-v[0-9]+(\.[0-9]+)*/
-            #           branches:
-            #               only: /test-cicd\/.*/
-            #       matrix:
-            #           parameters:
-            #               cdi-version: placeholder
+            - test-unit:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          only: /test-cicd\/.*/
+                  matrix:
+                      parameters:
+                          cdi-version: placeholder
             - test-backend-sdk-testing:
                   requires:
                       - test-dev-tag-as-not-passed
                   context:
                       - slack-notification
-                  # filters:
-                  #     tags:
-                  #         only: /dev-v[0-9]+(\.[0-9]+)*/
-                  #     branches:
-                  #         only: /test-cicd\/.*/
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          only: /test-cicd\/.*/
                   matrix:
                       parameters:
                           cdi-version: placeholder
                           fdi-version: placeholder
-            # - test-website:
-            #       requires:
-            #           - test-dev-tag-as-not-passed
-            #       context:
-            #           - slack-notification
-            #       filters:
-            #           tags:
-            #               only: /dev-v[0-9]+(\.[0-9]+)*/
-            #           branches:
-            #               only: /test-cicd\/.*/
-            #       matrix:
-            #           parameters:
-            #               fdi-version: placeholder
-            # - test-authreact:
-            #       requires:
-            #           - test-dev-tag-as-not-passed
-            #       context:
-            #           - slack-notification
-            #       filters:
-            #           tags:
-            #               only: /dev-v[0-9]+(\.[0-9]+)*/
-            #           branches:
-            #               only: /test-cicd\/.*/
-            #       matrix:
-            #           parameters:
-            #               fdi-version: placeholder
-            - test-success:
+            - test-website:
                   requires:
-                      #   - test-unit
-                      - test-backend-sdk-testing
-                      #   - test-website
-                      #   - test-authreact
+                      - test-dev-tag-as-not-passed
                   context:
                       - slack-notification
-                  #   filters:
-                  #       tags:
-                  #           only: /dev-v[0-9]+(\.[0-9]+)*/
-                  #       branches:
-                  #           ignore: /.*/
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          only: /test-cicd\/.*/
+                  matrix:
+                      parameters:
+                          fdi-version: placeholder
+            - test-authreact:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          only: /test-cicd\/.*/
+                  matrix:
+                      parameters:
+                          fdi-version: placeholder
+            - test-success:
+                  requires:
+                      - test-unit
+                      - test-backend-sdk-testing
+                      - test-website
+                      - test-authreact
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
