@@ -18,10 +18,9 @@ import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod, UserCont
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STError from "../../error";
-import { SIGN_IN_API, AUTHORISATION_API } from "./constants";
+import { SIGN_IN_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import signInAPI from "./api/signin";
-import authorisationUrlAPI from "./api/authorisationUrl";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
@@ -97,12 +96,6 @@ export default class Recipe extends RecipeModule {
                 id: SIGN_IN_API,
                 disabled: this.apiImpl.signInPOST === undefined,
             },
-            {
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(AUTHORISATION_API),
-                id: AUTHORISATION_API,
-                disabled: this.apiImpl.authorisationUrlGET === undefined,
-            },
         ];
     };
 
@@ -126,8 +119,6 @@ export default class Recipe extends RecipeModule {
         };
         if (id === SIGN_IN_API) {
             return await signInAPI(this.apiImpl, tenantId, options, userContext);
-        } else if (id === AUTHORISATION_API) {
-            return await authorisationUrlAPI(this.apiImpl, tenantId, options, userContext);
         }
         return false;
     };

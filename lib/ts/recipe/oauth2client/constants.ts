@@ -13,6 +13,4 @@
  * under the License.
  */
 
-export const AUTHORISATION_API = "/oauth2client/authorisationurl";
-
-export const SIGN_IN_API = "/oauth2client/signin";
+export const SIGN_IN_API = "/oauth/client/signin";
