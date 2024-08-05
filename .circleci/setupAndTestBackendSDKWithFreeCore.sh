@@ -53,8 +53,29 @@ cd ../project/
 # Set the script to exit on error
 set -e
 
+API_PORT=3030
+ST_CONNECTION_URI=http://localhost:8081
+
+# start test-server
+pushd test/test-server
+npm install
+API_PORT=$API_PORT ST_CONNECTION_URI=$ST_CONNECTION_URI npm start &
+popd
+
+frontendDriverVersion=$3
+# run tests
+cd ../
+git clone git@github.com:supertokens/backend-sdk-testing.git
+cd backend-sdk-testing
+git checkout $frontendDriverVersion
+npm install
+npm run build
+
 if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
-    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --no-config --timeout 500000 $(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/**/*.test.js')
+    API_PORT=$API_PORT TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --no-config --timeout 500000 $(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/**/*.test.js')
 else
-    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
+    API_PORT=$API_PORT TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
 fi
+
+# kill test-server
+kill $(lsof -t -i:$API_PORT)
