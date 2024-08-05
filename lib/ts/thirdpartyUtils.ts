@@ -101,9 +101,6 @@ var oidcInfoMap: { [key: string]: any } = {};
 export async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     const normalizedDomain = new NormalisedURLDomain(issuer);
     let normalizedPath = new NormalisedURLPath(issuer);
-    const openIdConfigPath = new NormalisedURLPath("/.well-known/openid-configuration");
-
-    normalizedPath = normalizedPath.appendPath(openIdConfigPath);
 
     if (oidcInfoMap[issuer] !== undefined) {
         return oidcInfoMap[issuer];

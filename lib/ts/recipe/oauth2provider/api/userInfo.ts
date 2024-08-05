@@ -32,9 +32,7 @@ export default async function userInfoGET(
     const authHeader = options.req.getHeaderValue("authorization") || options.req.getHeaderValue("Authorization");
 
     if (authHeader === undefined || !authHeader.startsWith("Bearer ")) {
-        // TODO: Returning a 400 instead of a 401 to prevent a potential refresh loop in the client SDK.
-        // When addressing this TODO, review other response codes in this function as well.
-        sendNon200ResponseWithMessage(options.res, "Missing or invalid Authorization header", 400);
+        sendNon200ResponseWithMessage(options.res, "Missing or invalid Authorization header", 401);
         return true;
     }
 
@@ -47,13 +45,13 @@ export default async function userInfoGET(
             payload,
         } = await OAuth2ProviderRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2AccessToken({
             token: accessToken,
-            // TODO: expectedAudience?
             userContext,
         });
         accessTokenPayload = payload;
     } catch (error) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
-        sendNon200ResponseWithMessage(options.res, "Invalid or expired OAuth2 access token", 400);
+        options.res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate", true);
+        sendNon200ResponseWithMessage(options.res, "Invalid or expired OAuth2 access token", 401);
         return true;
     }
 
@@ -64,7 +62,8 @@ export default async function userInfoGET(
         !Array.isArray(accessTokenPayload.scp)
     ) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
-        sendNon200ResponseWithMessage(options.res, "Malformed access token payload", 400);
+        options.res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate", true);
+        sendNon200ResponseWithMessage(options.res, "Malformed access token payload", 401);
         return true;
     }
 
@@ -74,7 +73,8 @@ export default async function userInfoGET(
 
     if (user === undefined) {
         options.res.setHeader("WWW-Authenticate", 'Bearer error="invalid_token"', false);
-        sendNon200ResponseWithMessage(options.res, "Couldn't find any user associated with the access token", 400);
+        options.res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate", true);
+        sendNon200ResponseWithMessage(options.res, "Couldn't find any user associated with the access token", 401);
         return true;
     }
 

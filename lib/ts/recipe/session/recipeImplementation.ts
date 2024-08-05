@@ -160,6 +160,7 @@ export default function getRecipeInterface(
                 antiCsrfToken,
                 options?.antiCsrfCheck !== false,
                 options?.checkDatabase === true,
+                config,
                 userContext
             );
 

@@ -122,6 +122,7 @@ export declare type ProviderConfig = CommonProviderConfig & {
 };
 export declare type ProviderInput = {
     config: ProviderConfig;
+    includeInNonPublicTenantsByDefault?: boolean;
     override?: (originalImplementation: TypeProvider) => TypeProvider;
 };
 export declare type TypeInputSignInAndUp = {

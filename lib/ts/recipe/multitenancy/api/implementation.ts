@@ -1,6 +1,7 @@
 import { APIInterface } from "../";
 import { isValidFirstFactor } from "../../multitenancy/utils";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
+import { DEFAULT_TENANT_ID } from "../constants";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -17,7 +18,11 @@ export default function getAPIInterface(): APIInterface {
             const providerInputsFromStatic = options.staticThirdPartyProviders;
             const providerConfigsFromCore = tenantConfigRes.thirdParty.providers;
 
-            const mergedProviders = mergeProvidersFromCoreAndStatic(providerConfigsFromCore, providerInputsFromStatic);
+            const mergedProviders = mergeProvidersFromCoreAndStatic(
+                providerConfigsFromCore,
+                providerInputsFromStatic,
+                tenantId === DEFAULT_TENANT_ID
+            );
 
             const finalProviderList: {
                 id: string;
@@ -79,14 +84,18 @@ export default function getAPIInterface(): APIInterface {
             return {
                 status: "OK",
                 emailPassword: {
-                    enabled: tenantConfigRes.emailPassword.enabled,
-                },
-                passwordless: {
-                    enabled: tenantConfigRes.passwordless.enabled,
+                    enabled: validFirstFactors.includes("emailpassword"),
                 },
                 thirdParty: {
-                    enabled: tenantConfigRes.thirdParty.enabled,
+                    enabled: validFirstFactors.includes("thirdparty"),
                     providers: finalProviderList,
+                },
+                passwordless: {
+                    enabled:
+                        validFirstFactors.includes("otp-email") ||
+                        validFirstFactors.includes("otp-phone") ||
+                        validFirstFactors.includes("link-email") ||
+                        validFirstFactors.includes("link-phone"),
                 },
                 firstFactors: validFirstFactors,
             };

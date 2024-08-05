@@ -21,10 +21,11 @@ import { RATE_LIMIT_STATUS_CODE } from "./constants";
 import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
+import SuperTokens from "./supertokens";
 
 export const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
 const hydraAdmDomain = process.env.HYDRA_ADM ?? "http://localhost:4445"; // This will be used as a domain for paths starting with hydraAdmPathPrefix
-export const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
+const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
 const hydraAdmPathPrefix = "/recipe/oauth2/admin"; // Replaced with "/admin" when sending the request (/recipe/oauth2/admin/clients -> /admin/clients)
 
 export class Querier {
@@ -53,11 +54,24 @@ export class Querier {
         this.rIdToCore = rIdToCore;
     }
 
-    getAPIVersion = async (): Promise<string> => {
+    getAPIVersion = async (userContext: UserContext): Promise<string> => {
         if (Querier.apiVersion !== undefined) {
             return Querier.apiVersion;
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
+        const st = SuperTokens.getInstanceOrThrowError();
+        const appInfo = st.appInfo;
+
+        const request = st.getRequestFromUserContext(userContext);
+        const queryParamsObj: {
+            apiDomain: string;
+            websiteDomain: string;
+        } = {
+            apiDomain: appInfo.apiDomain.getAsStringDangerous(),
+            websiteDomain: appInfo.getOrigin({ request, userContext }).getAsStringDangerous(),
+        };
+        const queryParams = new URLSearchParams(queryParamsObj).toString();
+
         let { body: response } = await this.sendRequestHelper(
             new NormalisedURLPath("/apiversion"),
             "GET",
@@ -68,7 +82,22 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                let response = await doFetch(url, {
+
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "get",
+                            headers: headers,
+                            params: queryParamsObj,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                }
+
+                let response = await doFetch(url + `?${queryParams}`, {
                     method: "GET",
                     headers,
                 });
@@ -92,6 +121,7 @@ export class Querier {
             throw Error("calling testing function in non testing env");
         }
         Querier.initCalled = false;
+        Querier.apiVersion = undefined;
     }
 
     getHostsAliveForTesting = () => {
@@ -140,7 +170,7 @@ export class Querier {
             path,
             "POST",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = {
                     "cdi-version": apiVersion,
                 };
@@ -212,7 +242,7 @@ export class Querier {
             path,
             "DELETE",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
                 if (Querier.apiKey !== undefined) {
                     headers = {
@@ -272,7 +302,7 @@ export class Querier {
             path,
             "GET",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion };
                 if (Querier.apiKey !== undefined) {
                     headers = {
@@ -379,7 +409,7 @@ export class Querier {
             path,
             "GET",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = inpHeaders ?? {};
                 headers["cdi-version"] = apiVersion;
 
@@ -438,7 +468,7 @@ export class Querier {
             path,
             "PUT",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
                 if (Querier.apiKey !== undefined) {
                     headers = {
@@ -495,7 +525,7 @@ export class Querier {
             path,
             "PATCH",
             async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
+                let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
                 if (Querier.apiKey !== undefined) {
                     headers = {

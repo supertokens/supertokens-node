@@ -289,11 +289,8 @@ function initST(config: any) {
                 TOTP.init({
                     ...config,
                     override: {
-                        apis: overrideBuilderWithLogging("Multitenancy.override.apis", config?.override?.apis),
-                        functions: overrideBuilderWithLogging(
-                            "Multitenancy.override.functions",
-                            config?.override?.functions
-                        ),
+                        apis: overrideBuilderWithLogging("TOTP.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging("TOTP.override.functions", config?.override?.functions),
                     },
                 })
             );

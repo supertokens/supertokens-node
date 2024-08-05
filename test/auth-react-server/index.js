@@ -406,9 +406,13 @@ app.post("/test/setFlow", (req, res) => {
 app.post("/setupTenant", async (req, res) => {
     const { tenantId, loginMethods, coreConfig } = req.body;
     let coreResp = await Multitenancy.createOrUpdateTenant(tenantId, {
-        emailPasswordEnabled: loginMethods.emailPassword?.enabled === true,
-        thirdPartyEnabled: loginMethods.thirdParty?.enabled === true,
-        passwordlessEnabled: loginMethods.passwordless?.enabled === true,
+        firstFactors: [
+            ...(loginMethods.emailPassword?.enabled === true ? ["emailpassword"] : []),
+            ...(loginMethods.thirdParty?.enabled === true ? ["thirdparty"] : []),
+            ...(loginMethods.passwordless?.enabled === true
+                ? ["otp-phone", "otp-email", "link-phone", "link-email"]
+                : []),
+        ],
         coreConfig,
     });
 
@@ -510,6 +514,7 @@ app.get("/test/featureFlags", (req, res) => {
     available.push("accountlinking");
     available.push("mfa");
     available.push("recipeConfig");
+    available.push("accountlinking-fixes"); // this is related to 19.0 release in which we fixed a bunch of issues with account linking, including changing error codes.
 
     res.send({
         available,

@@ -853,7 +853,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
                 origin: ({ request }) => {
-                    if (request.getHeaderValue("origin") !== undefined) {
+                    if (request !== undefined && request.getHeaderValue("origin") !== undefined) {
                         return request.getHeaderValue("origin");
                     }
 

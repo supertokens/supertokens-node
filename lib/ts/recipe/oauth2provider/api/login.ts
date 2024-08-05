@@ -13,64 +13,48 @@
  * under the License.
  */
 
-import { normaliseHttpMethod, send200Response } from "../../../utils";
+import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import Session from "../../session";
 import { UserContext } from "../../../types";
+import SuperTokensError from "../../../error";
 
-// TODO: separate post and get?
 export default async function login(
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (normaliseHttpMethod(options.req.getMethod()) === "post") {
-        if (apiImplementation.loginPOST === undefined) {
-            return false;
-        }
-        const session = await Session.getSession(options.req, options.res, { sessionRequired: true }, userContext);
-        const reqBody = await options.req.getJSONBody();
-        let response = await apiImplementation.loginPOST({
-            options,
-            accept: reqBody.accept,
-            loginChallenge: reqBody.loginChallenge,
-            session,
-            userContext,
+    if (apiImplementation.loginGET === undefined) {
+        return false;
+    }
+
+    let session;
+    try {
+        session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
+    } catch {
+        // We can handle this as if the session is not present, because then we redirect to the frontend,
+        // which should handle the validation error
+        session = undefined;
+    }
+
+    const loginChallenge =
+        options.req.getKeyValueFromQuery("login_challenge") ?? options.req.getKeyValueFromQuery("loginChallenge");
+    if (loginChallenge === undefined) {
+        throw new SuperTokensError({
+            type: SuperTokensError.BAD_INPUT_ERROR,
+            message: "Missing input param: loginChallenge",
         });
-        if ("status" in response) {
-            send200Response(options.res, response);
-        } else {
-            options.res.original.redirect(response.redirectTo);
-        }
+    }
+    let response = await apiImplementation.loginGET({
+        options,
+        loginChallenge,
+        session,
+        userContext,
+    });
+    if ("status" in response) {
+        send200Response(options.res, response);
     } else {
-        if (apiImplementation.loginGET === undefined) {
-            return false;
-        }
-
-        let session;
-        try {
-            session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
-        } catch {
-            // TODO: Claim validation failure
-        }
-
-        // TODO: take only one
-        const loginChallenge =
-            options.req.getKeyValueFromQuery("login_challenge") ?? options.req.getKeyValueFromQuery("loginChallenge");
-        if (loginChallenge === undefined) {
-            throw new Error("TODO");
-        }
-        let response = await apiImplementation.loginGET({
-            options,
-            loginChallenge,
-            session,
-            userContext,
-        });
-        if ("status" in response) {
-            send200Response(options.res, response);
-        } else {
-            options.res.original.redirect(response.redirectTo);
-        }
+        options.res.original.redirect(response.redirectTo);
     }
     return true;
 }

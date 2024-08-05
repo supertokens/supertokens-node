@@ -30,12 +30,13 @@ import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { JSONObject } from "@loopback/core";
+import { getSessionInformation } from "../session";
 
 // TODO: Remove this core changes are done
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
     return redirectTo
         .replace(hydraPubDomain, appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous())
-        .replace("oauth2", "oauth2provider");
+        .replace("oauth2/", "oauth/");
 }
 
 export default function getRecipeInterface(
@@ -95,9 +96,7 @@ export default function getRecipeInterface(
                 new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/login/reject`),
                 {
                     error: input.error.error,
-                    error_debug: input.error.errorDebug,
                     error_description: input.error.errorDescription,
-                    error_hint: input.error.errorHint,
                     status_code: input.error.statusCode,
                 },
                 {
@@ -162,9 +161,7 @@ export default function getRecipeInterface(
                 new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/reject`),
                 {
                     error: input.error.error,
-                    error_debug: input.error.errorDebug,
                     error_description: input.error.errorDescription,
-                    error_hint: input.error.errorHint,
                     status_code: input.error.statusCode,
                 },
                 {
@@ -188,7 +185,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            const redirectTo = resp.headers.get("Location")!;
+            const redirectTo = getUpdatedRedirectTo(appInfo, resp.headers.get("Location")!);
             if (redirectTo === undefined) {
                 throw new Error(resp.body);
             }
@@ -206,28 +203,24 @@ export default function getRecipeInterface(
                 }
                 const idToken = this.buildIdTokenPayload({
                     user,
+                    client: consentRequest.client!,
                     session: input.session,
-                    defaultPayload: await getDefaultIdTokenPayload(
-                        user,
-                        consentRequest.requestedScope ?? [],
-                        input.userContext
-                    ),
                     scopes: consentRequest.requestedScope || [],
                     userContext: input.userContext,
                 });
 
                 const accessTokenPayload = await this.buildAccessTokenPayload({
                     user,
+                    client: consentRequest.client!,
                     session: input.session,
-                    defaultPayload: {
-                        ...input.session.getAccessTokenPayload(input.userContext), // TODO: validate based on access token structure rfc
-                        iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
-                        scope: consentRequest.requestedScope?.join(" ") ?? "",
-                        aud: [consentRequest.client!.clientId],
-                    },
-                    userContext: input.userContext,
                     scopes: consentRequest.requestedScope || [],
+                    userContext: input.userContext,
                 });
+
+                const sessionInfo = await getSessionInformation(input.session.getHandle());
+                if (!sessionInfo) {
+                    throw new Error("Session not found");
+                }
 
                 const consentRes = await this.acceptConsentRequest({
                     ...input,
@@ -238,6 +231,7 @@ export default function getRecipeInterface(
                         id_token: idToken,
                         access_token: accessTokenPayload,
                     },
+                    handledAt: new Date(sessionInfo.timeCreated).toISOString(),
                 });
 
                 return {
@@ -248,7 +242,7 @@ export default function getRecipeInterface(
             return { redirectTo, setCookie: resp.headers.get("set-cookie") ?? undefined };
         },
 
-        token: async function (this: RecipeInterface, input) {
+        tokenExchange: async function (this: RecipeInterface, input) {
             const body: any = { $isFormData: true }; // TODO: we ideally want to avoid using formdata, the core can do the translation
             for (const key in input.body) {
                 body[key] = input.body[key];
@@ -380,10 +374,21 @@ export default function getRecipeInterface(
             }
         },
         buildAccessTokenPayload: async function (input) {
-            return input.defaultPayload;
+            const stAccessTokenPayload = input.session.getAccessTokenPayload(input.userContext);
+            const sessionInfo = await getSessionInformation(stAccessTokenPayload.sessionHandle);
+            if (sessionInfo === undefined) {
+                throw new Error("Session not found");
+            }
+            return {
+                tId: stAccessTokenPayload.tId,
+                rsub: stAccessTokenPayload.rsub,
+                sessionHandle: stAccessTokenPayload.sessionHandle,
+                // auth_time: sessionInfo?.timeCreated,
+                iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
+            };
         },
         buildIdTokenPayload: async function (input) {
-            return input.defaultPayload;
+            return getDefaultIdTokenPayload(input.user, input.scopes, input.userContext);
         },
         buildUserInfo: async function ({ user, accessTokenPayload, scopes, tenantId, userContext }) {
             return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, tenantId, userContext);
@@ -391,6 +396,11 @@ export default function getRecipeInterface(
         validateOAuth2AccessToken: async function (input) {
             const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
 
+            // if (payload.stt !== 1) {
+            //     throw new Error("Wrong token type");
+            // }
+
+            // TODO: we should be able uncomment this after we get proper core support
             // TODO: make this configurable?
             // const expectedIssuer =
             //     appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
@@ -398,33 +408,68 @@ export default function getRecipeInterface(
             //     throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
             // }
 
-            // TODO: Fix this
-            const aud =
-                (payload.ext as any)?.aud ??
-                (payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? []);
-            if (input.expectedAudience !== undefined && !aud.includes(input.expectedAudience)) {
-                throw new Error("Audience mismatch: this token doesn't belong to the specified client");
+            if (input.requirements?.clientId !== undefined && payload.client_id !== input.requirements.clientId) {
+                throw new Error("The token doesn't belong to the specified client");
             }
 
-            // TODO: add a check to make sure this is the right token type as they can be signed with the same key
+            if (
+                input.requirements?.scopes !== undefined &&
+                input.requirements.scopes.some((scope) => !(payload.scp as string[]).includes(scope))
+            ) {
+                throw new Error("The token is missing some required scopes");
+            }
 
+            const aud = payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? [];
+            if (input.requirements?.audience !== undefined && !aud.includes(input.requirements.audience)) {
+                throw new Error("The token doesn't belong to the specified audience");
+            }
+
+            if (input.checkDatabase) {
+                let response = await querier.sendPostRequest(
+                    new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/introspect`),
+                    {
+                        $isFormData: true,
+                        token: input.token,
+                    },
+                    input.userContext
+                );
+
+                // TODO: fix after the core interface is there
+                if (response.status !== "OK" || response.data.active !== true) {
+                    throw new Error(response.data.error);
+                }
+            }
             return { status: "OK", payload: payload as JSONObject };
         },
         validateOAuth2IdToken: async function (input) {
             const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
 
+            // TODO: we should be able uncomment this after we get proper core support
             // TODO: make this configurable?
             // const expectedIssuer =
             //     appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
-            // if (input.expectedAudience !== undefined && payload.iss !== expectedIssuer) {
+            // if (payload.iss !== expectedIssuer) {
             //     throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
             // }
-            const aud = payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? [];
-            if (input.expectedAudience !== undefined && !aud.includes(input.expectedAudience)) {
-                throw new Error("Audience mismatch: this token doesn't belong to the specified client");
+            // if (payload.stt !== 2) {
+            //     throw new Error("Wrong token type");
+            // }
+
+            if (input.requirements?.clientId !== undefined && payload.client_id !== input.requirements.clientId) {
+                throw new Error("The token doesn't belong to the specified client");
             }
 
-            // TODO: add a check to make sure this is the right token type as they can be signed with the same key
+            if (
+                input.requirements?.scopes !== undefined &&
+                input.requirements.scopes.some((scope) => !(payload.scp as string[]).includes(scope))
+            ) {
+                throw new Error("The token is missing some required scopes");
+            }
+
+            const aud = payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? [];
+            if (input.requirements?.audience !== undefined && !aud.includes(input.requirements.audience)) {
+                throw new Error("The token doesn't belong to the specified audience");
+            }
 
             return { status: "OK", payload: payload as JSONObject };
         },

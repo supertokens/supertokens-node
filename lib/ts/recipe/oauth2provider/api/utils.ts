@@ -25,18 +25,24 @@ export async function loginGET({
         userContext,
     });
 
+    const queryParams = new URLSearchParams({
+        loginChallenge,
+    });
+
+    if (request.oidcContext?.login_hint) {
+        queryParams.set("hint", request.oidcContext.login_hint);
+    }
+
     if (request.skip) {
         const accept = await recipeImplementation.acceptLoginRequest({
             challenge: loginChallenge,
+            identityProviderSessionId: session?.getHandle(),
             subject: request.subject,
             userContext,
         });
 
         return { redirectTo: accept.redirectTo, setCookie };
-    } else if (session) {
-        if (session.getUserId() !== request.subject) {
-            // TODO?
-        }
+    } else if (session && (!request.subject || session.getUserId() === request.subject)) {
         const accept = await recipeImplementation.acceptLoginRequest({
             challenge: loginChallenge,
             subject: session.getUserId(),
@@ -55,10 +61,7 @@ export async function loginGET({
     const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
 
     return {
-        redirectTo:
-            websiteDomain +
-            websiteBasePath +
-            `?hint=${request.oidcContext?.login_hint ?? ""}&loginChallenge=${loginChallenge}`,
+        redirectTo: websiteDomain + websiteBasePath + `?${queryParams.toString()}`,
         setCookie,
     };
 }
@@ -101,13 +104,17 @@ function mergeSetCookieHeaders(setCookie1?: string, setCookie2?: string): string
 function isInternalRedirect(redirectTo: string): boolean {
     const { apiDomain, apiBasePath } = SuperTokens.getInstanceOrThrowError().appInfo;
     const basePath = `${apiDomain.getAsStringDangerous()}${apiBasePath.getAsStringDangerous()}`;
-
-    return [LOGIN_PATH, AUTH_PATH].some((path) => redirectTo.startsWith(`${basePath}${path}`));
+    return [
+        LOGIN_PATH,
+        AUTH_PATH,
+        LOGIN_PATH.replace("oauth", "oauth2"),
+        AUTH_PATH.replace("oauth", "oauth2"),
+    ].some((path) => redirectTo.startsWith(`${basePath}${path}`));
 }
 
 // In the OAuth2 flow, we do several internal redirects. These redirects don't require a frontend-to-api-server round trip.
 // If an internal redirect is identified, it's handled directly by this function.
-// Currently, we only need to handle redirects to /oauth2provider/login and /oauth2provider/auth endpoints.
+// Currently, we only need to handle redirects to /oauth/login and /oauth/auth endpoints.
 export async function handleInternalRedirects({
     response,
     recipeImplementation,

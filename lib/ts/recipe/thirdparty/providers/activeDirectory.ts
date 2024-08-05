@@ -15,6 +15,7 @@
 
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
+import { normaliseOIDCEndpointToIncludeWellKnown } from "./utils";
 
 export default function ActiveDirectory(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {
@@ -28,14 +29,18 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
             const config = await oGetConfig({ clientType, userContext });
 
-            if (config.oidcDiscoveryEndpoint === undefined) {
-                if (config.additionalConfig == undefined || config.additionalConfig.directoryId == undefined) {
+            if (config.additionalConfig == undefined || config.additionalConfig.directoryId == undefined) {
+                if (config.oidcDiscoveryEndpoint === undefined) {
                     throw new Error(
                         "Please provide the directoryId in the additionalConfig of the Active Directory provider."
                     );
                 }
-                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/`;
+            } else {
+                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/.well-known/openid-configuration`;
             }
+
+            // The config could be coming from core where we didn't add the well-known previously
+            config.oidcDiscoveryEndpoint = normaliseOIDCEndpointToIncludeWellKnown(config.oidcDiscoveryEndpoint);
 
             if (config.scope === undefined) {
                 config.scope = ["openid", "email"];

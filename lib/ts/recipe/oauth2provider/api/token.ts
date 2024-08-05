@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 
@@ -32,6 +32,11 @@ export default async function tokenPOST(
         userContext,
     });
 
-    send200Response(options.res, response);
+    if ("statusCode" in response && response.statusCode !== 200) {
+        sendNon200Response(options.res, response.statusCode!, response);
+    } else {
+        send200Response(options.res, response);
+    }
+
     return true;
 }

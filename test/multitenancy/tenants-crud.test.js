@@ -54,9 +54,11 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t2", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["thirdparty"] });
 
         const tenants = await Multitenancy.listAllTenants();
         assert(tenants.tenants.length === 4); // public + 3 tenants created above
@@ -81,26 +83,28 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t2", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["thirdparty"] });
 
         let tenantConfig = await Multitenancy.getTenant("t1");
-        assert(tenantConfig.emailPassword.enabled === true);
-        assert(tenantConfig.passwordless.enabled === false);
-        assert(tenantConfig.thirdParty.enabled === false);
+        assert(tenantConfig.firstFactors.length === 1);
+        assert(tenantConfig.firstFactors.includes("emailpassword"));
         assert(tenantConfig.coreConfig !== undefined);
 
         tenantConfig = await Multitenancy.getTenant("t2");
-        assert(tenantConfig.passwordless.enabled === true);
-        assert(tenantConfig.emailPassword.enabled === false);
-        assert(tenantConfig.thirdParty.enabled === false);
+        assert(tenantConfig.firstFactors.length === 4);
+        assert(tenantConfig.firstFactors.includes("otp-phone"));
+        assert(tenantConfig.firstFactors.includes("otp-email"));
+        assert(tenantConfig.firstFactors.includes("link-phone"));
+        assert(tenantConfig.firstFactors.includes("link-email"));
         assert(tenantConfig.coreConfig !== undefined);
 
         tenantConfig = await Multitenancy.getTenant("t3");
-        assert(tenantConfig.thirdParty.enabled === true);
-        assert(tenantConfig.passwordless.enabled === false);
-        assert(tenantConfig.emailPassword.enabled === false);
+        assert(tenantConfig.firstFactors.length === 1);
+        assert(tenantConfig.firstFactors.includes("thirdparty"));
         assert(tenantConfig.coreConfig !== undefined);
     });
 
@@ -123,22 +127,26 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
 
         let tenantConfig = await Multitenancy.getTenant("t1");
-        assert(tenantConfig.emailPassword.enabled === true);
-        assert(tenantConfig.passwordless.enabled === false);
-        assert(tenantConfig.thirdParty.enabled === false);
+        assert(tenantConfig.firstFactors.length === 1);
+        assert(tenantConfig.firstFactors.includes("emailpassword"));
 
-        await Multitenancy.createOrUpdateTenant("t1", { passwordlessEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", {
+            firstFactors: ["emailpassword", "otp-phone", "otp-email", "link-phone", "link-email"],
+        });
         tenantConfig = await Multitenancy.getTenant("t1");
-        assert(tenantConfig.emailPassword.enabled === true);
-        assert(tenantConfig.passwordless.enabled === true);
+        assert(tenantConfig.firstFactors.length === 5);
+        assert(tenantConfig.firstFactors.includes("emailpassword"));
+        assert(tenantConfig.firstFactors.includes("otp-phone"));
+        assert(tenantConfig.firstFactors.includes("otp-email"));
+        assert(tenantConfig.firstFactors.includes("link-phone"));
+        assert(tenantConfig.firstFactors.includes("link-email"));
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: false });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: [] });
         tenantConfig = await Multitenancy.getTenant("t1");
-        assert(tenantConfig.emailPassword.enabled === false);
-        assert(tenantConfig.passwordless.enabled === true);
+        assert(tenantConfig.firstFactors.length === 0);
     });
 
     it("test delete tenant", async function () {
@@ -160,9 +168,11 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t2", {
+            firstFactors: ["otp-phone", "otp-email", "link-phone", "link-email"],
+        });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["thirdparty"] });
 
         let tenants = await Multitenancy.listAllTenants();
         assert(tenants.tenants.length === 4); // public + 3 tenants created above
@@ -196,7 +206,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
 
         await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
             thirdPartyId: "google",
@@ -230,7 +240,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
 
         const thirdPartyConfig = {
             thirdPartyId: "google",
@@ -298,7 +308,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
 
         await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
             thirdPartyId: "google",
@@ -334,7 +344,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
 
         await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
             thirdPartyId: "google",
@@ -378,9 +388,9 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t2", { emailPasswordEnabled: true });
-        await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t2", { firstFactors: ["emailpassword"] });
+        await Multitenancy.createOrUpdateTenant("t3", { firstFactors: ["emailpassword"] });
 
         const user = await EmailPassword.signUp("public", "test@example.com", "password1");
         const userId = user.user.loginMethods[0].recipeUserId;

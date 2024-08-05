@@ -4,7 +4,6 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 export declare const hydraPubDomain: string;
-export declare const hydraPubPathPrefix = "/recipe/oauth2/pub";
 export declare class Querier {
     private static initCalled;
     private static hosts;
@@ -18,7 +17,7 @@ export declare class Querier {
     private __hosts;
     private rIdToCore;
     private constructor();
-    getAPIVersion: () => Promise<string>;
+    getAPIVersion: (userContext: UserContext) => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getNewInstanceOrThrowError(rIdToCore?: string): Querier;

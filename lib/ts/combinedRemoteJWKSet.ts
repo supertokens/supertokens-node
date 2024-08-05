@@ -1,5 +1,5 @@
 import { createRemoteJWKSet } from "jose";
-import { JWKCacheCooldownInMs, JWKCacheMaxAgeInMs } from "./recipe/session/constants";
+import { JWKCacheCooldownInMs } from "./recipe/session/constants";
 import { Querier } from "./querier";
 
 let combinedJWKS: ReturnType<typeof createRemoteJWKSet> | undefined;
@@ -17,7 +17,6 @@ export function resetCombinedJWKS() {
 // TODO: remove this after proper core support
 const hydraJWKS = createRemoteJWKSet(new URL("http://localhost:4444/.well-known/jwks.json"), {
     cooldownDuration: JWKCacheCooldownInMs,
-    cacheMaxAge: JWKCacheMaxAgeInMs,
 });
 /**
     The function returned by this getter fetches all JWKs from the first available core instance. 
@@ -33,7 +32,6 @@ export function getCombinedJWKS() {
             .map((url) =>
                 createRemoteJWKSet(new URL(url), {
                     cooldownDuration: JWKCacheCooldownInMs,
-                    cacheMaxAge: JWKCacheMaxAgeInMs,
                 })
             );
 

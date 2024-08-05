@@ -22,7 +22,7 @@ import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 export default abstract class RecipeModule {
     private recipeId: string;
 
-    private appInfo: NormalisedAppinfo;
+    protected appInfo: NormalisedAppinfo;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo) {
         this.recipeId = recipeId;

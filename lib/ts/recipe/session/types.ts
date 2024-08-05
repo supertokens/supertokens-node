@@ -81,6 +81,7 @@ export type TypeInput = {
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
+    jwksRefreshIntervalSec?: number;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -139,6 +140,7 @@ export type TypeNormalisedInput = {
 
     invalidClaimStatusCode: number;
     exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
+    jwksRefreshIntervalSec: number;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

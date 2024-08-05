@@ -124,6 +124,10 @@ export async function getInfoFromAccessToken(
 }
 
 export function validateAccessTokenStructure(payload: any, version: number) {
+    if (payload.stt !== 0 && payload.stt !== undefined) {
+        throw Error("Wrong token type");
+    }
+
     if (version >= 5) {
         if (
             typeof payload.sub !== "string" ||
