@@ -148,7 +148,11 @@ export async function serializeResponse(req, res, response) {
 }
 
 export function serializeUser(response, fdiVersion: string) {
-    if (["1.17", "2.0"].includes(fdiVersion)) {
+    // fdiVersion <= "1.17" || (fdiVersion >= "2.0" && fdiVersion < "3.0")
+    if (
+        maxVersion("1.17", fdiVersion) === "1.17" ||
+        (maxVersion("2.0", fdiVersion) === fdiVersion && maxVersion("3.0", fdiVersion) !== fdiVersion)
+    ) {
         return {
             ...("user" in response && response.user instanceof supertokens.User
                 ? {
@@ -162,6 +166,7 @@ export function serializeUser(response, fdiVersion: string) {
                 : {}),
         };
     }
+
     return {
         ...("user" in response && response.user instanceof supertokens.User
             ? {
@@ -172,7 +177,11 @@ export function serializeUser(response, fdiVersion: string) {
 }
 
 export function serializeRecipeUserId(response, fdiVersion: string) {
-    if (["1.17", "2.0"].includes(fdiVersion)) {
+    if (
+        maxVersion("1.17", fdiVersion) === "1.17" ||
+        (maxVersion("2.0", fdiVersion) === fdiVersion && maxVersion("3.0", fdiVersion) !== fdiVersion)
+    ) {
+        // fdiVersion <= "1.17" || (fdiVersion >= "2.0" && fdiVersion < "3.0")
         return {};
     }
     return {
@@ -192,4 +201,23 @@ function popOrUseVal<T>(arrOrValue: T | T[]): T {
         return arrOrValue.pop()!;
     }
     return arrOrValue;
+}
+
+export function maxVersion(version1: string, version2: string): string {
+    let splittedv1 = version1.split(".");
+    let splittedv2 = version2.split(".");
+    let minLength = Math.min(splittedv1.length, splittedv2.length);
+    for (let i = 0; i < minLength; i++) {
+        let v1 = Number(splittedv1[i]);
+        let v2 = Number(splittedv2[i]);
+        if (v1 > v2) {
+            return version1;
+        } else if (v2 > v1) {
+            return version2;
+        }
+    }
+    if (splittedv1.length >= splittedv2.length) {
+        return version1;
+    }
+    return version2;
 }

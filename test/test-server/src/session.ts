@@ -4,7 +4,7 @@ import * as supertokens from "../../../lib/build";
 import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { logger } from "./logger";
 import { getFunc } from "./testFunctionMapper";
-import { convertRequestSessionToSessionObject, deserializeClaim, deserializeValidator } from "./utils";
+import { convertRequestSessionToSessionObject, deserializeClaim, deserializeValidator, maxVersion } from "./utils";
 import { logOverrideEvent } from "./overrideLogging";
 
 const namespace = "com.supertokens:node-test-server:session";
@@ -17,7 +17,11 @@ const router = Router()
         try {
             logDebugMessage("Session.createNewSessionWithoutRequestResponse %j", req.body);
             let recipeUserId;
-            if (["1.17", "2.0"].includes(fdiVersion)) {
+            if (
+                maxVersion("1.17", fdiVersion) === "1.17" ||
+                (maxVersion("2.0", fdiVersion) === fdiVersion && maxVersion("3.0", fdiVersion) !== fdiVersion)
+            ) {
+                // fdiVersion <= "1.17" || (fdiVersion >= "2.0" && fdiVersion < "3.0")
                 recipeUserId = supertokens.convertToRecipeUserId(req.body.userId);
             } else {
                 recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
