@@ -364,7 +364,7 @@ export type RecipeInterface = {
         clientSecret?: string;
         authorizationHeader?: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK" } | GeneralErrorResponse>;
+    }): Promise<{ status: "OK" }>;
 };
 
 export type APIInterface = {

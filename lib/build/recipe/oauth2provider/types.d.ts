@@ -251,12 +251,9 @@ export declare type RecipeInterface = {
         clientSecret?: string;
         authorizationHeader?: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-          }
-        | GeneralErrorResponse
-    >;
+    }): Promise<{
+        status: "OK";
+    }>;
 };
 export declare type APIInterface = {
     loginGET:

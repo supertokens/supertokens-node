@@ -105,12 +105,9 @@ export default class Wrapper {
         clientSecret: string,
         useBasicAuth?: boolean,
         userContext?: Record<string, any>
-    ): Promise<
-        | import("../../types").GeneralErrorResponse
-        | {
-              status: "OK";
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let getOAuth2Clients: typeof Wrapper.getOAuth2Clients;
