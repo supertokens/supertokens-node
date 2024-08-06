@@ -21,3 +21,4 @@ export const TOKEN_PATH = "/oauth/token";
 export const LOGIN_INFO_PATH = "/oauth/login/info";
 export const USER_INFO_PATH = "/oauth/userinfo";
 export const REVOKE_TOKEN_PATH = "/oauth/revoke";
+export const INTROSPECT_TOKEN_PATH = "/oauth/introspect";

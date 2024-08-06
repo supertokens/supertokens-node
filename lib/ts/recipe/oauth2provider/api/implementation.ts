@@ -52,6 +52,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         tokenPOST: async (input) => {
             return input.options.recipeImplementation.tokenExchange({
+                authorizationHeader: input.authorizationHeader,
                 body: input.body,
                 userContext: input.userContext,
             });
@@ -89,6 +90,13 @@ export default function getAPIImplementation(): APIInterface {
                 clientId: input.clientId,
                 clientSecret: input.clientSecret,
                 authorizationHeader: input.authorizationHeader,
+                userContext: input.userContext,
+            });
+        },
+        introspectTokenPOST: async (input) => {
+            return input.options.recipeImplementation.introspectToken({
+                token: input.token,
+                scopes: input.scopes,
                 userContext: input.userContext,
             });
         },

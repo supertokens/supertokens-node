@@ -85,6 +85,13 @@ export declare type UserInfo = {
     phoneNumber_verified?: boolean;
     [key: string]: JSONValue;
 };
+export declare type InstrospectTokenResponse =
+    | {
+          active: false;
+      }
+    | ({
+          active: true;
+      } & JSONObject);
 export declare type RecipeInterface = {
     authorization(input: {
         params: Record<string, string>;
@@ -96,6 +103,7 @@ export declare type RecipeInterface = {
         setCookie: string | undefined;
     }>;
     tokenExchange(input: {
+        authorizationHeader?: string;
         body: Record<string, string | undefined>;
         userContext: UserContext;
     }): Promise<TokenInfo | ErrorOAuth2>;
@@ -254,6 +262,11 @@ export declare type RecipeInterface = {
     }): Promise<{
         status: "OK";
     }>;
+    introspectToken(input: {
+        token: string;
+        scopes?: string[];
+        userContext: UserContext;
+    }): Promise<InstrospectTokenResponse>;
 };
 export declare type APIInterface = {
     loginGET:
@@ -288,6 +301,7 @@ export declare type APIInterface = {
     tokenPOST:
         | undefined
         | ((input: {
+              authorizationHeader?: string;
               body: any;
               options: APIOptions;
               userContext: UserContext;
@@ -330,6 +344,14 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
+    introspectTokenPOST:
+        | undefined
+        | ((input: {
+              token: string;
+              scopes?: string[];
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse>);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;

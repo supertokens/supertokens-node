@@ -13,34 +13,35 @@
  * under the License.
  */
 
-import { send200Response, sendNon200Response } from "../../../utils";
+import { send200Response, sendNon200ResponseWithMessage } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 
-export default async function tokenPOST(
+export default async function introspectTokenPOST(
     apiImplementation: APIInterface,
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (apiImplementation.tokenPOST === undefined) {
+    if (apiImplementation.introspectTokenPOST === undefined) {
         return false;
     }
 
-    const authorizationHeader =
-        options.req.getHeaderValue("authorization") || options.req.getHeaderValue("Authorization");
+    const body = await options.req.getBodyAsJSONOrFormData();
 
-    let response = await apiImplementation.tokenPOST({
-        authorizationHeader,
+    if (body.token === undefined) {
+        sendNon200ResponseWithMessage(options.res, "token is required in the request body", 400);
+        return true;
+    }
+
+    const scopes: string[] = body.scope ? body.scope.split(" ") : [];
+
+    let response = await apiImplementation.introspectTokenPOST({
         options,
-        body: await options.req.getBodyAsJSONOrFormData(),
+        token: body.token,
+        scopes,
         userContext,
     });
 
-    if ("statusCode" in response && response.statusCode !== 200) {
-        sendNon200Response(options.res, response.statusCode!, response);
-    } else {
-        send200Response(options.res, response);
-    }
-
+    send200Response(options.res, response);
     return true;
 }

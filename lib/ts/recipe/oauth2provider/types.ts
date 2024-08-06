@@ -171,6 +171,8 @@ export type UserInfo = {
     [key: string]: JSONValue;
 };
 
+export type InstrospectTokenResponse = { active: false } | ({ active: true } & JSONObject);
+
 export type RecipeInterface = {
     authorization(input: {
         params: Record<string, string>;
@@ -179,6 +181,7 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ redirectTo: string; setCookie: string | undefined }>;
     tokenExchange(input: {
+        authorizationHeader?: string;
         body: Record<string, string | undefined>;
         userContext: UserContext;
     }): Promise<TokenInfo | ErrorOAuth2>;
@@ -365,6 +368,11 @@ export type RecipeInterface = {
         authorizationHeader?: string;
         userContext: UserContext;
     }): Promise<{ status: "OK" }>;
+    introspectToken(input: {
+        token: string;
+        scopes?: string[];
+        userContext: UserContext;
+    }): Promise<InstrospectTokenResponse>;
 };
 
 export type APIInterface = {
@@ -389,6 +397,7 @@ export type APIInterface = {
     tokenPOST:
         | undefined
         | ((input: {
+              authorizationHeader?: string;
               body: any;
               options: APIOptions;
               userContext: UserContext;
@@ -420,6 +429,14 @@ export type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<{ status: "OK" } | GeneralErrorResponse>);
+    introspectTokenPOST:
+        | undefined
+        | ((input: {
+              token: string;
+              scopes?: string[];
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<InstrospectTokenResponse | GeneralErrorResponse>);
 };
 
 export type OAuth2ClientOptions = {

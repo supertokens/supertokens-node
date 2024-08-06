@@ -25,7 +25,15 @@ import APIImplementation from "./api/implementation";
 import loginAPI from "./api/login";
 import tokenPOST from "./api/token";
 import loginInfoGET from "./api/loginInfo";
-import { AUTH_PATH, LOGIN_INFO_PATH, LOGIN_PATH, REVOKE_TOKEN_PATH, TOKEN_PATH, USER_INFO_PATH } from "./constants";
+import {
+    AUTH_PATH,
+    INTROSPECT_TOKEN_PATH,
+    LOGIN_INFO_PATH,
+    LOGIN_PATH,
+    REVOKE_TOKEN_PATH,
+    TOKEN_PATH,
+    USER_INFO_PATH,
+} from "./constants";
 import RecipeImplementation from "./recipeImplementation";
 import {
     APIInterface,
@@ -42,6 +50,7 @@ import { User } from "../../user";
 import userInfoGET from "./api/userInfo";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import revokeTokenPOST from "./api/revokeToken";
+import introspectTokenPOST from "./api/introspectToken";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2provider";
@@ -152,6 +161,12 @@ export default class Recipe extends RecipeModule {
                 id: REVOKE_TOKEN_PATH,
                 disabled: this.apiImpl.revokeTokenPOST === undefined,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(INTROSPECT_TOKEN_PATH),
+                id: INTROSPECT_TOKEN_PATH,
+                disabled: this.apiImpl.introspectTokenPOST === undefined,
+            },
         ];
     }
 
@@ -190,6 +205,9 @@ export default class Recipe extends RecipeModule {
         }
         if (id === REVOKE_TOKEN_PATH) {
             return revokeTokenPOST(this.apiImpl, options, userContext);
+        }
+        if (id === INTROSPECT_TOKEN_PATH) {
+            return introspectTokenPOST(this.apiImpl, options, userContext);
         }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };
