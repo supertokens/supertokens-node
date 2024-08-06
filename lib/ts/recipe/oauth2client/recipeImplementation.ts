@@ -15,7 +15,6 @@ import {
     getOIDCDiscoveryInfo,
     verifyIdTokenFromJWKSEndpointAndGetPayload,
 } from "../../thirdpartyUtils";
-import pkceChallenge from "pkce-challenge";
 import { getUser } from "../..";
 import { logDebugMessage } from "../../logger";
 import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
@@ -24,52 +23,18 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
     let providerConfigWithOIDCInfo: ProviderConfigWithOIDCInfo | null = null;
 
     return {
-        getAuthorisationRedirectURL: async function (
-            this: RecipeInterface,
-            { providerConfig, redirectURIOnProviderDashboard }
-        ) {
-            const queryParams: { [key: string]: string } = {
-                client_id: providerConfig.clientId,
-                redirect_uri: redirectURIOnProviderDashboard,
-                response_type: "code",
-            };
-
-            if (providerConfig.scope !== undefined) {
-                queryParams.scope = providerConfig.scope.join(" ");
-            }
-
-            let pkceCodeVerifier: string | undefined = undefined;
-
-            if (providerConfig.clientSecret === undefined || providerConfig.forcePKCE) {
-                const { code_challenge, code_verifier } = pkceChallenge(64); // According to https://www.rfc-editor.org/rfc/rfc7636, length must be between 43 and 128
-                queryParams["code_challenge"] = code_challenge;
-                queryParams["code_challenge_method"] = "S256";
-                pkceCodeVerifier = code_verifier;
-            }
-
-            const urlObj = new URL(providerConfig.authorizationEndpoint);
-
-            for (const [key, value] of Object.entries(queryParams)) {
-                urlObj.searchParams.set(key, value);
-            }
-
-            return {
-                urlWithQueryParams: urlObj.toString(),
-                pkceCodeVerifier: pkceCodeVerifier,
-            };
-        },
         signIn: async function ({
             userId,
             tenantId,
             userContext,
             oAuthTokens,
-            rawUserInfoFromProvider,
+            rawUserInfo,
         }): Promise<{
             status: "OK";
             user: UserType;
             recipeUserId: RecipeUserId;
             oAuthTokens: OAuthTokens;
-            rawUserInfoFromProvider: {
+            rawUserInfo: {
                 fromIdTokenPayload?: { [key: string]: any };
                 fromUserInfoAPI?: { [key: string]: any };
             };
@@ -85,7 +50,7 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
                 user,
                 recipeUserId: new RecipeUserId(userId),
                 oAuthTokens,
-                rawUserInfoFromProvider,
+                rawUserInfo,
             };
         },
         getProviderConfig: async function () {
@@ -123,7 +88,7 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
             const tokenAPIURL = providerConfig.tokenEndpoint;
             const accessTokenAPIParams: { [key: string]: string } = {
                 client_id: providerConfig.clientId,
-                redirect_uri: redirectURIInfo.redirectURIOnProviderDashboard,
+                redirect_uri: redirectURIInfo.redirectURI,
                 code: redirectURIInfo.redirectURIQueryParams["code"],
                 grant_type: "authorization_code",
             };
@@ -153,7 +118,7 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
             const accessToken = oAuthTokens["access_token"];
             const idToken = oAuthTokens["id_token"];
 
-            let rawUserInfoFromProvider: {
+            let rawUserInfo: {
                 fromUserInfoAPI: any;
                 fromIdTokenPayload: any;
             } = {
@@ -166,13 +131,9 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
                     jwks = createRemoteJWKSet(new URL(providerConfig.jwksURI));
                 }
 
-                rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpointAndGetPayload(
-                    idToken,
-                    jwks,
-                    {
-                        audience: providerConfig.clientId,
-                    }
-                );
+                rawUserInfo.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpointAndGetPayload(idToken, jwks, {
+                    audience: providerConfig.clientId,
+                });
             }
 
             if (accessToken && providerConfig.userInfoEndpoint !== undefined) {
@@ -196,15 +157,15 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
                     );
                 }
 
-                rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken.jsonResponse;
+                rawUserInfo.fromUserInfoAPI = userInfoFromAccessToken.jsonResponse;
             }
 
             let userId: string | undefined = undefined;
 
-            if (rawUserInfoFromProvider.fromIdTokenPayload?.sub !== undefined) {
-                userId = rawUserInfoFromProvider.fromIdTokenPayload["sub"];
-            } else if (rawUserInfoFromProvider.fromUserInfoAPI?.sub !== undefined) {
-                userId = rawUserInfoFromProvider.fromUserInfoAPI["sub"];
+            if (rawUserInfo.fromIdTokenPayload?.sub !== undefined) {
+                userId = rawUserInfo.fromIdTokenPayload["sub"];
+            } else if (rawUserInfo.fromUserInfoAPI?.sub !== undefined) {
+                userId = rawUserInfo.fromUserInfoAPI["sub"];
             }
 
             if (userId === undefined) {
@@ -213,7 +174,7 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
 
             return {
                 userId,
-                rawUserInfoFromProvider,
+                rawUserInfo,
             };
         },
     };
