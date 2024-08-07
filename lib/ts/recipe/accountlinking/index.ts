@@ -165,6 +165,10 @@ export default class Wrapper {
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
 
+        if (user === undefined) {
+            throw new Error("Passed in recipe user id does not exist");
+        }
+
         const res = await Recipe.getInstance().isEmailChangeAllowed({
             user,
             newEmail,

@@ -523,7 +523,7 @@ export default class Recipe extends RecipeModule {
     };
 
     isEmailChangeAllowed = async (input: {
-        user?: User;
+        user: User;
         newEmail: string;
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
@@ -545,10 +545,6 @@ export default class Recipe extends RecipeModule {
          */
 
         let inputUser = input.user;
-
-        if (inputUser === undefined) {
-            throw new Error("Passed in recipe user id does not exist");
-        }
 
         for (const tenantId of inputUser.tenantIds) {
             let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
