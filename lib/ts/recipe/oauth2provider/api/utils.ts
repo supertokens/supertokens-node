@@ -1,5 +1,6 @@
 import SuperTokens from "../../../supertokens";
 import { UserContext } from "../../../types";
+import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { AUTH_PATH, LOGIN_PATH } from "../constants";
@@ -34,20 +35,13 @@ export async function loginGET({
     }
 
     const incomingAuthUrlQueryParams = new URLSearchParams(loginRequest.requestUrl.split("?")[1]);
-    const promptParam = incomingAuthUrlQueryParams.get("prompt");
+    const promptParam = incomingAuthUrlQueryParams.get("prompt") ?? incomingAuthUrlQueryParams.get("st_prompt");
     const maxAgeParam = incomingAuthUrlQueryParams.get("max_age");
-    if (loginRequest.skip) {
-        const accept = await recipeImplementation.acceptLoginRequest({
-            challenge: loginChallenge,
-            identityProviderSessionId: session?.getHandle(),
-            subject: loginRequest.subject,
-            userContext,
-        });
-
-        return { redirectTo: accept.redirectTo, setCookie };
-    } else if (
+    const tenantIdParam = incomingAuthUrlQueryParams.get("tenant_id");
+    if (
         session &&
         (["", undefined].includes(loginRequest.subject) || session.getUserId() === loginRequest.subject) &&
+        (["", null].includes(tenantIdParam) || session.getTenantId() === tenantIdParam) &&
         (promptParam !== "login" || isDirectCall) &&
         (maxAgeParam === null ||
             (maxAgeParam === "0" && isDirectCall) ||
@@ -62,6 +56,18 @@ export async function loginGET({
             userContext,
         });
         return { redirectTo: accept.redirectTo, setCookie };
+    }
+    if (promptParam === "none") {
+        const reject = await recipeImplementation.rejectLoginRequest({
+            challenge: loginChallenge,
+            error: {
+                error: "login_required",
+                errorDescription:
+                    "The Authorization Server requires End-User authentication. Prompt 'none' was requested, but no existing or expired login session was found.",
+            },
+            userContext,
+        });
+        return { redirectTo: reject.redirectTo, setCookie };
     }
     const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
     const websiteDomain = appInfo
@@ -80,8 +86,12 @@ export async function loginGET({
         queryParamsForAuthPage.set("hint", loginRequest.oidcContext.login_hint);
     }
 
-    if (session !== undefined) {
+    if (session !== undefined || promptParam === "login") {
         queryParamsForAuthPage.set("forceFreshAuth", "true");
+    }
+
+    if (tenantIdParam !== null && tenantIdParam !== DEFAULT_TENANT_ID) {
+        queryParamsForAuthPage.set("tenantId", tenantIdParam);
     }
 
     return {
