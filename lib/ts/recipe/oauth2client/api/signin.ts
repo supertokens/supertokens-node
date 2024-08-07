@@ -34,17 +34,17 @@ export default async function signInAPI(
     let redirectURIInfo:
         | undefined
         | {
-              redirectURIOnProviderDashboard: string;
+              redirectURI: string;
               redirectURIQueryParams: any;
               pkceCodeVerifier?: string;
           };
     let oAuthTokens: any;
 
     if (bodyParams.redirectURIInfo !== undefined) {
-        if (bodyParams.redirectURIInfo.redirectURIOnProviderDashboard === undefined) {
+        if (bodyParams.redirectURIInfo.redirectURI === undefined) {
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the redirectURIOnProviderDashboard in request body",
+                message: "Please provide the redirectURI in request body",
             });
         }
         redirectURIInfo = bodyParams.redirectURIInfo;
@@ -75,7 +75,6 @@ export default async function signInAPI(
         tenantId,
         redirectURIInfo,
         oAuthTokens,
-        session,
         options,
         userContext,
     });
