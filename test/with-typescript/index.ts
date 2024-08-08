@@ -1596,6 +1596,7 @@ Session.init({
                     token_endpoint: "http://localhost:3000/auth/oauth2/token",
                     authorization_endpoint: "http://localhost:3000/auth/oauth2/auth",
                     userinfo_endpoint: "http://localhost:3000/auth/oauth2/userinfo",
+                    revocation_endpoint: "http://localhost:3000/auth/oauth2/revoke",
                     id_token_signing_alg_values_supported: [],
                     response_types_supported: [],
                     subject_types_supported: [],
