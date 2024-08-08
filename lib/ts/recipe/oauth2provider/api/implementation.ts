@@ -83,5 +83,21 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
         },
+        revokeTokenPOST: async (input) => {
+            if ("authorizationHeader" in input) {
+                return input.options.recipeImplementation.revokeToken({
+                    token: input.token,
+                    authorizationHeader: input.authorizationHeader,
+                    userContext: input.userContext,
+                });
+            } else {
+                return input.options.recipeImplementation.revokeToken({
+                    token: input.token,
+                    clientId: input.clientId,
+                    clientSecret: input.clientSecret,
+                    userContext: input.userContext,
+                });
+            }
+        },
     };
 }

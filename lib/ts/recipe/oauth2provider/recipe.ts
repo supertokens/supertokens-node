@@ -25,7 +25,7 @@ import APIImplementation from "./api/implementation";
 import loginAPI from "./api/login";
 import tokenPOST from "./api/token";
 import loginInfoGET from "./api/loginInfo";
-import { AUTH_PATH, LOGIN_INFO_PATH, LOGIN_PATH, TOKEN_PATH, USER_INFO_PATH } from "./constants";
+import { AUTH_PATH, LOGIN_INFO_PATH, LOGIN_PATH, REVOKE_TOKEN_PATH, TOKEN_PATH, USER_INFO_PATH } from "./constants";
 import RecipeImplementation from "./recipeImplementation";
 import {
     APIInterface,
@@ -41,6 +41,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { User } from "../../user";
 import userInfoGET from "./api/userInfo";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
+import revokeTokenPOST from "./api/revokeToken";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2provider";
@@ -145,6 +146,12 @@ export default class Recipe extends RecipeModule {
                 id: USER_INFO_PATH,
                 disabled: this.apiImpl.userInfoGET === undefined,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(REVOKE_TOKEN_PATH),
+                id: REVOKE_TOKEN_PATH,
+                disabled: this.apiImpl.revokeTokenPOST === undefined,
+            },
         ];
     }
 
@@ -180,6 +187,9 @@ export default class Recipe extends RecipeModule {
         }
         if (id === USER_INFO_PATH) {
             return userInfoGET(this.apiImpl, tenantId, options, userContext);
+        }
+        if (id === REVOKE_TOKEN_PATH) {
+            return revokeTokenPOST(this.apiImpl, options, userContext);
         }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };

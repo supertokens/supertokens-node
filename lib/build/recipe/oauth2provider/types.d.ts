@@ -143,6 +143,20 @@ export declare type RecipeInterface = {
     }): Promise<{
         redirectTo: string;
     }>;
+    getOAuth2Client(
+        input: Pick<OAuth2ClientOptions, "clientId">,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              client: OAuth2Client;
+          }
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
     getOAuth2Clients(
         input: GetOAuth2ClientsInput,
         userContext: UserContext
@@ -245,6 +259,25 @@ export declare type RecipeInterface = {
         tenantId: string;
         userContext: UserContext;
     }): Promise<JSONObject>;
+    revokeToken(
+        input: {
+            token: string;
+            userContext: UserContext;
+        } & (
+            | {
+                  authorizationHeader: string;
+              }
+            | {
+                  clientId: string;
+                  clientSecret?: string;
+              }
+        )
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | ErrorOAuth2
+    >;
 };
 export declare type APIInterface = {
     loginGET:
@@ -306,6 +339,28 @@ export declare type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<JSONObject | GeneralErrorResponse>);
+    revokeTokenPOST:
+        | undefined
+        | ((
+              input: {
+                  token: string;
+                  options: APIOptions;
+                  userContext: UserContext;
+              } & (
+                  | {
+                        authorizationHeader: string;
+                    }
+                  | {
+                        clientId: string;
+                        clientSecret?: string;
+                    }
+              )
+          ) => Promise<
+              | {
+                    status: "OK";
+                }
+              | ErrorOAuth2
+          >);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;

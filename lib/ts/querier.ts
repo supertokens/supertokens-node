@@ -179,6 +179,13 @@ export class Querier {
                 } else {
                     headers["content-type"] = "application/json; charset=utf-8";
                 }
+
+                // TODO: Remove this after core changes are done
+                if (body !== undefined && body["authorizationHeader"]) {
+                    headers["authorization"] = body["authorizationHeader"];
+                    delete body["authorizationHeader"];
+                }
+
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -704,16 +711,21 @@ async function handleHydraAPICall(response: Response) {
         return {
             body: {
                 status: response.ok ? "OK" : "ERROR",
+                statusCode: response.status,
                 data: await response.clone().json(),
             },
             headers: response.headers,
         };
     } else if (contentType?.startsWith("text/plain")) {
         return {
-            body: { status: response.ok ? "OK" : "ERROR", data: await response.clone().text() },
+            body: {
+                status: response.ok ? "OK" : "ERROR",
+                statusCode: response.status,
+                data: await response.clone().text(),
+            },
             headers: response.headers,
         };
     }
 
-    return { body: { status: response.ok ? "OK" : "ERROR" }, headers: response.headers };
+    return { body: { status: response.ok ? "OK" : "ERROR", statusCode: response.status }, headers: response.headers };
 }

@@ -256,6 +256,21 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ redirectTo: string }>;
 
+    getOAuth2Client(
+        input: Pick<OAuth2ClientOptions, "clientId">,
+        userContext: UserContext
+    ): Promise<
+        | {
+              status: "OK";
+              client: OAuth2Client;
+          }
+        // TODO: Define specific error types once requirements are clearer
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
     getOAuth2Clients(
         input: GetOAuth2ClientsInput,
         userContext: UserContext
@@ -358,6 +373,17 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: UserContext;
     }): Promise<JSONObject>;
+    revokeToken(
+        input: {
+            token: string;
+            userContext: UserContext;
+        } & (
+            | {
+                  authorizationHeader: string;
+              }
+            | { clientId: string; clientSecret?: string }
+        )
+    ): Promise<{ status: "OK" } | ErrorOAuth2>;
 };
 
 export type APIInterface = {
@@ -403,6 +429,15 @@ export type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<JSONObject | GeneralErrorResponse>);
+    revokeTokenPOST:
+        | undefined
+        | ((
+              input: {
+                  token: string;
+                  options: APIOptions;
+                  userContext: UserContext;
+              } & ({ authorizationHeader: string } | { clientId: string; clientSecret?: string })
+          ) => Promise<{ status: "OK" } | ErrorOAuth2>);
 };
 
 export type OAuth2ClientOptions = {

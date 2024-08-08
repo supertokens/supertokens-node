@@ -28,6 +28,12 @@ import {
 export default class Wrapper {
     static init = Recipe.init;
 
+    static async getOAuth2Client(clientId: string, userContext?: Record<string, any>) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Client(
+            { clientId },
+            getUserContext(userContext)
+        );
+    }
     static async getOAuth2Clients(input: GetOAuth2ClientsInput, userContext?: Record<string, any>) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Clients(
             input,
@@ -107,6 +113,47 @@ export default class Wrapper {
             userContext: getUserContext(userContext),
         });
     }
+
+    static async revokeToken(
+        token: string,
+        clientId: string,
+        clientSecret?: string,
+        userContext?: Record<string, any>
+    ) {
+        let authorizationHeader: string | undefined = undefined;
+
+        const normalisedUserContext = getUserContext(userContext);
+        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+
+        const res = await recipeInterfaceImpl.getOAuth2Client({ clientId }, normalisedUserContext);
+
+        if (res.status !== "OK") {
+            throw new Error(`Failed to get OAuth2 client with id ${clientId}: ${res.error}`);
+        }
+
+        const { tokenEndpointAuthMethod } = res.client;
+
+        if (tokenEndpointAuthMethod === "none") {
+            authorizationHeader = "Basic " + Buffer.from(clientId + ":").toString("base64");
+        } else if (tokenEndpointAuthMethod === "client_secret_basic") {
+            authorizationHeader = "Basic " + Buffer.from(clientId + ":" + clientSecret).toString("base64");
+        }
+
+        if (authorizationHeader !== undefined) {
+            return await recipeInterfaceImpl.revokeToken({
+                token,
+                authorizationHeader,
+                userContext: normalisedUserContext,
+            });
+        }
+
+        return await recipeInterfaceImpl.revokeToken({
+            token,
+            clientId,
+            clientSecret,
+            userContext: normalisedUserContext,
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -124,5 +171,7 @@ export let validateOAuth2AccessToken = Wrapper.validateOAuth2AccessToken;
 export let validateOAuth2IdToken = Wrapper.validateOAuth2IdToken;
 
 export let createTokenForClientCredentials = Wrapper.createTokenForClientCredentials;
+
+export let revokeToken = Wrapper.revokeToken;
 
 export type { APIInterface, APIOptions, RecipeInterface };
