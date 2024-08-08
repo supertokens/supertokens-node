@@ -11,6 +11,20 @@ import {
 } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
+    static getOAuth2Client(
+        clientId: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              client: import("./OAuth2Client").OAuth2Client;
+          }
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
     static getOAuth2Clients(
         input: GetOAuth2ClientsInput,
         userContext?: Record<string, any>
@@ -87,6 +101,17 @@ export default class Wrapper {
         audience?: string,
         userContext?: Record<string, any>
     ): Promise<import("./types").ErrorOAuth2 | import("./types").TokenInfo>;
+    static revokeToken(
+        token: string,
+        clientId: string,
+        clientSecret?: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | import("./types").ErrorOAuth2
+        | {
+              status: "OK";
+          }
+    >;
 }
 export declare let init: typeof Recipe.init;
 export declare let getOAuth2Clients: typeof Wrapper.getOAuth2Clients;
@@ -95,4 +120,5 @@ export declare let updateOAuth2Client: typeof Wrapper.updateOAuth2Client;
 export declare let deleteOAuth2Client: typeof Wrapper.deleteOAuth2Client;
 export declare let validateOAuth2AccessToken: typeof Wrapper.validateOAuth2AccessToken;
 export declare let createTokenForClientCredentials: typeof Wrapper.createTokenForClientCredentials;
+export declare let revokeToken: typeof Wrapper.revokeToken;
 export type { APIInterface, APIOptions, RecipeInterface };

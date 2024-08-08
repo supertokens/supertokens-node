@@ -29,7 +29,7 @@ export default async function userInfoGET(
         return false;
     }
 
-    const authHeader = options.req.getHeaderValue("authorization") || options.req.getHeaderValue("Authorization");
+    const authHeader = options.req.getHeaderValue("authorization");
 
     if (authHeader === undefined || !authHeader.startsWith("Bearer ")) {
         sendNon200ResponseWithMessage(options.res, "Missing or invalid Authorization header", 401);

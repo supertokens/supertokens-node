@@ -22,16 +22,13 @@ import RecipeUserId from "../../recipeUserId";
 
 export type UserInfo = {
     userId: string;
-    rawUserInfoFromProvider: { fromIdTokenPayload?: { [key: string]: any }; fromUserInfoAPI?: { [key: string]: any } };
+    rawUserInfo: { fromIdTokenPayload?: { [key: string]: any }; fromUserInfoAPI?: { [key: string]: any } };
 };
 
 export type ProviderConfigInput = {
     clientId: string;
     clientSecret: string;
-    authorizationEndpointQueryParams?: { [key: string]: string | null };
     oidcDiscoveryEndpoint: string;
-    scope?: string[];
-    forcePKCE?: boolean;
 };
 
 export type ProviderConfigWithOIDCInfo = ProviderConfigInput & {
@@ -78,20 +75,12 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getAuthorisationRedirectURL(input: {
-        providerConfig: ProviderConfigWithOIDCInfo;
-        redirectURIOnProviderDashboard: string;
-        userContext: UserContext;
-    }): Promise<{
-        urlWithQueryParams: string;
-        pkceCodeVerifier?: string;
-    }>;
     getProviderConfig(input: { userContext: UserContext }): Promise<ProviderConfigWithOIDCInfo>;
 
     signIn(input: {
         userId: string;
         oAuthTokens: OAuthTokens;
-        rawUserInfoFromProvider: {
+        rawUserInfo: {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
         };
@@ -102,7 +91,7 @@ export type RecipeInterface = {
         recipeUserId: RecipeUserId;
         user: User;
         oAuthTokens: OAuthTokens;
-        rawUserInfoFromProvider: {
+        rawUserInfo: {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
         };
@@ -110,7 +99,7 @@ export type RecipeInterface = {
     exchangeAuthCodeForOAuthTokens(input: {
         providerConfig: ProviderConfigWithOIDCInfo;
         redirectURIInfo: {
-            redirectURIOnProviderDashboard: string;
+            redirectURI: string;
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
         };
@@ -134,31 +123,15 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
-    authorisationUrlGET:
-        | undefined
-        | ((input: {
-              redirectURIOnProviderDashboard: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    urlWithQueryParams: string;
-                    pkceCodeVerifier?: string;
-                }
-              | GeneralErrorResponse
-          >);
-
     signInPOST: (
         input: {
             tenantId: string;
-            session: SessionContainerInterface | undefined;
             options: APIOptions;
             userContext: UserContext;
         } & (
             | {
                   redirectURIInfo: {
-                      redirectURIOnProviderDashboard: string;
+                      redirectURI: string;
                       redirectURIQueryParams: any;
                       pkceCodeVerifier?: string;
                   };
@@ -173,7 +146,7 @@ export type APIInterface = {
               user: User;
               session: SessionContainerInterface;
               oAuthTokens: { [key: string]: any };
-              rawUserInfoFromProvider: {
+              rawUserInfo: {
                   fromIdTokenPayload?: { [key: string]: any };
                   fromUserInfoAPI?: { [key: string]: any };
               };
