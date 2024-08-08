@@ -37,6 +37,32 @@ export async function loginGET({
     const incomingAuthUrlQueryParams = new URLSearchParams(loginRequest.requestUrl.split("?")[1]);
     const promptParam = incomingAuthUrlQueryParams.get("prompt") ?? incomingAuthUrlQueryParams.get("st_prompt");
     const maxAgeParam = incomingAuthUrlQueryParams.get("max_age");
+    if (maxAgeParam !== null) {
+        try {
+            const maxAgeParsed = Number.parseInt(maxAgeParam);
+            if (maxAgeParsed < 0) {
+                const reject = await recipeImplementation.rejectLoginRequest({
+                    challenge: loginChallenge,
+                    error: {
+                        error: "invalid_request",
+                        errorDescription: "max_age cannot be negative",
+                    },
+                    userContext,
+                });
+                return { redirectTo: reject.redirectTo, setCookie };
+            }
+        } catch {
+            const reject = await recipeImplementation.rejectLoginRequest({
+                challenge: loginChallenge,
+                error: {
+                    error: "invalid_request",
+                    errorDescription: "max_age must be an integer",
+                },
+                userContext,
+            });
+            return { redirectTo: reject.redirectTo, setCookie };
+        }
+    }
     const tenantIdParam = incomingAuthUrlQueryParams.get("tenant_id");
     if (
         session &&
