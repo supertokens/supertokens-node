@@ -711,16 +711,21 @@ async function handleHydraAPICall(response: Response) {
         return {
             body: {
                 status: response.ok ? "OK" : "ERROR",
+                statusCode: response.status,
                 data: await response.clone().json(),
             },
             headers: response.headers,
         };
     } else if (contentType?.startsWith("text/plain")) {
         return {
-            body: { status: response.ok ? "OK" : "ERROR", data: await response.clone().text() },
+            body: {
+                status: response.ok ? "OK" : "ERROR",
+                statusCode: response.status,
+                data: await response.clone().text(),
+            },
             headers: response.headers,
         };
     }
 
-    return { body: { status: response.ok ? "OK" : "ERROR" }, headers: response.headers };
+    return { body: { status: response.ok ? "OK" : "ERROR", statusCode: response.status }, headers: response.headers };
 }

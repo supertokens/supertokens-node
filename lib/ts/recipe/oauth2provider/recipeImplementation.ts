@@ -258,6 +258,13 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
+            if (res.status !== "OK") {
+                return {
+                    statusCode: res.statusCode,
+                    error: res.data.error,
+                    errorDescription: res.data.error_description,
+                };
+            }
             return res.data;
         },
 
@@ -292,6 +299,27 @@ export default function getRecipeInterface(
                     status: "OK",
                     clients: response.body.data.map((client: any) => OAuth2Client.fromAPIResponse(client)),
                     nextPaginationToken,
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.body.data.error,
+                    errorHint: response.body.data.errorHint,
+                };
+            }
+        },
+        getOAuth2Client: async function (input, userContext) {
+            let response = await querier.sendGetRequestWithResponseHeaders(
+                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
+                {},
+                {},
+                userContext
+            );
+
+            if (response.body.status === "OK") {
+                return {
+                    status: "OK",
+                    client: OAuth2Client.fromAPIResponse(response.body.data),
                 };
             } else {
                 return {
@@ -479,23 +507,38 @@ export default function getRecipeInterface(
             return { status: "OK", payload: payload as JSONObject };
         },
 
-        revokeToken: async function (
-            this: RecipeInterface,
-            { clientId, clientSecret, token, authorizationHeader, userContext }
-        ) {
+        revokeToken: async function (this: RecipeInterface, input) {
+            const requestBody: Record<string, unknown> = {
+                $isFormData: true,
+                token: input.token,
+            };
+
+            if ("authorizationHeader" in input) {
+                requestBody.authorizationHeader = input.authorizationHeader;
+            } else {
+                if ("clientId" in input) {
+                    requestBody.client_id = input.clientId;
+                }
+                if ("clientSecret" in input) {
+                    requestBody.client_secret = input.clientSecret;
+                }
+            }
+
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/pub/revoke`),
-                {
-                    $isFormData: true,
-                    authorizationHeader,
-                    // NOTE: Send clientId and clientSecret only if authorizationHeader is undefined (token_endpoint_auth_method is client_secret_post).
-                    // Including them with authorizationHeader will result in an error.
-                    ...(authorizationHeader === undefined && { client_id: clientId, client_secret: clientSecret }),
-                    token,
-                },
-                userContext
+                requestBody,
+                input.userContext
             );
-            return res.data;
+
+            if (res.status !== "OK") {
+                return {
+                    statusCode: res.statusCode,
+                    error: res.data.error,
+                    errorDescription: res.data.error_description,
+                };
+            }
+
+            return { status: "OK" };
         },
 
         introspectToken: async function (this: RecipeInterface, { token, scopes, userContext }) {
