@@ -154,6 +154,14 @@ export default class Wrapper {
             userContext: normalisedUserContext,
         });
     }
+
+    static validateOAuth2RefreshToken(token: string, scopes?: string[], userContext?: Record<string, any>) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.introspectToken({
+            token,
+            scopes,
+            userContext: getUserContext(userContext),
+        });
+    }
 }
 
 export let init = Wrapper.init;

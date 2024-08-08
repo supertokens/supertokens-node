@@ -63,4 +63,26 @@ export abstract class BaseRequest {
         }
         return this.parsedJSONBody;
     };
+
+    getBodyAsJSONOrFormData = async (): Promise<any> => {
+        const contentType = this.getHeaderValue("content-type");
+
+        if (contentType) {
+            if (contentType.startsWith("application/json")) {
+                return await this.getJSONBody();
+            } else if (contentType.startsWith("application/x-www-form-urlencoded")) {
+                return await this.getFormData();
+            }
+        } else {
+            try {
+                return await this.getJSONBody();
+            } catch {
+                try {
+                    return await this.getFormData();
+                } catch {
+                    throw new Error("Unable to parse body as JSON or Form Data.");
+                }
+            }
+        }
+    };
 }
