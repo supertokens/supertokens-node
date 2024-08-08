@@ -11,6 +11,20 @@ import {
 } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
+    static getOAuth2Client(
+        clientId: string,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              client: import("./OAuth2Client").OAuth2Client;
+          }
+        | {
+              status: "ERROR";
+              error: string;
+              errorHint: string;
+          }
+    >;
     static getOAuth2Clients(
         input: GetOAuth2ClientsInput,
         userContext?: Record<string, any>
@@ -102,12 +116,14 @@ export default class Wrapper {
     static revokeToken(
         token: string,
         clientId: string,
-        clientSecret: string,
-        useBasicAuth?: boolean,
+        clientSecret?: string,
         userContext?: Record<string, any>
-    ): Promise<{
-        status: "OK";
-    }>;
+    ): Promise<
+        | import("./types").ErrorOAuth2
+        | {
+              status: "OK";
+          }
+    >;
 }
 export declare let init: typeof Recipe.init;
 export declare let getOAuth2Clients: typeof Wrapper.getOAuth2Clients;

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response, sendNon200ResponseWithMessage } from "../../../utils";
+import { send200Response, sendNon200Response, sendNon200ResponseWithMessage } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 
@@ -33,8 +33,16 @@ export default async function revokeTokenPOST(
         return true;
     }
 
-    const authorizationHeader =
-        options.req.getHeaderValue("authorization") || options.req.getHeaderValue("Authorization");
+    const authorizationHeader = options.req.getHeaderValue("authorization");
+
+    if (authorizationHeader !== undefined && (body.client_id !== undefined || body.client_secret !== undefined)) {
+        sendNon200ResponseWithMessage(
+            options.res,
+            "Only one of authorization header or client_id and client_secret can be provided",
+            400
+        );
+        return true;
+    }
 
     let response = await apiImplementation.revokeTokenPOST({
         options,
@@ -45,6 +53,10 @@ export default async function revokeTokenPOST(
         userContext,
     });
 
-    send200Response(options.res, response);
+    if ("statusCode" in response && response.statusCode !== 200) {
+        sendNon200Response(options.res, response.statusCode!, response);
+    } else {
+        send200Response(options.res, response);
+    }
     return true;
 }
