@@ -265,6 +265,13 @@ export default function getRecipeInterface(
                     errorDescription: res.data.error_description,
                 };
             }
+            if (res.status !== "OK") {
+                return {
+                    statusCode: res.statusCode,
+                    error: res.data.error,
+                    errorDescription: res.data.error_description,
+                };
+            }
             return res.data;
         },
 
