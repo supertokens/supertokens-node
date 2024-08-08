@@ -20,25 +20,9 @@ import { RecipeInterface, APIInterface, APIOptions, OAuthTokens } from "./types"
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getAuthorisationRedirectURL(
-        redirectURIOnProviderDashboard: string,
-        userContext?: Record<string, any>
-    ) {
-        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const normalisedUserContext = getUserContext(userContext);
-        const providerConfig = await recipeInterfaceImpl.getProviderConfig({
-            userContext: normalisedUserContext,
-        });
-        return await recipeInterfaceImpl.getAuthorisationRedirectURL({
-            providerConfig,
-            redirectURIOnProviderDashboard,
-            userContext: normalisedUserContext,
-        });
-    }
-
     static async exchangeAuthCodeForOAuthTokens(
         redirectURIInfo: {
-            redirectURIOnProviderDashboard: string;
+            redirectURI: string;
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
         },
@@ -71,8 +55,6 @@ export default class Wrapper {
 }
 
 export let init = Wrapper.init;
-
-export let getAuthorisationRedirectURL = Wrapper.getAuthorisationRedirectURL;
 
 export let exchangeAuthCodeForOAuthTokens = Wrapper.exchangeAuthCodeForOAuthTokens;
 

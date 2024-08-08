@@ -4,19 +4,6 @@ import { OAuthTokens } from "../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        authorisationUrlGET: async function ({ options, redirectURIOnProviderDashboard, userContext }) {
-            const providerConfig = await options.recipeImplementation.getProviderConfig({ userContext });
-
-            const authUrl = await options.recipeImplementation.getAuthorisationRedirectURL({
-                providerConfig,
-                redirectURIOnProviderDashboard,
-                userContext,
-            });
-            return {
-                status: "OK",
-                ...authUrl,
-            };
-        },
         signInPOST: async function (input) {
             const { options, tenantId, userContext } = input;
 
@@ -36,7 +23,7 @@ export default function getAPIInterface(): APIInterface {
                 throw Error("should never come here");
             }
 
-            const { userId, rawUserInfoFromProvider } = await options.recipeImplementation.getUserInfo({
+            const { userId, rawUserInfo } = await options.recipeImplementation.getUserInfo({
                 providerConfig,
                 oAuthTokens: oAuthTokensToUse,
                 userContext,
@@ -45,7 +32,7 @@ export default function getAPIInterface(): APIInterface {
             const { user, recipeUserId } = await options.recipeImplementation.signIn({
                 userId,
                 tenantId,
-                rawUserInfoFromProvider,
+                rawUserInfo,
                 oAuthTokens: oAuthTokensToUse,
                 userContext,
             });
@@ -65,7 +52,7 @@ export default function getAPIInterface(): APIInterface {
                 user,
                 session,
                 oAuthTokens: oAuthTokensToUse,
-                rawUserInfoFromProvider,
+                rawUserInfo,
             };
         },
     };
