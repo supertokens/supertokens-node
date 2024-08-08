@@ -65,12 +65,12 @@ export abstract class BaseRequest {
     };
 
     getBodyAsJSONOrFormData = async (): Promise<any> => {
-        const contentType = this.getHeaderValue("content-type") || this.getHeaderValue("Content-Type");
+        const contentType = this.getHeaderValue("content-type");
 
         if (contentType) {
-            if (contentType.includes("application/json")) {
+            if (contentType.startsWith("application/json")) {
                 return await this.getJSONBody();
-            } else if (contentType.includes("application/x-www-form-urlencoded")) {
+            } else if (contentType.startsWith("application/x-www-form-urlencoded")) {
                 return await this.getFormData();
             }
         } else {

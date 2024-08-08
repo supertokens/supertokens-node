@@ -26,8 +26,7 @@ export default async function tokenPOST(
         return false;
     }
 
-    const authorizationHeader =
-        options.req.getHeaderValue("authorization") || options.req.getHeaderValue("Authorization");
+    const authorizationHeader = options.req.getHeaderValue("authorization");
 
     let response = await apiImplementation.tokenPOST({
         authorizationHeader,
