@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { getNormalisedShouldTryLinkingWithSessionUserFlag, send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
@@ -93,7 +93,7 @@ export default async function createCode(
         }
     }
 
-    const shouldTryLinkingWithSessionUser = body.shouldTryLinkingWithSessionUser;
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
 
     let session =
         shouldTryLinkingWithSessionUser !== false

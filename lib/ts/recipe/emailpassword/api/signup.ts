@@ -13,7 +13,11 @@
  * under the License.
  */
 
-import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
+import {
+    getBackwardsCompatibleUserInfo,
+    getNormalisedShouldTryLinkingWithSessionUserFlag,
+    send200Response,
+} from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
@@ -45,7 +49,7 @@ export default async function signUpAPI(
         userContext
     );
 
-    const shouldTryLinkingWithSessionUser = requestBody.shouldTryLinkingWithSessionUser;
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, requestBody);
 
     let session =
         shouldTryLinkingWithSessionUser !== false

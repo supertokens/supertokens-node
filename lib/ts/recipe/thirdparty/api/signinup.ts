@@ -14,7 +14,11 @@
  */
 
 import STError from "../error";
-import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
+import {
+    getBackwardsCompatibleUserInfo,
+    getNormalisedShouldTryLinkingWithSessionUserFlag,
+    send200Response,
+} from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
 import Session from "../../session";
@@ -82,7 +86,7 @@ export default async function signInUpAPI(
 
     const provider = providerResponse;
 
-    const shouldTryLinkingWithSessionUser = bodyParams.shouldTryLinkingWithSessionUser;
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, bodyParams);
 
     let session =
         shouldTryLinkingWithSessionUser !== false

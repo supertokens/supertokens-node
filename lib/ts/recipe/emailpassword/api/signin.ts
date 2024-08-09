@@ -13,7 +13,11 @@
  * under the License.
  */
 
-import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
+import {
+    getBackwardsCompatibleUserInfo,
+    getNormalisedShouldTryLinkingWithSessionUserFlag,
+    send200Response,
+} from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
@@ -42,7 +46,7 @@ export default async function signInAPI(
         userContext
     );
 
-    const shouldTryLinkingWithSessionUser = body.shouldTryLinkingWithSessionUser;
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
 
     let session =
         shouldTryLinkingWithSessionUser !== false

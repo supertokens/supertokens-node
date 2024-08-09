@@ -12,6 +12,7 @@ export declare function sendNon200ResponseWithMessage(res: BaseResponse, message
 export declare function sendNon200Response(res: BaseResponse, statusCode: number, body: JSONObject): void;
 export declare function send200Response(res: BaseResponse, responseJson: any): void;
 export declare function isAnIpAddress(ipaddress: string): boolean;
+export declare function getNormalisedShouldTryLinkingWithSessionUserFlag(req: BaseRequest, body: any): any;
 export declare function getBackwardsCompatibleUserInfo(
     req: BaseRequest,
     result: {

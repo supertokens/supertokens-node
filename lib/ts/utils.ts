@@ -194,6 +194,12 @@ export function isAnIpAddress(ipaddress: string) {
         ipaddress
     );
 }
+export function getNormalisedShouldTryLinkingWithSessionUserFlag(req: BaseRequest, body: any) {
+    if (hasGreaterThanEqualToFDI(req, "3.1")) {
+        return body.shouldTryLinkingWithSessionUser ?? false;
+    }
+    return undefined;
+}
 
 export function getBackwardsCompatibleUserInfo(
     req: BaseRequest,
