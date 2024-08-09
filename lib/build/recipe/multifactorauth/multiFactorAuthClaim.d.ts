@@ -55,8 +55,10 @@ export declare class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValu
     ) => {
         [x: string]: import("../../types").JSONValue;
     };
-    removeFromPayloadByMerge_internal: () => {
-        [x: string]: null;
+    removeFromPayloadByMerge_internal: (
+        payload: JSONObject
+    ) => {
+        [x: string]: import("../../types").JSONValue;
     };
     getValueFromPayload: (payload: JSONObject) => MFAClaimValue;
 }

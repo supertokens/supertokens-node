@@ -137,7 +137,36 @@ export async function convertRequestSessionToSessionObject(
     return tokens;
 }
 
-export function serializeUser(response) {
+export async function serializeResponse(req, res, response) {
+    const fdiVersion: string = req.headers["fdi-version"] as string;
+
+    await res.json({
+        ...response,
+        ...serializeUser(response, fdiVersion),
+        ...serializeRecipeUserId(response, fdiVersion),
+    });
+}
+
+export function serializeUser(response, fdiVersion: string) {
+    // fdiVersion <= "1.17" || (fdiVersion >= "2.0" && fdiVersion < "3.0")
+    if (
+        maxVersion("1.17", fdiVersion) === "1.17" ||
+        (maxVersion("2.0", fdiVersion) === fdiVersion && maxVersion("3.0", fdiVersion) !== fdiVersion)
+    ) {
+        return {
+            ...("user" in response && response.user instanceof supertokens.User
+                ? {
+                      user: {
+                          id: (response.user as supertokens.User).id,
+                          email: (response.user as supertokens.User).emails[0],
+                          timeJoined: (response.user as supertokens.User).timeJoined,
+                          tenantIds: (response.user as supertokens.User).tenantIds,
+                      },
+                  }
+                : {}),
+        };
+    }
+
     return {
         ...("user" in response && response.user instanceof supertokens.User
             ? {
@@ -147,7 +176,14 @@ export function serializeUser(response) {
     };
 }
 
-export function serializeRecipeUserId(response) {
+export function serializeRecipeUserId(response, fdiVersion: string) {
+    if (
+        maxVersion("1.17", fdiVersion) === "1.17" ||
+        (maxVersion("2.0", fdiVersion) === fdiVersion && maxVersion("3.0", fdiVersion) !== fdiVersion)
+    ) {
+        // fdiVersion <= "1.17" || (fdiVersion >= "2.0" && fdiVersion < "3.0")
+        return {};
+    }
     return {
         ...("recipeUserId" in response && response.recipeUserId instanceof supertokens.RecipeUserId
             ? {
@@ -165,4 +201,23 @@ function popOrUseVal<T>(arrOrValue: T | T[]): T {
         return arrOrValue.pop()!;
     }
     return arrOrValue;
+}
+
+export function maxVersion(version1: string, version2: string): string {
+    let splittedv1 = version1.split(".");
+    let splittedv2 = version2.split(".");
+    let minLength = Math.min(splittedv1.length, splittedv2.length);
+    for (let i = 0; i < minLength; i++) {
+        let v1 = Number(splittedv1[i]);
+        let v2 = Number(splittedv2[i]);
+        if (v1 > v2) {
+            return version1;
+        } else if (v2 > v1) {
+            return version2;
+        }
+    }
+    if (splittedv1.length >= splittedv2.length) {
+        return version1;
+    }
+    return version2;
 }

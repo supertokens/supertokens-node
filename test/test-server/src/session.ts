@@ -4,7 +4,7 @@ import * as supertokens from "../../../lib/build";
 import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { logger } from "./logger";
 import { getFunc } from "./testFunctionMapper";
-import { convertRequestSessionToSessionObject, deserializeClaim, deserializeValidator } from "./utils";
+import { convertRequestSessionToSessionObject, deserializeClaim, deserializeValidator, maxVersion } from "./utils";
 import { logOverrideEvent } from "./overrideLogging";
 
 const namespace = "com.supertokens:node-test-server:session";
@@ -12,9 +12,20 @@ const { logDebugMessage } = logger(namespace);
 
 const router = Router()
     .post("/createnewsessionwithoutrequestresponse", async (req, res, next) => {
+        const fdiVersion = req.headers["fdi-version"] as string;
+
         try {
             logDebugMessage("Session.createNewSessionWithoutRequestResponse %j", req.body);
-            const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
+            let recipeUserId;
+            if (
+                maxVersion("1.17", fdiVersion) === "1.17" ||
+                (maxVersion("2.0", fdiVersion) === fdiVersion && maxVersion("3.0", fdiVersion) !== fdiVersion)
+            ) {
+                // fdiVersion <= "1.17" || (fdiVersion >= "2.0" && fdiVersion < "3.0")
+                recipeUserId = supertokens.convertToRecipeUserId(req.body.userId);
+            } else {
+                recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
+            }
             const response = await Session.createNewSessionWithoutRequestResponse(
                 req.body.tenantId || "public",
                 recipeUserId,

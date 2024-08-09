@@ -99,7 +99,7 @@ export default class Recipe extends RecipeModule {
         userContext: UserContext;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {
-        user?: User;
+        user: User;
         newEmail: string;
         isVerified: boolean;
         session: SessionContainerInterface | undefined;

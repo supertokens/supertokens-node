@@ -36,6 +36,24 @@ jobs:
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
             - slack/status
+    test-backend-sdk-testing:
+        docker:
+            - image: rishabhpoddar/supertokens_node_driver_testing_node_20
+        resource_class: large
+        parameters:
+            cdi-version:
+                type: string
+            fdi-version:
+                type: string
+        steps:
+            - checkout
+            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+            - run: apt-get install lsof
+            - run: npm i -d --force
+            - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
+            - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+            - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
+            - slack/status
     test-website:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
@@ -114,6 +132,20 @@ workflows:
                   matrix:
                       parameters:
                           cdi-version: placeholder
+            - test-backend-sdk-testing:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          only: /test-cicd\/.*/
+                  matrix:
+                      parameters:
+                          cdi-version: placeholder
+                          fdi-version: placeholder
             - test-website:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -143,6 +175,7 @@ workflows:
             - test-success:
                   requires:
                       - test-unit
+                      - test-backend-sdk-testing
                       - test-website
                       - test-authreact
                   context:
