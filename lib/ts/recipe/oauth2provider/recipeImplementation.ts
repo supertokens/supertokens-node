@@ -513,13 +513,13 @@ export default function getRecipeInterface(
                 token: input.token,
             };
 
-            if ("authorizationHeader" in input) {
+            if ("authorizationHeader" in input && input.authorizationHeader !== undefined) {
                 requestBody.authorizationHeader = input.authorizationHeader;
             } else {
-                if ("clientId" in input) {
+                if ("clientId" in input && input.clientId !== undefined) {
                     requestBody.client_id = input.clientId;
                 }
-                if ("clientSecret" in input) {
+                if ("clientSecret" in input && input.clientSecret !== undefined) {
                     requestBody.client_secret = input.clientSecret;
                 }
             }
