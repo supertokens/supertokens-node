@@ -26,7 +26,7 @@ export default async function revokeTokenPOST(
         return false;
     }
 
-    const body = await options.req.getFormData();
+    const body = await options.req.getBodyAsJSONOrFormData();
 
     if (body.token === undefined) {
         sendNon200ResponseWithMessage(options.res, "token is required in the request body", 400);

@@ -256,6 +256,11 @@ export default function getRecipeInterface(
             for (const key in input.body) {
                 body[key] = input.body[key];
             }
+
+            if (input.authorizationHeader) {
+                body["authorizationHeader"] = input.authorizationHeader;
+            }
+
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/pub/token`),
                 body,
@@ -484,13 +489,13 @@ export default function getRecipeInterface(
                 token: input.token,
             };
 
-            if ("authorizationHeader" in input) {
+            if ("authorizationHeader" in input && input.authorizationHeader !== undefined) {
                 requestBody.authorizationHeader = input.authorizationHeader;
             } else {
-                if ("clientId" in input) {
+                if ("clientId" in input && input.clientId !== undefined) {
                     requestBody.client_id = input.clientId;
                 }
-                if ("clientSecret" in input) {
+                if ("clientSecret" in input && input.clientSecret !== undefined) {
                     requestBody.client_secret = input.clientSecret;
                 }
             }
@@ -510,6 +515,40 @@ export default function getRecipeInterface(
             }
 
             return { status: "OK" };
+        },
+
+        introspectToken: async function (this: RecipeInterface, { token, scopes, userContext }) {
+            // Determine if the token is an access token by checking if it doesn't start with "ory_rt"
+            const isAccessToken = !token.startsWith("ory_rt");
+
+            // Attempt to validate the access token locally
+            // If it fails, the token is not active, and we return early
+            if (isAccessToken) {
+                try {
+                    await this.validateOAuth2AccessToken({
+                        token,
+                        requirements: { scopes },
+                        checkDatabase: false,
+                        userContext,
+                    });
+                } catch (error) {
+                    return { active: false };
+                }
+            }
+
+            // For tokens that passed local validation or if it's a refresh token,
+            // validate the token with the database by calling the core introspection endpoint
+            const res = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/introspect`),
+                {
+                    $isFormData: true,
+                    token,
+                    scope: scopes ? scopes.join(" ") : undefined,
+                },
+                userContext
+            );
+
+            return res.data;
         },
     };
 }

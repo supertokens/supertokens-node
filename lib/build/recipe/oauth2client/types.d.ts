@@ -18,7 +18,7 @@ export declare type UserInfo = {
 };
 export declare type ProviderConfigInput = {
     clientId: string;
-    clientSecret: string;
+    clientSecret?: string;
     oidcDiscoveryEndpoint: string;
 };
 export declare type ProviderConfigWithOIDCInfo = ProviderConfigInput & {

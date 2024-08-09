@@ -112,6 +112,11 @@ export default class Wrapper {
               status: "OK";
           }
     >;
+    static validateOAuth2RefreshToken(
+        token: string,
+        scopes?: string[],
+        userContext?: Record<string, any>
+    ): Promise<import("./types").InstrospectTokenResponse>;
 }
 export declare let init: typeof Recipe.init;
 export declare let getOAuth2Clients: typeof Wrapper.getOAuth2Clients;

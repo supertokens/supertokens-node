@@ -76,7 +76,6 @@ export default class Wrapper {
             userContext: getUserContext(userContext),
         });
     }
-    // TODO: revokeToken
 
     static createTokenForClientCredentials(
         clientId: string,
@@ -135,6 +134,14 @@ export default class Wrapper {
             clientId,
             clientSecret,
             userContext: normalisedUserContext,
+        });
+    }
+
+    static validateOAuth2RefreshToken(token: string, scopes?: string[], userContext?: Record<string, any>) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.introspectToken({
+            token,
+            scopes,
+            userContext: getUserContext(userContext),
         });
     }
 }

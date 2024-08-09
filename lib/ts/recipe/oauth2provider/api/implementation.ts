@@ -53,6 +53,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         tokenPOST: async (input) => {
             return input.options.recipeImplementation.tokenExchange({
+                authorizationHeader: input.authorizationHeader,
                 body: input.body,
                 userContext: input.userContext,
             });
@@ -85,20 +86,29 @@ export default function getAPIImplementation(): APIInterface {
             });
         },
         revokeTokenPOST: async (input) => {
-            if ("authorizationHeader" in input) {
+            if ("authorizationHeader" in input && input.authorizationHeader !== undefined) {
                 return input.options.recipeImplementation.revokeToken({
                     token: input.token,
                     authorizationHeader: input.authorizationHeader,
                     userContext: input.userContext,
                 });
-            } else {
+            } else if ("clientId" in input && input.clientId !== undefined) {
                 return input.options.recipeImplementation.revokeToken({
                     token: input.token,
                     clientId: input.clientId,
                     clientSecret: input.clientSecret,
                     userContext: input.userContext,
                 });
+            } else {
+                throw new Error(`Either of 'authorizationHeader' or 'clientId' must be provided`);
             }
+        },
+        introspectTokenPOST: async (input) => {
+            return input.options.recipeImplementation.introspectToken({
+                token: input.token,
+                scopes: input.scopes,
+                userContext: input.userContext,
+            });
         },
     };
 }
