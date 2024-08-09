@@ -27,7 +27,7 @@ export type UserInfo = {
 
 export type ProviderConfigInput = {
     clientId: string;
-    clientSecret: string;
+    clientSecret?: string;
     oidcDiscoveryEndpoint: string;
 };
 

@@ -93,8 +93,6 @@ export default class Wrapper {
         });
     }
 
-    // TODO: revokeToken
-
     static createTokenForClientCredentials(
         clientId: string,
         clientSecret: string,

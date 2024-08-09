@@ -386,7 +386,7 @@ export declare type APIInterface = {
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;
-    clientSecret: string;
+    clientSecret?: string;
     createdAt: string;
     updatedAt: string;
     clientName: string;

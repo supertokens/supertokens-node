@@ -11,7 +11,7 @@ export declare class OAuth2Client {
      * The secret will be included in the create request as cleartext, and then
      * never again. The secret is kept in hashed format and is not recoverable once lost.
      */
-    clientSecret: string;
+    clientSecret?: string;
     /**
      * OAuth 2.0 Client Name
      * The human-readable name of the client to be presented to the end-user during authorization.
