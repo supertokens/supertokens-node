@@ -459,7 +459,7 @@ export type APIInterface = {
 
 export type OAuth2ClientOptions = {
     clientId: string;
-    clientSecret: string;
+    clientSecret?: string;
     createdAt: string;
     updatedAt: string;
 

@@ -32,10 +32,6 @@ export function validateAndNormaliseUserInput(_appInfo: NormalisedAppinfo, confi
     //     );
     // }
 
-    if (config.providerConfig.clientSecret === undefined) {
-        throw new Error("Please pass clientSecret argument in the OAuth2Client providerConfig.");
-    }
-
     if (config.providerConfig.oidcDiscoveryEndpoint === undefined) {
         throw new Error("Please pass oidcDiscoveryEndpoint argument in the OAuth2Client providerConfig.");
     }
