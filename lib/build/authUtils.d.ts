@@ -340,4 +340,10 @@ export declare const AuthUtils: {
         hasSession: boolean,
         userContext: UserContext
     ) => Promise<string[]>;
+    loadSessionInAuthAPIIfNeeded: (
+        req: BaseRequest,
+        res: BaseResponse,
+        shouldTryLinkingWithSessionUser: boolean | undefined,
+        userContext: UserContext
+    ) => Promise<SessionContainerInterface | undefined>;
 };

@@ -1,6 +1,13 @@
 // @ts-nocheck
 import Recipe from "./recipe";
-import { VerifySessionOptions, RecipeInterface, TypeNormalisedInput, SessionContainerInterface } from "./types";
+import {
+    VerifySessionOptions,
+    RecipeInterface,
+    TokenTransferMethod,
+    TypeNormalisedInput,
+    SessionContainerInterface,
+} from "./types";
+import { ParsedJWTInfo } from "./jwt";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare function getSessionFromRequest({
@@ -18,6 +25,14 @@ export declare function getSessionFromRequest({
     options?: VerifySessionOptions;
     userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined>;
+export declare function getAccessTokenFromRequest(
+    req: any,
+    allowedTransferMethod: TokenTransferMethod | "any"
+): {
+    requestTransferMethod: TokenTransferMethod | undefined;
+    accessToken: ParsedJWTInfo | undefined;
+    allowedTransferMethod: TokenTransferMethod | "any";
+};
 export declare function refreshSessionInRequest({
     res,
     req,

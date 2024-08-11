@@ -368,7 +368,7 @@ export default function getAPIImplementation(): APIInterface {
             );
 
             if (response.status !== "OK") {
-                return AuthUtils.getErrorStatusResponseWithReason(response, {}, "SIGN_IN_UP_NOT_ALLOWED");
+                return AuthUtils.getErrorStatusResponseWithReason(response, errorCodeMap, "SIGN_IN_UP_NOT_ALLOWED");
             }
 
             // now we send the email / text message.

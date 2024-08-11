@@ -1,6 +1,5 @@
 import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
-import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
@@ -594,21 +593,7 @@ export default function getAPIImplementation(): APIInterface {
             shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }): Promise<
-            | {
-                  status: "OK";
-                  session: SessionContainerInterface;
-                  user: User;
-              }
-            | {
-                  status: "WRONG_CREDENTIALS_ERROR";
-              }
-            | {
-                  status: "SIGN_IN_NOT_ALLOWED";
-                  reason: string;
-              }
-            | GeneralErrorResponse
-        > {
+        }) {
             const errorCodeMap = {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
@@ -737,21 +722,7 @@ export default function getAPIImplementation(): APIInterface {
             shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }): Promise<
-            | {
-                  status: "OK";
-                  session: SessionContainerInterface;
-                  user: User;
-              }
-            | {
-                  status: "SIGN_UP_NOT_ALLOWED";
-                  reason: string;
-              }
-            | {
-                  status: "EMAIL_ALREADY_EXISTS_ERROR";
-              }
-            | GeneralErrorResponse
-        > {
+        }) {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",

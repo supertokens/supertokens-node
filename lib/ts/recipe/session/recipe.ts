@@ -43,6 +43,7 @@ import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
+import { getAccessTokenFromRequest } from "./sessionRequestFunctions";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -283,5 +284,15 @@ export default class SessionRecipe extends RecipeModule {
             },
             userContext,
         });
+    };
+
+    getAccessTokenFromRequest = (req: any, userContext: UserContext) => {
+        const allowedTransferMethod = this.config.getTokenTransferMethod({
+            req,
+            forCreateNewSession: false,
+            userContext,
+        });
+
+        return getAccessTokenFromRequest(req, allowedTransferMethod);
     };
 }

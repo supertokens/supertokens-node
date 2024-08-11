@@ -22,7 +22,7 @@ import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function signUpAPI(
     apiImplementation: APIInterface,
@@ -51,18 +51,12 @@ export default async function signUpAPI(
 
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, requestBody);
 
-    let session =
-        shouldTryLinkingWithSessionUser !== false
-            ? await Session.getSession(
-                  options.req,
-                  options.res,
-                  {
-                      sessionRequired: shouldTryLinkingWithSessionUser === true,
-                      overrideGlobalClaimValidators: () => [],
-                  },
-                  userContext
-              )
-            : undefined;
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        options.req,
+        options.res,
+        shouldTryLinkingWithSessionUser,
+        userContext
+    );
     if (session !== undefined) {
         tenantId = session.getTenantId();
     }

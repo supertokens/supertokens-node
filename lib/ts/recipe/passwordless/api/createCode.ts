@@ -18,7 +18,7 @@ import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function createCode(
     apiImplementation: APIInterface,
@@ -95,18 +95,12 @@ export default async function createCode(
 
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
 
-    let session =
-        shouldTryLinkingWithSessionUser !== false
-            ? await Session.getSession(
-                  options.req,
-                  options.res,
-                  {
-                      sessionRequired: shouldTryLinkingWithSessionUser === true,
-                      overrideGlobalClaimValidators: () => [],
-                  },
-                  userContext
-              )
-            : undefined;
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        options.req,
+        options.res,
+        shouldTryLinkingWithSessionUser,
+        userContext
+    );
 
     if (session !== undefined) {
         tenantId = session.getTenantId();

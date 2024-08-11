@@ -10,7 +10,7 @@ import RecipeUserId from "./recipeUserId";
 import { updateAndGetMFARelatedInfoInSession } from "./recipe/multifactorauth/utils";
 import { isValidFirstFactor } from "./recipe/multitenancy/utils";
 import SessionError from "./recipe/session/error";
-import { getUser } from ".";
+import { Error as STError, getUser } from ".";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 import SessionRecipe from "./recipe/session/recipe";
@@ -290,6 +290,9 @@ export const AuthUtils = {
                 }
             }
         } else {
+            // We do not have to care about overwriting the session here, since we either:
+            // - have overwriteSessionDuringSignInUp true and can ignore it
+            // - have overwriteSessionDuringSignInUp false and we checked in the api imlp that there is no session
             logDebugMessage(`postAuthChecks creating session for first factor sign in/up`);
             // If there is no input session, we do not need to do anything other checks and create a new session
             respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
@@ -566,9 +569,11 @@ export const AuthUtils = {
             );
             if (sessionUserResult.status === "SHOULD_AUTOMATICALLY_LINK_FALSE") {
                 if (shouldTryLinkingWithSessionUser === true) {
-                    throw new Error(
-                        "This should never happen: shouldDoAutomaticAccountLinking returned false when creating primary user but shouldTryLinkingWithSessionUser is true"
-                    );
+                    throw new STError({
+                        message:
+                            "shouldDoAutomaticAccountLinking returned false when creating primary user but shouldTryLinkingWithSessionUser is true",
+                        type: "BAD_INPUT_ERROR",
+                    });
                 }
 
                 return {
@@ -602,9 +607,11 @@ export const AuthUtils = {
 
             if (shouldLink.shouldAutomaticallyLink === false) {
                 if (shouldTryLinkingWithSessionUser === true) {
-                    throw new Error(
-                        "This should never happen: shouldDoAutomaticAccountLinking returned false when linking to session user, but shouldTryLinkingWithSessionUser is true"
-                    );
+                    throw new STError({
+                        message:
+                            "shouldDoAutomaticAccountLinking returned false when creating primary user but shouldTryLinkingWithSessionUser is true",
+                        type: "BAD_INPUT_ERROR",
+                    });
                 }
                 return { status: "OK", isFirstFactor: true };
             } else {
@@ -996,6 +1003,26 @@ export const AuthUtils = {
         }
 
         return validFactorIds;
+    },
+    loadSessionInAuthAPIIfNeeded: async function (
+        req: BaseRequest,
+        res: BaseResponse,
+        shouldTryLinkingWithSessionUser: boolean | undefined,
+        userContext: UserContext
+    ) {
+        const overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
+            .overwriteSessionDuringSignInUp;
+        return shouldTryLinkingWithSessionUser !== false || !overwriteSessionDuringSignInUp
+            ? await Session.getSession(
+                  req,
+                  res,
+                  {
+                      sessionRequired: shouldTryLinkingWithSessionUser === true,
+                      overrideGlobalClaimValidators: () => [],
+                  },
+                  userContext
+              )
+            : undefined;
     },
 };
 

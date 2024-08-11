@@ -17,7 +17,7 @@ import { getNormalisedShouldTryLinkingWithSessionUserFlag, send200Response } fro
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function resendCode(
     apiImplementation: APIInterface,
@@ -49,18 +49,12 @@ export default async function resendCode(
 
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
 
-    let session =
-        shouldTryLinkingWithSessionUser !== false
-            ? await Session.getSession(
-                  options.req,
-                  options.res,
-                  {
-                      sessionRequired: shouldTryLinkingWithSessionUser === true,
-                      overrideGlobalClaimValidators: () => [],
-                  },
-                  userContext
-              )
-            : undefined;
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
+        options.req,
+        options.res,
+        shouldTryLinkingWithSessionUser,
+        userContext
+    );
 
     let result = await apiImplementation.resendCodePOST({
         deviceId,
