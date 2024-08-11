@@ -13,12 +13,16 @@
  * under the License.
  */
 
-import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
+import {
+    getBackwardsCompatibleUserInfo,
+    getNormalisedShouldTryLinkingWithSessionUserFlag,
+    send200Response,
+} from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function signUpAPI(
     apiImplementation: APIInterface,
@@ -45,16 +49,14 @@ export default async function signUpAPI(
         userContext
     );
 
-    let session = await Session.getSession(
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, requestBody);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
         options.req,
         options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
+        shouldTryLinkingWithSessionUser,
         userContext
     );
-
     if (session !== undefined) {
         tenantId = session.getTenantId();
     }
@@ -63,6 +65,7 @@ export default async function signUpAPI(
         formFields,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext: userContext,
     });

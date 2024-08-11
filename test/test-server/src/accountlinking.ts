@@ -4,7 +4,7 @@ import AccountLinkingRecipe from "../../../lib/build/recipe/accountlinking/recip
 import AccountLinking from "../../../recipe/accountlinking";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
-import { serializeUser } from "./utils";
+import { serializeResponse, serializeUser } from "./utils";
 
 const namespace = "com.supertokens:node-test-server:accountlinking";
 const { logDebugMessage } = logger(namespace);
@@ -15,7 +15,7 @@ const router = Router()
             logDebugMessage("AccountLinking:createPrimaryUser %j", req.body);
             const recipeUserId = supertokens.convertToRecipeUserId(req.body.recipeUserId);
             const response = await AccountLinking.createPrimaryUser(recipeUserId, req.body.userContext);
-            res.json({ ...response, ...serializeUser(response) });
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }
@@ -29,10 +29,7 @@ const router = Router()
                 req.body.primaryUserId,
                 req.body.userContext
             );
-            res.json({
-                ...response,
-                ...serializeUser(response),
-            });
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }

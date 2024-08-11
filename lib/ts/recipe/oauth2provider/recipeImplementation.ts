@@ -176,10 +176,18 @@ export default function getRecipeInterface(
             };
         },
         authorization: async function (this: RecipeInterface, input) {
+            if (input.session !== undefined) {
+                if (input.params.prompt === "none") {
+                    input.params["st_prompt"] = "none";
+                    delete input.params.prompt;
+                }
+            }
+
             const resp = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
                 input.params,
                 {
+                    // TODO: if session is not set also clear the oauth2 cookie
                     Cookie: `${input.cookies}`,
                 },
                 input.userContext
@@ -227,6 +235,7 @@ export default function getRecipeInterface(
                     challenge: consentRequest.challenge,
                     grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
                     grantScope: consentRequest.requestedScope,
+                    remember: true, // TODO: verify that we need this
                     session: {
                         id_token: idToken,
                         access_token: accessTokenPayload,
@@ -474,39 +483,6 @@ export default function getRecipeInterface(
             }
             return { status: "OK", payload: payload as JSONObject };
         },
-        validateOAuth2IdToken: async function (input) {
-            const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
-
-            // TODO: we should be able uncomment this after we get proper core support
-            // TODO: make this configurable?
-            // const expectedIssuer =
-            //     appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
-            // if (payload.iss !== expectedIssuer) {
-            //     throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
-            // }
-            // if (payload.stt !== 2) {
-            //     throw new Error("Wrong token type");
-            // }
-
-            if (input.requirements?.clientId !== undefined && payload.client_id !== input.requirements.clientId) {
-                throw new Error("The token doesn't belong to the specified client");
-            }
-
-            if (
-                input.requirements?.scopes !== undefined &&
-                input.requirements.scopes.some((scope) => !(payload.scp as string[]).includes(scope))
-            ) {
-                throw new Error("The token is missing some required scopes");
-            }
-
-            const aud = payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? [];
-            if (input.requirements?.audience !== undefined && !aud.includes(input.requirements.audience)) {
-                throw new Error("The token doesn't belong to the specified audience");
-            }
-
-            return { status: "OK", payload: payload as JSONObject };
-        },
-
         revokeToken: async function (this: RecipeInterface, input) {
             const requestBody: Record<string, unknown> = {
                 $isFormData: true,

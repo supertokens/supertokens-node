@@ -67,6 +67,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -106,6 +107,7 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -275,6 +277,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;
+              shouldTryLinkingWithSessionUser: boolean | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<
@@ -301,6 +304,7 @@ export declare type APIInterface = {
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;
+              shouldTryLinkingWithSessionUser: boolean | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

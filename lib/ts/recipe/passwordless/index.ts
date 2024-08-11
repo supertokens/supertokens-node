@@ -51,6 +51,7 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             ...input,
             session: input.session,
+            shouldTryLinkingWithSessionUser: !!input.session,
             userContext: getUserContext(input.userContext),
         });
     }
@@ -203,6 +204,7 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             ...input,
             session: input.session,
+            shouldTryLinkingWithSessionUser: !!input.session,
             userContext: getUserContext(input.userContext),
         });
     }

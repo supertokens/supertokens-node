@@ -94,18 +94,6 @@ export default class Wrapper {
         status: "OK";
         payload: import("../usermetadata").JSONObject;
     }>;
-    static validateOAuth2IdToken(
-        token: string,
-        requirements?: {
-            clientId?: string;
-            scopes?: string[];
-            audience?: string;
-        },
-        userContext?: Record<string, any>
-    ): Promise<{
-        status: "OK";
-        payload: import("../usermetadata").JSONObject;
-    }>;
     static createTokenForClientCredentials(
         clientId: string,
         clientSecret: string,
@@ -136,7 +124,6 @@ export declare let createOAuth2Client: typeof Wrapper.createOAuth2Client;
 export declare let updateOAuth2Client: typeof Wrapper.updateOAuth2Client;
 export declare let deleteOAuth2Client: typeof Wrapper.deleteOAuth2Client;
 export declare let validateOAuth2AccessToken: typeof Wrapper.validateOAuth2AccessToken;
-export declare let validateOAuth2IdToken: typeof Wrapper.validateOAuth2IdToken;
 export declare let createTokenForClientCredentials: typeof Wrapper.createTokenForClientCredentials;
 export declare let revokeToken: typeof Wrapper.revokeToken;
 export type { APIInterface, APIOptions, RecipeInterface };

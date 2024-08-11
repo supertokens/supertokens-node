@@ -1,6 +1,5 @@
 import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
-import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
@@ -591,32 +590,10 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             tenantId,
             session,
+            shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }: {
-            formFields: {
-                id: string;
-                value: string;
-            }[];
-            tenantId: string;
-            session?: SessionContainerInterface;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  session: SessionContainerInterface;
-                  user: User;
-              }
-            | {
-                  status: "WRONG_CREDENTIALS_ERROR";
-              }
-            | {
-                  status: "SIGN_IN_NOT_ALLOWED";
-                  reason: string;
-              }
-            | GeneralErrorResponse
-        > {
+        }) {
             const errorCodeMap = {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
@@ -683,6 +660,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
                 session,
+                shouldTryLinkingWithSessionUser,
             });
             if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
                 throw new Error("This should never happen: pre-auth checks should not fail for sign in");
@@ -702,6 +680,7 @@ export default function getAPIImplementation(): APIInterface {
                 email,
                 password,
                 session,
+                shouldTryLinkingWithSessionUser,
                 tenantId,
                 userContext,
             });
@@ -740,32 +719,10 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             tenantId,
             session,
+            shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }: {
-            formFields: {
-                id: string;
-                value: string;
-            }[];
-            tenantId: string;
-            session?: SessionContainerInterface;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  session: SessionContainerInterface;
-                  user: User;
-              }
-            | {
-                  status: "SIGN_UP_NOT_ALLOWED";
-                  reason: string;
-              }
-            | {
-                  status: "EMAIL_ALREADY_EXISTS_ERROR";
-              }
-            | GeneralErrorResponse
-        > {
+        }) {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
@@ -797,6 +754,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
                 session,
+                shouldTryLinkingWithSessionUser,
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
@@ -834,6 +792,7 @@ export default function getAPIImplementation(): APIInterface {
                 email,
                 password,
                 session,
+                shouldTryLinkingWithSessionUser,
                 userContext,
             });
 

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import ThirdParty from "../../../recipe/thirdparty";
-import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
+import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeResponse, serializeUser } from "./utils";
 import { logger } from "./logger";
 
 const namespace = "com.supertokens:node-test-server:thirdparty";
@@ -19,11 +19,7 @@ const router = Router().post("/manuallycreateorupdateuser", async (req, res, nex
             session,
             req.body.userContext
         );
-        res.json({
-            ...response,
-            ...serializeUser(response),
-            ...serializeRecipeUserId(response),
-        });
+        await serializeResponse(req, res, response);
     } catch (e) {
         next(e);
     }

@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import setCookieParser from "set-cookie-parser";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import Session from "../../session";
@@ -54,6 +55,22 @@ export default async function login(
     if ("status" in response) {
         send200Response(options.res, response);
     } else {
+        if (response.setCookie) {
+            const cookieStr = setCookieParser.splitCookiesString(response.setCookie);
+            const cookies = setCookieParser.parse(cookieStr);
+            for (const cookie of cookies) {
+                options.res.setCookie(
+                    cookie.name,
+                    cookie.value,
+                    cookie.domain,
+                    !!cookie.secure,
+                    !!cookie.httpOnly,
+                    new Date(cookie.expires!).getTime(),
+                    cookie.path || "/",
+                    cookie.sameSite as any
+                );
+            }
+        }
         options.res.original.redirect(response.redirectTo);
     }
     return true;

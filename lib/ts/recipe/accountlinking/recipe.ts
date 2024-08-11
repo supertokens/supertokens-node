@@ -523,7 +523,7 @@ export default class Recipe extends RecipeModule {
     };
 
     isEmailChangeAllowed = async (input: {
-        user?: User;
+        user: User;
         newEmail: string;
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
@@ -545,10 +545,6 @@ export default class Recipe extends RecipeModule {
          */
 
         let inputUser = input.user;
-
-        if (inputUser === undefined) {
-            throw new Error("Passed in recipe user id does not exist");
-        }
 
         for (const tenantId of inputUser.tenantIds) {
             let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
@@ -929,7 +925,7 @@ export default class Recipe extends RecipeModule {
                     // we can use the 0 index cause targetUser is not a primary user.
                     let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                         inputUser.loginMethods[0],
-                        primaryUserThatCanBeLinkedToTheInputUser,
+                        createPrimaryUserResult.user,
                         session,
                         tenantId,
                         userContext

@@ -234,18 +234,6 @@ export declare type RecipeInterface = {
         status: "OK";
         payload: JSONObject;
     }>;
-    validateOAuth2IdToken(input: {
-        token: string;
-        requirements?: {
-            clientId?: string;
-            scopes?: string[];
-            audience?: string;
-        };
-        userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        payload: JSONObject;
-    }>;
     buildAccessTokenPayload(input: {
         user: User;
         client: OAuth2Client;
@@ -303,6 +291,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     redirectTo: string;
+                    setCookie: string | undefined;
                 }
               | GeneralErrorResponse
           >);

@@ -1,5 +1,7 @@
 import SuperTokens from "../../../supertokens";
 import { UserContext } from "../../../types";
+import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
+import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { AUTH_PATH, LOGIN_PATH } from "../constants";
 import { RecipeInterface } from "../types";
@@ -12,6 +14,7 @@ export async function loginGET({
     loginChallenge,
     session,
     setCookie,
+    isDirectCall,
     userContext,
 }: {
     recipeImplementation: RecipeInterface;
@@ -19,37 +22,78 @@ export async function loginGET({
     session?: SessionContainerInterface;
     setCookie?: string;
     userContext: UserContext;
+    isDirectCall: boolean;
 }) {
-    const request = await recipeImplementation.getLoginRequest({
+    const loginRequest = await recipeImplementation.getLoginRequest({
         challenge: loginChallenge,
         userContext,
     });
 
-    const queryParams = new URLSearchParams({
-        loginChallenge,
-    });
-
-    if (request.oidcContext?.login_hint) {
-        queryParams.set("hint", request.oidcContext.login_hint);
+    const sessionInfo = session !== undefined ? await getSessionInformation(session?.getHandle()) : undefined;
+    if (!sessionInfo) {
+        session = undefined;
     }
 
-    if (request.skip) {
-        const accept = await recipeImplementation.acceptLoginRequest({
-            challenge: loginChallenge,
-            identityProviderSessionId: session?.getHandle(),
-            subject: request.subject,
-            userContext,
-        });
-
-        return { redirectTo: accept.redirectTo, setCookie };
-    } else if (session && (!request.subject || session.getUserId() === request.subject)) {
+    const incomingAuthUrlQueryParams = new URLSearchParams(loginRequest.requestUrl.split("?")[1]);
+    const promptParam = incomingAuthUrlQueryParams.get("prompt") ?? incomingAuthUrlQueryParams.get("st_prompt");
+    const maxAgeParam = incomingAuthUrlQueryParams.get("max_age");
+    if (maxAgeParam !== null) {
+        try {
+            const maxAgeParsed = Number.parseInt(maxAgeParam);
+            if (maxAgeParsed < 0) {
+                const reject = await recipeImplementation.rejectLoginRequest({
+                    challenge: loginChallenge,
+                    error: {
+                        error: "invalid_request",
+                        errorDescription: "max_age cannot be negative",
+                    },
+                    userContext,
+                });
+                return { redirectTo: reject.redirectTo, setCookie };
+            }
+        } catch {
+            const reject = await recipeImplementation.rejectLoginRequest({
+                challenge: loginChallenge,
+                error: {
+                    error: "invalid_request",
+                    errorDescription: "max_age must be an integer",
+                },
+                userContext,
+            });
+            return { redirectTo: reject.redirectTo, setCookie };
+        }
+    }
+    const tenantIdParam = incomingAuthUrlQueryParams.get("tenant_id");
+    if (
+        session &&
+        (["", undefined].includes(loginRequest.subject) || session.getUserId() === loginRequest.subject) &&
+        (["", null].includes(tenantIdParam) || session.getTenantId() === tenantIdParam) &&
+        (promptParam !== "login" || isDirectCall) &&
+        (maxAgeParam === null ||
+            (maxAgeParam === "0" && isDirectCall) ||
+            Number.parseInt(maxAgeParam) * 1000 > Date.now() - sessionInfo!.timeCreated)
+    ) {
         const accept = await recipeImplementation.acceptLoginRequest({
             challenge: loginChallenge,
             subject: session.getUserId(),
             identityProviderSessionId: session.getHandle(),
+            remember: true,
+            rememberFor: 3600,
             userContext,
         });
         return { redirectTo: accept.redirectTo, setCookie };
+    }
+    if (promptParam === "none") {
+        const reject = await recipeImplementation.rejectLoginRequest({
+            challenge: loginChallenge,
+            error: {
+                error: "login_required",
+                errorDescription:
+                    "The Authorization Server requires End-User authentication. Prompt 'none' was requested, but no existing or expired login session was found.",
+            },
+            userContext,
+        });
+        return { redirectTo: reject.redirectTo, setCookie };
     }
     const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
     const websiteDomain = appInfo
@@ -60,8 +104,24 @@ export async function loginGET({
         .getAsStringDangerous();
     const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
 
+    const queryParamsForAuthPage = new URLSearchParams({
+        loginChallenge,
+    });
+
+    if (loginRequest.oidcContext?.login_hint) {
+        queryParamsForAuthPage.set("hint", loginRequest.oidcContext.login_hint);
+    }
+
+    if (session !== undefined || promptParam === "login") {
+        queryParamsForAuthPage.set("forceFreshAuth", "true");
+    }
+
+    if (tenantIdParam !== null && tenantIdParam !== DEFAULT_TENANT_ID) {
+        queryParamsForAuthPage.set("tenantId", tenantIdParam);
+    }
+
     return {
-        redirectTo: websiteDomain + websiteBasePath + `?${queryParams.toString()}`,
+        redirectTo: websiteDomain + websiteBasePath + `?${queryParamsForAuthPage.toString()}`,
         setCookie,
     };
 }
@@ -98,7 +158,7 @@ function mergeSetCookieHeaders(setCookie1?: string, setCookie2?: string): string
     if (!setCookie2 || setCookie1 === setCookie2) {
         return setCookie1;
     }
-    return `${setCookie1};${setCookie2}`;
+    return `${setCookie1}, ${setCookie2}`;
 }
 
 function isInternalRedirect(redirectTo: string): boolean {
@@ -154,6 +214,7 @@ export async function handleInternalRedirects({
                 loginChallenge,
                 session,
                 setCookie: response.setCookie,
+                isDirectCall: false,
                 userContext,
             });
 

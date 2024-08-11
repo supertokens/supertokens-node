@@ -1356,6 +1356,7 @@ EmailPassword.init({
                         password,
                         tenantId: input.tenantId,
                         session: input.session,
+                        shouldTryLinkingWithSessionUser: false,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {

@@ -13,11 +13,11 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { getNormalisedShouldTryLinkingWithSessionUserFlag, send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function resendCode(
     apiImplementation: APIInterface,
@@ -47,25 +47,21 @@ export default async function resendCode(
         });
     }
 
-    let session = await Session.getSession(
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
         options.req,
         options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
+        shouldTryLinkingWithSessionUser,
         userContext
     );
-
-    if (session !== undefined) {
-        tenantId = session.getTenantId();
-    }
 
     let result = await apiImplementation.resendCodePOST({
         deviceId,
         preAuthSessionId,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext,
     });

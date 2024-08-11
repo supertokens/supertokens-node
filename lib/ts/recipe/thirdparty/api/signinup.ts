@@ -14,10 +14,14 @@
  */
 
 import STError from "../error";
-import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
+import {
+    getBackwardsCompatibleUserInfo,
+    getNormalisedShouldTryLinkingWithSessionUserFlag,
+    send200Response,
+} from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function signInUpAPI(
     apiImplementation: APIInterface,
@@ -82,13 +86,12 @@ export default async function signInUpAPI(
 
     const provider = providerResponse;
 
-    let session = await Session.getSession(
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, bodyParams);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
         options.req,
         options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
+        shouldTryLinkingWithSessionUser,
         userContext
     );
 
@@ -102,6 +105,7 @@ export default async function signInUpAPI(
         oAuthTokens,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext,
     });

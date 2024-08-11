@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Added OAuth2Provider recipe
 
+## [20.0.2] - 2024-08-08
+
+-   Fixes an issue where `shouldDoAutomaticAccountLinking` was called without a primary user when linking in some cases.
+
+## [20.0.1] - 2024-08-05
+
+-   Fixes an issue with `removeFromPayloadByMerge_internal` for `MultiFactorAuthClaim` where it was not retaining other claims while removing the claim from the payload.
+-   Updates testing with backend-sdk-testing repo to run against all supported FDI versions.
+
 ## [20.0.0] - 2024-07-24
 
 ### Changes

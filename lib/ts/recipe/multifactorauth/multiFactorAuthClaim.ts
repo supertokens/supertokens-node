@@ -232,8 +232,9 @@ export class MultiFactorAuthClaimClass extends SessionClaim<MFAClaimValue> {
         return retVal;
     };
 
-    public removeFromPayloadByMerge_internal = () => {
+    public removeFromPayloadByMerge_internal = (payload: JSONObject) => {
         return {
+            ...payload,
             [this.key]: null,
         };
     };

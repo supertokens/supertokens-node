@@ -13,12 +13,12 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { getNormalisedShouldTryLinkingWithSessionUserFlag, send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function createCode(
     apiImplementation: APIInterface,
@@ -93,13 +93,12 @@ export default async function createCode(
         }
     }
 
-    let session = await Session.getSession(
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
         options.req,
         options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
+        shouldTryLinkingWithSessionUser,
         userContext
     );
 
@@ -109,8 +108,8 @@ export default async function createCode(
 
     let result = await apiImplementation.createCodePOST(
         email !== undefined
-            ? { email, session, tenantId, options, userContext }
-            : { phoneNumber: phoneNumber!, session, tenantId, options, userContext }
+            ? { email, session, tenantId, shouldTryLinkingWithSessionUser, options, userContext }
+            : { phoneNumber: phoneNumber!, session, tenantId, shouldTryLinkingWithSessionUser, options, userContext }
     );
 
     send200Response(options.res, result);

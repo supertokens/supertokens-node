@@ -77,22 +77,6 @@ export default class Wrapper {
         });
     }
 
-    static validateOAuth2IdToken(
-        token: string,
-        requirements?: {
-            clientId?: string;
-            scopes?: string[];
-            audience?: string;
-        },
-        userContext?: Record<string, any>
-    ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateOAuth2IdToken({
-            token,
-            requirements,
-            userContext: getUserContext(userContext),
-        });
-    }
-
     static createTokenForClientCredentials(
         clientId: string,
         clientSecret: string,
@@ -173,8 +157,6 @@ export let updateOAuth2Client = Wrapper.updateOAuth2Client;
 export let deleteOAuth2Client = Wrapper.deleteOAuth2Client;
 
 export let validateOAuth2AccessToken = Wrapper.validateOAuth2AccessToken;
-
-export let validateOAuth2IdToken = Wrapper.validateOAuth2IdToken;
 
 export let createTokenForClientCredentials = Wrapper.createTokenForClientCredentials;
 

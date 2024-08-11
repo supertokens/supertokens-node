@@ -36,7 +36,10 @@ export default async function tokenPOST(
     });
 
     if ("statusCode" in response && response.statusCode !== 200) {
-        sendNon200Response(options.res, response.statusCode!, response);
+        sendNon200Response(options.res, response.statusCode!, {
+            error: response.error,
+            error_description: response.errorDescription,
+        });
     } else {
         send200Response(options.res, response);
     }

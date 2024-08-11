@@ -13,11 +13,15 @@
  * under the License.
  */
 
-import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
+import {
+    getBackwardsCompatibleUserInfo,
+    getNormalisedShouldTryLinkingWithSessionUserFlag,
+    send200Response,
+} from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function signInAPI(
     apiImplementation: APIInterface,
@@ -30,24 +34,24 @@ export default async function signInAPI(
         return false;
     }
 
+    const body = await options.req.getJSONBody();
     // step 1
     let formFields: {
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.signInFeature.formFields,
-        (await options.req.getJSONBody()).formFields,
+        body.formFields,
         tenantId,
         userContext
     );
 
-    let session = await Session.getSession(
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
         options.req,
         options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
+        shouldTryLinkingWithSessionUser,
         userContext
     );
 
@@ -59,6 +63,7 @@ export default async function signInAPI(
         formFields,
         tenantId,
         session,
+        shouldTryLinkingWithSessionUser,
         options,
         userContext,
     });
