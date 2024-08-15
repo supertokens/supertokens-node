@@ -30,6 +30,8 @@ import {
     INTROSPECT_TOKEN_PATH,
     LOGIN_INFO_PATH,
     LOGIN_PATH,
+    LOGOUT_PATH,
+    END_SESSION_PATH,
     REVOKE_TOKEN_PATH,
     TOKEN_PATH,
     USER_INFO_PATH,
@@ -51,6 +53,8 @@ import userInfoGET from "./api/userInfo";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import revokeTokenPOST from "./api/revokeToken";
 import introspectTokenPOST from "./api/introspectToken";
+import { endSessionGET, endSessionPOST } from "./api/endSession";
+import { logoutGET, logoutPOST } from "./api/logout";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2provider";
@@ -167,6 +171,30 @@ export default class Recipe extends RecipeModule {
                 id: INTROSPECT_TOKEN_PATH,
                 disabled: this.apiImpl.introspectTokenPOST === undefined,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(END_SESSION_PATH),
+                id: END_SESSION_PATH,
+                disabled: this.apiImpl.endSessionGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(END_SESSION_PATH),
+                id: END_SESSION_PATH,
+                disabled: this.apiImpl.endSessionPOST === undefined,
+            },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGOUT_PATH),
+                id: LOGOUT_PATH,
+                disabled: this.apiImpl.logoutGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGOUT_PATH),
+                id: LOGOUT_PATH,
+                disabled: this.apiImpl.logoutPOST === undefined,
+            },
         ];
     }
 
@@ -176,7 +204,7 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
-        _method: HTTPMethod,
+        method: HTTPMethod,
         userContext: UserContext
     ): Promise<boolean> => {
         let options = {
@@ -208,6 +236,18 @@ export default class Recipe extends RecipeModule {
         }
         if (id === INTROSPECT_TOKEN_PATH) {
             return introspectTokenPOST(this.apiImpl, options, userContext);
+        }
+        if (id === END_SESSION_PATH && method === "get") {
+            return endSessionGET(this.apiImpl, options, userContext);
+        }
+        if (id === END_SESSION_PATH && method === "post") {
+            return endSessionPOST(this.apiImpl, options, userContext);
+        }
+        if (id === LOGOUT_PATH && method === "get") {
+            return logoutGET(this.apiImpl, options, userContext);
+        }
+        if (id === LOGOUT_PATH && method === "post") {
+            return logoutPOST(this.apiImpl, options, userContext);
         }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };

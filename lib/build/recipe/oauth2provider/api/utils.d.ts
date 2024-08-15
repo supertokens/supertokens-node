@@ -20,6 +20,32 @@ export declare function loginGET({
     redirectTo: string;
     setCookie: string | undefined;
 }>;
+export declare function logoutGET({
+    logoutChallenge,
+    recipeImplementation,
+    session,
+    userContext,
+}: {
+    logoutChallenge: string;
+    recipeImplementation: RecipeInterface;
+    session?: SessionContainerInterface;
+    userContext: UserContext;
+}): Promise<{
+    redirectTo: string;
+}>;
+export declare function logoutPOST({
+    logoutChallenge,
+    session,
+    recipeImplementation,
+    userContext,
+}: {
+    logoutChallenge: string;
+    recipeImplementation: RecipeInterface;
+    session?: SessionContainerInterface;
+    userContext: UserContext;
+}): Promise<{
+    redirectTo: string;
+}>;
 export declare function handleInternalRedirects({
     response,
     recipeImplementation,
@@ -29,7 +55,7 @@ export declare function handleInternalRedirects({
 }: {
     response: {
         redirectTo: string;
-        setCookie: string | undefined;
+        setCookie?: string;
     };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
@@ -37,5 +63,5 @@ export declare function handleInternalRedirects({
     userContext: UserContext;
 }): Promise<{
     redirectTo: string;
-    setCookie: string | undefined;
+    setCookie?: string;
 }>;

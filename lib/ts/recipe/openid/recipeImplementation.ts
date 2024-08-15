@@ -19,6 +19,7 @@ import { GET_JWKS_API } from "../jwt/constants";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import {
     AUTH_PATH,
+    END_SESSION_PATH,
     INTROSPECT_TOKEN_PATH,
     REVOKE_TOKEN_PATH,
     TOKEN_PATH,
@@ -47,6 +48,7 @@ export default function getRecipeInterface(
                 userinfo_endpoint: apiBasePath + USER_INFO_PATH,
                 revocation_endpoint: apiBasePath + REVOKE_TOKEN_PATH,
                 token_introspection_endpoint: apiBasePath + INTROSPECT_TOKEN_PATH,
+                end_session_endpoint: apiBasePath + END_SESSION_PATH,
                 subject_types_supported: ["public"],
                 id_token_signing_alg_values_supported: ["RS256"],
                 response_types_supported: ["code", "id_token", "id_token token"],

@@ -29,6 +29,11 @@ export declare class OAuth2Client {
      */
     redirectUris: string[] | null;
     /**
+     * Array of post logout redirect URIs
+     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
+     */
+    postLogoutRedirectUris: string[] | null;
+    /**
      * Authorization Code Grant Access Token Lifespan
      * NullDuration - ^[0-9]+(ns|us|ms|s|m|h)$
      */
@@ -144,6 +149,7 @@ export declare class OAuth2Client {
         clientName,
         scope,
         redirectUris,
+        postLogoutRedirectUris,
         authorizationCodeGrantAccessTokenLifespan,
         authorizationCodeGrantIdTokenLifespan,
         authorizationCodeGrantRefreshTokenLifespan,

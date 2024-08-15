@@ -50,6 +50,12 @@ export class OAuth2Client {
     redirectUris: string[] | null;
 
     /**
+     * Array of post logout redirect URIs
+     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
+     */
+    postLogoutRedirectUris: string[] | null;
+
+    /**
      * Authorization Code Grant Access Token Lifespan
      * NullDuration - ^[0-9]+(ns|us|ms|s|m|h)$
      */
@@ -186,6 +192,7 @@ export class OAuth2Client {
         clientName,
         scope,
         redirectUris = null,
+        postLogoutRedirectUris = null,
         authorizationCodeGrantAccessTokenLifespan = null,
         authorizationCodeGrantIdTokenLifespan = null,
         authorizationCodeGrantRefreshTokenLifespan = null,
@@ -213,6 +220,7 @@ export class OAuth2Client {
         this.clientName = clientName;
         this.scope = scope;
         this.redirectUris = redirectUris;
+        this.postLogoutRedirectUris = postLogoutRedirectUris;
         this.authorizationCodeGrantAccessTokenLifespan = authorizationCodeGrantAccessTokenLifespan;
         this.authorizationCodeGrantIdTokenLifespan = authorizationCodeGrantIdTokenLifespan;
         this.authorizationCodeGrantRefreshTokenLifespan = authorizationCodeGrantRefreshTokenLifespan;

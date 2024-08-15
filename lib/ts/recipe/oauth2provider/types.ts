@@ -383,6 +383,8 @@ export type RecipeInterface = {
         scopes?: string[];
         userContext: UserContext;
     }): Promise<InstrospectTokenResponse>;
+    endSession(input: { params: Record<string, string>; userContext: UserContext }): Promise<{ redirectTo: string }>;
+    acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
 };
 
 export type APIInterface = {
@@ -393,7 +395,7 @@ export type APIInterface = {
               options: APIOptions;
               session?: SessionContainerInterface;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string; setCookie: string | undefined } | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; setCookie?: string } | GeneralErrorResponse>);
 
     authGET:
         | undefined
@@ -403,7 +405,7 @@ export type APIInterface = {
               session: SessionContainerInterface | undefined;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string; setCookie: string | undefined } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2 | GeneralErrorResponse>);
     tokenPOST:
         | undefined
         | ((input: {
@@ -446,6 +448,38 @@ export type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<InstrospectTokenResponse | GeneralErrorResponse>);
+    endSessionGET:
+        | undefined
+        | ((input: {
+              params: Record<string, string>;
+              session?: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<{ redirectTo: string }>);
+    endSessionPOST:
+        | undefined
+        | ((input: {
+              params: Record<string, string>;
+              session?: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<{ redirectTo: string }>);
+    logoutGET:
+        | undefined
+        | ((input: {
+              logoutChallenge: string;
+              options: APIOptions;
+              session?: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<{ redirectTo: string }>);
+    logoutPOST:
+        | undefined
+        | ((input: {
+              logoutChallenge: string;
+              options: APIOptions;
+              session?: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<{ redirectTo: string }>);
 };
 
 export type OAuth2ClientOptions = {
@@ -458,6 +492,7 @@ export type OAuth2ClientOptions = {
 
     scope: string;
     redirectUris?: string[] | null;
+    postLogoutRedirectUris?: string[] | null;
     allowedCorsOrigins?: string[];
 
     authorizationCodeGrantAccessTokenLifespan?: string | null;
