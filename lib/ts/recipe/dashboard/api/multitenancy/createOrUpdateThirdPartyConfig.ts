@@ -19,6 +19,7 @@ import { UserContext } from "../../../../types";
 import NormalisedURLDomain from "../../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { doPostRequest } from "../../../thirdparty/providers/utils";
+import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
 
 export type Response =
     | {
@@ -50,7 +51,7 @@ export default async function createOrUpdateThirdPartyConfig(
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         for (const provider of staticProviders.filter(
-            (provider) => provider.includeInNonPublicTenantsByDefault === true
+            (provider) => provider.includeInNonPublicTenantsByDefault === true || tenantId === DEFAULT_TENANT_ID
         )) {
             await Multitenancy.createOrUpdateThirdPartyConfig(
                 tenantId,
