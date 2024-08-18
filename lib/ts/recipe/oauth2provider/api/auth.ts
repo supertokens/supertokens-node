@@ -18,6 +18,7 @@ import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import setCookieParser from "set-cookie-parser";
 import Session from "../../session";
+import SessionError from "../../../recipe/session/error";
 
 export default async function authGET(
     apiImplementation: APIInterface,
@@ -30,15 +31,19 @@ export default async function authGET(
     const origURL = options.req.getOriginalURL();
     const splitURL = origURL.split("?");
     const params = new URLSearchParams(splitURL[1]);
-    let session;
+    let session, shouldTryRefresh;
     try {
         session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
-    } catch {
-        // We ignore this here since the authGET is called from the auth endpoint which is used in full-page redirections
-        // Returning a 401 would break the sign-in flow.
-        // In theory we could serve some JS that handles refreshing and retrying, but this is not implemented.
-        // What we do is that the auth endpoint will redirect to the login page, and the login page handles refreshing and
-        // redirect to the auth endpoint again. This is not optimal, but it works for now.
+        shouldTryRefresh = false;
+    } catch (error) {
+        session = undefined;
+        if (SessionError.isErrorFromSuperTokens(error) && error.type === SessionError.TRY_REFRESH_TOKEN) {
+            shouldTryRefresh = true;
+        } else {
+            // This should generally not happen, but we can handle this as if the session is not present,
+            // because then we redirect to the frontend, which should handle the validation error
+            shouldTryRefresh = false;
+        }
     }
 
     let response = await apiImplementation.authGET({
@@ -46,6 +51,7 @@ export default async function authGET(
         params: Object.fromEntries(params.entries()),
         cookie: options.req.getHeaderValue("cookie"),
         session,
+        shouldTryRefresh,
         userContext,
     });
     if ("redirectTo" in response) {

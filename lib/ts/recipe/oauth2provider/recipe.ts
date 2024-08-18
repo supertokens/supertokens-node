@@ -51,10 +51,15 @@ import userInfoGET from "./api/userInfo";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import revokeTokenPOST from "./api/revokeToken";
 import introspectTokenPOST from "./api/introspectToken";
+import { getSessionInformation } from "../session";
+import { send200Response } from "../../utils";
+
+const tokenHookMap = new Map<string, { idToken: JSONObject; accessToken: JSONObject }>();
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2provider";
     private static instance: Recipe | undefined = undefined;
+    private accessTokenBuilders: PayloadBuilderFunction[] = [];
     private idTokenBuilders: PayloadBuilderFunction[] = [];
     private userInfoBuilders: UserInfoBuilderFunction[] = [];
 
@@ -74,8 +79,10 @@ export default class Recipe extends RecipeModule {
                     Querier.getNewInstanceOrThrowError(recipeId),
                     this.config,
                     appInfo,
+                    this.getDefaultAccessTokenPayload.bind(this),
                     this.getDefaultIdTokenPayload.bind(this),
-                    this.getDefaultUserInfoPayload.bind(this)
+                    this.getDefaultUserInfoPayload.bind(this),
+                    this.saveTokensForHook.bind(this)
                 )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
@@ -119,6 +126,15 @@ export default class Recipe extends RecipeModule {
 
     addUserInfoBuilderFromOtherRecipe = (userInfoBuilderFn: UserInfoBuilderFunction) => {
         this.userInfoBuilders.push(userInfoBuilderFn);
+    };
+    addAccessTokenBuilderFromOtherRecipe = (accessTokenBuilders: PayloadBuilderFunction) => {
+        this.accessTokenBuilders.push(accessTokenBuilders);
+    };
+    addIdTokenBuilderFromOtherRecipe = (idTokenBuilder: PayloadBuilderFunction) => {
+        this.idTokenBuilders.push(idTokenBuilder);
+    };
+    saveTokensForHook = (sessionHandle: string, idToken: JSONObject, accessToken: JSONObject) => {
+        tokenHookMap.set(sessionHandle, { idToken, accessToken });
     };
 
     /* RecipeModule functions */
@@ -167,6 +183,13 @@ export default class Recipe extends RecipeModule {
                 id: INTROSPECT_TOKEN_PATH,
                 disabled: this.apiImpl.introspectTokenPOST === undefined,
             },
+            {
+                // TODO: remove this once we get core support
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath("/oauth/token-hook"),
+                id: "token-hook",
+                disabled: false,
+            },
         ];
     }
 
@@ -209,6 +232,24 @@ export default class Recipe extends RecipeModule {
         if (id === INTROSPECT_TOKEN_PATH) {
             return introspectTokenPOST(this.apiImpl, options, userContext);
         }
+        if (id === "token-hook") {
+            const body = await options.req.getBodyAsJSONOrFormData();
+            const sessionHandle = body.session.extra.sessionHandle;
+            const tokens = tokenHookMap.get(sessionHandle);
+
+            if (tokens !== undefined) {
+                const { idToken, accessToken } = tokens;
+                send200Response(options.res, {
+                    session: {
+                        access_token: accessToken,
+                        id_token: idToken,
+                    },
+                });
+            } else {
+                send200Response(options.res, {});
+            }
+            return true;
+        }
         throw new Error("Should never come here: handleAPIRequest called with unknown id");
     };
 
@@ -224,7 +265,28 @@ export default class Recipe extends RecipeModule {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     }
 
-    async getDefaultIdTokenPayload(user: User, scopes: string[], userContext: UserContext) {
+    async getDefaultAccessTokenPayload(user: User, scopes: string[], sessionHandle: string, userContext: UserContext) {
+        const sessionInfo = await getSessionInformation(sessionHandle);
+        if (sessionInfo === undefined) {
+            throw new Error("Session not found");
+        }
+        let payload: JSONObject = {
+            iss: this.appInfo.apiDomain.getAsStringDangerous() + this.appInfo.apiBasePath.getAsStringDangerous(),
+            tId: sessionInfo.tenantId,
+            rsub: sessionInfo.recipeUserId.getAsString(),
+            sessionHandle: sessionHandle,
+        };
+
+        for (const fn of this.accessTokenBuilders) {
+            payload = {
+                ...payload,
+                ...(await fn(user, scopes, sessionHandle, userContext)),
+            };
+        }
+
+        return payload;
+    }
+    async getDefaultIdTokenPayload(user: User, scopes: string[], sessionHandle: string, userContext: UserContext) {
         let payload: JSONObject = {
             iss: this.appInfo.apiDomain.getAsStringDangerous() + this.appInfo.apiBasePath.getAsStringDangerous(),
         };
@@ -242,7 +304,7 @@ export default class Recipe extends RecipeModule {
         for (const fn of this.idTokenBuilders) {
             payload = {
                 ...payload,
-                ...(await fn(user, scopes, userContext)),
+                ...(await fn(user, scopes, sessionHandle, userContext)),
             };
         }
 

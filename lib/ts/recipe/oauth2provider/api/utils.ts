@@ -12,6 +12,7 @@ import setCookieParser from "set-cookie-parser";
 export async function loginGET({
     recipeImplementation,
     loginChallenge,
+    shouldTryRefresh,
     session,
     setCookie,
     isDirectCall,
@@ -20,6 +21,7 @@ export async function loginGET({
     recipeImplementation: RecipeInterface;
     loginChallenge: string;
     session?: SessionContainerInterface;
+    shouldTryRefresh: boolean;
     setCookie?: string;
     userContext: UserContext;
     isDirectCall: boolean;
@@ -83,6 +85,32 @@ export async function loginGET({
         });
         return { redirectTo: accept.redirectTo, setCookie };
     }
+    const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
+    const websiteDomain = appInfo
+        .getOrigin({
+            request: undefined,
+            userContext: userContext,
+        })
+        .getAsStringDangerous();
+    const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
+    if (shouldTryRefresh) {
+        const websiteDomain = appInfo
+            .getOrigin({
+                request: undefined,
+                userContext: userContext,
+            })
+            .getAsStringDangerous();
+        const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
+
+        const queryParamsForTryRefreshPage = new URLSearchParams({
+            loginChallenge,
+        });
+
+        return {
+            redirectTo: websiteDomain + websiteBasePath + `/try-refresh?${queryParamsForTryRefreshPage.toString()}`,
+            setCookie,
+        };
+    }
     if (promptParam === "none") {
         const reject = await recipeImplementation.rejectLoginRequest({
             challenge: loginChallenge,
@@ -95,14 +123,6 @@ export async function loginGET({
         });
         return { redirectTo: reject.redirectTo, setCookie };
     }
-    const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-    const websiteDomain = appInfo
-        .getOrigin({
-            request: undefined,
-            userContext: userContext,
-        })
-        .getAsStringDangerous();
-    const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
 
     const queryParamsForAuthPage = new URLSearchParams({
         loginChallenge,
@@ -179,12 +199,14 @@ export async function handleInternalRedirects({
     response,
     recipeImplementation,
     session,
+    shouldTryRefresh,
     cookie = "",
     userContext,
 }: {
     response: { redirectTo: string; setCookie: string | undefined };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
+    shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
 }): Promise<{ redirectTo: string; setCookie: string | undefined }> {
@@ -213,6 +235,7 @@ export async function handleInternalRedirects({
                 recipeImplementation,
                 loginChallenge,
                 session,
+                shouldTryRefresh,
                 setCookie: response.setCookie,
                 isDirectCall: false,
                 userContext,

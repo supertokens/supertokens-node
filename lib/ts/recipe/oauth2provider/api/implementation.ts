@@ -18,11 +18,12 @@ import { handleInternalRedirects, loginGET } from "./utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        loginGET: async ({ loginChallenge, options, session, userContext }) => {
+        loginGET: async ({ loginChallenge, options, session, shouldTryRefresh, userContext }) => {
             const response = await loginGET({
                 recipeImplementation: options.recipeImplementation,
                 loginChallenge,
                 session,
+                shouldTryRefresh,
                 isDirectCall: true,
                 userContext,
             });
@@ -31,11 +32,12 @@ export default function getAPIImplementation(): APIInterface {
                 cookie: options.req.getHeaderValue("cookie"),
                 recipeImplementation: options.recipeImplementation,
                 session,
+                shouldTryRefresh,
                 userContext,
             });
         },
 
-        authGET: async ({ options, params, cookie, session, userContext }) => {
+        authGET: async ({ options, params, cookie, session, shouldTryRefresh, userContext }) => {
             const response = await options.recipeImplementation.authorization({
                 params,
                 cookies: cookie,
@@ -48,6 +50,7 @@ export default function getAPIImplementation(): APIInterface {
                 recipeImplementation: options.recipeImplementation,
                 cookie,
                 session,
+                shouldTryRefresh,
                 userContext,
             });
         },
@@ -67,6 +70,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 info: {
+                    clientId: client.clientId,
                     clientName: client.clientName,
                     tosUri: client.tosUri,
                     policyUri: client.policyUri,
