@@ -6,6 +6,7 @@ import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, JSONObject, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import {
     APIInterface,
+    PayloadBuilderFunction,
     RecipeInterface,
     TypeInput,
     TypeNormalisedInput,
@@ -16,6 +17,7 @@ import { User } from "../../user";
 export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     private static instance;
+    private accessTokenBuilders;
     private idTokenBuilders;
     private userInfoBuilders;
     config: TypeNormalisedInput;
@@ -28,6 +30,9 @@ export default class Recipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     addUserInfoBuilderFromOtherRecipe: (userInfoBuilderFn: UserInfoBuilderFunction) => void;
+    addAccessTokenBuilderFromOtherRecipe: (accessTokenBuilders: PayloadBuilderFunction) => void;
+    addIdTokenBuilderFromOtherRecipe: (idTokenBuilder: PayloadBuilderFunction) => void;
+    saveTokensForHook: (sessionHandle: string, idToken: JSONObject, accessToken: JSONObject) => void;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
         id: string,
@@ -41,7 +46,18 @@ export default class Recipe extends RecipeModule {
     handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    getDefaultIdTokenPayload(user: User, scopes: string[], userContext: UserContext): Promise<JSONObject>;
+    getDefaultAccessTokenPayload(
+        user: User,
+        scopes: string[],
+        sessionHandle: string,
+        userContext: UserContext
+    ): Promise<JSONObject>;
+    getDefaultIdTokenPayload(
+        user: User,
+        scopes: string[],
+        sessionHandle: string,
+        userContext: UserContext
+    ): Promise<JSONObject>;
     getDefaultUserInfoPayload(
         user: User,
         accessTokenPayload: JSONObject,

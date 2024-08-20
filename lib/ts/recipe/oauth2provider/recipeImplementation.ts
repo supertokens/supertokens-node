@@ -16,7 +16,7 @@
 import * as jose from "jose";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier, hydraPubDomain } from "../../querier";
-import { NormalisedAppinfo } from "../../types";
+import { JSONObject, NormalisedAppinfo } from "../../types";
 import {
     RecipeInterface,
     TypeNormalisedInput,
@@ -29,7 +29,6 @@ import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
-import { JSONObject } from "@loopback/core";
 import { getSessionInformation } from "../session";
 
 // TODO: Remove this core changes are done
@@ -43,8 +42,10 @@ export default function getRecipeInterface(
     querier: Querier,
     _config: TypeNormalisedInput,
     appInfo: NormalisedAppinfo,
+    getDefaultAccessTokenPayload: PayloadBuilderFunction,
     getDefaultIdTokenPayload: PayloadBuilderFunction,
-    getDefaultUserInfoPayload: UserInfoBuilderFunction
+    getDefaultUserInfoPayload: UserInfoBuilderFunction,
+    saveTokensForHook: (sessionHandle: string, idToken: JSONObject, accessToken: JSONObject) => void
 ): RecipeInterface {
     return {
         getLoginRequest: async function (this: RecipeInterface, input): Promise<LoginRequest> {
@@ -209,18 +210,17 @@ export default function getRecipeInterface(
                 if (!user) {
                     throw new Error("Should not happen");
                 }
-                const idToken = this.buildIdTokenPayload({
+                const idToken = await this.buildIdTokenPayload({
                     user,
                     client: consentRequest.client!,
-                    session: input.session,
+                    sessionHandle: input.session.getHandle(),
                     scopes: consentRequest.requestedScope || [],
                     userContext: input.userContext,
                 });
-
                 const accessTokenPayload = await this.buildAccessTokenPayload({
                     user,
                     client: consentRequest.client!,
-                    session: input.session,
+                    sessionHandle: input.session.getHandle(),
                     scopes: consentRequest.requestedScope || [],
                     userContext: input.userContext,
                 });
@@ -257,6 +257,56 @@ export default function getRecipeInterface(
                 body[key] = input.body[key];
             }
 
+            if (input.body.grant_type === "refresh_token") {
+                const scopes = input.body.scope?.split(" ") ?? [];
+                const tokenInfo = await this.introspectToken({
+                    token: input.body.refresh_token!,
+                    scopes,
+                    userContext: input.userContext,
+                });
+
+                if (tokenInfo.active === true) {
+                    const sessionHandle = (tokenInfo.ext as any).sessionHandle as string;
+
+                    const clientInfo = await this.getOAuth2Client({
+                        clientId: tokenInfo.client_id as string,
+                        userContext: input.userContext,
+                    });
+                    if (clientInfo.status === "ERROR") {
+                        return {
+                            statusCode: 400,
+                            error: clientInfo.error,
+                            errorDescription: clientInfo.errorHint,
+                        };
+                    }
+                    const client = clientInfo.client;
+                    const user = await getUser(tokenInfo.sub as string);
+                    if (!user) {
+                        throw new Error("User not found");
+                    }
+                    const idToken = await this.buildIdTokenPayload({
+                        user,
+                        client,
+                        sessionHandle: sessionHandle,
+                        scopes,
+                        userContext: input.userContext,
+                    });
+                    const accessTokenPayload = await this.buildAccessTokenPayload({
+                        user,
+                        client,
+                        sessionHandle: sessionHandle,
+                        scopes,
+                        userContext: input.userContext,
+                    });
+                    body["session"] = {
+                        id_token: idToken,
+                        access_token: accessTokenPayload,
+                    };
+
+                    saveTokensForHook(sessionHandle, idToken, accessTokenPayload);
+                }
+            }
+
             if (input.authorizationHeader) {
                 body["authorizationHeader"] = input.authorizationHeader;
             }
@@ -277,7 +327,7 @@ export default function getRecipeInterface(
             return res.data;
         },
 
-        getOAuth2Clients: async function (input, userContext) {
+        getOAuth2Clients: async function (input) {
             let response = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
                 {
@@ -285,7 +335,7 @@ export default function getRecipeInterface(
                     page_token: input.paginationToken,
                 },
                 {},
-                userContext
+                input.userContext
             );
 
             if (response.body.status === "OK") {
@@ -317,12 +367,12 @@ export default function getRecipeInterface(
                 };
             }
         },
-        getOAuth2Client: async function (input, userContext) {
+        getOAuth2Client: async function (input) {
             let response = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
                 {},
                 {},
-                userContext
+                input.userContext
             );
 
             if (response.body.status === "OK") {
@@ -338,7 +388,7 @@ export default function getRecipeInterface(
                 };
             }
         },
-        createOAuth2Client: async function (input, userContext) {
+        createOAuth2Client: async function (input) {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
                 {
@@ -348,7 +398,7 @@ export default function getRecipeInterface(
                     skip_consent: true,
                     subject_type: "public",
                 },
-                userContext
+                input.userContext
             );
 
             if (response.status === "OK") {
@@ -364,7 +414,7 @@ export default function getRecipeInterface(
                 };
             }
         },
-        updateOAuth2Client: async function (input, userContext) {
+        updateOAuth2Client: async function (input) {
             // We convert the input into an array of "replace" operations
             const requestBody = Object.entries(input).reduce<
                 Array<{ from: string; op: "replace"; path: string; value: any }>
@@ -381,7 +431,7 @@ export default function getRecipeInterface(
             let response = await querier.sendPatchRequest(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
                 requestBody,
-                userContext
+                input.userContext
             );
 
             if (response.status === "OK") {
@@ -397,12 +447,12 @@ export default function getRecipeInterface(
                 };
             }
         },
-        deleteOAuth2Client: async function (input, userContext) {
+        deleteOAuth2Client: async function (input) {
             let response = await querier.sendDeleteRequest(
                 new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
                 undefined,
                 undefined,
-                userContext
+                input.userContext
             );
 
             if (response.status === "OK") {
@@ -416,21 +466,10 @@ export default function getRecipeInterface(
             }
         },
         buildAccessTokenPayload: async function (input) {
-            const stAccessTokenPayload = input.session.getAccessTokenPayload(input.userContext);
-            const sessionInfo = await getSessionInformation(stAccessTokenPayload.sessionHandle);
-            if (sessionInfo === undefined) {
-                throw new Error("Session not found");
-            }
-            return {
-                tId: stAccessTokenPayload.tId,
-                rsub: stAccessTokenPayload.rsub,
-                sessionHandle: stAccessTokenPayload.sessionHandle,
-                // auth_time: sessionInfo?.timeCreated,
-                iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
-            };
+            return getDefaultAccessTokenPayload(input.user, input.scopes, input.sessionHandle, input.userContext);
         },
         buildIdTokenPayload: async function (input) {
-            return getDefaultIdTokenPayload(input.user, input.scopes, input.userContext);
+            return getDefaultIdTokenPayload(input.user, input.scopes, input.sessionHandle, input.userContext);
         },
         buildUserInfo: async function ({ user, accessTokenPayload, scopes, tenantId, userContext }) {
             return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, tenantId, userContext);

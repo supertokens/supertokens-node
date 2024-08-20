@@ -5,6 +5,7 @@ import { RecipeInterface } from "../types";
 export declare function loginGET({
     recipeImplementation,
     loginChallenge,
+    shouldTryRefresh,
     session,
     setCookie,
     isDirectCall,
@@ -13,6 +14,7 @@ export declare function loginGET({
     recipeImplementation: RecipeInterface;
     loginChallenge: string;
     session?: SessionContainerInterface;
+    shouldTryRefresh: boolean;
     setCookie?: string;
     userContext: UserContext;
     isDirectCall: boolean;
@@ -50,6 +52,7 @@ export declare function handleInternalRedirects({
     response,
     recipeImplementation,
     session,
+    shouldTryRefresh,
     cookie,
     userContext,
 }: {
@@ -59,6 +62,7 @@ export declare function handleInternalRedirects({
     };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
+    shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
 }): Promise<{

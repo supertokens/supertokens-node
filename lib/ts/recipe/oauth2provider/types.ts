@@ -148,6 +148,7 @@ export type TokenInfo = {
 };
 
 export type LoginInfo = {
+    clientId: string;
     // The name of the client.
     clientName: string;
     // The URI of the client's terms of service.
@@ -259,10 +260,10 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ redirectTo: string }>;
 
-    getOAuth2Client(
-        input: Pick<OAuth2ClientOptions, "clientId">,
-        userContext: UserContext
-    ): Promise<
+    getOAuth2Client(input: {
+        clientId: string;
+        userContext: UserContext;
+    }): Promise<
         | {
               status: "OK";
               client: OAuth2Client;
@@ -275,8 +276,9 @@ export type RecipeInterface = {
           }
     >;
     getOAuth2Clients(
-        input: GetOAuth2ClientsInput,
-        userContext: UserContext
+        input: GetOAuth2ClientsInput & {
+            userContext: UserContext;
+        }
     ): Promise<
         | {
               status: "OK";
@@ -291,8 +293,9 @@ export type RecipeInterface = {
           }
     >;
     createOAuth2Client(
-        input: CreateOAuth2ClientInput,
-        userContext: UserContext
+        input: CreateOAuth2ClientInput & {
+            userContext: UserContext;
+        }
     ): Promise<
         | {
               status: "OK";
@@ -306,8 +309,9 @@ export type RecipeInterface = {
           }
     >;
     updateOAuth2Client(
-        input: UpdateOAuth2ClientInput,
-        userContext: UserContext
+        input: UpdateOAuth2ClientInput & {
+            userContext: UserContext;
+        }
     ): Promise<
         | {
               status: "OK";
@@ -321,8 +325,9 @@ export type RecipeInterface = {
           }
     >;
     deleteOAuth2Client(
-        input: DeleteOAuth2ClientInput,
-        userContext: UserContext
+        input: DeleteOAuth2ClientInput & {
+            userContext: UserContext;
+        }
     ): Promise<
         | {
               status: "OK";
@@ -349,14 +354,14 @@ export type RecipeInterface = {
     buildAccessTokenPayload(input: {
         user: User;
         client: OAuth2Client;
-        session: SessionContainerInterface;
+        sessionHandle: string;
         scopes: string[];
         userContext: UserContext;
     }): Promise<JSONObject>;
     buildIdTokenPayload(input: {
         user: User;
         client: OAuth2Client;
-        session: SessionContainerInterface;
+        sessionHandle: string;
         scopes: string[];
         userContext: UserContext;
     }): Promise<JSONObject>;
@@ -394,6 +399,7 @@ export type APIInterface = {
               loginChallenge: string;
               options: APIOptions;
               session?: SessionContainerInterface;
+              shouldTryRefresh: boolean;
               userContext: UserContext;
           }) => Promise<{ redirectTo: string; setCookie?: string } | GeneralErrorResponse>);
 
@@ -403,6 +409,7 @@ export type APIInterface = {
               params: any;
               cookie: string | undefined;
               session: SessionContainerInterface | undefined;
+              shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2 | GeneralErrorResponse>);
@@ -558,7 +565,12 @@ export type DeleteOAuth2ClientInput = {
     clientId: string;
 };
 
-export type PayloadBuilderFunction = (user: User, scopes: string[], userContext: UserContext) => Promise<JSONObject>;
+export type PayloadBuilderFunction = (
+    user: User,
+    scopes: string[],
+    sessionHandle: string,
+    userContext: UserContext
+) => Promise<JSONObject>;
 export type UserInfoBuilderFunction = (
     user: User,
     accessTokenPayload: JSONObject,

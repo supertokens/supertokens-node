@@ -29,34 +29,34 @@ export default class Wrapper {
     static init = Recipe.init;
 
     static async getOAuth2Client(clientId: string, userContext?: Record<string, any>) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Client(
-            { clientId },
-            getUserContext(userContext)
-        );
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Client({
+            clientId,
+            userContext: getUserContext(userContext),
+        });
     }
     static async getOAuth2Clients(input: GetOAuth2ClientsInput, userContext?: Record<string, any>) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Clients(
-            input,
-            getUserContext(userContext)
-        );
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getOAuth2Clients({
+            ...input,
+            userContext: getUserContext(userContext),
+        });
     }
     static async createOAuth2Client(input: CreateOAuth2ClientInput, userContext?: Record<string, any>) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createOAuth2Client(
-            input,
-            getUserContext(userContext)
-        );
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createOAuth2Client({
+            ...input,
+            userContext: getUserContext(userContext),
+        });
     }
     static async updateOAuth2Client(input: UpdateOAuth2ClientInput, userContext?: Record<string, any>) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateOAuth2Client(
-            input,
-            getUserContext(userContext)
-        );
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateOAuth2Client({
+            ...input,
+            userContext: getUserContext(userContext),
+        });
     }
     static async deleteOAuth2Client(input: DeleteOAuth2ClientInput, userContext?: Record<string, any>) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteOAuth2Client(
-            input,
-            getUserContext(userContext)
-        );
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteOAuth2Client({
+            ...input,
+            userContext: getUserContext(userContext),
+        });
     }
 
     static validateOAuth2AccessToken(
@@ -107,7 +107,7 @@ export default class Wrapper {
         const normalisedUserContext = getUserContext(userContext);
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
 
-        const res = await recipeInterfaceImpl.getOAuth2Client({ clientId }, normalisedUserContext);
+        const res = await recipeInterfaceImpl.getOAuth2Client({ clientId, userContext: normalisedUserContext });
 
         if (res.status !== "OK") {
             throw new Error(`Failed to get OAuth2 client with id ${clientId}: ${res.error}`);

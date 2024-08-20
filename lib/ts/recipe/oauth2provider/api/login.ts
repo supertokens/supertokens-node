@@ -19,6 +19,7 @@ import { APIInterface, APIOptions } from "..";
 import Session from "../../session";
 import { UserContext } from "../../../types";
 import SuperTokensError from "../../../error";
+import SessionError from "../../../recipe/session/error";
 
 export default async function login(
     apiImplementation: APIInterface,
@@ -29,13 +30,19 @@ export default async function login(
         return false;
     }
 
-    let session;
+    let session, shouldTryRefresh;
     try {
         session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
-    } catch {
+        shouldTryRefresh = false;
+    } catch (error) {
         // We can handle this as if the session is not present, because then we redirect to the frontend,
         // which should handle the validation error
         session = undefined;
+        if (SuperTokensError.isErrorFromSuperTokens(error) && error.type === SessionError.TRY_REFRESH_TOKEN) {
+            shouldTryRefresh = true;
+        } else {
+            shouldTryRefresh = false;
+        }
     }
 
     const loginChallenge =
@@ -50,6 +57,7 @@ export default async function login(
         options,
         loginChallenge,
         session,
+        shouldTryRefresh,
         userContext,
     });
     if ("status" in response) {
