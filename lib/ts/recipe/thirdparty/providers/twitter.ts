@@ -20,6 +20,7 @@ import NewProvider, {
     isUsingDevelopmentClientId,
 } from "./custom";
 import { doPostRequest } from "./utils";
+import { Buffer } from "buffer";
 
 export default function Twitter(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {

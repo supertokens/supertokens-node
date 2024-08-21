@@ -19,6 +19,7 @@ import { UserContext } from "../../types";
 import { availableTokenTransferMethods } from "./constants";
 import SessionError from "./error";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
+import { Buffer } from "buffer";
 
 const authorizationHeaderKey = "authorization";
 const accessTokenCookieKey = "sAccessToken";

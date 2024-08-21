@@ -25,6 +25,7 @@ import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
 import brotli from "brotli-wasm";
+import { Buffer } from "buffer";
 
 module.exports = inflate;
 

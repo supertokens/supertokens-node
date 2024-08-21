@@ -15,6 +15,7 @@
 import { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
 import { doGetRequest, doPostRequest } from "./utils";
+import { Buffer } from "buffer";
 
 function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoResponse: {
     fromIdTokenPayload?: any;
