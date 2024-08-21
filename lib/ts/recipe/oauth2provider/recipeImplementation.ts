@@ -184,17 +184,20 @@ export default function getRecipeInterface(
                 }
             }
 
-            const resp = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
-                input.params,
+            const resp = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth/auth`),
                 {
-                    // TODO: if session is not set also clear the oauth2 cookie
-                    Cookie: `${input.cookies}`,
+                    ...input.params,
+                    cookie: `${input.cookies}`,
                 },
+                // {
+                //     // TODO: if session is not set also clear the oauth2 cookie
+                //     Cookie: `${input.cookies}`,
+                // },
                 input.userContext
             );
 
-            const redirectTo = getUpdatedRedirectTo(appInfo, resp.headers.get("Location")!);
+            const redirectTo = resp.redirectTo;
             if (redirectTo === undefined) {
                 throw new Error(resp.body);
             }
@@ -245,14 +248,14 @@ export default function getRecipeInterface(
 
                 return {
                     redirectTo: consentRes.redirectTo,
-                    setCookie: resp.headers.get("set-cookie") ?? undefined,
+                    setCookie: resp.cookies ?? undefined,
                 };
             }
-            return { redirectTo, setCookie: resp.headers.get("set-cookie") ?? undefined };
+            return { redirectTo, setCookie: resp.cookies ?? undefined };
         },
 
         tokenExchange: async function (this: RecipeInterface, input) {
-            const body: any = { $isFormData: true }; // TODO: we ideally want to avoid using formdata, the core can do the translation
+            const body: any = {};
             for (const key in input.body) {
                 body[key] = input.body[key];
             }
@@ -312,7 +315,7 @@ export default function getRecipeInterface(
             }
 
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth2/pub/token`),
+                new NormalisedURLPath(`/recipe/oauth/token`),
                 body,
                 input.userContext
             );
@@ -324,7 +327,7 @@ export default function getRecipeInterface(
                     errorDescription: res.data.error_description,
                 };
             }
-            return res.data;
+            return res;
         },
 
         getOAuth2Clients: async function (input) {
