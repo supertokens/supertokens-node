@@ -52,8 +52,10 @@ export class OAuth2Client {
     /**
      * Array of post logout redirect URIs
      * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
+     *
+     * By default, this field is not present in the OAuth2Client. If provided, it must be a non-empty array of strings.
      */
-    postLogoutRedirectUris: string[] | null;
+    postLogoutRedirectUris?: string[];
 
     /**
      * Authorization Code Grant Access Token Lifespan
@@ -192,7 +194,7 @@ export class OAuth2Client {
         clientName,
         scope,
         redirectUris = null,
-        postLogoutRedirectUris = null,
+        postLogoutRedirectUris,
         authorizationCodeGrantAccessTokenLifespan = null,
         authorizationCodeGrantIdTokenLifespan = null,
         authorizationCodeGrantRefreshTokenLifespan = null,

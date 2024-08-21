@@ -286,6 +286,8 @@ export declare type RecipeInterface = {
     }): Promise<InstrospectTokenResponse>;
     endSession(input: {
         params: Record<string, string>;
+        session?: SessionContainerInterface;
+        shouldTryRefresh: boolean;
         userContext: UserContext;
     }): Promise<{
         redirectTo: string;
@@ -295,6 +297,12 @@ export declare type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{
         redirectTo: string;
+    }>;
+    rejectLogoutRequest(input: {
+        challenge: string;
+        userContext: UserContext;
+    }): Promise<{
+        status: "OK";
     }>;
 };
 export declare type APIInterface = {
@@ -396,6 +404,7 @@ export declare type APIInterface = {
         | ((input: {
               params: Record<string, string>;
               session?: SessionContainerInterface;
+              shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<{
@@ -406,17 +415,8 @@ export declare type APIInterface = {
         | ((input: {
               params: Record<string, string>;
               session?: SessionContainerInterface;
+              shouldTryRefresh: boolean;
               options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<{
-              redirectTo: string;
-          }>);
-    logoutGET:
-        | undefined
-        | ((input: {
-              logoutChallenge: string;
-              options: APIOptions;
-              session?: SessionContainerInterface;
               userContext: UserContext;
           }) => Promise<{
               redirectTo: string;
@@ -429,7 +429,7 @@ export declare type APIInterface = {
               session?: SessionContainerInterface;
               userContext: UserContext;
           }) => Promise<{
-              redirectTo: string;
+              frontendRedirectTo: string;
           }>);
 };
 export declare type OAuth2ClientOptions = {
@@ -440,7 +440,7 @@ export declare type OAuth2ClientOptions = {
     clientName: string;
     scope: string;
     redirectUris?: string[] | null;
-    postLogoutRedirectUris?: string[] | null;
+    postLogoutRedirectUris?: string[];
     allowedCorsOrigins?: string[];
     authorizationCodeGrantAccessTokenLifespan?: string | null;
     authorizationCodeGrantIdTokenLifespan?: string | null;

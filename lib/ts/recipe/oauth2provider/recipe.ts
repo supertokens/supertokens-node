@@ -54,7 +54,7 @@ import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import revokeTokenPOST from "./api/revokeToken";
 import introspectTokenPOST from "./api/introspectToken";
 import { endSessionGET, endSessionPOST } from "./api/endSession";
-import { logoutGET, logoutPOST } from "./api/logout";
+import { logoutPOST } from "./api/logout";
 import { getSessionInformation } from "../session";
 import { send200Response } from "../../utils";
 
@@ -207,12 +207,6 @@ export default class Recipe extends RecipeModule {
                 disabled: this.apiImpl.endSessionPOST === undefined,
             },
             {
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(LOGOUT_PATH),
-                id: LOGOUT_PATH,
-                disabled: this.apiImpl.logoutGET === undefined,
-            },
-            {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(LOGOUT_PATH),
                 id: LOGOUT_PATH,
@@ -265,9 +259,6 @@ export default class Recipe extends RecipeModule {
         }
         if (id === END_SESSION_PATH && method === "post") {
             return endSessionPOST(this.apiImpl, options, userContext);
-        }
-        if (id === LOGOUT_PATH && method === "get") {
-            return logoutGET(this.apiImpl, options, userContext);
         }
         if (id === LOGOUT_PATH && method === "post") {
             return logoutPOST(this.apiImpl, options, userContext);

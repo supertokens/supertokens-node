@@ -3,7 +3,7 @@ import { UserContext } from "../../../types";
 import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
-import { AUTH_PATH, LOGIN_PATH, LOGOUT_PATH, END_SESSION_PATH } from "../constants";
+import { AUTH_PATH, LOGIN_PATH, END_SESSION_PATH } from "../constants";
 import { RecipeInterface } from "../types";
 import setCookieParser from "set-cookie-parser";
 
@@ -146,66 +146,6 @@ export async function loginGET({
     };
 }
 
-export async function logoutGET({
-    logoutChallenge,
-    recipeImplementation,
-    session,
-    userContext,
-}: {
-    logoutChallenge: string;
-    recipeImplementation: RecipeInterface;
-    session?: SessionContainerInterface;
-    userContext: UserContext;
-}) {
-    if (session !== undefined) {
-        const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-        const websiteDomain = appInfo
-            .getOrigin({
-                request: undefined,
-                userContext: userContext,
-            })
-            .getAsStringDangerous();
-        const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
-
-        const queryParamsForLogoutPage = new URLSearchParams({
-            logoutChallenge,
-        });
-
-        return {
-            redirectTo: websiteDomain + websiteBasePath + "/oauth/logout" + `?${queryParamsForLogoutPage.toString()}`,
-        };
-    }
-
-    // Accept the logout request immediately as there is no supertokens session
-    const accept = await recipeImplementation.acceptLogoutRequest({
-        challenge: logoutChallenge,
-        userContext,
-    });
-    return { redirectTo: accept.redirectTo };
-}
-
-export async function logoutPOST({
-    logoutChallenge,
-    session,
-    recipeImplementation,
-    userContext,
-}: {
-    logoutChallenge: string;
-    recipeImplementation: RecipeInterface;
-    session?: SessionContainerInterface;
-    userContext: UserContext;
-}) {
-    if (session != undefined) {
-        await session.revokeSession(userContext);
-    }
-
-    const accept = await recipeImplementation.acceptLogoutRequest({
-        challenge: logoutChallenge,
-        userContext,
-    });
-    return { redirectTo: accept.redirectTo };
-}
-
 function getMergedCookies({ cookie = "", setCookie }: { cookie?: string; setCookie?: string }): string {
     if (!setCookie) {
         return cookie;
@@ -241,25 +181,29 @@ function mergeSetCookieHeaders(setCookie1?: string, setCookie2?: string): string
     return `${setCookie1}, ${setCookie2}`;
 }
 
-function isInternalRedirect(redirectTo: string): boolean {
+function isLoginInternalRedirect(redirectTo: string): boolean {
     const { apiDomain, apiBasePath } = SuperTokens.getInstanceOrThrowError().appInfo;
     const basePath = `${apiDomain.getAsStringDangerous()}${apiBasePath.getAsStringDangerous()}`;
     return [
         LOGIN_PATH,
         AUTH_PATH,
-        END_SESSION_PATH,
-        LOGOUT_PATH,
         LOGIN_PATH.replace("oauth", "oauth2"),
         AUTH_PATH.replace("oauth", "oauth2"),
-        END_SESSION_PATH.replace("oauth", "oauth2"),
-        LOGOUT_PATH.replace("oauth", "oauth2"),
     ].some((path) => redirectTo.startsWith(`${basePath}${path}`));
+}
+
+function isLogoutInternalRedirect(redirectTo: string): boolean {
+    const { apiDomain, apiBasePath } = SuperTokens.getInstanceOrThrowError().appInfo;
+    const basePath = `${apiDomain.getAsStringDangerous()}${apiBasePath.getAsStringDangerous()}`;
+    return [END_SESSION_PATH, END_SESSION_PATH.replace("oauth", "oauth2")].some((path) =>
+        redirectTo.startsWith(`${basePath}${path}`)
+    );
 }
 
 // In the OAuth2 flow, we do several internal redirects. These redirects don't require a frontend-to-api-server round trip.
 // If an internal redirect is identified, it's handled directly by this function.
-// Currently, we only need to handle redirects to /oauth/login and /oauth/auth endpoints.
-export async function handleInternalRedirects({
+// Currently, we only need to handle redirects to /oauth/login and /oauth/auth endpoints in the login flow.
+export async function handleLoginInternalRedirects({
     response,
     recipeImplementation,
     session,
@@ -274,7 +218,7 @@ export async function handleInternalRedirects({
     cookie?: string;
     userContext: UserContext;
 }): Promise<{ redirectTo: string; setCookie?: string }> {
-    if (!isInternalRedirect(response.redirectTo)) {
+    if (!isLoginInternalRedirect(response.redirectTo)) {
         return response;
     }
 
@@ -283,7 +227,7 @@ export async function handleInternalRedirects({
     const maxRedirects = 10;
     let redirectCount = 0;
 
-    while (redirectCount < maxRedirects && isInternalRedirect(response.redirectTo)) {
+    while (redirectCount < maxRedirects && isLoginInternalRedirect(response.redirectTo)) {
         cookie = getMergedCookies({ cookie, setCookie: response.setCookie });
 
         const queryString = response.redirectTo.split("?")[1];
@@ -321,21 +265,47 @@ export async function handleInternalRedirects({
                 redirectTo: authRes.redirectTo,
                 setCookie: mergeSetCookieHeaders(authRes.setCookie, response.setCookie),
             };
-        } else if (response.redirectTo.includes(END_SESSION_PATH)) {
+        } else {
+            throw new Error(`Unexpected internal redirect ${response.redirectTo}`);
+        }
+
+        redirectCount++;
+    }
+    return response;
+}
+
+// In the OAuth2 flow, we do several internal redirects. These redirects don't require a frontend-to-api-server round trip.
+// If an internal redirect is identified, it's handled directly by this function.
+// Currently, we only need to handle redirects to /oauth/end_session endpoint in the logout flow.
+export async function handleLogoutInternalRedirects({
+    response,
+    recipeImplementation,
+    session,
+    userContext,
+}: {
+    response: { redirectTo: string };
+    recipeImplementation: RecipeInterface;
+    session?: SessionContainerInterface;
+    userContext: UserContext;
+}): Promise<{ redirectTo: string }> {
+    if (!isLogoutInternalRedirect(response.redirectTo)) {
+        return response;
+    }
+
+    // Typically, there are no more than 2 internal redirects per API call but we are allowing upto 10.
+    // This safety net prevents infinite redirect loops in case there are more redirects than expected.
+    const maxRedirects = 10;
+    let redirectCount = 0;
+
+    while (redirectCount < maxRedirects && isLogoutInternalRedirect(response.redirectTo)) {
+        const queryString = response.redirectTo.split("?")[1];
+        const params = new URLSearchParams(queryString);
+
+        if (response.redirectTo.includes(END_SESSION_PATH)) {
             response = await recipeImplementation.endSession({
                 params: Object.fromEntries(params.entries()),
-                userContext,
-            });
-        } else if (response.redirectTo.includes(LOGOUT_PATH)) {
-            const logoutChallenge = params.get("logout_challenge") ?? params.get("logoutChallenge");
-            if (!logoutChallenge) {
-                throw new Error(`Expected logoutChallenge in ${response.redirectTo}`);
-            }
-
-            response = await logoutGET({
-                logoutChallenge,
-                recipeImplementation,
                 session,
+                shouldTryRefresh: false,
                 userContext,
             });
         } else {

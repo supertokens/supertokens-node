@@ -388,8 +388,14 @@ export type RecipeInterface = {
         scopes?: string[];
         userContext: UserContext;
     }): Promise<InstrospectTokenResponse>;
-    endSession(input: { params: Record<string, string>; userContext: UserContext }): Promise<{ redirectTo: string }>;
+    endSession(input: {
+        params: Record<string, string>;
+        session?: SessionContainerInterface;
+        shouldTryRefresh: boolean;
+        userContext: UserContext;
+    }): Promise<{ redirectTo: string }>;
     acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
+    rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ status: "OK" }>;
 };
 
 export type APIInterface = {
@@ -460,6 +466,7 @@ export type APIInterface = {
         | ((input: {
               params: Record<string, string>;
               session?: SessionContainerInterface;
+              shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<{ redirectTo: string }>);
@@ -468,15 +475,8 @@ export type APIInterface = {
         | ((input: {
               params: Record<string, string>;
               session?: SessionContainerInterface;
+              shouldTryRefresh: boolean;
               options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<{ redirectTo: string }>);
-    logoutGET:
-        | undefined
-        | ((input: {
-              logoutChallenge: string;
-              options: APIOptions;
-              session?: SessionContainerInterface;
               userContext: UserContext;
           }) => Promise<{ redirectTo: string }>);
     logoutPOST:
@@ -486,7 +486,7 @@ export type APIInterface = {
               options: APIOptions;
               session?: SessionContainerInterface;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string }>);
+          }) => Promise<{ frontendRedirectTo: string }>);
 };
 
 export type OAuth2ClientOptions = {
@@ -499,7 +499,7 @@ export type OAuth2ClientOptions = {
 
     scope: string;
     redirectUris?: string[] | null;
-    postLogoutRedirectUris?: string[] | null;
+    postLogoutRedirectUris?: string[];
     allowedCorsOrigins?: string[];
 
     authorizationCodeGrantAccessTokenLifespan?: string | null;

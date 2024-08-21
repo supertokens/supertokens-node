@@ -603,14 +603,34 @@ export default function getRecipeInterface(
                 throw new Error(resp.body);
             }
 
+            const websiteDomain = appInfo
+                .getOrigin({ request: undefined, userContext: input.userContext })
+                .getAsStringDangerous();
+            const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
+
+            const redirectToURL = new URL(redirectTo);
+            const logoutChallenge = redirectToURL.searchParams.get("logout_challenge");
+
+            if (logoutChallenge !== null) {
+                // Redirect to the frontend to ask for logout confirmation if there is a valid or expired supertokens session
+                if (input.session !== undefined || input.shouldTryRefresh) {
+                    return {
+                        redirectTo:
+                            websiteDomain + websiteBasePath + "/oauth/logout" + `?logoutChallenge=${logoutChallenge}`,
+                    };
+                } else {
+                    // Accept the logout challenge immediately as there is no supertokens session
+                    return await this.acceptLogoutRequest({
+                        challenge: logoutChallenge,
+                        userContext: input.userContext,
+                    });
+                }
+            }
+
             // TODO:
             // NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.
             // In this case, we redirect the user to the /auth page.
             if (redirectTo.endsWith("/oauth/fallbacks/logout/callback")) {
-                const websiteDomain = appInfo
-                    .getOrigin({ request: undefined, userContext: input.userContext })
-                    .getAsStringDangerous();
-                const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
                 return { redirectTo: `${websiteDomain}${websiteBasePath}` };
             }
 
@@ -630,6 +650,20 @@ export default function getRecipeInterface(
                     // NOTE: This renaming only applies to this endpoint, hence not part of the generic "getUpdatedRedirectTo" function.
                     .replace("/sessions/logout", "/end_session"),
             };
+        },
+        rejectLogoutRequest: async function (this: RecipeInterface, input) {
+            const resp = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/logout/reject`),
+                {},
+                { logout_challenge: input.challenge },
+                input.userContext
+            );
+
+            if (resp.status != "OK") {
+                throw new Error(resp.data.error);
+            }
+
+            return { status: "OK" };
         },
     };
 }

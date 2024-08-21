@@ -19,47 +19,6 @@ import Session from "../../session";
 import { UserContext } from "../../../types";
 import SuperTokensError from "../../../error";
 
-export async function logoutGET(
-    apiImplementation: APIInterface,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<boolean> {
-    if (apiImplementation.logoutGET === undefined) {
-        return false;
-    }
-
-    let session;
-    try {
-        session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
-    } catch {
-        session = undefined;
-    }
-
-    const logoutChallenge =
-        options.req.getKeyValueFromQuery("logout_challenge") ?? options.req.getKeyValueFromQuery("logoutChallenge");
-
-    if (logoutChallenge === undefined) {
-        throw new SuperTokensError({
-            type: SuperTokensError.BAD_INPUT_ERROR,
-            message: "Missing input param: logoutChallenge",
-        });
-    }
-
-    let response = await apiImplementation.logoutGET({
-        options,
-        logoutChallenge,
-        session,
-        userContext,
-    });
-
-    if ("redirectTo" in response) {
-        options.res.original.redirect(response.redirectTo);
-    } else {
-        send200Response(options.res, response);
-    }
-    return true;
-}
-
 export async function logoutPOST(
     apiImplementation: APIInterface,
     options: APIOptions,

@@ -14,7 +14,7 @@
  */
 
 import { APIInterface } from "../types";
-import { handleInternalRedirects, loginGET, logoutGET, logoutPOST } from "./utils";
+import { handleLoginInternalRedirects, handleLogoutInternalRedirects, loginGET } from "./utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -27,7 +27,7 @@ export default function getAPIImplementation(): APIInterface {
                 isDirectCall: true,
                 userContext,
             });
-            return handleInternalRedirects({
+            return handleLoginInternalRedirects({
                 response,
                 cookie: options.req.getHeaderValue("cookie"),
                 recipeImplementation: options.recipeImplementation,
@@ -45,7 +45,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            return handleInternalRedirects({
+            return handleLoginInternalRedirects({
                 response,
                 recipeImplementation: options.recipeImplementation,
                 cookie,
@@ -114,63 +114,53 @@ export default function getAPIImplementation(): APIInterface {
                 userContext: input.userContext,
             });
         },
-        endSessionGET: async ({ options, params, session, userContext }) => {
+        endSessionGET: async ({ options, params, session, shouldTryRefresh, userContext }) => {
             const response = await options.recipeImplementation.endSession({
                 params,
+                session,
+                shouldTryRefresh,
                 userContext,
             });
 
-            return handleInternalRedirects({
+            return handleLogoutInternalRedirects({
                 response,
                 session,
                 recipeImplementation: options.recipeImplementation,
                 userContext,
-                shouldTryRefresh: true,
             });
         },
-        endSessionPOST: async ({ options, params, session, userContext }) => {
+        endSessionPOST: async ({ options, params, session, shouldTryRefresh, userContext }) => {
             const response = await options.recipeImplementation.endSession({
                 params,
+                session,
+                shouldTryRefresh,
                 userContext,
             });
 
-            return handleInternalRedirects({
+            return handleLogoutInternalRedirects({
                 response,
                 session,
                 recipeImplementation: options.recipeImplementation,
                 userContext,
-                shouldTryRefresh: false,
-            });
-        },
-        logoutGET: async ({ logoutChallenge, options, session, userContext }) => {
-            const response = await logoutGET({
-                logoutChallenge,
-                recipeImplementation: options.recipeImplementation,
-                session,
-                userContext,
-            });
-
-            return handleInternalRedirects({
-                response,
-                recipeImplementation: options.recipeImplementation,
-                userContext,
-                shouldTryRefresh: false,
             });
         },
         logoutPOST: async ({ logoutChallenge, options, session, userContext }) => {
-            const response = await logoutPOST({
-                logoutChallenge,
-                recipeImplementation: options.recipeImplementation,
-                session,
+            if (session != undefined) {
+                await session.revokeSession(userContext);
+            }
+
+            const response = await options.recipeImplementation.acceptLogoutRequest({
+                challenge: logoutChallenge,
                 userContext,
             });
 
-            return handleInternalRedirects({
+            const { redirectTo } = await handleLogoutInternalRedirects({
                 response,
                 recipeImplementation: options.recipeImplementation,
                 userContext,
-                shouldTryRefresh: false,
             });
+
+            return { frontendRedirectTo: redirectTo };
         },
     };
 }

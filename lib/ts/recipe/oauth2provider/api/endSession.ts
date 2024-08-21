@@ -17,6 +17,8 @@ import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import Session from "../../session";
+import SuperTokensError from "../../../error";
+import SessionError from "../../../recipe/session/error";
 
 export async function endSessionGET(
     apiImplementation: APIInterface,
@@ -61,19 +63,28 @@ async function endSessionCommon(
         return false;
     }
 
-    // TODO: Validate client_id if passed
+    // TODO (core): If client_id is passed, validate if it the same one that was used to issue the id_token
 
-    let session;
+    let session, shouldTryRefresh;
     try {
         session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
-    } catch {
+        shouldTryRefresh = false;
+    } catch (error) {
+        // We can handle this as if the session is not present, because then we redirect to the frontend,
+        // which should handle the validation error
         session = undefined;
+        if (SuperTokensError.isErrorFromSuperTokens(error) && error.type === SessionError.TRY_REFRESH_TOKEN) {
+            shouldTryRefresh = true;
+        } else {
+            shouldTryRefresh = false;
+        }
     }
 
     let response = await apiImplementation({
         options,
         params,
         session,
+        shouldTryRefresh,
         userContext,
     });
 
