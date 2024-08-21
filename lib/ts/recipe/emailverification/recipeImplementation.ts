@@ -78,7 +78,9 @@ export default function getRecipeInterface(
                         if (emailInfo.status === "OK" && emailInfo.email === response.email) {
                             // we do this here to prevent cyclic dependencies.
                             // TODO: Fix this.
-                            let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
+                            let AccountLinking = (
+                                await import("../accountlinking/recipe")
+                            ).default.getInstance() as AccountLinkingRecipe;
                             await AccountLinking.tryLinkingByAccountInfoOrCreatePrimaryUser({
                                 tenantId,
                                 inputUser: updatedUser,

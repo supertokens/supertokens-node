@@ -50,6 +50,8 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
+        this.recipeModules = []; // initialize with empty array
+
         if (config.debug === true) {
             enableDebugLogs();
         }
@@ -100,6 +102,12 @@ export default class SuperTokens {
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
+        this.setupRecipeModules(config).then((recipeModules) => (this.recipeModules = recipeModules));
+
+        this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
+    }
+
+    async setupRecipeModules(config: TypeInput): Promise<RecipeModule[]> {
         let multitenancyFound = false;
         let totpFound = false;
         let userMetadataFound = false;
@@ -108,12 +116,12 @@ export default class SuperTokens {
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
         // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
-        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
-        let UserMetadataRecipe = require("./recipe/usermetadata/recipe").default;
-        let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
-        let TotpRecipe = require("./recipe/totp/recipe").default;
+        let MultitenancyRecipe = (await import("./recipe/multitenancy/recipe")).default;
+        let UserMetadataRecipe = (await import("./recipe/usermetadata/recipe")).default;
+        let MultiFactorAuthRecipe = (await import("./recipe/multifactorauth/recipe")).default;
+        let TotpRecipe = (await import("./recipe/totp/recipe")).default;
 
-        this.recipeModules = config.recipeList.map((func) => {
+        const recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
@@ -128,7 +136,7 @@ export default class SuperTokens {
         });
 
         if (!multitenancyFound) {
-            this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
         }
         if (totpFound && !multiFactorAuthFound) {
             throw new Error("Please initialize the MultiFactorAuth recipe to use TOTP.");
@@ -136,14 +144,15 @@ export default class SuperTokens {
         if (!userMetadataFound) {
             // Initializing the user metadata recipe shouldn't cause any issues/side effects and it doesn't expose any APIs,
             // so we can just always initialize it
-            this.recipeModules.push(UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv));
+            recipeModules.push(UserMetadataRecipe.init()(this.appInfo, this.isInServerlessEnv));
         }
+
         // While for many usecases account linking recipe also has to be initialized for MFA to function well,
         // the app doesn't have to do that if they only use TOTP (which shouldn't be that uncommon)
         // To let those cases function without initializing account linking we do not check it here, but when
         // the authentication endpoints are called.
 
-        this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
+        return recipeModules;
     }
 
     static init(config: TypeInput) {

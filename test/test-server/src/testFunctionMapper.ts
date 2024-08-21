@@ -395,14 +395,18 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
         return (e) => ({
             ...e,
             createNewSession: async (s) => {
-                const { PrimitiveClaim } = require("../../../lib/build/recipe/session/claims");
+                const claimsModule = await import("../../../lib/build/recipe/session/claims");
+
+                const PrimitiveClaim = claimsModule.PrimitiveClaim;
+
                 let c = new PrimitiveClaim({
                     key: "some-key",
                     fetchValue: async (e, s) => {
                         userIdInCallback = e;
                         recipeUserIdInCallback = s;
                     },
-                });
+                } as any);
+
                 s.accessTokenPayload = { ...s.accessTokenPayload, ...c.build(s.userId, s.recipeUserId) };
                 return e.createNewSession(s);
             },

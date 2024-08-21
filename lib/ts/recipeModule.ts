@@ -60,7 +60,8 @@ export default abstract class RecipeModule {
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
         // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
-        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
+        let MultitenancyRecipe = (await import("./recipe/multitenancy/recipe")).default;
+
         const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
 
         for (let i = 0; i < apisHandled.length; i++) {
