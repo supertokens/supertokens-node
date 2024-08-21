@@ -27,8 +27,6 @@ import pako from "pako";
 import brotli from "brotli-wasm";
 import { Buffer } from "buffer";
 
-module.exports = inflate;
-
 export async function inflate(stream: any, options?: any): Promise<Readable> {
     if (!stream) {
         throw new TypeError("argument stream is required");
