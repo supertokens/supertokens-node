@@ -23,7 +23,40 @@ import type { HTTPMethod } from "../types";
 import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
-import inflate from "inflation";
+import pako from "pako";
+import brotli from "brotli-wasm";
+
+module.exports = inflate;
+
+export async function inflate(stream: any, options?: any): Promise<Readable> {
+    if (!stream) {
+        throw new TypeError("argument stream is required");
+    }
+
+    options = options || {};
+
+    var encoding = options.encoding || (stream.headers && stream.headers["content-encoding"]) || "identity";
+
+    var decompressedData;
+    switch (encoding) {
+        case "gzip":
+            decompressedData = pako.inflate(await stream.arrayBuffer());
+            break;
+        case "deflate":
+            decompressedData = pako.inflateRaw(await stream.arrayBuffer());
+            break;
+        case "br":
+            decompressedData = (await brotli).decompress(new Uint8Array(await stream.arrayBuffer()));
+            break;
+        case "identity":
+            decompressedData = await stream.arrayBuffer();
+            break;
+        default:
+            throw new Error("Unsupported encoding: " + encoding);
+    }
+
+    return stream.pipe(decompressedData);
+}
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
     if (headers === undefined || headers === null) {
@@ -123,7 +156,8 @@ export async function parseJSONBodyFromRequest(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const buffer = await getBody(inflate(req));
+    const inflatedReq = await inflate(req);
+    const buffer = await getBody(inflatedReq);
     const str = buffer.toString(encoding as BufferEncoding);
 
     if (str.length === 0) {
@@ -137,7 +171,8 @@ export async function parseURLEncodedFormData(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const buffer = await getBody(inflate(req));
+    const inflatedReq = await inflate(req);
+    const buffer = await getBody(inflatedReq);
     const str = buffer.toString(encoding as BufferEncoding);
 
     let body: any = {};
@@ -255,7 +290,12 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
         }
     } catch (err) {
         throw new Error(
-            "Error while setting header with key: " + key + " and value: " + value + "\nError: " + (err.message ?? err)
+            "Error while setting header with key: " +
+                key +
+                " and value: " +
+                value +
+                "\nError: " +
+                ((err as any).message ?? err)
         );
     }
 }
