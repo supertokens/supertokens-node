@@ -32,6 +32,7 @@ import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { FactorIds } from "../multifactorauth";
+import * as process from "process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

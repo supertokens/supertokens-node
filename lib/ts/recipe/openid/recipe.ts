@@ -26,6 +26,7 @@ import APIImplementation from "./api/implementation";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_DISCOVERY_CONFIG_URL } from "./constants";
 import getOpenIdDiscoveryConfiguration from "./api/getOpenIdDiscoveryConfiguration";
+import * as process from "process";
 
 export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID = "openid";

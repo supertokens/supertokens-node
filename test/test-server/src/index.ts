@@ -47,6 +47,7 @@ import TOTPRoutes from "./totp";
 import { getFunc, resetOverrideParams, getOverrideParams } from "./testFunctionMapper";
 import OverrideableBuilder from "supertokens-js-override";
 import { resetOverrideLogs, logOverrideEvent, getOverrideLogs } from "./overrideLogging";
+import * as process from "process";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 

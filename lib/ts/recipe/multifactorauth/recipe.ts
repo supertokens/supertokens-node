@@ -42,6 +42,7 @@ import RecipeUserId from "../../recipeUserId";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
+import * as process from "process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

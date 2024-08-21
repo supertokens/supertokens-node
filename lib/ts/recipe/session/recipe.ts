@@ -42,6 +42,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
+import * as process from "process";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {

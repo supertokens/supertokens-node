@@ -28,6 +28,7 @@ import RecipeImplementation from "./recipeImplementation";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
+import * as process from "process";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "jwt";

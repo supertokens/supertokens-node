@@ -23,6 +23,7 @@ import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { JWKCacheCooldownInMs, protectedProps } from "./constants";
+import * as process from "process";
 
 export type Helpers = {
     querier: Querier;

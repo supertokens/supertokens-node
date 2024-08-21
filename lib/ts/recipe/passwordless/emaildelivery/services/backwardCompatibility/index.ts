@@ -16,6 +16,7 @@ import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import { NormalisedAppinfo, UserContext } from "../../../../../types";
 import { postWithFetch } from "../../../../../utils";
+import * as process from "process";
 
 async function createAndSendEmailUsingSupertokensService(input: {
     appInfo: NormalisedAppinfo;

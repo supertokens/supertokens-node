@@ -4,6 +4,7 @@ import { middleware } from "../../../framework/loopback";
 import { verifySession } from "../../../recipe/session/framework/loopback";
 import Session from "../../../recipe/session";
 import SuperTokens from "../../..";
+import * as process from "process";
 
 class Create {
     constructor(@inject(RestBindings.Http.CONTEXT) private ctx: MiddlewareContext) {}

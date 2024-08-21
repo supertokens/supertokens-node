@@ -29,6 +29,7 @@ import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks
 import SessionRecipe from "../session/recipe";
 import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
+import * as process from "process";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "userroles";
