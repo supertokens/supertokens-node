@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [20.0.3] - 2024-08-22
+
+-   Fixes issue with dashboard APIs to `createOrUpdateThirdPartyConfig` and `deleteThirdPartyConfig` which did not take `includeInNonPublicTenantsByDefault` into account for non-public tenants.
+-   Updates test server to support dashboard tests.
+
 ## [20.0.2] - 2024-08-08
 
 -   Fixes an issue where `shouldDoAutomaticAccountLinking` was called without a primary user when linking in some cases.
