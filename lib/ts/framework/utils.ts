@@ -24,7 +24,6 @@ import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
-import brotli from "brotli-wasm";
 import { Buffer } from "buffer";
 
 export async function inflate(stream: any, options?: any): Promise<Readable> {
@@ -43,9 +42,6 @@ export async function inflate(stream: any, options?: any): Promise<Readable> {
             break;
         case "deflate":
             decompressedData = pako.inflateRaw(await stream.arrayBuffer());
-            break;
-        case "br":
-            decompressedData = (await brotli).decompress(new Uint8Array(await stream.arrayBuffer()));
             break;
         case "identity":
             decompressedData = await stream.arrayBuffer();
