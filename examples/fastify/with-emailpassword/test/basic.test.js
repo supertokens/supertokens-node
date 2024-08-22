@@ -79,9 +79,9 @@ describe("SuperTokens Example Basic tests", function () {
                 { name: "password", value: testPW },
             ]);
             await submitForm(page);
+            const callApiBtn = await page.waitForSelector(".sessionButton");
             const userList = await SuperTokensNode.listUsersByAccountInfo("public", { email });
             const user = userList[0];
-            const callApiBtn = await page.waitForSelector(".sessionButton");
             let setAlertContent;
             let alertContent = new Promise((res) => (setAlertContent = res));
             page.on("dialog", async (dialog) => {
