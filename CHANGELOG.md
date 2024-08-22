@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [20.0.3] - 2024-08-22
 
--   Fixes issue with dashboard APIs to `createOrUpdateThirdPartyConfig` and `deleteThirdPartyConfig` which did not take `includeInNonPublicTenantsByDefault` into account for non-public tenants.
+-   Fixes issue with dashboard APIs `createOrUpdateThirdPartyConfig` and `deleteThirdPartyConfig` which did not take `includeInNonPublicTenantsByDefault` into account for non-public tenants.
 -   Updates test server to support dashboard tests.
 
 ## [20.0.2] - 2024-08-08
