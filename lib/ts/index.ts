@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
+import "./process-polyfill";
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { UserContext, User as UserType } from "./types";

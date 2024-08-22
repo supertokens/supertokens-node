@@ -94,7 +94,6 @@ import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor"
 import updateTenantSecondaryFactor from "./api/multitenancy/updateTenantSecondaryFactor";
 import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
 import getThirdPartyConfig from "./api/multitenancy/getThirdPartyConfig";
-import * as process from "process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

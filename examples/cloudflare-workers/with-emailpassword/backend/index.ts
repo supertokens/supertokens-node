@@ -1,4 +1,4 @@
-import "./setupProcess";
+import "./process-polyfill";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import supertokens from "supertokens-node";

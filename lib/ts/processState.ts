@@ -12,7 +12,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import * as process from "process";
 
 export enum PROCESS_STATE {
     CALLING_SERVICE_IN_VERIFY,

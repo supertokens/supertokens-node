@@ -7,7 +7,7 @@
         "outDir": "build",
         "moduleResolution": "Node",
         "noImplicitAny": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "noImplicitThis": false,
         "skipLibCheck": true,
         "strict": true,

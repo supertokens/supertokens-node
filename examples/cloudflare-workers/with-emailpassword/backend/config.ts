@@ -2,7 +2,6 @@ import EmailPassword from "supertokens-node/recipe/emailpassword";
 import Session from "supertokens-node/recipe/session";
 import { TypeInput } from "supertokens-node/types";
 import Dashboard from "supertokens-node/recipe/dashboard";
-import * as process from "process";
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 3001;

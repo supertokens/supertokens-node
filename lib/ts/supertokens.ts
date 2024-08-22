@@ -32,7 +32,6 @@ import STError from "./error";
 import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
-import * as process from "process";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;

@@ -22,7 +22,6 @@ import { logDebugMessage } from "./logger";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 import SuperTokens from "./supertokens";
-import * as process from "process";
 
 export class Querier {
     private static initCalled = false;

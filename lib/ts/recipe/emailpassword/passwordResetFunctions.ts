@@ -15,7 +15,6 @@
 
 import { NormalisedAppinfo } from "../../types";
 import { postWithFetch } from "../../utils";
-import * as process from "process";
 
 export async function createAndSendEmailUsingSupertokensService(
     appInfo: NormalisedAppinfo,

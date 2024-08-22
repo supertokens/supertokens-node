@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest & { session?: SessionConta
     }
 
     return withSession(request, async (err, session) => {
+        console.error("middleware", err, session);
         if (err) return NextResponse.json(err, { status: 500 });
         if (session === undefined) {
             return NextResponse.next();

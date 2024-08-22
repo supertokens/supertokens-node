@@ -46,7 +46,6 @@ import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
-import * as process from "process";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
