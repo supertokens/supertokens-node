@@ -3,6 +3,7 @@ import EmailPassword from "supertokens-node/recipe/emailpassword";
 
 export const getBackendConfig = () => {
     return {
+        debug: true,
         framework: "awsLambda",
         supertokens: {
             connectionURI: "https://try.supertokens.com",

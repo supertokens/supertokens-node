@@ -110,7 +110,7 @@ export class AWSRequest extends BaseRequest {
         let path = (this.event as APIGatewayProxyEvent).path;
         let queryParams = (this.event as APIGatewayProxyEvent).queryStringParameters as { [key: string]: string };
         if (path === undefined) {
-            logDebugMessage(JSON.stringify(this.event));
+            logDebugMessage("AWS_LAMBDA_EVENT: " + JSON.stringify(this.event));
             path = (this.event as APIGatewayProxyEventV2).requestContext.http.path;
             let stage = (this.event as APIGatewayProxyEventV2).requestContext.stage;
             if (stage !== undefined && path.startsWith(`/${stage}`)) {
