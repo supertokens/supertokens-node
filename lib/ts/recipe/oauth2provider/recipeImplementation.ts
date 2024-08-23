@@ -316,7 +316,7 @@ export default function getRecipeInterface(
 
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth/token`),
-                body,
+                { body },
                 input.userContext
             );
 
