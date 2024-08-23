@@ -18,6 +18,7 @@ import MultitenancyRecipe from "../../../multitenancy/recipe";
 import SuperTokensError from "../../../../error";
 import { FactorIds } from "../../../multifactorauth";
 import { UserContext } from "../../../../types";
+import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
 
 export type Response =
     | {
@@ -56,9 +57,11 @@ export default async function deleteThirdPartyConfig(
         // this means that the tenant was using the static list of providers, we need to add them all before deleting one
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
-        let staticProviderIds = staticProviders.map((provider) => provider.config.thirdPartyId);
 
-        for (const providerId of staticProviderIds) {
+        for (const provider of staticProviders.filter(
+            (provider) => provider.includeInNonPublicTenantsByDefault === true || tenantId === DEFAULT_TENANT_ID
+        )) {
+            const providerId = provider.config.thirdPartyId;
             await Multitenancy.createOrUpdateThirdPartyConfig(
                 tenantId,
                 {
