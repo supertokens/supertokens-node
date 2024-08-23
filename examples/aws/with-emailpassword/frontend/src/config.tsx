@@ -5,7 +5,7 @@ import Session from "supertokens-auth-react/recipe/session";
 export function getApiDomain() {
     // const apiPort = process.env.REACT_APP_API_PORT || 3001;
     // const apiUrl = process.env.REACT_APP_API_URL || `http://localhost:${apiPort}`;
-    return "https://zcbgp7k8ti.execute-api.ap-south-1.amazonaws.com/prod";
+    return "https://zcbgp7k8ti.execute-api.ap-south-1.amazonaws.com";
 }
 
 export function getWebsiteDomain() {
