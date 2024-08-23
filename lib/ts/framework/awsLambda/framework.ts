@@ -31,6 +31,7 @@ import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
 import { parse } from "querystring";
+import { logDebugMessage } from "../../logger";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;
@@ -109,7 +110,7 @@ export class AWSRequest extends BaseRequest {
         let path = (this.event as APIGatewayProxyEvent).path;
         let queryParams = (this.event as APIGatewayProxyEvent).queryStringParameters as { [key: string]: string };
         if (path === undefined) {
-            console.log(this.event);
+            logDebugMessage(JSON.stringify(this.event));
             path = (this.event as APIGatewayProxyEventV2).requestContext.http.path;
             let stage = (this.event as APIGatewayProxyEventV2).requestContext.stage;
             if (stage !== undefined && path.startsWith(`/${stage}`)) {
