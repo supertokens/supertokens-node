@@ -32,7 +32,11 @@ export declare class OAuth2Client {
      * Array of post logout redirect URIs
      * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      *
-     * By default, this field is not present in the OAuth2Client. If provided, it must be a non-empty array of strings.
+     * This field holds a list of whitelisted `post_logout_redirect_uri`s used to redirect the user after
+     * logout via the `end_session_endpoint`. If a non-whitelisted URI is provided, the logout request is rejected.
+     *
+     * By default, this field is absent in the OAuth2Client. If provided, it must be a non-empty array of strings,
+     * with each URI’s domain, port, and scheme matching at least one registered redirect URI.
      */
     postLogoutRedirectUris?: string[];
     /**

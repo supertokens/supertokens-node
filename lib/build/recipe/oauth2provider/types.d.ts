@@ -429,6 +429,7 @@ export declare type APIInterface = {
               session?: SessionContainerInterface;
               userContext: UserContext;
           }) => Promise<{
+              status: "OK";
               frontendRedirectTo: string;
           }>);
 };

@@ -305,6 +305,9 @@ export async function handleLogoutInternalRedirects({
             response = await recipeImplementation.endSession({
                 params: Object.fromEntries(params.entries()),
                 session,
+                // We internally redirect to the `end_session_endpoint` at the end of the logout flow.
+                // This involves calling Hydra with the `logout_verifier`, after which Hydra redirects to the `post_logout_redirect_uri`.
+                // We set `shouldTryRefresh` to `false` since the SuperTokens session isn't needed to handle this request.
                 shouldTryRefresh: false,
                 userContext,
             });

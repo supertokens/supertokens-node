@@ -591,6 +591,19 @@ export default function getRecipeInterface(
         },
 
         endSession: async function (this: RecipeInterface, input) {
+            /**
+             * NOTE: The API response has 3 possible cases:
+             *
+             * CASE 1: `end_session` request with a valid `id_token_hint`
+             *        - Redirects to `/oauth/logout` with a `logout_challenge`.
+             *
+             * CASE 2: `end_session` request with an already logged out `id_token_hint`
+             *        - Redirects to the `post_logout_redirect_uri` or the default logout fallback page.
+             *
+             * CASE 3: `end_session` request with a `logout_verifier` (after accepting the logout request)
+             *        - Redirects to the `post_logout_redirect_uri` or the default logout fallback page.
+             */
+
             const resp = await querier.sendGetRequestWithResponseHeaders(
                 new NormalisedURLPath(`/recipe/oauth2/pub/sessions/logout`),
                 input.params,
@@ -611,6 +624,7 @@ export default function getRecipeInterface(
             const redirectToURL = new URL(redirectTo);
             const logoutChallenge = redirectToURL.searchParams.get("logout_challenge");
 
+            // CASE 1 (See above notes)
             if (logoutChallenge !== null) {
                 // Redirect to the frontend to ask for logout confirmation if there is a valid or expired supertokens session
                 if (input.session !== undefined || input.shouldTryRefresh) {
@@ -626,6 +640,8 @@ export default function getRecipeInterface(
                     });
                 }
             }
+
+            // CASE 2 or 3 (See above notes)
 
             // TODO:
             // NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.

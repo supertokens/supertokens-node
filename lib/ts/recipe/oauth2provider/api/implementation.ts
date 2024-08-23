@@ -160,7 +160,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            return { frontendRedirectTo: redirectTo };
+            return { status: "OK", frontendRedirectTo: redirectTo };
         },
     };
 }

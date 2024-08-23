@@ -486,7 +486,7 @@ export type APIInterface = {
               options: APIOptions;
               session?: SessionContainerInterface;
               userContext: UserContext;
-          }) => Promise<{ frontendRedirectTo: string }>);
+          }) => Promise<{ status: "OK"; frontendRedirectTo: string }>);
 };
 
 export type OAuth2ClientOptions = {
