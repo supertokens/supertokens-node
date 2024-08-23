@@ -39,6 +39,7 @@ export class AWSRequest extends BaseRequest {
     constructor(event: APIGatewayProxyEventV2 | APIGatewayProxyEvent) {
         super();
         this.original = event;
+        logDebugMessage("AWS_REQUEST: " + JSON.stringify(event));
         this.event = event;
     }
 

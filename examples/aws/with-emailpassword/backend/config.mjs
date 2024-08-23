@@ -10,7 +10,7 @@ export const getBackendConfig = () => {
         },
         appInfo: {
             appName: "SuperTokens Demo",
-            apiDomain: "https://0ez3j5libc.execute-api.ap-south-1.amazonaws.com",
+            apiDomain: "https://zcbgp7k8ti.execute-api.ap-south-1.amazonaws.com",
             websiteDomain: "http://localhost:3000",
             apiBasePath: "/auth",
             apiGatewayPath: "/prod",
