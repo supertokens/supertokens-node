@@ -40,7 +40,7 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
-        _method: HTTPMethod,
+        method: HTTPMethod,
         userContext: UserContext
     ) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse, _userContext: UserContext): Promise<void>;

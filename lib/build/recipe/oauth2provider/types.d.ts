@@ -284,6 +284,26 @@ export declare type RecipeInterface = {
         scopes?: string[];
         userContext: UserContext;
     }): Promise<InstrospectTokenResponse>;
+    endSession(input: {
+        params: Record<string, string>;
+        session?: SessionContainerInterface;
+        shouldTryRefresh: boolean;
+        userContext: UserContext;
+    }): Promise<{
+        redirectTo: string;
+    }>;
+    acceptLogoutRequest(input: {
+        challenge: string;
+        userContext: UserContext;
+    }): Promise<{
+        redirectTo: string;
+    }>;
+    rejectLogoutRequest(input: {
+        challenge: string;
+        userContext: UserContext;
+    }): Promise<{
+        status: "OK";
+    }>;
 };
 export declare type APIInterface = {
     loginGET:
@@ -297,7 +317,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     redirectTo: string;
-                    setCookie: string | undefined;
+                    setCookie?: string;
                 }
               | GeneralErrorResponse
           >);
@@ -313,7 +333,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     redirectTo: string;
-                    setCookie: string | undefined;
+                    setCookie?: string;
                 }
               | ErrorOAuth2
               | GeneralErrorResponse
@@ -379,6 +399,39 @@ export declare type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<InstrospectTokenResponse | GeneralErrorResponse>);
+    endSessionGET:
+        | undefined
+        | ((input: {
+              params: Record<string, string>;
+              session?: SessionContainerInterface;
+              shouldTryRefresh: boolean;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<{
+              redirectTo: string;
+          }>);
+    endSessionPOST:
+        | undefined
+        | ((input: {
+              params: Record<string, string>;
+              session?: SessionContainerInterface;
+              shouldTryRefresh: boolean;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<{
+              redirectTo: string;
+          }>);
+    logoutPOST:
+        | undefined
+        | ((input: {
+              logoutChallenge: string;
+              options: APIOptions;
+              session?: SessionContainerInterface;
+              userContext: UserContext;
+          }) => Promise<{
+              status: "OK";
+              frontendRedirectTo: string;
+          }>);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;
@@ -388,6 +441,7 @@ export declare type OAuth2ClientOptions = {
     clientName: string;
     scope: string;
     redirectUris?: string[] | null;
+    postLogoutRedirectUris?: string[];
     allowedCorsOrigins?: string[];
     authorizationCodeGrantAccessTokenLifespan?: string | null;
     authorizationCodeGrantIdTokenLifespan?: string | null;

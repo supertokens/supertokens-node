@@ -14,7 +14,7 @@
  */
 
 import { APIInterface } from "../types";
-import { handleInternalRedirects, loginGET } from "./utils";
+import { handleLoginInternalRedirects, handleLogoutInternalRedirects, loginGET } from "./utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -27,7 +27,7 @@ export default function getAPIImplementation(): APIInterface {
                 isDirectCall: true,
                 userContext,
             });
-            return handleInternalRedirects({
+            return handleLoginInternalRedirects({
                 response,
                 cookie: options.req.getHeaderValue("cookie"),
                 recipeImplementation: options.recipeImplementation,
@@ -45,7 +45,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            return handleInternalRedirects({
+            return handleLoginInternalRedirects({
                 response,
                 recipeImplementation: options.recipeImplementation,
                 cookie,
@@ -113,6 +113,54 @@ export default function getAPIImplementation(): APIInterface {
                 scopes: input.scopes,
                 userContext: input.userContext,
             });
+        },
+        endSessionGET: async ({ options, params, session, shouldTryRefresh, userContext }) => {
+            const response = await options.recipeImplementation.endSession({
+                params,
+                session,
+                shouldTryRefresh,
+                userContext,
+            });
+
+            return handleLogoutInternalRedirects({
+                response,
+                session,
+                recipeImplementation: options.recipeImplementation,
+                userContext,
+            });
+        },
+        endSessionPOST: async ({ options, params, session, shouldTryRefresh, userContext }) => {
+            const response = await options.recipeImplementation.endSession({
+                params,
+                session,
+                shouldTryRefresh,
+                userContext,
+            });
+
+            return handleLogoutInternalRedirects({
+                response,
+                session,
+                recipeImplementation: options.recipeImplementation,
+                userContext,
+            });
+        },
+        logoutPOST: async ({ logoutChallenge, options, session, userContext }) => {
+            if (session != undefined) {
+                await session.revokeSession(userContext);
+            }
+
+            const response = await options.recipeImplementation.acceptLogoutRequest({
+                challenge: logoutChallenge,
+                userContext,
+            });
+
+            const { redirectTo } = await handleLogoutInternalRedirects({
+                response,
+                recipeImplementation: options.recipeImplementation,
+                userContext,
+            });
+
+            return { status: "OK", frontendRedirectTo: redirectTo };
         },
     };
 }

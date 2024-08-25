@@ -30,6 +30,8 @@ import {
     INTROSPECT_TOKEN_PATH,
     LOGIN_INFO_PATH,
     LOGIN_PATH,
+    LOGOUT_PATH,
+    END_SESSION_PATH,
     REVOKE_TOKEN_PATH,
     TOKEN_PATH,
     USER_INFO_PATH,
@@ -51,6 +53,8 @@ import userInfoGET from "./api/userInfo";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import revokeTokenPOST from "./api/revokeToken";
 import introspectTokenPOST from "./api/introspectToken";
+import { endSessionGET, endSessionPOST } from "./api/endSession";
+import { logoutPOST } from "./api/logout";
 import { getSessionInformation } from "../session";
 import { send200Response } from "../../utils";
 
@@ -190,6 +194,24 @@ export default class Recipe extends RecipeModule {
                 id: "token-hook",
                 disabled: false,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(END_SESSION_PATH),
+                id: END_SESSION_PATH,
+                disabled: this.apiImpl.endSessionGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(END_SESSION_PATH),
+                id: END_SESSION_PATH,
+                disabled: this.apiImpl.endSessionPOST === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LOGOUT_PATH),
+                id: LOGOUT_PATH,
+                disabled: this.apiImpl.logoutPOST === undefined,
+            },
         ];
     }
 
@@ -199,7 +221,7 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
-        _method: HTTPMethod,
+        method: HTTPMethod,
         userContext: UserContext
     ): Promise<boolean> => {
         let options = {
@@ -231,6 +253,15 @@ export default class Recipe extends RecipeModule {
         }
         if (id === INTROSPECT_TOKEN_PATH) {
             return introspectTokenPOST(this.apiImpl, options, userContext);
+        }
+        if (id === END_SESSION_PATH && method === "get") {
+            return endSessionGET(this.apiImpl, options, userContext);
+        }
+        if (id === END_SESSION_PATH && method === "post") {
+            return endSessionPOST(this.apiImpl, options, userContext);
+        }
+        if (id === LOGOUT_PATH && method === "post") {
+            return logoutPOST(this.apiImpl, options, userContext);
         }
         if (id === "token-hook") {
             const body = await options.req.getBodyAsJSONOrFormData();

@@ -50,6 +50,18 @@ export class OAuth2Client {
     redirectUris: string[] | null;
 
     /**
+     * Array of post logout redirect URIs
+     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
+     *
+     * This field holds a list of whitelisted `post_logout_redirect_uri`s used to redirect the user after
+     * logout via the `end_session_endpoint`. If a non-whitelisted URI is provided, the logout request is rejected.
+     *
+     * By default, this field is absent in the OAuth2Client. If provided, it must be a non-empty array of strings,
+     * with each URI’s domain, port, and scheme matching at least one registered redirect URI.
+     */
+    postLogoutRedirectUris?: string[];
+
+    /**
      * Authorization Code Grant Access Token Lifespan
      * NullDuration - ^[0-9]+(ns|us|ms|s|m|h)$
      */
@@ -186,6 +198,7 @@ export class OAuth2Client {
         clientName,
         scope,
         redirectUris = null,
+        postLogoutRedirectUris,
         authorizationCodeGrantAccessTokenLifespan = null,
         authorizationCodeGrantIdTokenLifespan = null,
         authorizationCodeGrantRefreshTokenLifespan = null,
@@ -213,6 +226,7 @@ export class OAuth2Client {
         this.clientName = clientName;
         this.scope = scope;
         this.redirectUris = redirectUris;
+        this.postLogoutRedirectUris = postLogoutRedirectUris;
         this.authorizationCodeGrantAccessTokenLifespan = authorizationCodeGrantAccessTokenLifespan;
         this.authorizationCodeGrantIdTokenLifespan = authorizationCodeGrantIdTokenLifespan;
         this.authorizationCodeGrantRefreshTokenLifespan = authorizationCodeGrantRefreshTokenLifespan;
