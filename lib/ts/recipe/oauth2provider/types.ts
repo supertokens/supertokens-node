@@ -351,6 +351,8 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ status: "OK"; payload: JSONObject }>;
 
+    getIssuer(input: { userContext: UserContext }): Promise<string>;
+
     buildAccessTokenPayload(input: {
         user: User;
         client: OAuth2Client;

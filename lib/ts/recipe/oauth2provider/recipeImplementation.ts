@@ -184,17 +184,20 @@ export default function getRecipeInterface(
                 }
             }
 
-            const resp = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
-                input.params,
+            const resp = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth/auth`),
                 {
-                    // TODO: if session is not set also clear the oauth2 cookie
-                    Cookie: `${input.cookies}`,
+                    params: input.params,
+                    cookies: `${input.cookies}`,
                 },
+                // {
+                //     // TODO: if session is not set also clear the oauth2 cookie
+                //     Cookie: `${input.cookies}`,
+                // },
                 input.userContext
             );
 
-            const redirectTo = getUpdatedRedirectTo(appInfo, resp.headers.get("Location")!);
+            const redirectTo = resp.redirectTo;
             if (redirectTo === undefined) {
                 throw new Error(resp.body);
             }
@@ -245,14 +248,14 @@ export default function getRecipeInterface(
 
                 return {
                     redirectTo: consentRes.redirectTo,
-                    setCookie: resp.headers.get("set-cookie") ?? undefined,
+                    setCookie: resp.cookies ?? undefined,
                 };
             }
-            return { redirectTo, setCookie: resp.headers.get("set-cookie") ?? undefined };
+            return { redirectTo, setCookie: resp.cookies ?? undefined };
         },
 
         tokenExchange: async function (this: RecipeInterface, input) {
-            const body: any = { $isFormData: true }; // TODO: we ideally want to avoid using formdata, the core can do the translation
+            const body: any = {};
             for (const key in input.body) {
                 body[key] = input.body[key];
             }
@@ -312,19 +315,20 @@ export default function getRecipeInterface(
             }
 
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth2/pub/token`),
-                body,
+                new NormalisedURLPath(`/recipe/oauth/token`),
+                { body, iss: await this.getIssuer({ userContext: input.userContext }) },
                 input.userContext
             );
 
             if (res.status !== "OK") {
                 return {
-                    statusCode: res.statusCode,
-                    error: res.data.error,
-                    errorDescription: res.data.error_description,
+                    statusCode: res.status_code,
+                    error: res.error,
+                    errorDescription: res.error_description,
                 };
             }
-            return res.data;
+
+            return res;
         },
 
         getOAuth2Clients: async function (input) {
@@ -464,6 +468,9 @@ export default function getRecipeInterface(
                     errorHint: response.data.errorHint,
                 };
             }
+        },
+        getIssuer: async function (_) {
+            return appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
         },
         buildAccessTokenPayload: async function (input) {
             return getDefaultAccessTokenPayload(input.user, input.scopes, input.sessionHandle, input.userContext);
