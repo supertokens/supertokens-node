@@ -187,8 +187,8 @@ export default function getRecipeInterface(
             const resp = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth/auth`),
                 {
-                    ...input.params,
-                    cookie: `${input.cookies}`,
+                    params: input.params,
+                    cookies: `${input.cookies}`,
                 },
                 // {
                 //     // TODO: if session is not set also clear the oauth2 cookie
@@ -316,17 +316,18 @@ export default function getRecipeInterface(
 
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth/token`),
-                { body },
+                { body, iss: await this.getIssuer({ userContext: input.userContext }) },
                 input.userContext
             );
 
             if (res.status !== "OK") {
                 return {
-                    statusCode: res.statusCode,
-                    error: res.data.error,
-                    errorDescription: res.data.error_description,
+                    statusCode: res.status_code,
+                    error: res.error,
+                    errorDescription: res.error_description,
                 };
             }
+
             return res;
         },
 
@@ -467,6 +468,9 @@ export default function getRecipeInterface(
                     errorHint: response.data.errorHint,
                 };
             }
+        },
+        getIssuer: async function (_) {
+            return appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
         },
         buildAccessTokenPayload: async function (input) {
             return getDefaultAccessTokenPayload(input.user, input.scopes, input.sessionHandle, input.userContext);
