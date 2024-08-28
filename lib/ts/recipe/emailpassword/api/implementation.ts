@@ -857,7 +857,11 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (postAuthChecks.status !== "OK") {
-                return AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
+                // It should never actually come here, but we do it cause of consistency.
+                // If it does come here (in case there is a bug), it would make this func throw
+                // anyway, cause there is no SIGN_IN_NOT_ALLOWED in the errorCodeMap.
+                AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
+                throw new Error("This should never happen");
             }
 
             return {
