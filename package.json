@@ -113,6 +113,7 @@
     },
     "homepage": "https://github.com/supertokens/supertokens-node#readme",
     "dependencies": {
+        "buffer": "^6.0.3",
         "content-type": "^1.0.5",
         "cookie": "0.4.0",
         "cross-fetch": "^3.1.6",
@@ -122,6 +123,7 @@
         "libphonenumber-js": "^1.9.44",
         "nodemailer": "^6.7.2",
         "pkce-challenge": "^3.0.0",
+        "process": "^0.11.10",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
         "twilio": "^4.19.3"

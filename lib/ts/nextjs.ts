@@ -12,6 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+import './polyfill'
+
 import { serialize } from "cookie";
 import { errorHandler } from "./framework/express";
 import { getUserContext } from "./utils";
