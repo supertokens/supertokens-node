@@ -33,11 +33,12 @@ export async function doGetRequest(
     const stringResponse = await response.text();
     let jsonResponse: Record<string, any> | undefined = undefined;
 
+    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
+
     if (response.status < 400) {
         jsonResponse = JSON.parse(stringResponse);
     }
 
-    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
     return {
         stringResponse,
         status: response.status,
@@ -75,11 +76,12 @@ export async function doPostRequest(
     const stringResponse = await response.text();
     let jsonResponse: Record<string, any> | undefined = undefined;
 
+    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
+
     if (response.status < 400) {
         jsonResponse = JSON.parse(stringResponse);
     }
 
-    logDebugMessage(`Received response with status ${response.status} and body ${stringResponse}`);
     return {
         stringResponse,
         status: response.status,
