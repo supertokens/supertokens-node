@@ -23,6 +23,7 @@ import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
+import { decompress as brotliDecompress } from "brotli";
 
 async function inflate(stream: IncomingMessage): Promise<string> {
     if (!stream) {
@@ -45,6 +46,13 @@ async function inflate(stream: IncomingMessage): Promise<string> {
         }
 
         decompressedData = inflator.result;
+    } else if (encoding === "br") {
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(chunk);
+        }
+        const compressedData = Buffer.concat(chunks);
+        decompressedData = brotliDecompress(compressedData);
     } else {
         // Handle identity or unsupported encoding
         decompressedData = Buffer.concat([]);
@@ -233,7 +241,8 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
             try {
                 // parsing it again to make sure that the request is parsed atleast once by a json parser
                 request.body = await parseJSONBodyFromRequest(request);
-            } catch {
+            } catch (err) {
+                console.log("err:", err);
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass a valid JSON input in the request body",
