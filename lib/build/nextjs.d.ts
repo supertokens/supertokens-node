@@ -1,5 +1,5 @@
 // @ts-nocheck
-import './polyfill';
+import "./polyfill";
 import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 declare type PartialNextRequest = {
@@ -16,19 +16,38 @@ declare type PartialNextRequest = {
     };
 };
 export default class NextJS {
-    static superTokensNextWrapper<T>(middleware: (next: (middlewareError?: any) => void) => Promise<T>, request: any, response: any): Promise<T>;
-    static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response): (req: T) => Promise<Response>;
+    static superTokensNextWrapper<T>(
+        middleware: (next: (middlewareError?: any) => void) => Promise<T>,
+        request: any,
+        response: any
+    ): Promise<T>;
+    static getAppDirRequestHandler<T extends PartialNextRequest>(
+        NextResponse: typeof Response
+    ): (req: T) => Promise<Response>;
     private static commonSSRSession;
-    static getSSRSession(cookies: Array<{
-        name: string;
-        value: string;
-    }>, headers: Headers, options?: VerifySessionOptions, userContext?: Record<string, any>): Promise<{
+    static getSSRSession(
+        cookies: Array<{
+            name: string;
+            value: string;
+        }>,
+        headers: Headers,
+        options?: VerifySessionOptions,
+        userContext?: Record<string, any>
+    ): Promise<{
         session: SessionContainer | undefined;
         hasToken: boolean;
         hasInvalidClaims: boolean;
     }>;
-    static withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(req: NextRequest, handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<NextResponse>, options?: VerifySessionOptions, userContext?: Record<string, any>): Promise<NextResponse>;
-    static withPreParsedRequestResponse<NextRequest extends PartialNextRequest, NextResponse extends Response>(req: NextRequest, handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<NextResponse>): Promise<NextResponse>;
+    static withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
+        req: NextRequest,
+        handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<NextResponse>,
+        options?: VerifySessionOptions,
+        userContext?: Record<string, any>
+    ): Promise<NextResponse>;
+    static withPreParsedRequestResponse<NextRequest extends PartialNextRequest, NextResponse extends Response>(
+        req: NextRequest,
+        handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<NextResponse>
+    ): Promise<NextResponse>;
 }
 export declare let superTokensNextWrapper: typeof NextJS.superTokensNextWrapper;
 export declare let getAppDirRequestHandler: typeof NextJS.getAppDirRequestHandler;

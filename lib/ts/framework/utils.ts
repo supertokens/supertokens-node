@@ -45,25 +45,25 @@ async function inflate(stream: IncomingMessage): Promise<string> {
 
 export function parseParams(string: string): object {
     // Set up a new URLSearchParams object using the string.
-    const params = new URLSearchParams(string)
+    const params = new URLSearchParams(string);
 
     // Get an iterator for the URLSearchParams object.
-    const entries = params.entries()
+    const entries = params.entries();
 
-    const result: { [key: string]: any } = {}
+    const result: { [key: string]: any } = {};
 
     // Loop through the URLSearchParams object and add each key/value
     for (const [key, value] of entries) {
         // Split comma-separated values into an array.
-        result[key] = value.split(",")
+        result[key] = value.split(",");
 
         // If a key does not have a value, delete it.
         if (!value) {
-            delete result[key]
+            delete result[key];
         }
     }
 
-    return result
+    return result;
 }
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {

@@ -228,8 +228,8 @@ export class AWSResponse extends BaseResponse {
         }
         let headers:
             | {
-                [header: string]: boolean | number | string;
-            }
+                  [header: string]: boolean | number | string;
+              }
             | undefined = response.headers;
         if (headers === undefined) {
             headers = {};
