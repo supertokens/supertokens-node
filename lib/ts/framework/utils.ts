@@ -23,7 +23,15 @@ import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
-import { decompress as brotliDecompress } from "brotli";
+
+let brotliDecompress: ((input: Buffer) => Buffer) | null = null;
+
+try {
+    // @ts-ignore
+    if (typeof EdgeRuntime === "undefined") brotliDecompress = require("brotli").decompress;
+} catch (error) {
+    brotliDecompress = null;
+}
 
 async function inflate(stream: IncomingMessage): Promise<string> {
     if (!stream) {
@@ -47,6 +55,8 @@ async function inflate(stream: IncomingMessage): Promise<string> {
 
         decompressedData = inflator.result;
     } else if (encoding === "br") {
+        if (!brotliDecompress) throw new Error("Brotli decompression not supported on the platform");
+
         const chunks: Buffer[] = [];
         for await (const chunk of stream) {
             chunks.push(chunk);
