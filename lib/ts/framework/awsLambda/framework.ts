@@ -25,12 +25,11 @@ import { HTTPMethod } from "../../types";
 import { getFromObjectCaseInsensitive, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
-import { normalizeHeaderValue, getCookieValueFromHeaders, serializeCookieValue } from "../utils";
+import { normalizeHeaderValue, getCookieValueFromHeaders, serializeCookieValue, parseParams } from "../utils";
 import { COOKIE_HEADER } from "../constants";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
-import queryString from "querystringify";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;
@@ -45,7 +44,7 @@ export class AWSRequest extends BaseRequest {
         if (this.event.body === null || this.event.body === undefined) {
             return {};
         } else {
-            const parsedUrlEncodedFormData = queryString.parse(this.event.body);
+            const parsedUrlEncodedFormData = parseParams(this.event.body);
             return parsedUrlEncodedFormData === undefined ? {} : parsedUrlEncodedFormData;
         }
     };
