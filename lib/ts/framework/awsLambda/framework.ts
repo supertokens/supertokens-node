@@ -30,7 +30,7 @@ import { COOKIE_HEADER } from "../constants";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
-import { parse } from "querystring";
+import queryString from "querystringify";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;
@@ -45,7 +45,7 @@ export class AWSRequest extends BaseRequest {
         if (this.event.body === null || this.event.body === undefined) {
             return {};
         } else {
-            const parsedUrlEncodedFormData = parse(this.event.body);
+            const parsedUrlEncodedFormData = queryString.parse(this.event.body);
             return parsedUrlEncodedFormData === undefined ? {} : parsedUrlEncodedFormData;
         }
     };
@@ -229,8 +229,8 @@ export class AWSResponse extends BaseResponse {
         }
         let headers:
             | {
-                  [header: string]: boolean | number | string;
-              }
+                [header: string]: boolean | number | string;
+            }
             | undefined = response.headers;
         if (headers === undefined) {
             headers = {};
