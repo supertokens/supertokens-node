@@ -29,18 +29,33 @@ async function inflate(stream: IncomingMessage): Promise<string> {
         throw new TypeError("argument stream is required");
     }
 
-    const encoding = stream.headers && stream.headers["content-encoding"];
+    const encoding = (stream.headers && stream.headers["content-encoding"]) || "identity";
 
-    let i = new pako.Inflate();
-    for await (const chunk of stream) {
-        i.push(Buffer.from(chunk));
-    }
+    let decompressedData: Uint8Array | string;
 
-    if (typeof i.result === "string") {
-        return i.result;
+    if (encoding === "gzip" || encoding === "deflate") {
+        const inflator = new pako.Inflate();
+
+        for await (const chunk of stream) {
+            inflator.push(chunk, false);
+        }
+
+        if (inflator.err) {
+            throw new Error(`Decompression error: ${inflator.msg}`);
+        }
+
+        decompressedData = inflator.result;
     } else {
-        return new TextDecoder(encoding).decode(i.result, { stream: true });
+        // Handle identity or unsupported encoding
+        decompressedData = Buffer.concat([]);
+        for await (const chunk of stream) {
+            decompressedData = Buffer.concat([decompressedData, chunk]);
+        }
     }
+
+    if (typeof decompressedData === "string") return decompressedData;
+
+    return new TextDecoder().decode(decompressedData);
 }
 
 export function parseParams(string: string): object {
@@ -229,6 +244,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
 }
 
 export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request) {
+    console.log("Entering assert 2");
     if (typeof request.body === "string") {
         try {
             request.body = Object.fromEntries(new URLSearchParams(request.body).entries());
