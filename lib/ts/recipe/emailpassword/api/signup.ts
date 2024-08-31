@@ -42,7 +42,8 @@ export default async function signUpAPI(
         options.config.signUpFeature.formFields,
         requestBody.formFields,
         tenantId,
-        userContext
+        userContext,
+        true
     );
 
     let session = await Session.getSession(
