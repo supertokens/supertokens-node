@@ -251,8 +251,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
             try {
                 // parsing it again to make sure that the request is parsed atleast once by a json parser
                 request.body = await parseJSONBodyFromRequest(request);
-            } catch (err) {
-                console.log("err:", err);
+            } catch {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass a valid JSON input in the request body",
@@ -263,7 +262,6 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
 }
 
 export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request) {
-    console.log("Entering assert 2");
     if (typeof request.body === "string") {
         try {
             request.body = Object.fromEntries(new URLSearchParams(request.body).entries());
