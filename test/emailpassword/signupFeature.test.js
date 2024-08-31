@@ -1185,6 +1185,72 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         assert(response.formFields[0].id === "testField2");
     });
 
+    // Custom optional field missing in the payload should not throw an error
+    it("Custom optional field missing in the payload should not throw an error", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                                optional: true,
+                            },
+                            {
+                                id: "testField1",
+                                optional: true,
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(response.user.id !== undefined);
+        assert(response.user.emails[0] === "random@gmail.com");
+    });
+
     // Test custom field validation error (one and two custom fields)
     it("test custom field validation error", async function () {
         const connectionURI = await startST();
