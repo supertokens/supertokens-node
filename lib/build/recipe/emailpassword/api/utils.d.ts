@@ -5,7 +5,8 @@ export declare function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],
     formFieldsRaw: any,
     tenantId: string,
-    userContext: UserContext
+    userContext: UserContext,
+    runValidators?: boolean
 ): Promise<
     {
         id: string;
