@@ -65,7 +65,7 @@ export default function getAPIImplementation(): APIInterface {
             | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
-            const email = formFields.filter((f) => f.id === "email")[0].value;
+            const email = formFields.find((f) => f.id === "email")?.value ?? "";
 
             // this function will be reused in different parts of the flow below..
             async function generateAndSendPasswordResetToken(
@@ -451,7 +451,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            let newPassword = formFields.filter((f) => f.id === "password")[0].value;
+            let newPassword = formFields.find((f) => f.id === "password")?.value || "";
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
@@ -631,8 +631,8 @@ export default function getAPIImplementation(): APIInterface {
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_012)",
                 },
             };
-            let email = formFields.filter((f) => f.id === "email")[0].value;
-            let password = formFields.filter((f) => f.id === "password")[0].value;
+            let email = formFields.find((f) => f.id === "email")?.value ?? "";
+            let password = formFields.find((f) => f.id === "password")?.value ?? "";
 
             const recipeId = "emailpassword";
 

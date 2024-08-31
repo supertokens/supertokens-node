@@ -38,7 +38,8 @@ export default async function signInAPI(
         options.config.signInFeature.formFields,
         (await options.req.getJSONBody()).formFields,
         tenantId,
-        userContext
+        userContext,
+        false
     );
 
     let session = await Session.getSession(

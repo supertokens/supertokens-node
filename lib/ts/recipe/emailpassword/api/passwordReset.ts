@@ -44,7 +44,8 @@ export default async function passwordReset(
         options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
         requestBody.formFields,
         tenantId,
-        userContext
+        userContext,
+        false
     );
 
     let token = requestBody.token;

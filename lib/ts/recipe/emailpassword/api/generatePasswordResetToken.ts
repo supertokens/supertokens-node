@@ -40,7 +40,8 @@ export default async function generatePasswordResetToken(
         options.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
         requestBody.formFields,
         tenantId,
-        userContext
+        userContext,
+        false
     );
 
     let result = await apiImplementation.generatePasswordResetTokenPOST({

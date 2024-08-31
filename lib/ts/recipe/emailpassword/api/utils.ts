@@ -21,7 +21,8 @@ export async function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],
     formFieldsRaw: any,
     tenantId: string,
-    userContext: UserContext
+    userContext: UserContext,
+    runValidators: boolean = true
 ): Promise<
     {
         id: string;
@@ -69,9 +70,11 @@ export async function validateFormFieldsOrThrowError(
         return field;
     });
 
-    // then run validators through them-----------------------
-    await validateFormOrThrowError(formFields, configFormFields, tenantId, userContext);
-
+    // Run form field validators for only signup, see: https://github.com/supertokens/supertokens-node/issues/447
+    if (runValidators) {
+        // then run validators through them-----------------------
+        await validateFormOrThrowError(formFields, configFormFields, tenantId, userContext);
+    }
     return formFields;
 }
 
