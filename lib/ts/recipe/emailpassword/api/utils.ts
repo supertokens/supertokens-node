@@ -106,7 +106,7 @@ async function validateFormOrThrowError(
         throw newBadRequestError("Are you sending too many / too few formFields?");
     }
 
-    configFormFields.forEach(async (formField) => {
+    for (const formField of configFormFields) {
         const input = inputs.find((input) => input.id === formField.id);
 
         if (formField.optional) {
@@ -136,7 +136,7 @@ async function validateFormOrThrowError(
                 });
             }
         }
-    });
+    }
 
     if (validationErrors.length > 0) {
         throw new STError({
