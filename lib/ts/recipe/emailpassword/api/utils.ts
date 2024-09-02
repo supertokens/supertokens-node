@@ -107,7 +107,7 @@ async function validateFormOrThrowError(
     // Convert to set and back to array to remove duplicates as user
     // inputs might contain some.
     const incomingFieldIds = [...new Set(inputs.map((field) => field.id))];
-    const notPresentIds = requiredFormFieldIds.filter((id) => incomingFieldIds.includes(id));
+    const notPresentIds = requiredFormFieldIds.filter((id) => !incomingFieldIds.includes(id));
 
     if (notPresentIds.length > 0) {
         // There are required fields that are not passed.
