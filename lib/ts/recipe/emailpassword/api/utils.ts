@@ -87,7 +87,7 @@ function newBadRequestError(message: string) {
 async function validateFormOrThrowError(
     inputs: {
         id: string;
-        value: string;
+        value: string | object | undefined;
     }[],
     configFormFields: NormalisedFormField[],
     tenantId: string,
