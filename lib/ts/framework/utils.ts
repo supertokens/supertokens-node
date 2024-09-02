@@ -19,7 +19,7 @@ import type { IncomingMessage } from "http";
 import { ServerResponse } from "http";
 import STError from "../error";
 import type { HTTPMethod } from "../types";
-import { COOKIE_HEADER } from "./constants";
+import { BROTLI_DECOMPRESSION_ERROR_MESSAGE, COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
@@ -55,7 +55,7 @@ async function inflate(stream: IncomingMessage): Promise<string> {
 
         decompressedData = inflator.result;
     } else if (encoding === "br") {
-        if (!brotliDecompress) throw new Error("Brotli decompression not supported on the platform");
+        if (!brotliDecompress) throw new Error(BROTLI_DECOMPRESSION_ERROR_MESSAGE);
 
         const chunks: Buffer[] = [];
         for await (const chunk of stream) {
@@ -228,7 +228,16 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
             try {
                 // parsing it again to make sure that the request is parsed atleast once by a json parser
                 request.body = await parseJSONBodyFromRequest(request);
-            } catch {
+            } catch (err) {
+                // If the error message matches the brotli decompression
+                // related error, then throw that error.
+                if (err.message === BROTLI_DECOMPRESSION_ERROR_MESSAGE) {
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: `API input error: ${BROTLI_DECOMPRESSION_ERROR_MESSAGE}`,
+                    });
+                }
+
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass a valid JSON input in the request body",
