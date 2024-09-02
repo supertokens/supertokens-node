@@ -1093,6 +1093,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                             id: "email",
                             value: "random@gmail.com",
                         },
+                        {
+                            id: "testField",
+                            value: "",
+                        },
                     ],
                 })
                 .expect(400)
