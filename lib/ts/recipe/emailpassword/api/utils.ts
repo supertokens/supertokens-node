@@ -101,18 +101,8 @@ async function validateFormOrThrowError(
         throw newBadRequestError("Are you sending too many formFields?");
     }
 
-    // Check if all the required formFields are passed.
-    const requiredFormFieldIds = configFormFields.filter((field) => !field.optional).map((field) => field.id);
-
-    // Convert to set and back to array to remove duplicates as user
-    // inputs might contain some.
-    const incomingFieldIds = [...new Set(inputs.map((field) => field.id))];
-    const notPresentIds = requiredFormFieldIds.filter((id) => !incomingFieldIds.includes(id));
-
-    if (notPresentIds.length > 0) {
-        // There are required fields that are not passed.
-        throw newBadRequestError(`${notPresentIds.join(", ")} are required values`);
-    }
+    // NOTE: We don't need to check for required fields at all as that will
+    // be picked up in the below codeblock.
 
     for (const formField of configFormFields) {
         const input = inputs.find((input) => input.id === formField.id);
