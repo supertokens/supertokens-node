@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   Optional form fields are now truly optional, can be omitted from the payload.
+
 ## [20.0.4] - 2024-08-30
 
 -   Improves thirdParty debug logging to help with debugging issues with JSON parsing.
