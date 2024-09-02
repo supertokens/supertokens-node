@@ -1547,7 +1547,6 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        console.log(err);
                         resolve(undefined);
                     } else {
                         resolve(JSON.parse(res.text));
