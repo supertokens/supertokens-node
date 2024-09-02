@@ -1093,10 +1093,6 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                             id: "email",
                             value: "random@gmail.com",
                         },
-                        {
-                            id: "testField",
-                            value: "",
-                        },
                     ],
                 })
                 .expect(400)
@@ -1551,6 +1547,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
+                        console.log(err);
                         resolve(undefined);
                     } else {
                         resolve(JSON.parse(res.text));
