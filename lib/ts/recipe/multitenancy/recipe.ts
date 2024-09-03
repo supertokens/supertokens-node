@@ -30,6 +30,7 @@ import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import loginMethodsAPI from "./api/loginMethods";
+import { isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -102,7 +103,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;

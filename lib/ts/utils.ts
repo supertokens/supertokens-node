@@ -422,3 +422,15 @@ export function normaliseEmail(email: string): string {
 
     return email;
 }
+
+export const isTestEnv = (): boolean => {
+    /**
+     * Check if test mode is enabled by reading the environment variable.
+     */
+    if (typeof process !== undefined) return process.env.TEST_MODE === "testing";
+
+    // Since `process` is not available, we will import and use it
+    // instead.
+    const ponyFilledProcess = require("process");
+    return ponyFilledProcess.env.TEST_MODE === "testing";
+};

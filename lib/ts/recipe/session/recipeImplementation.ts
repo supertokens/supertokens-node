@@ -23,6 +23,7 @@ import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { JWKCacheCooldownInMs, protectedProps } from "./constants";
+import { isTestEnv } from "../../utils";
 
 export type Helpers = {
     querier: Querier;
@@ -607,7 +608,7 @@ export default function getRecipeInterface(
         getRecipeImpl: getRecipeImplAfterOverrides,
     };
 
-    if (process.env.TEST_MODE === "testing") {
+    if (isTestEnv()) {
         // testing mode, we add some of the help functions to the obj
         (obj as any).helpers = helpers;
     }
