@@ -13,8 +13,6 @@
  * under the License.
  */
 
-import "./polyfill";
-
 import { serialize } from "cookie";
 import { errorHandler } from "./framework/express";
 import { getUserContext } from "./utils";

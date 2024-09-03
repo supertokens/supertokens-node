@@ -1,5 +1,4 @@
 // @ts-nocheck
-import "./polyfill";
 import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 declare type PartialNextRequest = {

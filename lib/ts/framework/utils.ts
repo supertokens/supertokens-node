@@ -20,11 +20,11 @@ import { ServerResponse } from "http";
 import STError from "../error";
 import type { HTTPMethod } from "../types";
 import { BROTLI_DECOMPRESSION_ERROR_MESSAGE, COOKIE_HEADER } from "./constants";
-import { getFromObjectCaseInsensitive } from "../utils";
+import { getBuffer, getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
 
-let brotliDecompress: ((input: Buffer) => Buffer) | null = null;
+let brotliDecompress: ((input: any) => any) | null = null;
 
 try {
     // @ts-ignore
@@ -57,17 +57,17 @@ async function inflate(stream: IncomingMessage): Promise<string> {
     } else if (encoding === "br") {
         if (!brotliDecompress) throw new Error(BROTLI_DECOMPRESSION_ERROR_MESSAGE);
 
-        const chunks: Buffer[] = [];
+        const chunks = [];
         for await (const chunk of stream) {
             chunks.push(chunk);
         }
-        const compressedData = Buffer.concat(chunks);
+        const compressedData = getBuffer().concat(chunks);
         decompressedData = brotliDecompress(compressedData);
     } else {
         // Handle identity or unsupported encoding
-        decompressedData = Buffer.concat([]);
+        decompressedData = getBuffer().concat([]);
         for await (const chunk of stream) {
-            decompressedData = Buffer.concat([decompressedData, chunk]);
+            decompressedData = getBuffer().concat([decompressedData, chunk]);
         }
     }
 
@@ -222,7 +222,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
             }
         } else if (
             request.body === undefined ||
-            Buffer.isBuffer(request.body) ||
+            getBuffer().isBuffer(request.body) ||
             (Object.keys(request.body).length === 0 && request.readable)
         ) {
             try {
@@ -263,7 +263,7 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(r
         }
     } else if (
         request.body === undefined ||
-        Buffer.isBuffer(request.body) ||
+        getBuffer().isBuffer(request.body) ||
         (Object.keys(request.body).length === 0 && request.readable)
     ) {
         try {

@@ -15,7 +15,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 import type { HTTPMethod } from "../../types";
-import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
+import { getBuffer, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import {
@@ -98,7 +98,7 @@ export class ExpressResponse extends BaseResponse {
              * like response as well as nextjs like response
              */
             this.response.setHeader("Content-Type", "text/html");
-            this.response.status(this.statusCode).send(Buffer.from(html));
+            this.response.status(this.statusCode).send(getBuffer().from(html));
         }
     };
 
