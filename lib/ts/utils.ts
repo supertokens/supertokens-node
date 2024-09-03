@@ -423,15 +423,26 @@ export function normaliseEmail(email: string): string {
     return email;
 }
 
-export const getProcess = (): NodeJS.Process => {
+export const getProcess = () => {
     /**
      * Return the process instance if it is available falling back
      * to one that is compatible where process may not be available
      * (like `edge` runtime).
      */
-    if (typeof process !== undefined) return process;
+    if (typeof process !== "undefined") return process;
     const ponyFilledProcess = require("process");
     return ponyFilledProcess;
+};
+
+export const getBuffer = () => {
+    /**
+     * Return the Buffer instance if it is available falling back
+     * to one that is compatible where it may not be available
+     * (like `edge` runtime).
+     */
+    if (typeof Buffer !== "undefined") return Buffer;
+    const ponyFilledBuffer = require("buffer").Buffer;
+    return ponyFilledBuffer;
 };
 
 export const isTestEnv = (): boolean => {

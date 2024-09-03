@@ -1,5 +1,4 @@
 // @ts-nocheck
-/// <reference types="node" />
 import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { User } from "./user";
@@ -58,5 +57,6 @@ export declare function postWithFetch(
       }
 >;
 export declare function normaliseEmail(email: string): string;
-export declare const getProcess: () => NodeJS.Process;
+export declare const getProcess: () => any;
+export declare const getBuffer: () => any;
 export declare const isTestEnv: () => boolean;
