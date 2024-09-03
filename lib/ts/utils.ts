@@ -451,3 +451,18 @@ export const isTestEnv = (): boolean => {
      */
     return getProcess().env.TEST_MODE === "testing";
 };
+
+export const encodeBase64 = (value: string): string => {
+    /**
+     * Encode the passed value to base64 and return the encoded value.
+     */
+    return getBuffer().from(value).toString("base64");
+};
+
+export const decodeBase64 = (value: string): string => {
+    /**
+     * Decode the passed value with base64 encoded and return the
+     * decoded value.
+     */
+    return getBuffer().from(value, "base64").toString();
+};

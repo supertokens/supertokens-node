@@ -3,6 +3,7 @@ import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
 import { logDebugMessage } from "../../../logger";
+import { decodeBase64 } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -212,7 +213,7 @@ export default function getAPIInterface(): APIInterface {
 
         appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options }): Promise<void> {
             const stateInBase64 = formPostInfoFromProvider.state;
-            const state = Buffer.from(stateInBase64, "base64").toString();
+            const state = decodeBase64(stateInBase64);
             const stateObj = JSON.parse(state);
             const redirectURI = stateObj.frontendRedirectURI;
 
