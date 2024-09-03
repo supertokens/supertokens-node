@@ -423,14 +423,20 @@ export function normaliseEmail(email: string): string {
     return email;
 }
 
+export const getProcess = (): NodeJS.Process => {
+    /**
+     * Return the process instance if it is available falling back
+     * to one that is compatible where process may not be available
+     * (like `edge` runtime).
+     */
+    if (typeof process !== undefined) return process;
+    const ponyFilledProcess = require("process");
+    return ponyFilledProcess;
+};
+
 export const isTestEnv = (): boolean => {
     /**
      * Check if test mode is enabled by reading the environment variable.
      */
-    if (typeof process !== undefined) return process.env.TEST_MODE === "testing";
-
-    // Since `process` is not available, we will import and use it
-    // instead.
-    const ponyFilledProcess = require("process");
-    return ponyFilledProcess.env.TEST_MODE === "testing";
+    return getProcess().env.TEST_MODE === "testing";
 };
