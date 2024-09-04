@@ -15,4 +15,4 @@
 export const COOKIE_HEADER = "Set-Cookie";
 
 // Define error message for brotli decompression not being supported
-export const BROTLI_DECOMPRESSION_ERROR_MESSAGE = "Brotli decompression not supported on the platform";
+export const BROTLI_DECOMPRESSION_ERROR_MESSAGE = "Brotli decompression not implement, use a middleware instead";

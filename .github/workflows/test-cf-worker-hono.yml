@@ -1,0 +1,43 @@
+name: "Test edge function compatibility for Hono on Cloudflare Workers"
+on: push
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        env:
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+            APP_URL: ${{ secrets.CLOUDFLARE_HONO_APP_URL }}
+            CLOUDFLARE_PROJECT_NAME: ${{ secrets.CLOUDFLARE_HONO_PROJECT_NAME }}
+            TEST_DEPLOYED_VERSION: true
+        defaults:
+            run:
+                working-directory: examples/cloudflare-workers/with-be-emailpassword
+        steps:
+            - uses: actions/checkout@v2
+            - run: echo $GITHUB_SHA
+            - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
+            - run: npm install
+            - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
+
+            - name: Replace APP_URL with deployed URL value
+              run: |
+                  sed -i "s|process.env.REACT_APP_API_URL|\"${{ env.APP_URL }}\"|" config.ts
+                  sed -i "s|process.env.REACT_APP_WEBSITE_URL|\"${{ env.APP_URL }}\"|" config.ts
+
+            - name: Deploy the changes
+              run: npx wrangler deploy --name ${{ env.CLOUDFLARE_PROJECT_NAME }} index.ts
+
+            - name: Run tests
+              run: |
+                  ( \
+                    (echo "=========== Test attempt 1 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 2 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 3 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) \
+                  )
+            - name: The job has failed
+              if: ${{ failure() }}
+              uses: actions/upload-artifact@v3
+              with:
+                  name: screenshots
+                  path: |
+                      ./**/*screenshot.jpeg

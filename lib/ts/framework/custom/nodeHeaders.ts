@@ -15,7 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 */
 
-import { types } from "util";
+import { isBoxedPrimitive } from "../utils";
 
 const validateHeaderName = (name) => {
     if (!/^[\^`\-\w!#$%&'*+.|~]+$/.test(name)) {
@@ -64,7 +64,7 @@ export default class Headers extends URLSearchParams {
         } else if (init == null) {
             // eslint-disable-line no-eq-null, eqeqeq
             // No op
-        } else if (typeof init === "object" && !types.isBoxedPrimitive(init)) {
+        } else if (typeof init === "object" && isBoxedPrimitive(init)) {
             const method = init[Symbol.iterator];
             // eslint-disable-next-line no-eq-null, eqeqeq
             if (method == null) {
@@ -79,7 +79,7 @@ export default class Headers extends URLSearchParams {
                 // Note: per spec we have to first exhaust the lists then process them
                 result = [...init]
                     .map((pair) => {
-                        if (typeof pair !== "object" || types.isBoxedPrimitive(pair)) {
+                        if (typeof pair !== "object" || isBoxedPrimitive(pair)) {
                             throw new TypeError("Each header pair must be an iterable object");
                         }
 

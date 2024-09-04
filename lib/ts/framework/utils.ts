@@ -24,15 +24,6 @@ import { getBuffer, getFromObjectCaseInsensitive, isBuffer } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
 
-let brotliDecompress: ((input: any) => any) | null = null;
-
-try {
-    // @ts-ignore
-    if (typeof EdgeRuntime === "undefined") brotliDecompress = require("brotli").decompress;
-} catch (error) {
-    brotliDecompress = null;
-}
-
 async function inflate(stream: IncomingMessage): Promise<string> {
     if (!stream) {
         throw new TypeError("argument stream is required");
@@ -55,14 +46,7 @@ async function inflate(stream: IncomingMessage): Promise<string> {
 
         decompressedData = inflator.result;
     } else if (encoding === "br") {
-        if (!brotliDecompress) throw new Error(BROTLI_DECOMPRESSION_ERROR_MESSAGE);
-
-        const chunks = [];
-        for await (const chunk of stream) {
-            chunks.push(chunk);
-        }
-        const compressedData = getBuffer().concat(chunks);
-        decompressedData = brotliDecompress(compressedData);
+        throw new Error(BROTLI_DECOMPRESSION_ERROR_MESSAGE);
     } else {
         // Handle identity or unsupported encoding
         decompressedData = getBuffer().concat([]);
@@ -231,7 +215,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
             } catch (err) {
                 // If the error message matches the brotli decompression
                 // related error, then throw that error.
-                if (err.message === BROTLI_DECOMPRESSION_ERROR_MESSAGE) {
+                if ((err as any).message === BROTLI_DECOMPRESSION_ERROR_MESSAGE) {
                     throw new STError({
                         type: STError.BAD_INPUT_ERROR,
                         message: `API input error: ${BROTLI_DECOMPRESSION_ERROR_MESSAGE}`,
@@ -313,7 +297,12 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
         }
     } catch (err) {
         throw new Error(
-            "Error while setting header with key: " + key + " and value: " + value + "\nError: " + (err.message ?? err)
+            "Error while setting header with key: " +
+                key +
+                " and value: " +
+                value +
+                "\nError: " +
+                ((err as any).message ?? err)
         );
     }
 }
@@ -417,4 +406,10 @@ export function serializeCookieValue(
     };
 
     return serialize(key, value, opts);
+}
+
+export function isBoxedPrimitive(value: any): boolean {
+    const boxedTypes = [Boolean, Number, String, Symbol, BigInt];
+
+    return boxedTypes.some((type) => value instanceof type);
 }
