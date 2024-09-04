@@ -19,11 +19,9 @@ jobs:
             - run: npm install
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
 
-            # Step to update the runtime to edge to all files in app/api/ and remove pages path
-            # to avoid conflicts
+            # Step to update the runtime to edge to all files in app/api/
             - name: Add runtime export to API files
               run: |
-                  rm -rf pages
                   find app/api -type f \( -name "*.js" -o -name "*.ts" \) -exec sed -i '1s/^/export const runtime = "edge";\n/' {} +
                   echo 'export const runtime = "edge";' >> app/auth/[[...path]]/page.tsx
 
