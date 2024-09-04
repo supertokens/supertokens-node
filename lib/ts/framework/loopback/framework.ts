@@ -17,7 +17,7 @@ import type { MiddlewareContext, Request, Response, Middleware } from "@loopback
 import type { Next } from "@loopback/core";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import { HTTPMethod } from "../../types";
-import { getBuffer, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
+import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import {
@@ -92,7 +92,7 @@ export class LoopbackResponse extends BaseResponse {
     sendHTMLResponse = (html: string) => {
         if (!this.response.writableEnded) {
             this.response.set("Content-Type", "text/html");
-            this.response.status(this.statusCode).send(getBuffer().from(html));
+            this.response.status(this.statusCode).send(html);
         }
     };
 
