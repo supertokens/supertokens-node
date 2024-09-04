@@ -466,3 +466,10 @@ export const decodeBase64 = (value: string): string => {
      */
     return getBuffer().from(value, "base64").toString();
 };
+
+export const isBuffer = (obj: any): boolean => {
+    /**
+     * Check if the passed object is a buffer or not.
+     */
+    return getBuffer().isBuffer(obj);
+};

@@ -20,7 +20,7 @@ import { ServerResponse } from "http";
 import STError from "../error";
 import type { HTTPMethod } from "../types";
 import { BROTLI_DECOMPRESSION_ERROR_MESSAGE, COOKIE_HEADER } from "./constants";
-import { getBuffer, getFromObjectCaseInsensitive } from "../utils";
+import { getBuffer, getFromObjectCaseInsensitive, isBuffer } from "../utils";
 import contentType from "content-type";
 import pako from "pako";
 
@@ -222,7 +222,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
             }
         } else if (
             request.body === undefined ||
-            getBuffer().isBuffer(request.body) ||
+            isBuffer(request.body) ||
             (Object.keys(request.body).length === 0 && request.readable)
         ) {
             try {
@@ -263,7 +263,7 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(r
         }
     } else if (
         request.body === undefined ||
-        getBuffer().isBuffer(request.body) ||
+        isBuffer(request.body) ||
         (Object.keys(request.body).length === 0 && request.readable)
     ) {
         try {
