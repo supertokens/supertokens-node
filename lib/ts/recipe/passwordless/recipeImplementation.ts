@@ -40,14 +40,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             response.user = new User(response.user);
             response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
-            if (response.status !== "OK") {
-                return response;
-            }
-
-            if (response.status !== "OK") {
-                return response;
-            }
-
             // Attempt account linking (this is a sign up)
             let updatedUser = response.user;
 
@@ -63,10 +55,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return linkResult;
             }
             updatedUser = linkResult.user;
-
-            if (updatedUser === undefined) {
-                throw new Error("Should never come here.");
-            }
 
             response.user = updatedUser;
 

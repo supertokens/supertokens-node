@@ -727,7 +727,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
      *        - Make sure that the input email is trimmed
      *        - Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handlePostSignup as that type
      */
-    it("test formFields added in config but not in inout to signup, check error about it being missing", async function () {
+    it("test formFields added in config but not in input to signup, check error about it being missing", async function () {
         const connectionURI = await startST();
         STExpress.init({
             supertokens: {
@@ -757,10 +757,12 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         app.use(errorHandler());
 
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(response.status === 400);
-
-        assert(JSON.parse(response.text).message === "Are you sending too many / too few formFields?");
+        let rawResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        const response = JSON.parse(rawResponse.text);
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
+        assert(response.formFields[0].error === "Field is not optional");
+        assert(response.formFields[0].id === "testField");
     });
 
     //- Good test case without optional
@@ -990,7 +992,6 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
-                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -999,7 +1000,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                     }
                 })
         );
-        assert(response.message === "Are you sending too many / too few formFields?");
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
+        assert(response.formFields[0].error === "Field is not optional");
+        assert(response.formFields[0].id === "email");
     });
 
     // Input formFields has no password field (and not in config
@@ -1033,7 +1037,6 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
-                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1042,7 +1045,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                     }
                 })
         );
-        assert(response.message === "Are you sending too many / too few formFields?");
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
+        assert(response.formFields[0].error === "Field is not optional");
+        assert(response.formFields[0].id === "password");
     });
 
     // Input form field has different number of custom fields than in config form fields)
@@ -1099,7 +1105,6 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
-                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1108,7 +1113,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                     }
                 })
         );
-        assert(response.message === "Are you sending too many / too few formFields?");
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
+        assert(response.formFields[0].error === "Field is not optional");
+        assert(response.formFields[0].id === "testField2");
     });
 
     // Input form field has same number of custom fields as in config form field, but some ids mismatch
@@ -1183,6 +1191,72 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         assert(response.formFields.length === 1);
         assert(response.formFields[0].error === "Field is not optional");
         assert(response.formFields[0].id === "testField2");
+    });
+
+    // Custom optional field missing in the payload should not throw an error
+    it("Custom optional field missing in the payload should not throw an error", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                                optional: true,
+                            },
+                            {
+                                id: "testField1",
+                                optional: true,
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(response.user.id !== undefined);
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     // Test custom field validation error (one and two custom fields)
@@ -1765,5 +1839,72 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
             assert(r3.status === "PASSWORD_POLICY_VIOLATED_ERROR");
             assert(r3.failureReason === "Password should be greater than 5 characters");
         }
+    });
+
+    // test case where more than the configured form fields are passed.
+    it("test bad case when too many formFields are passed", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "testField",
+                            value: "some value",
+                        },
+                        {
+                            id: "extraField",
+                            value: "some value",
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.message == "Are you sending too many formFields?");
     });
 });

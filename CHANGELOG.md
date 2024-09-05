@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [20.0.5] - 2024-09-02
+
+-   Optional form fields are now truly optional, can be omitted from the payload.
+
+## [20.0.4] - 2024-08-30
+
+-   Improves thirdParty debug logging to help with debugging issues with JSON parsing.
+
 ## [20.0.3] - 2024-08-22
 
 -   Fixes issue with dashboard APIs `createOrUpdateThirdPartyConfig` and `deleteThirdPartyConfig` which did not take `includeInNonPublicTenantsByDefault` into account for non-public tenants.
