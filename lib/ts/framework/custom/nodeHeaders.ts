@@ -64,7 +64,7 @@ export default class Headers extends URLSearchParams {
         } else if (init == null) {
             // eslint-disable-line no-eq-null, eqeqeq
             // No op
-        } else if (typeof init === "object" && isBoxedPrimitive(init)) {
+        } else if (typeof init === "object" && !isBoxedPrimitive(init)) {
             const method = init[Symbol.iterator];
             // eslint-disable-next-line no-eq-null, eqeqeq
             if (method == null) {
