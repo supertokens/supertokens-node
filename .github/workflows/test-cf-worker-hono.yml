@@ -11,7 +11,7 @@ jobs:
             TEST_DEPLOYED_VERSION: true
         defaults:
             run:
-                working-directory: examples/cloudflare-workers/with-be-emailpassword
+                working-directory: examples/cloudflare-workers/with-email-password-hono-be-only
         steps:
             - uses: actions/checkout@v2
             - run: echo $GITHUB_SHA

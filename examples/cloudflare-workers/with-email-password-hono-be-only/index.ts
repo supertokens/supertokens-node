@@ -23,6 +23,7 @@ app.use("*", async (c, next) => {
 });
 
 // This exposes all the APIs from SuperTokens to the client.
+// and adds the session to the request object if one exists.
 app.use("*", middleware());
 
 // An example API that requires session verification
