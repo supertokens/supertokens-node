@@ -32,8 +32,11 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type ErrorOAuth2 = {
+    status: "OAUTH_ERROR";
     error: string;
     errorDescription: string;
+    errorDebug?: string;
+    errorHint?: string;
     statusCode?: number;
 };
 export declare type ConsentRequest = {
@@ -99,10 +102,14 @@ export declare type RecipeInterface = {
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<{
-        redirectTo: string;
-        setCookie: string | undefined;
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              redirectTo: string;
+              setCookie: string | undefined;
+          }
+        | ErrorOAuth2
+    >;
     tokenExchange(input: {
         authorizationHeader?: string;
         body: Record<string, string | undefined>;

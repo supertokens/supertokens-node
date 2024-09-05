@@ -46,6 +46,7 @@ export async function loginGET({
                 const reject = await recipeImplementation.rejectLoginRequest({
                     challenge: loginChallenge,
                     error: {
+                        status: "OAUTH_ERROR",
                         error: "invalid_request",
                         errorDescription: "max_age cannot be negative",
                     },
@@ -57,6 +58,7 @@ export async function loginGET({
             const reject = await recipeImplementation.rejectLoginRequest({
                 challenge: loginChallenge,
                 error: {
+                    status: "OAUTH_ERROR",
                     error: "invalid_request",
                     errorDescription: "max_age must be an integer",
                 },
@@ -115,6 +117,7 @@ export async function loginGET({
         const reject = await recipeImplementation.rejectLoginRequest({
             challenge: loginChallenge,
             error: {
+                status: "OAUTH_ERROR",
                 error: "login_required",
                 errorDescription:
                     "The Authorization Server requires End-User authentication. Prompt 'none' was requested, but no existing or expired login session was found.",
@@ -253,10 +256,12 @@ export async function handleInternalRedirects({
                 userContext,
             });
 
-            response = {
-                redirectTo: authRes.redirectTo,
-                setCookie: mergeSetCookieHeaders(authRes.setCookie, response.setCookie),
-            };
+            if (authRes.status === "OK") {
+                response = {
+                    redirectTo: authRes.redirectTo,
+                    setCookie: mergeSetCookieHeaders(authRes.setCookie, response.setCookie),
+                };
+            }
         } else {
             throw new Error(`Unexpected internal redirect ${response.redirectTo}`);
         }

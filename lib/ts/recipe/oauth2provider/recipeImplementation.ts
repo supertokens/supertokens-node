@@ -31,8 +31,15 @@ import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { getSessionInformation } from "../session";
 
-// TODO: Remove this core changes are done
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
+    if (redirectTo.includes("{apiDomain}")) {
+        return redirectTo.replace(
+            "{apiDomain}",
+            appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
+        );
+    }
+
+    // TODO: Remove this core changes are done
     return redirectTo
         .replace(hydraPubDomain, appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous())
         .replace("oauth2/", "oauth/");
@@ -111,71 +118,70 @@ export default function getRecipeInterface(
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
             };
         },
+
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/consent"),
-                { consent_challenge: input.challenge },
+                new NormalisedURLPath("/recipe/oauth/auth/requests/consent"),
+                { challenge: input.challenge },
                 input.userContext
             );
 
             return {
-                acr: resp.data.acr,
-                amr: resp.data.amr,
-                challenge: resp.data.challenge,
-                client: OAuth2Client.fromAPIResponse(resp.data.client),
-                context: resp.data.context,
-                loginChallenge: resp.data.login_challenge,
-                loginSessionId: resp.data.login_session_id,
-                oidcContext: resp.data.oidc_context,
-                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
-                requestedScope: resp.data.requested_scope,
-                skip: resp.data.skip,
-                subject: resp.data.subject,
+                acr: resp.acr,
+                amr: resp.amr,
+                challenge: resp.challenge,
+                client: OAuth2Client.fromAPIResponse(resp.client),
+                context: resp.context,
+                loginChallenge: resp.loginChallenge,
+                loginSessionId: resp.loginSessionId,
+                oidcContext: resp.oidcContext,
+                requestedAccessTokenAudience: resp.requestedAccessTokenAudience,
+                requestedScope: resp.requestedScope,
+                skip: resp.skip,
+                subject: resp.subject,
             };
         },
         acceptConsentRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/accept`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/consent/accept`),
                 {
                     context: input.context,
-                    grant_access_token_audience: input.grantAccessTokenAudience,
-                    grant_scope: input.grantScope,
-                    handled_at: input.handledAt,
+                    grantAccessTokenAudience: input.grantAccessTokenAudience,
+                    grantScope: input.grantScope,
+                    handledAt: input.handledAt,
                     remember: input.remember,
-                    remember_for: input.rememberFor,
+                    rememberFor: input.rememberFor,
                     session: input.session,
                 },
                 {
-                    consent_challenge: input.challenge,
+                    challenge: input.challenge,
                 },
                 input.userContext
             );
 
             return {
-                // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
-
         rejectConsentRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/reject`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/consent/reject`),
                 {
                     error: input.error.error,
                     error_description: input.error.errorDescription,
                     status_code: input.error.statusCode,
                 },
                 {
-                    consent_challenge: input.challenge,
+                    consentChallenge: input.challenge,
                 },
                 input.userContext
             );
 
             return {
-                // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
+
         authorization: async function (this: RecipeInterface, input) {
             if (input.session !== undefined) {
                 if (input.params.prompt === "none") {
@@ -197,61 +203,65 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            const redirectTo = resp.redirectTo;
-            if (redirectTo === undefined) {
-                throw new Error(resp.body);
-            }
-            const redirectToURL = new URL(redirectTo);
-            const consentChallenge = redirectToURL.searchParams.get("consent_challenge");
-            if (consentChallenge !== null && input.session !== undefined) {
-                const consentRequest = await this.getConsentRequest({
-                    challenge: consentChallenge,
-                    userContext: input.userContext,
-                });
-
-                const user = await getUser(input.session.getUserId());
-                if (!user) {
-                    throw new Error("Should not happen");
+            if (resp.status === "OK") {
+                const redirectTo = resp.redirectTo;
+                if (redirectTo === undefined) {
+                    throw new Error(resp.body);
                 }
-                const idToken = await this.buildIdTokenPayload({
-                    user,
-                    client: consentRequest.client!,
-                    sessionHandle: input.session.getHandle(),
-                    scopes: consentRequest.requestedScope || [],
-                    userContext: input.userContext,
-                });
-                const accessTokenPayload = await this.buildAccessTokenPayload({
-                    user,
-                    client: consentRequest.client!,
-                    sessionHandle: input.session.getHandle(),
-                    scopes: consentRequest.requestedScope || [],
-                    userContext: input.userContext,
-                });
+                const redirectToURL = new URL(redirectTo);
+                const consentChallenge = redirectToURL.searchParams.get("consent_challenge");
+                if (consentChallenge !== null && input.session !== undefined) {
+                    const consentRequest = await this.getConsentRequest({
+                        challenge: consentChallenge,
+                        userContext: input.userContext,
+                    });
 
-                const sessionInfo = await getSessionInformation(input.session.getHandle());
-                if (!sessionInfo) {
-                    throw new Error("Session not found");
+                    const user = await getUser(input.session.getUserId());
+                    if (!user) {
+                        throw new Error("Should not happen");
+                    }
+                    const idToken = await this.buildIdTokenPayload({
+                        user,
+                        client: consentRequest.client!,
+                        sessionHandle: input.session.getHandle(),
+                        scopes: consentRequest.requestedScope || [],
+                        userContext: input.userContext,
+                    });
+                    const accessTokenPayload = await this.buildAccessTokenPayload({
+                        user,
+                        client: consentRequest.client!,
+                        sessionHandle: input.session.getHandle(),
+                        scopes: consentRequest.requestedScope || [],
+                        userContext: input.userContext,
+                    });
+
+                    const sessionInfo = await getSessionInformation(input.session.getHandle());
+                    if (!sessionInfo) {
+                        throw new Error("Session not found");
+                    }
+
+                    const consentRes = await this.acceptConsentRequest({
+                        ...input,
+                        challenge: consentRequest.challenge,
+                        grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
+                        grantScope: consentRequest.requestedScope,
+                        remember: true, // TODO: verify that we need this
+                        session: {
+                            id_token: idToken,
+                            access_token: accessTokenPayload,
+                        },
+                        handledAt: new Date(sessionInfo.timeCreated).toISOString(),
+                    });
+
+                    return {
+                        redirectTo: consentRes.redirectTo,
+                        setCookie: resp.cookies ?? undefined,
+                    };
                 }
-
-                const consentRes = await this.acceptConsentRequest({
-                    ...input,
-                    challenge: consentRequest.challenge,
-                    grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
-                    grantScope: consentRequest.requestedScope,
-                    remember: true, // TODO: verify that we need this
-                    session: {
-                        id_token: idToken,
-                        access_token: accessTokenPayload,
-                    },
-                    handledAt: new Date(sessionInfo.timeCreated).toISOString(),
-                });
-
-                return {
-                    redirectTo: consentRes.redirectTo,
-                    setCookie: resp.cookies ?? undefined,
-                };
+                return { redirectTo, setCookie: resp.cookies ?? undefined };
             }
-            return { redirectTo, setCookie: resp.cookies ?? undefined };
+
+            return resp;
         },
 
         tokenExchange: async function (this: RecipeInterface, input) {
@@ -322,9 +332,9 @@ export default function getRecipeInterface(
 
             if (res.status !== "OK") {
                 return {
-                    statusCode: res.status_code,
+                    statusCode: res.statusCode,
                     error: res.error,
-                    errorDescription: res.error_description,
+                    errorDescription: res.errorDescription,
                 };
             }
 
@@ -554,6 +564,7 @@ export default function getRecipeInterface(
 
             if (res.status !== "OK") {
                 return {
+                    status: "OAUTH_ERROR",
                     statusCode: res.statusCode,
                     error: res.data.error,
                     errorDescription: res.data.error_description,

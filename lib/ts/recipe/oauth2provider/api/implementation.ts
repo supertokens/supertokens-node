@@ -45,14 +45,17 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            return handleInternalRedirects({
-                response,
-                recipeImplementation: options.recipeImplementation,
-                cookie,
-                session,
-                shouldTryRefresh,
-                userContext,
-            });
+            if (response.status === "OK") {
+                return handleInternalRedirects({
+                    response,
+                    recipeImplementation: options.recipeImplementation,
+                    cookie,
+                    session,
+                    shouldTryRefresh,
+                    userContext,
+                });
+            }
+            return response;
         },
         tokenPOST: async (input) => {
             return input.options.recipeImplementation.tokenExchange({

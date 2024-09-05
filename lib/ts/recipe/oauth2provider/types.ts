@@ -51,12 +51,18 @@ export type APIOptions = {
 };
 
 export type ErrorOAuth2 = {
+    status: "OAUTH_ERROR";
+
     // The error should follow the OAuth2 error format (e.g. invalid_request, login_required).
     // Defaults to request_denied.
     error: string;
 
     // Description of the error in a human readable format.
     errorDescription: string;
+
+    errorDebug?: string;
+
+    errorHint?: string;
 
     // Represents the HTTP status code of the error (e.g. 401 or 403)
     // Defaults to 400
@@ -180,12 +186,14 @@ export type RecipeInterface = {
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; setCookie: string | undefined }>;
+    }): Promise<{ status: "OK"; redirectTo: string; setCookie: string | undefined } | ErrorOAuth2>;
+
     tokenExchange(input: {
         authorizationHeader?: string;
         body: Record<string, string | undefined>;
         userContext: UserContext;
     }): Promise<TokenInfo | ErrorOAuth2>;
+
     getConsentRequest(input: { challenge: string; userContext: UserContext }): Promise<ConsentRequest>;
     acceptConsentRequest(input: {
         challenge: string;
