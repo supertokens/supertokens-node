@@ -57,51 +57,50 @@ export default function getRecipeInterface(
     return {
         getLoginRequest: async function (this: RecipeInterface, input): Promise<LoginRequest> {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/login"),
-                { login_challenge: input.challenge },
+                new NormalisedURLPath("/recipe/oauth/auth/requests/login"),
+                { challenge: input.challenge },
                 input.userContext
             );
 
             return {
-                challenge: resp.data.challenge,
-                client: OAuth2Client.fromAPIResponse(resp.data.client),
-                oidcContext: resp.data.oidc_context,
-                requestUrl: resp.data.request_url,
-                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
-                requestedScope: resp.data.requested_scope,
-                sessionId: resp.data.session_id,
-                skip: resp.data.skip,
-                subject: resp.data.subject,
+                challenge: resp.challenge,
+                client: OAuth2Client.fromAPIResponse(resp.client),
+                oidcContext: resp.oidcContext,
+                requestUrl: resp.requestUrl,
+                requestedAccessTokenAudience: resp.requestedAccessTokenAudience,
+                requestedScope: resp.requestedScope,
+                sessionId: resp.sessionId,
+                skip: resp.skip,
+                subject: resp.subject,
             };
         },
         acceptLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/login/accept`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/login/accept`),
                 {
                     acr: input.acr,
                     amr: input.amr,
                     context: input.context,
-                    extend_session_lifespan: input.extendSessionLifespan,
-                    force_subject_identifier: input.forceSubjectIdentifier,
-                    identity_provider_session_id: input.identityProviderSessionId,
+                    extendSessionLifespan: input.extendSessionLifespan,
+                    forceSubjectIdentifier: input.forceSubjectIdentifier,
+                    identityProviderSessionId: input.identityProviderSessionId,
                     remember: input.remember,
-                    remember_for: input.rememberFor,
+                    rememberFor: input.rememberFor,
                     subject: input.subject,
                 },
                 {
-                    login_challenge: input.challenge,
+                    challenge: input.challenge,
                 },
                 input.userContext
             );
 
             return {
-                // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
         rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/login/reject`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/login/reject`),
                 {
                     error: input.error.error,
                     error_description: input.error.errorDescription,
@@ -114,8 +113,7 @@ export default function getRecipeInterface(
             );
 
             return {
-                // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
 
