@@ -13,17 +13,52 @@
  * under the License.
  */
 
-import { Readable } from "stream";
 import { parse, serialize } from "cookie";
 import type { Request, Response } from "express";
 import type { IncomingMessage } from "http";
 import { ServerResponse } from "http";
 import STError from "../error";
 import type { HTTPMethod } from "../types";
-import { COOKIE_HEADER } from "./constants";
-import { getFromObjectCaseInsensitive } from "../utils";
+import { BROTLI_DECOMPRESSION_ERROR_MESSAGE, COOKIE_HEADER } from "./constants";
+import { getBuffer, getFromObjectCaseInsensitive, isBuffer } from "../utils";
 import contentType from "content-type";
-import inflate from "inflation";
+import pako from "pako";
+
+async function inflate(stream: IncomingMessage): Promise<string> {
+    if (!stream) {
+        throw new TypeError("argument stream is required");
+    }
+
+    const encoding = (stream.headers && stream.headers["content-encoding"]) || "identity";
+
+    let decompressedData: Uint8Array | string;
+
+    if (encoding === "gzip" || encoding === "deflate") {
+        const inflator = new pako.Inflate();
+
+        for await (const chunk of stream) {
+            inflator.push(chunk, false);
+        }
+
+        if (inflator.err) {
+            throw new Error(`Decompression error: ${inflator.msg}`);
+        }
+
+        decompressedData = inflator.result;
+    } else if (encoding === "br") {
+        throw new Error(BROTLI_DECOMPRESSION_ERROR_MESSAGE);
+    } else {
+        // Handle identity or unsupported encoding
+        decompressedData = getBuffer().concat([]);
+        for await (const chunk of stream) {
+            decompressedData = getBuffer().concat([decompressedData, chunk]);
+        }
+    }
+
+    if (typeof decompressedData === "string") return decompressedData;
+
+    return new TextDecoder().decode(decompressedData);
+}
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
     if (headers === undefined || headers === null) {
@@ -123,8 +158,7 @@ export async function parseJSONBodyFromRequest(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const buffer = await getBody(inflate(req));
-    const str = buffer.toString(encoding as BufferEncoding);
+    const str = await inflate(req);
 
     if (str.length === 0) {
         return {};
@@ -137,8 +171,7 @@ export async function parseURLEncodedFormData(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const buffer = await getBody(inflate(req));
-    const str = buffer.toString(encoding as BufferEncoding);
+    const str = await inflate(req);
 
     let body: any = {};
     for (const [key, val] of new URLSearchParams(str).entries()) {
@@ -173,13 +206,22 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(metho
             }
         } else if (
             request.body === undefined ||
-            Buffer.isBuffer(request.body) ||
+            isBuffer(request.body) ||
             (Object.keys(request.body).length === 0 && request.readable)
         ) {
             try {
                 // parsing it again to make sure that the request is parsed atleast once by a json parser
                 request.body = await parseJSONBodyFromRequest(request);
-            } catch {
+            } catch (err) {
+                // If the error message matches the brotli decompression
+                // related error, then throw that error.
+                if ((err as any).message === BROTLI_DECOMPRESSION_ERROR_MESSAGE) {
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: `API input error: ${BROTLI_DECOMPRESSION_ERROR_MESSAGE}`,
+                    });
+                }
+
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass a valid JSON input in the request body",
@@ -205,7 +247,7 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(r
         }
     } else if (
         request.body === undefined ||
-        Buffer.isBuffer(request.body) ||
+        isBuffer(request.body) ||
         (Object.keys(request.body).length === 0 && request.readable)
     ) {
         try {
@@ -255,7 +297,12 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
         }
     } catch (err) {
         throw new Error(
-            "Error while setting header with key: " + key + " and value: " + value + "\nError: " + (err.message ?? err)
+            "Error while setting header with key: " +
+                key +
+                " and value: " +
+                value +
+                "\nError: " +
+                ((err as any).message ?? err)
         );
     }
 }
@@ -361,16 +408,8 @@ export function serializeCookieValue(
     return serialize(key, value, opts);
 }
 
-// based on https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction
-function getBody(request: Readable) {
-    return new Promise<Buffer>((resolve) => {
-        const bodyParts: Uint8Array[] = [];
-        request
-            .on("data", (chunk) => {
-                bodyParts.push(chunk);
-            })
-            .on("end", () => {
-                resolve(Buffer.concat(bodyParts));
-            });
-    });
+export function isBoxedPrimitive(value: any): boolean {
+    const boxedTypes = [Boolean, Number, String, Symbol, BigInt];
+
+    return boxedTypes.some((type) => value instanceof type);
 }

@@ -1,0 +1,72 @@
+name: "Test edge function compatibility for Next.js on Cloudflare Workers"
+on: push
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        env:
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+            APP_URL: ${{ secrets.CLOUDFLARE_APP_URL }}
+            CLOUDFLARE_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+            TEST_DEPLOYED_VERSION: true
+        defaults:
+            run:
+                working-directory: examples/next/with-emailpassword
+        steps:
+            - uses: actions/checkout@v2
+            - run: echo $GITHUB_SHA
+            - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
+            - run: npm install
+            - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
+
+            # Step to update the runtime to edge to all files in app/api/
+            - name: Add runtime export to API files
+              run: |
+                  find app/api -type f \( -name "*.js" -o -name "*.ts" \) -exec sed -i '1s/^/export const runtime = "edge";\n/' {} +
+                  echo 'export const runtime = "edge";' >> app/auth/[[...path]]/page.tsx
+
+            # Install next on pages to build the app
+            - name: Install next-on-pages
+              run: npm install --save-dev @cloudflare/next-on-pages
+
+            # Setup the compatibility flag to make non edge functions run
+            - name: Create a wrangler.toml
+              run: echo "compatibility_flags = [ "nodejs_compat" ]" >> wrangler.toml
+
+            - name: Replace APP_URL with deployed URL value
+              run: |
+                  sed -i "s|process.env.APP_URL|\"${{ env.APP_URL }}\"|" config/appInfo.ts
+            - name: Build using next-on-pages
+              run: npx next-on-pages
+
+            - name: Publish to Cloudflare Pages
+              id: deploy
+              uses: cloudflare/pages-action@v1
+              with:
+                  apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+                  projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
+                  directory: "./examples/next/with-emailpassword/.vercel/output/static"
+                  wranglerVersion: "3"
+                  branch: "master"
+
+            - name: Extract deployment info and save to JSON
+              id: extract_deploy_info
+              run: |
+                  DEPLOY_ID=${{ steps.deploy.outputs.id }}
+                  DEPLOY_URL=${{ steps.deploy.outputs.url }}
+                  echo "{\"deploy_url\": \"$DEPLOY_URL\", \"deploy_id\": \"$DEPLOY_ID\"}" > deployInfo.json
+            - name: Run tests
+              run: |
+                  ( \
+                    (echo "=========== Test attempt 1 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 2 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 3 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) \
+                  )
+            - name: The job has failed
+              if: ${{ failure() }}
+              uses: actions/upload-artifact@v3
+              with:
+                  name: screenshots
+                  path: |
+                      ./**/*screenshot.jpeg

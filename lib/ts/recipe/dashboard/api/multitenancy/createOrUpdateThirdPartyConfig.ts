@@ -20,6 +20,7 @@ import NormalisedURLDomain from "../../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { doPostRequest } from "../../../thirdparty/providers/utils";
 import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
+import { encodeBase64 } from "../../../../utils";
 
 export type Response =
     | {
@@ -87,7 +88,7 @@ export default async function createOrUpdateThirdPartyConfig(
                 defaultRedirectUrl: providerConfig.clients[0].additionalConfig.redirectURLs[0],
                 forceAuthn: false,
                 encodedRawMetadata: providerConfig.clients[0].additionalConfig.samlXML
-                    ? Buffer.from(providerConfig.clients[0].additionalConfig.samlXML).toString("base64")
+                    ? encodeBase64(providerConfig.clients[0].additionalConfig.samlXML)
                     : "",
                 redirectUrl: JSON.stringify(providerConfig.clients[0].additionalConfig.redirectURLs),
                 metadataUrl: providerConfig.clients[0].additionalConfig.samlURL || "",

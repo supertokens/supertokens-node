@@ -58,3 +58,4 @@ export declare function serializeCookieValue(
     path: string,
     sameSite: "strict" | "lax" | "none"
 ): string;
+export declare function isBoxedPrimitive(value: any): boolean;

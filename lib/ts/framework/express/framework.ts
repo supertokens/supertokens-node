@@ -98,7 +98,7 @@ export class ExpressResponse extends BaseResponse {
              * like response as well as nextjs like response
              */
             this.response.setHeader("Content-Type", "text/html");
-            this.response.status(this.statusCode).send(Buffer.from(html));
+            this.response.status(this.statusCode).send(html);
         }
     };
 

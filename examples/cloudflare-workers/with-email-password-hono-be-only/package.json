@@ -1,0 +1,24 @@
+{
+    "name": "with-email-password-hono-be-only",
+    "version": "0.0.1",
+    "private": true,
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "wrangler dev index.ts --port 3001"
+    },
+    "dependencies": {
+        "hono": "^4.3.9",
+        "process": "^0.11.10",
+        "supertokens-node": "file:../../../lib/build"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^4.20240403.0",
+        "@types/node": "^18.0.0",
+        "jsdom-global": "^3.0.2",
+        "wrangler": "^3.57.0"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

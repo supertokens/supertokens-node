@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { encodeBase64 } from "../../../utils";
 import { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
 import { doGetRequest, doPostRequest } from "./utils";
@@ -60,9 +61,9 @@ export default function Github(input: ProviderInput): TypeProvider {
 
     if (input.config.validateAccessToken === undefined) {
         input.config.validateAccessToken = async ({ accessToken, clientConfig }) => {
-            const basicAuthToken = Buffer.from(
+            const basicAuthToken = encodeBase64(
                 `${clientConfig.clientId}:${clientConfig.clientSecret === undefined ? "" : clientConfig.clientSecret}`
-            ).toString("base64");
+            );
 
             const applicationResponse = await doPostRequest(
                 `https://api.github.com/applications/${clientConfig.clientId}/token`,

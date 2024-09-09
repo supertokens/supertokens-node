@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [20.0.6] - 2024-09-05
+
+-   Add edge compatibility for custom frameworks and Next.JS
+
 ## [20.0.5] - 2024-09-02
 
 -   Optional form fields are now truly optional, can be omitted from the payload.

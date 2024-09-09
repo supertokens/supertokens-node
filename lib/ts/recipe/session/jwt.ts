@@ -14,22 +14,23 @@
  */
 
 import { logDebugMessage } from "../../logger";
+import { decodeBase64, encodeBase64 } from "../../utils";
 
 const HEADERS = new Set([
-    Buffer.from(
+    encodeBase64(
         JSON.stringify({
             alg: "RS256",
             typ: "JWT",
             version: "1",
         })
-    ).toString("base64"),
-    Buffer.from(
+    ),
+    encodeBase64(
         JSON.stringify({
             alg: "RS256",
             typ: "JWT",
             version: "2",
         })
-    ).toString("base64"),
+    ),
 ]);
 
 export type ParsedJWTInfo = {
@@ -56,7 +57,7 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
     // V2 or older tokens did not save the key id;
     // checking header
     if (!HEADERS.has(splittedInput[0])) {
-        const parsedHeader = JSON.parse(Buffer.from(splittedInput[0], "base64").toString());
+        const parsedHeader = JSON.parse(decodeBase64(splittedInput[0]));
 
         if (parsedHeader.version !== undefined) {
             // We have to ensure version is a string, otherwise Number.parseInt can have unexpected results
@@ -88,7 +89,7 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
         header: splittedInput[0],
         // Ideally we would only parse this after the signature verification is done.
         // We do this at the start, since we want to check if a token can be a supertokens access token or not
-        payload: JSON.parse(Buffer.from(splittedInput[1], "base64").toString()),
+        payload: JSON.parse(decodeBase64(splittedInput[1])),
         signature: splittedInput[2],
     };
 }

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { doFetch, getLargestVersionFromIntersection } from "./utils";
+import { doFetch, getLargestVersionFromIntersection, isTestEnv } from "./utils";
 import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -112,7 +112,7 @@ export class Querier {
     };
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw Error("calling testing function in non testing env");
         }
         Querier.initCalled = false;
@@ -120,7 +120,7 @@ export class Querier {
     }
 
     getHostsAliveForTesting = () => {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw Error("calling testing function in non testing env");
         }
         return Querier.hostsAliveForTesting;
@@ -535,7 +535,7 @@ export class Querier {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
             logDebugMessage(`core-call: ${method} ${url}`);
             let response = await requestFunc(url);
-            if (process.env.TEST_MODE === "testing") {
+            if (isTestEnv()) {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
             if (response.status !== 200) {

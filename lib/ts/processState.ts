@@ -13,6 +13,8 @@
  * under the License.
  */
 
+import { isTestEnv } from "./utils";
+
 export enum PROCESS_STATE {
     CALLING_SERVICE_IN_VERIFY,
     CALLING_SERVICE_IN_GET_API_VERSION,
@@ -41,7 +43,7 @@ export class ProcessState {
     }
 
     addState = (state: PROCESS_STATE) => {
-        if (process.env.TEST_MODE === "testing") {
+        if (isTestEnv()) {
             this.history.push(state);
         }
     };
