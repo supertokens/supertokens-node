@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [20.1.1] - 2024-09-10
+
+-   Fixes an issue with Okta / Active Directory providers where we check for additional config if `oidcDiscoveryEndpoint` is not defined. It would not be necessary in the cases where other endpoints are already provided.
+
 ## [20.1.0] - 2024-09-09
 
 -   Add edge compatibility for custom frameworks and Next.JS
