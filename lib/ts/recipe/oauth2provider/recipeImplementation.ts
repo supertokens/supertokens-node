@@ -202,7 +202,7 @@ export default function getRecipeInterface(
             );
 
             if (resp.status === "OK") {
-                const redirectTo = resp.redirectTo;
+                const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
                 if (redirectTo === undefined) {
                     throw new Error(resp.body);
                 }
@@ -263,9 +263,9 @@ export default function getRecipeInterface(
         },
 
         tokenExchange: async function (this: RecipeInterface, input) {
-            const body: any = {};
+            const inputBody: any = {};
             for (const key in input.body) {
-                body[key] = input.body[key];
+                inputBody[key] = input.body[key];
             }
 
             if (input.body.grant_type === "refresh_token") {
@@ -309,7 +309,7 @@ export default function getRecipeInterface(
                         scopes,
                         userContext: input.userContext,
                     });
-                    body["session"] = {
+                    inputBody["session"] = {
                         id_token: idToken,
                         access_token: accessTokenPayload,
                     };
@@ -319,12 +319,12 @@ export default function getRecipeInterface(
             }
 
             if (input.authorizationHeader) {
-                body["authorizationHeader"] = input.authorizationHeader;
+                inputBody["authorizationHeader"] = input.authorizationHeader;
             }
 
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth/token`),
-                { body, iss: await this.getIssuer({ userContext: input.userContext }) },
+                { inputBody, iss: await this.getIssuer({ userContext: input.userContext }) },
                 input.userContext
             );
 
