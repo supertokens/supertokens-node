@@ -62,6 +62,11 @@ export type RecipeInterface = {
         skew?: number;
         period?: number;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
     }) => Promise<
         | {
               status: "OK";
@@ -74,6 +79,9 @@ export type RecipeInterface = {
           }
         | {
               status: "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "IP_BANNED_ERROR" | "USER_BANNED_ERROR";
           }
     >;
     updateDevice: (input: {
@@ -110,6 +118,11 @@ export type RecipeInterface = {
         deviceName: string;
         totp: string;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
     }) => Promise<
         | {
               status: "OK";
@@ -127,12 +140,20 @@ export type RecipeInterface = {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
           }
+        | {
+              status: "IP_BANNED_ERROR" | "USER_BANNED_ERROR";
+          }
     >;
     verifyTOTP: (input: {
         tenantId: string;
         userId: string;
         totp: string;
         userContext: UserContext;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR";
@@ -145,6 +166,9 @@ export type RecipeInterface = {
         | {
               status: "LIMIT_REACHED_ERROR";
               retryAfterMs: number;
+          }
+        | {
+              status: "IP_BANNED_ERROR" | "USER_BANNED_ERROR";
           }
     >;
 };
@@ -213,6 +237,8 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
+    // we don't need to pass google recaptcha or security service request id here because the device is already verified
+    // since this only happens after you have a session token.
     verifyDevicePOST:
         | undefined
         | ((input: {
@@ -241,6 +267,8 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
+    // we don't need to pass google recaptcha or security service request id here because the device is already verified
+    // since this only happens after you have a session token.
     verifyTOTPPOST:
         | undefined
         | ((input: {

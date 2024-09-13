@@ -89,6 +89,11 @@ export type RecipeInterface = {
         password: string;
         session: SessionContainerInterface | undefined;
         tenantId: string;
+        securityOptions?: {
+            enforceEmailBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
         userContext: UserContext;
     }): Promise<
         | {
@@ -104,6 +109,14 @@ export type RecipeInterface = {
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
+          }
+        | {
+              // this can happen during account linking, if the primary user that this is going to be linked to is banned.
+              status: "USER_BANNED_ERROR";
+              user: User;
           }
     >;
     // this function is meant only for creating the recipe in the core and nothing else.
@@ -114,6 +127,11 @@ export type RecipeInterface = {
         email: string;
         password: string;
         tenantId: string;
+        securityOptions?: {
+            enforceEmailBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
         userContext: UserContext;
     }): Promise<
         | {
@@ -122,6 +140,9 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
+          }
     >;
 
     signIn(input: {
@@ -129,10 +150,22 @@ export type RecipeInterface = {
         password: string;
         session: SessionContainerInterface | undefined;
         tenantId: string;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceEmailBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+            limitWrongCredentialsAttempt?: {
+                enabled?: boolean;
+                counterKey?: string; // by default, it is just email ID
+                maxNumberOfIncorrectAttempts?: number; // by default, it is 4
+                lockoutTimeInSeconds?: number; // by default, it is 60
+            };
+        };
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR"; numberOfIncorrectAttemptsSoFar: number }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -141,6 +174,18 @@ export type RecipeInterface = {
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
+          }
+        | {
+              status: "USER_BANNED_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_LIMIT_REACHED_ERROR";
+              remainingLockingTimeInSeconds: number;
+          }
     >;
 
     verifyCredentials(input: {
@@ -148,7 +193,34 @@ export type RecipeInterface = {
         password: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceEmailBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+            limitWrongCredentialsAttempt?: {
+                enabled?: boolean;
+                counterKey?: string; // by default, it is just email ID
+                maxNumberOfIncorrectAttempts?: number; // by default, it is 4
+                lockoutTimeInSeconds?: number; // by default, it is 60
+            };
+        };
+    }): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
+          }
+        | {
+              status: "USER_BANNED_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_LIMIT_REACHED_ERROR";
+              remainingLockingTimeInSeconds: number;
+          }
+    >;
 
     /**
      * We pass in the email as well to this function cause the input userId
@@ -159,8 +231,25 @@ export type RecipeInterface = {
         userId: string; // the id can be either recipeUserId or primaryUserId
         email: string;
         tenantId: string;
+        securityOptions?: {
+            enforceUserBan?: boolean;
+            enforceEmailBan?: boolean;
+            enforceIpBan?: boolean;
+            ipAddress?: string;
+        };
         userContext: UserContext;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
+    }): Promise<
+        | { status: "OK"; token: string }
+        | { status: "UNKNOWN_USER_ID_ERROR" }
+        | {
+              status: "EMAIL_BANNED_ERROR" | "IP_BANNED_ERROR";
+          }
+        | {
+              status: "USER_BANNED_ERROR";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+    >;
 
     consumePasswordResetToken(input: {
         token: string;
@@ -183,6 +272,12 @@ export type RecipeInterface = {
         password?: string;
         userContext: UserContext;
         applyPasswordPolicy?: boolean;
+        securityOptions?: {
+            limitOldPasswordReuse?: {
+                enabled?: boolean;
+                numberOfOldPasswordsToCheck?: number;
+            };
+        };
         tenantIdForPasswordPolicy: string;
     }): Promise<
         | {
@@ -193,6 +288,7 @@ export type RecipeInterface = {
               reason: string;
           }
         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+        | { status: "OLD_PASSWORD_REUSED_ERROR" }
     >;
 };
 
@@ -226,6 +322,8 @@ export type APIInterface = {
     generatePasswordResetTokenPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               formFields: {
                   id: string;
                   value: string;
@@ -271,6 +369,8 @@ export type APIInterface = {
     signInPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               formFields: {
                   id: string;
                   value: string;
@@ -298,6 +398,8 @@ export type APIInterface = {
     signUpPOST:
         | undefined
         | ((input: {
+              googleRecaptchaToken?: string;
+              securityServiceRequestId?: string;
               formFields: {
                   id: string;
                   value: string;
