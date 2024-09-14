@@ -30,7 +30,7 @@ import { COOKIE_HEADER } from "../constants";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
-import { parse } from "querystring";
+import STError from "../../error";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;
@@ -45,8 +45,15 @@ export class AWSRequest extends BaseRequest {
         if (this.event.body === null || this.event.body === undefined) {
             return {};
         } else {
-            const parsedUrlEncodedFormData = parse(this.event.body);
-            return parsedUrlEncodedFormData === undefined ? {} : parsedUrlEncodedFormData;
+            try {
+                const parsedUrlEncodedFormData = Object.fromEntries(new URLSearchParams(this.event.body).entries());
+                return parsedUrlEncodedFormData === undefined ? {} : parsedUrlEncodedFormData;
+            } catch (err) {
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "API input error: Please make sure to pass valid url encoded form in the request body",
+                });
+            }
         }
     };
 

@@ -57,3 +57,9 @@ export declare function postWithFetch(
       }
 >;
 export declare function normaliseEmail(email: string): string;
+export declare const getProcess: () => any;
+export declare const getBuffer: () => any;
+export declare const isTestEnv: () => boolean;
+export declare const encodeBase64: (value: string) => string;
+export declare const decodeBase64: (value: string) => string;
+export declare const isBuffer: (obj: any) => boolean;

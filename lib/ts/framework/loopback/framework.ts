@@ -92,7 +92,7 @@ export class LoopbackResponse extends BaseResponse {
     sendHTMLResponse = (html: string) => {
         if (!this.response.writableEnded) {
             this.response.set("Content-Type", "text/html");
-            this.response.status(this.statusCode).send(Buffer.from(html));
+            this.response.status(this.statusCode).send(html);
         }
     };
 

@@ -20,6 +20,7 @@ import {
     normaliseHttpMethod,
     sendNon200ResponseWithMessage,
     getRidFromHeader,
+    isTestEnv,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -142,7 +143,7 @@ export default class SuperTokens {
         // To let those cases function without initializing account linking we do not check it here, but when
         // the authentication endpoints are called.
 
-        this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
+        this.telemetryEnabled = config.telemetry === undefined ? !isTestEnv() : config.telemetry;
     }
 
     static init(config: TypeInput) {
@@ -153,7 +154,7 @@ export default class SuperTokens {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw new Error("calling testing function in non testing env");
         }
         Querier.reset();

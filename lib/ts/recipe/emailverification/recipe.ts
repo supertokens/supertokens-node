@@ -38,6 +38,7 @@ import Session from "../session";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { logDebugMessage } from "../../logger";
+import { isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -125,7 +126,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;
