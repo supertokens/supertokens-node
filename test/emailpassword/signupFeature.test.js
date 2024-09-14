@@ -830,6 +830,136 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         assert(response.user.emails[0] === "random@gmail.com");
     });
 
+    it("test valid boolean formFields with optional", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "autoVerify",
+                                optional: false,
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "autoVerify",
+                            value: false,
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(response.user.id !== undefined);
+        assert(response.user.emails[0] === "random@gmail.com");
+    });
+
+    it("test valid int formFields with optional", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "intField",
+                                optional: false,
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "intField",
+                            value: 23,
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(response.user.id !== undefined);
+        assert(response.user.emails[0] === "random@gmail.com");
+    });
+
     //- Bad test case without optional (something is missing, and it's not optional)
     it("test bad case input to signup without optional", async function () {
         const connectionURI = await startST();

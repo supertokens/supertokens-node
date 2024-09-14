@@ -87,7 +87,7 @@ function newBadRequestError(message: string) {
 async function validateFormOrThrowError(
     inputs: {
         id: string;
-        value: string | object | undefined;
+        value: any | undefined;
     }[],
     configFormFields: NormalisedFormField[],
     tenantId: string,
@@ -111,7 +111,9 @@ async function validateFormOrThrowError(
         // and the field is not optional.
         const isValidInput =
             !!input &&
-            ((typeof input.value === "string" && input.value.length > 0) ||
+            ((typeof input.value === "string"
+                ? input.value.length > 0
+                : input.value !== null && typeof input.value !== "undefined") ||
                 (typeof input.value === "object" && Object.values(input.value).length > 0));
         if (!formField.optional && !isValidInput) {
             validationErrors.push({
