@@ -32,7 +32,6 @@ export default class Recipe extends RecipeModule {
     addUserInfoBuilderFromOtherRecipe: (userInfoBuilderFn: UserInfoBuilderFunction) => void;
     addAccessTokenBuilderFromOtherRecipe: (accessTokenBuilders: PayloadBuilderFunction) => void;
     addIdTokenBuilderFromOtherRecipe: (idTokenBuilder: PayloadBuilderFunction) => void;
-    saveTokensForHook: (sessionHandle: string, idToken: JSONObject, accessToken: JSONObject) => void;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
         id: string,

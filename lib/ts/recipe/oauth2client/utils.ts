@@ -17,23 +17,22 @@ import { NormalisedAppinfo } from "../../types";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 
 export function validateAndNormaliseUserInput(_appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
-    if (config === undefined || config.providerConfig === undefined) {
-        throw new Error("Please pass providerConfig argument in the OAuth2Client recipe.");
+    if (config === undefined || config.providerConfigs === undefined) {
+        throw new Error("Please pass providerConfigs argument in the OAuth2Client recipe.");
     }
 
-    if (config.providerConfig.clientId === undefined) {
-        throw new Error("Please pass clientId argument in the OAuth2Client providerConfig.");
+    if (config.providerConfigs.some((providerConfig) => providerConfig.clientId === undefined)) {
+        throw new Error("Please pass clientId for all providerConfigs.");
     }
 
-    // TODO: Decide on the prefix and also if we will allow users to customise clientIds
-    // if (!config.providerConfig.clientId.startsWith("supertokens_")) {
-    //     throw new Error(
-    //         `Only Supertokens OAuth ClientIds are supported in the OAuth2Client recipe. For any other OAuth Clients use the thirdparty recipe.`
-    //     );
-    // }
+    if (!config.providerConfigs.every((providerConfig) => providerConfig.clientId.startsWith("supertokens_"))) {
+        throw new Error(
+            `Only Supertokens OAuth ClientIds are supported in the OAuth2Client recipe. For any other OAuth Clients use the ThirdParty recipe.`
+        );
+    }
 
-    if (config.providerConfig.oidcDiscoveryEndpoint === undefined) {
-        throw new Error("Please pass oidcDiscoveryEndpoint argument in the OAuth2Client providerConfig.");
+    if (config.providerConfigs.some((providerConfig) => providerConfig.oidcDiscoveryEndpoint === undefined)) {
+        throw new Error("Please pass oidcDiscoveryEndpoint for all providerConfigs.");
     }
 
     let override = {
@@ -43,7 +42,7 @@ export function validateAndNormaliseUserInput(_appInfo: NormalisedAppinfo, confi
     };
 
     return {
-        providerConfig: config.providerConfig,
+        providerConfigs: config.providerConfigs,
         override,
     };
 }

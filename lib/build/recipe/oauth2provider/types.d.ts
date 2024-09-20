@@ -117,7 +117,9 @@ export declare type RecipeInterface = {
         handledAt?: string;
         remember?: boolean;
         rememberFor?: number;
-        session?: any;
+        tenantId: string;
+        rsub: string;
+        sessionHandle: string;
         userContext: UserContext;
     }): Promise<{
         redirectTo: string;
@@ -240,16 +242,16 @@ export declare type RecipeInterface = {
         payload: JSONObject;
     }>;
     buildAccessTokenPayload(input: {
-        user: User;
+        user: User | undefined;
         client: OAuth2Client;
-        sessionHandle: string;
+        sessionHandle: string | undefined;
         scopes: string[];
         userContext: UserContext;
     }): Promise<JSONObject>;
     buildIdTokenPayload(input: {
-        user: User;
+        user: User | undefined;
         client: OAuth2Client;
-        sessionHandle: string;
+        sessionHandle: string | undefined;
         scopes: string[];
         userContext: UserContext;
     }): Promise<JSONObject>;

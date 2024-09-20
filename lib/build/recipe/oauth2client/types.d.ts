@@ -40,7 +40,7 @@ export declare type OAuthTokenResponse = {
     token_type: string;
 };
 export declare type TypeInput = {
-    providerConfig: ProviderConfigInput;
+    providerConfigs: ProviderConfigInput[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -50,7 +50,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    providerConfig: ProviderConfigInput;
+    providerConfigs: ProviderConfigInput[];
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -60,7 +60,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getProviderConfig(input: { userContext: UserContext }): Promise<ProviderConfigWithOIDCInfo>;
+    getProviderConfig(input: { clientId: string; userContext: UserContext }): Promise<ProviderConfigWithOIDCInfo>;
     signIn(input: {
         userId: string;
         oAuthTokens: OAuthTokens;
@@ -116,6 +116,7 @@ export declare type APIInterface = {
     signInPOST: (
         input: {
             tenantId: string;
+            clientId?: string;
             options: APIOptions;
             userContext: UserContext;
         } & (

@@ -21,7 +21,6 @@ import { OAuth2Client } from "./OAuth2Client";
 import { User } from "../../user";
 
 export type TypeInput = {
-    // TODO: issuer?
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -204,8 +203,10 @@ export type RecipeInterface = {
         // RememberFor sets how long the consent authorization should be remembered for in seconds. If set to 0, the authorization will be remembered indefinitely. integer <int64>
         rememberFor?: number;
 
-        // object (Pass session data to a consent request.)
-        session?: any;
+        tenantId: string;
+        rsub: string;
+        sessionHandle: string;
+
         userContext: UserContext;
     }): Promise<{ redirectTo: string }>;
 
@@ -352,16 +353,16 @@ export type RecipeInterface = {
     }): Promise<{ status: "OK"; payload: JSONObject }>;
 
     buildAccessTokenPayload(input: {
-        user: User;
+        user: User | undefined;
         client: OAuth2Client;
-        sessionHandle: string;
+        sessionHandle: string | undefined;
         scopes: string[];
         userContext: UserContext;
     }): Promise<JSONObject>;
     buildIdTokenPayload(input: {
-        user: User;
+        user: User | undefined;
         client: OAuth2Client;
-        sessionHandle: string;
+        sessionHandle: string | undefined;
         scopes: string[];
         userContext: UserContext;
     }): Promise<JSONObject>;

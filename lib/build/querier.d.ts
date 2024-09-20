@@ -3,7 +3,6 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
-export declare const hydraPubDomain: string;
 export declare class Querier {
     private static initCalled;
     private static hosts;

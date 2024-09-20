@@ -15,7 +15,7 @@
 
 import * as jose from "jose";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier, hydraPubDomain } from "../../querier";
+import { Querier } from "../../querier";
 import { JSONObject, NormalisedAppinfo } from "../../types";
 import {
     RecipeInterface,
@@ -25,17 +25,27 @@ import {
     PayloadBuilderFunction,
     UserInfoBuilderFunction,
 } from "./types";
-import { toSnakeCase, transformObjectKeys } from "../../utils";
 import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
-import { getSessionInformation } from "../session";
 
-// TODO: Remove this core changes are done
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
-    return redirectTo
-        .replace(hydraPubDomain, appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous())
-        .replace("oauth2/", "oauth/");
+    return redirectTo.replace(
+        "{apiDomain}",
+        appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
+    );
+    // .replace("oauth2/", "oauth/");
+}
+
+function copyAndCleanRequestBodyInput(input: any): any {
+    let result = {
+        ...input,
+    };
+    delete result.userContext;
+    delete result.tenantId;
+    delete result.session;
+
+    return result;
 }
 
 export default function getRecipeInterface(
@@ -44,136 +54,154 @@ export default function getRecipeInterface(
     appInfo: NormalisedAppinfo,
     getDefaultAccessTokenPayload: PayloadBuilderFunction,
     getDefaultIdTokenPayload: PayloadBuilderFunction,
-    getDefaultUserInfoPayload: UserInfoBuilderFunction,
-    saveTokensForHook: (sessionHandle: string, idToken: JSONObject, accessToken: JSONObject) => void
+    getDefaultUserInfoPayload: UserInfoBuilderFunction
 ): RecipeInterface {
     return {
         getLoginRequest: async function (this: RecipeInterface, input): Promise<LoginRequest> {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/login"),
-                { login_challenge: input.challenge },
+                new NormalisedURLPath("/recipe/oauth/auth/requests/login"),
+                { loginChallenge: input.challenge },
                 input.userContext
             );
 
             return {
-                challenge: resp.data.challenge,
-                client: OAuth2Client.fromAPIResponse(resp.data.client),
-                oidcContext: resp.data.oidc_context,
-                requestUrl: resp.data.request_url,
-                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
-                requestedScope: resp.data.requested_scope,
-                sessionId: resp.data.session_id,
-                skip: resp.data.skip,
-                subject: resp.data.subject,
+                challenge: resp.challenge,
+                client: OAuth2Client.fromAPIResponse(resp.client),
+                oidcContext: resp.oidcContext,
+                requestUrl: resp.requestUrl,
+                requestedAccessTokenAudience: resp.requestedAccessTokenAudience,
+                requestedScope: resp.requestedScope,
+                sessionId: resp.sessionId,
+                skip: resp.skip,
+                subject: resp.subject,
             };
         },
         acceptLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/login/accept`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/login/accept`),
                 {
                     acr: input.acr,
                     amr: input.amr,
                     context: input.context,
-                    extend_session_lifespan: input.extendSessionLifespan,
-                    force_subject_identifier: input.forceSubjectIdentifier,
-                    identity_provider_session_id: input.identityProviderSessionId,
+                    extendSessionLifespan: input.extendSessionLifespan,
+                    forceSubjectIdentifier: input.forceSubjectIdentifier,
+                    identityProviderSessionId: input.identityProviderSessionId,
                     remember: input.remember,
-                    remember_for: input.rememberFor,
+                    rememberFor: input.rememberFor,
                     subject: input.subject,
                 },
                 {
-                    login_challenge: input.challenge,
+                    loginChallenge: input.challenge,
                 },
                 input.userContext
             );
 
+            console.log("acceptLoginRequest resp", resp);
+
             return {
                 // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
         rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/login/reject`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/login/reject`),
+                copyAndCleanRequestBodyInput(input),
                 {
-                    error: input.error.error,
-                    error_description: input.error.errorDescription,
-                    status_code: input.error.statusCode,
-                },
-                {
-                    login_challenge: input.challenge,
+                    loginChallenge: input.challenge,
                 },
                 input.userContext
             );
 
             return {
                 // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
         getConsentRequest: async function (this: RecipeInterface, input): Promise<ConsentRequest> {
             const resp = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/oauth2/admin/oauth2/auth/requests/consent"),
-                { consent_challenge: input.challenge },
+                new NormalisedURLPath("/recipe/oauth/auth/requests/consent"),
+                { consentChallenge: input.challenge },
                 input.userContext
             );
 
             return {
-                acr: resp.data.acr,
-                amr: resp.data.amr,
-                challenge: resp.data.challenge,
-                client: OAuth2Client.fromAPIResponse(resp.data.client),
-                context: resp.data.context,
-                loginChallenge: resp.data.login_challenge,
-                loginSessionId: resp.data.login_session_id,
-                oidcContext: resp.data.oidc_context,
-                requestedAccessTokenAudience: resp.data.requested_access_token_audience,
-                requestedScope: resp.data.requested_scope,
-                skip: resp.data.skip,
-                subject: resp.data.subject,
+                acr: resp.acr,
+                amr: resp.amr,
+                challenge: resp.challenge,
+                client: OAuth2Client.fromAPIResponse(resp.client),
+                context: resp.context,
+                loginChallenge: resp.loginChallenge,
+                loginSessionId: resp.loginSessionId,
+                oidcContext: resp.oidcContext,
+                requestedAccessTokenAudience: resp.requestedAccessTokenAudience,
+                requestedScope: resp.requestedScope,
+                skip: resp.skip,
+                subject: resp.subject,
             };
         },
         acceptConsentRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/accept`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/consent/accept`),
                 {
                     context: input.context,
-                    grant_access_token_audience: input.grantAccessTokenAudience,
-                    grant_scope: input.grantScope,
-                    handled_at: input.handledAt,
+                    grantAccessTokenAudience: input.grantAccessTokenAudience,
+                    grantScope: input.grantScope,
+                    handledAt: input.handledAt,
                     remember: input.remember,
-                    remember_for: input.rememberFor,
-                    session: input.session,
+                    rememberFor: input.rememberFor,
+                    iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
+                    tId: input.tenantId,
+                    rsub: input.rsub,
+                    sessionHandle: input.sessionHandle,
                 },
                 {
-                    consent_challenge: input.challenge,
+                    consentChallenge: input.challenge,
                 },
                 input.userContext
             );
+            console.log("acceptConsentRequest resp", {
+                body: {
+                    context: input.context,
+                    grantAccessTokenAudience: input.grantAccessTokenAudience,
+                    grantScope: input.grantScope,
+                    handledAt: input.handledAt,
+                    remember: input.remember,
+                    rememberFor: input.rememberFor,
+                    iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
+                    tId: input.tenantId,
+                    rsub: input.rsub,
+                    sessionHandle: input.sessionHandle,
+                },
+                queryParams: {
+                    consentChallenge: input.challenge,
+                },
+                resp,
+            });
 
             return {
                 // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
 
         rejectConsentRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/consent/reject`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/consent/reject`),
                 {
                     error: input.error.error,
-                    error_description: input.error.errorDescription,
-                    status_code: input.error.statusCode,
+                    errorDescription: input.error.errorDescription,
+                    statusCode: input.error.statusCode,
                 },
                 {
-                    consent_challenge: input.challenge,
+                    consentChallenge: input.challenge,
                 },
                 input.userContext
             );
-
+            console.log("rejectConsentRequest resp", resp);
             return {
                 // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to),
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
         authorization: async function (this: RecipeInterface, input) {
@@ -184,17 +212,67 @@ export default function getRecipeInterface(
                 }
             }
 
-            const resp = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth2/pub/auth`),
-                input.params,
+            let payloads: { idToken: JSONObject | undefined; accessToken: JSONObject | undefined } | undefined;
+
+            if (input.params.client_id === undefined) {
+                throw new Error("client_id is required");
+            }
+
+            const responseTypes = input.params.response_type?.split(" ") ?? [];
+            if (
+                input.session !== undefined &&
+                (responseTypes.includes("token") || responseTypes.includes("id_token"))
+            ) {
+                const clientInfo = await this.getOAuth2Client({
+                    clientId: input.params.client_id as string,
+                    userContext: input.userContext,
+                });
+
+                if (clientInfo.status === "ERROR") {
+                    throw new Error(clientInfo.error);
+                }
+                const client = clientInfo.client;
+
+                const user = await getUser(input.session.getUserId());
+                if (!user) {
+                    throw new Error("User not found");
+                }
+
+                const idToken = responseTypes.includes("id_token")
+                    ? await this.buildIdTokenPayload({
+                          user,
+                          client,
+                          sessionHandle: input.session.getHandle(),
+                          scopes: input.params.scope?.split(" ") || [],
+                          userContext: input.userContext,
+                      })
+                    : undefined;
+                const accessToken = responseTypes.includes("token")
+                    ? await this.buildAccessTokenPayload({
+                          user,
+                          client,
+                          sessionHandle: input.session.getHandle(),
+                          scopes: input.params.scope?.split(" ") || [],
+                          userContext: input.userContext,
+                      })
+                    : undefined;
+                payloads = {
+                    idToken,
+                    accessToken,
+                };
+            }
+
+            const resp = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth/auth`),
                 {
-                    // TODO: if session is not set also clear the oauth2 cookie
-                    Cookie: `${input.cookies}`,
+                    params: input.params,
+                    cookies: input.cookies,
+                    session: payloads,
                 },
                 input.userContext
             );
 
-            const redirectTo = getUpdatedRedirectTo(appInfo, resp.headers.get("Location")!);
+            const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
             if (redirectTo === undefined) {
                 throw new Error(resp.body);
             }
@@ -206,55 +284,73 @@ export default function getRecipeInterface(
                     userContext: input.userContext,
                 });
 
-                const user = await getUser(input.session.getUserId());
-                if (!user) {
-                    throw new Error("Should not happen");
-                }
-                const idToken = await this.buildIdTokenPayload({
-                    user,
-                    client: consentRequest.client!,
-                    sessionHandle: input.session.getHandle(),
-                    scopes: consentRequest.requestedScope || [],
-                    userContext: input.userContext,
-                });
-                const accessTokenPayload = await this.buildAccessTokenPayload({
-                    user,
-                    client: consentRequest.client!,
-                    sessionHandle: input.session.getHandle(),
-                    scopes: consentRequest.requestedScope || [],
-                    userContext: input.userContext,
-                });
-
-                const sessionInfo = await getSessionInformation(input.session.getHandle());
-                if (!sessionInfo) {
-                    throw new Error("Session not found");
-                }
-
                 const consentRes = await this.acceptConsentRequest({
-                    ...input,
+                    userContext: input.userContext,
                     challenge: consentRequest.challenge,
                     grantAccessTokenAudience: consentRequest.requestedAccessTokenAudience,
                     grantScope: consentRequest.requestedScope,
-                    remember: true, // TODO: verify that we need this
-                    session: {
-                        id_token: idToken,
-                        access_token: accessTokenPayload,
-                    },
-                    handledAt: new Date(sessionInfo.timeCreated).toISOString(),
+                    tenantId: input.session.getTenantId(),
+                    rsub: input.session.getRecipeUserId().getAsString(),
+                    sessionHandle: input.session.getHandle(),
                 });
 
                 return {
                     redirectTo: consentRes.redirectTo,
-                    setCookie: resp.headers.get("set-cookie") ?? undefined,
+                    setCookie: resp.cookies,
                 };
             }
-            return { redirectTo, setCookie: resp.headers.get("set-cookie") ?? undefined };
+            return { redirectTo, setCookie: resp.cookies };
         },
 
         tokenExchange: async function (this: RecipeInterface, input) {
-            const body: any = { $isFormData: true }; // TODO: we ideally want to avoid using formdata, the core can do the translation
-            for (const key in input.body) {
-                body[key] = input.body[key];
+            const body: any = {
+                inputBody: input.body,
+                authorizationHeader: input.authorizationHeader,
+            };
+
+            body.iss = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+
+            if (input.body.grant_type === "client_credentials") {
+                if (input.body.client_id === undefined) {
+                    return {
+                        statusCode: 400,
+                        error: "invalid_request",
+                        errorDescription: "client_id is required",
+                    };
+                }
+
+                const scopes = input.body.scope?.split(" ") ?? [];
+                const clientInfo = await this.getOAuth2Client({
+                    clientId: input.body.client_id as string,
+                    userContext: input.userContext,
+                });
+                console.log("clientInfo", clientInfo);
+                if (clientInfo.status === "ERROR") {
+                    return {
+                        statusCode: 400,
+                        error: clientInfo.error,
+                        errorDescription: clientInfo.errorHint,
+                    };
+                }
+                const client = clientInfo.client;
+                const idToken = await this.buildIdTokenPayload({
+                    user: undefined,
+                    client,
+                    sessionHandle: undefined,
+                    scopes,
+                    userContext: input.userContext,
+                });
+                const accessTokenPayload = await this.buildAccessTokenPayload({
+                    user: undefined,
+                    client,
+                    sessionHandle: undefined,
+                    scopes,
+                    userContext: input.userContext,
+                });
+                body["session"] = {
+                    idToken: idToken,
+                    accessToken: accessTokenPayload,
+                };
             }
 
             if (input.body.grant_type === "refresh_token") {
@@ -264,6 +360,7 @@ export default function getRecipeInterface(
                     scopes,
                     userContext: input.userContext,
                 });
+                console.log("tokenInfo", input.body.refresh_token, tokenInfo);
 
                 if (tokenInfo.active === true) {
                     const sessionHandle = (tokenInfo.ext as any).sessionHandle as string;
@@ -287,7 +384,7 @@ export default function getRecipeInterface(
                     const idToken = await this.buildIdTokenPayload({
                         user,
                         client,
-                        sessionHandle: sessionHandle,
+                        sessionHandle,
                         scopes,
                         userContext: input.userContext,
                     });
@@ -299,11 +396,9 @@ export default function getRecipeInterface(
                         userContext: input.userContext,
                     });
                     body["session"] = {
-                        id_token: idToken,
-                        access_token: accessTokenPayload,
+                        idToken: idToken,
+                        accessToken: accessTokenPayload,
                     };
-
-                    saveTokensForHook(sessionHandle, idToken, accessTokenPayload);
                 }
             }
 
@@ -311,8 +406,9 @@ export default function getRecipeInterface(
                 body["authorizationHeader"] = input.authorizationHeader;
             }
 
+            console.log("/recipe/oauth/token", body);
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth2/pub/token`),
+                new NormalisedURLPath(`/recipe/oauth/token`),
                 body,
                 input.userContext
             );
@@ -320,138 +416,98 @@ export default function getRecipeInterface(
             if (res.status !== "OK") {
                 return {
                     statusCode: res.statusCode,
-                    error: res.data.error,
-                    errorDescription: res.data.error_description,
+                    error: res.error,
+                    errorDescription: res.error_description,
                 };
             }
-            return res.data;
+            return res;
         },
 
         getOAuth2Clients: async function (input) {
             let response = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
+                new NormalisedURLPath(`/recipe/oauth/clients`),
                 {
-                    ...transformObjectKeys(input, "snake-case"),
-                    page_token: input.paginationToken,
+                    ...copyAndCleanRequestBodyInput(input),
+                    pageToken: input.paginationToken,
                 },
                 {},
                 input.userContext
             );
 
             if (response.body.status === "OK") {
-                // Pagination info is in the Link header, containing comma-separated links:
-                // "first", "next" (if applicable).
-                // Example: Link: </admin/clients?page_size=5&page_token=token1>; rel="first", </admin/clients?page_size=5&page_token=token2>; rel="next"
-
-                // We parse the nextPaginationToken from the Link header using RegExp
-                let nextPaginationToken: string | undefined;
-                const linkHeader = response.headers.get("link") ?? "";
-
-                const nextLinkMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
-                if (nextLinkMatch) {
-                    const url = nextLinkMatch[1];
-                    const urlParams = new URLSearchParams(url.split("?")[1]);
-                    nextPaginationToken = urlParams.get("page_token") as string;
-                }
-
                 return {
                     status: "OK",
-                    clients: response.body.data.map((client: any) => OAuth2Client.fromAPIResponse(client)),
-                    nextPaginationToken,
+                    clients: response.body.clients.map((client: any) => OAuth2Client.fromAPIResponse(client)),
+                    nextPaginationToken: response.body.nextPaginationToken,
                 };
             } else {
                 return {
                     status: "ERROR",
-                    error: response.body.data.error,
-                    errorHint: response.body.data.errorHint,
+                    error: response.body.error,
+                    errorHint: response.body.errorHint,
                 };
             }
         },
         getOAuth2Client: async function (input) {
             let response = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
-                {},
+                new NormalisedURLPath(`/recipe/oauth/clients`),
+                { clientId: input.clientId },
                 {},
                 input.userContext
             );
 
-            if (response.body.status === "OK") {
-                return {
-                    status: "OK",
-                    client: OAuth2Client.fromAPIResponse(response.body.data),
-                };
-            } else {
-                return {
-                    status: "ERROR",
-                    error: response.body.data.error,
-                    errorHint: response.body.data.errorHint,
-                };
-            }
+            return {
+                status: "OK",
+                client: OAuth2Client.fromAPIResponse(response.body),
+            };
+            // return {
+            //     status: "ERROR",
+            //     error: response.body.error,
+            //     errorHint: response.body.errorHint,
+            // };
         },
         createOAuth2Client: async function (input) {
             let response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/clients`),
-                {
-                    ...transformObjectKeys(input, "snake-case"),
-                    // TODO: these defaults should be set/enforced on the core side
-                    access_token_strategy: "jwt",
-                    skip_consent: true,
-                    subject_type: "public",
-                },
+                new NormalisedURLPath(`/recipe/oauth/clients`),
+                copyAndCleanRequestBodyInput(input),
                 input.userContext
             );
 
-            if (response.status === "OK") {
-                return {
-                    status: "OK",
-                    client: OAuth2Client.fromAPIResponse(response.data),
-                };
-            } else {
-                return {
-                    status: "ERROR",
-                    error: response.data.error,
-                    errorHint: response.data.errorHint,
-                };
-            }
+            return {
+                status: "OK",
+                client: OAuth2Client.fromAPIResponse(response),
+            };
+            // return {
+            //     status: "ERROR",
+            //     error: response.error,
+            //     errorHint: response.errorHint,
+            // };
         },
         updateOAuth2Client: async function (input) {
-            // We convert the input into an array of "replace" operations
-            const requestBody = Object.entries(input).reduce<
-                Array<{ from: string; op: "replace"; path: string; value: any }>
-            >((result, [key, value]) => {
-                result.push({
-                    from: `/${toSnakeCase(key)}`,
-                    op: "replace",
-                    path: `/${toSnakeCase(key)}`,
-                    value,
-                });
-                return result;
-            }, []);
-
-            let response = await querier.sendPatchRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
-                requestBody,
+            let response = await querier.sendPutRequest(
+                new NormalisedURLPath(`/recipe/oauth/clients`),
+                copyAndCleanRequestBodyInput(input),
+                { clientId: input.clientId },
                 input.userContext
             );
 
             if (response.status === "OK") {
                 return {
                     status: "OK",
-                    client: OAuth2Client.fromAPIResponse(response.data),
+                    client: OAuth2Client.fromAPIResponse(response),
                 };
             } else {
                 return {
                     status: "ERROR",
-                    error: response.data.error,
-                    errorHint: response.data.errorHint,
+                    error: response.error,
+                    errorHint: response.errorHint,
                 };
             }
         },
         deleteOAuth2Client: async function (input) {
-            let response = await querier.sendDeleteRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/clients/${input.clientId}`),
-                undefined,
-                undefined,
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth/clients/remove`),
+                { clientId: input.clientId },
                 input.userContext
             );
 
@@ -460,15 +516,21 @@ export default function getRecipeInterface(
             } else {
                 return {
                     status: "ERROR",
-                    error: response.data.error,
-                    errorHint: response.data.errorHint,
+                    error: response.error,
+                    errorHint: response.errorHint,
                 };
             }
         },
         buildAccessTokenPayload: async function (input) {
+            if (input.user === undefined || input.sessionHandle === undefined) {
+                return {};
+            }
             return getDefaultAccessTokenPayload(input.user, input.scopes, input.sessionHandle, input.userContext);
         },
         buildIdTokenPayload: async function (input) {
+            if (input.user === undefined || input.sessionHandle === undefined) {
+                return {};
+            }
             return getDefaultIdTokenPayload(input.user, input.scopes, input.sessionHandle, input.userContext);
         },
         buildUserInfo: async function ({ user, accessTokenPayload, scopes, tenantId, userContext }) {
@@ -477,17 +539,9 @@ export default function getRecipeInterface(
         validateOAuth2AccessToken: async function (input) {
             const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
 
-            // if (payload.stt !== 1) {
-            //     throw new Error("Wrong token type");
-            // }
-
-            // TODO: we should be able uncomment this after we get proper core support
-            // TODO: make this configurable?
-            // const expectedIssuer =
-            //     appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
-            // if (payload.iss !== expectedIssuer) {
-            //     throw new Error("Issuer mismatch: this token was likely issued by another application or spoofed");
-            // }
+            if (payload.stt !== 1) {
+                throw new Error("Wrong token type");
+            }
 
             if (input.requirements?.clientId !== undefined && payload.client_id !== input.requirements.clientId) {
                 throw new Error("The token doesn't belong to the specified client");
@@ -507,24 +561,22 @@ export default function getRecipeInterface(
 
             if (input.checkDatabase) {
                 let response = await querier.sendPostRequest(
-                    new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/introspect`),
+                    new NormalisedURLPath(`/recipe/oauth/introspect`),
                     {
-                        $isFormData: true,
                         token: input.token,
+                        scope: input.requirements?.scopes?.join(" ") ?? undefined,
                     },
                     input.userContext
                 );
 
-                // TODO: fix after the core interface is there
-                if (response.status !== "OK" || response.data.active !== true) {
-                    throw new Error(response.data.error);
+                if (response.status !== "OK" || response.active !== true) {
+                    throw new Error(response.error);
                 }
             }
             return { status: "OK", payload: payload as JSONObject };
         },
         revokeToken: async function (this: RecipeInterface, input) {
             const requestBody: Record<string, unknown> = {
-                $isFormData: true,
                 token: input.token,
             };
 
@@ -532,15 +584,15 @@ export default function getRecipeInterface(
                 requestBody.authorizationHeader = input.authorizationHeader;
             } else {
                 if ("clientId" in input && input.clientId !== undefined) {
-                    requestBody.client_id = input.clientId;
+                    requestBody.clientId = input.clientId;
                 }
                 if ("clientSecret" in input && input.clientSecret !== undefined) {
-                    requestBody.client_secret = input.clientSecret;
+                    requestBody.clientSecret = input.clientSecret;
                 }
             }
 
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth2/pub/revoke`),
+                new NormalisedURLPath(`/recipe/oauth/token/revoke`),
                 requestBody,
                 input.userContext
             );
@@ -548,8 +600,8 @@ export default function getRecipeInterface(
             if (res.status !== "OK") {
                 return {
                     statusCode: res.statusCode,
-                    error: res.data.error,
-                    errorDescription: res.data.error_description,
+                    error: res.error,
+                    errorDescription: res.error_description,
                 };
             }
 
@@ -557,8 +609,8 @@ export default function getRecipeInterface(
         },
 
         introspectToken: async function (this: RecipeInterface, { token, scopes, userContext }) {
-            // Determine if the token is an access token by checking if it doesn't start with "ory_rt"
-            const isAccessToken = !token.startsWith("ory_rt");
+            // Determine if the token is an access token by checking if it doesn't start with "st_rt"
+            const isAccessToken = !token.startsWith("st_rt");
 
             // Attempt to validate the access token locally
             // If it fails, the token is not active, and we return early
@@ -578,16 +630,15 @@ export default function getRecipeInterface(
             // For tokens that passed local validation or if it's a refresh token,
             // validate the token with the database by calling the core introspection endpoint
             const res = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/introspect`),
+                new NormalisedURLPath(`/recipe/oauth/introspect`),
                 {
-                    $isFormData: true,
                     token,
                     scope: scopes ? scopes.join(" ") : undefined,
                 },
                 userContext
             );
 
-            return res.data;
+            return res;
         },
 
         endSession: async function (this: RecipeInterface, input) {
@@ -605,7 +656,7 @@ export default function getRecipeInterface(
              */
 
             const resp = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth2/pub/sessions/logout`),
+                new NormalisedURLPath(`/recipe/oauth/sessions/logout`),
                 input.params,
                 {},
                 input.userContext
@@ -654,7 +705,7 @@ export default function getRecipeInterface(
         },
         acceptLogoutRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/logout/accept`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/logout/accept`),
                 {},
                 { logout_challenge: input.challenge },
                 input.userContext
@@ -662,21 +713,21 @@ export default function getRecipeInterface(
 
             return {
                 // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.data.redirect_to)
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirect_to)
                     // NOTE: This renaming only applies to this endpoint, hence not part of the generic "getUpdatedRedirectTo" function.
                     .replace("/sessions/logout", "/end_session"),
             };
         },
         rejectLogoutRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
-                new NormalisedURLPath(`/recipe/oauth2/admin/oauth2/auth/requests/logout/reject`),
+                new NormalisedURLPath(`/recipe/oauth/auth/requests/logout/reject`),
                 {},
                 { logout_challenge: input.challenge },
                 input.userContext
             );
 
             if (resp.status != "OK") {
-                throw new Error(resp.data.error);
+                throw new Error(resp.error);
             }
 
             return { status: "OK" };

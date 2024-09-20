@@ -40,6 +40,13 @@ export default async function signInAPI(
           };
     let oAuthTokens: any;
 
+    if (bodyParams.clientId === undefined && options.config.providerConfigs.length > 1) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the clientId in request body",
+        });
+    }
+
     if (bodyParams.redirectURIInfo !== undefined) {
         if (bodyParams.redirectURIInfo.redirectURI === undefined) {
             throw new STError({
@@ -73,6 +80,7 @@ export default async function signInAPI(
 
     let result = await apiImplementation.signInPOST({
         tenantId,
+        clientId: bodyParams.clientId,
         redirectURIInfo,
         oAuthTokens,
         options,

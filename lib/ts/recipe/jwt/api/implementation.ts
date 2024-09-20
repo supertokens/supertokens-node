@@ -31,17 +31,6 @@ export default function getAPIImplementation(): APIInterface {
                 options.res.setHeader("Cache-Control", `max-age=${resp.validityInSeconds}, must-revalidate`, false);
             }
 
-            const oauth2Provider = require("../../oauth2provider/recipe").default.getInstance();
-
-            // TODO: dirty hack until we get core support
-            if (oauth2Provider !== undefined) {
-                const oauth2JWKSRes = await fetch("http://localhost:4444/.well-known/jwks.json");
-                if (oauth2JWKSRes.ok) {
-                    const oauth2RespBody = await oauth2JWKSRes.json();
-                    resp.keys = resp.keys.concat(oauth2RespBody.keys);
-                }
-            }
-
             return {
                 keys: resp.keys,
             };

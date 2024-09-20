@@ -45,6 +45,7 @@ export default async function authGET(
             shouldTryRefresh = false;
         }
     }
+    console.log({ n: "authGET", shouldTryRefresh, origURL });
 
     let response = await apiImplementation.authGET({
         options,
@@ -54,6 +55,7 @@ export default async function authGET(
         shouldTryRefresh,
         userContext,
     });
+    console.log({ n: "authGET", response });
     if ("redirectTo" in response) {
         if (response.setCookie) {
             const cookieStr = setCookieParser.splitCookiesString(response.setCookie);

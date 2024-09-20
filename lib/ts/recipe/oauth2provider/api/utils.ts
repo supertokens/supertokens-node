@@ -39,6 +39,7 @@ export async function loginGET({
     const incomingAuthUrlQueryParams = new URLSearchParams(loginRequest.requestUrl.split("?")[1]);
     const promptParam = incomingAuthUrlQueryParams.get("prompt") ?? incomingAuthUrlQueryParams.get("st_prompt");
     const maxAgeParam = incomingAuthUrlQueryParams.get("max_age");
+    console.log({ n: "loginGET", shouldTryRefresh, loginRequest, sessionInfo });
     if (maxAgeParam !== null) {
         try {
             const maxAgeParsed = Number.parseInt(maxAgeParam);
@@ -93,6 +94,7 @@ export async function loginGET({
         })
         .getAsStringDangerous();
     const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
+    console.log({ n: "loginGET2", shouldTryRefresh });
     if (shouldTryRefresh) {
         const websiteDomain = appInfo
             .getOrigin({
@@ -218,6 +220,12 @@ export async function handleLoginInternalRedirects({
     cookie?: string;
     userContext: UserContext;
 }): Promise<{ redirectTo: string; setCookie?: string }> {
+    console.log({
+        n: "handleLoginInternalRedirects",
+        response,
+        isLoginInternalRedirect: isLoginInternalRedirect(response.redirectTo),
+        shouldTryRefresh,
+    });
     if (!isLoginInternalRedirect(response.redirectTo)) {
         return response;
     }
@@ -228,6 +236,7 @@ export async function handleLoginInternalRedirects({
     let redirectCount = 0;
 
     while (redirectCount < maxRedirects && isLoginInternalRedirect(response.redirectTo)) {
+        console.log({ n: "handleLoginInternalRedirects2", response, shouldTryRefresh });
         cookie = getMergedCookies({ cookie, setCookie: response.setCookie });
 
         const queryString = response.redirectTo.split("?")[1];
