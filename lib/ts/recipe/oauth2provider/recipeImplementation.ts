@@ -106,12 +106,18 @@ export default function getRecipeInterface(
         rejectLoginRequest: async function (this: RecipeInterface, input): Promise<{ redirectTo: string }> {
             const resp = await querier.sendPutRequest(
                 new NormalisedURLPath(`/recipe/oauth/auth/requests/login/reject`),
-                copyAndCleanRequestBodyInput(input),
                 {
-                    loginChallenge: input.challenge,
+                    error: input.error.error,
+                    errorDescription: input.error.errorDescription,
+                    statusCode: input.error.statusCode,
+                },
+                {
+                    login_challenge: input.challenge,
                 },
                 input.userContext
             );
+
+            console.log("rejectLoginRequest resp", resp);
 
             return {
                 // TODO: FIXME!!!
@@ -205,11 +211,10 @@ export default function getRecipeInterface(
             };
         },
         authorization: async function (this: RecipeInterface, input) {
-            if (input.session !== undefined) {
-                if (input.params.prompt === "none") {
-                    input.params["st_prompt"] = "none";
-                    delete input.params.prompt;
-                }
+            // we handle this in the backend SDK level
+            if (input.params.prompt === "none") {
+                input.params["st_prompt"] = "none";
+                delete input.params.prompt;
             }
 
             let payloads: { idToken: JSONObject | undefined; accessToken: JSONObject | undefined } | undefined;
@@ -271,6 +276,14 @@ export default function getRecipeInterface(
                 },
                 input.userContext
             );
+
+            if (resp.status !== "OK") {
+                return {
+                    statusCode: resp.statusCode,
+                    error: resp.error,
+                    errorDescription: resp.errorDescription,
+                };
+            }
 
             const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
             if (redirectTo === undefined) {
@@ -363,7 +376,7 @@ export default function getRecipeInterface(
                 console.log("tokenInfo", input.body.refresh_token, tokenInfo);
 
                 if (tokenInfo.active === true) {
-                    const sessionHandle = (tokenInfo.ext as any).sessionHandle as string;
+                    const sessionHandle = tokenInfo.sessionHandle as string;
 
                     const clientInfo = await this.getOAuth2Client({
                         clientId: tokenInfo.client_id as string,
@@ -406,18 +419,18 @@ export default function getRecipeInterface(
                 body["authorizationHeader"] = input.authorizationHeader;
             }
 
-            console.log("/recipe/oauth/token", body);
             const res = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth/token`),
                 body,
                 input.userContext
             );
+            console.log("/recipe/oauth/token", body, res);
 
             if (res.status !== "OK") {
                 return {
                     statusCode: res.statusCode,
                     error: res.error,
-                    errorDescription: res.error_description,
+                    errorDescription: res.errorDescription,
                 };
             }
             return res;
@@ -425,9 +438,11 @@ export default function getRecipeInterface(
 
         getOAuth2Clients: async function (input) {
             let response = await querier.sendGetRequestWithResponseHeaders(
-                new NormalisedURLPath(`/recipe/oauth/clients`),
+                new NormalisedURLPath(`/recipe/oauth/clients/list`),
                 {
-                    ...copyAndCleanRequestBodyInput(input),
+                    pageSize: input.pageSize,
+                    clientName: input.clientName,
+                    owner: input.owner,
                     pageToken: input.paginationToken,
                 },
                 {},
@@ -544,7 +559,9 @@ export default function getRecipeInterface(
             }
 
             if (input.requirements?.clientId !== undefined && payload.client_id !== input.requirements.clientId) {
-                throw new Error("The token doesn't belong to the specified client");
+                throw new Error(
+                    `The token doesn't belong to the specified client (${input.requirements.clientId} !== ${payload.client_id})`
+                );
             }
 
             if (
@@ -564,13 +581,12 @@ export default function getRecipeInterface(
                     new NormalisedURLPath(`/recipe/oauth/introspect`),
                     {
                         token: input.token,
-                        scope: input.requirements?.scopes?.join(" ") ?? undefined,
                     },
                     input.userContext
                 );
 
-                if (response.status !== "OK" || response.active !== true) {
-                    throw new Error(response.error);
+                if (response.active !== true) {
+                    throw new Error("The token is expired, invalid or has been revoked");
                 }
             }
             return { status: "OK", payload: payload as JSONObject };
@@ -601,7 +617,7 @@ export default function getRecipeInterface(
                 return {
                     statusCode: res.statusCode,
                     error: res.error,
-                    errorDescription: res.error_description,
+                    errorDescription: res.errorDescription,
                 };
             }
 
@@ -712,8 +728,7 @@ export default function getRecipeInterface(
             );
 
             return {
-                // TODO: FIXME!!!
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirect_to)
+                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo)
                     // NOTE: This renaming only applies to this endpoint, hence not part of the generic "getUpdatedRedirectTo" function.
                     .replace("/sessions/logout", "/end_session"),
             };

@@ -99,10 +99,13 @@ export declare type RecipeInterface = {
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<{
-        redirectTo: string;
-        setCookie: string | undefined;
-    }>;
+    }): Promise<
+        | {
+              redirectTo: string;
+              setCookie: string | undefined;
+          }
+        | ErrorOAuth2
+    >;
     tokenExchange(input: {
         authorizationHeader?: string;
         body: Record<string, string | undefined>;
@@ -321,6 +324,7 @@ export declare type APIInterface = {
                     redirectTo: string;
                     setCookie?: string;
                 }
+              | ErrorOAuth2
               | GeneralErrorResponse
           >);
     authGET:

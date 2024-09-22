@@ -25,7 +25,7 @@ export function validateAndNormaliseUserInput(_appInfo: NormalisedAppinfo, confi
         throw new Error("Please pass clientId for all providerConfigs.");
     }
 
-    if (!config.providerConfigs.every((providerConfig) => providerConfig.clientId.startsWith("supertokens_"))) {
+    if (!config.providerConfigs.every((providerConfig) => providerConfig.clientId.startsWith("stcl_"))) {
         throw new Error(
             `Only Supertokens OAuth ClientIds are supported in the OAuth2Client recipe. For any other OAuth Clients use the ThirdParty recipe.`
         );

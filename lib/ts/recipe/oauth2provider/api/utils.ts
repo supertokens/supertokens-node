@@ -4,7 +4,7 @@ import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { AUTH_PATH, LOGIN_PATH, END_SESSION_PATH } from "../constants";
-import { RecipeInterface } from "../types";
+import { ErrorOAuth2, RecipeInterface } from "../types";
 import setCookieParser from "set-cookie-parser";
 
 // API implementation for the loginGET function.
@@ -94,8 +94,8 @@ export async function loginGET({
         })
         .getAsStringDangerous();
     const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
-    console.log({ n: "loginGET2", shouldTryRefresh });
-    if (shouldTryRefresh) {
+
+    if (shouldTryRefresh && promptParam !== "login") {
         const websiteDomain = appInfo
             .getOrigin({
                 request: undefined,
@@ -219,7 +219,7 @@ export async function handleLoginInternalRedirects({
     shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
-}): Promise<{ redirectTo: string; setCookie?: string }> {
+}): Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2> {
     console.log({
         n: "handleLoginInternalRedirects",
         response,
@@ -270,6 +270,10 @@ export async function handleLoginInternalRedirects({
                 userContext,
             });
 
+            if ("error" in authRes) {
+                return authRes;
+            }
+
             response = {
                 redirectTo: authRes.redirectTo,
                 setCookie: mergeSetCookieHeaders(authRes.setCookie, response.setCookie),
@@ -280,6 +284,7 @@ export async function handleLoginInternalRedirects({
 
         redirectCount++;
     }
+    console.log("handleLoginInternalRedirects3", response);
     return response;
 }
 

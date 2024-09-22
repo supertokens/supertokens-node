@@ -45,6 +45,10 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
+            if ("error" in response) {
+                return response;
+            }
+
             return handleLoginInternalRedirects({
                 response,
                 recipeImplementation: options.recipeImplementation,

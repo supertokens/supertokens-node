@@ -270,11 +270,7 @@ export default class Recipe extends RecipeModule {
         if (sessionInfo === undefined) {
             throw new Error("Session not found");
         }
-        let payload: JSONObject = {
-            tId: sessionInfo.tenantId,
-            rsub: sessionInfo.recipeUserId.getAsString(),
-            sessionHandle: sessionHandle,
-        };
+        let payload: JSONObject = {};
 
         for (const fn of this.accessTokenBuilders) {
             payload = {
@@ -286,9 +282,7 @@ export default class Recipe extends RecipeModule {
         return payload;
     }
     async getDefaultIdTokenPayload(user: User, scopes: string[], sessionHandle: string, userContext: UserContext) {
-        let payload: JSONObject = {
-            iss: this.appInfo.apiDomain.getAsStringDangerous() + this.appInfo.apiBasePath.getAsStringDangerous(),
-        };
+        let payload: JSONObject = {};
         if (scopes.includes("email")) {
             payload.email = user?.emails[0];
             payload.email_verified = user.loginMethods.some((lm) => lm.hasSameEmailAs(user?.emails[0]) && lm.verified);

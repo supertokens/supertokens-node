@@ -54,13 +54,15 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
             };
         },
         getProviderConfig: async function ({ clientId }) {
-            if (providerConfigsWithOIDCInfo[clientId] !== null) {
+            if (providerConfigsWithOIDCInfo[clientId] !== undefined) {
                 return providerConfigsWithOIDCInfo[clientId];
             }
+            console.log("config.providerConfigs", config.providerConfigs, clientId);
             const providerConfig = config.providerConfigs.find(
                 (providerConfig) => providerConfig.clientId === clientId
             )!;
-            const oidcInfo = await getOIDCDiscoveryInfo(config.providerConfigs[0].oidcDiscoveryEndpoint);
+            console.log("providerConfig", providerConfig);
+            const oidcInfo = await getOIDCDiscoveryInfo(providerConfig.oidcDiscoveryEndpoint);
 
             if (oidcInfo.authorization_endpoint === undefined) {
                 throw new Error("Failed to authorization_endpoint from the oidcDiscoveryEndpoint.");
