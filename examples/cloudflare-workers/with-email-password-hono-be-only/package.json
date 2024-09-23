@@ -5,12 +5,10 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start-dev": "wrangler dev index.ts --port 3001",
-        "start": "npm-run-all --parallel start-dev"
+        "start": "wrangler dev index.ts --port 3000"
     },
     "dependencies": {
         "hono": "^4.3.9",
-        "npm-run-all": "^4.1.5",
         "process": "^0.11.10",
         "supertokens-node": "file:../../../lib/build"
     },
