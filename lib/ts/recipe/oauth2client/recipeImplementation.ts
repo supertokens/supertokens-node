@@ -57,11 +57,9 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
             if (providerConfigsWithOIDCInfo[clientId] !== undefined) {
                 return providerConfigsWithOIDCInfo[clientId];
             }
-            console.log("config.providerConfigs", config.providerConfigs, clientId);
             const providerConfig = config.providerConfigs.find(
                 (providerConfig) => providerConfig.clientId === clientId
             )!;
-            console.log("providerConfig", providerConfig);
             const oidcInfo = await getOIDCDiscoveryInfo(providerConfig.oidcDiscoveryEndpoint);
 
             if (oidcInfo.authorization_endpoint === undefined) {

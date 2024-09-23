@@ -58,6 +58,9 @@ export declare function handleLogoutInternalRedirects({
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
     userContext: UserContext;
-}): Promise<{
-    redirectTo: string;
-}>;
+}): Promise<
+    | {
+          redirectTo: string;
+      }
+    | ErrorOAuth2
+>;

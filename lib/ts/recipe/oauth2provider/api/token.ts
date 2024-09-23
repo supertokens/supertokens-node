@@ -35,10 +35,8 @@ export default async function tokenPOST(
         userContext,
     });
 
-    console.log("response", response);
-
-    if ("statusCode" in response && response.statusCode !== 200) {
-        sendNon200Response(options.res, response.statusCode!, {
+    if ("error" in response) {
+        sendNon200Response(options.res, response.statusCode ?? 400, {
             error: response.error,
             error_description: response.errorDescription,
         });

@@ -39,7 +39,7 @@ export async function loginGET({
     const incomingAuthUrlQueryParams = new URLSearchParams(loginRequest.requestUrl.split("?")[1]);
     const promptParam = incomingAuthUrlQueryParams.get("prompt") ?? incomingAuthUrlQueryParams.get("st_prompt");
     const maxAgeParam = incomingAuthUrlQueryParams.get("max_age");
-    console.log({ n: "loginGET", shouldTryRefresh, loginRequest, sessionInfo });
+
     if (maxAgeParam !== null) {
         try {
             const maxAgeParsed = Number.parseInt(maxAgeParam);
@@ -220,12 +220,6 @@ export async function handleLoginInternalRedirects({
     cookie?: string;
     userContext: UserContext;
 }): Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2> {
-    console.log({
-        n: "handleLoginInternalRedirects",
-        response,
-        isLoginInternalRedirect: isLoginInternalRedirect(response.redirectTo),
-        shouldTryRefresh,
-    });
     if (!isLoginInternalRedirect(response.redirectTo)) {
         return response;
     }
@@ -236,7 +230,6 @@ export async function handleLoginInternalRedirects({
     let redirectCount = 0;
 
     while (redirectCount < maxRedirects && isLoginInternalRedirect(response.redirectTo)) {
-        console.log({ n: "handleLoginInternalRedirects2", response, shouldTryRefresh });
         cookie = getMergedCookies({ cookie, setCookie: response.setCookie });
 
         const queryString = response.redirectTo.split("?")[1];
@@ -284,7 +277,6 @@ export async function handleLoginInternalRedirects({
 
         redirectCount++;
     }
-    console.log("handleLoginInternalRedirects3", response);
     return response;
 }
 
@@ -301,7 +293,7 @@ export async function handleLogoutInternalRedirects({
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
     userContext: UserContext;
-}): Promise<{ redirectTo: string }> {
+}): Promise<{ redirectTo: string } | ErrorOAuth2> {
     if (!isLogoutInternalRedirect(response.redirectTo)) {
         return response;
     }
@@ -316,7 +308,7 @@ export async function handleLogoutInternalRedirects({
         const params = new URLSearchParams(queryString);
 
         if (response.redirectTo.includes(END_SESSION_PATH)) {
-            response = await recipeImplementation.endSession({
+            const endSessionRes = await recipeImplementation.endSession({
                 params: Object.fromEntries(params.entries()),
                 session,
                 // We internally redirect to the `end_session_endpoint` at the end of the logout flow.
@@ -325,6 +317,10 @@ export async function handleLogoutInternalRedirects({
                 shouldTryRefresh: false,
                 userContext,
             });
+            if ("error" in endSessionRes) {
+                return endSessionRes;
+            }
+            response = endSessionRes;
         } else {
             throw new Error(`Unexpected internal redirect ${response.redirectTo}`);
         }

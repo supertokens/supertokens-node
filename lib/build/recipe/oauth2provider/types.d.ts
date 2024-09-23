@@ -294,9 +294,12 @@ export declare type RecipeInterface = {
         session?: SessionContainerInterface;
         shouldTryRefresh: boolean;
         userContext: UserContext;
-    }): Promise<{
-        redirectTo: string;
-    }>;
+    }): Promise<
+        | {
+              redirectTo: string;
+          }
+        | ErrorOAuth2
+    >;
     acceptLogoutRequest(input: {
         challenge: string;
         userContext: UserContext;
@@ -413,9 +416,13 @@ export declare type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{
-              redirectTo: string;
-          }>);
+          }) => Promise<
+              | {
+                    redirectTo: string;
+                }
+              | ErrorOAuth2
+              | GeneralErrorResponse
+          >);
     endSessionPOST:
         | undefined
         | ((input: {
@@ -424,9 +431,13 @@ export declare type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{
-              redirectTo: string;
-          }>);
+          }) => Promise<
+              | {
+                    redirectTo: string;
+                }
+              | ErrorOAuth2
+              | GeneralErrorResponse
+          >);
     logoutPOST:
         | undefined
         | ((input: {
@@ -434,10 +445,14 @@ export declare type APIInterface = {
               options: APIOptions;
               session?: SessionContainerInterface;
               userContext: UserContext;
-          }) => Promise<{
-              status: "OK";
-              frontendRedirectTo: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    frontendRedirectTo: string;
+                }
+              | ErrorOAuth2
+              | GeneralErrorResponse
+          >);
 };
 export declare type OAuth2ClientOptions = {
     clientId: string;

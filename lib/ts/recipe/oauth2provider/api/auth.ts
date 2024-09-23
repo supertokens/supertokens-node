@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response, sendNon200ResponseWithMessage } from "../../../utils";
+import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import setCookieParser from "set-cookie-parser";
@@ -45,7 +45,6 @@ export default async function authGET(
             shouldTryRefresh = false;
         }
     }
-    console.log({ n: "authGET", shouldTryRefresh, origURL });
 
     let response = await apiImplementation.authGET({
         options,
@@ -55,7 +54,7 @@ export default async function authGET(
         shouldTryRefresh,
         userContext,
     });
-    console.log({ n: "authGET", response });
+
     if ("redirectTo" in response) {
         if (response.setCookie) {
             const cookieStr = setCookieParser.splitCookiesString(response.setCookie);
@@ -75,11 +74,10 @@ export default async function authGET(
         }
         options.res.original.redirect(response.redirectTo);
     } else if ("statusCode" in response) {
-        sendNon200ResponseWithMessage(
-            options.res,
-            response.error + ": " + response.errorDescription,
-            response.statusCode ?? 400
-        );
+        sendNon200Response(options.res, response.statusCode ?? 400, {
+            error: response.error,
+            error_description: response.errorDescription,
+        });
     } else {
         send200Response(options.res, response);
     }

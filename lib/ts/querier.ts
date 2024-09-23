@@ -166,12 +166,6 @@ export class Querier {
                 };
                 headers["content-type"] = "application/json; charset=utf-8";
 
-                // TODO: Remove this after core changes are done
-                if (body !== undefined && body["authorizationHeader"]) {
-                    headers["authorization"] = body["authorizationHeader"];
-                    delete body["authorizationHeader"];
-                }
-
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -488,12 +482,6 @@ export class Querier {
                 );
                 finalURL.search = searchParams.toString();
 
-                console.log(
-                    "finalURL",
-                    finalURL.toString(),
-                    "body",
-                    body !== undefined ? JSON.stringify(body) : undefined
-                );
                 return doFetch(finalURL.toString(), {
                     method: "PUT",
                     body: body !== undefined ? JSON.stringify(body) : undefined,

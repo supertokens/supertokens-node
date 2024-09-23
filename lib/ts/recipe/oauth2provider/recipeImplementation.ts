@@ -34,7 +34,6 @@ function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
         "{apiDomain}",
         appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous()
     );
-    // .replace("oauth2/", "oauth/");
 }
 
 function copyAndCleanRequestBodyInput(input: any): any {
@@ -96,10 +95,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            console.log("acceptLoginRequest resp", resp);
-
             return {
-                // TODO: FIXME!!!
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
@@ -117,10 +113,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            console.log("rejectLoginRequest resp", resp);
-
             return {
-                // TODO: FIXME!!!
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
@@ -166,27 +159,8 @@ export default function getRecipeInterface(
                 },
                 input.userContext
             );
-            console.log("acceptConsentRequest resp", {
-                body: {
-                    context: input.context,
-                    grantAccessTokenAudience: input.grantAccessTokenAudience,
-                    grantScope: input.grantScope,
-                    handledAt: input.handledAt,
-                    remember: input.remember,
-                    rememberFor: input.rememberFor,
-                    iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
-                    tId: input.tenantId,
-                    rsub: input.rsub,
-                    sessionHandle: input.sessionHandle,
-                },
-                queryParams: {
-                    consentChallenge: input.challenge,
-                },
-                resp,
-            });
 
             return {
-                // TODO: FIXME!!!
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
@@ -204,9 +178,8 @@ export default function getRecipeInterface(
                 },
                 input.userContext
             );
-            console.log("rejectConsentRequest resp", resp);
+
             return {
-                // TODO: FIXME!!!
                 redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo),
             };
         },
@@ -337,7 +310,7 @@ export default function getRecipeInterface(
                     clientId: input.body.client_id as string,
                     userContext: input.userContext,
                 });
-                console.log("clientInfo", clientInfo);
+
                 if (clientInfo.status === "ERROR") {
                     return {
                         statusCode: 400,
@@ -373,7 +346,6 @@ export default function getRecipeInterface(
                     scopes,
                     userContext: input.userContext,
                 });
-                console.log("tokenInfo", input.body.refresh_token, tokenInfo);
 
                 if (tokenInfo.active === true) {
                     const sessionHandle = tokenInfo.sessionHandle as string;
@@ -424,7 +396,6 @@ export default function getRecipeInterface(
                 body,
                 input.userContext
             );
-            console.log("/recipe/oauth/token", body, res);
 
             if (res.status !== "OK") {
                 return {
@@ -710,7 +681,7 @@ export default function getRecipeInterface(
 
             // CASE 2 or 3 (See above notes)
 
-            // TODO:
+            // TODO: add test for this
             // NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.
             // In this case, we redirect the user to the /auth page.
             if (redirectTo.endsWith("/oauth/fallbacks/logout/callback")) {

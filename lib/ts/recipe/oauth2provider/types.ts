@@ -269,7 +269,6 @@ export type RecipeInterface = {
               status: "OK";
               client: OAuth2Client;
           }
-        // TODO: Define specific error types once requirements are clearer
         | {
               status: "ERROR";
               error: string;
@@ -286,7 +285,6 @@ export type RecipeInterface = {
               clients: Array<OAuth2Client>;
               nextPaginationToken?: string;
           }
-        // TODO: Define specific error types once requirements are clearer
         | {
               status: "ERROR";
               error: string;
@@ -302,7 +300,6 @@ export type RecipeInterface = {
               status: "OK";
               client: OAuth2Client;
           }
-        // TODO: Define specific error types once requirements are clearer
         | {
               status: "ERROR";
               error: string;
@@ -318,7 +315,6 @@ export type RecipeInterface = {
               status: "OK";
               client: OAuth2Client;
           }
-        // TODO: Define specific error types once requirements are clearer
         | {
               status: "ERROR";
               error: string;
@@ -333,7 +329,6 @@ export type RecipeInterface = {
         | {
               status: "OK";
           }
-        // TODO: Define specific error types once requirements are clearer
         | {
               status: "ERROR";
               error: string;
@@ -394,7 +389,7 @@ export type RecipeInterface = {
         session?: SessionContainerInterface;
         shouldTryRefresh: boolean;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string }>;
+    }): Promise<{ redirectTo: string } | ErrorOAuth2>;
     acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
     rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ status: "OK" }>;
 };
@@ -470,7 +465,7 @@ export type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string }>);
+          }) => Promise<{ redirectTo: string } | ErrorOAuth2 | GeneralErrorResponse>);
     endSessionPOST:
         | undefined
         | ((input: {
@@ -479,7 +474,7 @@ export type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string }>);
+          }) => Promise<{ redirectTo: string } | ErrorOAuth2 | GeneralErrorResponse>);
     logoutPOST:
         | undefined
         | ((input: {
@@ -487,7 +482,7 @@ export type APIInterface = {
               options: APIOptions;
               session?: SessionContainerInterface;
               userContext: UserContext;
-          }) => Promise<{ status: "OK"; frontendRedirectTo: string }>);
+          }) => Promise<{ status: "OK"; frontendRedirectTo: string } | ErrorOAuth2 | GeneralErrorResponse>);
 };
 
 export type OAuth2ClientOptions = {
