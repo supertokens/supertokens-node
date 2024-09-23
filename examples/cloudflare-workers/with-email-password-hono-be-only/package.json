@@ -5,7 +5,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "wrangler dev index.ts --port 3001"
+        "start": "wrangler dev index.ts --port 3000"
     },
     "dependencies": {
         "hono": "^4.3.9",
