@@ -22,7 +22,7 @@ const assert = require("assert");
 // Run the tests in a DOM environment.
 require("jsdom-global")();
 
-const APP_URL = process.env.APP_URL || "http://localhost:8787";
+const APP_URL = process.env.APP_URL || "http://localhost:3001";
 
 describe("Auth API Tests", () => {
     const signupBody = {
