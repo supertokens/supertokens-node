@@ -379,6 +379,8 @@ export type RecipeInterface = {
             | { clientId: string; clientSecret?: string }
         )
     ): Promise<{ status: "OK" } | ErrorOAuth2>;
+    revokeTokensByClientId(input: { clientId: string; userContext: UserContext }): Promise<{ status: "OK" }>;
+    revokeTokensBySessionHandle(input: { sessionHandle: string; userContext: UserContext }): Promise<{ status: "OK" }>;
     introspectToken(input: {
         token: string;
         scopes?: string[];

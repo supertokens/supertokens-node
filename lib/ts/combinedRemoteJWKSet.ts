@@ -21,12 +21,13 @@ export function resetCombinedJWKS() {
     Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
     token verification. Otherwise, the result of session verification would depend on which core is currently available.
 */
-export function getCombinedJWKS() {
+export function getCombinedJWKS(config: { jwksRefreshIntervalSec: number }) {
     if (combinedJWKS === undefined) {
         const JWKS: ReturnType<typeof createRemoteJWKSet>[] = Querier.getNewInstanceOrThrowError(undefined)
             .getAllCoreUrlsForPath("/.well-known/jwks.json")
             .map((url) =>
                 createRemoteJWKSet(new URL(url), {
+                    cacheMaxAge: config.jwksRefreshIntervalSec,
                     cooldownDuration: JWKCacheCooldownInMs,
                 })
             );

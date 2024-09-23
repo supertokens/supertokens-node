@@ -23,6 +23,7 @@ export const availableTokenTransferMethods: TokenTransferMethod[] = ["cookie", "
 export const oneYearInMs = 31536000000;
 
 export const JWKCacheCooldownInMs = 500;
+export const JWKCacheMaxAgeInMs = 60000;
 
 export const protectedProps = [
     "sub",

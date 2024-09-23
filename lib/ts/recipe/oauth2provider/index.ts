@@ -137,6 +137,20 @@ export default class Wrapper {
         });
     }
 
+    static async revokeTokensByClientId(clientId: string, userContext?: Record<string, any>) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeTokensByClientId({
+            clientId,
+            userContext: getUserContext(userContext),
+        });
+    }
+
+    static async revokeTokensBySessionHandle(sessionHandle: string, userContext?: Record<string, any>) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeTokensBySessionHandle({
+            sessionHandle,
+            userContext: getUserContext(userContext),
+        });
+    }
+
     static validateOAuth2RefreshToken(token: string, scopes?: string[], userContext?: Record<string, any>) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.introspectToken({
             token,
@@ -161,5 +175,7 @@ export let validateOAuth2AccessToken = Wrapper.validateOAuth2AccessToken;
 export let createTokenForClientCredentials = Wrapper.createTokenForClientCredentials;
 
 export let revokeToken = Wrapper.revokeToken;
+export let revokeTokensByClientId = Wrapper.revokeTokensByClientId;
+export let revokeTokensBySessionHandle = Wrapper.revokeTokensBySessionHandle;
 
 export type { APIInterface, APIOptions, RecipeInterface };

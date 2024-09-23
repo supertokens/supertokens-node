@@ -219,7 +219,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         // This should be done using the cache
         assert.ok(await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken));
         assert.strictEqual(requestMock.callCount, 1);
-        // we "wait" for 3 seconds to make the cache out-of-date
+        // we "wait" for 20 seconds to make the cache out-of-date
         clock.tick(20000);
         // This should re-fetch from the core
         assert.ok(await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken));

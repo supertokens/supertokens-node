@@ -28,6 +28,7 @@ import {
 import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
+import SessionRecipe from "../session/recipe";
 
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
     return redirectTo.replace(
@@ -523,7 +524,9 @@ export default function getRecipeInterface(
             return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, tenantId, userContext);
         },
         validateOAuth2AccessToken: async function (input) {
-            const payload = (await jose.jwtVerify(input.token, getCombinedJWKS())).payload;
+            const payload = (
+                await jose.jwtVerify(input.token, getCombinedJWKS(SessionRecipe.getInstanceOrThrowError().config))
+            ).payload;
 
             if (payload.stt !== 1) {
                 throw new Error("Wrong token type");
@@ -591,6 +594,24 @@ export default function getRecipeInterface(
                     errorDescription: res.errorDescription,
                 };
             }
+
+            return { status: "OK" };
+        },
+        revokeTokensBySessionHandle: async function (this: RecipeInterface, input) {
+            await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth/session/revoke`),
+                { sessionHandle: input.sessionHandle },
+                input.userContext
+            );
+
+            return { status: "OK" };
+        },
+        revokeTokensByClientId: async function (this: RecipeInterface, input) {
+            await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/oauth/tokens/revoke`),
+                { clientId: input.clientId },
+                input.userContext
+            );
 
             return { status: "OK" };
         },

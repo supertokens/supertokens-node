@@ -112,6 +112,18 @@ export default class Wrapper {
               status: "OK";
           }
     >;
+    static revokeTokensByClientId(
+        clientId: string,
+        userContext?: Record<string, any>
+    ): Promise<{
+        status: "OK";
+    }>;
+    static revokeTokensBySessionHandle(
+        sessionHandle: string,
+        userContext?: Record<string, any>
+    ): Promise<{
+        status: "OK";
+    }>;
     static validateOAuth2RefreshToken(
         token: string,
         scopes?: string[],
@@ -126,4 +138,6 @@ export declare let deleteOAuth2Client: typeof Wrapper.deleteOAuth2Client;
 export declare let validateOAuth2AccessToken: typeof Wrapper.validateOAuth2AccessToken;
 export declare let createTokenForClientCredentials: typeof Wrapper.createTokenForClientCredentials;
 export declare let revokeToken: typeof Wrapper.revokeToken;
+export declare let revokeTokensByClientId: typeof Wrapper.revokeTokensByClientId;
+export declare let revokeTokensBySessionHandle: typeof Wrapper.revokeTokensBySessionHandle;
 export type { APIInterface, APIOptions, RecipeInterface };
