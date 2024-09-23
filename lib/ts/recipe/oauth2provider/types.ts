@@ -368,6 +368,31 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: UserContext;
     }): Promise<JSONObject>;
+    getFrontendRedirectionURL(
+        input:
+            | {
+                  type: "login";
+                  loginChallenge: string;
+                  tenantId: string;
+                  forceFreshAuth: boolean;
+                  hint: string | undefined;
+                  userContext: UserContext;
+              }
+            | {
+                  type: "try-refresh";
+                  loginChallenge: string;
+                  userContext: UserContext;
+              }
+            | {
+                  type: "logout-confirmation";
+                  logoutChallenge: string;
+                  userContext: UserContext;
+              }
+            | {
+                  type: "post-logout-fallback";
+                  userContext: UserContext;
+              }
+    ): Promise<string>;
     revokeToken(
         input: {
             token: string;

@@ -86,30 +86,14 @@ export async function loginGET({
         });
         return { redirectTo: accept.redirectTo, setCookie };
     }
-    const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-    const websiteDomain = appInfo
-        .getOrigin({
-            request: undefined,
-            userContext: userContext,
-        })
-        .getAsStringDangerous();
-    const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
 
     if (shouldTryRefresh && promptParam !== "login") {
-        const websiteDomain = appInfo
-            .getOrigin({
-                request: undefined,
-                userContext: userContext,
-            })
-            .getAsStringDangerous();
-        const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
-
-        const queryParamsForTryRefreshPage = new URLSearchParams({
-            loginChallenge,
-        });
-
         return {
-            redirectTo: websiteDomain + websiteBasePath + `/try-refresh?${queryParamsForTryRefreshPage.toString()}`,
+            redirectTo: await recipeImplementation.getFrontendRedirectionURL({
+                type: "try-refresh",
+                loginChallenge,
+                userContext,
+            }),
             setCookie,
         };
     }
@@ -126,24 +110,15 @@ export async function loginGET({
         return { redirectTo: reject.redirectTo, setCookie };
     }
 
-    const queryParamsForAuthPage = new URLSearchParams({
-        loginChallenge,
-    });
-
-    if (loginRequest.oidcContext?.login_hint) {
-        queryParamsForAuthPage.set("hint", loginRequest.oidcContext.login_hint);
-    }
-
-    if (session !== undefined || promptParam === "login") {
-        queryParamsForAuthPage.set("forceFreshAuth", "true");
-    }
-
-    if (tenantIdParam !== null && tenantIdParam !== DEFAULT_TENANT_ID) {
-        queryParamsForAuthPage.set("tenantId", tenantIdParam);
-    }
-
     return {
-        redirectTo: websiteDomain + websiteBasePath + `?${queryParamsForAuthPage.toString()}`,
+        redirectTo: await recipeImplementation.getFrontendRedirectionURL({
+            type: "login",
+            loginChallenge,
+            forceFreshAuth: session !== undefined || promptParam === "login",
+            tenantId: tenantIdParam ?? DEFAULT_TENANT_ID,
+            hint: loginRequest.oidcContext?.login_hint,
+            userContext,
+        }),
         setCookie,
     };
 }

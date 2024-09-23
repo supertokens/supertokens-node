@@ -29,6 +29,7 @@ import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 import SessionRecipe from "../session/recipe";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
     return redirectTo.replace(
@@ -523,6 +524,37 @@ export default function getRecipeInterface(
         buildUserInfo: async function ({ user, accessTokenPayload, scopes, tenantId, userContext }) {
             return getDefaultUserInfoPayload(user, accessTokenPayload, scopes, tenantId, userContext);
         },
+        getFrontendRedirectionURL: async function (input) {
+            const websiteDomain = appInfo
+                .getOrigin({ request: undefined, userContext: input.userContext })
+                .getAsStringDangerous();
+            const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
+
+            if (input.type === "login") {
+                const queryParams = new URLSearchParams({
+                    loginChallenge: input.loginChallenge,
+                });
+                if (input.tenantId !== undefined && input.tenantId !== DEFAULT_TENANT_ID) {
+                    queryParams.set("tenantId", input.tenantId);
+                }
+                if (input.hint !== undefined) {
+                    queryParams.set("hint", input.hint);
+                }
+                if (input.forceFreshAuth) {
+                    queryParams.set("forceFreshAuth", "true");
+                }
+
+                return `${websiteDomain}${websiteBasePath}?${queryParams.toString()}`;
+            } else if (input.type === "try-refresh") {
+                return `${websiteDomain}${websiteBasePath}/try-refresh?loginChallenge=${input.loginChallenge}`;
+            } else if (input.type === "post-logout-fallback") {
+                return `${websiteDomain}${websiteBasePath}`;
+            } else if (input.type === "logout-confirmation") {
+                return `${websiteDomain}${websiteBasePath}/oauth/logout?logoutChallenge=${input.logoutChallenge}`;
+            }
+
+            throw new Error("This should never happen: invalid type passed to getFrontendRedirectionURL");
+        },
         validateOAuth2AccessToken: async function (input) {
             const payload = (
                 await jose.jwtVerify(input.token, getCombinedJWKS(SessionRecipe.getInstanceOrThrowError().config))
@@ -675,11 +707,6 @@ export default function getRecipeInterface(
                 throw new Error(resp.body);
             }
 
-            const websiteDomain = appInfo
-                .getOrigin({ request: undefined, userContext: input.userContext })
-                .getAsStringDangerous();
-            const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
-
             const redirectToURL = new URL(redirectTo);
             const logoutChallenge = redirectToURL.searchParams.get("logout_challenge");
 
@@ -688,8 +715,11 @@ export default function getRecipeInterface(
                 // Redirect to the frontend to ask for logout confirmation if there is a valid or expired supertokens session
                 if (input.session !== undefined || input.shouldTryRefresh) {
                     return {
-                        redirectTo:
-                            websiteDomain + websiteBasePath + "/oauth/logout" + `?logoutChallenge=${logoutChallenge}`,
+                        redirectTo: await this.getFrontendRedirectionURL({
+                            type: "logout-confirmation",
+                            logoutChallenge,
+                            userContext: input.userContext,
+                        }),
                     };
                 } else {
                     // Accept the logout challenge immediately as there is no supertokens session
@@ -706,7 +736,12 @@ export default function getRecipeInterface(
             // NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.
             // In this case, we redirect the user to the /auth page.
             if (redirectTo.endsWith("/oauth/fallbacks/logout/callback")) {
-                return { redirectTo: `${websiteDomain}${websiteBasePath}` };
+                return {
+                    redirectTo: await this.getFrontendRedirectionURL({
+                        type: "post-logout-fallback",
+                        userContext: input.userContext,
+                    }),
+                };
             }
 
             return { redirectTo };
