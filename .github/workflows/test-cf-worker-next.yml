@@ -6,8 +6,8 @@ jobs:
         env:
             CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
             CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-            APP_URL: ${{ secrets.CLOUDFLARE_APP_URL }}
-            CLOUDFLARE_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+            APP_URL: "supertokens-node-b95.pages.dev"
+            CLOUDFLARE_PROJECT_NAME: "supertokens-node-pr-check-for-edge-function-compat"
             TEST_DEPLOYED_VERSION: true
         defaults:
             run:
