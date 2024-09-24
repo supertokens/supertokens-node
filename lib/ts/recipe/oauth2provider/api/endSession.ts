@@ -63,8 +63,6 @@ async function endSessionCommon(
         return false;
     }
 
-    // TODO (core): If client_id is passed, validate if it the same one that was used to issue the id_token
-
     let session, shouldTryRefresh;
     try {
         session = await Session.getSession(options.req, options.res, { sessionRequired: false }, userContext);
@@ -89,17 +87,12 @@ async function endSessionCommon(
     });
 
     if ("redirectTo" in response) {
-        // TODO: Fix
-        if (response.redirectTo.includes("/oauth/fallbacks/error")) {
-            const redirectToUrlObj = new URL(response.redirectTo);
-            const res = {
-                error: redirectToUrlObj.searchParams.get("error"),
-                errorDescription: redirectToUrlObj.searchParams.get("error_description"),
-            };
-            sendNon200Response(options.res, 400, res);
-        } else {
-            options.res.original.redirect(response.redirectTo);
-        }
+        options.res.original.redirect(response.redirectTo);
+    } else if ("error" in response) {
+        sendNon200Response(options.res, response.statusCode ?? 400, {
+            error: response.error,
+            error_description: response.errorDescription,
+        });
     } else {
         send200Response(options.res, response);
     }

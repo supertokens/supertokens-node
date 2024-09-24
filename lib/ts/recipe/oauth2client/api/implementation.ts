@@ -5,9 +5,22 @@ import { OAuthTokens } from "../types";
 export default function getAPIInterface(): APIInterface {
     return {
         signInPOST: async function (input) {
-            const { options, tenantId, userContext } = input;
+            const { options, tenantId, userContext, clientId } = input;
 
-            const providerConfig = await options.recipeImplementation.getProviderConfig({ userContext });
+            let normalisedClientId = clientId;
+            if (normalisedClientId === undefined) {
+                if (options.config.providerConfigs.length > 1) {
+                    throw new Error(
+                        "Should never come here: clientId is undefined and there are multiple providerConfigs"
+                    );
+                }
+
+                normalisedClientId = options.config.providerConfigs[0].clientId!;
+            }
+            const providerConfig = await options.recipeImplementation.getProviderConfig({
+                clientId: normalisedClientId,
+                userContext,
+            });
 
             let oAuthTokensToUse: OAuthTokens = {};
 

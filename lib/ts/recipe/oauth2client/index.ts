@@ -14,6 +14,7 @@
  */
 
 import { getUserContext } from "../../utils";
+import { parseJWTWithoutSignatureVerification } from "../session/jwt";
 import Recipe from "./recipe";
 import { RecipeInterface, APIInterface, APIOptions, OAuthTokens } from "./types";
 
@@ -26,11 +27,23 @@ export default class Wrapper {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
         },
+        clientId?: string,
         userContext?: Record<string, any>
     ) {
-        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        let normalisedClientId = clientId;
+        const instance = Recipe.getInstanceOrThrowError();
+        const recipeInterfaceImpl = instance.recipeInterfaceImpl;
         const normalisedUserContext = getUserContext(userContext);
+        if (normalisedClientId === undefined) {
+            if (instance.config.providerConfigs.length > 1) {
+                throw new Error("clientId is required if there are more than one provider configs defined");
+            }
+
+            normalisedClientId = instance.config.providerConfigs[0].clientId!;
+        }
+
         const providerConfig = await recipeInterfaceImpl.getProviderConfig({
+            clientId: normalisedClientId,
             userContext: normalisedUserContext,
         });
         return await recipeInterfaceImpl.exchangeAuthCodeForOAuthTokens({
@@ -43,7 +56,12 @@ export default class Wrapper {
     static async getUserInfo(oAuthTokens: OAuthTokens, userContext?: Record<string, any>) {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
         const normalisedUserContext = getUserContext(userContext);
+        if (oAuthTokens.access_token === undefined) {
+            throw new Error("access_token is required to get user info");
+        }
+        const preparseJWTInfo = parseJWTWithoutSignatureVerification(oAuthTokens.access_token!);
         const providerConfig = await recipeInterfaceImpl.getProviderConfig({
+            clientId: preparseJWTInfo.payload.client_id,
             userContext: normalisedUserContext,
         });
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserInfo({

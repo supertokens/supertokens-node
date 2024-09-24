@@ -14,10 +14,6 @@ export function resetCombinedJWKS() {
     combinedJWKS = undefined;
 }
 
-// TODO: remove this after proper core support
-const hydraJWKS = createRemoteJWKSet(new URL("http://localhost:4444/.well-known/jwks.json"), {
-    cooldownDuration: JWKCacheCooldownInMs,
-});
 /**
     The function returned by this getter fetches all JWKs from the first available core instance. 
     This combines the other JWKS functions to become error resistant.
@@ -25,22 +21,19 @@ const hydraJWKS = createRemoteJWKSet(new URL("http://localhost:4444/.well-known/
     Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
     token verification. Otherwise, the result of session verification would depend on which core is currently available.
 */
-export function getCombinedJWKS() {
+export function getCombinedJWKS(config: { jwksRefreshIntervalSec: number }) {
     if (combinedJWKS === undefined) {
         const JWKS: ReturnType<typeof createRemoteJWKSet>[] = Querier.getNewInstanceOrThrowError(undefined)
             .getAllCoreUrlsForPath("/.well-known/jwks.json")
             .map((url) =>
                 createRemoteJWKSet(new URL(url), {
+                    cacheMaxAge: config.jwksRefreshIntervalSec,
                     cooldownDuration: JWKCacheCooldownInMs,
                 })
             );
 
         combinedJWKS = async (...args) => {
             let lastError = undefined;
-
-            if (!args[0]?.kid?.startsWith("s-") && !args[0]?.kid?.startsWith("d-")) {
-                return hydraJWKS(...args);
-            }
 
             if (JWKS.length === 0) {
                 throw Error(

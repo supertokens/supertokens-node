@@ -20,7 +20,7 @@ import { logDebugMessage } from "../../logger";
 import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
 
 export default function getRecipeImplementation(_querier: Querier, config: TypeNormalisedInput): RecipeInterface {
-    let providerConfigWithOIDCInfo: ProviderConfigWithOIDCInfo | null = null;
+    let providerConfigsWithOIDCInfo: Record<string, ProviderConfigWithOIDCInfo> = {};
 
     return {
         signIn: async function ({
@@ -53,11 +53,14 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
                 rawUserInfo,
             };
         },
-        getProviderConfig: async function () {
-            if (providerConfigWithOIDCInfo !== null) {
-                return providerConfigWithOIDCInfo;
+        getProviderConfig: async function ({ clientId }) {
+            if (providerConfigsWithOIDCInfo[clientId] !== undefined) {
+                return providerConfigsWithOIDCInfo[clientId];
             }
-            const oidcInfo = await getOIDCDiscoveryInfo(config.providerConfig.oidcDiscoveryEndpoint);
+            const providerConfig = config.providerConfigs.find(
+                (providerConfig) => providerConfig.clientId === clientId
+            )!;
+            const oidcInfo = await getOIDCDiscoveryInfo(providerConfig.oidcDiscoveryEndpoint);
 
             if (oidcInfo.authorization_endpoint === undefined) {
                 throw new Error("Failed to authorization_endpoint from the oidcDiscoveryEndpoint.");
@@ -72,14 +75,15 @@ export default function getRecipeImplementation(_querier: Querier, config: TypeN
                 throw new Error("Failed to jwks_uri from the oidcDiscoveryEndpoint.");
             }
 
-            providerConfigWithOIDCInfo = {
-                ...config.providerConfig,
+            providerConfigsWithOIDCInfo[clientId] = {
+                ...providerConfig,
                 authorizationEndpoint: oidcInfo.authorization_endpoint,
                 tokenEndpoint: oidcInfo.token_endpoint,
                 userInfoEndpoint: oidcInfo.userinfo_endpoint,
                 jwksURI: oidcInfo.jwks_uri,
             };
-            return providerConfigWithOIDCInfo;
+
+            return providerConfigsWithOIDCInfo[clientId];
         },
         exchangeAuthCodeForOAuthTokens: async function (this: RecipeInterface, { providerConfig, redirectURIInfo }) {
             if (providerConfig.tokenEndpoint === undefined) {

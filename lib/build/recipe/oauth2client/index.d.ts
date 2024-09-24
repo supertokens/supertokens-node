@@ -9,6 +9,7 @@ export default class Wrapper {
             redirectURIQueryParams: any;
             pkceCodeVerifier?: string | undefined;
         },
+        clientId?: string,
         userContext?: Record<string, any>
     ): Promise<import("./types").OAuthTokenResponse>;
     static getUserInfo(

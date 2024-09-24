@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import Session from "../../session";
 import { UserContext } from "../../../types";
@@ -51,6 +51,16 @@ export async function logoutPOST(
         userContext,
     });
 
-    send200Response(options.res, response);
+    if ("status" in response && response.status === "OK") {
+        send200Response(options.res, response);
+    } else if ("statusCode" in response) {
+        sendNon200Response(options.res, response.statusCode ?? 400, {
+            error: response.error,
+            error_description: response.errorDescription,
+        });
+    } else {
+        send200Response(options.res, response);
+    }
+
     return true;
 }

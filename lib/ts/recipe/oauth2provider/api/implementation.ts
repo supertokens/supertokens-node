@@ -45,6 +45,10 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
+            if ("error" in response) {
+                return response;
+            }
+
             return handleLoginInternalRedirects({
                 response,
                 recipeImplementation: options.recipeImplementation,
@@ -122,6 +126,10 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
+            if ("error" in response) {
+                return response;
+            }
+
             return handleLogoutInternalRedirects({
                 response,
                 session,
@@ -136,6 +144,10 @@ export default function getAPIImplementation(): APIInterface {
                 shouldTryRefresh,
                 userContext,
             });
+
+            if ("error" in response) {
+                return response;
+            }
 
             return handleLogoutInternalRedirects({
                 response,
@@ -154,13 +166,17 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            const { redirectTo } = await handleLogoutInternalRedirects({
+            const res = await handleLogoutInternalRedirects({
                 response,
                 recipeImplementation: options.recipeImplementation,
                 userContext,
             });
 
-            return { status: "OK", frontendRedirectTo: redirectTo };
+            if ("error" in res) {
+                return res;
+            }
+
+            return { status: "OK", frontendRedirectTo: res.redirectTo };
         },
     };
 }

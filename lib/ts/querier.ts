@@ -23,11 +23,6 @@ import { UserContext } from "./types";
 import { NetworkInterceptor } from "./types";
 import SuperTokens from "./supertokens";
 
-export const hydraPubDomain = process.env.HYDRA_PUB ?? "http://localhost:4444"; // This will be used as a domain for paths starting with hydraPubPathPrefix
-const hydraAdmDomain = process.env.HYDRA_ADM ?? "http://localhost:4445"; // This will be used as a domain for paths starting with hydraAdmPathPrefix
-const hydraPubPathPrefix = "/recipe/oauth2/pub"; // Replaced with "/oauth2" when sending the request (/recipe/oauth2/pub/token -> /oauth2/token)
-const hydraAdmPathPrefix = "/recipe/oauth2/admin"; // Replaced with "/admin" when sending the request (/recipe/oauth2/admin/clients -> /admin/clients)
-
 export class Querier {
     private static initCalled = false;
     private static hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined = undefined;
@@ -160,11 +155,6 @@ export class Querier {
     // path should start with "/"
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any, userContext: UserContext): Promise<T> => {
         this.invalidateCoreCallCache(userContext);
-        // TODO: remove FormData
-        const isForm = body !== undefined && body["$isFormData"];
-        if (isForm) {
-            delete body["$isFormData"];
-        }
 
         const { body: respBody } = await this.sendRequestHelper(
             path,
@@ -174,17 +164,7 @@ export class Querier {
                 let headers: any = {
                     "cdi-version": apiVersion,
                 };
-                if (isForm) {
-                    headers["content-type"] = "application/x-www-form-urlencoded";
-                } else {
-                    headers["content-type"] = "application/json; charset=utf-8";
-                }
-
-                // TODO: Remove this after core changes are done
-                if (body !== undefined && body["authorizationHeader"]) {
-                    headers["authorization"] = body["authorizationHeader"];
-                    delete body["authorizationHeader"];
-                }
+                headers["content-type"] = "application/json; charset=utf-8";
 
                 if (Querier.apiKey !== undefined) {
                     headers = {
@@ -216,11 +196,7 @@ export class Querier {
                 }
                 return doFetch(url, {
                     method: "POST",
-                    body: isForm
-                        ? new URLSearchParams(Object.entries(body)).toString()
-                        : body !== undefined
-                        ? JSON.stringify(body)
-                        : undefined,
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },
@@ -613,19 +589,6 @@ export class Querier {
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
 
         let strPath = path.getAsStringDangerous();
-        const isHydraAPICall = strPath.startsWith(hydraAdmPathPrefix) || strPath.startsWith(hydraPubPathPrefix);
-
-        if (strPath.startsWith(hydraPubPathPrefix)) {
-            currentDomain = hydraPubDomain;
-            currentBasePath = "";
-            strPath = strPath.replace(hydraPubPathPrefix, "/oauth2");
-        }
-
-        if (strPath.startsWith(hydraAdmPathPrefix)) {
-            currentDomain = hydraAdmDomain;
-            currentBasePath = "";
-            strPath = strPath.replace(hydraAdmPathPrefix, "/admin");
-        }
 
         const url = currentDomain + currentBasePath + strPath;
         const maxRetries = 5;
@@ -646,11 +609,6 @@ export class Querier {
             let response = await requestFunc(url);
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
-            }
-
-            // TODO: Temporary solution for handling Hydra API calls. Remove when Hydra is no longer called directly.
-            if (isHydraAPICall) {
-                return handleHydraAPICall(response);
             }
 
             if (response.status !== 200) {
@@ -702,30 +660,4 @@ export class Querier {
             throw err;
         }
     };
-}
-
-async function handleHydraAPICall(response: Response) {
-    const contentType = response.headers.get("Content-Type");
-
-    if (contentType?.startsWith("application/json")) {
-        return {
-            body: {
-                status: response.ok ? "OK" : "ERROR",
-                statusCode: response.status,
-                data: await response.clone().json(),
-            },
-            headers: response.headers,
-        };
-    } else if (contentType?.startsWith("text/plain")) {
-        return {
-            body: {
-                status: response.ok ? "OK" : "ERROR",
-                statusCode: response.status,
-                data: await response.clone().text(),
-            },
-            headers: response.headers,
-        };
-    }
-
-    return { body: { status: response.ok ? "OK" : "ERROR", statusCode: response.status }, headers: response.headers };
 }

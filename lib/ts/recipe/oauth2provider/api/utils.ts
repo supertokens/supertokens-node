@@ -4,7 +4,7 @@ import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 import { getSessionInformation } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { AUTH_PATH, LOGIN_PATH, END_SESSION_PATH } from "../constants";
-import { RecipeInterface } from "../types";
+import { ErrorOAuth2, RecipeInterface } from "../types";
 import setCookieParser from "set-cookie-parser";
 
 // API implementation for the loginGET function.
@@ -39,6 +39,7 @@ export async function loginGET({
     const incomingAuthUrlQueryParams = new URLSearchParams(loginRequest.requestUrl.split("?")[1]);
     const promptParam = incomingAuthUrlQueryParams.get("prompt") ?? incomingAuthUrlQueryParams.get("st_prompt");
     const maxAgeParam = incomingAuthUrlQueryParams.get("max_age");
+
     if (maxAgeParam !== null) {
         try {
             const maxAgeParsed = Number.parseInt(maxAgeParam);
@@ -85,29 +86,14 @@ export async function loginGET({
         });
         return { redirectTo: accept.redirectTo, setCookie };
     }
-    const appInfo = SuperTokens.getInstanceOrThrowError().appInfo;
-    const websiteDomain = appInfo
-        .getOrigin({
-            request: undefined,
-            userContext: userContext,
-        })
-        .getAsStringDangerous();
-    const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
-    if (shouldTryRefresh) {
-        const websiteDomain = appInfo
-            .getOrigin({
-                request: undefined,
-                userContext: userContext,
-            })
-            .getAsStringDangerous();
-        const websiteBasePath = appInfo.websiteBasePath.getAsStringDangerous();
 
-        const queryParamsForTryRefreshPage = new URLSearchParams({
-            loginChallenge,
-        });
-
+    if (shouldTryRefresh && promptParam !== "login") {
         return {
-            redirectTo: websiteDomain + websiteBasePath + `/try-refresh?${queryParamsForTryRefreshPage.toString()}`,
+            redirectTo: await recipeImplementation.getFrontendRedirectionURL({
+                type: "try-refresh",
+                loginChallenge,
+                userContext,
+            }),
             setCookie,
         };
     }
@@ -124,24 +110,15 @@ export async function loginGET({
         return { redirectTo: reject.redirectTo, setCookie };
     }
 
-    const queryParamsForAuthPage = new URLSearchParams({
-        loginChallenge,
-    });
-
-    if (loginRequest.oidcContext?.login_hint) {
-        queryParamsForAuthPage.set("hint", loginRequest.oidcContext.login_hint);
-    }
-
-    if (session !== undefined || promptParam === "login") {
-        queryParamsForAuthPage.set("forceFreshAuth", "true");
-    }
-
-    if (tenantIdParam !== null && tenantIdParam !== DEFAULT_TENANT_ID) {
-        queryParamsForAuthPage.set("tenantId", tenantIdParam);
-    }
-
     return {
-        redirectTo: websiteDomain + websiteBasePath + `?${queryParamsForAuthPage.toString()}`,
+        redirectTo: await recipeImplementation.getFrontendRedirectionURL({
+            type: "login",
+            loginChallenge,
+            forceFreshAuth: session !== undefined || promptParam === "login",
+            tenantId: tenantIdParam ?? DEFAULT_TENANT_ID,
+            hint: loginRequest.oidcContext?.login_hint,
+            userContext,
+        }),
         setCookie,
     };
 }
@@ -217,7 +194,7 @@ export async function handleLoginInternalRedirects({
     shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
-}): Promise<{ redirectTo: string; setCookie?: string }> {
+}): Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2> {
     if (!isLoginInternalRedirect(response.redirectTo)) {
         return response;
     }
@@ -261,6 +238,10 @@ export async function handleLoginInternalRedirects({
                 userContext,
             });
 
+            if ("error" in authRes) {
+                return authRes;
+            }
+
             response = {
                 redirectTo: authRes.redirectTo,
                 setCookie: mergeSetCookieHeaders(authRes.setCookie, response.setCookie),
@@ -287,7 +268,7 @@ export async function handleLogoutInternalRedirects({
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
     userContext: UserContext;
-}): Promise<{ redirectTo: string }> {
+}): Promise<{ redirectTo: string } | ErrorOAuth2> {
     if (!isLogoutInternalRedirect(response.redirectTo)) {
         return response;
     }
@@ -302,7 +283,7 @@ export async function handleLogoutInternalRedirects({
         const params = new URLSearchParams(queryString);
 
         if (response.redirectTo.includes(END_SESSION_PATH)) {
-            response = await recipeImplementation.endSession({
+            const endSessionRes = await recipeImplementation.endSession({
                 params: Object.fromEntries(params.entries()),
                 session,
                 // We internally redirect to the `end_session_endpoint` at the end of the logout flow.
@@ -311,6 +292,10 @@ export async function handleLogoutInternalRedirects({
                 shouldTryRefresh: false,
                 userContext,
             });
+            if ("error" in endSessionRes) {
+                return endSessionRes;
+            }
+            response = endSessionRes;
         } else {
             throw new Error(`Unexpected internal redirect ${response.redirectTo}`);
         }

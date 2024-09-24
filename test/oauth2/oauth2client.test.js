@@ -154,7 +154,7 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
         let clientIds = new Set();
         // Create 10 clients
         for (let i = 0; i < 10; i++) {
-            const client = await OAuth2Recipe.createOAuth2Client({});
+            const { client } = await OAuth2Recipe.createOAuth2Client({});
             clientIds.add(client.clientId);
         }
 
