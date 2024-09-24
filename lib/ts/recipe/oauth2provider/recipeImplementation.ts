@@ -155,6 +155,8 @@ export default function getRecipeInterface(
                     tId: input.tenantId,
                     rsub: input.rsub,
                     sessionHandle: input.sessionHandle,
+                    initialAccessTokenPayload: input.initialAccessTokenPayload,
+                    initialIdTokenPayload: input.initialIdTokenPayload,
                 },
                 {
                     consentChallenge: input.challenge,
@@ -194,15 +196,25 @@ export default function getRecipeInterface(
 
             let payloads: { idToken: JSONObject | undefined; accessToken: JSONObject | undefined } | undefined;
 
-            if (input.params.client_id === undefined) {
-                throw new Error("client_id is required");
+            if (input.params.client_id === undefined || typeof input.params.client_id !== "string") {
+                return {
+                    statusCode: 400,
+                    error: "invalid_request",
+                    errorDescription: "client_id is required and must be a string",
+                };
             }
 
+            const scopes = await this.getRequestedScopes({
+                scopeParam: input.params.scope?.split(" ") || [],
+                clientId: input.params.client_id as string,
+                recipeUserId: input.session?.getRecipeUserId(),
+                sessionHandle: input.session?.getHandle(),
+                userContext: input.userContext,
+            });
+
             const responseTypes = input.params.response_type?.split(" ") ?? [];
-            if (
-                input.session !== undefined &&
-                (responseTypes.includes("token") || responseTypes.includes("id_token"))
-            ) {
+
+            if (input.session !== undefined) {
                 const clientInfo = await this.getOAuth2Client({
                     clientId: input.params.client_id as string,
                     userContext: input.userContext,
@@ -218,24 +230,26 @@ export default function getRecipeInterface(
                     throw new Error("User not found");
                 }
 
-                const idToken = responseTypes.includes("id_token")
-                    ? await this.buildIdTokenPayload({
-                          user,
-                          client,
-                          sessionHandle: input.session.getHandle(),
-                          scopes: input.params.scope?.split(" ") || [],
-                          userContext: input.userContext,
-                      })
-                    : undefined;
-                const accessToken = responseTypes.includes("token")
-                    ? await this.buildAccessTokenPayload({
-                          user,
-                          client,
-                          sessionHandle: input.session.getHandle(),
-                          scopes: input.params.scope?.split(" ") || [],
-                          userContext: input.userContext,
-                      })
-                    : undefined;
+                const idToken =
+                    responseTypes.includes("id_token") || responseTypes.includes("code")
+                        ? await this.buildIdTokenPayload({
+                              user,
+                              client,
+                              sessionHandle: input.session.getHandle(),
+                              scopes,
+                              userContext: input.userContext,
+                          })
+                        : undefined;
+                const accessToken =
+                    responseTypes.includes("token") || responseTypes.includes("code")
+                        ? await this.buildAccessTokenPayload({
+                              user,
+                              client,
+                              sessionHandle: input.session.getHandle(),
+                              scopes,
+                              userContext: input.userContext,
+                          })
+                        : undefined;
                 payloads = {
                     idToken,
                     accessToken,
@@ -245,7 +259,10 @@ export default function getRecipeInterface(
             const resp = await querier.sendPostRequest(
                 new NormalisedURLPath(`/recipe/oauth/auth`),
                 {
-                    params: input.params,
+                    params: {
+                        ...input.params,
+                        scope: scopes.join(" "),
+                    },
                     cookies: input.cookies,
                     session: payloads,
                 },
@@ -280,6 +297,8 @@ export default function getRecipeInterface(
                     tenantId: input.session.getTenantId(),
                     rsub: input.session.getRecipeUserId().getAsString(),
                     sessionHandle: input.session.getHandle(),
+                    initialAccessTokenPayload: payloads?.accessToken,
+                    initialIdTokenPayload: payloads?.idToken,
                 });
 
                 return {
@@ -321,24 +340,20 @@ export default function getRecipeInterface(
                     };
                 }
                 const client = clientInfo.client;
-                const idToken = await this.buildIdTokenPayload({
+                body["id_token"] = await this.buildIdTokenPayload({
                     user: undefined,
                     client,
                     sessionHandle: undefined,
                     scopes,
                     userContext: input.userContext,
                 });
-                const accessTokenPayload = await this.buildAccessTokenPayload({
+                body["access_token"] = await this.buildAccessTokenPayload({
                     user: undefined,
                     client,
                     sessionHandle: undefined,
                     scopes,
                     userContext: input.userContext,
                 });
-                body["session"] = {
-                    idToken: idToken,
-                    accessToken: accessTokenPayload,
-                };
             }
 
             if (input.body.grant_type === "refresh_token") {
@@ -368,24 +383,20 @@ export default function getRecipeInterface(
                     if (!user) {
                         throw new Error("User not found");
                     }
-                    const idToken = await this.buildIdTokenPayload({
+                    body["id_token"] = await this.buildIdTokenPayload({
                         user,
                         client,
                         sessionHandle,
                         scopes,
                         userContext: input.userContext,
                     });
-                    const accessTokenPayload = await this.buildAccessTokenPayload({
+                    body["access_token"] = await this.buildAccessTokenPayload({
                         user,
                         client,
                         sessionHandle: sessionHandle,
                         scopes,
                         userContext: input.userContext,
                     });
-                    body["session"] = {
-                        idToken: idToken,
-                        accessToken: accessTokenPayload,
-                    };
                 }
             }
 
@@ -509,6 +520,9 @@ export default function getRecipeInterface(
                 };
             }
         },
+        getRequestedScopes: async function (this: RecipeInterface, input): Promise<string[]> {
+            return input.scopeParam;
+        },
         buildAccessTokenPayload: async function (input) {
             if (input.user === undefined || input.sessionHandle === undefined) {
                 return {};
@@ -606,10 +620,10 @@ export default function getRecipeInterface(
                 requestBody.authorizationHeader = input.authorizationHeader;
             } else {
                 if ("clientId" in input && input.clientId !== undefined) {
-                    requestBody.clientId = input.clientId;
+                    requestBody.client_id = input.clientId;
                 }
                 if ("clientSecret" in input && input.clientSecret !== undefined) {
-                    requestBody.clientSecret = input.clientSecret;
+                    requestBody.client_secret = input.clientSecret;
                 }
             }
 

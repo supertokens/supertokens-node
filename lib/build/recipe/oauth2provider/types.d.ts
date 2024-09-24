@@ -5,6 +5,7 @@ import { GeneralErrorResponse, JSONObject, JSONValue, NonNullableProperties, Use
 import { SessionContainerInterface } from "../session/types";
 import { OAuth2Client } from "./OAuth2Client";
 import { User } from "../../user";
+import RecipeUserId from "../../recipeUserId";
 export declare type TypeInput = {
     override?: {
         functions?: (
@@ -123,6 +124,8 @@ export declare type RecipeInterface = {
         tenantId: string;
         rsub: string;
         sessionHandle: string;
+        initialAccessTokenPayload: JSONObject | undefined;
+        initialIdTokenPayload: JSONObject | undefined;
         userContext: UserContext;
     }): Promise<{
         redirectTo: string;
@@ -244,6 +247,13 @@ export declare type RecipeInterface = {
         status: "OK";
         payload: JSONObject;
     }>;
+    getRequestedScopes(input: {
+        recipeUserId: RecipeUserId | undefined;
+        sessionHandle: string | undefined;
+        scopeParam: string[];
+        clientId: string;
+        userContext: UserContext;
+    }): Promise<string[]>;
     buildAccessTokenPayload(input: {
         user: User | undefined;
         client: OAuth2Client;
