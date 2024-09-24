@@ -11,6 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Added OAuth2Provider recipe
 
+## [20.1.2] - 2024-09-14
+
+-   Fixes formFields to accept non string types as well.
+
+## [20.1.1] - 2024-09-10
+
+-   Fixes an issue with Okta / Active Directory providers where we check for additional config if `oidcDiscoveryEndpoint` is not defined. It would not be necessary in the cases where other endpoints are already provided.
+
+## [20.1.0] - 2024-09-09
+
+-   Add edge compatibility for custom frameworks and Next.JS
+
+## [20.0.5] - 2024-09-02
+
+-   Optional form fields are now truly optional, can be omitted from the payload.
+
+## [20.0.4] - 2024-08-30
+
+-   Improves thirdParty debug logging to help with debugging issues with JSON parsing.
+
+## [20.0.3] - 2024-08-22
+
+-   Fixes issue with dashboard APIs `createOrUpdateThirdPartyConfig` and `deleteThirdPartyConfig` which did not take `includeInNonPublicTenantsByDefault` into account for non-public tenants.
+-   Updates test server to support dashboard tests.
+
 ## [20.0.2] - 2024-08-08
 
 -   Fixes an issue where `shouldDoAutomaticAccountLinking` was called without a primary user when linking in some cases.

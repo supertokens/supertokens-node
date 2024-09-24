@@ -1038,7 +1038,6 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                         },
                     ],
                 })
-                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1047,7 +1046,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     resolve(JSON.parse(res.text));
                 })
         );
-        assert(response.message === "Are you sending too many / too few formFields?");
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
+        assert(response.formFields[0].error === "Field is not optional");
+        assert(response.formFields[0].id === "email");
     });
 
     // Input formFields has no password field
@@ -1087,7 +1089,6 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                         },
                     ],
                 })
-                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1096,7 +1097,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     resolve(JSON.parse(res.text));
                 })
         );
-        assert(response.message === "Are you sending too many / too few formFields?");
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
+        assert(response.formFields[0].error === "Field is not optional");
+        assert(response.formFields[0].id === "password");
     });
 
     // Provide invalid (wrong syntax) email and wrong password, and you should get form field error

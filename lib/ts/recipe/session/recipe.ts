@@ -44,6 +44,7 @@ import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { getAccessTokenFromRequest } from "./sessionRequestFunctions";
+import { isTestEnv } from "../../utils";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -123,7 +124,7 @@ export default class SessionRecipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw new Error("calling testing function in non testing env");
         }
         SessionRecipe.instance = undefined;

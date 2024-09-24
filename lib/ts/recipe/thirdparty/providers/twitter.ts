@@ -13,6 +13,7 @@
  * under the License.
  */
 import { logDebugMessage } from "../../../logger";
+import { encodeBase64 } from "../../../utils";
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider, {
     DEV_OAUTH_REDIRECT_URL,
@@ -80,10 +81,7 @@ export default function Twitter(input: ProviderInput): TypeProvider {
             }
             /* Transformation needed for dev keys END */
 
-            const basicAuthToken = Buffer.from(
-                `${clientId}:${originalImplementation.config.clientSecret}`,
-                "utf8"
-            ).toString("base64");
+            const basicAuthToken = encodeBase64(`${clientId}:${originalImplementation.config.clientSecret}`);
             const twitterOauthTokenParams = {
                 grant_type: "authorization_code",
                 client_id: clientId,

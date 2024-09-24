@@ -26,6 +26,7 @@ import APIImplementation from "./api/implementation";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_DISCOVERY_CONFIG_URL } from "./constants";
 import getOpenIdDiscoveryConfiguration from "./api/getOpenIdDiscoveryConfiguration";
+import { isTestEnv } from "../../utils";
 
 export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID = "openid";
@@ -74,7 +75,7 @@ export default class OpenIdRecipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw new Error("calling testing function in non testing env");
         }
         OpenIdRecipe.instance = undefined;

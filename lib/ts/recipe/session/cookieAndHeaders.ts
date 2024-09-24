@@ -16,6 +16,7 @@ import { HEADER_RID } from "../../constants";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
 import { UserContext } from "../../types";
+import { encodeBase64 } from "../../utils";
 import { availableTokenTransferMethods } from "./constants";
 import SessionError from "./error";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
@@ -83,7 +84,7 @@ export function buildFrontToken(userId: string, atExpiry: number, accessTokenPay
         ate: atExpiry,
         up: accessTokenPayload,
     };
-    return Buffer.from(JSON.stringify(tokenInfo)).toString("base64");
+    return encodeBase64(JSON.stringify(tokenInfo));
 }
 
 export function setFrontTokenInHeaders(res: BaseResponse, frontToken: string) {

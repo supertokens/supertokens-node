@@ -3,13 +3,14 @@ import EmailPassword from "supertokens-node/recipe/emailpassword";
 
 export const getBackendConfig = () => {
     return {
+        debug: true,
         framework: "awsLambda",
         supertokens: {
             connectionURI: "https://try.supertokens.com",
         },
         appInfo: {
             appName: "SuperTokens Demo",
-            apiDomain: "https://0ez3j5libc.execute-api.ap-south-1.amazonaws.com",
+            apiDomain: "https://zcbgp7k8ti.execute-api.ap-south-1.amazonaws.com",
             websiteDomain: "http://localhost:3000",
             apiBasePath: "/auth",
             apiGatewayPath: "/prod",

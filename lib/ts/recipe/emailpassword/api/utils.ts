@@ -82,12 +82,12 @@ function newBadRequestError(message: string) {
     });
 }
 
-// We check that the number of fields in input and config form field is the same.
-// We check that each item in the config form field is also present in the input form field
+// We check to make sure we are validating each required form field
+// and also validate optional form fields only when present
 async function validateFormOrThrowError(
     inputs: {
         id: string;
-        value: string;
+        value: any | undefined;
     }[],
     configFormFields: NormalisedFormField[],
     tenantId: string,
@@ -95,37 +95,45 @@ async function validateFormOrThrowError(
 ) {
     let validationErrors: { id: string; error: string }[] = [];
 
-    if (configFormFields.length !== inputs.length) {
-        throw newBadRequestError("Are you sending too many / too few formFields?");
+    // Throw an error if the user has provided more than the allowed
+    // formFields.
+    if (inputs.length > configFormFields.length) {
+        throw newBadRequestError("Are you sending too many formFields?");
     }
 
-    // Loop through all form fields.
-    for (let i = 0; i < configFormFields.length; i++) {
-        const field = configFormFields[i];
+    // NOTE: We don't need to check for required fields at all as that will
+    // be picked up in the below codeblock.
 
-        // Find corresponding input value.
-        const input = inputs.find((i) => i.id === field.id);
+    for (const formField of configFormFields) {
+        const input = inputs.find((input) => input.id === formField.id);
 
-        // Absent or not optional empty field
-        if (input === undefined || (input.value === "" && !field.optional)) {
+        // Add the not optional error if input is not passed
+        // and the field is not optional.
+        const isValidInput =
+            !!input &&
+            ((typeof input.value === "string"
+                ? input.value.length > 0
+                : input.value !== null && typeof input.value !== "undefined") ||
+                (typeof input.value === "object" && Object.values(input.value).length > 0));
+        if (!formField.optional && !isValidInput) {
             validationErrors.push({
                 error: "Field is not optional",
-                id: field.id,
+                id: formField.id,
             });
-        } else {
-            // Otherwise, use validate function.
-            const error = await field.validate(input.value, tenantId, userContext);
-            // If error, add it.
-            if (error !== undefined) {
+        }
+
+        if (isValidInput) {
+            const error = await formField.validate(input!.value, tenantId, userContext);
+            if (error) {
                 validationErrors.push({
                     error,
-                    id: field.id,
+                    id: formField.id,
                 });
             }
         }
     }
 
-    if (validationErrors.length !== 0) {
+    if (validationErrors.length > 0) {
         throw new STError({
             type: STError.FIELD_ERROR,
             payload: validationErrors,

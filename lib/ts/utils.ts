@@ -451,3 +451,54 @@ export function transformObjectKeys<T>(obj: { [key: string]: any }, caseType: "s
         return result;
     }, {} as any) as T;
 }
+
+export const getProcess = () => {
+    /**
+     * Return the process instance if it is available falling back
+     * to one that is compatible where process may not be available
+     * (like `edge` runtime).
+     */
+    if (typeof process !== "undefined") return process;
+    const ponyFilledProcess = require("process");
+    return ponyFilledProcess;
+};
+
+export const getBuffer = () => {
+    /**
+     * Return the Buffer instance if it is available falling back
+     * to one that is compatible where it may not be available
+     * (like `edge` runtime).
+     */
+    if (typeof Buffer !== "undefined") return Buffer;
+    const ponyFilledBuffer = require("buffer").Buffer;
+    return ponyFilledBuffer;
+};
+
+export const isTestEnv = (): boolean => {
+    /**
+     * Check if test mode is enabled by reading the environment variable.
+     */
+    return getProcess().env.TEST_MODE === "testing";
+};
+
+export const encodeBase64 = (value: string): string => {
+    /**
+     * Encode the passed value to base64 and return the encoded value.
+     */
+    return getBuffer().from(value).toString("base64");
+};
+
+export const decodeBase64 = (value: string): string => {
+    /**
+     * Decode the passed value with base64 encoded and return the
+     * decoded value.
+     */
+    return getBuffer().from(value, "base64").toString();
+};
+
+export const isBuffer = (obj: any): boolean => {
+    /**
+     * Check if the passed object is a buffer or not.
+     */
+    return getBuffer().isBuffer(obj);
+};

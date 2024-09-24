@@ -15,14 +15,14 @@
 
 import { UserEmailInfo } from "./types";
 import { NormalisedAppinfo } from "../../types";
-import { postWithFetch } from "../../utils";
+import { isTestEnv, postWithFetch } from "../../utils";
 
 export async function createAndSendEmailUsingSupertokensService(
     appInfo: NormalisedAppinfo,
     user: UserEmailInfo,
     emailVerifyURLWithToken: string
 ) {
-    if (process.env.TEST_MODE === "testing") {
+    if (isTestEnv()) {
         return;
     }
     await postWithFetch(

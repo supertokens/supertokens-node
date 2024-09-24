@@ -64,11 +64,6 @@ export const isValidFirstFactor = async function (
 
     logDebugMessage(`isValidFirstFactor got ${tenantConfig.firstFactors?.join(", ")} from tenant config`);
     logDebugMessage(`isValidFirstFactor got ${firstFactorsFromMFA} from MFA`);
-    logDebugMessage(
-        `isValidFirstFactor tenantconfig enables: ${Object.keys(tenantConfig).filter(
-            (k) => (tenantConfig as any)[k]?.enabled
-        )}`
-    );
 
     // first factors configured in core is prioritised over the ones configured statically
     let configuredFirstFactors: string[] | undefined =

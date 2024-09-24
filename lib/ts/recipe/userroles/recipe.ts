@@ -32,6 +32,7 @@ import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
 import { User } from "../../user";
 import { getSessionInformation } from "../session";
+import { isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "userroles";
@@ -192,7 +193,7 @@ export default class Recipe extends RecipeModule {
     }
 
     static reset() {
-        if (process.env.TEST_MODE !== "testing") {
+        if (!isTestEnv()) {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;

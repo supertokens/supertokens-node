@@ -19,6 +19,8 @@ import { UserContext } from "../../../../types";
 import NormalisedURLDomain from "../../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../../normalisedURLPath";
 import { doPostRequest } from "../../../../thirdpartyUtils";
+import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
+import { encodeBase64 } from "../../../../utils";
 
 export type Response =
     | {
@@ -50,7 +52,7 @@ export default async function createOrUpdateThirdPartyConfig(
         const mtRecipe = MultitenancyRecipe.getInstance();
         const staticProviders = mtRecipe?.staticThirdPartyProviders ?? [];
         for (const provider of staticProviders.filter(
-            (provider) => provider.includeInNonPublicTenantsByDefault === true
+            (provider) => provider.includeInNonPublicTenantsByDefault === true || tenantId === DEFAULT_TENANT_ID
         )) {
             await Multitenancy.createOrUpdateThirdPartyConfig(
                 tenantId,
@@ -86,7 +88,7 @@ export default async function createOrUpdateThirdPartyConfig(
                 defaultRedirectUrl: providerConfig.clients[0].additionalConfig.redirectURLs[0],
                 forceAuthn: false,
                 encodedRawMetadata: providerConfig.clients[0].additionalConfig.samlXML
-                    ? Buffer.from(providerConfig.clients[0].additionalConfig.samlXML).toString("base64")
+                    ? encodeBase64(providerConfig.clients[0].additionalConfig.samlXML)
                     : "",
                 redirectUrl: JSON.stringify(providerConfig.clients[0].additionalConfig.redirectURLs),
                 metadataUrl: providerConfig.clients[0].additionalConfig.samlURL || "",

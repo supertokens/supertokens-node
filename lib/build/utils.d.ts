@@ -66,3 +66,9 @@ export declare function transformObjectKeys<T>(
     },
     caseType: "snake-case" | "camelCase"
 ): T;
+export declare const getProcess: () => any;
+export declare const getBuffer: () => any;
+export declare const isTestEnv: () => boolean;
+export declare const encodeBase64: (value: string) => string;
+export declare const decodeBase64: (value: string) => string;
+export declare const isBuffer: (obj: any) => boolean;
