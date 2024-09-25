@@ -128,12 +128,6 @@ export class OAuth2Client {
     clientUri: string;
 
     /**
-     * Array of allowed CORS origins
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
-     */
-    allowedCorsOrigins: string[];
-
-    /**
      * Array of audiences
      * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
@@ -210,7 +204,6 @@ export class OAuth2Client {
         refreshTokenGrantRefreshTokenLifespan = null,
         tokenEndpointAuthMethod,
         clientUri = "",
-        allowedCorsOrigins = [],
         audience = [],
         grantTypes = null,
         responseTypes = null,
@@ -238,7 +231,6 @@ export class OAuth2Client {
         this.refreshTokenGrantRefreshTokenLifespan = refreshTokenGrantRefreshTokenLifespan;
         this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
         this.clientUri = clientUri;
-        this.allowedCorsOrigins = allowedCorsOrigins;
         this.audience = audience;
         this.grantTypes = grantTypes;
         this.responseTypes = responseTypes;

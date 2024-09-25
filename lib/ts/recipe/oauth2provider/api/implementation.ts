@@ -27,7 +27,7 @@ export default function getAPIImplementation(): APIInterface {
                 isDirectCall: true,
                 userContext,
             });
-            return handleLoginInternalRedirects({
+            const respAfterInternalRedirects = await handleLoginInternalRedirects({
                 response,
                 cookie: options.req.getHeaderValue("cookie"),
                 recipeImplementation: options.recipeImplementation,
@@ -35,6 +35,15 @@ export default function getAPIImplementation(): APIInterface {
                 shouldTryRefresh,
                 userContext,
             });
+
+            if ("error" in respAfterInternalRedirects) {
+                return respAfterInternalRedirects;
+            }
+
+            return {
+                frontendRedirectTo: respAfterInternalRedirects.redirectTo,
+                setCookie: respAfterInternalRedirects.setCookie,
+            };
         },
 
         authGET: async ({ options, params, cookie, session, shouldTryRefresh, userContext }) => {

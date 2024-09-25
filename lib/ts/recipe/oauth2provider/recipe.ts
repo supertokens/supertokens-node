@@ -315,14 +315,17 @@ export default class Recipe extends RecipeModule {
             sub: accessTokenPayload.sub,
         };
         if (scopes.includes("email")) {
+            // TODO: try and get the email based on the user id of the entire user object
             payload.email = user?.emails[0];
             payload.email_verified = user.loginMethods.some((lm) => lm.hasSameEmailAs(user?.emails[0]) && lm.verified);
+            payload.emails = user.emails;
         }
         if (scopes.includes("phoneNumber")) {
             payload.phoneNumber = user?.phoneNumbers[0];
             payload.phoneNumber_verified = user.loginMethods.some(
                 (lm) => lm.hasSamePhoneNumberAs(user?.phoneNumbers[0]) && lm.verified
             );
+            payload.phoneNumbers = user.phoneNumbers;
         }
 
         for (const fn of this.userInfoBuilders) {

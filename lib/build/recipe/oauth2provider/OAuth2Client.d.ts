@@ -95,11 +95,6 @@ export declare class OAuth2Client {
      */
     clientUri: string;
     /**
-     * Array of allowed CORS origins
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
-     */
-    allowedCorsOrigins: string[];
-    /**
      * Array of audiences
      * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
@@ -167,7 +162,6 @@ export declare class OAuth2Client {
         refreshTokenGrantRefreshTokenLifespan,
         tokenEndpointAuthMethod,
         clientUri,
-        allowedCorsOrigins,
         audience,
         grantTypes,
         responseTypes,

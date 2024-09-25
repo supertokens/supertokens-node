@@ -426,7 +426,6 @@ export default function getRecipeInterface(
                 {
                     pageSize: input.pageSize,
                     clientName: input.clientName,
-                    owner: input.owner,
                     pageToken: input.paginationToken,
                 },
                 {},
@@ -709,17 +708,21 @@ export default function getRecipeInterface(
              *        - Redirects to the `post_logout_redirect_uri` or the default logout fallback page.
              */
 
-            const resp = await querier.sendGetRequestWithResponseHeaders(
+            console.log("input", input.params);
+            const resp = await querier.sendGetRequest(
                 new NormalisedURLPath(`/recipe/oauth/sessions/logout`),
                 input.params,
-                {},
                 input.userContext
             );
 
-            const redirectTo = getUpdatedRedirectTo(appInfo, resp.headers.get("Location")!);
-            if (redirectTo === undefined) {
-                throw new Error(resp.body);
+            if ("error" in resp) {
+                return {
+                    statusCode: resp.statusCode,
+                    error: resp.error,
+                    errorDescription: resp.errorDescription,
+                };
             }
+            const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
 
             const redirectToURL = new URL(redirectTo);
             const logoutChallenge = redirectToURL.searchParams.get("logout_challenge");

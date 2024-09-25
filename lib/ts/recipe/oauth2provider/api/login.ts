@@ -61,7 +61,7 @@ export default async function login(
         userContext,
     });
 
-    if ("redirectTo" in response) {
+    if ("frontendRedirectTo" in response) {
         if (response.setCookie) {
             const cookieStr = setCookieParser.splitCookiesString(response.setCookie);
             const cookies = setCookieParser.parse(cookieStr);
@@ -78,7 +78,9 @@ export default async function login(
                 );
             }
         }
-        options.res.original.redirect(response.redirectTo);
+        send200Response(options.res, {
+            frontendRedirectTo: response.frontendRedirectTo,
+        });
     } else if ("statusCode" in response) {
         sendNon200ResponseWithMessage(
             options.res,

@@ -440,7 +440,7 @@ export type APIInterface = {
               session?: SessionContainerInterface;
               shouldTryRefresh: boolean;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ frontendRedirectTo: string; setCookie?: string } | ErrorOAuth2 | GeneralErrorResponse>);
 
     authGET:
         | undefined
@@ -533,7 +533,6 @@ export type OAuth2ClientOptions = {
     scope: string;
     redirectUris?: string[] | null;
     postLogoutRedirectUris?: string[];
-    allowedCorsOrigins?: string[];
 
     authorizationCodeGrantAccessTokenLifespan?: string | null;
     authorizationCodeGrantIdTokenLifespan?: string | null;
@@ -573,11 +572,6 @@ export type GetOAuth2ClientsInput = {
      * The name of the clients to filter by.
      */
     clientName?: string;
-
-    /**
-     * The owner of the clients to filter by.
-     */
-    owner?: string;
 };
 
 export type CreateOAuth2ClientInput = Partial<

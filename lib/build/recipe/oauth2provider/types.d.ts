@@ -371,7 +371,7 @@ export declare type APIInterface = {
               userContext: UserContext;
           }) => Promise<
               | {
-                    redirectTo: string;
+                    frontendRedirectTo: string;
                     setCookie?: string;
                 }
               | ErrorOAuth2
@@ -510,7 +510,6 @@ export declare type OAuth2ClientOptions = {
     scope: string;
     redirectUris?: string[] | null;
     postLogoutRedirectUris?: string[];
-    allowedCorsOrigins?: string[];
     authorizationCodeGrantAccessTokenLifespan?: string | null;
     authorizationCodeGrantIdTokenLifespan?: string | null;
     authorizationCodeGrantRefreshTokenLifespan?: string | null;
@@ -543,10 +542,6 @@ export declare type GetOAuth2ClientsInput = {
      * The name of the clients to filter by.
      */
     clientName?: string;
-    /**
-     * The owner of the clients to filter by.
-     */
-    owner?: string;
 };
 export declare type CreateOAuth2ClientInput = Partial<
     Omit<OAuth2ClientOptions, "createdAt" | "updatedAt" | "clientId" | "clientSecret">
