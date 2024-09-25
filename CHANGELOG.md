@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Added OAuth2Provider recipe
 
+### Breaking change
+
+-   Changes type of value in formField object to be `unknown` instead of `string` to add support for accepting any type of value in form fields.
+
 ## [20.1.2] - 2024-09-14
 
 -   Fixes formFields to accept non string types as well.
