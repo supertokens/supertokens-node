@@ -111,6 +111,48 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(response.body.formFields[0].id === "email");
     });
 
+    it("test invalid email type in generate token API", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset/token")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: 123456,
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.body.message === "email value must be a string");
+    });
+
     it("test that generated password link is correct", async function () {
         const connectionURI = await startST();
 
@@ -253,6 +295,49 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 })
         );
         assert(response.status !== "FIELD_ERROR");
+    });
+
+    it("test invalid type of password", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: 12345,
+                        },
+                    ],
+                    token: "randomToken",
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.message === "password value must be a string");
     });
 
     it("test token missing from input", async function () {
