@@ -24,9 +24,9 @@ export default function getAPIImplementation(): APIInterface {
             userContext: UserContext;
         }): Promise<
             | {
-                status: "OK";
-                exists: boolean;
-            }
+                  status: "OK";
+                  exists: boolean;
+              }
             | GeneralErrorResponse
         > {
             // even if the above returns true, we still need to check if there
@@ -60,8 +60,8 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }): Promise<
             | {
-                status: "OK";
-            }
+                  status: "OK";
+              }
             | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
@@ -70,7 +70,9 @@ export default function getAPIImplementation(): APIInterface {
             // in validation but kept here to be safe.
             const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
             if (typeof emailAsUnknown !== "string")
-                throw new Error("Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError");
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                );
             const email: string = emailAsUnknown;
 
             // this function will be reused in different parts of the flow below..
@@ -79,8 +81,8 @@ export default function getAPIImplementation(): APIInterface {
                 recipeUserId: RecipeUserId | undefined
             ): Promise<
                 | {
-                    status: "OK";
-                }
+                      status: "OK";
+                  }
                 | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
                 | GeneralErrorResponse
             > {
@@ -93,7 +95,8 @@ export default function getAPIImplementation(): APIInterface {
                 });
                 if (response.status === "UNKNOWN_USER_ID_ERROR") {
                     logDebugMessage(
-                        `Password reset email not sent, unknown user id: ${recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
+                        `Password reset email not sent, unknown user id: ${
+                            recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
                         }`
                     );
                     return {
@@ -202,9 +205,9 @@ export default function getAPIImplementation(): APIInterface {
                 emailPasswordAccount !== undefined
                     ? emailPasswordAccount
                     : {
-                        recipeId: "emailpassword",
-                        email,
-                    },
+                          recipeId: "emailpassword",
+                          email,
+                      },
                 primaryUserAssociatedWithEmail,
                 undefined,
                 tenantId,
@@ -335,10 +338,10 @@ export default function getAPIImplementation(): APIInterface {
             userContext: UserContext;
         }): Promise<
             | {
-                status: "OK";
-                user: User;
-                email: string;
-            }
+                  status: "OK";
+                  user: User;
+                  email: string;
+              }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | GeneralErrorResponse
@@ -372,10 +375,10 @@ export default function getAPIImplementation(): APIInterface {
                 recipeUserId: RecipeUserId
             ): Promise<
                 | {
-                    status: "OK";
-                    user: User;
-                    email: string;
-                }
+                      status: "OK";
+                      user: User;
+                      email: string;
+                  }
                 | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
                 | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
                 | GeneralErrorResponse
@@ -461,7 +464,9 @@ export default function getAPIImplementation(): APIInterface {
             // in validation but kept here to be safe.
             const newPasswordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
             if (typeof newPasswordAsUnknown !== "string")
-                throw new Error("Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError");
+                throw new Error(
+                    "Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError"
+                );
             let newPassword: string = newPasswordAsUnknown;
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
@@ -612,22 +617,22 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             session?: SessionContainerInterface;
-            shouldTryLinkingWithSessionUser: boolean | undefined,
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }): Promise<
             | {
-                status: "OK";
-                session: SessionContainerInterface;
-                user: User;
-            }
+                  status: "OK";
+                  session: SessionContainerInterface;
+                  user: User;
+              }
             | {
-                status: "WRONG_CREDENTIALS_ERROR";
-            }
+                  status: "WRONG_CREDENTIALS_ERROR";
+              }
             | {
-                status: "SIGN_IN_NOT_ALLOWED";
-                reason: string;
-            }
+                  status: "SIGN_IN_NOT_ALLOWED";
+                  reason: string;
+              }
             | GeneralErrorResponse
         > {
             const errorCodeMap = {
@@ -651,10 +656,14 @@ export default function getAPIImplementation(): APIInterface {
             // check for type is done in a parent function but they are kept
             // here to be on the safe side.
             if (typeof emailAsUnknown !== "string")
-                throw new Error("Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError");
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                );
 
             if (typeof passwordAsUnknown !== "string")
-                throw new Error("Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError");
+                throw new Error(
+                    "Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError"
+                );
 
             let email: string = emailAsUnknown;
             let password: string = passwordAsUnknown;
@@ -777,22 +786,22 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             tenantId: string;
             session?: SessionContainerInterface;
-            shouldTryLinkingWithSessionUser: boolean | undefined,
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }): Promise<
             | {
-                status: "OK";
-                session: SessionContainerInterface;
-                user: User;
-            }
+                  status: "OK";
+                  session: SessionContainerInterface;
+                  user: User;
+              }
             | {
-                status: "SIGN_UP_NOT_ALLOWED";
-                reason: string;
-            }
+                  status: "SIGN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
             | {
-                status: "EMAIL_ALREADY_EXISTS_ERROR";
-            }
+                  status: "EMAIL_ALREADY_EXISTS_ERROR";
+              }
             | GeneralErrorResponse
         > {
             const errorCodeMap = {
@@ -816,10 +825,14 @@ export default function getAPIImplementation(): APIInterface {
             // check for type is done in a parent function but they are kept
             // here to be on the safe side.
             if (typeof emailAsUnknown !== "string")
-                throw new Error("Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError");
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                );
 
             if (typeof passwordAsUnknown !== "string")
-                throw new Error("Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError");
+                throw new Error(
+                    "Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError"
+                );
 
             let email: string = emailAsUnknown;
             let password: string = passwordAsUnknown;
