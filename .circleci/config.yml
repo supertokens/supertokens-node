@@ -31,12 +31,31 @@ jobs:
     setup:
         machine:
             image: ubuntu-2204:2024.04.4
+        parameters:
+            force:
+                type: boolean
+                default: false
+            cdi-core-map:
+                type: string
+                default: "{}"
+            cdi-plugin-interface-map:
+                type: string
+                default: "{}"
+            fdi-node-map:
+                type: string
+                default: "{}"
+            fdi-auth-react-map:
+                type: string
+                default: "{}"
+            fdi-website-map:
+                type: string
+                default: "{}"
         steps:
             - checkout
             - run:
                   name: Generate config
                   command: |
-                      cd .circleci && ./generateConfig.sh
+                      cd .circleci && ./generateConfig.sh << parameters.force >> '<< parameters.cdi-core-map >>' '<< parameters.cdi-plugin-interface-map >>' '<< parameters.fdi-node-map >>' '<< parameters.fdi-auth-react-map >>' '<< parameters.fdi-website-map >>'
             - continuation/continue:
                   configuration_path: .circleci/config_continue.yml # use newly generated config to continue
 
@@ -52,12 +71,7 @@ workflows:
                           only: /v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
-            - setup:
-                  filters:
-                      tags:
-                          only: /dev-v[0-9]+(\.[0-9]+)*/
-                      branches:
-                          only: /test-cicd\/.*/
+            - setup
             - update-docs:
                   context:
                       - slack-notification

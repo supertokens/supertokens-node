@@ -12,10 +12,9 @@ jobs:
             - run: echo "Testing branch << pipeline.git.branch >>"
             - when:
                   condition:
-                      not:
-                          matches:
-                              pattern: "^test-cicd/.*$"
-                              value: << pipeline.git.branch >>
+                      matches:
+                          pattern: "^[0-9]+\\.[0-9]+$" # X.Y branches
+                          value: << pipeline.git.branch >>
                   steps:
                       - checkout
                       - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
@@ -100,10 +99,9 @@ jobs:
             - run: echo "Testing passed for branch << pipeline.git.branch >>"
             - when:
                   condition:
-                      not:
-                          matches:
-                              pattern: "^test-cicd/.*$"
-                              value: << pipeline.git.branch >>
+                      matches:
+                          pattern: "^[0-9]+\\.[0-9]+$" # X.Y branches
+                          value: << pipeline.git.branch >>
                   steps:
                       - checkout
                       - run: (cd .circleci/ && ./markAsSuccess.sh)
