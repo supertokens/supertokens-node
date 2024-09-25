@@ -52,7 +52,7 @@ export async function validateFormFieldsOrThrowError(
         }
         if (curr.id === FORM_FIELD_EMAIL_ID || curr.id === FORM_FIELD_PASSWORD_ID) {
             if (typeof curr.value !== "string") {
-                throw newBadRequestError("The value of formFields with id = " + curr.id + " must be a string");
+                throw newBadRequestError(`${curr.id} value must be a string`);
             }
         }
         formFields.push(curr);
