@@ -70,10 +70,7 @@ export default function getAPIImplementation(): APIInterface {
             // in validation but kept here to be safe.
             const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
             if (typeof emailAsUnknown !== "string")
-                return {
-                    status: "GENERAL_ERROR",
-                    message: "email value needs to be a string",
-                };
+                throw new Error("Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError");
             const email: string = emailAsUnknown;
 
             // this function will be reused in different parts of the flow below..
@@ -464,10 +461,7 @@ export default function getAPIImplementation(): APIInterface {
             // in validation but kept here to be safe.
             const newPasswordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
             if (typeof newPasswordAsUnknown !== "string")
-                return {
-                    status: "GENERAL_ERROR",
-                    message: "password value needs to be a string",
-                };
+                throw new Error("Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError");
             let newPassword: string = newPasswordAsUnknown;
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
@@ -657,16 +651,10 @@ export default function getAPIImplementation(): APIInterface {
             // check for type is done in a parent function but they are kept
             // here to be on the safe side.
             if (typeof emailAsUnknown !== "string")
-                return {
-                    status: "GENERAL_ERROR",
-                    message: "email value needs to be a string",
-                };
+                throw new Error("Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError");
 
             if (typeof passwordAsUnknown !== "string")
-                return {
-                    status: "GENERAL_ERROR",
-                    message: "password value needs to be a string",
-                };
+                throw new Error("Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError");
 
             let email: string = emailAsUnknown;
             let password: string = passwordAsUnknown;
@@ -828,16 +816,10 @@ export default function getAPIImplementation(): APIInterface {
             // check for type is done in a parent function but they are kept
             // here to be on the safe side.
             if (typeof emailAsUnknown !== "string")
-                return {
-                    status: "GENERAL_ERROR",
-                    message: "email value needs to be a string",
-                };
+                throw new Error("Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError");
 
             if (typeof passwordAsUnknown !== "string")
-                return {
-                    status: "GENERAL_ERROR",
-                    message: "password value needs to be a string",
-                };
+                throw new Error("Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError");
 
             let email: string = emailAsUnknown;
             let password: string = passwordAsUnknown;
