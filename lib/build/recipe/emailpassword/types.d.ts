@@ -227,7 +227,7 @@ export declare type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               options: APIOptions;
@@ -247,7 +247,7 @@ export declare type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               token: string;
               tenantId: string;
@@ -273,7 +273,7 @@ export declare type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;
@@ -300,7 +300,7 @@ export declare type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;

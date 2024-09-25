@@ -1348,8 +1348,26 @@ EmailPassword.init({
                 signInPOST: async (input) => {
                     let formFields = input.formFields;
                     let options = input.options;
-                    let email = formFields.filter((f) => f.id === "email")[0].value;
-                    let password = formFields.filter((f) => f.id === "password")[0].value;
+                    const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+                    const passwordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+
+                    // NOTE: Following checks will likely never throw an error as the
+                    // check for type is done in a parent function but they are kept
+                    // here to be on the safe side.
+                    if (typeof emailAsUnknown !== "string")
+                        return {
+                            status: "GENERAL_ERROR",
+                            message: "email value needs to be a string",
+                        };
+
+                    if (typeof passwordAsUnknown !== "string")
+                        return {
+                            status: "GENERAL_ERROR",
+                            message: "password value needs to be a string",
+                        };
+
+                    let email: string = emailAsUnknown;
+                    let password: string = passwordAsUnknown;
 
                     let response = await options.recipeImplementation.signIn({
                         email,

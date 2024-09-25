@@ -230,7 +230,7 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               options: APIOptions;
@@ -251,7 +251,7 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               token: string;
               tenantId: string;
@@ -275,7 +275,7 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;
@@ -303,7 +303,7 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;

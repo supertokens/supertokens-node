@@ -35,7 +35,7 @@ export default async function generatePasswordResetToken(
     // step 1
     let formFields: {
         id: string;
-        value: string;
+        value: unknown;
     }[] = await validateFormFieldsOrThrowError(
         options.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
         requestBody.formFields,

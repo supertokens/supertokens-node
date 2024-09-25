@@ -9,6 +9,7 @@ import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -23,9 +24,9 @@ export default function getAPIImplementation(): APIInterface {
             userContext: UserContext;
         }): Promise<
             | {
-                  status: "OK";
-                  exists: boolean;
-              }
+                status: "OK";
+                exists: boolean;
+            }
             | GeneralErrorResponse
         > {
             // even if the above returns true, we still need to check if there
@@ -59,12 +60,21 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }): Promise<
             | {
-                  status: "OK";
-              }
+                status: "OK";
+            }
             | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
-            const email = formFields.filter((f) => f.id === "email")[0].value;
+            // NOTE: Check for email being a non-string value. This check will likely
+            // never evaluate to `true` as there is an upper-level check for the type
+            // in validation but kept here to be safe.
+            const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+            if (typeof emailAsUnknown !== "string")
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "email value needs to be a string",
+                };
+            const email: string = emailAsUnknown;
 
             // this function will be reused in different parts of the flow below..
             async function generateAndSendPasswordResetToken(
@@ -72,8 +82,8 @@ export default function getAPIImplementation(): APIInterface {
                 recipeUserId: RecipeUserId | undefined
             ): Promise<
                 | {
-                      status: "OK";
-                  }
+                    status: "OK";
+                }
                 | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
                 | GeneralErrorResponse
             > {
@@ -86,8 +96,7 @@ export default function getAPIImplementation(): APIInterface {
                 });
                 if (response.status === "UNKNOWN_USER_ID_ERROR") {
                     logDebugMessage(
-                        `Password reset email not sent, unknown user id: ${
-                            recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
+                        `Password reset email not sent, unknown user id: ${recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
                         }`
                     );
                     return {
@@ -196,9 +205,9 @@ export default function getAPIImplementation(): APIInterface {
                 emailPasswordAccount !== undefined
                     ? emailPasswordAccount
                     : {
-                          recipeId: "emailpassword",
-                          email,
-                      },
+                        recipeId: "emailpassword",
+                        email,
+                    },
                 primaryUserAssociatedWithEmail,
                 undefined,
                 tenantId,
@@ -321,7 +330,7 @@ export default function getAPIImplementation(): APIInterface {
         }: {
             formFields: {
                 id: string;
-                value: string;
+                value: unknown;
             }[];
             token: string;
             tenantId: string;
@@ -329,10 +338,10 @@ export default function getAPIImplementation(): APIInterface {
             userContext: UserContext;
         }): Promise<
             | {
-                  status: "OK";
-                  user: User;
-                  email: string;
-              }
+                status: "OK";
+                user: User;
+                email: string;
+            }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | GeneralErrorResponse
@@ -366,10 +375,10 @@ export default function getAPIImplementation(): APIInterface {
                 recipeUserId: RecipeUserId
             ): Promise<
                 | {
-                      status: "OK";
-                      user: User;
-                      email: string;
-                  }
+                    status: "OK";
+                    user: User;
+                    email: string;
+                }
                 | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
                 | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
                 | GeneralErrorResponse
@@ -450,7 +459,16 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            let newPassword = formFields.filter((f) => f.id === "password")[0].value;
+            // NOTE: Check for password being a non-string value. This check will likely
+            // never evaluate to `true` as there is an upper-level check for the type
+            // in validation but kept here to be safe.
+            const newPasswordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+            if (typeof newPasswordAsUnknown !== "string")
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "password value needs to be a string",
+                };
+            let newPassword: string = newPasswordAsUnknown;
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
@@ -471,7 +489,7 @@ export default function getAPIImplementation(): APIInterface {
                 // This should happen only cause of a race condition where the user
                 // might be deleted before token creation and consumption.
                 // Also note that this being undefined doesn't mean that the email password
-                // user does not exist, but it means that there is no reicpe or primary user
+                // user does not exist, but it means that there is no recipe or primary user
                 // for whom the token was generated.
                 return {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
@@ -593,7 +611,31 @@ export default function getAPIImplementation(): APIInterface {
             shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }) {
+        }: {
+            formFields: {
+                id: string;
+                value: unknown;
+            }[];
+            tenantId: string;
+            session?: SessionContainerInterface;
+            shouldTryLinkingWithSessionUser: boolean | undefined,
+            options: APIOptions;
+            userContext: UserContext;
+        }): Promise<
+            | {
+                status: "OK";
+                session: SessionContainerInterface;
+                user: User;
+            }
+            | {
+                status: "WRONG_CREDENTIALS_ERROR";
+            }
+            | {
+                status: "SIGN_IN_NOT_ALLOWED";
+                reason: string;
+            }
+            | GeneralErrorResponse
+        > {
             const errorCodeMap = {
                 SIGN_IN_NOT_ALLOWED:
                     "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
@@ -608,8 +650,26 @@ export default function getAPIImplementation(): APIInterface {
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_012)",
                 },
             };
-            let email = formFields.filter((f) => f.id === "email")[0].value;
-            let password = formFields.filter((f) => f.id === "password")[0].value;
+            const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+            const passwordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+
+            // NOTE: Following checks will likely never throw an error as the
+            // check for type is done in a parent function but they are kept
+            // here to be on the safe side.
+            if (typeof emailAsUnknown !== "string")
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "email value needs to be a string",
+                };
+
+            if (typeof passwordAsUnknown !== "string")
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "password value needs to be a string",
+                };
+
+            let email: string = emailAsUnknown;
+            let password: string = passwordAsUnknown;
 
             const recipeId = "emailpassword";
 
@@ -722,7 +782,31 @@ export default function getAPIImplementation(): APIInterface {
             shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }) {
+        }: {
+            formFields: {
+                id: string;
+                value: unknown;
+            }[];
+            tenantId: string;
+            session?: SessionContainerInterface;
+            shouldTryLinkingWithSessionUser: boolean | undefined,
+            options: APIOptions;
+            userContext: UserContext;
+        }): Promise<
+            | {
+                status: "OK";
+                session: SessionContainerInterface;
+                user: User;
+            }
+            | {
+                status: "SIGN_UP_NOT_ALLOWED";
+                reason: string;
+            }
+            | {
+                status: "EMAIL_ALREADY_EXISTS_ERROR";
+            }
+            | GeneralErrorResponse
+        > {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
@@ -737,8 +821,26 @@ export default function getAPIImplementation(): APIInterface {
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_016)",
                 },
             };
-            let email = formFields.filter((f) => f.id === "email")[0].value;
-            let password = formFields.filter((f) => f.id === "password")[0].value;
+            const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+            const passwordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+
+            // NOTE: Following checks will likely never throw an error as the
+            // check for type is done in a parent function but they are kept
+            // here to be on the safe side.
+            if (typeof emailAsUnknown !== "string")
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "email value needs to be a string",
+                };
+
+            if (typeof passwordAsUnknown !== "string")
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "password value needs to be a string",
+                };
+
+            let email: string = emailAsUnknown;
+            let password: string = passwordAsUnknown;
 
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {

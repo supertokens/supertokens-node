@@ -38,7 +38,7 @@ export default async function signInAPI(
     // step 1
     let formFields: {
         id: string;
-        value: string;
+        value: unknown;
     }[] = await validateFormFieldsOrThrowError(
         options.config.signInFeature.formFields,
         body.formFields,

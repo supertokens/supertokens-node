@@ -25,7 +25,7 @@ export async function validateFormFieldsOrThrowError(
 ): Promise<
     {
         id: string;
-        value: string;
+        value: unknown;
     }[]
 > {
     // first we check syntax ----------------------------
@@ -39,7 +39,7 @@ export async function validateFormFieldsOrThrowError(
 
     let formFields: {
         id: string;
-        value: string;
+        value: unknown;
     }[] = [];
 
     for (let i = 0; i < formFieldsRaw.length; i++) {
@@ -63,7 +63,7 @@ export async function validateFormFieldsOrThrowError(
         if (field.id === FORM_FIELD_EMAIL_ID) {
             return {
                 ...field,
-                value: field.value.trim(),
+                value: typeof field.value === "string" ? field.value.trim() : field.value,
             };
         }
         return field;
