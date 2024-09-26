@@ -2,9 +2,15 @@ coreVersionXY=$1
 if [ -f "cdi-core-map.json" ]
 then
     coreTag=`cat cdi-core-map.json | jq '.["'$1'"]' | tr -d '"'`
-    coreVersion=$coreTag
-    coreVersionXY=$coreTag
-else
+    if [ $coreTag != "null" ]
+    then
+        coreVersion=$coreTag
+        coreVersionXY=$coreTag
+    fi
+fi
+
+if [ -z "$coreVersion" ]
+then
     coreInfo=`curl -s -X GET \
     "https://api.supertokens.io/0/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$1" \
     -H 'api-version: 0'`
@@ -20,9 +26,15 @@ fi
 if [ -f "cdi-plugin-interface-map.json" ]
 then
     pluginInterfaceTag=`cat cdi-plugin-interface-map.json | jq '.["'$1'"]' | tr -d '"'`
-    pluginInterfaceVersionXY=$pluginInterfaceTag
-    pluginInterfaceVersion=$pluginInterfaceTag
-else
+    if [ $pluginInterfaceTag != "null" ]
+    then
+        pluginInterfaceVersionXY=$pluginInterfaceTag
+        pluginInterfaceVersion=$pluginInterfaceTag
+    fi
+fi
+
+if [ -z "$pluginInterfaceVersion" ]
+then
     pluginInterfaceVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/core/dependency/plugin-interface/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$1" \
     -H 'api-version: 0'`

@@ -41,10 +41,14 @@ fi
 frontendDriverVersion=$1
 frontendDriverVersion=`echo $frontendDriverVersion | tr -d '"'`
 
+nodeTag="null"
 if [ -f fdi-node-map.json ]
 then
     nodeTag=`cat fdi-node-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
-else
+fi
+
+if [ $nodeTag == "null" ]
+then
     nodeVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node&frontendName=auth-react" \
     -H 'api-version: 1'`
@@ -66,10 +70,14 @@ else
     nodeTag=$(echo $nodeInfo | jq .tag | tr -d '"')
 fi
 
+frontendAuthReactTag="null"
 if [ -f fdi-auth-react-map.json ]
 then
     frontendAuthReactTag=`cat fdi-auth-react-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
-else
+fi
+
+if [ $frontendAuthReactTag == "null" ]
+then
     frontendAuthReactVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion&driverName=node" \
     -H 'api-version: 1'`
