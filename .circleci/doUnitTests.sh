@@ -10,7 +10,7 @@ coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
 
 if [ -f cdi-core-map.json ]
 then
-    coreFree=`cat cdi-core-map.json | jq '.["'$coreDriverVersion'"]'` | tr -d '"'
+    coreFree=`cat cdi-core-map.json | jq '.["'$coreDriverVersion'"]' | tr -d '"'`
 else
     coreFree=`curl -s -X GET \
     "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion&driverName=node" \

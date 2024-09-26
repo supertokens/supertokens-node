@@ -43,7 +43,7 @@ frontendDriverVersion=`echo $frontendDriverVersion | tr -d '"'`
 
 if [ -f fdi-website-map.json ]
 then
-    frontendTag=`cat fdi-website-map.json | jq '.["'$frontendDriverVersion'"]'` | tr -d '"'
+    frontendTag=`cat fdi-website-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
 else
     frontendVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=website&mode=DEV&version=$frontendDriverVersion&driverName=node" \
@@ -69,7 +69,7 @@ fi
 
 if [ -f fdi-node-map.json ]
 then
-    nodeTag=`cat fdi-node-map.json | jq '.["'$frontendDriverVersion'"]'` | tr -d '"'
+    nodeTag=`cat fdi-node-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
 else
     nodeVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node&frontendName=website" \
