@@ -21,12 +21,21 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
-coreDriverVersion=`echo $coreDriverArray | jq ". | last"`
-coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
+coreFree="null"
 if [ -f cdi-core-map.json ]
 then
-    coreFree=$coreDriverVersion
-else
+    cat cdi-core-map.json
+    echo "coreDriverVersion: $coreDriverVersion"
+
+    coreBranchName=`cat cdi-core-map.json | jq -r '.["'$coreDriverVersion'"]'`
+    if [ "$coreBranchName" != "null" ]
+    then
+        coreFree=$coreBranchName
+    fi
+fi
+
+if [ "$coreFree" == "null" ]
+then
     coreFree=`curl -s -X GET \
     "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion&driverName=node" \
     -H 'api-version: 1'`
