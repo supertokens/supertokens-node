@@ -14,7 +14,7 @@ then
     cat cdi-core-map.json
     echo "coreDriverVersion: $coreDriverVersion"
 
-    coreFree=`cat cdi-core-map.json | jq '.["'$coreDriverVersion'"]'`
+    coreFree=`cat cdi-core-map.json | jq -r '.["'$coreDriverVersion'"]'`
 fi
 
 if [ "$coreFree" == "null" ]
