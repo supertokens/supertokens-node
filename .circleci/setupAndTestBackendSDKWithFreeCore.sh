@@ -1,4 +1,4 @@
-coreVersionXY=$1
+coreVersionXY=`echo $1 | tr -d '"'`
 if [ -f "cdi-core-map.json" ]
 then
     coreTag=`cat cdi-core-map.json | jq '.["'$1'"]' | tr -d '"'`
