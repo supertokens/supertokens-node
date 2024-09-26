@@ -521,6 +521,9 @@ export const AuthUtils = {
             return { status: "OK", isFirstFactor: true };
         } else {
             if (shouldTryLinkingWithSessionUser === false) {
+                logDebugMessage(
+                    `checkAuthTypeAndLinkingStatus returning first factor because shouldTryLinkingWithSessionUser is false`
+                );
                 // In our normal flows this should never happen - but some user overrides might do this.
                 // Anyway, since shouldTryLinkingWithSessionUser explicitly set to false, it's safe to consider this a firstFactor
                 return { status: "OK", isFirstFactor: true };
@@ -538,6 +541,9 @@ export const AuthUtils = {
                             "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
                         );
                     } else {
+                        logDebugMessage(
+                            `checkAuthTypeAndLinkingStatus returning first factor because MFA is not initialised`
+                        );
                         return { status: "OK", isFirstFactor: true };
                     }
                 }

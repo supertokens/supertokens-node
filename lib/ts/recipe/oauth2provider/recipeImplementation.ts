@@ -230,8 +230,10 @@ export default function getRecipeInterface(
                     throw new Error("User not found");
                 }
 
+                // These default to an empty objects, because we want to keep them as a required input
+                // but they'll not be actually used in the flows where we are not building them.
                 const idToken =
-                    responseTypes.includes("id_token") || responseTypes.includes("code")
+                    scopes.includes("openid") && (responseTypes.includes("id_token") || responseTypes.includes("code"))
                         ? await this.buildIdTokenPayload({
                               user,
                               client,
@@ -239,7 +241,7 @@ export default function getRecipeInterface(
                               scopes,
                               userContext: input.userContext,
                           })
-                        : undefined;
+                        : {};
                 const accessToken =
                     responseTypes.includes("token") || responseTypes.includes("code")
                         ? await this.buildAccessTokenPayload({
@@ -249,7 +251,7 @@ export default function getRecipeInterface(
                               scopes,
                               userContext: input.userContext,
                           })
-                        : undefined;
+                        : {};
                 payloads = {
                     idToken,
                     accessToken,
@@ -316,6 +318,14 @@ export default function getRecipeInterface(
             };
 
             body.iss = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+
+            if (input.body.grant_type === "password") {
+                return {
+                    statusCode: 400,
+                    error: "invalid_request",
+                    errorDescription: "Unsupported grant type: password",
+                };
+            }
 
             if (input.body.grant_type === "client_credentials") {
                 if (input.body.client_id === undefined) {
