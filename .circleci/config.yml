@@ -57,7 +57,7 @@ jobs:
             - run:
                   name: Generate config
                   command: |
-                      cd .circleci && ./generateConfig.sh << parameters.force >> '<< parameters.cdi-core-map >>' '<< parameters.cdi-plugin-interface-map >>' '<< parameters.fdi-node-map >>' '<< parameters.fdi-auth-react-map >>' '<< parameters.fdi-website-map >>'
+                      cd .circleci && ./generateConfig.sh << pipeline.parameters.force >> '<< pipeline.parameters.cdi-core-map >>' '<< pipeline.parameters.cdi-plugin-interface-map >>' '<< pipeline.parameters.fdi-node-map >>' '<< pipeline.parameters.fdi-auth-react-map >>' '<< pipeline.parameters.fdi-website-map >>'
             - continuation/continue:
                   configuration_path: .circleci/config_continue.yml # use newly generated config to continue
 
