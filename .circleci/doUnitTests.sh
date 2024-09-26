@@ -17,7 +17,7 @@ then
     coreBranchName=`cat cdi-core-map.json | jq -r '.["'$coreDriverVersion'"]'`
     if [ "$coreBranchName" != "null" ]
     then
-        coreFree=$coreBranchName
+        coreFree=$coreDriverVersion
     fi
 fi
 
