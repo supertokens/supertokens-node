@@ -7,6 +7,27 @@ orbs:
     continuation: circleci/continuation@0.1.2
     slack: circleci/slack@3.4.2
     jq: circleci/jq@2.2.0
+
+parameters:
+    force:
+        type: boolean
+        default: false
+    cdi-core-map:
+        type: string
+        default: "{}"
+    cdi-plugin-interface-map:
+        type: string
+        default: "{}"
+    fdi-node-map:
+        type: string
+        default: "{}"
+    fdi-auth-react-map:
+        type: string
+        default: "{}"
+    fdi-website-map:
+        type: string
+        default: "{}"
+
 jobs:
     publish:
         docker:
@@ -31,25 +52,6 @@ jobs:
     setup:
         machine:
             image: ubuntu-2204:2024.04.4
-        parameters:
-            force:
-                type: boolean
-                default: false
-            cdi-core-map:
-                type: string
-                default: "{}"
-            cdi-plugin-interface-map:
-                type: string
-                default: "{}"
-            fdi-node-map:
-                type: string
-                default: "{}"
-            fdi-auth-react-map:
-                type: string
-                default: "{}"
-            fdi-website-map:
-                type: string
-                default: "{}"
         steps:
             - checkout
             - run:
