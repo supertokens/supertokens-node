@@ -124,7 +124,7 @@ export type TypeNormalisedInput = {
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    overwriteSessionDuringSignInUp: boolean;
+    overwriteSessionDuringSignInUp: boolean | undefined;
 
     antiCsrfFunctionOrString:
         | "VIA_TOKEN"

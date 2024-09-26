@@ -344,7 +344,6 @@ export class Querier {
                 );
                 finalURL.search = searchParams.toString();
 
-                console.log("finalURL", finalURL.toString());
                 // Update cache and return
                 let response = await doFetch(finalURL.toString(), {
                     method: "GET",
@@ -612,7 +611,6 @@ export class Querier {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
 
-            console.log("response", { url, body: await response.clone().text(), headers: response.headers });
             if (response.status !== 200) {
                 throw response;
             }

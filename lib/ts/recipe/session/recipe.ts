@@ -44,7 +44,7 @@ import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { getAccessTokenFromRequest } from "./sessionRequestFunctions";
-import { isTestEnv } from "../../utils";
+import { hasGreaterThanEqualToFDI, isTestEnv } from "../../utils";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -295,5 +295,12 @@ export default class SessionRecipe extends RecipeModule {
         });
 
         return getAccessTokenFromRequest(req, allowedTransferMethod);
+    };
+
+    getNormalisedOverwriteSessionDuringSignInUp = (req: any) => {
+        const supportsFDI31 = hasGreaterThanEqualToFDI(req, "3.1");
+        const res = this.config.overwriteSessionDuringSignInUp ?? supportsFDI31;
+        logDebugMessage("getNormalisedOverwriteSessionDuringSignInUp returning: " + res);
+        return res;
     };
 }

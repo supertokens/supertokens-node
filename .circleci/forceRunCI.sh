@@ -3,9 +3,9 @@ branch=`git rev-parse --abbrev-ref HEAD`
 
 cdiCoreMap='{ "5.1": "feat/oauth-provider-base" }'
 cdiPluginInterfaceMap='{ "5.1": "feat/oauth-provider-base" }'
-fdiNodeMap='{ "3.1": "feat/oauth2/base" }'
-fdiWebsiteMap='{ "3.1": "master" }'
-fdiAuthReactMap='{ "3.1": "feat/oauth2/base" }'
+fdiNodeMap='{ "3.1": "feat/oauth2/base", "4.0": "feat/oauth2/base" }'
+fdiWebsiteMap='{ "3.1": "master", "4.0": "master" }'
+fdiAuthReactMap='{ "3.1": "feat/oauth2/base", "4.0": "feat/oauth2/base" }'
 
 data=`jq -cn --arg branch "$branch" \
   --arg cdiCoreMap "$cdiCoreMap" \

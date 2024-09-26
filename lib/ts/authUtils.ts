@@ -280,8 +280,9 @@ export const AuthUtils = {
                 // If the new user wasn't linked to the current one, we check the config and overwrite the session if required
                 // Note: we could also get here if MFA is enabled, but the app didn't want to link the user to the session user.
                 // This is intentional, since the MFA and overwriteSessionDuringSignInUp configs should work independently.
-                let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
-                    .overwriteSessionDuringSignInUp;
+                let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().getNormalisedOverwriteSessionDuringSignInUp(
+                    req
+                );
                 if (overwriteSessionDuringSignInUp) {
                     respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
                     if (mfaInstance !== undefined) {
@@ -1016,9 +1017,11 @@ export const AuthUtils = {
         shouldTryLinkingWithSessionUser: boolean | undefined,
         userContext: UserContext
     ) {
-        const overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
-            .overwriteSessionDuringSignInUp;
-        return shouldTryLinkingWithSessionUser !== false || !overwriteSessionDuringSignInUp
+        const overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().getNormalisedOverwriteSessionDuringSignInUp(
+            req
+        );
+
+        return shouldTryLinkingWithSessionUser !== false || overwriteSessionDuringSignInUp === false
             ? await Session.getSession(
                   req,
                   res,
