@@ -47,7 +47,7 @@ then
     frontendTag=`cat fdi-website-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
 fi
 
-if [ $frontendTag == "null" ]
+if [ "$frontendTag" == "null" ]
 then
     frontendVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=website&mode=DEV&version=$frontendDriverVersion&driverName=node" \
@@ -77,7 +77,7 @@ then
     nodeTag=`cat fdi-node-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
 fi
 
-if [ $nodeTag == "null" ]
+if [ "$nodeTag" == "null" ]
 then
     nodeVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node&frontendName=website" \

@@ -2,7 +2,7 @@ coreVersionXY=$1
 if [ -f "cdi-core-map.json" ]
 then
     coreTag=`cat cdi-core-map.json | jq '.["'$1'"]' | tr -d '"'`
-    if [ $coreTag != "null" ]
+    if [ "$coreTag" != "null" ]
     then
         coreVersion=$coreTag
         coreVersionXY=$coreTag
@@ -26,7 +26,7 @@ fi
 if [ -f "cdi-plugin-interface-map.json" ]
 then
     pluginInterfaceTag=`cat cdi-plugin-interface-map.json | jq '.["'$1'"]' | tr -d '"'`
-    if [ $pluginInterfaceTag != "null" ]
+    if [ "$pluginInterfaceTag" != "null" ]
     then
         pluginInterfaceVersionXY=$pluginInterfaceTag
         pluginInterfaceVersion=$pluginInterfaceTag

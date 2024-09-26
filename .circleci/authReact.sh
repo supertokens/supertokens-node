@@ -47,7 +47,7 @@ then
     nodeTag=`cat fdi-node-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
 fi
 
-if [ $nodeTag == "null" ]
+if [ "$nodeTag" == "null" ]
 then
     nodeVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node&frontendName=auth-react" \
@@ -76,7 +76,7 @@ then
     frontendAuthReactTag=`cat fdi-auth-react-map.json | jq '.["'$frontendDriverVersion'"]' | tr -d '"'`
 fi
 
-if [ $frontendAuthReactTag == "null" ]
+if [ "$frontendAuthReactTag" == "null" ]
 then
     frontendAuthReactVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion&driverName=node" \
