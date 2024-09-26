@@ -1,7 +1,9 @@
+coreVersionXY=$1
 if [ -f "cdi-core-map.json" ]
 then
     coreTag=`cat cdi-core-map.json | jq '.["'$1'"]'`
     coreVersion=$coreTag
+    coreVersionXY=$coreTag
 else
     coreInfo=`curl -s -X GET \
     "https://api.supertokens.io/0/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$1" \
@@ -17,7 +19,7 @@ fi
 
 if [ -f "cdi-plugin-interface-map.json" ]
 then
-    pluginInterfaceTag=`cat cdi-plugin-interface-map.json | jq '.["'$coreDriverVersion'"]'`
+    pluginInterfaceTag=`cat cdi-plugin-interface-map.json | jq '.["'$1'"]'`
     pluginInterfaceVersionXY=$pluginInterfaceTag
     pluginInterfaceVersion=$pluginInterfaceTag
 else
@@ -51,7 +53,7 @@ if [[ $2 == "2.0" ]] || [[ $2 == "2.1" ]] || [[ $2 == "2.2" ]]
 then
     git checkout 36e5af1b9a4e3b07247d0cf333cf82a071a78681
 fi
-echo -e "core,$1\nplugin-interface,$pluginInterfaceVersionXY" > modules.txt
+echo -e "core,$coreVersionXY\nplugin-interface,$pluginInterfaceVersionXY" > modules.txt
 ./loadModules --ssh
 cd supertokens-core
 git checkout $coreTag
