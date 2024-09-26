@@ -24,7 +24,7 @@ then
     coreTag=$(echo $coreInfo | jq .tag | tr -d '"')
     coreVersion=$(echo $coreInfo | jq .version | tr -d '"')
 fi
-exit 0;
+
 if [ -f "cdi-plugin-interface-map.json" ]
 then
     pluginInterfaceTag=`cat cdi-plugin-interface-map.json | jq '.["'$coreVersionXYParam'"]' | tr -d '"'`

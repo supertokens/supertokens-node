@@ -21,7 +21,10 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
+coreDriverVersion=`echo $coreDriverArray | jq ". | last"`
+coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
 coreFree="null"
+
 if [ -f cdi-core-map.json ]
 then
     cat cdi-core-map.json
