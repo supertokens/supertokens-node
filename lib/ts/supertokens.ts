@@ -165,6 +165,13 @@ export default class SuperTokens {
         if (!isTestEnv()) {
             throw new Error("calling testing function in non testing env");
         }
+
+        // We call reset the OAuth2Provider recipe because it is auto-initialized
+        // and there is no case where we want to reset the SuperTokens instance but not
+        // the recipes.
+        let OAuth2ProviderRecipe = require("./recipe/oauth2provider/recipe").default;
+        OAuth2ProviderRecipe.reset();
+
         Querier.reset();
         SuperTokens.instance = undefined;
     }

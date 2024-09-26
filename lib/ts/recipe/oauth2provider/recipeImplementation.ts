@@ -708,10 +708,15 @@ export default function getRecipeInterface(
              *        - Redirects to the `post_logout_redirect_uri` or the default logout fallback page.
              */
 
-            console.log("input", input.params);
             const resp = await querier.sendGetRequest(
                 new NormalisedURLPath(`/recipe/oauth/sessions/logout`),
-                input.params,
+                {
+                    clientId: input.params.client_id,
+                    idTokenHint: input.params.id_token_hint,
+                    postLogoutRedirectUri: input.params.post_logout_redirect_uri,
+                    state: input.params.state,
+                    logoutVerifier: input.params.logout_verifier,
+                },
                 input.userContext
             );
 
@@ -722,10 +727,10 @@ export default function getRecipeInterface(
                     errorDescription: resp.errorDescription,
                 };
             }
-            const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
+            let redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
 
-            const redirectToURL = new URL(redirectTo);
-            const logoutChallenge = redirectToURL.searchParams.get("logout_challenge");
+            const initialRedirectToURL = new URL(redirectTo);
+            const logoutChallenge = initialRedirectToURL.searchParams.get("logout_challenge");
 
             // CASE 1 (See above notes)
             if (logoutChallenge !== null) {
@@ -740,19 +745,20 @@ export default function getRecipeInterface(
                     };
                 } else {
                     // Accept the logout challenge immediately as there is no supertokens session
-                    return await this.acceptLogoutRequest({
-                        challenge: logoutChallenge,
-                        userContext: input.userContext,
-                    });
+                    redirectTo = (
+                        await this.acceptLogoutRequest({
+                            challenge: logoutChallenge,
+                            userContext: input.userContext,
+                        })
+                    ).redirectTo;
                 }
             }
 
             // CASE 2 or 3 (See above notes)
 
-            // TODO: add test for this
             // NOTE: If no post_logout_redirect_uri is provided, Hydra redirects to a fallback page.
             // In this case, we redirect the user to the /auth page.
-            if (redirectTo.endsWith("/oauth/fallbacks/logout/callback")) {
+            if (redirectTo.endsWith("/fallbacks/logout/callback")) {
                 return {
                     redirectTo: await this.getFrontendRedirectionURL({
                         type: "post-logout-fallback",
@@ -766,22 +772,29 @@ export default function getRecipeInterface(
         acceptLogoutRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
                 new NormalisedURLPath(`/recipe/oauth/auth/requests/logout/accept`),
+                { challenge: input.challenge },
                 {},
-                { logout_challenge: input.challenge },
                 input.userContext
             );
 
-            return {
-                redirectTo: getUpdatedRedirectTo(appInfo, resp.redirectTo)
-                    // NOTE: This renaming only applies to this endpoint, hence not part of the generic "getUpdatedRedirectTo" function.
-                    .replace("/sessions/logout", "/end_session"),
-            };
+            const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
+
+            if (redirectTo.endsWith("/fallbacks/logout/callback")) {
+                return {
+                    redirectTo: await this.getFrontendRedirectionURL({
+                        type: "post-logout-fallback",
+                        userContext: input.userContext,
+                    }),
+                };
+            }
+
+            return { redirectTo };
         },
         rejectLogoutRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendPutRequest(
                 new NormalisedURLPath(`/recipe/oauth/auth/requests/logout/reject`),
                 {},
-                { logout_challenge: input.challenge },
+                { challenge: input.challenge },
                 input.userContext
             );
 
