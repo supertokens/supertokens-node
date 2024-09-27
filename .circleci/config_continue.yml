@@ -60,6 +60,7 @@ jobs:
     test-backend-sdk-testing:
         docker:
             - image: rishabhpoddar/supertokens_node_driver_testing_node_20
+            - image: sattvik/hydra
         resource_class: large
         parameters:
             cdi-version:
@@ -78,6 +79,7 @@ jobs:
     test-website:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
+            - image: sattvik/hydra
         resource_class: large
         parameters:
             fdi-version:
@@ -96,6 +98,7 @@ jobs:
     test-authreact:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: sattvik/hydra
         resource_class: large
         parameters:
             fdi-version:
