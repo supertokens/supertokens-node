@@ -42,10 +42,7 @@ jobs:
     test-unit:
         docker:
             - image: rishabhpoddar/supertokens_node_driver_testing_node_20
-            - image: ory/hydra:v2.2.0-distroless
-              command: serve all --config /etc/config/hydra/hydra.yml
-              volumes:
-                  - ./.circleci/configs/hydra.yml:/etc/config/hydra/hydra.yml
+            - image: sattvik/hydra
         resource_class: large
         parameters:
             cdi-version:
