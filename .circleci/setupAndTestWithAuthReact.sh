@@ -68,6 +68,12 @@ echo -e "core,$coreVersionXY\nplugin-interface,$pluginInterfaceVersionXY" > modu
 ./loadModules --ssh
 cd supertokens-core
 git checkout $coreTag
+
+# Update oauth provider config in devConfig.yaml
+echo "oauth_provider_public_service_url: http://localhost:4444" >> devConfig.yaml
+echo "oauth_provider_admin_service_url: http://localhost:4445" >> devConfig.yaml
+echo "oauth_provider_consent_login_base_url: http://localhost:3001/auth" >> devConfig.yaml
+
 cd ../supertokens-plugin-interface
 git checkout $pluginInterfaceTag
 cd ../
