@@ -359,6 +359,7 @@ export declare type RecipeInterface = {
     }): Promise<{
         status: "OK";
     }>;
+    getIssuer(input: { userContext: UserContext }): Promise<string>;
 };
 export declare type APIInterface = {
     loginGET:

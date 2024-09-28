@@ -151,7 +151,7 @@ export default function getRecipeInterface(
                     handledAt: input.handledAt,
                     remember: input.remember,
                     rememberFor: input.rememberFor,
-                    iss: appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous(),
+                    iss: await this.getIssuer({ userContext: input.userContext }),
                     tId: input.tenantId,
                     rsub: input.rsub,
                     sessionHandle: input.sessionHandle,
@@ -271,6 +271,14 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
+            if (resp.status !== "CLIENT_NOT_FOUND_ERROR") {
+                return {
+                    statusCode: 400,
+                    error: "invalid_request",
+                    errorDescription: "The provided client_id is not valid",
+                };
+            }
+
             if (resp.status !== "OK") {
                 return {
                     statusCode: resp.statusCode,
@@ -317,7 +325,7 @@ export default function getRecipeInterface(
                 authorizationHeader: input.authorizationHeader,
             };
 
-            body.iss = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+            body.iss = await this.getIssuer({ userContext: input.userContext });
 
             if (input.body.grant_type === "password") {
                 return {
@@ -813,6 +821,9 @@ export default function getRecipeInterface(
             }
 
             return { status: "OK" };
+        },
+        getIssuer: async function () {
+            return appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
         },
     };
 }

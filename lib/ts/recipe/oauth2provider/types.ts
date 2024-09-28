@@ -429,6 +429,7 @@ export type RecipeInterface = {
     }): Promise<{ redirectTo: string } | ErrorOAuth2>;
     acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
     rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ status: "OK" }>;
+    getIssuer(input: { userContext: UserContext }): Promise<string>;
 };
 
 export type APIInterface = {
