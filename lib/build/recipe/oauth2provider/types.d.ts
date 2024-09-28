@@ -171,7 +171,7 @@ export declare type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     getOAuth2Clients(
@@ -187,7 +187,7 @@ export declare type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     createOAuth2Client(
@@ -202,7 +202,7 @@ export declare type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     updateOAuth2Client(
@@ -217,7 +217,7 @@ export declare type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     deleteOAuth2Client(
@@ -231,7 +231,7 @@ export declare type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     validateOAuth2AccessToken(input: {

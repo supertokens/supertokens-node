@@ -275,7 +275,7 @@ export type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     getOAuth2Clients(
@@ -291,7 +291,7 @@ export type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     createOAuth2Client(
@@ -306,7 +306,7 @@ export type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     updateOAuth2Client(
@@ -321,7 +321,7 @@ export type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     deleteOAuth2Client(
@@ -335,7 +335,7 @@ export type RecipeInterface = {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
 

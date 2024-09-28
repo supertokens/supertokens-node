@@ -22,7 +22,7 @@ export default class Wrapper {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     static getOAuth2Clients(
@@ -37,7 +37,7 @@ export default class Wrapper {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     static createOAuth2Client(
@@ -51,7 +51,7 @@ export default class Wrapper {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     static updateOAuth2Client(
@@ -65,7 +65,7 @@ export default class Wrapper {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     static deleteOAuth2Client(
@@ -78,7 +78,7 @@ export default class Wrapper {
         | {
               status: "ERROR";
               error: string;
-              errorHint: string;
+              errorDescription: string;
           }
     >;
     static validateOAuth2AccessToken(

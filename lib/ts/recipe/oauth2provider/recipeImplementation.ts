@@ -221,13 +221,21 @@ export default function getRecipeInterface(
                 });
 
                 if (clientInfo.status === "ERROR") {
-                    throw new Error(clientInfo.error);
+                    return {
+                        statusCode: 400,
+                        error: clientInfo.error,
+                        errorDescription: clientInfo.errorDescription,
+                    };
                 }
                 const client = clientInfo.client;
 
                 const user = await getUser(input.session.getUserId());
                 if (!user) {
-                    throw new Error("User not found");
+                    return {
+                        statusCode: 400,
+                        error: "invalid_request",
+                        errorDescription: "User deleted",
+                    };
                 }
 
                 // These default to an empty objects, because we want to keep them as a required input
@@ -354,7 +362,7 @@ export default function getRecipeInterface(
                     return {
                         statusCode: 400,
                         error: clientInfo.error,
-                        errorDescription: clientInfo.errorHint,
+                        errorDescription: clientInfo.errorDescription,
                     };
                 }
                 const client = clientInfo.client;
@@ -393,13 +401,17 @@ export default function getRecipeInterface(
                         return {
                             statusCode: 400,
                             error: clientInfo.error,
-                            errorDescription: clientInfo.errorHint,
+                            errorDescription: clientInfo.errorDescription,
                         };
                     }
                     const client = clientInfo.client;
                     const user = await getUser(tokenInfo.sub as string);
                     if (!user) {
-                        throw new Error("User not found");
+                        return {
+                            statusCode: 400,
+                            error: "invalid_request",
+                            errorDescription: "User not found",
+                        };
                     }
                     body["id_token"] = await this.buildIdTokenPayload({
                         user,
@@ -460,7 +472,7 @@ export default function getRecipeInterface(
                 return {
                     status: "ERROR",
                     error: response.body.error,
-                    errorHint: response.body.errorHint,
+                    errorDescription: response.body.errorDescription,
                 };
             }
         },
@@ -472,15 +484,18 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return {
-                status: "OK",
-                client: OAuth2Client.fromAPIResponse(response.body),
-            };
-            // return {
-            //     status: "ERROR",
-            //     error: response.body.error,
-            //     errorHint: response.body.errorHint,
-            // };
+            if (response.body.status === "OK") {
+                return {
+                    status: "OK",
+                    client: OAuth2Client.fromAPIResponse(response.body),
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.body.error,
+                    errorDescription: response.body.errorDescription,
+                };
+            }
         },
         createOAuth2Client: async function (input) {
             let response = await querier.sendPostRequest(
@@ -489,15 +504,18 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            return {
-                status: "OK",
-                client: OAuth2Client.fromAPIResponse(response),
-            };
-            // return {
-            //     status: "ERROR",
-            //     error: response.error,
-            //     errorHint: response.errorHint,
-            // };
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                    client: OAuth2Client.fromAPIResponse(response),
+                };
+            } else {
+                return {
+                    status: "ERROR",
+                    error: response.error,
+                    errorDescription: response.errorDescription,
+                };
+            }
         },
         updateOAuth2Client: async function (input) {
             let response = await querier.sendPutRequest(
@@ -516,7 +534,7 @@ export default function getRecipeInterface(
                 return {
                     status: "ERROR",
                     error: response.error,
-                    errorHint: response.errorHint,
+                    errorDescription: response.errorDescription,
                 };
             }
         },
@@ -533,7 +551,7 @@ export default function getRecipeInterface(
                 return {
                     status: "ERROR",
                     error: response.error,
-                    errorHint: response.errorHint,
+                    errorDescription: response.errorDescription,
                 };
             }
         },
