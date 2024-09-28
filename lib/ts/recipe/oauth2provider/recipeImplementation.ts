@@ -21,7 +21,6 @@ import {
     RecipeInterface,
     TypeNormalisedInput,
     ConsentRequest,
-    LoginRequest,
     PayloadBuilderFunction,
     UserInfoBuilderFunction,
 } from "./types";
@@ -58,14 +57,22 @@ export default function getRecipeInterface(
     getDefaultUserInfoPayload: UserInfoBuilderFunction
 ): RecipeInterface {
     return {
-        getLoginRequest: async function (this: RecipeInterface, input): Promise<LoginRequest> {
+        getLoginRequest: async function (this: RecipeInterface, input) {
             const resp = await querier.sendGetRequest(
                 new NormalisedURLPath("/recipe/oauth/auth/requests/login"),
                 { loginChallenge: input.challenge },
                 input.userContext
             );
-
+            if (resp.status !== "OK") {
+                return {
+                    status: "ERROR",
+                    statusCode: resp.statusCode,
+                    error: resp.error,
+                    errorDescription: resp.errorDescription,
+                };
+            }
             return {
+                status: "OK",
                 challenge: resp.challenge,
                 client: OAuth2Client.fromAPIResponse(resp.client),
                 oidcContext: resp.oidcContext,
@@ -198,6 +205,7 @@ export default function getRecipeInterface(
 
             if (input.params.client_id === undefined || typeof input.params.client_id !== "string") {
                 return {
+                    status: "ERROR",
                     statusCode: 400,
                     error: "invalid_request",
                     errorDescription: "client_id is required and must be a string",
@@ -222,6 +230,7 @@ export default function getRecipeInterface(
 
                 if (clientInfo.status === "ERROR") {
                     return {
+                        status: "ERROR",
                         statusCode: 400,
                         error: clientInfo.error,
                         errorDescription: clientInfo.errorDescription,
@@ -232,6 +241,7 @@ export default function getRecipeInterface(
                 const user = await getUser(input.session.getUserId());
                 if (!user) {
                     return {
+                        status: "ERROR",
                         statusCode: 400,
                         error: "invalid_request",
                         errorDescription: "User deleted",
@@ -281,6 +291,7 @@ export default function getRecipeInterface(
 
             if (resp.status === "CLIENT_NOT_FOUND_ERROR") {
                 return {
+                    status: "ERROR",
                     statusCode: 400,
                     error: "invalid_request",
                     errorDescription: "The provided client_id is not valid",
@@ -289,6 +300,7 @@ export default function getRecipeInterface(
 
             if (resp.status !== "OK") {
                 return {
+                    status: "ERROR",
                     statusCode: resp.statusCode,
                     error: resp.error,
                     errorDescription: resp.errorDescription,
@@ -337,6 +349,7 @@ export default function getRecipeInterface(
 
             if (input.body.grant_type === "password") {
                 return {
+                    status: "ERROR",
                     statusCode: 400,
                     error: "invalid_request",
                     errorDescription: "Unsupported grant type: password",
@@ -346,6 +359,7 @@ export default function getRecipeInterface(
             if (input.body.grant_type === "client_credentials") {
                 if (input.body.client_id === undefined) {
                     return {
+                        status: "ERROR",
                         statusCode: 400,
                         error: "invalid_request",
                         errorDescription: "client_id is required",
@@ -360,6 +374,7 @@ export default function getRecipeInterface(
 
                 if (clientInfo.status === "ERROR") {
                     return {
+                        status: "ERROR",
                         statusCode: 400,
                         error: clientInfo.error,
                         errorDescription: clientInfo.errorDescription,
@@ -399,6 +414,7 @@ export default function getRecipeInterface(
                     });
                     if (clientInfo.status === "ERROR") {
                         return {
+                            status: "ERROR",
                             statusCode: 400,
                             error: clientInfo.error,
                             errorDescription: clientInfo.errorDescription,
@@ -408,6 +424,7 @@ export default function getRecipeInterface(
                     const user = await getUser(tokenInfo.sub as string);
                     if (!user) {
                         return {
+                            status: "ERROR",
                             statusCode: 400,
                             error: "invalid_request",
                             errorDescription: "User not found",
@@ -442,6 +459,7 @@ export default function getRecipeInterface(
 
             if (res.status !== "OK") {
                 return {
+                    status: "ERROR",
                     statusCode: res.statusCode,
                     error: res.error,
                     errorDescription: res.errorDescription,
@@ -676,6 +694,7 @@ export default function getRecipeInterface(
 
             if (res.status !== "OK") {
                 return {
+                    status: "ERROR",
                     statusCode: res.statusCode,
                     error: res.error,
                     errorDescription: res.errorDescription,
@@ -764,6 +783,7 @@ export default function getRecipeInterface(
 
             if ("error" in resp) {
                 return {
+                    status: "ERROR",
                     statusCode: resp.statusCode,
                     error: resp.error,
                     errorDescription: resp.errorDescription,

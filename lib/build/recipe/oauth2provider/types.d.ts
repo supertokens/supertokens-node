@@ -33,6 +33,7 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type ErrorOAuth2 = {
+    status: "ERROR";
     error: string;
     errorDescription: string;
     statusCode?: number;
@@ -137,7 +138,15 @@ export declare type RecipeInterface = {
     }): Promise<{
         redirectTo: string;
     }>;
-    getLoginRequest(input: { challenge: string; userContext: UserContext }): Promise<LoginRequest>;
+    getLoginRequest(input: {
+        challenge: string;
+        userContext: UserContext;
+    }): Promise<
+        | (LoginRequest & {
+              status: "OK";
+          })
+        | ErrorOAuth2
+    >;
     acceptLoginRequest(input: {
         challenge: string;
         acr?: string;
@@ -414,6 +423,7 @@ export declare type APIInterface = {
                     status: "OK";
                     info: LoginInfo;
                 }
+              | ErrorOAuth2
               | GeneralErrorResponse
           >);
     userInfoGET:

@@ -51,6 +51,8 @@ export type APIOptions = {
 };
 
 export type ErrorOAuth2 = {
+    status: "ERROR";
+
     // The error should follow the OAuth2 error format (e.g. invalid_request, login_required).
     // Defaults to request_denied.
     error: string;
@@ -219,7 +221,10 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<{ redirectTo: string }>;
 
-    getLoginRequest(input: { challenge: string; userContext: UserContext }): Promise<LoginRequest>;
+    getLoginRequest(input: {
+        challenge: string;
+        userContext: UserContext;
+    }): Promise<(LoginRequest & { status: "OK" }) | ErrorOAuth2>;
     acceptLoginRequest(input: {
         challenge: string;
 
@@ -467,7 +472,7 @@ export type APIInterface = {
               loginChallenge: string;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ status: "OK"; info: LoginInfo } | GeneralErrorResponse>);
+          }) => Promise<{ status: "OK"; info: LoginInfo } | ErrorOAuth2 | GeneralErrorResponse>);
     userInfoGET:
         | undefined
         | ((input: {

@@ -27,6 +27,11 @@ export default function getAPIImplementation(): APIInterface {
                 isDirectCall: true,
                 userContext,
             });
+
+            if ("error" in response) {
+                return response;
+            }
+
             const respAfterInternalRedirects = await handleLoginInternalRedirects({
                 response,
                 cookie: options.req.getHeaderValue("cookie"),
@@ -75,10 +80,15 @@ export default function getAPIImplementation(): APIInterface {
             });
         },
         loginInfoGET: async ({ loginChallenge, options, userContext }) => {
-            const { client } = await options.recipeImplementation.getLoginRequest({
+            const loginRes = await options.recipeImplementation.getLoginRequest({
                 challenge: loginChallenge,
                 userContext,
             });
+
+            if (loginRes.status === "ERROR") {
+                return loginRes;
+            }
+            const { client } = loginRes;
 
             return {
                 status: "OK",

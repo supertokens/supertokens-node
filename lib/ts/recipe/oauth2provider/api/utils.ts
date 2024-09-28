@@ -31,6 +31,10 @@ export async function loginGET({
         userContext,
     });
 
+    if (loginRequest.status === "ERROR") {
+        return loginRequest;
+    }
+
     const sessionInfo = session !== undefined ? await getSessionInformation(session?.getHandle()) : undefined;
     if (!sessionInfo) {
         session = undefined;
@@ -47,23 +51,25 @@ export async function loginGET({
                 const reject = await recipeImplementation.rejectLoginRequest({
                     challenge: loginChallenge,
                     error: {
+                        status: "ERROR",
                         error: "invalid_request",
                         errorDescription: "max_age cannot be negative",
                     },
                     userContext,
                 });
-                return { redirectTo: reject.redirectTo, setCookie };
+                return { status: "REDIRECT", redirectTo: reject.redirectTo, setCookie };
             }
         } catch {
             const reject = await recipeImplementation.rejectLoginRequest({
                 challenge: loginChallenge,
                 error: {
+                    status: "ERROR",
                     error: "invalid_request",
                     errorDescription: "max_age must be an integer",
                 },
                 userContext,
             });
-            return { redirectTo: reject.redirectTo, setCookie };
+            return { status: "REDIRECT", redirectTo: reject.redirectTo, setCookie };
         }
     }
     const tenantIdParam = incomingAuthUrlQueryParams.get("tenant_id");
@@ -84,7 +90,7 @@ export async function loginGET({
             rememberFor: 3600,
             userContext,
         });
-        return { redirectTo: accept.redirectTo, setCookie };
+        return { status: "REDIRECT", redirectTo: accept.redirectTo, setCookie };
     }
 
     if (shouldTryRefresh && promptParam !== "login") {
@@ -101,16 +107,18 @@ export async function loginGET({
         const reject = await recipeImplementation.rejectLoginRequest({
             challenge: loginChallenge,
             error: {
+                status: "ERROR",
                 error: "login_required",
                 errorDescription:
                     "The Authorization Server requires End-User authentication. Prompt 'none' was requested, but no existing or expired login session was found.",
             },
             userContext,
         });
-        return { redirectTo: reject.redirectTo, setCookie };
+        return { status: "REDIRECT", redirectTo: reject.redirectTo, setCookie };
     }
 
     return {
+        status: "REDIRECT",
         redirectTo: await recipeImplementation.getFrontendRedirectionURL({
             type: "login",
             loginChallenge,
@@ -225,6 +233,10 @@ export async function handleLoginInternalRedirects({
                 isDirectCall: false,
                 userContext,
             });
+
+            if ("error" in loginRes) {
+                return loginRes;
+            }
 
             response = {
                 redirectTo: loginRes.redirectTo,

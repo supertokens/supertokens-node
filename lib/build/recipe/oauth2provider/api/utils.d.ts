@@ -18,10 +18,19 @@ export declare function loginGET({
     setCookie?: string;
     userContext: UserContext;
     isDirectCall: boolean;
-}): Promise<{
-    redirectTo: string;
-    setCookie: string | undefined;
-}>;
+}): Promise<
+    | ErrorOAuth2
+    | {
+          status: string;
+          redirectTo: string;
+          setCookie: string | undefined;
+      }
+    | {
+          redirectTo: string;
+          setCookie: string | undefined;
+          status?: undefined;
+      }
+>;
 export declare function handleLoginInternalRedirects({
     response,
     recipeImplementation,
