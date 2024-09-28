@@ -271,7 +271,7 @@ export default function getRecipeInterface(
                 input.userContext
             );
 
-            if (resp.status !== "CLIENT_NOT_FOUND_ERROR") {
+            if (resp.status === "CLIENT_NOT_FOUND_ERROR") {
                 return {
                     statusCode: 400,
                     error: "invalid_request",
