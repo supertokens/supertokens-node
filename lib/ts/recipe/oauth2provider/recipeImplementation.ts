@@ -489,6 +489,12 @@ export default function getRecipeInterface(
                     status: "OK",
                     client: OAuth2Client.fromAPIResponse(response.body),
                 };
+            } else if (response.body.status === "CLIENT_NOT_FOUND_ERROR") {
+                return {
+                    status: "ERROR",
+                    error: "invalid_request",
+                    errorDescription: "The provided client_id is not valid or unknown",
+                };
             } else {
                 return {
                     status: "ERROR",
