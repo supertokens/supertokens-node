@@ -64,4 +64,5 @@ export default class SessionRecipe extends RecipeModule {
         accessToken: import("./jwt").ParsedJWTInfo | undefined;
         allowedTransferMethod: import("./types").TokenTransferMethod | "any";
     };
+    getNormalisedOverwriteSessionDuringSignInUp: (req: any) => boolean;
 }

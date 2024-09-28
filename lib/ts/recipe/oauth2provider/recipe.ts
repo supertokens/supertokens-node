@@ -55,7 +55,6 @@ import revokeTokenPOST from "./api/revokeToken";
 import introspectTokenPOST from "./api/introspectToken";
 import { endSessionGET, endSessionPOST } from "./api/endSession";
 import { logoutPOST } from "./api/logout";
-import { getSessionInformation } from "../session";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "oauth2provider";
@@ -266,10 +265,6 @@ export default class Recipe extends RecipeModule {
     }
 
     async getDefaultAccessTokenPayload(user: User, scopes: string[], sessionHandle: string, userContext: UserContext) {
-        const sessionInfo = await getSessionInformation(sessionHandle);
-        if (sessionInfo === undefined) {
-            throw new Error("Session not found");
-        }
         let payload: JSONObject = {};
 
         for (const fn of this.accessTokenBuilders) {

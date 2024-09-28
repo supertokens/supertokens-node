@@ -505,9 +505,13 @@ app.post("/test/getTOTPCode", (req, res) => {
     res.send(JSON.stringify({ totp: new OTPAuth.TOTP({ secret: req.body.secret, digits: 6, period: 1 }).generate() }));
 });
 
-app.post("/test/create-oauth2-client", async (req, res) => {
-    const { client } = await OAuth2Provider.createOAuth2Client(req.body);
-    res.send({ client });
+app.post("/test/create-oauth2-client", async (req, res, next) => {
+    try {
+        const { client } = await OAuth2Provider.createOAuth2Client(req.body);
+        res.send({ client });
+    } catch (e) {
+        next(e);
+    }
 });
 
 app.get("/test/featureFlags", (req, res) => {
