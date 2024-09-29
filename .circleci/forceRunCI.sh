@@ -1,11 +1,11 @@
 PAT=`cat .pat`
-auth=`echo "${PAT}:\c" | base64 --wrap=0`
+auth=`echo -n "${PAT}:" | base64 --wrap=0`
 
 branch=`git rev-parse --abbrev-ref HEAD`
 
 cdiCoreMap='{ "5.1": "feat/oauth-provider-base" }'
 cdiPluginInterfaceMap='{ "5.1": "feat/oauth-provider-base" }'
-fdiNodeMap='{ "3.1": "ci/manual_ci_runs", "4.0": "ci/manual_ci_runs" }'
+fdiNodeMap='{ "3.1": "feat/oauth2/base", "4.0": "feat/oauth2/base" }'
 fdiWebsiteMap='{ "1.17": "ci/support_custom_tags", "1.18": "ci/support_custom_tags", "1.19": "ci/support_custom_tags", "2.0": "ci/support_custom_tags", "3.0": "ci/support_custom_tags", "3.1": "ci/support_custom_tags", "4.0": "ci/support_custom_tags" }'
 fdiAuthReactMap='{ "3.1": "feat/oauth2/examples", "4.0": "feat/oauth2/examples" }'
 

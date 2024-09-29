@@ -211,16 +211,18 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
             SuperTokens.convertToRecipeUserId("test-user-id")
         );
         const tokens = createRes.getAllSessionTokensDangerously();
+        clock.tick(500);
 
         assert.strictEqual(requestMock.callCount, 0);
         assert.ok(await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken));
         assert.strictEqual(requestMock.callCount, 1);
+        clock.tick(1000);
 
         // This should be done using the cache
         assert.ok(await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken));
         assert.strictEqual(requestMock.callCount, 1);
-        // we "wait" for 20 seconds to make the cache out-of-date
-        clock.tick(20000);
+        // we "wait" for 21 seconds to make the cache out-of-date
+        clock.tick(21000);
         // This should re-fetch from the core
         assert.ok(await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken));
         assert.strictEqual(requestMock.callCount, 2);

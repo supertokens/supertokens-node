@@ -27,7 +27,7 @@ export function getCombinedJWKS(config: { jwksRefreshIntervalSec: number }) {
             .getAllCoreUrlsForPath("/.well-known/jwks.json")
             .map((url) =>
                 createRemoteJWKSet(new URL(url), {
-                    cacheMaxAge: config.jwksRefreshIntervalSec,
+                    cacheMaxAge: config.jwksRefreshIntervalSec * 1000,
                     cooldownDuration: JWKCacheCooldownInMs,
                 })
             );
