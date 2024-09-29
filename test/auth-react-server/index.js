@@ -951,7 +951,7 @@ function initST({ passwordlessConfig } = {}) {
         }),
     ]);
 
-    recipeList.push(["oauth2", OAuth2Provider.init()]);
+    recipeList.push(["oauth2provider", OAuth2Provider.init()]);
 
     SuperTokens.init({
         appInfo: {

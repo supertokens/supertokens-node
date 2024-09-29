@@ -113,6 +113,12 @@ cd ../../../supertokens-auth-react/
 MOCHA_FILE=test_report/report_node.xml SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
 then
+    mkdir -p ../project/test_report/screenshots
+    mv ./test_report/screenshots/* ../project/test_report/screenshots/
+
+    mkdir -p ../project/test_report/react-logs
+    mv ./test_report/logs/* ../project/test_report/react-logs/
+
     echo "test failed... exiting!"
     rm -rf ./test/server/node_modules/supertokens-node
     git checkout HEAD -- ./test/server/package.json

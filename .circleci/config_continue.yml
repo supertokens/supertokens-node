@@ -116,6 +116,12 @@ jobs:
             - store_artifacts:
                   path: test_report/backend.log
                   destination: logs
+            - store_artifacts:
+                  path: test_report/screenshots
+                  destination: screenshots
+            - store_artifacts:
+                  path: test_report/react-logs
+                  destination: react-logs
             - slack/status
     test-success:
         docker:
