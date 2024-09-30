@@ -1021,30 +1021,42 @@ export const AuthUtils = {
             req
         );
 
-        if (shouldTryLinkingWithSessionUser === false) {
+        if (shouldTryLinkingWithSessionUser !== false) {
             logDebugMessage(
-                "loadSessionInAuthAPIIfNeeded: skipping session loading because shouldTryLinkingWithSessionUser is false"
+                "loadSessionInAuthAPIIfNeeded: loading session because shouldTryLinkingWithSessionUser is not set to false so we may want to link later"
             );
-            return undefined;
+            return await Session.getSession(
+                req,
+                res,
+                {
+                    // This is optional only if shouldTryLinkingWithSessionUser is defined
+                    // in the 3.0 FDI, we decided about linking based on the session presence instead of this flag
+                    sessionRequired: shouldTryLinkingWithSessionUser === true,
+                    overrideGlobalClaimValidators: () => [],
+                },
+                userContext
+            );
         }
 
         if (overwriteSessionDuringSignInUp === false) {
             logDebugMessage(
-                "loadSessionInAuthAPIIfNeeded: skipping session loading because overwriteSessionDuringSignInUp is false"
+                "loadSessionInAuthAPIIfNeeded: loading session in optional mode because overwriteSessionDuringSignInUp is false so if it is not found we will skip session creation"
             );
-            return undefined;
+            return await Session.getSession(
+                req,
+                res,
+                {
+                    sessionRequired: false,
+                    overrideGlobalClaimValidators: () => [],
+                },
+                userContext
+            );
         }
-        logDebugMessage("loadSessionInAuthAPIIfNeeded: loading session");
-
-        return await Session.getSession(
-            req,
-            res,
-            {
-                sessionRequired: shouldTryLinkingWithSessionUser === true,
-                overrideGlobalClaimValidators: () => [],
-            },
-            userContext
+        logDebugMessage(
+            "loadSessionInAuthAPIIfNeeded: skipping session loading because we are not linking and we would overwrite it anyway"
         );
+
+        return undefined;
     },
 };
 
