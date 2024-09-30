@@ -1,4 +1,4 @@
-import * as psl from "psl";
+import { parse } from "tldts";
 
 import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
@@ -345,13 +345,13 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         return "localhost";
     }
 
-    let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
-    if (parsedURL.domain === null) {
-        if (hostname.endsWith(".amazonaws.com") && parsedURL.tld === hostname) {
+    let parsedURL = parse(hostname);
+    if (!parsedURL.domain) {
+        if (hostname.endsWith(".amazonaws.com") && parsedURL.publicSuffix === hostname) {
             return hostname;
         }
         // support for .local domain
-        if (hostname.endsWith(".local") && parsedURL.tld === null) {
+        if (hostname.endsWith(".local") && !parsedURL.publicSuffix) {
             return hostname;
         }
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
