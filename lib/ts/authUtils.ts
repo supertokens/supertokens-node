@@ -1021,17 +1021,30 @@ export const AuthUtils = {
             req
         );
 
-        return shouldTryLinkingWithSessionUser !== false || overwriteSessionDuringSignInUp === false
-            ? await Session.getSession(
-                  req,
-                  res,
-                  {
-                      sessionRequired: shouldTryLinkingWithSessionUser === true,
-                      overrideGlobalClaimValidators: () => [],
-                  },
-                  userContext
-              )
-            : undefined;
+        if (shouldTryLinkingWithSessionUser === false) {
+            logDebugMessage(
+                "loadSessionInAuthAPIIfNeeded: skipping session loading because shouldTryLinkingWithSessionUser is false"
+            );
+            return undefined;
+        }
+
+        if (overwriteSessionDuringSignInUp === false) {
+            logDebugMessage(
+                "loadSessionInAuthAPIIfNeeded: skipping session loading because overwriteSessionDuringSignInUp is false"
+            );
+            return undefined;
+        }
+        logDebugMessage("loadSessionInAuthAPIIfNeeded: loading session");
+
+        return await Session.getSession(
+            req,
+            res,
+            {
+                sessionRequired: shouldTryLinkingWithSessionUser === true,
+                overrideGlobalClaimValidators: () => [],
+            },
+            userContext
+        );
     },
 };
 
