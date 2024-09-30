@@ -41,8 +41,8 @@ app.get("/sessioninfo", (c) => {
 
 app.get("/", (c) => {
     return c.json({
-        "message": "Hello from Supertokens"
-    })
-})
+        message: "Hello from Supertokens",
+    });
+});
 
 export default app;

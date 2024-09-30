@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [20.1.3] - 2024-09-30
+
+-   Replaces `psl` with `tldts` to avoid `punycode` deprecation warning.
+
 ## [20.1.2] - 2024-09-14
 
 -   Fixes formFields to accept non string types as well.
