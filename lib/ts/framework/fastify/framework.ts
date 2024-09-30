@@ -13,12 +13,13 @@
  * under the License.
  */
 
-import type {
-    FastifyInstance,
-    FastifyRequest as OriginalFastifyRequest,
-    FastifyReply,
-    FastifyPluginCallback,
-} from "fastify";
+// import type {
+//     FastifyInstance,
+//     FastifyRequest as OriginalFastifyRequest,
+//     FastifyReply,
+//     FastifyPluginCallback,
+// } from "fastify";
+import { FastifyRequest as OriginalFastifyRequest, FastifyReply } from "./types";
 import type { HTTPMethod } from "../../types";
 import { getFromObjectCaseInsensitive, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
