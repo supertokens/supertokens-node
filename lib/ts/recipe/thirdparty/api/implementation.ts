@@ -142,6 +142,17 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (preAuthChecks.status !== "OK") {
+                if (
+                    preAuthChecks.status === "SIGN_IN_NOT_ALLOWED" &&
+                    authenticatingUser !== undefined &&
+                    !authenticatingUser.loginMethod.hasSameEmailAs(emailInfo.id)
+                ) {
+                    return {
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
+                        reason:
+                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
+                    };
+                }
                 logDebugMessage("signInUpPOST: erroring out because preAuthChecks returned " + preAuthChecks.status);
                 // On the frontend, this should show a UI of asking the user
                 // to login using a different method.
