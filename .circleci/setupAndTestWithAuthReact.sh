@@ -99,7 +99,7 @@ npm i
 mkdir -p ../../test_report
 
 echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion" >> ../../test_report/backend.log
-DEBUG=com.supertokens TEST_MODE=testing node . >> ../../test_report/backend.log 2>&1 &
+NODE_PORT=8083 DEBUG=com.supertokens TEST_MODE=testing node . >> ../../test_report/backend.log 2>&1 &
 pid=$!
 cd ../../../supertokens-auth-react/
 
