@@ -1,6 +1,5 @@
 PAT=`cat .pat`
-auth=`echo -n "${PAT}:" | base64 --wrap=0`
-
+auth=`echo "${PAT}:" | tr -d '\n' | base64 --wrap=0`
 branch=`git rev-parse --abbrev-ref HEAD`
 
 cdiCoreMap='{ "5.1": "feat/oauth-provider-base" }'
