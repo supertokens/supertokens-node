@@ -13,12 +13,6 @@
  * under the License.
  */
 
-// import type {
-//     FastifyInstance,
-//     FastifyRequest as OriginalFastifyRequest,
-//     FastifyReply,
-//     FastifyPluginCallback,
-// } from "fastify";
 import {
     FastifyRequest as OriginalFastifyRequest,
     FastifyReply,
