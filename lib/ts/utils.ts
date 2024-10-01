@@ -345,8 +345,18 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         return "localhost";
     }
 
-    let parsedURL = parse(hostname);
+    // Before `tldts`, `psl` was being used and that library automatically
+    // handled parsing private domains. With `tldts`, `allowPrivateDomains` is
+    // required to be passed to handle that.
+    //
+    // This is important for parsing ec2 public URL's that were initially
+    // reported to be breaking in the following issue:
+    // https://github.com/supertokens/supertokens-python/issues/394
+    let parsedURL = parse(hostname, { allowPrivateDomains: true });
     if (!parsedURL.domain) {
+        // If the URL is an AWS public URL, return the entire URL since it is
+        // considered a suffix entirely (instead of just amazonaws.com). This
+        // was initially reported in https://github.com/supertokens/supertokens-python/issues/394
         if (hostname.endsWith(".amazonaws.com") && parsedURL.publicSuffix === hostname) {
             return hostname;
         }
