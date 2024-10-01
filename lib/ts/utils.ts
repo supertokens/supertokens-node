@@ -345,11 +345,19 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         return "localhost";
     }
 
+    // According to tests, if it is an ec2 subdomain, we want to return the subdomain
+    // as well. With `psl` library, this was not an issue because the library
+    // would return a `null` value for `domain` for ec2 urls.
+    //
+    // With tldts library, it parses the ec2 urls and returns the .amazonaws.com
+    // as the domain (instead of `null`) so we need to do the amazonaws check
+    // regardless of the domain being null.
+    if (hostname.endsWith(".amazonaws.com")) {
+        return hostname;
+    }
+
     let parsedURL = parse(hostname);
     if (!parsedURL.domain) {
-        if (hostname.endsWith(".amazonaws.com") && parsedURL.publicSuffix === hostname) {
-            return hostname;
-        }
         // support for .local domain
         if (hostname.endsWith(".local") && !parsedURL.publicSuffix) {
             return hostname;

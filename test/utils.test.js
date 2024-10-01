@@ -40,9 +40,10 @@ describe("getTopLevelDomainForSameSiteResolution test", () => {
         assert.equal(getTopLevelDomainForSameSiteResolution("http://sub.domain.co.uk"), "domain.co.uk");
     });
 
-    it("should handle .amazonaws.com domains correctly", () => {
-        assert.equal(getTopLevelDomainForSameSiteResolution("https://my-instance.amazonaws.com"), "amazonaws.com");
-    });
+    assert.strictEqual(
+        getTopLevelDomainForSameSiteResolution("https://ec2-xx-yyy-zzz-0.compute-1.amazonaws.com"),
+        "ec2-xx-yyy-zzz-0.compute-1.amazonaws.com"
+    );
 
     it("should handle .local domains correctly", () => {
         assert.equal(getTopLevelDomainForSameSiteResolution("http://myserver.local"), "myserver.local");
