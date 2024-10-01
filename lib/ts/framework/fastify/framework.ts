@@ -19,7 +19,12 @@
 //     FastifyReply,
 //     FastifyPluginCallback,
 // } from "fastify";
-import { FastifyRequest as OriginalFastifyRequest, FastifyReply } from "./types";
+import {
+    FastifyRequest as OriginalFastifyRequest,
+    FastifyReply,
+    FastifyInstance,
+    FastifyPluginCallback,
+} from "./types";
 import type { HTTPMethod } from "../../types";
 import { getFromObjectCaseInsensitive, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
@@ -134,9 +139,9 @@ export class FastifyResponse extends BaseResponse {
     ) => {
         let serialisedCookie = serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite);
 
-        let oldHeaders: string | string[] | undefined = this.response.getHeader(COOKIE_HEADER);
+        let oldHeaders: string | string[] | undefined | number = this.response.getHeader(COOKIE_HEADER);
         if (oldHeaders === undefined) oldHeaders = [];
-        else if (!((oldHeaders as any) instanceof Array)) oldHeaders = [oldHeaders];
+        else if (!((oldHeaders as any) instanceof Array)) oldHeaders = [oldHeaders.toString()];
 
         this.response.removeHeader(COOKIE_HEADER);
         this.response.header(COOKIE_HEADER, [
