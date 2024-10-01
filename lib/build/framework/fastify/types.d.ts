@@ -4,7 +4,7 @@
  */
 export interface FastifyRequest {
     body: any;
-    query: Record<string, string | string[] | undefined>;
+    query: unknown;
     headers: Record<string, string | string[] | undefined>;
     method: string;
     url: string;
@@ -15,7 +15,7 @@ export interface FastifyReply {
     getHeaders(): Record<string, number | string | string[] | undefined>;
     send(payload?: any): FastifyReply;
     header(key: any, value: any): FastifyReply;
-    removeHeader(key: any): FastifyReply;
+    removeHeader(key: string): void;
     getHeader(key: any): number | string | string[] | undefined;
     type(contentType: string): FastifyReply;
 }

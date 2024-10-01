@@ -18,7 +18,7 @@
         "@fastify/cors": "^7.0.0",
         "@fastify/formbody": "^6.0.1",
         "axios": "^0.21.0",
-        "fastify": "3.18.1",
+        "fastify": "^5.0.0",
         "helmet": "^5.1.0",
         "morgan": "^1.10.0",
         "react": "^18.2.0",
