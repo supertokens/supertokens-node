@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { FastifyRequest as OriginalFastifyRequest, FastifyReply, FastifyPluginCallback } from "fastify";
+import { FastifyRequest as OriginalFastifyRequest, FastifyReply, FastifyPluginCallback } from "./types";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
