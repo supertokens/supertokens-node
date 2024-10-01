@@ -104,7 +104,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               redirectTo: string;
-              setCookie: string | undefined;
+              cookies: string | undefined;
           }
         | ErrorOAuth2
     >;
@@ -120,8 +120,6 @@ export declare type RecipeInterface = {
         grantAccessTokenAudience?: string[];
         grantScope?: string[];
         handledAt?: string;
-        remember?: boolean;
-        rememberFor?: number;
         tenantId: string;
         rsub: string;
         sessionHandle: string;
@@ -153,10 +151,7 @@ export declare type RecipeInterface = {
         amr?: string[];
         context?: any;
         extendSessionLifespan?: boolean;
-        forceSubjectIdentifier?: string;
         identityProviderSessionId?: string;
-        remember?: boolean;
-        rememberFor?: number;
         subject: string;
         userContext: UserContext;
     }): Promise<{
@@ -368,7 +363,6 @@ export declare type RecipeInterface = {
     }): Promise<{
         status: "OK";
     }>;
-    getIssuer(input: { userContext: UserContext }): Promise<string>;
 };
 export declare type APIInterface = {
     loginGET:
@@ -382,7 +376,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     frontendRedirectTo: string;
-                    setCookie?: string;
+                    cookies?: string;
                 }
               | ErrorOAuth2
               | GeneralErrorResponse
@@ -399,7 +393,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     redirectTo: string;
-                    setCookie?: string;
+                    cookies?: string;
                 }
               | ErrorOAuth2
               | GeneralErrorResponse

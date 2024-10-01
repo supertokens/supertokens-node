@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -47,7 +47,7 @@ export default function getAPIImplementation(): APIInterface {
 
             return {
                 frontendRedirectTo: respAfterInternalRedirects.redirectTo,
-                setCookie: respAfterInternalRedirects.setCookie,
+                cookies: respAfterInternalRedirects.cookies,
             };
         },
 

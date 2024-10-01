@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -69,7 +69,7 @@ export type ConsentRequest = {
     // ACR represents the Authentication AuthorizationContext Class Reference value for this authentication session. You can use it to express that, for example, a user authenticated using two factor authentication.
     acr?: string;
 
-    // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+    // Array of strings
     amr?: string[];
 
     // ID is the identifier ("authorization challenge") of the consent authorization request. It is used to identify the session.
@@ -78,22 +78,22 @@ export type ConsentRequest = {
     // OAuth 2.0 Clients are used to perform OAuth 2.0 and OpenID Connect flows. Usually, OAuth 2.0 clients are generated for applications which want to consume your OAuth 2.0 or OpenID Connect capabilities.
     client?: OAuth2Client;
 
-    // any (JSONRawMessage represents a json.RawMessage that works well with JSON, SQL, and Swagger.)
+    // any json serializable object
     context?: JSONObject;
 
     // LoginChallenge is the login challenge this consent challenge belongs to. It can be used to associate a login and consent request in the login & consent app.
     loginChallenge?: string;
 
-    // LoginSessionID is the login session ID. If the user-agent reuses a login session (via cookie / remember flag) this ID will remain the same. If the user-agent did not have an existing authentication session (e.g. remember is false) this will be a new random value. This value is used as the "sid" parameter in the ID Token and in OIDC Front-/Back- channel logout. It's value can generally be used to associate consecutive login requests by a certain user.
+    // LoginSessionID is the login session ID.
     loginSessionId?: string;
 
     // object (Contains optional information about the OpenID Connect request.)
     oidcContext?: any;
 
-    // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+    // Array of strings
     requestedAccessTokenAudience?: string[];
 
-    // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+    // Array of strings
     requestedScope?: string[];
 
     // Skip, if true, implies that the client has requested the same scopes from the same user previously. If true, you must not ask the user to grant the requested scopes. You must however either allow or deny the consent request using the usual API call.
@@ -116,13 +116,13 @@ export type LoginRequest = {
     // RequestURL is the original OAuth 2.0 Authorization URL requested by the OAuth 2.0 client. It is the URL which initiates the OAuth 2.0 Authorization Code or OAuth 2.0 Implicit flow. This URL is typically not needed, but might come in handy if you want to deal with additional request parameters.
     requestUrl: string;
 
-    // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+    // Array of strings
     requestedAccessTokenAudience?: string[];
 
-    // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+    // Array of strings
     requestedScope?: string[];
 
-    // SessionID is the login session ID. If the user-agent reuses a login session (via cookie / remember flag) this ID will remain the same. If the user-agent did not have an existing authentication session (e.g. remember is false) this will be a new random value. This value is used as the "sid" parameter in the ID Token and in OIDC Front-/Back- channel logout. It's value can generally be used to associate consecutive login requests by a certain user.
+    // SessionID is the login session ID.
     sessionId?: string;
 
     // Skip, if true, implies that the client has requested the same scopes from the same user previously. If true, you can skip asking the user to grant the requested scopes, and simply forward the user to the redirect URL.
@@ -182,7 +182,7 @@ export type RecipeInterface = {
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; setCookie: string | undefined } | ErrorOAuth2>;
+    }): Promise<{ redirectTo: string; cookies: string | undefined } | ErrorOAuth2>;
     tokenExchange(input: {
         authorizationHeader?: string;
         body: Record<string, string | undefined>;
@@ -192,19 +192,14 @@ export type RecipeInterface = {
     acceptConsentRequest(input: {
         challenge: string;
 
-        // any (JSONRawMessage represents a json.RawMessage that works well with JSON, SQL, and Swagger.)
+        // any json serializable object
         context?: any;
-        // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+        // Array of strings
         grantAccessTokenAudience?: string[];
-        // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+        // Array of strings
         grantScope?: string[];
         // string <date-time> (NullTime implements sql.NullTime functionality.)
         handledAt?: string;
-        // Remember, if set to true, tells ORY Hydra to remember this consent authorization and reuse it if the same client asks the same user for the same, or a subset of, scope.
-        remember?: boolean;
-
-        // RememberFor sets how long the consent authorization should be remembered for in seconds. If set to 0, the authorization will be remembered indefinitely. integer <int64>
-        rememberFor?: number;
 
         tenantId: string;
         rsub: string;
@@ -231,10 +226,10 @@ export type RecipeInterface = {
         // ACR sets the Authentication AuthorizationContext Class Reference value for this authentication session. You can use it to express that, for example, a user authenticated using two factor authentication.
         acr?: string;
 
-        // Array of strings (StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.)
+        // Array of strings
         amr?: string[];
 
-        // any (JSONRawMessage represents a json.RawMessage that works well with JSON, SQL, and Swagger.)
+        // any json serializable object
         context?: any;
 
         // Extend OAuth2 authentication session lifespan
@@ -242,22 +237,8 @@ export type RecipeInterface = {
         // This value can only be set to true if the user has an authentication, which is the case if the skip value is true.
         extendSessionLifespan?: boolean;
 
-        // ForceSubjectIdentifier forces the "pairwise" user ID of the end-user that authenticated. The "pairwise" user ID refers to the (Pairwise Identifier Algorithm)[http://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg] of the OpenID Connect specification. It allows you to set an obfuscated subject ("user") identifier that is unique to the client.
-        // Please note that this changes the user ID on endpoint /userinfo and sub claim of the ID Token. It does not change the sub claim in the OAuth 2.0 Introspection.
-        forceSubjectIdentifier?: string;
-
-        // Per default, ORY Hydra handles this value with its own algorithm. In case you want to set this yourself you can use this field. Please note that setting this field has no effect if pairwise is not configured in ORY Hydra or the OAuth 2.0 Client does not expect a pairwise identifier (set via subject_type key in the client's configuration).
-        // Please also be aware that ORY Hydra is unable to properly compute this value during authentication. This implies that you have to compute this value on every authentication process (probably depending on the client ID or some other unique value).
-        // If you fail to compute the proper value, then authentication processes which have id_token_hint set might fail.
-
-        // IdentityProviderSessionID is the session ID of the end-user that authenticated. If specified, we will use this value to propagate the logout.
+        // IdentityProviderSessionID is the session ID of the end-user that authenticated.
         identityProviderSessionId?: string;
-
-        // Remember, if set to true, tells ORY Hydra to remember this user by telling the user agent (browser) to store a cookie with authentication data. If the same user performs another OAuth 2.0 Authorization Request, he/she will not be asked to log in again.
-        remember?: boolean;
-
-        // RememberFor sets how long the authentication should be remembered for in seconds. If set to 0, the authorization will be remembered for the duration of the browser session (using a session cookie). integer <int64>
-        rememberFor?: number;
 
         // Subject is the user ID of the end-user that authenticated.
         subject: string;
@@ -434,7 +415,6 @@ export type RecipeInterface = {
     }): Promise<{ redirectTo: string } | ErrorOAuth2>;
     acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
     rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ status: "OK" }>;
-    getIssuer(input: { userContext: UserContext }): Promise<string>;
 };
 
 export type APIInterface = {
@@ -446,7 +426,7 @@ export type APIInterface = {
               session?: SessionContainerInterface;
               shouldTryRefresh: boolean;
               userContext: UserContext;
-          }) => Promise<{ frontendRedirectTo: string; setCookie?: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ frontendRedirectTo: string; cookies?: string } | ErrorOAuth2 | GeneralErrorResponse>);
 
     authGET:
         | undefined
@@ -457,7 +437,7 @@ export type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; cookies?: string } | ErrorOAuth2 | GeneralErrorResponse>);
     tokenPOST:
         | undefined
         | ((input: {

@@ -10,10 +10,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## UNRELEASED
 
 -   Added OAuth2Provider recipe
+-   Added a way to run CI on unmerged PRs
+-   Added support for FDIs: 3.1 and 4.0. Required by: auth-react >=0.43.0 and web-js>=0.13.0
+-   The `networkInterceptor` now also gets a new `params` prop in the request config.
 
 ### Breaking change
 
 -   Changes type of value in formField object to be `unknown` instead of `string` to add support for accepting any type of value in form fields.
+-   Only supporting CDI 5.1, Compatible with core version >= 10.0
+-   Changed the default value of `overwriteSessionDuringSignInUp` to true.
+-   Added a new `shouldTryLinkingWithSessionUser` to sign in/up related APIs (and the related recipe functions)
+    -   This will default to false on the API
+    -   This will be set to true in function calls if you pass a session, otherwise it is set to false
+    -   By setting this to true you can enable MFA flows (trying to connect to the session user)
+    -   If set to false, the sign-in/up will be considered a first-factor
+    -   Changed APIs:
+        -   `ThirdParty.signInUpPOST`
+        -   `Passwordless.createCodePOST`
+        -   `Passwordless.consumeCodePOST`
+        -   `Passwordless.consumeCodePOST`
+    -   Changed functions:
+        -   `ThirdParty.signInUp`
+        -   `ThirdPary.manuallyCreateOrUpdateUser`
+        -   `Passwordless.createCode`
+        -   `Passwordless.consumeCode`
+-   We no longer try to load the session if `shouldTryLinkingWithSessionUser` is set to false and overwriteSessionDuringSignInUp is set to true or left as the default value.
+-   Changed the return type of `getOpenIdConfiguration` and `getOpenIdDiscoveryConfigurationGET`, and added the following props:
+    -   authorization_endpoint
+    -   token_endpoint
+    -   userinfo_endpoint
+    -   revocation_endpoint
+    -   token_introspection_endpoint
+    -   end_session_endpoint
+    -   subject_types_supported
+    -   id_token_signing_alg_values_supported
+    -   response_types_supported
 
 ## [20.1.3] - 2024-09-30
 

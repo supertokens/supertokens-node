@@ -56,13 +56,5 @@ export default class SessionRecipe extends RecipeModule {
         response: BaseResponse,
         userContext: UserContext
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
-    getAccessTokenFromRequest: (
-        req: any,
-        userContext: UserContext
-    ) => {
-        requestTransferMethod: import("./types").TokenTransferMethod | undefined;
-        accessToken: import("./jwt").ParsedJWTInfo | undefined;
-        allowedTransferMethod: import("./types").TokenTransferMethod | "any";
-    };
     getNormalisedOverwriteSessionDuringSignInUp: (req: any) => boolean;
 }

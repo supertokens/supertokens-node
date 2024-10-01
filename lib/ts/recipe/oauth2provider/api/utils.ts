@@ -14,7 +14,7 @@ export async function loginGET({
     loginChallenge,
     shouldTryRefresh,
     session,
-    setCookie,
+    cookies,
     isDirectCall,
     userContext,
 }: {
@@ -22,7 +22,7 @@ export async function loginGET({
     loginChallenge: string;
     session?: SessionContainerInterface;
     shouldTryRefresh: boolean;
-    setCookie?: string;
+    cookies?: string;
     userContext: UserContext;
     isDirectCall: boolean;
 }) {
@@ -47,6 +47,20 @@ export async function loginGET({
     if (maxAgeParam !== null) {
         try {
             const maxAgeParsed = Number.parseInt(maxAgeParam);
+
+            if (Number.isNaN(maxAgeParsed)) {
+                const reject = await recipeImplementation.rejectLoginRequest({
+                    challenge: loginChallenge,
+                    error: {
+                        status: "ERROR",
+                        error: "invalid_request",
+                        errorDescription: "max_age must be an integer",
+                    },
+                    userContext,
+                });
+                return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
+            }
+
             if (maxAgeParsed < 0) {
                 const reject = await recipeImplementation.rejectLoginRequest({
                     challenge: loginChallenge,
@@ -57,7 +71,7 @@ export async function loginGET({
                     },
                     userContext,
                 });
-                return { status: "REDIRECT", redirectTo: reject.redirectTo, setCookie };
+                return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
             }
         } catch {
             const reject = await recipeImplementation.rejectLoginRequest({
@@ -69,7 +83,7 @@ export async function loginGET({
                 },
                 userContext,
             });
-            return { status: "REDIRECT", redirectTo: reject.redirectTo, setCookie };
+            return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
         }
     }
     const tenantIdParam = incomingAuthUrlQueryParams.get("tenant_id");
@@ -86,11 +100,9 @@ export async function loginGET({
             challenge: loginChallenge,
             subject: session.getUserId(),
             identityProviderSessionId: session.getHandle(),
-            remember: true,
-            rememberFor: 3600,
             userContext,
         });
-        return { status: "REDIRECT", redirectTo: accept.redirectTo, setCookie };
+        return { status: "REDIRECT", redirectTo: accept.redirectTo, cookies: cookies };
     }
 
     if (shouldTryRefresh && promptParam !== "login") {
@@ -100,7 +112,7 @@ export async function loginGET({
                 loginChallenge,
                 userContext,
             }),
-            setCookie,
+            cookies: cookies,
         };
     }
     if (promptParam === "none") {
@@ -114,7 +126,7 @@ export async function loginGET({
             },
             userContext,
         });
-        return { status: "REDIRECT", redirectTo: reject.redirectTo, setCookie };
+        return { status: "REDIRECT", redirectTo: reject.redirectTo, cookies };
     }
 
     return {
@@ -127,21 +139,21 @@ export async function loginGET({
             hint: loginRequest.oidcContext?.login_hint,
             userContext,
         }),
-        setCookie,
+        cookies,
     };
 }
 
-function getMergedCookies({ cookie = "", setCookie }: { cookie?: string; setCookie?: string }): string {
-    if (!setCookie) {
-        return cookie;
+function getMergedCookies({ origCookies = "", newCookies }: { origCookies?: string; newCookies?: string }): string {
+    if (!newCookies) {
+        return origCookies;
     }
 
-    const cookieMap = cookie.split(";").reduce((acc, curr) => {
+    const cookieMap = origCookies.split(";").reduce((acc, curr) => {
         const [name, value] = curr.split("=");
         return { ...acc, [name.trim()]: value };
     }, {} as Record<string, string>);
 
-    const setCookies = setCookieParser.parse(setCookieParser.splitCookiesString(setCookie));
+    const setCookies = setCookieParser.parse(setCookieParser.splitCookiesString(newCookies));
 
     for (const { name, value, expires } of setCookies) {
         if (expires && new Date(expires) < new Date()) {
@@ -169,20 +181,14 @@ function mergeSetCookieHeaders(setCookie1?: string, setCookie2?: string): string
 function isLoginInternalRedirect(redirectTo: string): boolean {
     const { apiDomain, apiBasePath } = SuperTokens.getInstanceOrThrowError().appInfo;
     const basePath = `${apiDomain.getAsStringDangerous()}${apiBasePath.getAsStringDangerous()}`;
-    return [
-        LOGIN_PATH,
-        AUTH_PATH,
-        LOGIN_PATH.replace("oauth", "oauth2"),
-        AUTH_PATH.replace("oauth", "oauth2"),
-    ].some((path) => redirectTo.startsWith(`${basePath}${path}`));
+
+    return [LOGIN_PATH, AUTH_PATH].some((path) => redirectTo.startsWith(`${basePath}${path}`));
 }
 
 function isLogoutInternalRedirect(redirectTo: string): boolean {
     const { apiDomain, apiBasePath } = SuperTokens.getInstanceOrThrowError().appInfo;
     const basePath = `${apiDomain.getAsStringDangerous()}${apiBasePath.getAsStringDangerous()}`;
-    return [END_SESSION_PATH, END_SESSION_PATH.replace("oauth", "oauth2")].some((path) =>
-        redirectTo.startsWith(`${basePath}${path}`)
-    );
+    return redirectTo.startsWith(`${basePath}${END_SESSION_PATH}`);
 }
 
 // In the OAuth2 flow, we do several internal redirects. These redirects don't require a frontend-to-api-server round trip.
@@ -196,13 +202,13 @@ export async function handleLoginInternalRedirects({
     cookie = "",
     userContext,
 }: {
-    response: { redirectTo: string; setCookie?: string };
+    response: { redirectTo: string; cookies?: string };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
     shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
-}): Promise<{ redirectTo: string; setCookie?: string } | ErrorOAuth2> {
+}): Promise<{ redirectTo: string; cookies?: string } | ErrorOAuth2> {
     if (!isLoginInternalRedirect(response.redirectTo)) {
         return response;
     }
@@ -213,7 +219,7 @@ export async function handleLoginInternalRedirects({
     let redirectCount = 0;
 
     while (redirectCount < maxRedirects && isLoginInternalRedirect(response.redirectTo)) {
-        cookie = getMergedCookies({ cookie, setCookie: response.setCookie });
+        cookie = getMergedCookies({ origCookies: cookie, newCookies: response.cookies });
 
         const queryString = response.redirectTo.split("?")[1];
         const params = new URLSearchParams(queryString);
@@ -229,7 +235,7 @@ export async function handleLoginInternalRedirects({
                 loginChallenge,
                 session,
                 shouldTryRefresh,
-                setCookie: response.setCookie,
+                cookies: response.cookies,
                 isDirectCall: false,
                 userContext,
             });
@@ -240,7 +246,7 @@ export async function handleLoginInternalRedirects({
 
             response = {
                 redirectTo: loginRes.redirectTo,
-                setCookie: mergeSetCookieHeaders(loginRes.setCookie, response.setCookie),
+                cookies: mergeSetCookieHeaders(loginRes.cookies, response.cookies),
             };
         } else if (response.redirectTo.includes(AUTH_PATH)) {
             const authRes = await recipeImplementation.authorization({
@@ -256,7 +262,7 @@ export async function handleLoginInternalRedirects({
 
             response = {
                 redirectTo: authRes.redirectTo,
-                setCookie: mergeSetCookieHeaders(authRes.setCookie, response.setCookie),
+                cookies: mergeSetCookieHeaders(authRes.cookies, response.cookies),
             };
         } else {
             throw new Error(`Unexpected internal redirect ${response.redirectTo}`);

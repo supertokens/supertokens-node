@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -16,7 +16,7 @@
 import * as jose from "jose";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
-import { JSONObject, NormalisedAppinfo } from "../../types";
+import { JSONObject, NormalisedAppinfo, UserContext } from "../../types";
 import {
     RecipeInterface,
     TypeNormalisedInput,
@@ -92,10 +92,7 @@ export default function getRecipeInterface(
                     amr: input.amr,
                     context: input.context,
                     extendSessionLifespan: input.extendSessionLifespan,
-                    forceSubjectIdentifier: input.forceSubjectIdentifier,
                     identityProviderSessionId: input.identityProviderSessionId,
-                    remember: input.remember,
-                    rememberFor: input.rememberFor,
                     subject: input.subject,
                 },
                 {
@@ -156,9 +153,7 @@ export default function getRecipeInterface(
                     grantAccessTokenAudience: input.grantAccessTokenAudience,
                     grantScope: input.grantScope,
                     handledAt: input.handledAt,
-                    remember: input.remember,
-                    rememberFor: input.rememberFor,
-                    iss: await this.getIssuer({ userContext: input.userContext }),
+                    iss: await getIssuer(input.userContext),
                     tId: input.tenantId,
                     rsub: input.rsub,
                     sessionHandle: input.sessionHandle,
@@ -333,10 +328,10 @@ export default function getRecipeInterface(
 
                 return {
                     redirectTo: consentRes.redirectTo,
-                    setCookie: resp.cookies,
+                    cookies: resp.cookies,
                 };
             }
-            return { redirectTo, setCookie: resp.cookies };
+            return { redirectTo, cookies: resp.cookies };
         },
 
         tokenExchange: async function (this: RecipeInterface, input) {
@@ -345,7 +340,7 @@ export default function getRecipeInterface(
                 authorizationHeader: input.authorizationHeader,
             };
 
-            body.iss = await this.getIssuer({ userContext: input.userContext });
+            body.iss = await getIssuer(input.userContext);
 
             if (input.body.grant_type === "password") {
                 return {
@@ -650,7 +645,7 @@ export default function getRecipeInterface(
                 throw new Error("The token is missing some required scopes");
             }
 
-            const aud = payload.aud instanceof Array ? payload.aud : payload.aud?.split(" ") ?? [];
+            const aud = payload.aud instanceof Array ? payload.aud : [payload.aud];
             if (input.requirements?.audience !== undefined && !aud.includes(input.requirements.audience)) {
                 throw new Error("The token doesn't belong to the specified audience");
             }
@@ -866,8 +861,15 @@ export default function getRecipeInterface(
 
             return { status: "OK" };
         },
-        getIssuer: async function () {
-            return appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
-        },
     };
+}
+
+async function getIssuer(userContext: UserContext) {
+    // We already depend on the Session recipe being initialized elsewhere in this recipe
+    const openIdConfig = await SessionRecipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration(
+        { userContext }
+    );
+    // We grab it from the openIdConfig because that is the way we used to tell people to override
+
+    return openIdConfig.issuer;
 }

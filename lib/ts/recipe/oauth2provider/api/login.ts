@@ -14,7 +14,7 @@
  */
 
 import setCookieParser from "set-cookie-parser";
-import { send200Response, sendNon200ResponseWithMessage } from "../../../utils";
+import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import Session from "../../session";
 import { UserContext } from "../../../types";
@@ -62,8 +62,8 @@ export default async function login(
     });
 
     if ("frontendRedirectTo" in response) {
-        if (response.setCookie) {
-            const cookieStr = setCookieParser.splitCookiesString(response.setCookie);
+        if (response.cookies) {
+            const cookieStr = setCookieParser.splitCookiesString(response.cookies);
             const cookies = setCookieParser.parse(cookieStr);
             for (const cookie of cookies) {
                 options.res.setCookie(
@@ -82,11 +82,10 @@ export default async function login(
             frontendRedirectTo: response.frontendRedirectTo,
         });
     } else if ("statusCode" in response) {
-        sendNon200ResponseWithMessage(
-            options.res,
-            response.error + ": " + response.errorDescription,
-            response.statusCode ?? 400
-        );
+        sendNon200Response(options.res, response.statusCode ?? 400, {
+            error: response.error,
+            error_description: response.errorDescription,
+        });
     } else {
         send200Response(options.res, response);
     }

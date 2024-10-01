@@ -54,7 +54,10 @@ export default async function revokeTokenPOST(
     });
 
     if ("statusCode" in response && response.statusCode !== 200) {
-        sendNon200Response(options.res, response.statusCode!, response);
+        sendNon200Response(options.res, response.statusCode ?? 400, {
+            error: response.error,
+            error_description: response.errorDescription,
+        });
     } else {
         send200Response(options.res, response);
     }

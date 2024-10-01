@@ -56,8 +56,8 @@ export default async function authGET(
     });
 
     if ("redirectTo" in response) {
-        if (response.setCookie) {
-            const cookieStr = setCookieParser.splitCookiesString(response.setCookie);
+        if (response.cookies) {
+            const cookieStr = setCookieParser.splitCookiesString(response.cookies);
             const cookies = setCookieParser.parse(cookieStr);
             for (const cookie of cookies) {
                 options.res.setCookie(

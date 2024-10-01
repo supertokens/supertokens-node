@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -162,6 +162,7 @@ export default class Wrapper {
 
 export let init = Wrapper.init;
 
+export let getOAuth2Client = Wrapper.getOAuth2Client;
 export let getOAuth2Clients = Wrapper.getOAuth2Clients;
 
 export let createOAuth2Client = Wrapper.createOAuth2Client;
@@ -171,6 +172,7 @@ export let updateOAuth2Client = Wrapper.updateOAuth2Client;
 export let deleteOAuth2Client = Wrapper.deleteOAuth2Client;
 
 export let validateOAuth2AccessToken = Wrapper.validateOAuth2AccessToken;
+export let validateOAuth2RefreshToken = Wrapper.validateOAuth2RefreshToken;
 
 export let createTokenForClientCredentials = Wrapper.createTokenForClientCredentials;
 

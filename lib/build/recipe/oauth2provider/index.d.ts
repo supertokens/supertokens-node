@@ -131,11 +131,13 @@ export default class Wrapper {
     ): Promise<import("./types").InstrospectTokenResponse>;
 }
 export declare let init: typeof Recipe.init;
+export declare let getOAuth2Client: typeof Wrapper.getOAuth2Client;
 export declare let getOAuth2Clients: typeof Wrapper.getOAuth2Clients;
 export declare let createOAuth2Client: typeof Wrapper.createOAuth2Client;
 export declare let updateOAuth2Client: typeof Wrapper.updateOAuth2Client;
 export declare let deleteOAuth2Client: typeof Wrapper.deleteOAuth2Client;
 export declare let validateOAuth2AccessToken: typeof Wrapper.validateOAuth2AccessToken;
+export declare let validateOAuth2RefreshToken: typeof Wrapper.validateOAuth2RefreshToken;
 export declare let createTokenForClientCredentials: typeof Wrapper.createTokenForClientCredentials;
 export declare let revokeToken: typeof Wrapper.revokeToken;
 export declare let revokeTokensByClientId: typeof Wrapper.revokeTokensByClientId;

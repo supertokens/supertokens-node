@@ -25,12 +25,10 @@ export declare class OAuth2Client {
     scope: string;
     /**
      * Array of redirect URIs
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
     redirectUris: string[] | null;
     /**
      * Array of post logout redirect URIs
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      *
      * This field holds a list of whitelisted `post_logout_redirect_uri`s used to redirect the user after
      * logout via the `end_session_endpoint`. If a non-whitelisted URI is provided, the logout request is rejected.
@@ -96,17 +94,14 @@ export declare class OAuth2Client {
     clientUri: string;
     /**
      * Array of audiences
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
     audience: string[];
     /**
      * Array of grant types
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
     grantTypes: string[] | null;
     /**
      * Array of response types
-     * StringSliceJSONFormat represents []string{} which is encoded to/from JSON for SQL storage.
      */
     responseTypes: string[] | null;
     /**
