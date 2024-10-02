@@ -65,6 +65,18 @@
             "types": "./nextjs/index.d.ts",
             "default": "./nextjs/index.js"
         },
+        "./customFramework": {
+            "types": "./custom/index.d.ts",
+            "default": "./custom/index.js"
+        },
+        "./customFramework/index": {
+            "types": "./custom/index.d.ts",
+            "default": "./custom/index.js"
+        },
+        "./customFramework/index.js": {
+            "types": "./custom/index.d.ts",
+            "default": "./custom/index.js"
+        },
         "./types": {
             "types": "./types/index.d.ts",
             "default": "./types/index.js"

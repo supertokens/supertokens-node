@@ -11,6 +11,7 @@ import SessionRecipe from "./recipe/session/recipe";
 import { availableTokenTransferMethods } from "./recipe/session/constants";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
+import { jwtVerify, JWTPayload } from "jose";
 
 // Define supported types for HTTPMethod
 export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
@@ -71,27 +72,10 @@ function getAccessToken(request: Request): string | undefined {
     return getCookieFromRequest(request)["sAccessToken"];
 }
 
-function getPublicKey(header: JwtHeader, callback: SigningKeyCallback) {
-    client.getSigningKey(header.kid, (err, key) => {
-        if (err) {
-            callback(err);
-        } else {
-            const signingKey = key?.getPublicKey();
-            callback(null, signingKey);
-        }
-    });
-}
-
-async function verifyToken(token: string): Promise<JwtPayload> {
-    return new Promise((resolve, reject) => {
-        JsonWebToken.verify(token, getPublicKey, {}, (err, decoded) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(decoded as JwtPayload);
-            }
-        });
-    });
+async function verifyToken(token: string, jwks: any): Promise<JWTPayload> {
+    // Verify the JWT using the remote JWK set and return the payload
+    const { payload } = await jwtVerify(token, jwks);
+    return payload;
 }
 
 export function handleAuthAPIRequest(CustomResponse: typeof Response) {
@@ -135,7 +119,6 @@ export function handleAuthAPIRequest(CustomResponse: typeof Response) {
         });
     };
 }
-
 
 async function getSessionDetails(
     preParsedRequest: PreParsedRequest,
@@ -195,7 +178,6 @@ async function getSessionDetails(
     }
 }
 
-
 /**
  * A helper function to retrieve session details on the server side.
  *
@@ -203,21 +185,24 @@ async function getSessionDetails(
  * because getSession can update the access token. These updated tokens would not be
  * propagated to the client side, as request interceptors do not run on the server side.
  */
-export async function getSessionForSSR(remixRequest: Request): Promise<{
-    accessTokenPayload: JwtPayload | undefined;
+export async function getSessionForSSR(
+    request: Request,
+    jwks: any
+): Promise<{
+    accessTokenPayload: JWTPayload | undefined;
     hasToken: boolean;
     error: Error | undefined;
 }> {
-    const accessToken = getAccessToken(remixRequest);
+    const accessToken = getAccessToken(request);
     const hasToken = !!accessToken;
     try {
         if (accessToken) {
-            const decoded = await verifyToken(accessToken);
+            const decoded = await verifyToken(accessToken, jwks);
             return { accessTokenPayload: decoded, hasToken, error: undefined };
         }
         return { accessTokenPayload: undefined, hasToken, error: undefined };
     } catch (error) {
-        if (error instanceof JsonWebToken.TokenExpiredError) {
+        if (error instanceof Error && error.name === "JWTExpired") {
             return { accessTokenPayload: undefined, hasToken, error: undefined };
         }
         return { accessTokenPayload: undefined, hasToken, error: error as Error };
