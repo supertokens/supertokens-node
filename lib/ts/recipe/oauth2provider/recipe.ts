@@ -281,12 +281,14 @@ export default class Recipe extends RecipeModule {
         if (scopes.includes("email")) {
             payload.email = user?.emails[0];
             payload.email_verified = user.loginMethods.some((lm) => lm.hasSameEmailAs(user?.emails[0]) && lm.verified);
+            payload.emails = user.emails;
         }
         if (scopes.includes("phoneNumber")) {
             payload.phoneNumber = user?.phoneNumbers[0];
             payload.phoneNumber_verified = user.loginMethods.some(
                 (lm) => lm.hasSamePhoneNumberAs(user?.phoneNumbers[0]) && lm.verified
             );
+            payload.phoneNumbers = user.phoneNumbers;
         }
 
         for (const fn of this.idTokenBuilders) {
