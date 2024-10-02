@@ -1,9 +1,7 @@
 // @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
-import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
 import { JSONObject, JSONValue, UserContext } from "../../types";
 import { GeneralErrorResponse } from "../../types";
 import RecipeUserId from "../../recipeUserId";
@@ -64,26 +62,6 @@ export declare type TypeInput = {
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        openIdFeature?: {
-            functions?: (
-                originalImplementation: OpenIdRecipeInterface,
-                builder?: OverrideableBuilder<OpenIdRecipeInterface>
-            ) => OpenIdRecipeInterface;
-            apis?: (
-                originalImplementation: OpenIdAPIInterface,
-                builder?: OverrideableBuilder<OpenIdAPIInterface>
-            ) => OpenIdAPIInterface;
-            jwtFeature?: {
-                functions?: (
-                    originalImplementation: JWTRecipeInterface,
-                    builder?: OverrideableBuilder<JWTRecipeInterface>
-                ) => JWTRecipeInterface;
-                apis?: (
-                    originalImplementation: JWTAPIInterface,
-                    builder?: OverrideableBuilder<JWTAPIInterface>
-                ) => JWTAPIInterface;
-            };
-        };
     };
 };
 export declare type TypeNormalisedInput = {
@@ -119,26 +97,6 @@ export declare type TypeNormalisedInput = {
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        openIdFeature?: {
-            functions?: (
-                originalImplementation: OpenIdRecipeInterface,
-                builder?: OverrideableBuilder<OpenIdRecipeInterface>
-            ) => OpenIdRecipeInterface;
-            apis?: (
-                originalImplementation: OpenIdAPIInterface,
-                builder?: OverrideableBuilder<OpenIdAPIInterface>
-            ) => OpenIdAPIInterface;
-            jwtFeature?: {
-                functions?: (
-                    originalImplementation: JWTRecipeInterface,
-                    builder?: OverrideableBuilder<JWTRecipeInterface>
-                ) => JWTRecipeInterface;
-                apis?: (
-                    originalImplementation: JWTAPIInterface,
-                    builder?: OverrideableBuilder<JWTAPIInterface>
-                ) => JWTAPIInterface;
-            };
-        };
     };
 };
 export interface SessionRequest extends BaseRequest {

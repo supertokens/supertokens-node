@@ -105,6 +105,8 @@ export default class SuperTokens {
         let userMetadataFound = false;
         let multiFactorAuthFound = false;
         let oauth2Found = false;
+        let openIdFound = false;
+        let jwtFound = false;
 
         // Multitenancy recipe is an always initialized recipe and needs to be imported this way
         // so that there is no circular dependency. Otherwise there would be cyclic dependency
@@ -114,6 +116,8 @@ export default class SuperTokens {
         let MultiFactorAuthRecipe = require("./recipe/multifactorauth/recipe").default;
         let TotpRecipe = require("./recipe/totp/recipe").default;
         let OAuth2ProviderRecipe = require("./recipe/oauth2provider/recipe").default;
+        let OpenIdRecipe = require("./recipe/openid/recipe").default;
+        let jwtRecipe = require("./recipe/jwt/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
@@ -127,10 +131,20 @@ export default class SuperTokens {
                 totpFound = true;
             } else if (recipeModule.getRecipeId() === OAuth2ProviderRecipe.RECIPE_ID) {
                 oauth2Found = true;
+            } else if (recipeModule.getRecipeId() === OpenIdRecipe.RECIPE_ID) {
+                openIdFound = true;
+            } else if (recipeModule.getRecipeId() === jwtRecipe.RECIPE_ID) {
+                jwtFound = true;
             }
             return recipeModule;
         });
 
+        if (!jwtFound) {
+            this.recipeModules.push(jwtRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
+        if (!openIdFound) {
+            this.recipeModules.push(OpenIdRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
         if (!multitenancyFound) {
             this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
         }
@@ -166,11 +180,15 @@ export default class SuperTokens {
             throw new Error("calling testing function in non testing env");
         }
 
-        // We call reset the OAuth2Provider recipe because it is auto-initialized
+        // We call reset the following recipes because they are auto-initialized
         // and there is no case where we want to reset the SuperTokens instance but not
         // the recipes.
         let OAuth2ProviderRecipe = require("./recipe/oauth2provider/recipe").default;
         OAuth2ProviderRecipe.reset();
+        let OpenIdRecipe = require("./recipe/openid/recipe").default;
+        OpenIdRecipe.reset();
+        let JWTRecipe = require("./recipe/jwt/recipe").default;
+        JWTRecipe.reset();
 
         Querier.reset();
         SuperTokens.instance = undefined;

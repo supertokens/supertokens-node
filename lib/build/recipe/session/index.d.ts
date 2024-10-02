@@ -170,6 +170,7 @@ export default class SessionWrapper {
         userContext?: Record<string, any>
     ): Promise<{
         keys: import("../jwt").JsonWebKey[];
+        validityInSeconds?: number | undefined;
     }>;
     static getOpenIdDiscoveryConfiguration(
         userContext?: Record<string, any>

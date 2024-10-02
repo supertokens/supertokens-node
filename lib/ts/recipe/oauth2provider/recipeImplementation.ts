@@ -16,7 +16,7 @@
 import * as jose from "jose";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
-import { JSONObject, NormalisedAppinfo, UserContext } from "../../types";
+import { JSONObject, NormalisedAppinfo } from "../../types";
 import {
     RecipeInterface,
     TypeNormalisedInput,
@@ -28,6 +28,7 @@ import { OAuth2Client } from "./OAuth2Client";
 import { getUser } from "../..";
 import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 import SessionRecipe from "../session/recipe";
+import OpenIdRecipe from "../openid/recipe";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
@@ -153,7 +154,7 @@ export default function getRecipeInterface(
                     grantAccessTokenAudience: input.grantAccessTokenAudience,
                     grantScope: input.grantScope,
                     handledAt: input.handledAt,
-                    iss: await getIssuer(input.userContext),
+                    iss: await OpenIdRecipe.getIssuer(input.userContext),
                     tId: input.tenantId,
                     rsub: input.rsub,
                     sessionHandle: input.sessionHandle,
@@ -340,7 +341,7 @@ export default function getRecipeInterface(
                 authorizationHeader: input.authorizationHeader,
             };
 
-            body.iss = await getIssuer(input.userContext);
+            body.iss = await OpenIdRecipe.getIssuer(input.userContext);
 
             if (input.body.grant_type === "password") {
                 return {
@@ -862,14 +863,4 @@ export default function getRecipeInterface(
             return { status: "OK" };
         },
     };
-}
-
-async function getIssuer(userContext: UserContext) {
-    // We already depend on the Session recipe being initialized elsewhere in this recipe
-    const openIdConfig = await SessionRecipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration(
-        { userContext }
-    );
-    // We grab it from the openIdConfig because that is the way we used to tell people to override
-
-    return openIdConfig.issuer;
 }

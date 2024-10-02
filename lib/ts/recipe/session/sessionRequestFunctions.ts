@@ -8,6 +8,7 @@ import {
 } from "./types";
 import frameworks from "../../framework";
 import SuperTokens from "../../supertokens";
+import OpenIdRecipe from "../openid/recipe";
 import { getRequiredClaimValidators } from "./utils";
 import { getRidFromHeader, isAnIpAddress, normaliseHttpMethod, setRequestInUserContextIfNotDefined } from "../../utils";
 import { logDebugMessage } from "../../logger";
@@ -444,7 +445,7 @@ export async function createNewSessionInRequest({
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
 
     const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
-    const issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+    const issuer = await OpenIdRecipe.getIssuer(userContext);
 
     let finalAccessTokenPayload = {
         ...accessTokenPayload,

@@ -45,6 +45,99 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   subject_types_supported
     -   id_token_signing_alg_values_supported
     -   response_types_supported
+-   Exposing the OpenId recipe separately and remove it from the Session recipe
+    -   This means that we removed `override.openIdFeature` from the Session recipe configuration
+-   Removed `getJWKS` from the OpenId recipe, as it is already exposed by the JWT recipe
+-   We now automatically initialize the OpenId and JWT recipes even if you do not use the Session recipe
+
+### Migration
+
+#### Separating the OpenId recipe from Session recipe
+
+If you used to use the `openIdFeature` in the Session recipe, you should now use the OpenId recipe directly instead:
+
+Before:
+
+```tsx
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init({
+            override: {
+                openIdFeature: {
+                    jwtFeature: {
+                        functions: originalImplementation => ({
+                            ...originalImplementation,
+                            getJWKS: async (input) => {
+                                console.log("getJWKS called");
+                                return originalImplementation.getJWKS(input);
+                            },
+                        })
+                    },
+                    functions: originalImplementation => ({
+                        ...originalImplementation,
+                        getOpenIdDiscoveryConfiguration: async (input) => ({
+                            issuer: "your issuer",
+                            jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                            status: "OK"
+                        }),
+                    })
+                }
+            }
+        });
+    ],
+});
+```
+
+After:
+
+```tsx
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
+import OpenId from "supertokens-node/recipe/openid";
+import JWT from "supertokens-node/recipe/jwt";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init(),
+        JWT.init({
+            override: {
+                functions: originalImplementation => ({
+                    ...originalImplementation,
+                    getJWKS: async (input) => {
+                        console.log("getJWKS called");
+                        return originalImplementation.getJWKS(input);
+                    },
+                })
+            }
+        }),
+        OpenId.init({
+            override: {
+                functions: originalImplementation => ({
+                    ...originalImplementation,
+                    getOpenIdDiscoveryConfiguration: async (input) => ({
+                        issuer: "your issuer",
+                        jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                        status: "OK"
+                    }),
+                })
+            }
+        });
+    ],
+});
+```
 
 ## [20.1.3] - 2024-09-30
 

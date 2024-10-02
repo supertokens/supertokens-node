@@ -40,7 +40,6 @@ import APIImplementation from "./api/implementation";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
-import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { hasGreaterThanEqualToFDI, isTestEnv } from "../../utils";
@@ -56,7 +55,6 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
-    openIdRecipe: OpenIdRecipe;
 
     apiImpl: APIInterface;
 
@@ -81,10 +79,6 @@ export default class SessionRecipe extends RecipeModule {
         logDebugMessage("session init: sessionExpiredStatusCode: " + this.config.sessionExpiredStatusCode);
 
         this.isInServerlessEnv = isInServerlessEnv;
-
-        this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {
-            override: this.config.override.openIdFeature,
-        });
 
         let builder = new OverrideableBuilder(
             RecipeImplementation(
@@ -170,18 +164,16 @@ export default class SessionRecipe extends RecipeModule {
             },
         ];
 
-        apisHandled.push(...this.openIdRecipe.getAPIsHandled());
-
         return apisHandled;
     };
 
     handleAPIRequest = async (
         id: string,
-        tenantId: string,
+        _tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod,
+        _path: NormalisedURLPath,
+        _method: HTTPMethod,
         userContext: UserContext
     ): Promise<boolean> => {
         let options: APIOptions = {
@@ -197,7 +189,7 @@ export default class SessionRecipe extends RecipeModule {
         } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options, userContext);
         } else {
-            return await this.openIdRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
+            return false;
         }
     };
 
@@ -247,23 +239,18 @@ export default class SessionRecipe extends RecipeModule {
                 throw err;
             }
         } else {
-            return await this.openIdRecipe.handleError(err, request, response, userContext);
+            throw err;
         }
     };
 
     getAllCORSHeaders = (): string[] => {
         let corsHeaders: string[] = [...getCORSAllowedHeadersFromCookiesAndHeaders()];
 
-        corsHeaders.push(...this.openIdRecipe.getAllCORSHeaders());
-
         return corsHeaders;
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return (
-            STError.isErrorFromSuperTokens(err) &&
-            (err.fromRecipe === SessionRecipe.RECIPE_ID || this.openIdRecipe.isErrorFromThisRecipe(err))
-        );
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === SessionRecipe.RECIPE_ID;
     };
 
     verifySession = async (

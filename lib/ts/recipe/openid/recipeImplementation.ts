@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { RecipeInterface, TypeNormalisedInput } from "./types";
-import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
+import { RecipeInterface } from "./types";
+import JWTRecipe from "../jwt/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
 import { NormalisedAppinfo, UserContext } from "../../types";
@@ -26,17 +26,13 @@ import {
     USER_INFO_PATH,
 } from "../oauth2provider/constants";
 
-export default function getRecipeInterface(
-    config: TypeNormalisedInput,
-    jwtRecipeImplementation: JWTRecipeInterface,
-    appInfo: NormalisedAppinfo
-): RecipeInterface {
+export default function getRecipeInterface(appInfo: NormalisedAppinfo): RecipeInterface {
     return {
         getOpenIdDiscoveryConfiguration: async function () {
-            let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
+            let issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
             let jwks_uri =
-                config.issuerDomain.getAsStringDangerous() +
-                config.issuerPath.appendPath(new NormalisedURLPath(GET_JWKS_API)).getAsStringDangerous();
+                appInfo.apiDomain.getAsStringDangerous() +
+                appInfo.apiBasePath.appendPath(new NormalisedURLPath(GET_JWKS_API)).getAsStringDangerous();
 
             const apiBasePath = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
             return {
@@ -54,17 +50,20 @@ export default function getRecipeInterface(
                 response_types_supported: ["code", "id_token", "id_token token"],
             };
         },
-        createJWT: async function ({
-            payload,
-            validitySeconds,
-            useStaticSigningKey,
-            userContext,
-        }: {
-            payload?: any;
-            validitySeconds?: number;
-            useStaticSigningKey?: boolean;
-            userContext: UserContext;
-        }): Promise<
+        createJWT: async function (
+            this: RecipeInterface,
+            {
+                payload,
+                validitySeconds,
+                useStaticSigningKey,
+                userContext,
+            }: {
+                payload?: any;
+                validitySeconds?: number;
+                useStaticSigningKey?: boolean;
+                userContext: UserContext;
+            }
+        ): Promise<
             | {
                   status: "OK";
                   jwt: string;
@@ -75,8 +74,8 @@ export default function getRecipeInterface(
         > {
             payload = payload === undefined || payload === null ? {} : payload;
 
-            let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
-            return await jwtRecipeImplementation.createJWT({
+            let issuer = (await this.getOpenIdDiscoveryConfiguration({ userContext })).issuer;
+            return await JWTRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
                 payload: {
                     iss: issuer,
                     ...payload,
@@ -85,9 +84,6 @@ export default function getRecipeInterface(
                 validitySeconds,
                 userContext,
             });
-        },
-        getJWKS: async function (input): Promise<{ keys: JsonWebKey[] }> {
-            return await jwtRecipeImplementation.getJWKS(input);
         },
     };
 }
