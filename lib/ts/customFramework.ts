@@ -133,11 +133,11 @@ async function getSessionDetails(
 }> {
     const baseResponse = new CollectingResponse();
     // Possible interop issue.
-    const recipe = (SessionRecipe as any).default.instance;
+    const recipe = SessionRecipe.getInstanceOrThrowError();
     const tokenTransferMethod = recipe.config.getTokenTransferMethod({
         req: preParsedRequest,
         forCreateNewSession: false,
-        userContext,
+        userContext: userContext as any,
     });
     const transferMethods = tokenTransferMethod === "any" ? availableTokenTransferMethods : [tokenTransferMethod];
     const hasToken = transferMethods.some((transferMethod) => {
