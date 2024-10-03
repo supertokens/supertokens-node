@@ -16,12 +16,7 @@
 import { serialize } from "cookie";
 import { errorHandler } from "./framework/express";
 import { getUserContext } from "./utils";
-import {
-    CollectingResponse,
-    PreParsedRequest,
-    middleware,
-    errorHandler as customErrorHandler,
-} from "./framework/custom";
+import { CollectingResponse, PreParsedRequest, middleware } from "./framework/custom";
 import { HTTPMethod } from "./types";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import {
@@ -178,17 +173,7 @@ export default class NextJS {
             try {
                 userResponse = await handler(undefined, session);
             } catch (err) {
-                await customErrorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
-                    if (errorHandlerError) {
-                        throw errorHandlerError;
-                    }
-                });
-
-                // The headers in the userResponse are set twice from baseResponse, but the resulting response contains unique headers.
-                userResponse = new Response(baseResponse.body, {
-                    status: baseResponse.statusCode,
-                    headers: baseResponse.headers,
-                }) as NextResponse;
+                userResponse = await handleError<NextResponse>(err, baseRequest, baseResponse);
             }
 
             let didAddCookies = false;
