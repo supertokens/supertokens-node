@@ -28,6 +28,7 @@ import SessionRecipe from "./recipe/session/recipe";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { availableTokenTransferMethods } from "./recipe/session/constants";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
+import { createPreParsedRequest, GetCookieFn, getHandleCall } from "./customFramework";
 
 function next(
     request: any,
@@ -91,54 +92,14 @@ export default class NextJS {
     }
 
     static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
-        const stMiddleware = middleware<T>((req) => {
-            const query = Object.fromEntries(new URL(req.url).searchParams.entries());
-            const cookies: Record<string, string> = Object.fromEntries(
-                req.cookies.getAll().map((cookie) => [cookie.name, cookie.value])
-            );
+        const getCookieFromNextReq: GetCookieFn<T> = (req: T): Record<string, string> =>
+            Object.fromEntries(req.cookies.getAll().map((cookie) => [cookie.name, cookie.value]));
 
-            return new PreParsedRequest({
-                method: req.method as HTTPMethod,
-                url: req.url,
-                query: query,
-                headers: req.headers,
-                cookies,
-                getFormBody: () => req.formData(),
-                getJSONBody: () => req.json(),
-            });
+        const stMiddleware = middleware<T>((req) => {
+            return createPreParsedRequest<T>(req, getCookieFromNextReq);
         });
 
-        return async function handleCall(req: T) {
-            const baseResponse = new CollectingResponse();
-
-            const { handled, error } = await stMiddleware(req, baseResponse);
-
-            if (error) {
-                throw error;
-            }
-            if (!handled) {
-                return new NextResponse("Not found", { status: 404 });
-            }
-
-            for (const respCookie of baseResponse.cookies) {
-                baseResponse.headers.append(
-                    "Set-Cookie",
-                    serialize(respCookie.key, respCookie.value, {
-                        domain: respCookie.domain,
-                        expires: new Date(respCookie.expires),
-                        httpOnly: respCookie.httpOnly,
-                        path: respCookie.path,
-                        sameSite: respCookie.sameSite,
-                        secure: respCookie.secure,
-                    })
-                );
-            }
-
-            return new NextResponse(baseResponse.body, {
-                headers: baseResponse.headers,
-                status: baseResponse.statusCode,
-            });
-        };
+        return getHandleCall<T>(NextResponse, stMiddleware);
     }
 
     private static async commonSSRSession(

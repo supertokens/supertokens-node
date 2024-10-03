@@ -11,19 +11,33 @@ import SessionRecipe from "./recipe/session/recipe";
 import { availableTokenTransferMethods } from "./recipe/session/constants";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
-import { jwtVerify, JWTPayload } from "jose";
+import { jwtVerify, JWTPayload, createRemoteJWKSet } from "jose";
+import SuperTokens from "./supertokens";
 
 // Define supported types for HTTPMethod
 export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
 
-export function createPreParsedRequest(request: Request): PreParsedRequest {
+export type GetCookieFn<T extends ParsableRequest = Request> = (req: T) => Record<string, string>;
+
+export interface ParsableRequest {
+    url: string;
+    method: string;
+    headers: Headers;
+    formData: () => Promise<FormData>;
+    json: () => Promise<any>;
+}
+
+export function createPreParsedRequest<RequestType extends ParsableRequest = Request>(
+    request: RequestType,
+    getCookieFn: GetCookieFn<RequestType> = getCookieFromRequest
+): PreParsedRequest {
     /**
      * This helper function can take any `Request` type of object
      * and parse the details into an equivalent PreParsedRequest
      * that can be used with the custom framework helpers.
      */
     return new PreParsedRequest({
-        cookies: getCookieFromRequest(request),
+        cookies: getCookieFn(request),
         url: request.url as string,
         method: request.method as HTTPMethod,
         query: getQueryFromRequest(request),
@@ -37,7 +51,7 @@ export function createPreParsedRequest(request: Request): PreParsedRequest {
     });
 }
 
-function getCookieFromRequest(request: Request): Record<string, string> {
+export function getCookieFromRequest(request: ParsableRequest): Record<string, string> {
     /**
      * This function will extract the cookies from any `Request`
      * type of object and return them to be usable with PreParsedRequest.
@@ -54,7 +68,7 @@ function getCookieFromRequest(request: Request): Record<string, string> {
     return cookies;
 }
 
-function getQueryFromRequest(request: Request): Record<string, string> {
+export function getQueryFromRequest(request: ParsableRequest): Record<string, string> {
     /**
      * Helper function to extract query from any `Request` type of
      * object and return them to be usable with PreParsedRequest.
@@ -78,16 +92,8 @@ async function verifyToken(token: string, jwks: any): Promise<JWTPayload> {
     return payload;
 }
 
-export function handleAuthAPIRequest(CustomResponse: typeof Response) {
-    /**
-     * Util function to handle all calls by intercepting them, calling
-     * Supertokens middleware and then accordingly returning.
-     */
-    const stMiddleware = middleware<Request>((req) => {
-        return createPreParsedRequest(req);
-    });
-
-    return async function handleCall(req: Request) {
+export function getHandleCall<T = Request>(res: typeof Response, stMiddleware: any) {
+    return async function handleCall(req: T) {
         const baseResponse = new CollectingResponse();
 
         const { handled, error } = await stMiddleware(req, baseResponse);
@@ -96,7 +102,7 @@ export function handleAuthAPIRequest(CustomResponse: typeof Response) {
             throw error;
         }
         if (!handled) {
-            return new CustomResponse("Not found", { status: 404 });
+            return new res("Not found", { status: 404 });
         }
 
         for (const respCookie of baseResponse.cookies) {
@@ -113,11 +119,23 @@ export function handleAuthAPIRequest(CustomResponse: typeof Response) {
             );
         }
 
-        return new CustomResponse(baseResponse.body, {
+        return new res(baseResponse.body, {
             headers: baseResponse.headers,
             status: baseResponse.statusCode,
         });
     };
+}
+
+export function handleAuthAPIRequest(CustomResponse: typeof Response) {
+    /**
+     * Util function to handle all calls by intercepting them, calling
+     * Supertokens middleware and then accordingly returning.
+     */
+    const stMiddleware = middleware<Request>((req) => {
+        return createPreParsedRequest(req);
+    });
+
+    return getHandleCall<Request>(CustomResponse, stMiddleware);
 }
 
 async function getSessionDetails(
@@ -187,7 +205,7 @@ async function getSessionDetails(
  */
 export async function getSessionForSSR(
     request: Request,
-    jwks: any
+    jwks?: any
 ): Promise<{
     accessTokenPayload: JWTPayload | undefined;
     hasToken: boolean;
@@ -195,9 +213,18 @@ export async function getSessionForSSR(
 }> {
     const accessToken = getAccessToken(request);
     const hasToken = !!accessToken;
+
+    let jwksToUse = jwks;
+    if (!jwks) {
+        const stInstance = SuperTokens.getInstanceOrThrowError();
+        jwksToUse = createRemoteJWKSet(
+            new URL(`${stInstance.appInfo.apiDomain}${stInstance.appInfo.apiBasePath}/jwt/jwks.json`)
+        );
+    }
+
     try {
         if (accessToken) {
-            const decoded = await verifyToken(accessToken, jwks);
+            const decoded = await verifyToken(accessToken, jwksToUse);
             return { accessTokenPayload: decoded, hasToken, error: undefined };
         }
         return { accessTokenPayload: undefined, hasToken, error: undefined };
