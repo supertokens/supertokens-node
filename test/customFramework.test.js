@@ -1,11 +1,32 @@
 let assert = require("assert");
-const { createPreParsedRequest, handleAuthAPIRequest, withSession } = require("../lib/build/customFramework");
+const {
+    createPreParsedRequest,
+    handleAuthAPIRequest,
+    withSession,
+    getSessionForSSR,
+} = require("../lib/build/customFramework");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../lib/build/").default;
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const { PreParsedRequest } = require("../lib/build/framework/custom");
 const { printPath, setupST, startST, killAllST, cleanST, delay } = require("./utils");
+const { generateKeyPair, SignJWT } = require("jose");
+
+// Helper function to create a JWKS
+async function createJWKS() {
+    const { privateKey } = await generateKeyPair("RS256");
+    return privateKey;
+}
+
+// Function to sign a JWT
+async function signJWT(privateKey, payload, expiresIn = "2h") {
+    return new SignJWT(payload)
+        .setProtectedHeader({ alg: "RS256", kid: "test-key-id" })
+        .setIssuedAt()
+        .setExpirationTime(expiresIn)
+        .sign(privateKey);
+}
 
 describe(`createPreParsedRequest ${printPath("[test/customFramework.test.js]")}`, () => {
     it("should create a PreParsedRequest with correct properties from the Request object", async () => {
@@ -64,6 +85,7 @@ describe(`createPreParsedRequest ${printPath("[test/customFramework.test.js]")}`
 describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, () => {
     let connectionURI;
     let accessToken;
+    let privateKey;
 
     before(async function () {
         process.env.user = undefined;
@@ -99,6 +121,8 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
                 }),
             ],
         });
+
+        privateKey = await createJWKS();
     });
 
     after(async function () {
@@ -283,5 +307,92 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
 
         assert.strictEqual(response.status, 404, "Should return status 404");
         assert.strictEqual(await response.text(), "Not found", "Should return Not found");
+    });
+
+    it("getSessionForSSR should return session for valid token", async () => {
+        // Create a valid JWT payload
+        const payload = { userId: "123", email: "john.doe@example.com" };
+
+        // Sign the JWT
+        const validToken = await signJWT(privateKey, payload);
+
+        // Create a mock request containing the valid token as a cookie
+        const mockRequest = new Request("https://example.com", {
+            headers: { Cookie: `sAccessToken=${validToken}` },
+        });
+
+        // Call the getSessionForSSR function
+        const result = await getSessionForSSR(mockRequest, privateKey);
+
+        // Assertions
+        assert.strictEqual(result.hasToken, true, "hasToken should be true for a valid token");
+        assert.ok(result.accessTokenPayload, "accessTokenPayload should be present for a valid token");
+        assert.strictEqual(result.error, undefined, "error should be undefined for a valid token");
+        assert.strictEqual(result.accessTokenPayload.userId, "123", "User ID in payload should match");
+        assert.strictEqual(result.accessTokenPayload.email, "john.doe@example.com", "Email in payload should match");
+    });
+
+    it("should return undefined accessTokenPayload and hasToken as false when no token is present", async () => {
+        // Create a request without an access token
+        const mockRequest = new Request("https://example.com");
+
+        // Call the getSessionForSSR function
+        const result = await getSessionForSSR(mockRequest, privateKey);
+
+        // Assertions
+        assert.strictEqual(result.hasToken, false, "hasToken should be false when no token is present");
+        assert.strictEqual(
+            result.accessTokenPayload,
+            undefined,
+            "accessTokenPayload should be undefined when no token is present"
+        );
+        assert.strictEqual(result.error, undefined, "error should be undefined when no token is present");
+    });
+
+    it("should handle an expired token gracefully", async () => {
+        // Create a payload for the token
+        const payload = { userId: "123", email: "john.doe@example.com" };
+
+        // Sign the JWT with an expiration time in the past (e.g., 1 second ago)
+        const expiredToken = await signJWT(privateKey, payload, Math.floor(Date.now() / 1000) - 1);
+
+        // Create a mock request containing the expired token as a cookie
+        const mockRequest = new Request("https://example.com", {
+            headers: { Cookie: `sAccessToken=${expiredToken}` },
+        });
+
+        // Call the getSessionForSSR function
+        const result = await getSessionForSSR(mockRequest, privateKey);
+
+        // Assertions
+        assert.strictEqual(result.hasToken, true, "hasToken should be true for an expired token");
+        assert.strictEqual(
+            result.accessTokenPayload,
+            undefined,
+            "accessTokenPayload should be undefined for an expired token"
+        );
+        assert.strictEqual(result.error, undefined, "error should be undefined for an expired token");
+    });
+
+    it("should return an error for an invalid token", async () => {
+        // Assume you have an invalid token that does not match the JWKS
+        const invalidToken = "your-invalid-jwt-token";
+
+        // Create a mock request containing the invalid token as a cookie
+        const mockRequest = new Request("https://example.com", {
+            headers: { Cookie: `sAccessToken=${invalidToken}` },
+        });
+
+        // Call the getSessionForSSR function
+        const result = await getSessionForSSR(mockRequest, privateKey);
+
+        // Assertions
+        assert.strictEqual(result.hasToken, true, "hasToken should be true for an invalid token");
+        assert.strictEqual(
+            result.accessTokenPayload,
+            undefined,
+            "accessTokenPayload should be undefined for an invalid token"
+        );
+        assert.ok(result.error instanceof Error, "error should be an instance of Error for an invalid token");
     });
 });
