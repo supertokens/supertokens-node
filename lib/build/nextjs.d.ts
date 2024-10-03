@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
+import { GetCookieFn } from "./customFramework";
 declare type PartialNextRequest = {
     method: string;
     url: string;
@@ -20,6 +21,7 @@ export default class NextJS {
         request: any,
         response: any
     ): Promise<T>;
+    static getCookieExtractor<T extends PartialNextRequest>(): GetCookieFn<T>;
     static getAppDirRequestHandler<T extends PartialNextRequest>(
         NextResponse: typeof Response
     ): (req: T) => Promise<Response>;

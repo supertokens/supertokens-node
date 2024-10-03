@@ -28,7 +28,7 @@ import SessionRecipe from "./recipe/session/recipe";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { availableTokenTransferMethods } from "./recipe/session/constants";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
-import { createPreParsedRequest, GetCookieFn, getHandleCall } from "./customFramework";
+import { addCookies, createPreParsedRequest, GetCookieFn, getHandleCall, handleError } from "./customFramework";
 
 function next(
     request: any,
@@ -91,9 +91,13 @@ export default class NextJS {
         });
     }
 
-    static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
-        const getCookieFromNextReq: GetCookieFn<T> = (req: T): Record<string, string> =>
+    static getCookieExtractor<T extends PartialNextRequest>(): GetCookieFn<T> {
+        return (req: T): Record<string, string> =>
             Object.fromEntries(req.cookies.getAll().map((cookie) => [cookie.name, cookie.value]));
+    }
+
+    static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
+        const getCookieFromNextReq = this.getCookieExtractor<T>();
 
         const stMiddleware = middleware<T>((req) => {
             return createPreParsedRequest<T>(req, getCookieFromNextReq);
@@ -291,20 +295,8 @@ export default class NextJS {
         req: NextRequest,
         handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<NextResponse>
     ): Promise<NextResponse> {
-        const query = Object.fromEntries(new URL(req.url).searchParams.entries());
-        const cookies: Record<string, string> = Object.fromEntries(
-            req.cookies.getAll().map((cookie) => [cookie.name, cookie.value])
-        );
-
-        let baseRequest = new PreParsedRequest({
-            method: req.method as HTTPMethod,
-            url: req.url,
-            query: query,
-            headers: req.headers,
-            cookies: cookies,
-            getFormBody: () => req!.formData(),
-            getJSONBody: () => req!.json(),
-        });
+        const getCookieFromNextReq = this.getCookieExtractor<NextRequest>();
+        let baseRequest = createPreParsedRequest<NextRequest>(req, getCookieFromNextReq);
 
         let baseResponse = new CollectingResponse();
         let userResponse: NextResponse;
@@ -312,57 +304,10 @@ export default class NextJS {
         try {
             userResponse = await handler(baseRequest, baseResponse);
         } catch (err) {
-            await customErrorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
-                if (errorHandlerError) {
-                    throw errorHandlerError;
-                }
-            });
-
-            // The headers in the userResponse are set twice from baseResponse, but the resulting response contains unique headers.
-            userResponse = new Response(baseResponse.body, {
-                status: baseResponse.statusCode,
-                headers: baseResponse.headers,
-            }) as NextResponse;
+            userResponse = await handleError<NextResponse>(err, baseRequest, baseResponse);
         }
 
-        let didAddCookies = false;
-        let didAddHeaders = false;
-
-        for (const respCookie of baseResponse.cookies) {
-            didAddCookies = true;
-            userResponse.headers.append(
-                "Set-Cookie",
-                serialize(respCookie.key, respCookie.value, {
-                    domain: respCookie.domain,
-                    expires: new Date(respCookie.expires),
-                    httpOnly: respCookie.httpOnly,
-                    path: respCookie.path,
-                    sameSite: respCookie.sameSite,
-                    secure: respCookie.secure,
-                })
-            );
-        }
-
-        baseResponse.headers.forEach((value: string, key: string) => {
-            didAddHeaders = true;
-            userResponse.headers.set(key, value);
-        });
-
-        /**
-         * For some deployment services (Vercel for example) production builds can return cached results for
-         * APIs with older header values. In this case if the session tokens have changed (because of refreshing
-         * for example) the cached result would still contain the older tokens and sessions would stop working.
-         *
-         * As a result, if we add cookies or headers from base response we also set the Cache-Control header
-         * to make sure that the final result is not a cached version.
-         */
-        if (didAddCookies || didAddHeaders) {
-            if (!userResponse.headers.has("Cache-Control")) {
-                // This is needed for production deployments with Vercel
-                userResponse.headers.set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
-            }
-        }
-        return userResponse;
+        return addCookies<NextResponse>(baseResponse, userResponse);
     }
 }
 export let superTokensNextWrapper = NextJS.superTokensNextWrapper;

@@ -255,50 +255,76 @@ export async function withSession(
         try {
             userResponse = await handler(undefined, session);
         } catch (err) {
-            await errorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
-                if (errorHandlerError) {
-                    throw errorHandlerError;
-                }
-            });
-
-            // The headers in the userResponse are set twice from baseResponse, but the resulting response contains unique headers.
-            userResponse = new Response(baseResponse.body, {
-                status: baseResponse.statusCode,
-                headers: baseResponse.headers,
-            });
+            userResponse = await handleError<Response>(err, baseRequest, baseResponse);
         }
 
-        let didAddCookies = false;
-        let didAddHeaders = false;
-
-        for (const respCookie of baseResponse.cookies) {
-            didAddCookies = true;
-            userResponse.headers.append(
-                "Set-Cookie",
-                serialize(respCookie.key, respCookie.value, {
-                    domain: respCookie.domain,
-                    expires: new Date(respCookie.expires),
-                    httpOnly: respCookie.httpOnly,
-                    path: respCookie.path,
-                    sameSite: respCookie.sameSite,
-                    secure: respCookie.secure,
-                })
-            );
-        }
-
-        baseResponse.headers.forEach((value: string, key: string) => {
-            didAddHeaders = true;
-            userResponse.headers.set(key, value);
-        });
-        if (didAddCookies || didAddHeaders) {
-            if (!userResponse.headers.has("Cache-Control")) {
-                // This is needed for production deployments with Vercel
-                userResponse.headers.set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
-            }
-        }
-
-        return userResponse;
+        return addCookies(baseResponse, userResponse);
     } catch (error) {
         return await handler(error as Error, undefined);
     }
+}
+
+export function addCookies<UserResponseType extends Response = Response>(
+    baseResponse: CollectingResponse,
+    userResponse: UserResponseType
+): UserResponseType {
+    /**
+     * Add cookies to the userResponse passed by copying it from the baseResponse.
+     */
+    let didAddCookies = false;
+    let didAddHeaders = false;
+
+    for (const respCookie of baseResponse.cookies) {
+        didAddCookies = true;
+        userResponse.headers.append(
+            "Set-Cookie",
+            serialize(respCookie.key, respCookie.value, {
+                domain: respCookie.domain,
+                expires: new Date(respCookie.expires),
+                httpOnly: respCookie.httpOnly,
+                path: respCookie.path,
+                sameSite: respCookie.sameSite,
+                secure: respCookie.secure,
+            })
+        );
+    }
+
+    baseResponse.headers.forEach((value: string, key: string) => {
+        didAddHeaders = true;
+        userResponse.headers.set(key, value);
+    });
+
+    /**
+     * For some deployment services (Vercel for example) production builds can return cached results for
+     * APIs with older header values. In this case if the session tokens have changed (because of refreshing
+     * for example) the cached result would still contain the older tokens and sessions would stop working.
+     *
+     * As a result, if we add cookies or headers from base response we also set the Cache-Control header
+     * to make sure that the final result is not a cached version.
+     */
+    if (didAddCookies || didAddHeaders) {
+        if (!userResponse.headers.has("Cache-Control")) {
+            // This is needed for production deployments with Vercel
+            userResponse.headers.set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
+        }
+    }
+    return userResponse;
+}
+
+export async function handleError<UserResponseType extends Response = Response>(
+    err: any,
+    baseRequest: PreParsedRequest,
+    baseResponse: CollectingResponse
+): Promise<UserResponseType> {
+    await errorHandler()(err, baseRequest, baseResponse, (errorHandlerError: Error) => {
+        if (errorHandlerError) {
+            throw errorHandlerError;
+        }
+    });
+
+    // The headers in the userResponse are set twice from baseResponse, but the resulting response contains unique headers.
+    return new Response(baseResponse.body, {
+        status: baseResponse.statusCode,
+        headers: baseResponse.headers,
+    }) as UserResponseType;
 }

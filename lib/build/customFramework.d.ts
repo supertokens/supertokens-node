@@ -4,7 +4,7 @@
  * that can be used to easily integrate the SDK with most
  * frameworks if they are not directly supported.
  */
-import { PreParsedRequest } from "./framework/custom";
+import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import { JWTPayload } from "jose";
 export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
@@ -48,3 +48,12 @@ export declare function withSession(
     options?: VerifySessionOptions,
     userContext?: Record<string, any>
 ): Promise<Response>;
+export declare function addCookies<UserResponseType extends Response = Response>(
+    baseResponse: CollectingResponse,
+    userResponse: UserResponseType
+): UserResponseType;
+export declare function handleError<UserResponseType extends Response = Response>(
+    err: any,
+    baseRequest: PreParsedRequest,
+    baseResponse: CollectingResponse
+): Promise<UserResponseType>;
