@@ -7,7 +7,6 @@
 import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import { JWTPayload } from "jose";
-export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
 export declare type GetCookieFn<T extends ParsableRequest = Request> = (req: T) => Record<string, string>;
 export interface ParsableRequest {
     url: string;
@@ -27,6 +26,17 @@ export declare function getHandleCall<T = Request>(
     stMiddleware: any
 ): (req: T) => Promise<Response>;
 export declare function handleAuthAPIRequest(CustomResponse: typeof Response): (req: Request) => Promise<Response>;
+export declare function getSessionDetails(
+    preParsedRequest: PreParsedRequest,
+    options?: VerifySessionOptions,
+    userContext?: Record<string, unknown>
+): Promise<{
+    session: SessionContainer | undefined;
+    hasToken: boolean;
+    hasInvalidClaims: boolean;
+    baseResponse: CollectingResponse;
+    response?: Response;
+}>;
 /**
  * A helper function to retrieve session details on the server side.
  *

@@ -22,13 +22,16 @@ import {
     middleware,
     errorHandler as customErrorHandler,
 } from "./framework/custom";
-import { HTTPMethod, UserContext } from "./types";
-import Session, { SessionContainer, VerifySessionOptions } from "./recipe/session";
-import SessionRecipe from "./recipe/session/recipe";
-import { getToken } from "./recipe/session/cookieAndHeaders";
-import { availableTokenTransferMethods } from "./recipe/session/constants";
-import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
-import { addCookies, createPreParsedRequest, GetCookieFn, getHandleCall, handleError } from "./customFramework";
+import { HTTPMethod } from "./types";
+import { SessionContainer, VerifySessionOptions } from "./recipe/session";
+import {
+    addCookies,
+    createPreParsedRequest,
+    GetCookieFn,
+    getHandleCall,
+    getSessionDetails,
+    handleError,
+} from "./customFramework";
 
 function next(
     request: any,
@@ -106,65 +109,6 @@ export default class NextJS {
         return getHandleCall<T>(NextResponse, stMiddleware);
     }
 
-    private static async commonSSRSession(
-        baseRequest: PreParsedRequest,
-        options: VerifySessionOptions | undefined,
-        userContext: UserContext
-    ): Promise<{
-        session: SessionContainer | undefined;
-        hasToken: boolean;
-        hasInvalidClaims: boolean;
-        baseResponse: CollectingResponse;
-        nextResponse?: Response;
-    }> {
-        let baseResponse = new CollectingResponse();
-
-        const recipe = SessionRecipe.getInstanceOrThrowError();
-        const tokenTransferMethod = recipe.config.getTokenTransferMethod({
-            req: baseRequest,
-            forCreateNewSession: false,
-            userContext,
-        });
-        const transferMethods = tokenTransferMethod === "any" ? availableTokenTransferMethods : [tokenTransferMethod];
-        const hasToken = transferMethods.some((transferMethod) => {
-            const token = getToken(baseRequest, "access", transferMethod);
-            if (!token) {
-                return false;
-            }
-
-            try {
-                parseJWTWithoutSignatureVerification(token);
-                return true;
-            } catch {
-                return false;
-            }
-        });
-
-        try {
-            let session = await Session.getSession(baseRequest, baseResponse, options, userContext);
-            return {
-                session,
-                hasInvalidClaims: false,
-                hasToken,
-                baseResponse,
-            };
-        } catch (err) {
-            if (Session.Error.isErrorFromSuperTokens(err)) {
-                return {
-                    hasToken,
-                    hasInvalidClaims: err.type === Session.Error.INVALID_CLAIMS,
-                    session: undefined,
-                    baseResponse,
-                    nextResponse: new Response("Authentication required", {
-                        status: err.type === Session.Error.INVALID_CLAIMS ? 403 : 401,
-                    }),
-                };
-            } else {
-                throw err;
-            }
-        }
-    }
-
     static async getSSRSession(
         cookies: Array<{ name: string; value: string }>,
         headers: Headers,
@@ -189,7 +133,7 @@ export default class NextJS {
             getJSONBody: async () => [],
         });
 
-        const { baseResponse, nextResponse, ...result } = await NextJS.commonSSRSession(
+        const { baseResponse, response, ...result } = await getSessionDetails(
             baseRequest,
             options,
             getUserContext(userContext)
@@ -219,14 +163,14 @@ export default class NextJS {
                 getJSONBody: () => req!.json(),
             });
 
-            const { session, nextResponse, baseResponse } = await NextJS.commonSSRSession(
+            const { session, response, baseResponse } = await getSessionDetails(
                 baseRequest,
                 options,
                 getUserContext(userContext)
             );
 
-            if (nextResponse) {
-                return nextResponse as NextResponse;
+            if (response) {
+                return response as NextResponse;
             }
 
             let userResponse: NextResponse;

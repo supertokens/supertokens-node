@@ -25,7 +25,6 @@ export default class NextJS {
     static getAppDirRequestHandler<T extends PartialNextRequest>(
         NextResponse: typeof Response
     ): (req: T) => Promise<Response>;
-    private static commonSSRSession;
     static getSSRSession(
         cookies: Array<{
             name: string;

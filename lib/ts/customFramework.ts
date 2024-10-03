@@ -13,9 +13,7 @@ import { getToken } from "./recipe/session/cookieAndHeaders";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
 import { jwtVerify, JWTPayload, createRemoteJWKSet } from "jose";
 import SuperTokens from "./supertokens";
-
-// Define supported types for HTTPMethod
-export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
+import { HTTPMethod } from "./types";
 
 export type GetCookieFn<T extends ParsableRequest = Request> = (req: T) => Record<string, string>;
 
@@ -138,7 +136,7 @@ export function handleAuthAPIRequest(CustomResponse: typeof Response) {
     return getHandleCall<Request>(CustomResponse, stMiddleware);
 }
 
-async function getSessionDetails(
+export async function getSessionDetails(
     preParsedRequest: PreParsedRequest,
     options?: VerifySessionOptions,
     userContext?: Record<string, unknown>
