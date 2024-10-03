@@ -1,5 +1,5 @@
 let assert = require("assert");
-const { createPreParsedRequest, handleAuthAPIRequest } = require("../lib/build/customFramework");
+const { createPreParsedRequest, handleAuthAPIRequest, withSession } = require("../lib/build/customFramework");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../lib/build/").default;
 const Session = require("../lib/build/recipe/session");
@@ -63,6 +63,7 @@ describe(`createPreParsedRequest ${printPath("[test/customFramework.test.js]")}`
 
 describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, () => {
     let connectionURI;
+    let accessToken;
 
     before(async function () {
         process.env.user = undefined;
@@ -175,8 +176,112 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
             "john.doe@supertokens.io",
             "User email should be returned correctly"
         );
-        assert.ok(response.headers.get("st-access-token"), "st-access-token header should be set");
+
+        accessToken = response.headers.get("st-access-token");
+
+        assert.ok(accessToken, "st-access-token header should be set");
         assert.ok(response.headers.get("st-refresh-token"), "st-refresh-token header should be set");
         assert.ok(response.headers.get("front-token"), "front-token header should be set");
+    });
+
+    // Case 1: Successful => add session to request object.
+    it("withSession should create a session properly", async () => {
+        const mockSessionRequest = new Request(`${connectionURI}/api/user/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            headers: {
+                authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+
+        const sessionResponse = await withSession(mockSessionRequest, async (err, session) => {
+            assert.strictEqual(err, undefined, "Error should be undefined");
+            assert.ok(session, "Session should be present");
+            assert.strictEqual(session.getUserId(), process.env.user, "Session user ID should match");
+
+            // Return success response
+            return new Response(
+                JSON.stringify({
+                    status: "session created",
+                    userId: session.getUserId(),
+                }),
+                { status: 200 }
+            );
+        });
+
+        // Assertions for the response
+        assert.strictEqual(sessionResponse.status, 200, "Should return status 200");
+        const sessionResponseBody = await sessionResponse.json();
+        assert.strictEqual(
+            sessionResponseBody.status,
+            "session created",
+            "Response status should be 'session created'"
+        );
+        assert.strictEqual(
+            sessionResponseBody.userId,
+            process.env.user,
+            "Response user ID should match session user ID"
+        );
+    });
+
+    // Case 2: Error => throws error when no access token is passed.
+    it("withSession should pass error when session fails", async () => {
+        const mockSessionRequest = new Request(`${connectionURI}/api/user/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            headers: {},
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+
+        const sessionResponse = await withSession(mockSessionRequest, async (err, session) => {
+            // No action required since the function will throw an error due to unauthorized
+        });
+
+        // Assertions for the response
+        assert.strictEqual(sessionResponse.status, 401, "Should return status 401");
+    });
+
+    it("should return 404 for unhandled routes", async () => {
+        const handleCall = handleAuthAPIRequest(CustomResponse);
+
+        const mockRequest = new Request(`${connectionURI}/api/auth/test/`, {
+            method: "GET",
+            headers: {
+                rid: "emailpassword",
+            },
+        });
+
+        // Call handleCall
+        const response = await handleCall(mockRequest);
+
+        assert.strictEqual(response.status, 404, "Should return status 404");
+        assert.strictEqual(await response.text(), "Not found", "Should return Not found");
     });
 });
