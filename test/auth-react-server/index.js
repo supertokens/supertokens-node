@@ -51,6 +51,9 @@ const TOTPRaw = require("../../lib/build/recipe/totp/recipe").default;
 const TOTP = require("../../recipe/totp");
 const OTPAuth = require("otpauth");
 
+const OAuth2ProviderRaw = require("../../lib/build/recipe/oauth2provider/recipe").default;
+const OAuth2Provider = require("../../recipe/oauth2provider");
+
 let {
     startST,
     killAllST,
@@ -502,6 +505,15 @@ app.post("/test/getTOTPCode", (req, res) => {
     res.send(JSON.stringify({ totp: new OTPAuth.TOTP({ secret: req.body.secret, digits: 6, period: 1 }).generate() }));
 });
 
+app.post("/test/create-oauth2-client", async (req, res, next) => {
+    try {
+        const { client } = await OAuth2Provider.createOAuth2Client(req.body);
+        res.send({ client });
+    } catch (e) {
+        next(e);
+    }
+});
+
 app.get("/test/featureFlags", (req, res) => {
     const available = [];
 
@@ -515,6 +527,7 @@ app.get("/test/featureFlags", (req, res) => {
     available.push("mfa");
     available.push("recipeConfig");
     available.push("accountlinking-fixes"); // this is related to 19.0 release in which we fixed a bunch of issues with account linking, including changing error codes.
+    available.push("oauth2");
 
     res.send({
         available,
@@ -568,6 +581,7 @@ function initST({ passwordlessConfig } = {}) {
     UserMetadataRaw.reset();
     MultiFactorAuthRaw.reset();
     TOTPRaw.reset();
+    OAuth2ProviderRaw.reset();
     SuperTokensRaw.reset();
 
     passwordlessConfig = {
@@ -936,6 +950,8 @@ function initST({ passwordlessConfig } = {}) {
             defaultSkew: 30,
         }),
     ]);
+
+    recipeList.push(["oauth2provider", OAuth2Provider.init()]);
 
     SuperTokens.init({
         appInfo: {

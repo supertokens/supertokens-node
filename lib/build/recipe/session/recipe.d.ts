@@ -13,7 +13,6 @@ import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod, UserContext } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
-import OpenIdRecipe from "../openid/recipe";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -21,7 +20,6 @@ export default class SessionRecipe extends RecipeModule {
     private claimValidatorsAddedByOtherRecipes;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
-    openIdRecipe: OpenIdRecipe;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
@@ -35,11 +33,11 @@ export default class SessionRecipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
-        tenantId: string,
+        _tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod,
+        _path: NormalisedURLPath,
+        _method: HTTPMethod,
         userContext: UserContext
     ) => Promise<boolean>;
     handleError: (
@@ -56,4 +54,5 @@ export default class SessionRecipe extends RecipeModule {
         response: BaseResponse,
         userContext: UserContext
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
+    getNormalisedOverwriteSessionDuringSignInUp: (req: any) => boolean;
 }

@@ -19,7 +19,6 @@ import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import JWTRecipe from "../jwt/recipe";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -32,20 +31,15 @@ export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID = "openid";
     private static instance: OpenIdRecipe | undefined = undefined;
     config: TypeNormalisedInput;
-    jwtRecipe: JWTRecipe;
     recipeImplementation: RecipeInterface;
     apiImpl: APIInterface;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
 
-        this.config = validateAndNormaliseUserInput(appInfo, config);
-        this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
-            jwtValiditySeconds: this.config.jwtValiditySeconds,
-            override: this.config.override.jwtFeature,
-        });
+        this.config = validateAndNormaliseUserInput(config);
 
-        let builder = new OverrideableBuilder(RecipeImplementation(this.config, this.jwtRecipe.recipeInterfaceImpl));
+        let builder = new OverrideableBuilder(RecipeImplementation(appInfo));
 
         this.recipeImplementation = builder.override(this.config.override.functions).build();
 
@@ -62,9 +56,9 @@ export default class OpenIdRecipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo) => {
             if (OpenIdRecipe.instance === undefined) {
-                OpenIdRecipe.instance = new OpenIdRecipe(OpenIdRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                OpenIdRecipe.instance = new OpenIdRecipe(OpenIdRecipe.RECIPE_ID, appInfo, config);
                 return OpenIdRecipe.instance;
             } else {
                 throw new Error("OpenId recipe has already been initialised. Please check your code for bugs.");
@@ -79,6 +73,12 @@ export default class OpenIdRecipe extends RecipeModule {
         OpenIdRecipe.instance = undefined;
     }
 
+    static async getIssuer(userContext: UserContext) {
+        return (
+            await this.getInstanceOrThrowError().recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext })
+        ).issuer;
+    }
+
     getAPIsHandled = (): APIHandled[] => {
         return [
             {
@@ -87,16 +87,15 @@ export default class OpenIdRecipe extends RecipeModule {
                 id: GET_DISCOVERY_CONFIG_URL,
                 disabled: this.apiImpl.getOpenIdDiscoveryConfigurationGET === undefined,
             },
-            ...this.jwtRecipe.getAPIsHandled(),
         ];
     };
     handleAPIRequest = async (
         id: string,
-        tenantId: string,
+        _tenantId: string,
         req: BaseRequest,
         response: BaseResponse,
-        path: normalisedURLPath,
-        method: HTTPMethod,
+        _path: normalisedURLPath,
+        _method: HTTPMethod,
         userContext: UserContext
     ): Promise<boolean> => {
         let apiOptions: APIOptions = {
@@ -110,28 +109,16 @@ export default class OpenIdRecipe extends RecipeModule {
         if (id === GET_DISCOVERY_CONFIG_URL) {
             return await getOpenIdDiscoveryConfiguration(this.apiImpl, apiOptions, userContext);
         } else {
-            return this.jwtRecipe.handleAPIRequest(id, tenantId, req, response, path, method, userContext);
+            return false;
         }
     };
-    handleError = async (
-        error: STError,
-        request: BaseRequest,
-        response: BaseResponse,
-        userContext: UserContext
-    ): Promise<void> => {
-        if (error.fromRecipe === OpenIdRecipe.RECIPE_ID) {
-            throw error;
-        } else {
-            return await this.jwtRecipe.handleError(error, request, response, userContext);
-        }
+    handleError = async (error: STError): Promise<void> => {
+        throw error;
     };
     getAllCORSHeaders = (): string[] => {
-        return [...this.jwtRecipe.getAllCORSHeaders()];
+        return [];
     };
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return (
-            (STError.isErrorFromSuperTokens(err) && err.fromRecipe === OpenIdRecipe.RECIPE_ID) ||
-            this.jwtRecipe.isErrorFromThisRecipe(err)
-        );
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === OpenIdRecipe.RECIPE_ID;
     };
 }

@@ -174,6 +174,7 @@ export type RecipeInterface = {
             fromUserInfoAPI?: { [key: string]: any };
         };
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -208,6 +209,7 @@ export type RecipeInterface = {
         email: string;
         isVerified: boolean;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -272,6 +274,7 @@ export type APIInterface = {
                   provider: TypeProvider;
                   tenantId: string;
                   session: SessionContainerInterface | undefined;
+                  shouldTryLinkingWithSessionUser: boolean | undefined;
                   options: APIOptions;
                   userContext: UserContext;
               } & (

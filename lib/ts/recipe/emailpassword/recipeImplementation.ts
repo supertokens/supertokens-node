@@ -18,7 +18,7 @@ export default function getRecipeInterface(
     return {
         signUp: async function (
             this: RecipeInterface,
-            { email, password, tenantId, session, userContext }
+            { email, password, tenantId, session, shouldTryLinkingWithSessionUser, userContext }
         ): Promise<
             | {
                   status: "OK";
@@ -47,11 +47,12 @@ export default function getRecipeInterface(
 
             let updatedUser = response.user;
 
-            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+            const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 inputUser: response.user,
                 recipeUserId: response.recipeUserId,
                 session,
+                shouldTryLinkingWithSessionUser,
                 userContext,
             });
 
@@ -103,7 +104,10 @@ export default function getRecipeInterface(
             // users are always initially unverified.
         },
 
-        signIn: async function (this: RecipeInterface, { email, password, tenantId, session, userContext }) {
+        signIn: async function (
+            this: RecipeInterface,
+            { email, password, tenantId, session, shouldTryLinkingWithSessionUser, userContext }
+        ) {
             const response = await this.verifyCredentials({ email, password, tenantId, userContext });
 
             if (response.status === "OK") {
@@ -133,11 +137,12 @@ export default function getRecipeInterface(
                     response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
                 }
 
-                const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                     tenantId,
                     inputUser: response.user,
                     recipeUserId: response.recipeUserId,
                     session,
+                    shouldTryLinkingWithSessionUser,
                     userContext,
                 });
                 if (linkResult.status === "LINKING_TO_SESSION_USER_FAILED") {
@@ -320,6 +325,7 @@ export default function getRecipeInterface(
                     email: input.email,
                     password: input.password,
                 },
+                {},
                 input.userContext
             );
 

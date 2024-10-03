@@ -119,6 +119,7 @@ export type RecipeInterface = {
         ) & {
             userInputCode?: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             tenantId: string;
             userContext: UserContext;
         }
@@ -158,6 +159,7 @@ export type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   session: SessionContainerInterface | undefined;
+                  shouldTryLinkingWithSessionUser: boolean | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -165,6 +167,7 @@ export type RecipeInterface = {
                   linkCode: string;
                   preAuthSessionId: string;
                   session: SessionContainerInterface | undefined;
+                  shouldTryLinkingWithSessionUser: boolean | undefined;
                   tenantId: string;
                   userContext: UserContext;
               }
@@ -334,6 +337,7 @@ export type APIInterface = {
         input: ({ email: string } | { phoneNumber: string }) & {
             tenantId: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -355,6 +359,7 @@ export type APIInterface = {
         input: { deviceId: string; preAuthSessionId: string } & {
             tenantId: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }
@@ -374,6 +379,7 @@ export type APIInterface = {
         ) & {
             tenantId: string;
             session: SessionContainerInterface | undefined;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }

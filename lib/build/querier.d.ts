@@ -44,12 +44,19 @@ export declare class Querier {
     sendGetRequestWithResponseHeaders: (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
+        inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ) => Promise<{
         body: any;
         headers: Headers;
     }>;
-    sendPutRequest: (path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<any>;
+    sendPutRequest: (
+        path: NormalisedURLPath,
+        body: any,
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: UserContext
+    ) => Promise<any>;
+    sendPatchRequest: (path: NormalisedURLPath, body: any, userContext: UserContext) => Promise<any>;
     invalidateCoreCallCache: (userContext: UserContext, updGlobalCacheTagIfNecessary?: boolean) => void;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;

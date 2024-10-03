@@ -39,7 +39,7 @@ export default async function passwordReset(
     //      a password that meets the password policy.
     let formFields: {
         id: string;
-        value: string;
+        value: unknown;
     }[] = await validateFormFieldsOrThrowError(
         options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
         requestBody.formFields,

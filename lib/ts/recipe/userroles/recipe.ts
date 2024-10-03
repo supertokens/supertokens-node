@@ -19,7 +19,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 
 import RecipeImplementation from "./recipeImplementation";
 import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
@@ -27,8 +27,11 @@ import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import SessionRecipe from "../session/recipe";
+import OAuth2Recipe from "../oauth2provider/recipe";
 import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
+import { User } from "../../user";
+import { getSessionInformation } from "../session";
 import { isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
@@ -56,6 +59,114 @@ export default class Recipe extends RecipeModule {
             if (!this.config.skipAddingPermissionsToAccessToken) {
                 SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(PermissionClaim);
             }
+
+            const tokenPayloadBuilder = async (
+                user: User,
+                scopes: string[],
+                sessionHandle: string,
+                userContext: UserContext
+            ) => {
+                let payload: {
+                    roles?: string[];
+                    permissions?: string[];
+                } = {};
+
+                const sessionInfo = await getSessionInformation(sessionHandle, userContext);
+
+                let userRoles: string[] = [];
+
+                if (scopes.includes("roles") || scopes.includes("permissions")) {
+                    const res = await this.recipeInterfaceImpl.getRolesForUser({
+                        userId: user.id,
+                        tenantId: sessionInfo!.tenantId,
+                        userContext,
+                    });
+
+                    if (res.status !== "OK") {
+                        throw new Error("Failed to fetch roles for the user");
+                    }
+                    userRoles = res.roles;
+                }
+
+                if (scopes.includes("roles")) {
+                    payload.roles = userRoles;
+                }
+
+                if (scopes.includes("permissions")) {
+                    const userPermissions = new Set<string>();
+                    for (const role of userRoles) {
+                        const rolePermissions = await this.recipeInterfaceImpl.getPermissionsForRole({
+                            role,
+                            userContext,
+                        });
+
+                        if (rolePermissions.status !== "OK") {
+                            throw new Error("Failed to fetch permissions for the role");
+                        }
+
+                        for (const perm of rolePermissions.permissions) {
+                            userPermissions.add(perm);
+                        }
+                    }
+
+                    payload.permissions = Array.from(userPermissions);
+                }
+
+                return payload;
+            };
+
+            OAuth2Recipe.getInstanceOrThrowError().addAccessTokenBuilderFromOtherRecipe(tokenPayloadBuilder);
+            OAuth2Recipe.getInstanceOrThrowError().addIdTokenBuilderFromOtherRecipe(tokenPayloadBuilder);
+
+            OAuth2Recipe.getInstanceOrThrowError().addUserInfoBuilderFromOtherRecipe(
+                async (user, _accessTokenPayload, scopes, tenantId, userContext) => {
+                    let userInfo: {
+                        roles?: string[];
+                        permissions?: string[];
+                    } = {};
+
+                    let userRoles: string[] = [];
+
+                    if (scopes.includes("roles") || scopes.includes("permissions")) {
+                        const res = await this.recipeInterfaceImpl.getRolesForUser({
+                            userId: user.id,
+                            tenantId,
+                            userContext,
+                        });
+
+                        if (res.status !== "OK") {
+                            throw new Error("Failed to fetch roles for the user");
+                        }
+                        userRoles = res.roles;
+                    }
+
+                    if (scopes.includes("roles")) {
+                        userInfo.roles = userRoles;
+                    }
+
+                    if (scopes.includes("permissions")) {
+                        const userPermissions = new Set<string>();
+                        for (const role of userRoles) {
+                            const rolePermissions = await this.recipeInterfaceImpl.getPermissionsForRole({
+                                role,
+                                userContext,
+                            });
+
+                            if (rolePermissions.status !== "OK") {
+                                throw new Error("Failed to fetch permissions for the role");
+                            }
+
+                            for (const perm of rolePermissions.permissions) {
+                                userPermissions.add(perm);
+                            }
+                        }
+
+                        userInfo.permissions = Array.from(userPermissions);
+                    }
+
+                    return userInfo;
+                }
+            );
         });
     }
 

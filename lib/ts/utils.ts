@@ -18,11 +18,13 @@ export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: Req
         ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
         init = {
             cache: "no-cache",
+            redirect: "manual",
         };
     } else {
         if (init.cache === undefined) {
             ProcessState.getInstance().addState(PROCESS_STATE.ADDING_NO_CACHE_HEADER_IN_FETCH);
             init.cache = "no-cache";
+            init.redirect = "manual";
         }
     }
     const fetchFunction = typeof fetch !== "undefined" ? fetch : crossFetch;
@@ -191,6 +193,12 @@ export function isAnIpAddress(ipaddress: string) {
     return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
         ipaddress
     );
+}
+export function getNormalisedShouldTryLinkingWithSessionUserFlag(req: BaseRequest, body: any) {
+    if (hasGreaterThanEqualToFDI(req, "3.1")) {
+        return body.shouldTryLinkingWithSessionUser ?? false;
+    }
+    return undefined;
 }
 
 export function getBackwardsCompatibleUserInfo(
@@ -431,6 +439,27 @@ export function normaliseEmail(email: string): string {
     email = email.toLowerCase();
 
     return email;
+}
+
+export function toCamelCase(str: string): string {
+    return str.replace(/([-_][a-z])/gi, (match) => {
+        return match.toUpperCase().replace("-", "").replace("_", "");
+    });
+}
+
+export function toSnakeCase(str: string): string {
+    return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+// Transforms the keys of an object from camelCase to snakeCase or vice versa.
+export function transformObjectKeys<T>(obj: { [key: string]: any }, caseType: "snake-case" | "camelCase"): T {
+    const transformKey = caseType === "camelCase" ? toCamelCase : toSnakeCase;
+
+    return Object.entries(obj).reduce((result, [key, value]) => {
+        const transformedKey = transformKey(key);
+        result[transformedKey] = value;
+        return result;
+    }, {} as any) as T;
 }
 
 export const getProcess = () => {

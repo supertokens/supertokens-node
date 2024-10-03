@@ -12,6 +12,7 @@ export declare function sendNon200ResponseWithMessage(res: BaseResponse, message
 export declare function sendNon200Response(res: BaseResponse, statusCode: number, body: JSONObject): void;
 export declare function send200Response(res: BaseResponse, responseJson: any): void;
 export declare function isAnIpAddress(ipaddress: string): boolean;
+export declare function getNormalisedShouldTryLinkingWithSessionUserFlag(req: BaseRequest, body: any): any;
 export declare function getBackwardsCompatibleUserInfo(
     req: BaseRequest,
     result: {
@@ -57,6 +58,14 @@ export declare function postWithFetch(
       }
 >;
 export declare function normaliseEmail(email: string): string;
+export declare function toCamelCase(str: string): string;
+export declare function toSnakeCase(str: string): string;
+export declare function transformObjectKeys<T>(
+    obj: {
+        [key: string]: any;
+    },
+    caseType: "snake-case" | "camelCase"
+): T;
 export declare const getProcess: () => any;
 export declare const getBuffer: () => any;
 export declare const isTestEnv: () => boolean;

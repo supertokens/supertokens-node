@@ -7,6 +7,138 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [21.0.0] - 2024-10-07
+
+-   Added OAuth2Provider recipe
+-   Added a way to run CI on unmerged PRs
+-   Added support for FDIs: 3.1 and 4.0. Required by: auth-react >=0.49.0 and web-js>=0.15.0
+-   The `networkInterceptor` now also gets a new `params` prop in the request config.
+
+### Breaking change
+
+-   Changes type of value in formField object to be `unknown` instead of `string` to add support for accepting any type of value in form fields.
+-   Only supporting CDI 5.2, Compatible with Core version >= 10.0
+-   Changed the default value of `overwriteSessionDuringSignInUp` to true.
+-   Added a new `shouldTryLinkingWithSessionUser` to sign in/up related APIs (and the related recipe functions)
+    -   This will default to false on the API
+    -   This will be set to true in function calls if you pass a session, otherwise it is set to false
+    -   By setting this to true you can enable MFA flows (trying to connect to the session user)
+    -   If set to false, the sign-in/up will be considered a first-factor
+    -   Changed APIs:
+        -   `ThirdParty.signInUpPOST`
+        -   `Passwordless.createCodePOST`
+        -   `Passwordless.consumeCodePOST`
+        -   `Passwordless.consumeCodePOST`
+    -   Changed functions:
+        -   `ThirdParty.signInUp`
+        -   `ThirdPary.manuallyCreateOrUpdateUser`
+        -   `Passwordless.createCode`
+        -   `Passwordless.consumeCode`
+-   We no longer try to load the session if `shouldTryLinkingWithSessionUser` is set to false and overwriteSessionDuringSignInUp is set to true or left as the default value.
+-   Changed the return type of `getOpenIdConfiguration` and `getOpenIdDiscoveryConfigurationGET`, and added the following props:
+    -   authorization_endpoint
+    -   token_endpoint
+    -   userinfo_endpoint
+    -   revocation_endpoint
+    -   token_introspection_endpoint
+    -   end_session_endpoint
+    -   subject_types_supported
+    -   id_token_signing_alg_values_supported
+    -   response_types_supported
+-   Exposing the OpenId recipe separately and remove it from the Session recipe
+    -   This means that we removed `override.openIdFeature` from the Session recipe configuration
+-   Removed `getJWKS` from the OpenId recipe, as it is already exposed by the JWT recipe
+-   We now automatically initialize the OpenId and JWT recipes even if you do not use the Session recipe
+
+### Migration
+
+#### Separating the OpenId recipe from Session recipe
+
+If you used to use the `openIdFeature` in the Session recipe, you should now use the OpenId recipe directly instead:
+
+Before:
+
+```tsx
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init({
+            override: {
+                openIdFeature: {
+                    jwtFeature: {
+                        functions: originalImplementation => ({
+                            ...originalImplementation,
+                            getJWKS: async (input) => {
+                                console.log("getJWKS called");
+                                return originalImplementation.getJWKS(input);
+                            },
+                        })
+                    },
+                    functions: originalImplementation => ({
+                        ...originalImplementation,
+                        getOpenIdDiscoveryConfiguration: async (input) => ({
+                            issuer: "your issuer",
+                            jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                            status: "OK"
+                        }),
+                    })
+                }
+            }
+        });
+    ],
+});
+```
+
+After:
+
+```tsx
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
+import OpenId from "supertokens-node/recipe/openid";
+import JWT from "supertokens-node/recipe/jwt";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init(),
+        JWT.init({
+            override: {
+                functions: originalImplementation => ({
+                    ...originalImplementation,
+                    getJWKS: async (input) => {
+                        console.log("getJWKS called");
+                        return originalImplementation.getJWKS(input);
+                    },
+                })
+            }
+        }),
+        OpenId.init({
+            override: {
+                functions: originalImplementation => ({
+                    ...originalImplementation,
+                    getOpenIdDiscoveryConfiguration: async (input) => ({
+                        issuer: "your issuer",
+                        jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                        status: "OK"
+                    }),
+                })
+            }
+        });
+    ],
+});
+```
+
 ## [20.1.3] - 2024-09-30
 
 -   Replaces `psl` with `tldts` to avoid `punycode` deprecation warning.
@@ -339,6 +471,10 @@ for (const tenant of tenantsRes.tenants) {
     }
 }
 ```
+
+## [18.0.2] - 2024-07-09
+
+-   `refreshPOST` and `refreshSession` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
 
 ## [18.0.2] - 2024-07-09
 

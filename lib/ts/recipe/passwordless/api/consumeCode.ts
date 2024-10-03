@@ -13,11 +13,15 @@
  * under the License.
  */
 
-import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
+import {
+    getBackwardsCompatibleUserInfo,
+    getNormalisedShouldTryLinkingWithSessionUserFlag,
+    send200Response,
+} from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
-import Session from "../../session";
+import { AuthUtils } from "../../../authUtils";
 
 export default async function consumeCode(
     apiImplementation: APIInterface,
@@ -62,13 +66,12 @@ export default async function consumeCode(
         });
     }
 
-    let session = await Session.getSession(
+    const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, body);
+
+    const session = await AuthUtils.loadSessionInAuthAPIIfNeeded(
         options.req,
         options.res,
-        {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
+        shouldTryLinkingWithSessionUser,
         userContext
     );
 
@@ -84,6 +87,7 @@ export default async function consumeCode(
                   preAuthSessionId,
                   tenantId,
                   session,
+                  shouldTryLinkingWithSessionUser,
                   options,
                   userContext,
               }
@@ -93,6 +97,7 @@ export default async function consumeCode(
                   preAuthSessionId,
                   tenantId,
                   session,
+                  shouldTryLinkingWithSessionUser,
                   userContext,
               }
     );

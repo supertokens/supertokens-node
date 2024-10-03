@@ -18,7 +18,7 @@ import MultitenancyRecipe from "../../../multitenancy/recipe";
 import { UserContext } from "../../../../types";
 import NormalisedURLDomain from "../../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../../normalisedURLPath";
-import { doPostRequest } from "../../../thirdparty/providers/utils";
+import { doPostRequest } from "../../../../thirdpartyUtils";
 import { DEFAULT_TENANT_ID } from "../../../multitenancy/constants";
 import { encodeBase64 } from "../../../../utils";
 

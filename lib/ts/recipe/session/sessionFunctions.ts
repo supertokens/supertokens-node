@@ -24,6 +24,7 @@ import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { UserContext } from "../../types";
+import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 
 /**
  * @description call this to "login" a user.
@@ -111,7 +112,7 @@ export async function getSession(
          */
         accessTokenInfo = await getInfoFromAccessToken(
             parsedAccessToken,
-            helpers.JWKS,
+            getCombinedJWKS(config),
             helpers.config.antiCsrfFunctionOrString === "VIA_TOKEN" && doAntiCsrfCheck
         );
     } catch (err) {
@@ -500,6 +501,7 @@ export async function updateSessionDataInDatabase(
             sessionHandle,
             userDataInDatabase: newSessionData,
         },
+        {},
         userContext
     );
     if (response.status === "UNAUTHORISED") {
@@ -522,6 +524,7 @@ export async function updateAccessTokenPayload(
             sessionHandle,
             userDataInJWT: newAccessTokenPayload,
         },
+        {},
         userContext
     );
     if (response.status === "UNAUTHORISED") {

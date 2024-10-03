@@ -43,11 +43,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             // Attempt account linking (this is a sign up)
             let updatedUser = response.user;
 
-            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+            const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId: input.tenantId,
                 inputUser: response.user,
                 recipeUserId: response.recipeUserId,
                 session: input.session,
+                shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                 userContext: input.userContext,
             });
 
@@ -188,6 +189,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             let response = await querier.sendPutRequest(
                 new NormalisedURLPath(`/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input),
+                {},
                 input.userContext
             );
             if (response.status !== "OK") {

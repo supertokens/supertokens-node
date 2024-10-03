@@ -1,6 +1,5 @@
 import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
-import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import { getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
@@ -10,6 +9,7 @@ import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -65,7 +65,15 @@ export default function getAPIImplementation(): APIInterface {
             | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
-            const email = formFields.filter((f) => f.id === "email")[0].value;
+            // NOTE: Check for email being a non-string value. This check will likely
+            // never evaluate to `true` as there is an upper-level check for the type
+            // in validation but kept here to be safe.
+            const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+            if (typeof emailAsUnknown !== "string")
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                );
+            const email: string = emailAsUnknown;
 
             // this function will be reused in different parts of the flow below..
             async function generateAndSendPasswordResetToken(
@@ -322,7 +330,7 @@ export default function getAPIImplementation(): APIInterface {
         }: {
             formFields: {
                 id: string;
-                value: string;
+                value: unknown;
             }[];
             token: string;
             tenantId: string;
@@ -451,7 +459,15 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            let newPassword = formFields.filter((f) => f.id === "password")[0].value;
+            // NOTE: Check for password being a non-string value. This check will likely
+            // never evaluate to `true` as there is an upper-level check for the type
+            // in validation but kept here to be safe.
+            const newPasswordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+            if (typeof newPasswordAsUnknown !== "string")
+                throw new Error(
+                    "Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError"
+                );
+            let newPassword: string = newPasswordAsUnknown;
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
@@ -472,7 +488,7 @@ export default function getAPIImplementation(): APIInterface {
                 // This should happen only cause of a race condition where the user
                 // might be deleted before token creation and consumption.
                 // Also note that this being undefined doesn't mean that the email password
-                // user does not exist, but it means that there is no reicpe or primary user
+                // user does not exist, but it means that there is no recipe or primary user
                 // for whom the token was generated.
                 return {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
@@ -591,15 +607,17 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             tenantId,
             session,
+            shouldTryLinkingWithSessionUser,
             options,
             userContext,
         }: {
             formFields: {
                 id: string;
-                value: string;
+                value: unknown;
             }[];
             tenantId: string;
             session?: SessionContainerInterface;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }): Promise<
@@ -631,8 +649,24 @@ export default function getAPIImplementation(): APIInterface {
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_012)",
                 },
             };
-            let email = formFields.filter((f) => f.id === "email")[0].value;
-            let password = formFields.filter((f) => f.id === "password")[0].value;
+            const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+            const passwordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+
+            // NOTE: Following checks will likely never throw an error as the
+            // check for type is done in a parent function but they are kept
+            // here to be on the safe side.
+            if (typeof emailAsUnknown !== "string")
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                );
+
+            if (typeof passwordAsUnknown !== "string")
+                throw new Error(
+                    "Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError"
+                );
+
+            let email: string = emailAsUnknown;
+            let password: string = passwordAsUnknown;
 
             const recipeId = "emailpassword";
 
@@ -683,6 +717,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
                 session,
+                shouldTryLinkingWithSessionUser,
             });
             if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
                 throw new Error("This should never happen: pre-auth checks should not fail for sign in");
@@ -702,6 +737,7 @@ export default function getAPIImplementation(): APIInterface {
                 email,
                 password,
                 session,
+                shouldTryLinkingWithSessionUser,
                 tenantId,
                 userContext,
             });
@@ -740,15 +776,17 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             tenantId,
             session,
+            shouldTryLinkingWithSessionUser,
             options,
             userContext,
         }: {
             formFields: {
                 id: string;
-                value: string;
+                value: unknown;
             }[];
             tenantId: string;
             session?: SessionContainerInterface;
+            shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
         }): Promise<
@@ -780,8 +818,24 @@ export default function getAPIImplementation(): APIInterface {
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_016)",
                 },
             };
-            let email = formFields.filter((f) => f.id === "email")[0].value;
-            let password = formFields.filter((f) => f.id === "password")[0].value;
+            const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+            const passwordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+
+            // NOTE: Following checks will likely never throw an error as the
+            // check for type is done in a parent function but they are kept
+            // here to be on the safe side.
+            if (typeof emailAsUnknown !== "string")
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                );
+
+            if (typeof passwordAsUnknown !== "string")
+                throw new Error(
+                    "Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError"
+                );
+
+            let email: string = emailAsUnknown;
+            let password: string = passwordAsUnknown;
 
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
@@ -797,6 +851,7 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
                 session,
+                shouldTryLinkingWithSessionUser,
             });
 
             if (preAuthCheckRes.status === "SIGN_UP_NOT_ALLOWED") {
@@ -834,6 +889,7 @@ export default function getAPIImplementation(): APIInterface {
                 email,
                 password,
                 session,
+                shouldTryLinkingWithSessionUser,
                 userContext,
             });
 

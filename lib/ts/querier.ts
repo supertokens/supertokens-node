@@ -163,8 +163,9 @@ export class Querier {
                 let apiVersion = await this.getAPIVersion(userContext);
                 let headers: any = {
                     "cdi-version": apiVersion,
-                    "content-type": "application/json; charset=utf-8",
                 };
+                headers["content-type"] = "application/json; charset=utf-8";
+
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -344,11 +345,14 @@ export class Querier {
                 finalURL.search = searchParams.toString();
 
                 // Update cache and return
-
                 let response = await doFetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
+
+                if (response.status === 302) {
+                    return response;
+                }
 
                 if (response.status === 200 && !Querier.disableCache) {
                     // If the request was successful, we save the result into the cache
@@ -374,6 +378,7 @@ export class Querier {
     sendGetRequestWithResponseHeaders = async (
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>,
+        inpHeaders: Record<string, string> | undefined,
         userContext: UserContext
     ): Promise<{ body: any; headers: Headers }> => {
         return await this.sendRequestHelper(
@@ -381,7 +386,9 @@ export class Querier {
             "GET",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion(userContext);
-                let headers: any = { "cdi-version": apiVersion };
+                let headers: any = inpHeaders ?? {};
+                headers["cdi-version"] = apiVersion;
+
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -425,7 +432,12 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
+    sendPutRequest = async (
+        path: NormalisedURLPath,
+        body: any,
+        params: Record<string, boolean | number | string | undefined>,
+        userContext: UserContext
+    ): Promise<any> => {
         this.invalidateCoreCallCache(userContext);
 
         const { body: respBody } = await this.sendRequestHelper(
@@ -453,6 +465,63 @@ export class Querier {
                             method: "put",
                             headers: headers,
                             body: body,
+                            params: params,
+                        },
+                        userContext
+                    );
+                    url = request.url;
+                    headers = request.headers;
+                    if (request.body !== undefined) {
+                        body = request.body;
+                    }
+                }
+
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
+                );
+                finalURL.search = searchParams.toString();
+
+                return doFetch(finalURL.toString(), {
+                    method: "PUT",
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
+                    headers,
+                });
+            },
+            this.__hosts?.length || 0
+        );
+        return respBody;
+    };
+
+    // path should start with "/"
+    sendPatchRequest = async (path: NormalisedURLPath, body: any, userContext: UserContext): Promise<any> => {
+        this.invalidateCoreCallCache(userContext);
+
+        const { body: respBody } = await this.sendRequestHelper(
+            path,
+            "PATCH",
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion(userContext);
+                let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
+                if (Querier.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": Querier.apiKey,
+                    };
+                }
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
+                    headers = {
+                        ...headers,
+                        rid: this.rIdToCore,
+                    };
+                }
+                if (Querier.networkInterceptor !== undefined) {
+                    let request = Querier.networkInterceptor(
+                        {
+                            url: url,
+                            method: "patch",
+                            headers: headers,
+                            body: body,
                         },
                         userContext
                     );
@@ -464,7 +533,7 @@ export class Querier {
                 }
 
                 return doFetch(url, {
-                    method: "PUT",
+                    method: "PATCH",
                     body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
@@ -518,7 +587,10 @@ export class Querier {
         }
         let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
-        const url = currentDomain + currentBasePath + path.getAsStringDangerous();
+
+        let strPath = path.getAsStringDangerous();
+
+        const url = currentDomain + currentBasePath + strPath;
         const maxRetries = 5;
 
         if (retryInfoMap === undefined) {
@@ -538,6 +610,7 @@ export class Querier {
             if (isTestEnv()) {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
+
             if (response.status !== 200) {
                 throw response;
             }

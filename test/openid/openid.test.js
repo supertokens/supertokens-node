@@ -88,7 +88,19 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             },
             recipeList: [
                 OpenIdRecipe.init({
-                    issuer: "https://cusomissuer/auth",
+                    override: {
+                        functions: (originalImplementation) => ({
+                            ...originalImplementation,
+                            getOpenIdDiscoveryConfiguration: async (input) => {
+                                const orig = originalImplementation.getOpenIdDiscoveryConfiguration(input);
+                                return {
+                                    ...orig,
+                                    issuer: "https://cusomissuer/auth",
+                                    jwks_uri: "https://cusomissuer/auth/jwt/jwks.json",
+                                };
+                            },
+                        }),
+                    },
                 }),
             ],
         });

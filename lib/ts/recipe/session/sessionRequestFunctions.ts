@@ -8,6 +8,7 @@ import {
 } from "./types";
 import frameworks from "../../framework";
 import SuperTokens from "../../supertokens";
+import OpenIdRecipe from "../openid/recipe";
 import { getRequiredClaimValidators } from "./utils";
 import { getRidFromHeader, isAnIpAddress, normaliseHttpMethod, setRequestInUserContextIfNotDefined } from "../../utils";
 import { logDebugMessage } from "../../logger";
@@ -73,65 +74,13 @@ export async function getSessionFromRequest({
     const sessionOptional = options?.sessionRequired === false;
     logDebugMessage("getSession: optional validation: " + sessionOptional);
 
-    const accessTokens: {
-        [key in TokenTransferMethod]?: ParsedJWTInfo;
-    } = {};
-
-    // We check all token transfer methods for available access tokens
-    for (const transferMethod of availableTokenTransferMethods) {
-        const tokenString = getToken(req, "access", transferMethod);
-        if (tokenString !== undefined) {
-            try {
-                const info = parseJWTWithoutSignatureVerification(tokenString);
-                validateAccessTokenStructure(info.payload, info.version);
-                logDebugMessage("getSession: got access token from " + transferMethod);
-                accessTokens[transferMethod] = info;
-            } catch {
-                logDebugMessage(
-                    `getSession: ignoring token in ${transferMethod}, because it doesn't match our access token structure`
-                );
-            }
-        }
-    }
-
     const allowedTransferMethod = config.getTokenTransferMethod({
         req,
         forCreateNewSession: false,
         userContext,
     });
-    let requestTransferMethod: TokenTransferMethod | undefined;
-    let accessToken: ParsedJWTInfo | undefined;
 
-    if (
-        (allowedTransferMethod === "any" || allowedTransferMethod === "header") &&
-        accessTokens["header"] !== undefined
-    ) {
-        logDebugMessage("getSession: using header transfer method");
-        requestTransferMethod = "header";
-        accessToken = accessTokens["header"];
-    } else if (
-        (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
-        accessTokens["cookie"] !== undefined
-    ) {
-        logDebugMessage("getSession: using cookie transfer method");
-
-        // If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
-        // This prompts the client to call the refresh endpoint, clearing olderCookieDomain cookies (if set).
-        // ensuring outdated token payload isn't used.
-        const hasMultipleAccessTokenCookies = hasMultipleCookiesForTokenType(req, "access");
-        if (hasMultipleAccessTokenCookies) {
-            logDebugMessage(
-                "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
-            );
-            throw new SessionError({
-                message: "Multiple access tokens present in the request cookies.",
-                type: SessionError.TRY_REFRESH_TOKEN,
-            });
-        }
-
-        requestTransferMethod = "cookie";
-        accessToken = accessTokens["cookie"];
-    }
+    const { requestTransferMethod, accessToken } = getAccessTokenFromRequest(req, allowedTransferMethod);
 
     let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
     let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
@@ -210,6 +159,64 @@ export async function getSessionFromRequest({
         );
     }
     return session;
+}
+
+export function getAccessTokenFromRequest(req: any, allowedTransferMethod: TokenTransferMethod | "any") {
+    const accessTokens: {
+        [key in TokenTransferMethod]?: ParsedJWTInfo;
+    } = {};
+
+    // We check all token transfer methods for available access tokens
+    for (const transferMethod of availableTokenTransferMethods) {
+        const tokenString = getToken(req, "access", transferMethod);
+        if (tokenString !== undefined) {
+            try {
+                const info = parseJWTWithoutSignatureVerification(tokenString);
+                validateAccessTokenStructure(info.payload, info.version);
+                logDebugMessage("getSession: got access token from " + transferMethod);
+                accessTokens[transferMethod] = info;
+            } catch {
+                logDebugMessage(
+                    `getSession: ignoring token in ${transferMethod}, because it doesn't match our access token structure`
+                );
+            }
+        }
+    }
+
+    let requestTransferMethod: TokenTransferMethod | undefined;
+    let accessToken: ParsedJWTInfo | undefined;
+
+    if (
+        (allowedTransferMethod === "any" || allowedTransferMethod === "header") &&
+        accessTokens["header"] !== undefined
+    ) {
+        logDebugMessage("getSession: using header transfer method");
+        requestTransferMethod = "header";
+        accessToken = accessTokens["header"];
+    } else if (
+        (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+        accessTokens["cookie"] !== undefined
+    ) {
+        logDebugMessage("getSession: using cookie transfer method");
+
+        // If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
+        // This prompts the client to call the refresh endpoint, clearing olderCookieDomain cookies (if set).
+        // ensuring outdated token payload isn't used.
+        const hasMultipleAccessTokenCookies = hasMultipleCookiesForTokenType(req, "access");
+        if (hasMultipleAccessTokenCookies) {
+            logDebugMessage(
+                "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
+            );
+            throw new SessionError({
+                message: "Multiple access tokens present in the request cookies.",
+                type: SessionError.TRY_REFRESH_TOKEN,
+            });
+        }
+
+        requestTransferMethod = "cookie";
+        accessToken = accessTokens["cookie"];
+    }
+    return { requestTransferMethod, accessToken, allowedTransferMethod };
 }
 
 /*
@@ -438,7 +445,7 @@ export async function createNewSessionInRequest({
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
 
     const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
-    const issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+    const issuer = await OpenIdRecipe.getIssuer(userContext);
 
     let finalAccessTokenPayload = {
         ...accessTokenPayload,

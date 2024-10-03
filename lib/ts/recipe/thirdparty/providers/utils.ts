@@ -1,6 +1,6 @@
 import * as jose from "jose";
-
 import { ProviderConfigForClientType } from "../types";
+import { getOIDCDiscoveryInfo } from "../../../thirdpartyUtils";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { logDebugMessage } from "../../../logger";
@@ -97,27 +97,6 @@ export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
     const { payload } = await jose.jwtVerify(idToken, jwks, otherOptions);
 
     return payload;
-}
-
-// OIDC utils
-var oidcInfoMap: { [key: string]: any } = {};
-
-async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
-    if (oidcInfoMap[issuer] !== undefined) {
-        return oidcInfoMap[issuer];
-    }
-
-    const normalizedDomain = new NormalisedURLDomain(issuer);
-    const normalizedPath = new NormalisedURLPath(issuer);
-
-    let oidcInfo = await doGetRequest(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous());
-    if (oidcInfo.status > 400) {
-        logDebugMessage(`Received response with status ${oidcInfo.status} and body ${oidcInfo.stringResponse}`);
-        throw new Error(`Received response with status ${oidcInfo!.status} and body ${oidcInfo!.stringResponse}`);
-    }
-
-    oidcInfoMap[issuer] = oidcInfo.jsonResponse!;
-    return oidcInfo.jsonResponse!;
 }
 
 export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<void> {

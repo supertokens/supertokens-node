@@ -91,6 +91,7 @@ export default class Wrapper {
             email,
             password,
             session,
+            shouldTryLinkingWithSessionUser: !!session,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: getUserContext(userContext),
         });
@@ -143,6 +144,7 @@ export default class Wrapper {
             email,
             password,
             session,
+            shouldTryLinkingWithSessionUser: !!session,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: getUserContext(userContext),
         });

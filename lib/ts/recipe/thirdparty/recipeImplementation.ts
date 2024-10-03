@@ -15,7 +15,16 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
     return {
         manuallyCreateOrUpdateUser: async function (
             this: RecipeInterface,
-            { thirdPartyId, thirdPartyUserId, email, isVerified, tenantId, session, userContext }
+            {
+                thirdPartyId,
+                thirdPartyUserId,
+                email,
+                isVerified,
+                tenantId,
+                session,
+                shouldTryLinkingWithSessionUser,
+                userContext,
+            }
         ) {
             const accountLinking = AccountLinking.getInstance();
             const users = await listUsersByAccountInfo(
@@ -71,8 +80,9 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             // function updated the verification status) and can return that
             response.user = (await getUser(response.recipeUserId.getAsString(), userContext))!;
 
-            const linkResult = await AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+            const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
+                shouldTryLinkingWithSessionUser,
                 inputUser: response.user,
                 recipeUserId: response.recipeUserId,
                 session,
@@ -102,6 +112,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext,
                 oAuthTokens,
                 session,
+                shouldTryLinkingWithSessionUser,
                 rawUserInfoFromProvider,
             }
         ): Promise<
@@ -136,6 +147,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 tenantId,
                 isVerified,
                 session,
+                shouldTryLinkingWithSessionUser,
                 userContext,
             });
 

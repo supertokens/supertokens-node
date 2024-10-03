@@ -15,4 +15,5 @@ export declare abstract class BaseRequest {
     abstract getOriginalURL: () => string;
     getFormData: () => Promise<any>;
     getJSONBody: () => Promise<any>;
+    getBodyAsJSONOrFormData: () => Promise<any>;
 }

@@ -138,6 +138,7 @@ export default function getAPIInterface(): APIInterface {
                 tenantId: input.tenantId,
                 userContext: input.userContext,
                 session: input.session,
+                shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
             });
 
             if (preAuthChecks.status !== "OK") {
@@ -160,6 +161,7 @@ export default function getAPIInterface(): APIInterface {
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                 session: input.session,
+                shouldTryLinkingWithSessionUser: input.shouldTryLinkingWithSessionUser,
                 tenantId,
                 userContext,
             });

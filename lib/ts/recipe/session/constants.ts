@@ -34,4 +34,5 @@ export const protectedProps = [
     "antiCsrfToken",
     "rsub",
     "tId",
+    "stt",
 ];

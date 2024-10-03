@@ -351,7 +351,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(JSON.parse(res.text).message === "The value of formFields with id = password must be a string");
+        assert(JSON.parse(res.text).message === "password value must be a string");
     });
 
     it("test email must be of type string in input", async function () {
@@ -404,7 +404,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(JSON.parse(res.text).message === "The value of formFields with id = email must be a string");
+        assert(JSON.parse(res.text).message === "email value must be a string");
     });
 
     /*

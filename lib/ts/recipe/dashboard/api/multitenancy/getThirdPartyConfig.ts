@@ -23,7 +23,7 @@ import { ProviderConfig } from "../../../thirdparty/types";
 import { UserContext } from "../../../../types";
 import NormalisedURLDomain from "../../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../../normalisedURLPath";
-import { doGetRequest } from "../../../thirdparty/providers/utils";
+import { doGetRequest } from "../../../../thirdpartyUtils";
 
 export type Response =
     | {

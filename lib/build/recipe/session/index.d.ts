@@ -170,6 +170,7 @@ export default class SessionWrapper {
         userContext?: Record<string, any>
     ): Promise<{
         keys: import("../jwt").JsonWebKey[];
+        validityInSeconds?: number | undefined;
     }>;
     static getOpenIdDiscoveryConfiguration(
         userContext?: Record<string, any>
@@ -177,6 +178,15 @@ export default class SessionWrapper {
         status: "OK";
         issuer: string;
         jwks_uri: string;
+        authorization_endpoint: string;
+        token_endpoint: string;
+        userinfo_endpoint: string;
+        revocation_endpoint: string;
+        token_introspection_endpoint: string;
+        end_session_endpoint: string;
+        subject_types_supported: string[];
+        id_token_signing_alg_values_supported: string[];
+        response_types_supported: string[];
     }>;
     static fetchAndSetClaim(
         sessionHandle: string,

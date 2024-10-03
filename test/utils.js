@@ -31,6 +31,7 @@ let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").def
 let MultitenancyRecipe = require("../lib/build/recipe/multitenancy/recipe").default;
 let MultiFactorAuthRecipe = require("../lib/build/recipe/multifactorauth/recipe").default;
 const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
+const OAuth2Recipe = require("../lib/build/recipe/oauth2provider/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
@@ -266,6 +267,7 @@ module.exports.resetAll = function (disableLogging = true) {
     MultitenancyRecipe.reset();
     TotpRecipe.reset();
     MultiFactorAuthRecipe.reset();
+    OAuth2Recipe.reset();
     if (disableLogging) {
         debug.disable();
     }

@@ -119,7 +119,7 @@ describe(`overwriteSessionDuringSignInUp config: ${printPath(
             );
 
             cookies = extractInfoFromResponse(res);
-            assert(cookies.accessTokenFromAny === undefined);
+            assert.notStrictEqual(cookies.accessTokenFromAny, undefined);
         });
 
         it("test false", async function () {

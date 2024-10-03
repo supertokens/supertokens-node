@@ -10,7 +10,7 @@ import RecipeUserId from "./recipeUserId";
 import { updateAndGetMFARelatedInfoInSession } from "./recipe/multifactorauth/utils";
 import { isValidFirstFactor } from "./recipe/multitenancy/utils";
 import SessionError from "./recipe/session/error";
-import { getUser } from ".";
+import { Error as STError, getUser } from ".";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
 import SessionRecipe from "./recipe/session/recipe";
@@ -82,6 +82,7 @@ export const AuthUtils = {
         factorIds,
         skipSessionUserUpdateInCore,
         session,
+        shouldTryLinkingWithSessionUser,
         userContext,
     }: {
         authenticatingAccountInfo: AccountInfoWithRecipeId;
@@ -93,6 +94,7 @@ export const AuthUtils = {
         signInVerifiesLoginMethod: boolean;
         skipSessionUserUpdateInCore: boolean;
         session?: SessionContainerInterface;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; validFactorIds: string[]; isFirstFactor: boolean }
@@ -118,6 +120,7 @@ export const AuthUtils = {
         // We also load the session user here if it is available.
         const authTypeInfo = await AuthUtils.checkAuthTypeAndLinkingStatus(
             session,
+            shouldTryLinkingWithSessionUser,
             authenticatingAccountInfo,
             authenticatingUser,
             skipSessionUserUpdateInCore,
@@ -277,8 +280,9 @@ export const AuthUtils = {
                 // If the new user wasn't linked to the current one, we check the config and overwrite the session if required
                 // Note: we could also get here if MFA is enabled, but the app didn't want to link the user to the session user.
                 // This is intentional, since the MFA and overwriteSessionDuringSignInUp configs should work independently.
-                let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().config
-                    .overwriteSessionDuringSignInUp;
+                let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().getNormalisedOverwriteSessionDuringSignInUp(
+                    req
+                );
                 if (overwriteSessionDuringSignInUp) {
                     respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
                     if (mfaInstance !== undefined) {
@@ -287,6 +291,9 @@ export const AuthUtils = {
                 }
             }
         } else {
+            // We do not have to care about overwriting the session here, since we either:
+            // - have overwriteSessionDuringSignInUp true and we didn't even try to load the session because we ignore it anyway
+            // - have overwriteSessionDuringSignInUp false and we checked in the api imlp that there is no session
             logDebugMessage(`postAuthChecks creating session for first factor sign in/up`);
             // If there is no input session, we do not need to do anything other checks and create a new session
             respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
@@ -480,6 +487,7 @@ export const AuthUtils = {
      */
     checkAuthTypeAndLinkingStatus: async function (
         session: SessionContainerInterface | undefined,
+        shouldTryLinkingWithSessionUser: boolean | undefined,
         accountInfo: AccountInfoWithRecipeId,
         inputUser: User | undefined,
         skipSessionUserUpdateInCore: boolean,
@@ -503,19 +511,50 @@ export const AuthUtils = {
         logDebugMessage(`checkAuthTypeAndLinkingStatus called`);
         let sessionUser: User | undefined = undefined;
         if (session === undefined) {
+            if (shouldTryLinkingWithSessionUser === true) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session not found but shouldTryLinkingWithSessionUser is true",
+                });
+            }
             logDebugMessage(`checkAuthTypeAndLinkingStatus returning first factor because there is no session`);
             // If there is no active session we have nothing to link to - so this has to be a first factor sign in
             return { status: "OK", isFirstFactor: true };
         } else {
+            if (shouldTryLinkingWithSessionUser === false) {
+                logDebugMessage(
+                    `checkAuthTypeAndLinkingStatus returning first factor because shouldTryLinkingWithSessionUser is false`
+                );
+                // In our normal flows this should never happen - but some user overrides might do this.
+                // Anyway, since shouldTryLinkingWithSessionUser explicitly set to false, it's safe to consider this a firstFactor
+                return { status: "OK", isFirstFactor: true };
+            }
+
             if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config)) {
-                if (MultiFactorAuthRecipe.getInstance() !== undefined) {
+                if (shouldTryLinkingWithSessionUser === true) {
                     throw new Error(
                         "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
                     );
                 } else {
-                    return { status: "OK", isFirstFactor: true };
+                    // This is the legacy case where shouldTryLinkingWithSessionUser is undefined
+                    if (MultiFactorAuthRecipe.getInstance() !== undefined) {
+                        throw new Error(
+                            "Please initialise the account linking recipe and define shouldDoAutomaticAccountLinking to enable MFA"
+                        );
+                    } else {
+                        logDebugMessage(
+                            `checkAuthTypeAndLinkingStatus (legacy behaviour) returning first factor because MFA is not initialised and shouldDoAutomaticAccountLinking is not defined`
+                        );
+                        return { status: "OK", isFirstFactor: true };
+                    }
                 }
             }
+
+            // If we get here:
+            // - session is defined
+            // - shouldTryLinkingWithSessionUser is true or undefined
+            // - shouldDoAutomaticAccountLinking is defined
+            // - MFA may or may not be initialized
 
             // If the input and the session user are the same
             if (inputUser !== undefined && inputUser.id === session.getUserId()) {
@@ -542,6 +581,15 @@ export const AuthUtils = {
                 userContext
             );
             if (sessionUserResult.status === "SHOULD_AUTOMATICALLY_LINK_FALSE") {
+                if (shouldTryLinkingWithSessionUser === true) {
+                    // tryAndMakeSessionUserIntoAPrimaryUser throws if it is an email verification iss
+                    throw new STError({
+                        message:
+                            "shouldDoAutomaticAccountLinking returned false when making the session user primary but shouldTryLinkingWithSessionUser is true",
+                        type: "BAD_INPUT_ERROR",
+                    });
+                }
+
                 return {
                     status: "OK",
                     isFirstFactor: true,
@@ -572,6 +620,13 @@ export const AuthUtils = {
             );
 
             if (shouldLink.shouldAutomaticallyLink === false) {
+                if (shouldTryLinkingWithSessionUser === true) {
+                    throw new STError({
+                        message:
+                            "shouldDoAutomaticAccountLinking returned false when making the session user primary but shouldTryLinkingWithSessionUser is true",
+                        type: "BAD_INPUT_ERROR",
+                    });
+                }
                 return { status: "OK", isFirstFactor: true };
             } else {
                 return {
@@ -599,17 +654,19 @@ export const AuthUtils = {
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
-    linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo: async function ({
+    linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo: async function ({
         tenantId,
         inputUser,
         recipeUserId,
         session,
+        shouldTryLinkingWithSessionUser,
         userContext,
     }: {
         tenantId: string;
         inputUser: User;
         recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User }
@@ -622,13 +679,14 @@ export const AuthUtils = {
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
     > {
-        logDebugMessage("linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo called");
+        logDebugMessage("linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo called");
         const retry = () => {
-            logDebugMessage("linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo retrying....");
-            return AuthUtils.linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo({
+            logDebugMessage("linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo retrying....");
+            return AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 inputUser: inputUser,
                 session,
+                shouldTryLinkingWithSessionUser,
                 recipeUserId,
                 userContext,
             });
@@ -647,6 +705,7 @@ export const AuthUtils = {
 
         const authTypeRes = await AuthUtils.checkAuthTypeAndLinkingStatus(
             session,
+            shouldTryLinkingWithSessionUser,
             authLoginMethod,
             inputUser,
             false,
@@ -660,12 +719,12 @@ export const AuthUtils = {
         if (authTypeRes.isFirstFactor) {
             if (!recipeInitDefinedShouldDoAutomaticAccountLinking(AccountLinking.getInstance().config)) {
                 logDebugMessage(
-                    "linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo skipping link by account info because this is a first factor auth and the app hasn't defined shouldDoAutomaticAccountLinking"
+                    "linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo skipping link by account info because this is a first factor auth and the app hasn't defined shouldDoAutomaticAccountLinking"
                 );
                 return { status: "OK", user: inputUser };
             }
             logDebugMessage(
-                "linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by account info because this is a first factor auth"
+                "linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by account info because this is a first factor auth"
             );
             // We try and list all users that can be linked to the input user based on the account info
             // later we can use these when trying to link or when checking if linking to the session user is possible.
@@ -692,7 +751,7 @@ export const AuthUtils = {
         }
 
         logDebugMessage(
-            "linkToSessionIfProvidedElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by session info"
+            "linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo trying to link by session info"
         );
         const sessionLinkingRes = await AuthUtils.tryLinkingBySession({
             sessionUser: authTypeRes.sessionUser,
@@ -958,6 +1017,53 @@ export const AuthUtils = {
         }
 
         return validFactorIds;
+    },
+    loadSessionInAuthAPIIfNeeded: async function (
+        req: BaseRequest,
+        res: BaseResponse,
+        shouldTryLinkingWithSessionUser: boolean | undefined,
+        userContext: UserContext
+    ) {
+        const overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().getNormalisedOverwriteSessionDuringSignInUp(
+            req
+        );
+
+        if (shouldTryLinkingWithSessionUser !== false) {
+            logDebugMessage(
+                "loadSessionInAuthAPIIfNeeded: loading session because shouldTryLinkingWithSessionUser is not set to false so we may want to link later"
+            );
+            return await Session.getSession(
+                req,
+                res,
+                {
+                    // This is optional only if shouldTryLinkingWithSessionUser is undefined
+                    // in the (old) 3.0 FDI, this flag didn't exist and we linking was based on the session presence and shouldDoAutomaticAccountLinking
+                    sessionRequired: shouldTryLinkingWithSessionUser === true,
+                    overrideGlobalClaimValidators: () => [],
+                },
+                userContext
+            );
+        }
+
+        if (overwriteSessionDuringSignInUp === false) {
+            logDebugMessage(
+                "loadSessionInAuthAPIIfNeeded: loading session in optional mode because overwriteSessionDuringSignInUp is false so if it is not found we will skip session creation"
+            );
+            return await Session.getSession(
+                req,
+                res,
+                {
+                    sessionRequired: false,
+                    overrideGlobalClaimValidators: () => [],
+                },
+                userContext
+            );
+        }
+        logDebugMessage(
+            "loadSessionInAuthAPIIfNeeded: skipping session loading because we are not linking and we would overwrite it anyway"
+        );
+
+        return undefined;
     },
 };
 

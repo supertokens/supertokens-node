@@ -9,6 +9,6 @@ export declare function validateFormFieldsOrThrowError(
 ): Promise<
     {
         id: string;
-        value: string;
+        value: unknown;
     }[]
 >;

@@ -4,6 +4,27 @@ orbs:
     continuation: circleci/continuation@0.1.2
     slack: circleci/slack@3.4.2
     jq: circleci/jq@2.2.0
+
+parameters:
+    force:
+        type: boolean
+        default: false
+    cdi-core-map:
+        type: string
+        default: "{}"
+    cdi-plugin-interface-map:
+        type: string
+        default: "{}"
+    fdi-node-map:
+        type: string
+        default: "{}"
+    fdi-auth-react-map:
+        type: string
+        default: "{}"
+    fdi-website-map:
+        type: string
+        default: "{}"
+
 jobs:
     test-dev-tag-as-not-passed:
         docker:
@@ -12,16 +33,16 @@ jobs:
             - run: echo "Testing branch << pipeline.git.branch >>"
             - when:
                   condition:
-                      not:
-                          matches:
-                              pattern: "^test-cicd/.*$"
-                              value: << pipeline.git.branch >>
+                      matches:
+                          pattern: "^[0-9]+\\.[0-9]+$" # X.Y branches
+                          value: << pipeline.git.branch >>
                   steps:
                       - checkout
                       - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
     test-unit:
         docker:
             - image: rishabhpoddar/supertokens_node_driver_testing_node_20
+            - image: rishabhpoddar/oauth-server-cicd
         resource_class: large
         parameters:
             cdi-version:
@@ -39,6 +60,7 @@ jobs:
     test-backend-sdk-testing:
         docker:
             - image: rishabhpoddar/supertokens_node_driver_testing_node_20
+            - image: rishabhpoddar/oauth-server-cicd
         resource_class: large
         parameters:
             cdi-version:
@@ -57,6 +79,7 @@ jobs:
     test-website:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
+            - image: rishabhpoddar/oauth-server-cicd
         resource_class: large
         parameters:
             fdi-version:
@@ -75,6 +98,7 @@ jobs:
     test-authreact:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: rishabhpoddar/oauth-server-cicd
         resource_class: large
         parameters:
             fdi-version:
@@ -92,6 +116,12 @@ jobs:
             - store_artifacts:
                   path: test_report/backend.log
                   destination: logs
+            - store_artifacts:
+                  path: test_report/screenshots
+                  destination: screenshots
+            - store_artifacts:
+                  path: test_report/react-logs
+                  destination: react-logs
             - slack/status
     test-success:
         docker:
@@ -100,10 +130,9 @@ jobs:
             - run: echo "Testing passed for branch << pipeline.git.branch >>"
             - when:
                   condition:
-                      not:
-                          matches:
-                              pattern: "^test-cicd/.*$"
-                              value: << pipeline.git.branch >>
+                      matches:
+                          pattern: "^[0-9]+\\.[0-9]+$" # X.Y branches
+                          value: << pipeline.git.branch >>
                   steps:
                       - checkout
                       - run: (cd .circleci/ && ./markAsSuccess.sh)

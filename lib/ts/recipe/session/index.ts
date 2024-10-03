@@ -26,6 +26,8 @@ import {
     RecipeInterface,
 } from "./types";
 import Recipe from "./recipe";
+import OpenIdRecipe from "../openid/recipe";
+import JWTRecipe from "../jwt/recipe";
 import { JSONObject, UserContext } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
@@ -85,8 +87,7 @@ export default class SessionWrapper {
         const ctx = getUserContext(userContext);
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
-        const appInfo = recipeInstance.getAppInfo();
-        const issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+        const issuer = await OpenIdRecipe.getIssuer(ctx);
 
         let finalAccessTokenPayload = {
             ...accessTokenPayload,
@@ -398,7 +399,7 @@ export default class SessionWrapper {
         useStaticSigningKey?: boolean,
         userContext?: Record<string, any>
     ) {
-        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.createJWT({
+        return OpenIdRecipe.getInstanceOrThrowError().recipeImplementation.createJWT({
             payload,
             validitySeconds,
             useStaticSigningKey,
@@ -407,13 +408,13 @@ export default class SessionWrapper {
     }
 
     static getJWKS(userContext?: Record<string, any>) {
-        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getJWKS({
+        return JWTRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWKS({
             userContext: getUserContext(userContext),
         });
     }
 
     static getOpenIdDiscoveryConfiguration(userContext?: Record<string, any>) {
-        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({
+        return OpenIdRecipe.getInstanceOrThrowError().recipeImplementation.getOpenIdDiscoveryConfiguration({
             userContext: getUserContext(userContext),
         });
     }

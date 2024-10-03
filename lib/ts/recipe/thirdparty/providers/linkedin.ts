@@ -15,7 +15,7 @@
 import { logDebugMessage } from "../../../logger";
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider from "./custom";
-import { doGetRequest } from "./utils";
+import { doGetRequest } from "../../../thirdpartyUtils";
 
 export default function Linkedin(input: ProviderInput): TypeProvider {
     if (input.config.name === undefined) {

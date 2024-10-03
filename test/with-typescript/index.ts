@@ -11,6 +11,7 @@ import NextJS from "../../nextjs";
 import ThirdParty from "../../recipe/thirdparty";
 import Multitenancy from "../../recipe/multitenancy";
 import Passwordless from "../../recipe/passwordless";
+import OpenId from "../../recipe/openid";
 import { SMTPService as SMTPServiceTPP } from "../../recipe/passwordless/emaildelivery";
 import { SMTPService as SMTPServiceP } from "../../recipe/passwordless/emaildelivery";
 import { SMTPService as SMTPServiceTPEP } from "../../recipe/emailpassword/emaildelivery";
@@ -1348,14 +1349,33 @@ EmailPassword.init({
                 signInPOST: async (input) => {
                     let formFields = input.formFields;
                     let options = input.options;
-                    let email = formFields.filter((f) => f.id === "email")[0].value;
-                    let password = formFields.filter((f) => f.id === "password")[0].value;
+                    const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
+                    const passwordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
+
+                    // NOTE: Following checks will likely never throw an error as the
+                    // check for type is done in a parent function but they are kept
+                    // here to be on the safe side.
+                    if (typeof emailAsUnknown !== "string")
+                        return {
+                            status: "GENERAL_ERROR",
+                            message: "email value needs to be a string",
+                        };
+
+                    if (typeof passwordAsUnknown !== "string")
+                        return {
+                            status: "GENERAL_ERROR",
+                            message: "password value needs to be a string",
+                        };
+
+                    let email: string = emailAsUnknown;
+                    let password: string = passwordAsUnknown;
 
                     let response = await options.recipeImplementation.signIn({
                         email,
                         password,
                         tenantId: input.tenantId,
                         session: input.session,
+                        shouldTryLinkingWithSessionUser: false,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {
@@ -1587,16 +1607,28 @@ Session.init({
                 });
             },
         }),
-        openIdFeature: {
-            functions: (oI) => ({
-                ...oI,
-                getOpenIdDiscoveryConfiguration: async (input) => ({
-                    issuer: "your issuer",
-                    jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
-                    status: "OK",
-                }),
+    },
+});
+
+OpenId.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getOpenIdDiscoveryConfiguration: async (input) => ({
+                issuer: "your issuer",
+                jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                token_endpoint: "http://localhost:3000/auth/oauth2/token",
+                authorization_endpoint: "http://localhost:3000/auth/oauth2/auth",
+                userinfo_endpoint: "http://localhost:3000/auth/oauth2/userinfo",
+                revocation_endpoint: "http://localhost:3000/auth/oauth2/revoke",
+                token_introspection_endpoint: "http://localhost:3000/auth/oauth2/introspect",
+                end_session_endpoint: "http://localhost:3000/auth/oauth2/introspect",
+                id_token_signing_alg_values_supported: [],
+                response_types_supported: [],
+                subject_types_supported: [],
+                status: "OK",
             }),
-        },
+        }),
     },
 });
 
@@ -1858,21 +1890,17 @@ Passwordless.init({
 
 const recipeUserId = new Supertokens.RecipeUserId("asdf");
 
-Session.init({
+JWT.init({
     override: {
-        openIdFeature: {
-            jwtFeature: {
-                apis: (oI) => {
-                    return {
-                        ...oI,
-                        getJWKSGET: async function (input) {
-                            let result = await oI.getJWKSGET!(input);
-                            input.options.res.setHeader("custom-header", "custom-value", false);
-                            return result;
-                        },
-                    };
+        apis: (oI) => {
+            return {
+                ...oI,
+                getJWKSGET: async function (input) {
+                    let result = await oI.getJWKSGET!(input);
+                    input.options.res.setHeader("custom-header", "custom-value", false);
+                    return result;
                 },
-            },
+            };
         },
     },
 });

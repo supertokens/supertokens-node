@@ -8,29 +8,16 @@ export default class OpenIdRecipeWrapper {
         status: "OK";
         issuer: string;
         jwks_uri: string;
-    }>;
-    static createJWT(
-        payload?: any,
-        validitySeconds?: number,
-        useStaticSigningKey?: boolean,
-        userContext?: Record<string, any>
-    ): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    >;
-    static getJWKS(
-        userContext?: Record<string, any>
-    ): Promise<{
-        keys: import("../jwt").JsonWebKey[];
-        validityInSeconds?: number | undefined;
+        authorization_endpoint: string;
+        token_endpoint: string;
+        userinfo_endpoint: string;
+        revocation_endpoint: string;
+        token_introspection_endpoint: string;
+        end_session_endpoint: string;
+        subject_types_supported: string[];
+        id_token_signing_alg_values_supported: string[];
+        response_types_supported: string[];
     }>;
 }
 export declare let init: typeof OpenIdRecipe.init;
 export declare let getOpenIdDiscoveryConfiguration: typeof OpenIdRecipeWrapper.getOpenIdDiscoveryConfiguration;
-export declare let createJWT: typeof OpenIdRecipeWrapper.createJWT;
-export declare let getJWKS: typeof OpenIdRecipeWrapper.getJWKS;

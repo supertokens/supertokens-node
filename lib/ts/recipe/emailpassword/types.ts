@@ -88,6 +88,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -128,6 +129,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -228,7 +230,7 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               options: APIOptions;
@@ -249,7 +251,7 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               token: string;
               tenantId: string;
@@ -273,10 +275,11 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;
+              shouldTryLinkingWithSessionUser: boolean | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<
@@ -300,10 +303,11 @@ export type APIInterface = {
         | ((input: {
               formFields: {
                   id: string;
-                  value: string;
+                  value: unknown;
               }[];
               tenantId: string;
               session: SessionContainerInterface | undefined;
+              shouldTryLinkingWithSessionUser: boolean | undefined;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<

@@ -15,7 +15,7 @@
 import { encodeBase64 } from "../../../utils";
 import { ProviderInput, TypeProvider, UserInfo } from "../types";
 import NewProvider from "./custom";
-import { doGetRequest, doPostRequest } from "./utils";
+import { doGetRequest, doPostRequest } from "../../../thirdpartyUtils";
 
 function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoResponse: {
     fromIdTokenPayload?: any;
