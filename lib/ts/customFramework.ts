@@ -216,7 +216,9 @@ export async function getSessionForSSR(
     if (!jwks) {
         const stInstance = SuperTokens.getInstanceOrThrowError();
         jwksToUse = createRemoteJWKSet(
-            new URL(`${stInstance.appInfo.apiDomain}${stInstance.appInfo.apiBasePath}/jwt/jwks.json`)
+            new URL(
+                `${stInstance.appInfo.apiDomain.getAsStringDangerous()}${stInstance.appInfo.apiBasePath.getAsStringDangerous()}/jwt/jwks.json`
+            )
         );
     }
 
