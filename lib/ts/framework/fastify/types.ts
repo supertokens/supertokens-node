@@ -21,8 +21,8 @@ export interface FastifyReply {
     type(contentType: string): FastifyReply;
 }
 
-export interface FastifyInstance {
-    addHook(name: string, hook: (req: FastifyRequest, reply: FastifyReply) => void): FastifyInstance;
+export interface FastifyInstance<Instance = any, Request = any, Reply = any> {
+    addHook(name: string, hook: (req: Request, reply: Reply) => void): Instance;
 }
 
-export type FastifyPluginCallback = (instance: FastifyInstance, opts: any, done: (err?: Error) => void) => void;
+export type FastifyPluginCallback = (instance: any, opts: any, done: (err?: Error) => void) => void;

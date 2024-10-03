@@ -42,7 +42,7 @@ fastify.route({
     },
     // @ts-ignore
     preHandler: verifySession(),
-    handler: async (req: SessionRequest, _) => {
+    handler: async (req: SessionRequest, _: any) => {
         let session = req.session;
         return {
             sessionHandle: session!.getHandle(),
