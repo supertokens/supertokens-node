@@ -26,7 +26,7 @@ export declare function getSessionForSSR(
     error: Error | undefined;
 }>;
 export declare function withSession(
-    remixRequest: Request,
+    request: Request,
     handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<Response>,
     options?: VerifySessionOptions,
     userContext?: Record<string, any>

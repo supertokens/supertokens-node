@@ -129,7 +129,7 @@ async function getSessionDetails(
     hasToken: boolean;
     hasInvalidClaims: boolean;
     baseResponse: CollectingResponse;
-    RemixResponse?: Response;
+    response?: Response;
 }> {
     const baseResponse = new CollectingResponse();
     // Possible interop issue.
@@ -168,7 +168,7 @@ async function getSessionDetails(
                 hasInvalidClaims: err.type === Session.Error.INVALID_CLAIMS,
                 session: undefined,
                 baseResponse,
-                RemixResponse: new Response("Authentication required", {
+                response: new Response("Authentication required", {
                     status: err.type === Session.Error.INVALID_CLAIMS ? 403 : 401,
                 }),
             };
@@ -210,17 +210,17 @@ export async function getSessionForSSR(
 }
 
 export async function withSession(
-    remixRequest: Request,
+    request: Request,
     handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<Response>,
     options?: VerifySessionOptions,
     userContext?: Record<string, any>
 ): Promise<Response> {
     try {
-        const baseRequest = createPreParsedRequest(remixRequest);
-        const { session, RemixResponse, baseResponse } = await getSessionDetails(baseRequest, options, userContext);
+        const baseRequest = createPreParsedRequest(request);
+        const { session, response, baseResponse } = await getSessionDetails(baseRequest, options, userContext);
 
-        if (RemixResponse !== undefined) {
-            return RemixResponse;
+        if (response !== undefined) {
+            return response;
         }
 
         let userResponse: Response;
