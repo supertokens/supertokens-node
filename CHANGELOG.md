@@ -7,17 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## UNRELEASED
+## [21.0.0] - 2024-10-07
 
 -   Added OAuth2Provider recipe
 -   Added a way to run CI on unmerged PRs
--   Added support for FDIs: 3.1 and 4.0. Required by: auth-react >=0.43.0 and web-js>=0.13.0
+-   Added support for FDIs: 3.1 and 4.0. Required by: auth-react >=0.49.0 and web-js>=0.15.0
 -   The `networkInterceptor` now also gets a new `params` prop in the request config.
 
 ### Breaking change
 
 -   Changes type of value in formField object to be `unknown` instead of `string` to add support for accepting any type of value in form fields.
--   Only supporting CDI 5.1, Compatible with core version >= 10.0
+-   Only supporting CDI 5.2, Compatible with Core version >= 10.0
 -   Changed the default value of `overwriteSessionDuringSignInUp` to true.
 -   Added a new `shouldTryLinkingWithSessionUser` to sign in/up related APIs (and the related recipe functions)
     -   This will default to false on the API
