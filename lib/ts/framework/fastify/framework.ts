@@ -164,7 +164,7 @@ export class FastifyResponse extends BaseResponse {
     };
 }
 
-function plugin(fastify: FastifyInstance<any>, _: any, done: Function) {
+function plugin(fastify: FastifyInstance, _: unknown, done: () => void) {
     fastify.addHook("preHandler", async (req: OriginalFastifyRequest, reply: FastifyReply) => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
