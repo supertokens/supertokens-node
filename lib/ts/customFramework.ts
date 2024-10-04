@@ -11,10 +11,10 @@ import SessionRecipe from "./recipe/session/recipe";
 import { availableTokenTransferMethods } from "./recipe/session/constants";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
-import { JWTPayload, createRemoteJWKSet } from "jose";
-import SuperTokens from "./supertokens";
+import { JWTPayload } from "jose";
 import { HTTPMethod } from "./types";
 import { getInfoFromAccessToken } from "./recipe/session/accessToken";
+import { getCombinedJWKS } from "./combinedRemoteJWKSet";
 
 export type GetCookieFn<T extends ParsableRequest = Request> = (req: T) => Record<string, string>;
 
@@ -209,12 +209,8 @@ export async function getSessionForSSR(
 
     let jwksToUse = jwks;
     if (!jwks) {
-        const stInstance = SuperTokens.getInstanceOrThrowError();
-        jwksToUse = createRemoteJWKSet(
-            new URL(
-                `${stInstance.appInfo.apiDomain.getAsStringDangerous()}${stInstance.appInfo.apiBasePath.getAsStringDangerous()}/jwt/jwks.json`
-            )
-        );
+        const sessionRecipe = SessionRecipe.getInstanceOrThrowError();
+        jwksToUse = getCombinedJWKS(sessionRecipe.config);
     }
 
     try {
