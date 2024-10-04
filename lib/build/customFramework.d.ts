@@ -52,12 +52,16 @@ export declare function getSessionForSSR(
     hasToken: boolean;
     error: Error | undefined;
 }>;
-export declare function withSession(
-    request: Request,
-    handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<Response>,
+export declare function withSession<
+    RequestType extends ParsableRequest = Request,
+    ResponseType extends Response = Response
+>(
+    request: RequestType,
+    handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<ResponseType>,
     options?: VerifySessionOptions,
-    userContext?: Record<string, any>
-): Promise<Response>;
+    userContext?: Record<string, any>,
+    getCookieFn?: GetCookieFn<RequestType>
+): Promise<ResponseType>;
 export declare function addCookies<UserResponseType extends Response = Response>(
     baseResponse: CollectingResponse,
     userResponse: UserResponseType

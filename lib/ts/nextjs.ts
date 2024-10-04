@@ -13,11 +13,9 @@
  * under the License.
  */
 
-import { serialize } from "cookie";
 import { errorHandler } from "./framework/express";
 import { getUserContext } from "./utils";
 import { CollectingResponse, PreParsedRequest, middleware } from "./framework/custom";
-import { HTTPMethod } from "./types";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import {
     addCookies,
@@ -26,6 +24,7 @@ import {
     getHandleCall,
     getSessionDetails,
     handleError,
+    withSession as customWithSession,
 } from "./customFramework";
 
 function next(
@@ -96,11 +95,9 @@ export default class NextJS {
 
     static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
         const getCookieFromNextReq = NextJS.getCookieExtractor<T>();
-
         const stMiddleware = middleware<T>((req) => {
             return createPreParsedRequest<T>(req, getCookieFromNextReq);
         });
-
         return getHandleCall<T>(NextResponse, stMiddleware);
     }
 
@@ -114,16 +111,14 @@ export default class NextJS {
         hasToken: boolean;
         hasInvalidClaims: boolean;
     }> {
-        let cookiesObj: Record<string, string> = Object.fromEntries(
-            cookies.map((cookie) => [cookie.name, cookie.value])
-        );
-
+        // Create an instance of PreParsedRequest without access to the actual
+        // request body and inject cookies into it.
         let baseRequest = new PreParsedRequest({
             method: "get",
             url: "",
             query: {},
             headers: headers,
-            cookies: cookiesObj,
+            cookies: Object.fromEntries(cookies.map((cookie) => [cookie.name, cookie.value])),
             getFormBody: async () => [],
             getJSONBody: async () => [],
         });
@@ -142,82 +137,14 @@ export default class NextJS {
         options?: VerifySessionOptions,
         userContext?: Record<string, any>
     ): Promise<NextResponse> {
-        try {
-            const query = Object.fromEntries(new URL(req.url).searchParams.entries());
-            const cookies: Record<string, string> = Object.fromEntries(
-                req.cookies.getAll().map((cookie) => [cookie.name, cookie.value])
-            );
-
-            let baseRequest = new PreParsedRequest({
-                method: req.method as HTTPMethod,
-                url: req.url,
-                query: query,
-                headers: req.headers,
-                cookies: cookies,
-                getFormBody: () => req!.formData(),
-                getJSONBody: () => req!.json(),
-            });
-
-            const { session, response, baseResponse } = await getSessionDetails(
-                baseRequest,
-                options,
-                getUserContext(userContext)
-            );
-
-            if (response) {
-                return response as NextResponse;
-            }
-
-            let userResponse: NextResponse;
-
-            try {
-                userResponse = await handler(undefined, session);
-            } catch (err) {
-                userResponse = await handleError<NextResponse>(err, baseRequest, baseResponse);
-            }
-
-            let didAddCookies = false;
-            let didAddHeaders = false;
-
-            for (const respCookie of baseResponse.cookies) {
-                didAddCookies = true;
-                userResponse.headers.append(
-                    "Set-Cookie",
-                    serialize(respCookie.key, respCookie.value, {
-                        domain: respCookie.domain,
-                        expires: new Date(respCookie.expires),
-                        httpOnly: respCookie.httpOnly,
-                        path: respCookie.path,
-                        sameSite: respCookie.sameSite,
-                        secure: respCookie.secure,
-                    })
-                );
-            }
-
-            baseResponse.headers.forEach((value: string, key: string) => {
-                didAddHeaders = true;
-                userResponse.headers.set(key, value);
-            });
-
-            /**
-             * For some deployment services (Vercel for example) production builds can return cached results for
-             * APIs with older header values. In this case if the session tokens have changed (because of refreshing
-             * for example) the cached result would still contain the older tokens and sessions would stop working.
-             *
-             * As a result, if we add cookies or headers from base response we also set the Cache-Control header
-             * to make sure that the final result is not a cached version.
-             */
-            if (didAddCookies || didAddHeaders) {
-                if (!userResponse.headers.has("Cache-Control")) {
-                    // This is needed for production deployments with Vercel
-                    userResponse.headers.set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
-                }
-            }
-
-            return userResponse;
-        } catch (error) {
-            return await handler(error as Error, undefined);
-        }
+        const getCookieFromNextReq = NextJS.getCookieExtractor<NextRequest>();
+        return await customWithSession<NextRequest, NextResponse>(
+            req,
+            handler,
+            options,
+            userContext,
+            getCookieFromNextReq
+        );
     }
 
     static async withPreParsedRequestResponse<NextRequest extends PartialNextRequest, NextResponse extends Response>(
@@ -226,7 +153,6 @@ export default class NextJS {
     ): Promise<NextResponse> {
         const getCookieFromNextReq = NextJS.getCookieExtractor<NextRequest>();
         let baseRequest = createPreParsedRequest<NextRequest>(req, getCookieFromNextReq);
-
         let baseResponse = new CollectingResponse();
         let userResponse: NextResponse;
 

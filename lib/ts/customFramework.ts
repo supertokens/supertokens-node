@@ -228,18 +228,22 @@ export async function getSessionForSSR(
     }
 }
 
-export async function withSession(
-    request: Request,
-    handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<Response>,
+export async function withSession<
+    RequestType extends ParsableRequest = Request,
+    ResponseType extends Response = Response
+>(
+    request: RequestType,
+    handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<ResponseType>,
     options?: VerifySessionOptions,
-    userContext?: Record<string, any>
-): Promise<Response> {
+    userContext?: Record<string, any>,
+    getCookieFn: GetCookieFn<RequestType> = getCookieFromRequest
+): Promise<ResponseType> {
     try {
-        const baseRequest = createPreParsedRequest(request);
+        const baseRequest = createPreParsedRequest(request, getCookieFn);
         const { session, response, baseResponse } = await getSessionDetails(baseRequest, options, userContext);
 
         if (response !== undefined) {
-            return response;
+            return response as ResponseType;
         }
 
         let userResponse: Response;
@@ -250,7 +254,7 @@ export async function withSession(
             userResponse = await handleError<Response>(err, baseRequest, baseResponse);
         }
 
-        return addCookies(baseResponse, userResponse);
+        return addCookies(baseResponse, userResponse) as ResponseType;
     } catch (error) {
         return await handler(error as Error, undefined);
     }
