@@ -207,6 +207,10 @@ export async function getSessionForSSR(
     const accessToken = getAccessToken(request);
     const hasToken = !!accessToken;
 
+    // NOTE: We are accepting jwks as a parameter so that this function can
+    // be effectively tested.
+    // There's more details on why this is needed in the tests file where this
+    // function is being tested.
     let jwksToUse = jwks;
     if (!jwks) {
         const sessionRecipe = SessionRecipe.getInstanceOrThrowError();
