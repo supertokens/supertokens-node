@@ -14,17 +14,14 @@
  */
 
 import { errorHandler } from "./framework/express";
-import { getUserContext } from "./utils";
-import { CollectingResponse, PreParsedRequest, middleware } from "./framework/custom";
+import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
+import { JWTPayload } from "jose";
 import {
-    addCookies,
-    createPreParsedRequest,
-    GetCookieFn,
-    getHandleCall,
-    getSessionDetails,
-    handleError,
+    withPreParsedRequestResponse as customWithPreParsedRequestResponse,
+    getSessionForSSRUsingAccessToken,
     withSession as customWithSession,
+    handleAuthAPIRequest,
 } from "./customFramework";
 
 function next(
@@ -88,47 +85,19 @@ export default class NextJS {
         });
     }
 
-    static getCookieExtractor<T extends PartialNextRequest>(): GetCookieFn<T> {
-        return (req: T): Record<string, string> =>
-            Object.fromEntries(req.cookies.getAll().map((cookie) => [cookie.name, cookie.value]));
-    }
-
-    static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
-        const getCookieFromNextReq = NextJS.getCookieExtractor<T>();
-        const stMiddleware = middleware<T>((req) => {
-            return createPreParsedRequest<T>(req, getCookieFromNextReq);
-        });
-        return getHandleCall<T>(NextResponse, stMiddleware);
+    static getAppDirRequestHandler() {
+        return handleAuthAPIRequest();
     }
 
     static async getSSRSession(
-        cookies: Array<{ name: string; value: string }>,
-        headers: Headers,
-        options?: VerifySessionOptions,
-        userContext?: Record<string, any>
+        cookies: Array<{ name: string; value: string }>
     ): Promise<{
-        session: SessionContainer | undefined;
+        accessTokenPayload: JWTPayload | undefined;
         hasToken: boolean;
-        hasInvalidClaims: boolean;
+        error: Error | undefined;
     }> {
-        // Create an instance of PreParsedRequest without access to the actual
-        // request body and inject cookies into it.
-        let baseRequest = new PreParsedRequest({
-            method: "get",
-            url: "",
-            query: {},
-            headers: headers,
-            cookies: Object.fromEntries(cookies.map((cookie) => [cookie.name, cookie.value])),
-            getFormBody: async () => [],
-            getJSONBody: async () => [],
-        });
-
-        const { baseResponse, response, ...result } = await getSessionDetails(
-            baseRequest,
-            options,
-            getUserContext(userContext)
-        );
-        return result;
+        let accessToken = cookies.find((cookie) => cookie.name === "sAccessToken")?.value;
+        return await getSessionForSSRUsingAccessToken(accessToken);
     }
 
     static async withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
@@ -137,32 +106,14 @@ export default class NextJS {
         options?: VerifySessionOptions,
         userContext?: Record<string, any>
     ): Promise<NextResponse> {
-        const getCookieFromNextReq = NextJS.getCookieExtractor<NextRequest>();
-        return await customWithSession<NextRequest, NextResponse>(
-            req,
-            handler,
-            options,
-            userContext,
-            getCookieFromNextReq
-        );
+        return await customWithSession<NextRequest, NextResponse>(req, handler, options, userContext);
     }
 
     static async withPreParsedRequestResponse<NextRequest extends PartialNextRequest, NextResponse extends Response>(
         req: NextRequest,
         handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<NextResponse>
     ): Promise<NextResponse> {
-        const getCookieFromNextReq = NextJS.getCookieExtractor<NextRequest>();
-        let baseRequest = createPreParsedRequest<NextRequest>(req, getCookieFromNextReq);
-        let baseResponse = new CollectingResponse();
-        let userResponse: NextResponse;
-
-        try {
-            userResponse = await handler(baseRequest, baseResponse);
-        } catch (err) {
-            userResponse = await handleError<NextResponse>(err, baseRequest, baseResponse);
-        }
-
-        return addCookies<NextResponse>(baseResponse, userResponse);
+        return customWithPreParsedRequestResponse(req, handler);
     }
 }
 export let superTokensNextWrapper = NextJS.superTokensNextWrapper;

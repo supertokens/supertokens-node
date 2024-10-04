@@ -2258,13 +2258,13 @@ async function handleCall(req: NextRequest): Promise<NextResponse> {
     });
 }
 
-NextJS.getAppDirRequestHandler(NextResponse);
+NextJS.getAppDirRequestHandler();
 
 customVerifySession({ checkDatabase: true })(new PreParsedRequest({} as any), new CollectingResponse());
 
 const nextRequest = new NextRequest("http://localhost:3000/api/user");
 
-NextJS.getSSRSession(nextRequest.cookies.getAll(), nextRequest.headers);
+NextJS.getSSRSession(nextRequest.cookies.getAll());
 NextJS.withSession(nextRequest, async function test(session): Promise<NextResponse> {
     return NextResponse.json({});
 });

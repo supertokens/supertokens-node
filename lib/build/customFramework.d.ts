@@ -7,7 +7,6 @@
 import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
 import { JWTPayload } from "jose";
-export declare type GetCookieFn<T extends ParsableRequest = Request> = (req: T) => Record<string, string>;
 export interface ParsableRequest {
     url: string;
     method: string;
@@ -15,28 +14,13 @@ export interface ParsableRequest {
     formData: () => Promise<FormData>;
     json: () => Promise<any>;
 }
-export declare function createPreParsedRequest<RequestType extends ParsableRequest = Request>(
-    request: RequestType,
-    getCookieFn?: GetCookieFn<RequestType>
-): PreParsedRequest;
-export declare function getCookieFromRequest(request: ParsableRequest): Record<string, string>;
-export declare function getQueryFromRequest(request: ParsableRequest): Record<string, string>;
-export declare function getHandleCall<T = Request>(
-    res: typeof Response,
-    stMiddleware: any
-): (req: T) => Promise<Response>;
-export declare function handleAuthAPIRequest(CustomResponse: typeof Response): (req: Request) => Promise<Response>;
-export declare function getSessionDetails(
-    preParsedRequest: PreParsedRequest,
-    options?: VerifySessionOptions,
-    userContext?: Record<string, unknown>
-): Promise<{
-    session: SessionContainer | undefined;
-    hasToken: boolean;
-    hasInvalidClaims: boolean;
-    baseResponse: CollectingResponse;
-    response?: Response;
-}>;
+export declare function getCookieFromRequest<RequestType extends ParsableRequest = Request>(
+    request: RequestType
+): Record<string, string>;
+export declare function getQueryFromRequest<RequestType extends ParsableRequest = Request>(
+    request: RequestType
+): Record<string, string>;
+export declare function handleAuthAPIRequest(): (req: Request) => Promise<Response>;
 /**
  * A helper function to retrieve session details on the server side.
  *
@@ -44,9 +28,15 @@ export declare function getSessionDetails(
  * because getSession can update the access token. These updated tokens would not be
  * propagated to the client side, as request interceptors do not run on the server side.
  */
-export declare function getSessionForSSR(
-    request: Request,
-    jwks?: any
+export declare function getSessionForSSR<RequestType extends ParsableRequest = Request>(
+    request: RequestType
+): Promise<{
+    accessTokenPayload: JWTPayload | undefined;
+    hasToken: boolean;
+    error: Error | undefined;
+}>;
+export declare function getSessionForSSRUsingAccessToken(
+    accessToken: string | undefined
 ): Promise<{
     accessTokenPayload: JWTPayload | undefined;
     hasToken: boolean;
@@ -59,15 +49,12 @@ export declare function withSession<
     request: RequestType,
     handler: (error: Error | undefined, session: SessionContainer | undefined) => Promise<ResponseType>,
     options?: VerifySessionOptions,
-    userContext?: Record<string, any>,
-    getCookieFn?: GetCookieFn<RequestType>
+    userContext?: Record<string, any>
 ): Promise<ResponseType>;
-export declare function addCookies<UserResponseType extends Response = Response>(
-    baseResponse: CollectingResponse,
-    userResponse: UserResponseType
-): UserResponseType;
-export declare function handleError<UserResponseType extends Response = Response>(
-    err: any,
-    baseRequest: PreParsedRequest,
-    baseResponse: CollectingResponse
-): Promise<UserResponseType>;
+export declare function withPreParsedRequestResponse<
+    RequestType extends ParsableRequest = Request,
+    ResponseType extends Response = Response
+>(
+    req: RequestType,
+    handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<ResponseType>
+): Promise<ResponseType>;
