@@ -95,7 +95,7 @@ export default class NextJS {
     }
 
     static getAppDirRequestHandler<T extends PartialNextRequest>(NextResponse: typeof Response) {
-        const getCookieFromNextReq = this.getCookieExtractor<T>();
+        const getCookieFromNextReq = NextJS.getCookieExtractor<T>();
 
         const stMiddleware = middleware<T>((req) => {
             return createPreParsedRequest<T>(req, getCookieFromNextReq);
@@ -224,7 +224,7 @@ export default class NextJS {
         req: NextRequest,
         handler: (baseRequest: PreParsedRequest, baseResponse: CollectingResponse) => Promise<NextResponse>
     ): Promise<NextResponse> {
-        const getCookieFromNextReq = this.getCookieExtractor<NextRequest>();
+        const getCookieFromNextReq = NextJS.getCookieExtractor<NextRequest>();
         let baseRequest = createPreParsedRequest<NextRequest>(req, getCookieFromNextReq);
 
         let baseResponse = new CollectingResponse();
