@@ -15,7 +15,7 @@
 import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { FastifyRequest, FastifyResponse, SessionRequest } from "../../../framework/fastify/framework";
-import { FastifyReply, FastifyRequest as OriginalFastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest as OriginalFastifyRequest } from "../../../framework/fastify/types";
 import SuperTokens from "../../../supertokens";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 

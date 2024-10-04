@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { FastifyRequest as OriginalFastifyRequest, FastifyReply, FastifyPluginCallback } from "fastify";
+import { FastifyRequest as OriginalFastifyRequest, FastifyReply, FastifyPluginCallback } from "./types";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
@@ -45,9 +45,9 @@ export declare class FastifyResponse extends BaseResponse {
 export declare type SessionRequest<TRequest extends OriginalFastifyRequest = OriginalFastifyRequest> = TRequest & {
     session?: SessionContainerInterface;
 };
-export interface FasitfyFramework extends Framework {
+export interface FastifyFramework extends Framework {
     plugin: FastifyPluginCallback;
     errorHandler: () => (err: any, req: OriginalFastifyRequest, res: FastifyReply) => Promise<void>;
 }
 export declare const errorHandler: () => (err: any, req: OriginalFastifyRequest, res: FastifyReply) => Promise<void>;
-export declare const FastifyWrapper: FasitfyFramework;
+export declare const FastifyWrapper: FastifyFramework;
