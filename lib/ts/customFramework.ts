@@ -11,9 +11,10 @@ import SessionRecipe from "./recipe/session/recipe";
 import { availableTokenTransferMethods } from "./recipe/session/constants";
 import { getToken } from "./recipe/session/cookieAndHeaders";
 import { parseJWTWithoutSignatureVerification } from "./recipe/session/jwt";
-import { jwtVerify, JWTPayload, createRemoteJWKSet } from "jose";
+import { JWTPayload, createRemoteJWKSet } from "jose";
 import SuperTokens from "./supertokens";
 import { HTTPMethod } from "./types";
+import { getInfoFromAccessToken } from "./recipe/session/accessToken";
 
 export type GetCookieFn<T extends ParsableRequest = Request> = (req: T) => Record<string, string>;
 
@@ -82,12 +83,6 @@ export function getQueryFromRequest(request: ParsableRequest): Record<string, st
 
 function getAccessToken(request: Request): string | undefined {
     return getCookieFromRequest(request)["sAccessToken"];
-}
-
-async function verifyToken(token: string, jwks: any): Promise<JWTPayload> {
-    // Verify the JWT using the remote JWK set and return the payload
-    const { payload } = await jwtVerify(token, jwks);
-    return payload;
 }
 
 export function getHandleCall<T = Request>(res: typeof Response, stMiddleware: any) {
@@ -224,8 +219,9 @@ export async function getSessionForSSR(
 
     try {
         if (accessToken) {
-            const decoded = await verifyToken(accessToken, jwksToUse);
-            return { accessTokenPayload: decoded, hasToken, error: undefined };
+            const tokenInfo = parseJWTWithoutSignatureVerification(accessToken);
+            const decoded = await getInfoFromAccessToken(tokenInfo, jwksToUse, false);
+            return { accessTokenPayload: decoded.userData, hasToken, error: undefined };
         }
         return { accessTokenPayload: undefined, hasToken, error: undefined };
     } catch (error) {
