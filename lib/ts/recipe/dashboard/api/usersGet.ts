@@ -17,7 +17,6 @@ import STError from "../../../error";
 import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
-import { UserContext } from "../../../types";
 
 export type Response = {
     status: "OK";
@@ -25,12 +24,7 @@ export type Response = {
     users: UserWithFirstAndLastName[];
 };
 
-export default async function usersGet(
-    _: APIInterface,
-    tenantId: string,
-    options: APIOptions,
-    userContext: UserContext
-): Promise<Response> {
+export default async function usersGet(_: APIInterface, tenantId: string, options: APIOptions): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");
 
@@ -93,7 +87,7 @@ export default async function usersGet(
             (): Promise<any> =>
                 new Promise(async (resolve, reject) => {
                     try {
-                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.id, userContext);
+                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.id);
                         const { first_name, last_name } = userMetaDataResponse.metadata;
 
                         updatedUsersArray[i] = {

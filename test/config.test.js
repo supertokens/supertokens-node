@@ -40,6 +40,8 @@ let SuperTokens = require("../lib/build/supertokens").default;
 let ST = require("../");
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+let OpenIdRecipe = require("../lib/build/recipe/openid/recipe").default;
+let JWTRecipe = require("../lib/build/recipe/jwt/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/utils");
 const { middleware } = require("../framework/express");
 const { logDebugMessage } = require("../lib/build/logger");
@@ -234,7 +236,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             SessionRecipe.getInstanceOrThrowError();
-            assert.strictEqual(SuperTokens.getInstanceOrThrowError().recipeModules.length, 4); // multitenancy&usermetadata&oauth2provider is initialised by default
+            assert.strictEqual(SuperTokens.getInstanceOrThrowError().recipeModules.length, 6); // openid,jwt,multitenancy,usermetadata&oauth2provider is initialised by default
             resetAll();
         }
 
@@ -252,7 +254,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             SessionRecipe.getInstanceOrThrowError();
             EmailPasswordRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 5); // multitenancy&usermetadata&oauth2provider is initialised by default
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 7); // openid,jwt,multitenancy,usermetadata&oauth2provider is initialised by default
             resetAll();
         }
     });
@@ -1349,7 +1351,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode, 401);
     });
 
-    it("Test that the JWKS and OpenId endpoints are exposed by Session", async function () {
+    it("Test that the JWKS and OpenId endpoints are exposed by default", async function () {
         const connectionURI = await startST();
         STExpress.init({
             supertokens: {
@@ -1362,11 +1364,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
-        const apis = SessionRecipe.getInstanceOrThrowError().getAPIsHandled();
+
+        const apis = JWTRecipe.getInstanceOrThrowError().getAPIsHandled();
         const jwksApi = apis.find((f) => f.id === "/jwt/jwks.json");
         assert.ok(jwksApi);
-        assert.equal(jwksApi.pathWithoutApiBasePath.getAsStringDangerous(), "/jwt/jwks.json");
-        const openidApi = apis.find((f) => f.id === "/.well-known/openid-configuration");
+        const openidApis = OpenIdRecipe.getInstanceOrThrowError().getAPIsHandled();
+        const openidApi = openidApis.find((f) => f.id === "/.well-known/openid-configuration");
         assert.ok(openidApi);
         assert.equal(openidApi.pathWithoutApiBasePath.getAsStringDangerous(), "/.well-known/openid-configuration");
     });
