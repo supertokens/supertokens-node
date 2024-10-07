@@ -97,6 +97,7 @@ export default function getRecipeInterface(
                     },
                 };
             } else {
+                console.error("Email verification failed", response);
                 return {
                     status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
                 };
