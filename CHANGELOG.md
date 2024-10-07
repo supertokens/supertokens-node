@@ -141,6 +141,25 @@ SuperTokens.init({
 });
 ```
 
+#### Using updated `getAppDirRequestHandler` for next.js
+
+Before:
+
+```ts
+import { getAppDirRequestHandler } from "supertokens-node/nextjs";
+import { NextResponse } from "next/server";
+
+const handleCall = getAppDirRequestHandler(NextResponse);
+```
+
+After:
+
+```ts
+import { getAppDirRequestHandler } from "supertokens-node/nextjs";
+
+const handleCall = getAppDirRequestHandler();
+```
+
 ## [20.1.3] - 2024-09-30
 
 -   Replaces `psl` with `tldts` to avoid `punycode` deprecation warning.
