@@ -18,7 +18,16 @@ const { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/se
 const [major, minor, patch] = process.versions.node.split(".").map(Number);
 
 if (major >= 18) {
-    const { printPath, setupST, startST, killAllST, cleanST, delay, killAllSTCoresOnly } = require("./utils");
+    const {
+        printPath,
+        setupST,
+        startST,
+        killAllST,
+        cleanST,
+        delay,
+        killAllSTCoresOnly,
+        extractInfoFromResponse,
+    } = require("./utils");
     let assert = require("assert");
     let { ProcessState } = require("../lib/build/processState");
     let SuperTokens = require("../lib/build/").default;
@@ -948,6 +957,85 @@ if (major >= 18) {
                 assert.strictEqual(error, unknownError);
             }
         });
+
+        // it("should go to next error handler when withSession is called without core", async function () {
+        //     const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
+
+        //     const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+        //         headers: {
+        //             Cookie: `sAccessToken=${tokens.access}`,
+        //         },
+        //     });
+
+        //     // Manually kill to get error when withSession is called
+        //     await killAllSTCoresOnly();
+
+        //     const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
+        //         if (err) return NextResponse.json(`CUSTOM_ERROR: ${err}`, { status: 500 });
+        //         return NextResponse.json({
+        //             userId: session.getUserId(),
+        //             sessionHandle: session.getHandle(),
+        //             accessTokenPayload: session.getAccessTokenPayload(),
+        //         });
+        //     });
+        //     const responseJSON = await authenticatedResponse.json();
+        //     console.log(responseJSON);
+        //     assert.strictEqual(responseJSON, {}, "test");
+        // });
+    });
+
+    describe("session refresh test", async () => {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            const connectionURI = await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        getTokenTransferMethod: () => "cookie",
+                    }),
+                ],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("should successfully refresh session", async () => {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
+
+            const authenticatedRequest = new NextRequest("http://localhost:3000/api/auth/session/refresh", {
+                headers: {
+                    Cookie: `sAccessToken=${tokens.access};sRefreshToken=${tokens.refresh}`,
+                    "st-auth-mode": "cookie",
+                },
+            });
+
+            const authenticatedResponse = await withPreParsedRequestResponse(
+                authenticatedRequest,
+                async (baseRequest, baseResponse) => {
+                    const session = await Session.getSession(baseRequest, baseResponse);
+                    return NextResponse.json({ userId: session.getUserId() });
+                }
+            );
+            const responseJSON = await authenticatedResponse.json();
+            assert.equal(authenticatedResponse.status, 200, "response should return a 200 OK");
+            assert.ok(responseJSON.userId, "response should contain the user ID");
+        });
     });
 
     describe(`getSSRSession:hasToken`, function () {
@@ -1198,6 +1286,8 @@ if (major >= 18) {
                 tokens.refresh = matchRefreshToken[1];
             }
         }
+
+        tokens.antiCsrf = response.headers.get("anti-csrf");
 
         return tokens;
     }
