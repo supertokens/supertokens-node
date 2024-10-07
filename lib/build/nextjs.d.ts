@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { CollectingResponse, PreParsedRequest } from "./framework/custom";
 import { SessionContainer, VerifySessionOptions } from "./recipe/session";
+import { JWTPayload } from "jose";
 declare type PartialNextRequest = {
     method: string;
     url: string;
@@ -20,22 +21,16 @@ export default class NextJS {
         request: any,
         response: any
     ): Promise<T>;
-    static getAppDirRequestHandler<T extends PartialNextRequest>(
-        NextResponse: typeof Response
-    ): (req: T) => Promise<Response>;
-    private static commonSSRSession;
+    static getAppDirRequestHandler(): (req: Request) => Promise<Response>;
     static getSSRSession(
         cookies: Array<{
             name: string;
             value: string;
-        }>,
-        headers: Headers,
-        options?: VerifySessionOptions,
-        userContext?: Record<string, any>
+        }>
     ): Promise<{
-        session: SessionContainer | undefined;
+        accessTokenPayload: JWTPayload | undefined;
         hasToken: boolean;
-        hasInvalidClaims: boolean;
+        error: Error | undefined;
     }>;
     static withSession<NextRequest extends PartialNextRequest, NextResponse extends Response>(
         req: NextRequest,

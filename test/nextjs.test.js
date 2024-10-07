@@ -13,10 +13,21 @@
  * under the License.
  */
 
+const { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
+
 const [major, minor, patch] = process.versions.node.split(".").map(Number);
 
 if (major >= 18) {
-    const { printPath, setupST, startST, killAllST, cleanST, delay } = require("./utils");
+    const {
+        printPath,
+        setupST,
+        startST,
+        killAllST,
+        cleanST,
+        delay,
+        killAllSTCoresOnly,
+        extractInfoFromResponse,
+    } = require("./utils");
     let assert = require("assert");
     let { ProcessState } = require("../lib/build/processState");
     let SuperTokens = require("../lib/build/").default;
@@ -729,58 +740,30 @@ if (major >= 18) {
 
             const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
-                    Authorization: `Bearer ${tokens.access}`,
+                    Cookie: `sAccessToken=${tokens.access}`,
                 },
             });
 
-            let sessionContainer = await getSSRSession(
-                authenticatedRequest.cookies.getAll(),
-                authenticatedRequest.headers
-            );
+            let sessionContainer = await getSSRSession(authenticatedRequest.cookies.getAll());
 
             assert.equal(sessionContainer.hasToken, true);
-            assert.equal(sessionContainer.session.getUserId(), process.env.user);
+            assert.equal(sessionContainer.accessTokenPayload.sub, process.env.user);
 
             const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
 
-            sessionContainer = await getSSRSession(
-                unAuthenticatedRequest.cookies.getAll(),
-                unAuthenticatedRequest.headers
-            );
+            sessionContainer = await getSSRSession(unAuthenticatedRequest.cookies.getAll());
 
             assert.equal(sessionContainer.hasToken, false);
-            assert.equal(sessionContainer.session, undefined);
-
-            const requestWithFailedClaim = new NextRequest("http://localhost:3000/api/get-user", {
-                headers: {
-                    Authorization: `Bearer ${tokens.access}`,
-                },
-            });
-
-            sessionContainer = await getSSRSession(
-                requestWithFailedClaim.cookies.getAll(),
-                requestWithFailedClaim.headers,
-                {
-                    overrideGlobalClaimValidators: async (globalValidators) => [
-                        ...globalValidators,
-                        EmailVerification.EmailVerificationClaim.validators.isVerified(),
-                    ],
-                }
-            );
-            assert.equal(sessionContainer.hasToken, true);
-            assert.equal(sessionContainer.hasInvalidClaims, true);
+            assert.equal(sessionContainer.accessTokenPayload, undefined);
 
             await delay(3);
             const requestWithExpiredToken = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
-                    Authorization: `Bearer ${tokens.access}`,
+                    Cookie: `sAccessToken=${tokens.access}`,
                 },
             });
 
-            sessionContainer = await getSSRSession(
-                requestWithExpiredToken.cookies.getAll(),
-                requestWithExpiredToken.headers
-            );
+            sessionContainer = await getSSRSession(requestWithExpiredToken.cookies.getAll());
             assert.equal(sessionContainer.session, undefined);
             assert.equal(sessionContainer.hasToken, true);
         });
@@ -841,7 +824,7 @@ if (major >= 18) {
 
             const requestWithFailedClaim = new NextRequest("http://localhost:3000/api/get-user", {
                 headers: {
-                    Authorization: `Bearer ${tokens.access}`,
+                    Cookie: `sAccessToken=${tokens.access}`,
                 },
             });
 
@@ -893,6 +876,42 @@ if (major >= 18) {
             assert.equal(responseThatThrows.status, 500);
         });
 
+        it("withSession with updated access token payload should be correctly returned", async () => {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
+
+            const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Authorization: `Bearer ${tokens.access}`,
+                },
+            });
+
+            const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
+                if (err) return NextResponse.json(err, { status: 500 });
+
+                // Update token payload
+                await session.mergeIntoAccessTokenPayload({ test: true });
+
+                return NextResponse.json({
+                    userId: session.getUserId(),
+                    sessionHandle: session.getHandle(),
+                    accessTokenPayload: session.getAccessTokenPayload(),
+                });
+            });
+            const updatedAccessToken = authenticatedResponse.headers.get("st-access-token");
+            const tokenInfo = parseJWTWithoutSignatureVerification(updatedAccessToken);
+
+            assert.strictEqual(
+                authenticatedResponse.headers.get("Cache-Control"),
+                "no-cache, no-store, max-age=0, must-revalidate",
+                "cache control headers should be set"
+            );
+            assert.strictEqual(
+                tokenInfo.payload.test,
+                true,
+                "access token payload should have a test value that is true"
+            );
+        });
+
         it("withPreParsedRequestResponse", async function () {
             const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
 
@@ -938,6 +957,92 @@ if (major >= 18) {
                 assert.strictEqual(error, unknownError);
             }
         });
+
+        it("should go to next error handler when withSession is called without core", async function () {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
+
+            const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Cookie: `sAccessToken=${tokens.access}`,
+                },
+            });
+
+            // Manually kill to get error when withSession is called
+            await killAllSTCoresOnly();
+
+            const authenticatedResponse = await withSession(
+                authenticatedRequest,
+                async (err, session) => {
+                    if (err) return NextResponse.json(`CUSTOM_ERROR: ${err}`, { status: 500 });
+                    return NextResponse.json({
+                        userId: session.getUserId(),
+                        sessionHandle: session.getHandle(),
+                        accessTokenPayload: session.getAccessTokenPayload(),
+                    });
+                },
+                { checkDatabase: true }
+            );
+            const responseJSON = await authenticatedResponse.json();
+            assert.strictEqual(
+                responseJSON,
+                "CUSTOM_ERROR: Error: No SuperTokens core available to query",
+                "should return custom error from next error handler"
+            );
+        });
+    });
+
+    describe("session refresh test", async () => {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            const connectionURI = await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        getTokenTransferMethod: () => "cookie",
+                    }),
+                ],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("should successfully refresh session", async () => {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
+
+            const authenticatedRequest = new NextRequest("http://localhost:3000/api/auth/session/refresh", {
+                headers: {
+                    Cookie: `sAccessToken=${tokens.access};sRefreshToken=${tokens.refresh}`,
+                    "st-auth-mode": "cookie",
+                },
+            });
+
+            const authenticatedResponse = await withPreParsedRequestResponse(
+                authenticatedRequest,
+                async (baseRequest, baseResponse) => {
+                    const session = await Session.getSession(baseRequest, baseResponse);
+                    return NextResponse.json({ userId: session.getUserId() });
+                }
+            );
+            const responseJSON = await authenticatedResponse.json();
+            assert.equal(authenticatedResponse.status, 200, "response should return a 200 OK");
+            assert.ok(responseJSON.userId, "response should contain the user ID");
+        });
     });
 
     describe(`getSSRSession:hasToken`, function () {
@@ -977,32 +1082,17 @@ if (major >= 18) {
 
                 const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
 
-                sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
+                sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll());
 
                 assert.equal(sessionContainer.hasToken, false);
 
                 const requestWithInvalidToken = new NextRequest("http://localhost:3000/api/get-user", {
                     headers: {
-                        Authorization: `Bearer some-random-token`,
+                        Cookie: `sAccessToken=some-random-token`,
                     },
                 });
 
-                sessionContainer = await getSSRSession(
-                    requestWithInvalidToken.cookies.getAll(),
-                    requestWithInvalidToken.headers
-                );
-                assert.equal(sessionContainer.hasToken, false);
-
-                const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
-                    headers: {
-                        Authorization: `Bearer ${tokens.access}`,
-                    },
-                });
-
-                sessionContainer = await getSSRSession(
-                    requestWithTokenInHeader.cookies.getAll(),
-                    requestWithTokenInHeader.headers
-                );
+                sessionContainer = await getSSRSession(requestWithInvalidToken.cookies.getAll());
                 assert.equal(sessionContainer.hasToken, true);
 
                 const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
@@ -1011,10 +1101,7 @@ if (major >= 18) {
                     },
                 });
 
-                sessionContainer = await getSSRSession(
-                    requestWithTokenInCookie.cookies.getAll(),
-                    requestWithTokenInCookie.headers
-                );
+                sessionContainer = await getSSRSession(requestWithTokenInCookie.cookies.getAll());
                 assert.equal(sessionContainer.hasToken, true);
             });
         });
@@ -1055,7 +1142,7 @@ if (major >= 18) {
 
                 const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
 
-                sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
+                sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll());
 
                 assert.equal(sessionContainer.hasToken, false);
 
@@ -1065,11 +1152,8 @@ if (major >= 18) {
                     },
                 });
 
-                sessionContainer = await getSSRSession(
-                    requestWithInvalidToken.cookies.getAll(),
-                    requestWithInvalidToken.headers
-                );
-                assert.equal(sessionContainer.hasToken, false);
+                sessionContainer = await getSSRSession(requestWithInvalidToken.cookies.getAll());
+                assert.equal(sessionContainer.hasToken, true);
 
                 const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
                     headers: {
@@ -1077,10 +1161,7 @@ if (major >= 18) {
                     },
                 });
 
-                sessionContainer = await getSSRSession(
-                    requestWithTokenInHeader.cookies.getAll(),
-                    requestWithTokenInHeader.headers
-                );
+                sessionContainer = await getSSRSession(requestWithTokenInHeader.cookies.getAll());
                 assert.equal(sessionContainer.hasToken, false);
 
                 const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
@@ -1089,90 +1170,74 @@ if (major >= 18) {
                     },
                 });
 
-                sessionContainer = await getSSRSession(
-                    requestWithTokenInCookie.cookies.getAll(),
-                    requestWithTokenInCookie.headers
-                );
+                sessionContainer = await getSSRSession(requestWithTokenInCookie.cookies.getAll());
                 assert.equal(sessionContainer.hasToken, true);
             });
         });
+    });
 
-        describe("tokenTransferMethod = header", function () {
-            before(async function () {
-                process.env.user = undefined;
-                await killAllST();
-                await setupST();
-                const connectionURI = await startST();
-                ProcessState.getInstance().reset();
-                SuperTokens.init({
-                    supertokens: {
-                        connectionURI,
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        apiBasePath: "/api/auth",
-                        websiteDomain: "supertokens.io",
-                    },
-                    recipeList: [
-                        EmailPassword.init(),
-                        Session.init({
-                            getTokenTransferMethod: () => "header",
-                        }),
-                    ],
-                });
+    describe("with email verification should throw st-ev claim has expired", async () => {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            const connectionURI = await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        getTokenTransferMethod: () => "any",
+                    }),
+                    EmailVerification.init({
+                        mode: "REQUIRED",
+                    }),
+                ],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("should throw st-ev claim has expired for unverified email", async () => {
+            const tokens = await getValidTokensAfterSignup();
+            const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Cookie: `sAccessToken=${tokens.access}`,
+                },
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
+            const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
+                if (err) return NextResponse.json(`CUSTOM_ERROR: ${err}`, { status: 500 });
+                return NextResponse.json({
+                    userId: session.getUserId(),
+                    sessionHandle: session.getHandle(),
+                    accessTokenPayload: session.getAccessTokenPayload(),
+                });
             });
-
-            it("should return hasToken value correctly", async function () {
-                const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
-
-                const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
-
-                sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll(), requestWithNoToken.headers);
-
-                assert.equal(sessionContainer.hasToken, false);
-
-                const requestWithInvalidToken = new NextRequest("http://localhost:3000/api/get-user", {
-                    headers: {
-                        Authorization: `Bearer some-random-token`,
-                    },
-                });
-
-                sessionContainer = await getSSRSession(
-                    requestWithInvalidToken.cookies.getAll(),
-                    requestWithInvalidToken.headers
-                );
-                assert.equal(sessionContainer.hasToken, false);
-
-                const requestWithTokenInHeader = new NextRequest("http://localhost:3000/api/get-user", {
-                    headers: {
-                        Authorization: `Bearer ${tokens.access}`,
-                    },
-                });
-
-                sessionContainer = await getSSRSession(
-                    requestWithTokenInHeader.cookies.getAll(),
-                    requestWithTokenInHeader.headers
-                );
-                assert.equal(sessionContainer.hasToken, true);
-
-                const requestWithTokenInCookie = new NextRequest("http://localhost:3000/api/get-user", {
-                    headers: {
-                        Cookie: `sAccessToken=${tokens.access}`,
-                    },
-                });
-
-                sessionContainer = await getSSRSession(
-                    requestWithTokenInCookie.cookies.getAll(),
-                    requestWithTokenInCookie.headers
-                );
-                assert.equal(sessionContainer.hasToken, false);
-            });
+            const responseJSON = await authenticatedResponse.json();
+            assert.strictEqual(responseJSON.message, "invalid claim", "should return message: invalid claim");
+            assert.strictEqual(
+                responseJSON.claimValidationErrors.length,
+                1,
+                "should return claim validation errors of length 1"
+            );
+            assert.strictEqual(
+                responseJSON.claimValidationErrors[0].id,
+                "st-ev",
+                "should return claim validation error id as st-ev"
+            );
         });
     });
 
@@ -1228,6 +1293,8 @@ if (major >= 18) {
                 tokens.refresh = matchRefreshToken[1];
             }
         }
+
+        tokens.antiCsrf = response.headers.get("anti-csrf");
 
         return tokens;
     }

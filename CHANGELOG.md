@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added a way to run CI on unmerged PRs
 -   Added support for FDIs: 3.1 and 4.0. Required by: auth-react >=0.49.0 and web-js>=0.15.0
 -   The `networkInterceptor` now also gets a new `params` prop in the request config.
+-   Adds `customFramework` util functions to minimize code required in custom frameworks like remix, astro etc.
 -   Replicates `fastify` types based on requirement for the SDK instead of using the original module.
 
 ### Breaking change
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   This means that we removed `override.openIdFeature` from the Session recipe configuration
 -   Removed `getJWKS` from the OpenId recipe, as it is already exposed by the JWT recipe
 -   We now automatically initialize the OpenId and JWT recipes even if you do not use the Session recipe
+-   `getAppDirRequestHandler` for `nextjs` will no longer accept a Response object.
 
 ### Migration
 
@@ -138,6 +140,25 @@ SuperTokens.init({
         });
     ],
 });
+```
+
+#### Using updated `getAppDirRequestHandler` for next.js
+
+Before:
+
+```ts
+import { getAppDirRequestHandler } from "supertokens-node/nextjs";
+import { NextResponse } from "next/server";
+
+const handleCall = getAppDirRequestHandler(NextResponse);
+```
+
+After:
+
+```ts
+import { getAppDirRequestHandler } from "supertokens-node/nextjs";
+
+const handleCall = getAppDirRequestHandler();
 ```
 
 ## [20.1.3] - 2024-09-30
