@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   This means that we removed `override.openIdFeature` from the Session recipe configuration
 -   Removed `getJWKS` from the OpenId recipe, as it is already exposed by the JWT recipe
 -   We now automatically initialize the OpenId and JWT recipes even if you do not use the Session recipe
+-   `getAppDirRequestHandler` for `nextjs` will no longer accept a Response object.
 
 ### Migration
 
