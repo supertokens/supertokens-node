@@ -46,7 +46,6 @@ export declare type TypeInput = {
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
     olderCookieDomain?: string;
-    overwriteSessionDuringSignInUp?: boolean;
     getTokenTransferMethod?: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
@@ -77,7 +76,6 @@ export declare type TypeNormalisedInput = {
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    overwriteSessionDuringSignInUp: boolean | undefined;
     antiCsrfFunctionOrString:
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
