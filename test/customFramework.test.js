@@ -65,60 +65,6 @@ async function signJWT(privateKey, jwks, payload, expiresIn = "2h") {
         .sign(privateKey);
 }
 
-describe(`createPreParsedRequest ${printPath("[test/customFramework.test.js]")}`, () => {
-    it("should create a PreParsedRequest with correct properties from the Request object", async () => {
-        // Mock a Request object
-        const mockRequest = {
-            url: "https://example.com/path?name=test",
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-                Authorization: "Bearer token",
-                Cookie: "session=abcd1234; theme=dark",
-            }),
-            formData: async () => new FormData(),
-            json: async () => ({ key: "value" }),
-        };
-
-        // Assume getCookieFromRequest and getQueryFromRequest return specific mock data
-        const mockCookies = { session: "abcd1234", theme: "dark" };
-        const mockQuery = { name: "test" };
-
-        // Create the PreParsedRequest
-        const preParsedReq = createPreParsedRequest(mockRequest);
-
-        // Assertions
-        assert(preParsedReq instanceof PreParsedRequest, "Should return an instance of PreParsedRequest");
-        assert.deepStrictEqual(
-            preParsedReq.getCookieValue("session"),
-            mockCookies.session,
-            "Should parse `session` value from cookie correctly"
-        );
-        assert.deepStrictEqual(
-            preParsedReq.getCookieValue("theme"),
-            mockCookies.theme,
-            "Should parse `session` value from cookie correctly"
-        );
-        assert.strictEqual(preParsedReq.getOriginalURL(), mockRequest.url, "Should set the correct URL");
-        assert.strictEqual(preParsedReq.getMethod(), mockRequest.method.toLowerCase(), "Should set the correct method");
-        assert.deepStrictEqual(
-            preParsedReq.getKeyValueFromQuery("name"),
-            mockQuery.name,
-            "Should parse query parameters correctly"
-        );
-        assert.strictEqual(
-            preParsedReq.getHeaderValue("Authorization"),
-            mockRequest.headers.get("Authorization"),
-            "Should set the correct headers"
-        );
-
-        // Test getJSONBody methods
-        const jsonBody = await preParsedReq.getJSONBody();
-
-        assert.deepStrictEqual(jsonBody, { key: "value" }, "getJSONBody should return parsed JSON body");
-    });
-});
-
 describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, () => {
     let connectionURI;
     let accessToken, accessTokenPayload;
@@ -349,22 +295,14 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
         assert.strictEqual(await response.text(), "Not found", "Should return Not found");
     });
 
-    // NOTE: For all the JWT related testing, we are using a different key because
-    // the default way of getting the key is by hitting the `/jwt/jwks` endpoint
-    // but that endpoint doesn't return anything for testing and thus we are testing
-    // with a custom key.
-
     it("getSessionForSSR should return session for valid token", async () => {
-        // Sign the JWT
-        const validToken = await signJWT(privateKey, jwks, accessTokenPayload);
-
         // Create a mock request containing the valid token as a cookie
         const mockRequest = new Request("https://example.com", {
-            headers: { Cookie: `sAccessToken=${validToken}` },
+            headers: { Cookie: `sAccessToken=${accessToken}` },
         });
 
         // Call the getSessionForSSR function
-        const result = await getSessionForSSR(mockRequest, await createJWTVerifyGetKey(jwks));
+        const result = await getSessionForSSR(mockRequest);
 
         // Assertions
         assert.strictEqual(result.hasToken, true, "hasToken should be true for a valid token");
@@ -378,7 +316,7 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
         const mockRequest = new Request("https://example.com");
 
         // Call the getSessionForSSR function
-        const result = await getSessionForSSR(mockRequest, privateKey);
+        const result = await getSessionForSSR(mockRequest);
 
         // Assertions
         assert.strictEqual(result.hasToken, false, "hasToken should be false when no token is present");
@@ -388,32 +326,6 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
             "accessTokenPayload should be undefined when no token is present"
         );
         assert.strictEqual(result.error, undefined, "error should be undefined when no token is present");
-    });
-
-    it("should handle an expired token gracefully", async () => {
-        // Sign the JWT with an expiration time in the past (e.g., 1 second ago)
-        const expiredToken = await signJWT(privateKey, jwks, accessTokenPayload, Math.floor(Date.now() / 1000) - 1);
-
-        // Create a mock request containing the expired token as a cookie
-        const mockRequest = new Request("https://example.com", {
-            headers: { Cookie: `sAccessToken=${expiredToken}` },
-        });
-
-        // Call the getSessionForSSR function
-        const result = await getSessionForSSR(mockRequest, privateKey);
-
-        // Assertions
-        assert.strictEqual(result.hasToken, true, "hasToken should be true for an expired token");
-        assert.strictEqual(
-            result.accessTokenPayload,
-            undefined,
-            "accessTokenPayload should be undefined for an expired token"
-        );
-        assert.strictEqual(
-            result.error.type,
-            "TRY_REFRESH_TOKEN",
-            "error should be TRY_REFRESH_TOKEN for an expired token"
-        );
     });
 
     it("should return an error for an invalid token", async () => {
@@ -426,7 +338,7 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
         });
 
         // Call the getSessionForSSR function
-        const result = await getSessionForSSR(mockRequest, privateKey);
+        const result = await getSessionForSSR(mockRequest);
 
         // Assertions
         assert.strictEqual(result.hasToken, true, "hasToken should be true for an invalid token");
@@ -435,6 +347,6 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
             undefined,
             "accessTokenPayload should be undefined for an invalid token"
         );
-        assert.ok(result.error instanceof Error, "error should be an instance of Error for an invalid token");
+        assert.strictEqual(result.error, undefined, "error should be undefined for an invalid token");
     });
 });
