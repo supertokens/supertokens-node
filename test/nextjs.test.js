@@ -958,30 +958,37 @@ if (major >= 18) {
             }
         });
 
-        // it("should go to next error handler when withSession is called without core", async function () {
-        //     const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
+        it("should go to next error handler when withSession is called without core", async function () {
+            const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
 
-        //     const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
-        //         headers: {
-        //             Cookie: `sAccessToken=${tokens.access}`,
-        //         },
-        //     });
+            const authenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", {
+                headers: {
+                    Cookie: `sAccessToken=${tokens.access}`,
+                },
+            });
 
-        //     // Manually kill to get error when withSession is called
-        //     await killAllSTCoresOnly();
+            // Manually kill to get error when withSession is called
+            await killAllSTCoresOnly();
 
-        //     const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
-        //         if (err) return NextResponse.json(`CUSTOM_ERROR: ${err}`, { status: 500 });
-        //         return NextResponse.json({
-        //             userId: session.getUserId(),
-        //             sessionHandle: session.getHandle(),
-        //             accessTokenPayload: session.getAccessTokenPayload(),
-        //         });
-        //     });
-        //     const responseJSON = await authenticatedResponse.json();
-        //     console.log(responseJSON);
-        //     assert.strictEqual(responseJSON, {}, "test");
-        // });
+            const authenticatedResponse = await withSession(
+                authenticatedRequest,
+                async (err, session) => {
+                    if (err) return NextResponse.json(`CUSTOM_ERROR: ${err}`, { status: 500 });
+                    return NextResponse.json({
+                        userId: session.getUserId(),
+                        sessionHandle: session.getHandle(),
+                        accessTokenPayload: session.getAccessTokenPayload(),
+                    });
+                },
+                { checkDatabase: true }
+            );
+            const responseJSON = await authenticatedResponse.json();
+            assert.strictEqual(
+                responseJSON,
+                "CUSTOM_ERROR: Error: No SuperTokens core available to query",
+                "should return custom error from next error handler"
+            );
+        });
     });
 
     describe("session refresh test", async () => {
