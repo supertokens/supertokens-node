@@ -10,6 +10,7 @@ import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
+import { createPrimaryUser } from "../../accountlinking";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -148,11 +149,51 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             // we find the primary user ID from the user's list for later use.
-            let primaryUserAssociatedWithEmail = users.find((u) => u.isPrimaryUser);
+            let linkingCandidate = users.find((u) => u.isPrimaryUser);
 
-            // first we check if there even exists a primary user that has the input email
+            logDebugMessage("generatePasswordResetTokenPOST: primary linking candidate: " + linkingCandidate?.id);
+
+            // If there is no existing primary user and there is a single option to link
+            // we see if that user can become primary (and a candidate for linking)
+            if (linkingCandidate === undefined && users.length === 1) {
+                // If the only user that exists with this email is a non-primary emailpassword user, then we can just let them reset their password, because:
+                // we are not going to link anything and there is no risk of account takeover.
+                if (
+                    users[0].loginMethods[0].recipeUserId.getAsString() ===
+                    emailPasswordAccount?.recipeUserId.getAsString()
+                ) {
+                    return await generateAndSendPasswordResetToken(
+                        emailPasswordAccount.recipeUserId.getAsString(),
+                        emailPasswordAccount.recipeUserId
+                    );
+                }
+
+                logDebugMessage(
+                    `generatePasswordResetTokenPOST: recipe level-linking candidate: ${users[0].id} (w/ ${
+                        users[0].loginMethods[0].verified ? "verified" : "unverified"
+                    } email)`
+                );
+                // Otherwise, we check if the user can become primary.
+                const shouldBecomePrimaryUser = await AccountLinking.getInstance().shouldBecomePrimaryUser(
+                    users[0],
+                    tenantId,
+                    undefined,
+                    userContext
+                );
+
+                logDebugMessage(
+                    `generatePasswordResetTokenPOST: recipe level-linking candidate ${
+                        shouldBecomePrimaryUser ? "can" : "can not"
+                    } become primary`
+                );
+                if (shouldBecomePrimaryUser) {
+                    linkingCandidate = users[0];
+                }
+            }
+
+            // first we check if there even exists a candidate user that has the input email
             // if not, then we do the regular flow for password reset.
-            if (primaryUserAssociatedWithEmail === undefined) {
+            if (linkingCandidate === undefined) {
                 if (emailPasswordAccount === undefined) {
                     logDebugMessage(`Password reset email not sent, unknown user email: ${email}`);
                     return {
@@ -169,7 +210,7 @@ export default function getAPIImplementation(): APIInterface {
             // If that is the case, then it's proven that the user owns the email and we can
             // trust linking of the email password account.
             let emailVerified =
-                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                linkingCandidate.loginMethods.find((lm) => {
                     return lm.hasSameEmailAs(email) && lm.verified;
                 }) !== undefined;
 
@@ -177,7 +218,7 @@ export default function getAPIImplementation(): APIInterface {
             // associated with this account - and if it does, then it means that
             // there is a risk of account takeover, so we do not allow the token to be generated
             let hasOtherEmailOrPhone =
-                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                linkingCandidate.loginMethods.find((lm) => {
                     // we do the extra undefined check below cause
                     // hasSameEmailAs returns false if the lm.email is undefined, and
                     // we want to check that the email is different as opposed to email
@@ -193,6 +234,29 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
+            if (linkingCandidate.isPrimaryUser && emailPasswordAccount !== undefined) {
+                // If a primary user has the input email as verified or has no other emails: then it is always allowed to reset their password:
+                // - there is no risk of account takeover, because they have verified this email or haven't linked it to anything else
+                // - there will be no linking as a result of this action, so we do not need to check for linking.
+                // TODO: what happens if user M signs up with the email of the victim using a third-party provider that doesn't verify emails
+                let areTheTwoAccountsLinked =
+                    linkingCandidate.loginMethods.find((lm) => {
+                        return lm.recipeUserId.getAsString() === emailPasswordAccount!.recipeUserId.getAsString();
+                    }) !== undefined;
+
+                if (areTheTwoAccountsLinked) {
+                    return await generateAndSendPasswordResetToken(
+                        linkingCandidate.id,
+                        emailPasswordAccount.recipeUserId
+                    );
+                }
+            }
+
+            // Here we know that the two accounts are NOT linked. We now need to check for an
+            // extra security measure here to make sure that the input email in the primary user
+            // is verified, and if not, we need to make sure that there is no other email / phone number
+            // associated with the primary user account. If there is, then we do not proceed.
+
             let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
                 emailPasswordAccount !== undefined
                     ? emailPasswordAccount
@@ -200,7 +264,7 @@ export default function getAPIImplementation(): APIInterface {
                           recipeId: "emailpassword",
                           email,
                       },
-                primaryUserAssociatedWithEmail,
+                linkingCandidate,
                 undefined,
                 tenantId,
                 userContext
@@ -242,7 +306,7 @@ export default function getAPIImplementation(): APIInterface {
                     // notice that we pass in the primary user ID here. This means that
                     // we will be creating a new email password account when the token
                     // is consumed and linking it to this primary user.
-                    return await generateAndSendPasswordResetToken(primaryUserAssociatedWithEmail.id, undefined);
+                    return await generateAndSendPasswordResetToken(linkingCandidate.id, undefined);
                 } else {
                     logDebugMessage(
                         `Password reset email not sent, isSignUpAllowed returned false for email: ${email}`
@@ -252,27 +316,6 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
             }
-
-            // At this point, we know that some email password user exists with this email
-            // and also some primary user ID exist. We now need to find out if they are linked
-            // together or not. If they are linked together, then we can just generate the token
-            // else we check for more security conditions (since we will be linking them post token generation)
-            let areTheTwoAccountsLinked =
-                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-                    return lm.recipeUserId.getAsString() === emailPasswordAccount!.recipeUserId.getAsString();
-                }) !== undefined;
-
-            if (areTheTwoAccountsLinked) {
-                return await generateAndSendPasswordResetToken(
-                    primaryUserAssociatedWithEmail.id,
-                    emailPasswordAccount.recipeUserId
-                );
-            }
-
-            // Here we know that the two accounts are NOT linked. We now need to check for an
-            // extra security measure here to make sure that the input email in the primary user
-            // is verified, and if not, we need to make sure that there is no other email / phone number
-            // associated with the primary user account. If there is, then we do not proceed.
 
             /*
             This security measure helps prevent the following attack:
@@ -299,19 +342,8 @@ export default function getAPIImplementation(): APIInterface {
                 );
             }
 
-            if (!shouldDoAccountLinkingResponse.shouldRequireVerification) {
-                // the checks below are related to email verification, and if the user
-                // does not care about that, then we should just continue with token generation
-                return await generateAndSendPasswordResetToken(
-                    primaryUserAssociatedWithEmail.id,
-                    emailPasswordAccount.recipeUserId
-                );
-            }
-
-            return await generateAndSendPasswordResetToken(
-                primaryUserAssociatedWithEmail.id,
-                emailPasswordAccount.recipeUserId
-            );
+            // Here we accounted for both `shouldRequireVerification` by the above checks (where we return ERR_CODE_001)
+            return await generateAndSendPasswordResetToken(linkingCandidate.id, emailPasswordAccount.recipeUserId);
         },
         passwordResetPOST: async function ({
             formFields,
@@ -433,7 +465,6 @@ export default function getAPIImplementation(): APIInterface {
                     // The function below will try and also create a primary user of the new account, this can happen if:
                     // 1. the user was unverified and linking requires verification
                     // We do not take try linking by session here, since this is supposed to be called without a session
-                    // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
                     const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
                         tenantId,
                         inputUser: updatedUserAfterEmailVerification,
@@ -466,7 +497,7 @@ export default function getAPIImplementation(): APIInterface {
             let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
             let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
 
-            let existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
+            let existingUser = await getUser(userIdForWhomTokenWasGenerated, userContext);
 
             if (existingUser === undefined) {
                 // This should happen only cause of a race condition where the user
@@ -479,111 +510,174 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            // We start by checking if the existingUser is a primary user or not. If it is,
-            // then we will try and create a new email password user and link it to the primary user (if required)
+            let tokenGeneratedForEmailPasswordUser = existingUser.loginMethods.some((lm) => {
+                // we check based on user ID and not email because the only time the user ID of another login method
+                // is used for token generation is if the email password user did not exist - in which case the
+                // value of emailPasswordUserIsLinkedToExistingUser will resolve to false anyway, and that's what we want.
 
-            if (existingUser.isPrimaryUser) {
-                // If this user contains an email password account for whom the token was generated,
-                // then we update that user's password.
-                let emailPasswordUserIsLinkedToExistingUser =
-                    existingUser.loginMethods.find((lm) => {
-                        // we check based on user ID and not email because the only time
-                        // the primary user ID is used for token generation is if the email password
-                        // user did not exist - in which case the value of emailPasswordUserExists will
-                        // resolve to false anyway, and that's what we want.
+                // there is an edge case where if the email password recipe user was created
+                // after the password reset token generation, and it was linked to the
+                // primary user id (userIdForWhomTokenWasGenerated), in this case,
+                // we still don't allow password update, cause the user should try again
+                // and the token should be regenerated for the right recipe user.
+                return (
+                    lm.recipeUserId.getAsString() === userIdForWhomTokenWasGenerated && lm.recipeId === "emailpassword"
+                );
+            });
 
-                        // there is an edge case where if the email password recipe user was created
-                        // after the password reset token generation, and it was linked to the
-                        // primary user id (userIdForWhomTokenWasGenerated), in this case,
-                        // we still don't allow password update, cause the user should try again
-                        // and the token should be regenerated for the right recipe user.
-                        return (
-                            lm.recipeUserId.getAsString() === userIdForWhomTokenWasGenerated &&
-                            lm.recipeId === "emailpassword"
-                        );
-                    }) !== undefined;
-
-                if (emailPasswordUserIsLinkedToExistingUser) {
+            if (tokenGeneratedForEmailPasswordUser) {
+                if (!existingUser.isPrimaryUser) {
+                    // If this is a recipe level emailpassword user, we can always allow them to reset their password.
                     return doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
                         new RecipeUserId(userIdForWhomTokenWasGenerated)
                     );
-                } else {
-                    // this means that the existingUser does not have an emailpassword user associated
-                    // with it. It could now mean that no emailpassword user exists, or it could mean that
-                    // the the ep user exists, but it's not linked to the current account.
-                    // If no ep user doesn't exists, we will create one, and link it to the existing account.
-                    // If ep user exists, then it means there is some race condition cause
-                    // then the token should have been generated for that user instead of the primary user,
-                    // and it shouldn't have come into this branch. So we can simply send a password reset
-                    // invalid error and the user can try again.
-
-                    // NOTE: We do not ask the dev if we should do account linking or not here
-                    // cause we already have asked them this when generating an password reset token.
-                    // In the edge case that the dev changes account linking allowance from true to false
-                    // when it comes here, only a new recipe user id will be created and not linked
-                    // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
-                    // really cause any security issue.
-
-                    let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
-                        tenantId,
-                        email: tokenConsumptionResponse.email,
-                        password: newPassword,
-                        userContext,
-                    });
-                    if (createUserResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                        // this means that the user already existed and we can just return an invalid
-                        // token (see the above comment)
-                        return {
-                            status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-                        };
-                    } else {
-                        // we mark the email as verified because password reset also requires
-                        // access to the email to work.. This has a good side effect that
-                        // any other login method with the same email in existingAccount will also get marked
-                        // as verified.
-                        await markEmailAsVerified(
-                            createUserResponse.user.loginMethods[0].recipeUserId,
-                            tokenConsumptionResponse.email
-                        );
-                        const updatedUser = await getUser(createUserResponse.user.id, userContext);
-                        if (updatedUser === undefined) {
-                            throw new Error("Should never happen - user deleted after during password reset");
-                        }
-                        createUserResponse.user = updatedUser;
-                        // Now we try and link the accounts. The function below will try and also
-                        // create a primary user of the new account, and if it does that, it's OK..
-                        // But in most cases, it will end up linking to existing account since the
-                        // email is shared.
-                        // We do not take try linking by session here, since this is supposed to be called without a session
-                        // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-                        const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-                            tenantId,
-                            inputUser: createUserResponse.user,
-                            session: undefined,
-                            userContext,
-                        });
-                        const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
-                        if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
-                            // this means that the account we just linked to
-                            // was not the one we had expected to link it to. This can happen
-                            // due to some race condition or the other.. Either way, this
-                            // is not an issue and we can just return OK
-                        }
-                        return {
-                            status: "OK",
-                            email: tokenConsumptionResponse.email,
-                            user: userAfterLinking,
-                        };
-                    }
                 }
-            } else {
-                // This means that the existing user is not a primary account, which implies that
-                // it must be a non linked email password account. In this case, we simply update the password.
-                // Linking to an existing account will be done after the user goes through the email
-                // verification flow once they log in (if applicable).
+
+                // If the user is a primary user resetting the password of an emailpassword user linked to it
+                // we need to check for account takeover risk (similar to what we do when generating the token)
+
+                // We check if there is any login method in which the input email is verified.
+                // If that is the case, then it's proven that the user owns the email and we can
+                // trust linking of the email password account.
+                let emailVerified =
+                    existingUser.loginMethods.find((lm) => {
+                        return lm.hasSameEmailAs(emailForWhomTokenWasGenerated) && lm.verified;
+                    }) !== undefined;
+
+                // finally, we check if the primary user has any other email / phone number
+                // associated with this account - and if it does, then it means that
+                // there is a risk of account takeover, so we do not allow the token to be generated
+                let hasOtherEmailOrPhone =
+                    existingUser.loginMethods.find((lm) => {
+                        // we do the extra undefined check below cause
+                        // hasSameEmailAs returns false if the lm.email is undefined, and
+                        // we want to check that the email is different as opposed to email
+                        // not existing in lm.
+                        return (
+                            (lm.email !== undefined && !lm.hasSameEmailAs(emailForWhomTokenWasGenerated)) ||
+                            lm.phoneNumber !== undefined
+                        );
+                    }) !== undefined;
+
+                if (!emailVerified && hasOtherEmailOrPhone) {
+                    // We can return an invalid token error, because in this case the token should not have been created
+                    // whenever they try to re-create it they'll see the appropriate error message
+                    return {
+                        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                    };
+                }
+
+                // since this doesn't result in linking and there is no risk of account takeover, we can allow the password reset to proceed
                 return doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
                     new RecipeUserId(userIdForWhomTokenWasGenerated)
                 );
+            }
+
+            if (!existingUser.isPrimaryUser) {
+                // if the existing user is not primary we try and make it one
+                logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser not primary user yet`);
+                // We could check here if the user can even become a primary user, but that'd only mean one extra core call
+                // without any added benefits, since the core already checks all pre-conditions
+
+                // We do this check here instead of using the shouldBecomePrimaryUser util, because
+                // here we handle the shouldRequireVerification case differently
+                const shouldBecomePrimary = await AccountLinking.getInstance().shouldBecomePrimaryUser(
+                    existingUser,
+                    tenantId,
+                    undefined,
+                    userContext
+                );
+
+                if (shouldBecomePrimary) {
+                    const createPrimaryResp = await createPrimaryUser(
+                        existingUser.loginMethods[0].recipeUserId,
+                        userContext
+                    );
+                    if (createPrimaryResp.status !== "OK") {
+                        // Since this condition is checked when generating the token we can return an invalid token error
+                        // This should only occur if something happened since the token was generated, and the user will
+                        // see the appropriate error message when re-starting the flow.
+                        return {
+                            status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                        };
+                    }
+                    existingUser = createPrimaryResp.user;
+                } else {
+                    // Since this condition is checked when generating the token we can return an invalid token error
+                    // This should only occur if something happened since the token was generated, and the user will
+                    // see the appropriate error message when re-starting the flow.
+                    return {
+                        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                    };
+                }
+            }
+
+            // this means that the existingUser is primary but does not have an emailpassword user associated
+            // with it. It could now mean that no emailpassword user exists, or it could mean that
+            // the the ep user exists, but it's not linked to the current account.
+            // If no ep user doesn't exists, we will create one, and link it to the existing account.
+            // If ep user exists, then it means there is some race condition cause
+            // then the token should have been generated for that user instead of the primary user,
+            // and it shouldn't have come into this branch. So we can simply send a password reset
+            // invalid error and the user can try again.
+
+            // NOTE: We do not ask the dev if we should do account linking or not here
+            // cause we already have asked them this when generating an password reset token.
+            // In the edge case that the dev changes account linking allowance from true to false
+            // when it comes here, only a new recipe user id will be created and not linked
+            // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
+            // really cause any security issue.
+
+            let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
+                tenantId,
+                email: tokenConsumptionResponse.email,
+                password: newPassword,
+                userContext,
+            });
+            if (createUserResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                // this means that the user already existed and we can just return an invalid
+                // token (see the above comment)
+                return {
+                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                };
+            } else {
+                // we mark the email as verified because password reset also requires
+                // access to the email to work.. This has a good side effect that
+                // any other login method with the same email in existingAccount will also get marked
+                // as verified.
+                await markEmailAsVerified(
+                    createUserResponse.user.loginMethods[0].recipeUserId,
+                    tokenConsumptionResponse.email
+                );
+                const updatedUser = await getUser(createUserResponse.user.id, userContext);
+                if (updatedUser === undefined) {
+                    throw new Error("Should never happen - user deleted after during password reset");
+                }
+                createUserResponse.user = updatedUser;
+                // Now we try and link the accounts. The function below will try and also
+                // create a primary user of the new account, and if it does that, it's OK..
+                // But in most cases, it will end up linking to existing account since the
+                // email is shared.
+                // We do not take try linking by session here, since this is supposed to be called without a session
+                // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
+                const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                    tenantId,
+                    inputUser: createUserResponse.user,
+                    session: undefined,
+                    userContext,
+                });
+                const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
+                if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
+                    // this means that the account we just linked to
+                    // was not the one we had expected to link it to. This can happen
+                    // due to some race condition or the other.. Either way, this
+                    // is not an issue and we can just return OK
+                }
+                return {
+                    status: "OK",
+                    email: tokenConsumptionResponse.email,
+                    user: userAfterLinking,
+                };
             }
         },
 
