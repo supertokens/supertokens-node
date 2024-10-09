@@ -10,7 +10,6 @@ import RecipeUserId from "../../../recipeUserId";
 import { getPasswordResetLink } from "../utils";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
-import { createPrimaryUser } from "../../accountlinking";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -152,15 +151,17 @@ export default function getAPIImplementation(): APIInterface {
             let linkingCandidate = users.find((u) => u.isPrimaryUser);
 
             logDebugMessage("generatePasswordResetTokenPOST: primary linking candidate: " + linkingCandidate?.id);
+            logDebugMessage("generatePasswordResetTokenPOST: linking candidate count " + users.length);
 
             // If there is no existing primary user and there is a single option to link
             // we see if that user can become primary (and a candidate for linking)
-            if (linkingCandidate === undefined && users.length === 1) {
+            if (linkingCandidate === undefined && users.length > 0) {
                 // If the only user that exists with this email is a non-primary emailpassword user, then we can just let them reset their password, because:
                 // we are not going to link anything and there is no risk of account takeover.
                 if (
+                    users.length === 1 &&
                     users[0].loginMethods[0].recipeUserId.getAsString() ===
-                    emailPasswordAccount?.recipeUserId.getAsString()
+                        emailPasswordAccount?.recipeUserId.getAsString()
                 ) {
                     return await generateAndSendPasswordResetToken(
                         emailPasswordAccount.recipeUserId.getAsString(),
@@ -168,14 +169,15 @@ export default function getAPIImplementation(): APIInterface {
                     );
                 }
 
+                const oldestUser = users.sort((a, b) => a.timeJoined - b.timeJoined)[0];
                 logDebugMessage(
-                    `generatePasswordResetTokenPOST: recipe level-linking candidate: ${users[0].id} (w/ ${
-                        users[0].loginMethods[0].verified ? "verified" : "unverified"
+                    `generatePasswordResetTokenPOST: oldest recipe level-linking candidate: ${oldestUser.id} (w/ ${
+                        oldestUser.loginMethods[0].verified ? "verified" : "unverified"
                     } email)`
                 );
                 // Otherwise, we check if the user can become primary.
                 const shouldBecomePrimaryUser = await AccountLinking.getInstance().shouldBecomePrimaryUser(
-                    users[0],
+                    oldestUser,
                     tenantId,
                     undefined,
                     userContext
@@ -187,7 +189,7 @@ export default function getAPIImplementation(): APIInterface {
                     } become primary`
                 );
                 if (shouldBecomePrimaryUser) {
-                    linkingCandidate = users[0];
+                    linkingCandidate = oldestUser;
                 }
             }
 
@@ -206,7 +208,27 @@ export default function getAPIImplementation(): APIInterface {
                 );
             }
 
-            // Next we check if there is any login method in which the input email is verified.
+            /*
+            This security measure helps prevent the following attack:
+            An attacker has email A and they create an account using TP and it doesn't matter if A is verified or not. Now they create another 
+            account using EP with email A and verifies it. Both these accounts are linked. Now the attacker changes the email for EP recipe to
+            B which makes the EP account unverified, but it's still linked.
+
+            If the real owner of B tries to signup using EP, it will say that the account already exists so they may try to reset password which should be denied,
+            because then they will end up getting access to attacker's account and verify the EP account.
+
+            The problem with this situation is if the EP account is verified, it will allow further sign-ups with email B which will also be linked to this primary account,
+            that the attacker had created with email A.
+
+            It is important to realize that the attacker had created another account with A because if they hadn't done that, then they wouldn't
+            have access to this account after the real user resets the password which is why it is important to check there is another non-EP account
+            linked to the primary such that the email is not the same as B.
+
+            Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should 
+            allow reset password token generation because user has already proven that the owns the email B
+            */
+
+            // First we check if there is any login method in which the input email is verified.
             // If that is the case, then it's proven that the user owns the email and we can
             // trust linking of the email password account.
             let emailVerified =
@@ -214,7 +236,7 @@ export default function getAPIImplementation(): APIInterface {
                     return lm.hasSameEmailAs(email) && lm.verified;
                 }) !== undefined;
 
-            // finally, we check if the primary user has any other email / phone number
+            // then, we check if the primary user has any other email / phone number
             // associated with this account - and if it does, then it means that
             // there is a risk of account takeover, so we do not allow the token to be generated
             let hasOtherEmailOrPhone =
@@ -226,6 +248,8 @@ export default function getAPIImplementation(): APIInterface {
                     return (lm.email !== undefined && !lm.hasSameEmailAs(email)) || lm.phoneNumber !== undefined;
                 }) !== undefined;
 
+            // If we allow this to pass, then:
+            // 1. the
             if (!emailVerified && hasOtherEmailOrPhone) {
                 return {
                     status: "PASSWORD_RESET_NOT_ALLOWED",
@@ -235,10 +259,9 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             if (linkingCandidate.isPrimaryUser && emailPasswordAccount !== undefined) {
-                // If a primary user has the input email as verified or has no other emails: then it is always allowed to reset their password:
-                // - there is no risk of account takeover, because they have verified this email or haven't linked it to anything else
-                // - there will be no linking as a result of this action, so we do not need to check for linking.
-                // TODO: what happens if user M signs up with the email of the victim using a third-party provider that doesn't verify emails
+                // If a primary user has the input email as verified or has no other emails then it is always allowed to reset their own password:
+                // - there is no risk of account takeover, because they have verified this email or haven't linked it to anything else (checked above this block)
+                // - there will be no linking as a result of this action, so we do not need to check for linking (checked here by seeing that the two accounts are already linked)
                 let areTheTwoAccountsLinked =
                     linkingCandidate.loginMethods.find((lm) => {
                         return lm.recipeUserId.getAsString() === emailPasswordAccount!.recipeUserId.getAsString();
@@ -316,19 +339,6 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
             }
-
-            /*
-            This security measure helps prevent the following attack:
-            An attacker has email A and they create an account using TP and it doesn't matter if A is verified or not. Now they create another account using EP with email A and verifies it. Both these accounts are linked. Now the attacker changes the email for EP recipe to B which makes the EP account unverified, but it's still linked.
-
-            If the real owner of B tries to signup using EP, it will say that the account already exists so they may try to reset password which should be denied because then they will end up getting access to attacker's account and verify the EP account.
-
-            The problem with this situation is if the EP account is verified, it will allow further sign-ups with email B which will also be linked to this primary account (that the attacker had created with email A).
-
-            It is important to realize that the attacker had created another account with A because if they hadn't done that, then they wouldn't have access to this account after the real user resets the password which is why it is important to check there is another non-EP account linked to the primary such that the email is not the same as B.
-
-            Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should allow reset password token generation because user has already proven that the owns the email B
-            */
 
             // But first, this only matters it the user cares about checking for email verification status..
 
@@ -571,45 +581,6 @@ export default function getAPIImplementation(): APIInterface {
                 return doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
                     new RecipeUserId(userIdForWhomTokenWasGenerated)
                 );
-            }
-
-            if (!existingUser.isPrimaryUser) {
-                // if the existing user is not primary we try and make it one
-                logDebugMessage(`tryAndMakeSessionUserIntoAPrimaryUser not primary user yet`);
-                // We could check here if the user can even become a primary user, but that'd only mean one extra core call
-                // without any added benefits, since the core already checks all pre-conditions
-
-                // We do this check here instead of using the shouldBecomePrimaryUser util, because
-                // here we handle the shouldRequireVerification case differently
-                const shouldBecomePrimary = await AccountLinking.getInstance().shouldBecomePrimaryUser(
-                    existingUser,
-                    tenantId,
-                    undefined,
-                    userContext
-                );
-
-                if (shouldBecomePrimary) {
-                    const createPrimaryResp = await createPrimaryUser(
-                        existingUser.loginMethods[0].recipeUserId,
-                        userContext
-                    );
-                    if (createPrimaryResp.status !== "OK") {
-                        // Since this condition is checked when generating the token we can return an invalid token error
-                        // This should only occur if something happened since the token was generated, and the user will
-                        // see the appropriate error message when re-starting the flow.
-                        return {
-                            status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-                        };
-                    }
-                    existingUser = createPrimaryResp.user;
-                } else {
-                    // Since this condition is checked when generating the token we can return an invalid token error
-                    // This should only occur if something happened since the token was generated, and the user will
-                    // see the appropriate error message when re-starting the flow.
-                    return {
-                        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-                    };
-                }
             }
 
             // this means that the existingUser is primary but does not have an emailpassword user associated
