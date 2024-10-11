@@ -14,7 +14,8 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { JSONObject, UserContext } from "../../types";
+import { GeneralErrorResponse, JSONObject, UserContext } from "../../types";
+import { SessionContainerInterface } from "../session/types";
 
 export type TypeInput = {
     override?: {
@@ -36,7 +37,27 @@ export type TypeNormalisedInput = {
     };
 };
 
-export type APIInterface = {};
+export type APIInterface = {
+    updateUserDetailsPOST?: (input: {
+        session: SessionContainerInterface;
+        details: {
+            name?: string;
+        };
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              details: {
+                  name: string | undefined;
+              };
+          }
+        | {
+              status: "USER_DETAILS_UPDATE_NOT_ALLOWED";
+              reason: string;
+          }
+        | GeneralErrorResponse
+    >;
+};
 
 export type RecipeInterface = {
     getUserMetadata: (input: {
