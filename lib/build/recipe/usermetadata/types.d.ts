@@ -30,6 +30,19 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
+    userDetailsGET?: (input: {
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              details: {
+                  name?: string;
+              };
+          }
+        | GeneralErrorResponse
+    >;
     updateUserDetailsPOST?: (input: {
         session: SessionContainerInterface;
         details: {

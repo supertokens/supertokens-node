@@ -48,6 +48,20 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
+    userDetailsGET?: (input: {
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              details: {
+                  name?: string;
+              };
+          }
+        | GeneralErrorResponse
+    >;
+
     updateUserDetailsPOST?: (input: {
         session: SessionContainerInterface;
         details: {
