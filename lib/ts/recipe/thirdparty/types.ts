@@ -332,6 +332,7 @@ export type APIInterface = {
     >;
 
     removeAccountDELETE?: (input: {
+        id: string;
         session: SessionContainerInterface;
         options: APIOptions;
     }) => Promise<

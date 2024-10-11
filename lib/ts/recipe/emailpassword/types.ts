@@ -325,6 +325,40 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
+
+    passwordStateGET?: (input: {
+        email: string;
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              exists: boolean;
+          }
+        | GeneralErrorResponse
+    >;
+
+    updatePasswordPOST?: (input: {
+        details: {
+            email: string;
+            newPassword: string;
+            oldPassword?: string;
+        };
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "OLD_PASSWORD_IS_REQUIRED_FOR_VERIFICATION";
+              reason: string;
+          }
+        | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+        | GeneralErrorResponse
+    >;
 };
 
 export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {

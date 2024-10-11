@@ -344,6 +344,7 @@ export declare type APIInterface = {
         | GeneralErrorResponse
     >;
     removeAccountDELETE?: (input: {
+        id: string;
         session: SessionContainerInterface;
         options: APIOptions;
     }) => Promise<
