@@ -135,6 +135,65 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
+
+    factorsSetupForUserGET?: (input: {
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              factors: {
+                  id: string;
+                  details: JSONObject;
+              }[];
+              backupCodes: string[] | undefined;
+          }
+        | GeneralErrorResponse
+    >;
+
+    addFactorForUserPOST?: (input: {
+        factor: {
+            id: string;
+        };
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              backupCodes: string[];
+          }
+        | GeneralErrorResponse
+    >;
+
+    deleteFactorForUserDELETE?: (input: {
+        factorId: string;
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+          }
+        | GeneralErrorResponse
+    >;
+
+    regenerateBackupCodesPOST?: (input: {
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              backupCodes: string[];
+          }
+        | {
+              status: "NO_FACTORS_ARE_SETUP";
+              reason: string;
+          }
+        | GeneralErrorResponse
+    >;
 };
 
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
