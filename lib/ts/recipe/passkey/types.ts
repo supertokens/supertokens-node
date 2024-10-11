@@ -24,15 +24,13 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
-// default implementation for the TypeInput
-// todo update this ???
 export type TypeNormalisedInput = {
     validateEmail: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
     relyingPartyId: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string; // should return the domain of the origin
     relyingPartyName: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string; // should return the app name
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
+    ) => EmailDeliveryTypeInputWithService<TypePasskeyEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -43,7 +41,7 @@ export type TypeNormalisedInput = {
 };
 
 export type TypeInput = {
-    emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypePasskeyEmailDeliveryInput>;
     validateEmail?: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
     relyingPartyId?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
     relyingPartyName?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
@@ -59,8 +57,6 @@ export type TypeInput = {
 export type RecipeInterface = {
     registerPasskeyOptions(input: {
         email: string;
-        password: string;
-        session: SessionContainerInterface | undefined;
         tenantId: string;
         userContext: UserContext;
     }): Promise<{
@@ -253,7 +249,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypePasskeyEmailDeliveryInput>;
 };
 
 export type APIInterface = {
@@ -458,16 +454,16 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 };
-// todo update this ???
-export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
-    type: "PASSWORD_RESET";
+
+export type TypePasskeyRecoverAccountEmailDeliveryInput = {
+    type: "RECOVER_ACCOUNT";
     user: {
         id: string;
         recipeUserId: RecipeUserId | undefined;
         email: string;
     };
-    passwordResetLink: string;
+    recoverAccountLink: string;
     tenantId: string;
 };
 
-export type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;
+export type TypePasskeyEmailDeliveryInput = TypePasskeyRecoverAccountEmailDeliveryInput;
