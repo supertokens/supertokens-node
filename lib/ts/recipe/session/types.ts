@@ -394,6 +394,43 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
+    allSessionsGET?: (input: {
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              sessions: SessionInformation[];
+          }
+        | GeneralErrorResponse
+    >;
+
+    revokeAllSessionsPOST?: (input: {
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              sessionRemoveCount: number;
+          }
+        | GeneralErrorResponse
+    >;
+
+    revokeSessionPOST?: (input: {
+        sessionHandle: string;
+        session: SessionContainerInterface;
+        options: APIOptions;
+        userContext: UserContext;
+    }) => Promise<
+        | {
+              status: "OK";
+              wasRemoved: boolean;
+          }
+        | GeneralErrorResponse
+    >;
+
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
