@@ -146,7 +146,7 @@ export declare type APIInterface = {
           }
         | GeneralErrorResponse
     >;
-    regenerateBackupCodesPOST?: (input: {
+    generateBackupCodesPOST?: (input: {
         session: SessionContainerInterface;
         options: APIOptions;
         userContext: UserContext;
