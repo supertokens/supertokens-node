@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   The `networkInterceptor` now also gets a new `params` prop in the request config.
 -   Adds `customFramework` util functions to minimize code required in custom frameworks like remix, astro etc.
 -   Replicates `fastify` types based on requirement for the SDK instead of using the original module.
+-   Improved type definitions for `TypeProvider`
 
 ### Breaking change
 
