@@ -107,7 +107,7 @@ export type TypeProvider = {
     exchangeAuthCodeForOAuthTokens: (input: {
         redirectURIInfo: {
             redirectURIOnProviderDashboard: string;
-            redirectURIQueryParams: any;
+            redirectURIQueryParams: Record<string, string>;
             pkceCodeVerifier?: string;
         };
         userContext?: UserContext;
