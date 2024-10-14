@@ -1,3 +1,4 @@
+import type { UserContext } from "../../../types";
 import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "../../../thirdpartyUtils";
 import pkceChallenge from "pkce-challenge";
@@ -312,7 +313,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                     await impl.config.validateIdTokenPayload({
                         idTokenPayload: rawUserInfoFromProvider.fromIdTokenPayload,
                         clientConfig: impl.config,
-                        userContext,
+                        userContext: userContext as UserContext,
                     });
                 }
             }
@@ -321,7 +322,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 await impl.config.validateAccessToken({
                     accessToken: accessToken,
                     clientConfig: impl.config,
-                    userContext,
+                    userContext: userContext as UserContext,
                 });
             }
 
