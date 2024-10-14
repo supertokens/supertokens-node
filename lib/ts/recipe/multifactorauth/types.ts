@@ -136,64 +136,47 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    factorsSetupForUserGET?: (input: {
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              factors: {
-                  id: string;
-                  details: JSONObject;
-              }[];
-              backupCodes: string[] | undefined;
-          }
-        | GeneralErrorResponse
-    >;
+    factorsForUserGET:
+        | undefined
+        | ((input: {
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    factors: string[];
+                }
+              | GeneralErrorResponse
+          >);
 
-    addFactorForUserPOST?: (input: {
-        factor: {
-            id: string;
-        };
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              backupCodes: string[];
-          }
-        | GeneralErrorResponse
-    >;
+    addFactorForUserPOST:
+        | undefined
+        | ((input: {
+              factorId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
 
-    deleteFactorForUserDELETE?: (input: {
-        factorId: string;
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-          }
-        | GeneralErrorResponse
-    >;
-
-    generateBackupCodesPOST?: (input: {
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              backupCodes: string[];
-          }
-        | {
-              status: "NO_FACTORS_ARE_SETUP";
-              reason: string;
-          }
-        | GeneralErrorResponse
-    >;
+    deleteFactorForUserDELETE:
+        | undefined
+        | ((input: {
+              factorId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
 };
 
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;
