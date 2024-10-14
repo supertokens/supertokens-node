@@ -244,6 +244,8 @@ export type APIInterface = {
     updateUserDetailsPOST:
         | undefined
         | ((input: {
+              firstName: string;
+              lastName: string;
               session: SessionContainerInterface;
               options: APIOptions;
               userContext: UserContext;
