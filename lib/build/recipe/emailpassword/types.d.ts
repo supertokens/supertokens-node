@@ -322,41 +322,49 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
-    passwordStateGET?: (input: {
-        email: string;
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              exists: boolean;
-          }
-        | GeneralErrorResponse
-    >;
-    updatePasswordPOST?: (input: {
-        details: {
-            email: string;
-            newPassword: string;
-            oldPassword?: string;
-        };
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "OLD_PASSWORD_IS_REQUIRED_FOR_VERIFICATION";
-              reason: string;
-          }
-        | {
-              status: "PASSWORD_POLICY_VIOLATED_ERROR";
-              failureReason: string;
-          }
-        | GeneralErrorResponse
-    >;
+    updatePasswordPOST:
+        | undefined
+        | ((input: {
+              newPassword: string;
+              oldPassword: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | {
+                    status: "WRONG_CREDENTIALS_ERROR";
+                }
+              | {
+                    status: "PASSWORD_POLICY_VIOLATED_ERROR";
+                    failureReason: string;
+                }
+              | GeneralErrorResponse
+          >);
+    changeEmailPOST:
+        | undefined
+        | ((input: {
+              email: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | {
+                    status: "EMAIL_VERIFICATION_SENT";
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | {
+                    status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";

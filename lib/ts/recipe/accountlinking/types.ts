@@ -13,8 +13,9 @@
  * under the License.
  */
 
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import type { User, UserContext } from "../../types";
+import type { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { SessionContainerInterface } from "../session/types";
 
@@ -183,6 +184,76 @@ export type RecipeInterface = {
         removeAllLinkedAccounts: boolean;
         userContext: UserContext;
     }) => Promise<{ status: "OK" }>;
+};
+
+export type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    appInfo: NormalisedAppinfo;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    isInServerlessEnv: boolean;
+    req: BaseRequest;
+    res: BaseResponse;
+};
+
+export type APIInterface = {
+    userDetailsGET:
+        | undefined
+        | ((input: {
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | GeneralErrorResponse
+          >);
+
+    userEnabledDetailsGET:
+        | undefined
+        | ((input: {
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    enabledRecipes: string[];
+                    shouldDoAutomaticAccountLinking: boolean;
+                }
+              | GeneralErrorResponse
+          >);
+
+    loginMethodDELETE:
+        | undefined
+        | ((input: {
+              recipeId: string;
+              recipeUserId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
+
+    updateUserDetailsPOST:
+        | undefined
+        | ((input: {
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | { status: "USER_DETAILS_UPDATE_NOT_ALLOWED"; reason: string }
+              | GeneralErrorResponse
+          >);
 };
 
 export type AccountInfo = {

@@ -330,29 +330,5 @@ export declare type APIInterface = {
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<void>);
-    connectedAccountsGET?: (input: {
-        session: SessionContainerInterface;
-        options: APIOptions;
-    }) => Promise<
-        | {
-              status: "OK";
-              accounts: {
-                  id: string;
-                  userId: string;
-              }[];
-          }
-        | GeneralErrorResponse
-    >;
-    removeAccountDELETE?: (input: {
-        id: string;
-        session: SessionContainerInterface;
-        options: APIOptions;
-    }) => Promise<
-        | {
-              status: "OK";
-              wasDeleted: boolean;
-          }
-        | GeneralErrorResponse
-    >;
 };
 export {};
