@@ -405,7 +405,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    sessions: SessionInformation[];
+                    sessions: SessionInformationWithExtractedInformation[];
                 }
               | SessionError
               | GeneralErrorResponse
@@ -441,6 +441,10 @@ export type SessionInformation = {
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
     tenantId: string;
+};
+
+export type SessionInformationWithExtractedInformation = SessionInformation & {
+    userAgent: string | undefined;
 };
 
 export type ClaimValidationResult = { isValid: true } | { isValid: false; reason?: JSONValue };

@@ -1,11 +1,12 @@
 import SessionWrapper, { APIInterface, APIOptions, VerifySessionOptions } from "../";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
-import { SessionContainerInterface, SessionInformation } from "../types";
+import { SessionContainerInterface, SessionInformationWithExtractedInformation } from "../types";
 import { GeneralErrorResponse, UserContext } from "../../../types";
 import { getSessionFromRequest, refreshSessionInRequest } from "../sessionRequestFunctions";
 import SessionError from "../error";
 import { getUser } from "../../..";
+import { USER_AGENT_KEY_FOR_SESSION_DATA } from "../constants";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -91,7 +92,7 @@ export default function getAPIInterface(): APIInterface {
         }): Promise<
             | {
                   status: "OK";
-                  sessions: SessionInformation[];
+                  sessions: SessionInformationWithExtractedInformation[];
               }
             | SessionError
             | GeneralErrorResponse
@@ -130,7 +131,7 @@ export default function getAPIInterface(): APIInterface {
             // Since we need to fetch multiple sessions information,
             // we are creating multiple promises for fetching the details
             // and using a Promise.all() to resolve them together.
-            const userSessions: SessionInformation[] = [];
+            const userSessions: SessionInformationWithExtractedInformation[] = [];
             const sessionGetPromises: Promise<void>[] = [];
 
             allSessionHandles.forEach((sessionHandle) => {
@@ -142,7 +143,11 @@ export default function getAPIInterface(): APIInterface {
                                 userContext
                             );
                             if (sessionInformation !== undefined) {
-                                userSessions.push(sessionInformation);
+                                userSessions.push({
+                                    ...sessionInformation,
+                                    userAgent:
+                                        sessionInformation.sessionDataInDatabase[USER_AGENT_KEY_FOR_SESSION_DATA],
+                                });
                             }
 
                             resolve();

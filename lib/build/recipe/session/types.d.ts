@@ -334,7 +334,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    sessions: SessionInformation[];
+                    sessions: SessionInformationWithExtractedInformation[];
                 }
               | SessionError
               | GeneralErrorResponse
@@ -367,6 +367,9 @@ export declare type SessionInformation = {
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
     tenantId: string;
+};
+export declare type SessionInformationWithExtractedInformation = SessionInformation & {
+    userAgent: string | undefined;
 };
 export declare type ClaimValidationResult =
     | {
