@@ -74,3 +74,4 @@ export declare function validateClaimsInPayload(
         reason: import("../../types").JSONValue;
     }[]
 >;
+export declare function extractUserAgent(req: BaseRequest): string | undefined;

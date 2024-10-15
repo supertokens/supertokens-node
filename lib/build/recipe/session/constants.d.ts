@@ -8,3 +8,4 @@ export declare const availableTokenTransferMethods: TokenTransferMethod[];
 export declare const oneYearInMs = 31536000000;
 export declare const JWKCacheCooldownInMs = 500;
 export declare const protectedProps: string[];
+export declare const USER_AGENT_KEY_FOR_SESSION_DATA = "__user-agent";

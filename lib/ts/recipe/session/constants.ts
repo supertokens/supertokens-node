@@ -38,3 +38,7 @@ export const protectedProps = [
     "tId",
     "stt",
 ];
+
+// Key to store/retrieve user-agent details from session
+// data in database.
+export const USER_AGENT_KEY_FOR_SESSION_DATA = "__user-agent";

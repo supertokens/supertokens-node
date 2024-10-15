@@ -424,3 +424,11 @@ function defaultGetTokenTransferMethod({
             return "any";
     }
 }
+
+export function extractUserAgent(req: BaseRequest): string | undefined {
+    /**
+     * Extract user agent from the passed request and return it
+     * accordingly.
+     */
+    return req.getHeaderValue("user-agent");
+}
