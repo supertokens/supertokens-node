@@ -98,6 +98,10 @@ export default function getAPIInterface(): APIInterface {
         > {
             /**
              * Get all the active sessions for the logged in user.
+             *
+             * This function will fetched all sessions for the user and
+             * return them in descending order based on the time the session
+             * was created at.
              */
             // Get the logged in user's userId
             const userId = session.getUserId(userContext);

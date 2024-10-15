@@ -28,7 +28,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod, UserContext } from "../../types";
 import handleRefreshAPI from "./api/refresh";
 import signOutAPI from "./api/signout";
-import { REFRESH_API_PATH, SIGNOUT_API_PATH } from "./constants";
+import { REFRESH_API_PATH, SESSIONS_GET_API_PATH, SIGNOUT_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import {
     clearSessionFromAllTokenTransferMethods,
@@ -43,6 +43,7 @@ import { APIOptions } from ".";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
 import { hasGreaterThanEqualToFDI, isTestEnv } from "../../utils";
+import sessionsGetAPI from "./api/sessionsGet";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -162,6 +163,12 @@ export default class SessionRecipe extends RecipeModule {
                 id: SIGNOUT_API_PATH,
                 disabled: this.apiImpl.signOutPOST === undefined,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(SESSIONS_GET_API_PATH),
+                id: SESSIONS_GET_API_PATH,
+                disabled: this.apiImpl.allSessionsGET === undefined,
+            },
         ];
 
         return apisHandled;
@@ -188,6 +195,8 @@ export default class SessionRecipe extends RecipeModule {
             return await handleRefreshAPI(this.apiImpl, options, userContext);
         } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options, userContext);
+        } else if (id === SESSIONS_GET_API_PATH) {
+            return await sessionsGetAPI(this.apiImpl, options, userContext, _tenantId);
         } else {
             return false;
         }
