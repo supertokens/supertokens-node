@@ -17,6 +17,8 @@ import { TokenTransferMethod } from "./types";
 
 export const REFRESH_API_PATH = "/session/refresh";
 export const SIGNOUT_API_PATH = "/signout";
+export const SESSIONS_GET_API_PATH = "/sessions";
+export const SESSION_REVOKE_API_PATH = "/session/revoke";
 
 export const availableTokenTransferMethods: TokenTransferMethod[] = ["cookie", "header"];
 
@@ -36,3 +38,7 @@ export const protectedProps = [
     "tId",
     "stt",
 ];
+
+// Key to store/retrieve user-agent details from session
+// data in database.
+export const USER_AGENT_KEY_FOR_SESSION_DATA = "__user-agent";

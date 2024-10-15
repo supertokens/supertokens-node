@@ -5,6 +5,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { JSONObject, JSONValue, UserContext } from "../../types";
 import { GeneralErrorResponse } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import SessionError from "./error";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -328,12 +329,14 @@ export declare type APIInterface = {
         | ((input: {
               session: SessionContainerInterface;
               options: APIOptions;
+              tenantId: string;
               userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
-                    sessions: SessionInformation[];
+                    sessions: SessionInformationWithExtractedInformation[];
                 }
+              | SessionError
               | GeneralErrorResponse
           >);
     revokeSessionPOST:
@@ -364,6 +367,9 @@ export declare type SessionInformation = {
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
     tenantId: string;
+};
+export declare type SessionInformationWithExtractedInformation = SessionInformation & {
+    userAgent: string | undefined;
 };
 export declare type ClaimValidationResult =
     | {

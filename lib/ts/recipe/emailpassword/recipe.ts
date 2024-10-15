@@ -26,6 +26,7 @@ import {
     PASSWORD_RESET_API,
     SIGNUP_EMAIL_EXISTS_API,
     SIGNUP_EMAIL_EXISTS_API_OLD,
+    PASSWORD_UPDATE_API,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -33,6 +34,7 @@ import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
 import { isTestEnv, send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
+import updatePasswordAPI from "./api/updatePassword";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
@@ -290,6 +292,12 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API_OLD,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(PASSWORD_UPDATE_API),
+                id: PASSWORD_UPDATE_API,
+                disabled: this.apiImpl.updatePasswordPOST === undefined,
+            },
         ];
     };
 
@@ -322,6 +330,8 @@ export default class Recipe extends RecipeModule {
             return await passwordResetAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGNUP_EMAIL_EXISTS_API || id === SIGNUP_EMAIL_EXISTS_API_OLD) {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
+        } else if (id === PASSWORD_UPDATE_API) {
+            return await updatePasswordAPI(this.apiImpl, tenantId, options, userContext);
         }
         return false;
     };

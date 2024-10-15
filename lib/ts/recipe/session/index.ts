@@ -29,12 +29,12 @@ import Recipe from "./recipe";
 import OpenIdRecipe from "../openid/recipe";
 import JWTRecipe from "../jwt/recipe";
 import { JSONObject, UserContext } from "../../types";
-import { getRequiredClaimValidators } from "./utils";
+import { extractUserAgent, getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { protectedProps } from "./constants";
+import { protectedProps, USER_AGENT_KEY_FOR_SESSION_DATA } from "./constants";
 import { getUserContext } from "../../utils";
 
 export default class SessionWrapper {
@@ -60,6 +60,16 @@ export default class SessionWrapper {
         if (user !== undefined) {
             userId = user.id;
         }
+
+        // Extract user-agent from header and inject it into
+        // sessionDataInDatabase.
+        const userAgent = extractUserAgent(req);
+
+        // Parse sessionDataInDatabase and make sure that it's initiated
+        // if it's not present.
+        sessionDataInDatabase =
+            sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
+        sessionDataInDatabase[USER_AGENT_KEY_FOR_SESSION_DATA] = userAgent;
 
         return await createNewSessionInRequest({
             req,
