@@ -740,7 +740,7 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    private async shouldBecomePrimaryUser(
+    public async shouldBecomePrimaryUser(
         user: User,
         tenantId: string,
         session: SessionContainerInterface | undefined,
