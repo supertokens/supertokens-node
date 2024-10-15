@@ -168,6 +168,51 @@ export default function getAPIInterface(): APIInterface {
             };
         },
 
-        revokeSessionPOST: undefined,
+        revokeSessionPOST: async function ({
+            sessionHandle,
+            session,
+            options,
+            userContext,
+        }): Promise<
+            | {
+                  status: "OK";
+              }
+            | GeneralErrorResponse
+        > {
+            /**
+             * Revoke the session passed using the sessionHandle.
+             */
+            // Get the logged in user's userId
+            const userId = session.getUserId(userContext);
+
+            // We need to verify that the user is authenticated because
+            // the revokeSession function doesn't check
+            // whether the user is logged in or not
+            const existingUser = await getUser(userId, userContext);
+            if (existingUser === undefined) {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
+            }
+
+            const wasRevoked = await options.recipeImplementation.revokeSession({
+                sessionHandle,
+                userContext,
+            });
+
+            if (!wasRevoked) {
+                // This is a very unlikely case but we should still consider
+                // it since the upper level function returns this.
+                //
+                // We will just throw an error so that the API consumer
+                // can understand that session was not removed.
+                throw new Error("Failed to revoke session");
+            }
+
+            return {
+                status: "OK",
+            };
+        },
     };
 }
