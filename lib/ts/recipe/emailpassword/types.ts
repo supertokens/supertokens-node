@@ -23,6 +23,7 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import SessionError from "../session/error";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
@@ -334,12 +335,15 @@ export type APIInterface = {
               session: SessionContainerInterface;
               options: APIOptions;
               userContext: UserContext;
+              tenantId: string;
           }) => Promise<
               | {
                     status: "OK";
                 }
               | { status: "WRONG_CREDENTIALS_ERROR" }
               | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+              | { status: "USER_DELETED_WHILE_IN_PROGRESS"; reason: string }
+              | SessionError
               | GeneralErrorResponse
           >);
 

@@ -9,6 +9,7 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import SessionError from "../session/error";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -330,6 +331,7 @@ export declare type APIInterface = {
               session: SessionContainerInterface;
               options: APIOptions;
               userContext: UserContext;
+              tenantId: string;
           }) => Promise<
               | {
                     status: "OK";
@@ -341,6 +343,11 @@ export declare type APIInterface = {
                     status: "PASSWORD_POLICY_VIOLATED_ERROR";
                     failureReason: string;
                 }
+              | {
+                    status: "USER_DELETED_WHILE_IN_PROGRESS";
+                    reason: string;
+                }
+              | SessionError
               | GeneralErrorResponse
           >);
     changeEmailPOST:
