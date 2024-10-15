@@ -944,6 +944,7 @@ export default function getAPIImplementation(): APIInterface {
             | { status: "WRONG_CREDENTIALS_ERROR" }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | { status: "USER_DELETED_WHILE_IN_PROGRESS"; reason: string }
+            | SessionError
             | GeneralErrorResponse
         > {
             /**
@@ -956,14 +957,16 @@ export default function getAPIImplementation(): APIInterface {
             // ID accordingly.
             const existingUser = await getUser(session.getUserId(), userContext);
             if (existingUser === undefined) {
-                // Should never come here as we verified above that the user exists.
-                throw new Error("Should never come here as the user was checked to exist");
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Session user not found",
+                });
             }
             const recipeUser = existingUser.loginMethods.find((lm) => lm.recipeId === "emailpassword");
             if (!recipeUser || recipeUser.email === undefined) {
                 throw new SessionError({
                     type: SessionError.UNAUTHORISED,
-                    message: "A valid session is required to authenticate user for updating password",
+                    message: "No user found with emailpassword recipe",
                 });
             }
             const email = recipeUser.email;
