@@ -18,6 +18,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { JSONObject, JSONValue, UserContext } from "../../types";
 import { GeneralErrorResponse } from "../../types";
 import RecipeUserId from "../../recipeUserId";
+import SessionError from "./error";
 
 export type KeyInfo = {
     publicKey: string;
@@ -399,12 +400,14 @@ export type APIInterface = {
         | ((input: {
               session: SessionContainerInterface;
               options: APIOptions;
+              tenantId: string;
               userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
                     sessions: SessionInformation[];
                 }
+              | SessionError
               | GeneralErrorResponse
           >);
 
