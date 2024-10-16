@@ -339,6 +339,7 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
             userId,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            revokeAcrossAllTenants: tenantId === undefined,
             revokeSessionsForLinkedAccounts,
             userContext: getUserContext(userContext),
         });
