@@ -195,7 +195,7 @@ export type AccountInfo = {
 };
 
 export type AccountInfoWithRecipeId = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+    recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 } & AccountInfo;
 
 export type RecipeLevelUser = {

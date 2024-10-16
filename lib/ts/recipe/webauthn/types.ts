@@ -25,12 +25,12 @@ import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../.
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeNormalisedInput = {
-    validateEmail: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
-    relyingPartyId: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string; // should return the domain of the origin
-    relyingPartyName: (input: { request: BaseRequest | undefined; userContext: UserContext }) => string; // should return the app name
+    relyingPartyId: TypeNormalisedInputRelyingPartyId;
+    relyingPartyName: TypeNormalisedInputRelyingPartyName;
+    getOrigin: TypeNormalisedInputGetOrigin;
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInputWithService<TypePasskeyEmailDeliveryInput>;
+    ) => EmailDeliveryTypeInputWithService<TypeWebauthnEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -40,11 +40,23 @@ export type TypeNormalisedInput = {
     };
 };
 
+export type TypeNormalisedInputRelyingPartyId = (input: {
+    request: BaseRequest | undefined;
+    userContext: UserContext;
+}) => string; // should return the domain of the origin
+
+export type TypeNormalisedInputRelyingPartyName = (input: {
+    request: BaseRequest | undefined;
+    userContext: UserContext;
+}) => string; // should return the app name
+
+export type TypeNormalisedInputGetOrigin = (input: { request: BaseRequest; userContext: UserContext }) => string; // should return the app name
+
 export type TypeInput = {
-    emailDelivery?: EmailDeliveryTypeInput<TypePasskeyEmailDeliveryInput>;
-    validateEmail?: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
-    relyingPartyId?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
-    relyingPartyName?: string | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
+    emailDelivery?: EmailDeliveryTypeInput<TypeWebauthnEmailDeliveryInput>;
+    relyingPartyId?: TypeInputRelyingPartyId;
+    relyingPartyName?: TypeInputRelyingPartyName;
+    getOrigin?: TypeInputGetOrigin;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -54,14 +66,29 @@ export type TypeInput = {
     };
 };
 
+export type TypeInputRelyingPartyId =
+    | string
+    | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
+
+export type TypeInputRelyingPartyName =
+    | string
+    | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
+
+export type TypeInputGetOrigin = (input: { request: BaseRequest; userContext: UserContext }) => string;
+
 export type RecipeInterface = {
-    registerPasskeyOptions(input: {
+    registerOptions(input: {
         email: string;
+        relyingPartyId: string;
+        relyingPartyName: string;
+        origin: string;
+        timeout: number;
+        attestation: "none" | "indirect" | "direct" | "enterprise";
         tenantId: string;
         userContext: UserContext;
     }): Promise<{
         status: "OK";
-        passkeyGeneratedOptionsId: string;
+        webauthnGeneratedOptionsId: string;
         rp: {
             id: string;
             name: string;
@@ -90,22 +117,23 @@ export type RecipeInterface = {
         };
     }>;
 
-    signInPasskeyOptions(input: {
-        session: SessionContainerInterface | undefined;
+    signInOptions(input: {
+        relyingPartyId: string;
+        origin: string;
+        timeout: number;
         tenantId: string;
         userContext: UserContext;
     }): Promise<{
         status: "OK";
-        passkeyGeneratedOptionsId: string;
+        webauthnGeneratedOptionsId: string;
         challenge: string;
         timeout: number;
         userVerification: "required" | "preferred" | "discouraged";
     }>;
 
     signUp(input: {
-        email: string | undefined;
-        passkeyGeneratedOptionsId: string;
-        passkey: {
+        webauthnGeneratedOptionsId: string;
+        credential: {
             id: string;
             rawId: string;
             response: {
@@ -139,9 +167,58 @@ export type RecipeInterface = {
           }
     >;
 
+    // this function is meant only for creating the recipe in the core and nothing else.
+    // we added this even though signUp exists cause devs may override signup expecting it
+    // to be called just during sign up. But we also need a version of signing up which can be
+    // called during operations like creating a user during password reset flow.
+    createNewRecipeUser(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: {
+            id: string;
+            rawId: string;
+            response: {
+                clientDataJSON: string;
+                attestationObject: string;
+                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                userHandle: string;
+            };
+            authenticatorAttachment: "platform" | "cross-platform";
+            clientExtensionResults: Record<string, unknown>;
+            type: "public-key";
+        };
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
+
+    verifyCredentials(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: {
+            id: string;
+            rawId: string;
+            response: {
+                clientDataJSON: string;
+                attestationObject: string;
+                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                userHandle: string;
+            };
+            authenticatorAttachment: "platform" | "cross-platform";
+            clientExtensionResults: Record<string, unknown>;
+            type: "public-key";
+        };
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+
     signIn(input: {
-        passkeyGeneratedOptionsId: string;
-        passkey: {
+        webauthnGeneratedOptionsId: string;
+        credential: {
             id: string;
             rawId: string;
             response: {
@@ -171,74 +248,47 @@ export type RecipeInterface = {
           }
     >;
 
+    // todo uncomment one by one once starting implementation
+
     /**
      * We pass in the email as well to this function cause the input userId
      * may not be associated with an passkey account. In this case, we
      * need to know which email to use to create an passkey account later on.
      */
-    generateRecoverAccountToken(input: {
-        userId: string; // the id can be either recipeUserId or primaryUserId
-        email: string;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
+    // generateRecoverAccountToken(input: {
+    //     userId: string; // the id can be either recipeUserId or primaryUserId
+    //     email: string;
+    //     tenantId: string;
+    //     userContext: UserContext;
+    // }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
-    consumeRecoverAccountToken(input: {
-        token: string;
-        passkey: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | { status: "RECOVER_ACCOUNT_INVALID_TOKEN_ERROR" }
-    >;
-
-    // this function is meant only for creating the recipe in the core and nothing else.
-    // we added this even though signUp exists cause devs may override signup expecting it
-    // to be called just during sign up. But we also need a version of signing up which can be
-    // called during operations like creating a user during password reset flow.
-    createNewRecipeUser(input: {
-        email: string;
-        passkeyGeneratedOptionsId: string;
-        passkey: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-    >;
+    // // make sure the email maps to options email
+    // consumeRecoverAccountToken(input: {
+    //     token: string;
+    //     webauthnGeneratedOptionsId: string;
+    //     credential: {
+    //         id: string;
+    //         rawId: string;
+    //         response: {
+    //             clientDataJSON: string;
+    //             attestationObject: string;
+    //             transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+    //             userHandle: string;
+    //         };
+    //         authenticatorAttachment: "platform" | "cross-platform";
+    //         clientExtensionResults: Record<string, unknown>;
+    //         type: "public-key";
+    //     };
+    //     tenantId: string;
+    //     userContext: UserContext;
+    // }): Promise<
+    //     | {
+    //           status: "OK";
+    //           email: string;
+    //           userId: string;
+    //       }
+    //     | { status: "RECOVER_ACCOUNT_INVALID_TOKEN_ERROR" }
+    // >;
 };
 
 export type APIOptions = {
@@ -249,21 +299,21 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryIngredient<TypePasskeyEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypeWebauthnEmailDeliveryInput>;
 };
 
 export type APIInterface = {
-    registerPasskeyOptionsPOST:
+    registerOptionsPOST:
         | undefined
         | ((input: {
-              email: string | undefined;
+              email: string;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
           }) => Promise<
               | {
                     status: "OK";
-                    passkeyGeneratedOptionsId: string;
+                    webauthnGeneratedOptionsId: string;
                     rp: {
                         id: string;
                         name: string;
@@ -294,7 +344,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    signInPasskeyOptionsPOST:
+    signInOptionsPOST:
         | undefined
         | ((input: {
               tenantId: string;
@@ -303,7 +353,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    passkeyGeneratedOptionsId: string;
+                    webauthnGeneratedOptionsId: string;
                     challenge: string;
                     timeout: number;
                     userVerification: "required" | "preferred" | "discouraged";
@@ -315,8 +365,8 @@ export type APIInterface = {
         | undefined
         | ((input: {
               email: string;
-              passkeyGeneratedOptionsId: string;
-              passkey: {
+              webauthnGeneratedOptionsId: string;
+              credential: {
                   id: string;
                   rawId: string;
                   response: {
@@ -353,8 +403,8 @@ export type APIInterface = {
     signInPOST:
         | undefined
         | ((input: {
-              passkeyGeneratedOptionsId: string;
-              passkey: {
+              webauthnGeneratedOptionsId: string;
+              credential: {
                   id: string;
                   rawId: string;
                   response: {
@@ -388,74 +438,75 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    generateRecoverAccountTokenPOST:
-        | undefined
-        | ((input: {
-              email: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                }
-              | {
-                    status: "ACCOUNT_RECOVERY_NOT_ALLOWED";
-                    reason: string;
-                }
-              | GeneralErrorResponse
-          >);
+    // todo uncomment one by one once starting implementation
+    // generateRecoverAccountTokenPOST:
+    //     | undefined
+    //     | ((input: {
+    //           email: string;
+    //           tenantId: string;
+    //           options: APIOptions;
+    //           userContext: UserContext;
+    //       }) => Promise<
+    //           | {
+    //                 status: "OK";
+    //             }
+    //           | {
+    //                 status: "ACCOUNT_RECOVERY_NOT_ALLOWED";
+    //                 reason: string;
+    //             }
+    //           | GeneralErrorResponse
+    //       >);
 
-    recoverAccountPOST:
-        | undefined
-        | ((input: {
-              passkey: {
-                  id: string;
-                  rawId: string;
-                  response: {
-                      clientDataJSON: string;
-                      attestationObject: string;
-                      transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                      userHandle: string;
-                  };
-                  authenticatorAttachment: "platform" | "cross-platform";
-                  clientExtensionResults: Record<string, unknown>;
-                  type: "public-key";
-              };
-              token: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    email: string;
-                    user: User;
-                }
-              | {
-                    status: "RECOVER_ACCOUNT_TOKEN_INVALID_TOKEN_ERROR";
-                }
-              | GeneralErrorResponse
-          >);
+    // recoverAccountPOST:
+    //     | undefined
+    //     | ((input: {
+    //           credential: {
+    //               id: string;
+    //               rawId: string;
+    //               response: {
+    //                   clientDataJSON: string;
+    //                   attestationObject: string;
+    //                   transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+    //                   userHandle: string;
+    //               };
+    //               authenticatorAttachment: "platform" | "cross-platform";
+    //               clientExtensionResults: Record<string, unknown>;
+    //               type: "public-key";
+    //           };
+    //           token: string;
+    //           tenantId: string;
+    //           options: APIOptions;
+    //           userContext: UserContext;
+    //       }) => Promise<
+    //           | {
+    //                 status: "OK";
+    //                 email: string;
+    //                 user: User;
+    //             }
+    //           | {
+    //                 status: "RECOVER_ACCOUNT_TOKEN_INVALID_TOKEN_ERROR";
+    //             }
+    //           | GeneralErrorResponse
+    //       >);
 
-    // used for checking if the email already exists before generating the passkey
-    emailExistsGET:
-        | undefined
-        | ((input: {
-              email: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    exists: boolean;
-                }
-              | GeneralErrorResponse
-          >);
+    // // used for checking if the email already exists before generating the passkey
+    // emailExistsGET:
+    //     | undefined
+    //     | ((input: {
+    //           email: string;
+    //           tenantId: string;
+    //           options: APIOptions;
+    //           userContext: UserContext;
+    //       }) => Promise<
+    //           | {
+    //                 status: "OK";
+    //                 exists: boolean;
+    //             }
+    //           | GeneralErrorResponse
+    //       >);
 };
 
-export type TypePasskeyRecoverAccountEmailDeliveryInput = {
+export type TypeWebauthnRecoverAccountEmailDeliveryInput = {
     type: "RECOVER_ACCOUNT";
     user: {
         id: string;
@@ -466,4 +517,4 @@ export type TypePasskeyRecoverAccountEmailDeliveryInput = {
     tenantId: string;
 };
 
-export type TypePasskeyEmailDeliveryInput = TypePasskeyRecoverAccountEmailDeliveryInput;
+export type TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput;
