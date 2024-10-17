@@ -25,8 +25,6 @@ export class OAuth2Client {
 
     /**
      * OAuth 2.0 Client Secret
-     * The secret will be included in the create request as cleartext, and then
-     * never again. The secret is kept in hashed format and is not recoverable once lost.
      */
     clientSecret?: string;
 
@@ -177,9 +175,11 @@ export class OAuth2Client {
 
     /**
      * Metadata - JSON object
-     * JSONRawMessage represents a json.RawMessage that works well with JSON, SQL, and Swagger.
      */
     metadata: Record<string, any> = {};
+
+    /** This flag is set to true if refresh tokens are updated upon use */
+    enableRefreshTokenRotation: boolean;
 
     constructor({
         clientId,
@@ -208,6 +208,7 @@ export class OAuth2Client {
         createdAt,
         updatedAt,
         metadata = {},
+        enableRefreshTokenRotation = false,
     }: OAuth2ClientOptions) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -235,6 +236,7 @@ export class OAuth2Client {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.metadata = metadata;
+        this.enableRefreshTokenRotation = enableRefreshTokenRotation;
     }
 
     static fromAPIResponse(response: any): OAuth2Client {
