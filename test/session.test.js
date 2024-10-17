@@ -245,6 +245,64 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.refreshTokenExpiry === new Date(0).toUTCString());
     });
 
+    it("test that custom cookie format does nto throw an error during cookie parsing", async function () {
+        const connectionURI = await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+        });
+        const app = express();
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";custom=" + JSON.stringify({ a: "b%b" })])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let cookies = extractInfoFromResponse(res2);
+        assert(res2.status === 401);
+        assert(cookies.accessToken === "");
+        assert(cookies.accessTokenExpiry === new Date(0).toUTCString());
+        assert(cookies.refreshToken === "");
+        assert(cookies.refreshTokenExpiry === new Date(0).toUTCString());
+    });
+
     it("test that session tokens are cleared if refresh token api is called without the refresh token but with an expired access token", async function () {
         const connectionURI = await startST({ coreConfig: { access_token_validity: 1 } });
         SuperTokens.init({

@@ -118,7 +118,12 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         userContext: UserContext;
     }) => Promise<void>;
-    private shouldBecomePrimaryUser;
+    shouldBecomePrimaryUser(
+        user: User,
+        tenantId: string,
+        session: SessionContainerInterface | undefined,
+        userContext: UserContext
+    ): Promise<boolean>;
     tryLinkingByAccountInfoOrCreatePrimaryUser({
         inputUser,
         session,
