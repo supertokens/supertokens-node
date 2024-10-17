@@ -45,10 +45,7 @@ export type TypeNormalisedInputRelyingPartyId = (input: {
     userContext: UserContext;
 }) => string; // should return the domain of the origin
 
-export type TypeNormalisedInputRelyingPartyName = (input: {
-    request: BaseRequest | undefined;
-    userContext: UserContext;
-}) => string; // should return the app name
+export type TypeNormalisedInputRelyingPartyName = () => string; // should return the app name
 
 export type TypeNormalisedInputGetOrigin = (input: { request: BaseRequest; userContext: UserContext }) => string; // should return the app name
 
@@ -70,66 +67,103 @@ export type TypeInputRelyingPartyId =
     | string
     | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
 
-export type TypeInputRelyingPartyName =
-    | string
-    | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
+export type TypeInputRelyingPartyName = string | (() => string);
 
 export type TypeInputGetOrigin = (input: { request: BaseRequest; userContext: UserContext }) => string;
 
 export type RecipeInterface = {
-    registerOptions(input: {
-        email: string;
-        relyingPartyId: string;
-        relyingPartyName: string;
-        origin: string;
-        timeout: number;
-        attestation: "none" | "indirect" | "direct" | "enterprise";
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        webauthnGeneratedOptionsId: string;
-        rp: {
-            id: string;
-            name: string;
-        };
-        user: {
-            id: string;
-            name: string;
-            displayName: string;
-        };
-        challenge: string;
-        timeout: number;
-        excludeCredentials: {
-            id: string;
-            type: string;
-            transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
-        }[];
-        attestation: "none" | "indirect" | "direct" | "enterprise";
-        pubKeyCredParams: {
-            alg: number;
-            type: string;
-        }[];
-        authenticatorSelection: {
-            requireResidentKey: boolean;
-            residentKey: "required" | "preferred" | "discouraged";
-            userVerification: "required" | "preferred" | "discouraged";
-        };
-    }>;
+    // should have a way to access the user email: passed as a param, through session, or using recoverAccountToken
+    // it should have at least one of those 3 options
+    registerOptions(
+        input: {
+            relyingPartyId: string;
+            relyingPartyName: string;
+            origin: string;
+            requireResidentKey: boolean | undefined; // should default to false in order to allow multiple authenticators to be used; see https://auth0.com/blog/a-look-at-webauthn-resident-credentials/
+            // default to 'required' in order store the private key locally on the device and not on the server
+            residentKey: "required" | "preferred" | "discouraged" | undefined;
+            // default to 'preferred' in order to verify the user (biometrics, pin, etc) based on the device preferences
+            userVerification: "required" | "preferred" | "discouraged" | undefined;
+            // default to 'none' in order to allow any authenticator and not verify attestation
+            attestation: "none" | "indirect" | "direct" | "enterprise" | undefined;
+            // default to 5 seconds
+            timeout: number | undefined;
+            tenantId: string;
+            userContext: UserContext;
+        } & (
+            | {
+                  recoverAccountToken: string;
+              }
+            | {
+                  email: string;
+              }
+            | {
+                  session: SessionContainerInterface;
+              }
+        )
+    ): Promise<
+        | {
+              status: "OK";
+              webauthnGeneratedOptionsId: string;
+              rp: {
+                  id: string;
+                  name: string;
+              };
+              user: {
+                  id: string;
+                  name: string; // user email
+                  displayName: string; //user email
+              };
+              challenge: string;
+              timeout: number;
+              excludeCredentials: {
+                  id: string;
+                  type: "public-key";
+                  transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
+              }[];
+              attestation: "none" | "indirect" | "direct" | "enterprise";
+              pubKeyCredParams: {
+                  // we will default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+                  alg: number;
+                  type: "public-key";
+              }[];
+              authenticatorSelection: {
+                  requireResidentKey: boolean;
+                  residentKey: "required" | "preferred" | "discouraged";
+                  userVerification: "required" | "preferred" | "discouraged";
+              };
+          }
+        | { status: "EMAIL_MISSING_ERROR" } // email is required if not using session or recoverAccountToken
+        | { status: "SESSION_MISSING_ERROR" } // session is required if not using email or recoverAccountToken
+        | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" } // recoverAccountToken is required if not using email or session
+        | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+        | { status: "RELYING_PARTY_ID_MISSING_ERROR" }
+        | { status: "RELYING_PARTY_ID_INVALID_ERROR" } // wrong format; must be domain
+        | { status: "RELYING_PARTY_NAME_MISSING_ERROR" } // relyingPartyName is required
+        | { status: "ORIGIN_MISSING_ERROR" }
+        | { status: "ORIGIN_INVALID_ERROR" } // wrong format; must be domain url
+    >;
 
     signInOptions(input: {
         relyingPartyId: string;
         origin: string;
-        timeout: number;
+        userVerification: "required" | "preferred" | "discouraged" | undefined; // see register options
+        timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        webauthnGeneratedOptionsId: string;
-        challenge: string;
-        timeout: number;
-        userVerification: "required" | "preferred" | "discouraged";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              webauthnGeneratedOptionsId: string;
+              challenge: string;
+              timeout: number;
+              userVerification: "required" | "preferred" | "discouraged";
+          }
+        | { status: "RELYING_PARTY_ID_MISSING_ERROR" }
+        | { status: "RELYING_PARTY_ID_INVALID_ERROR" } // wrong format; must be domain
+        | { status: "ORIGIN_MISSING_ERROR" }
+        | { status: "ORIGIN_INVALID_ERROR" } // wrong format; must be domain url
+    >;
 
     signUp(input: {
         webauthnGeneratedOptionsId: string;
@@ -157,6 +191,9 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "CREDENTIAL_MISSING_ERROR" }
+        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -165,6 +202,118 @@ export type RecipeInterface = {
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
+    >;
+
+    signIn(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: {
+            id: string;
+            rawId: string;
+            response: {
+                clientDataJSON: string;
+                attestationObject: string;
+                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                userHandle: string;
+            };
+            authenticatorAttachment: "platform" | "cross-platform";
+            clientExtensionResults: Record<string, unknown>;
+            type: "public-key";
+        };
+        session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "CREDENTIAL_MISSING_ERROR" }
+        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+
+    /**
+     * We pass in the email as well to this function cause the input userId
+     * may not be associated with an webauthn account. In this case, we
+     * need to know which email to use to create an webauthn account later on.
+     */
+    generateRecoverAccountToken(input: {
+        userId: string; // the id can be either recipeUserId or primaryUserId
+        email: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        { status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" } | { status: "UNKNOWN_EMAIL_ERROR" }
+    >;
+
+    // make sure the email maps to options email
+    consumeRecoverAccountToken(input: {
+        token: string;
+        webauthnGeneratedOptionsId: string;
+        credential: {
+            id: string;
+            rawId: string;
+            response: {
+                clientDataJSON: string;
+                attestationObject: string;
+                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                userHandle: string;
+            };
+            authenticatorAttachment: "platform" | "cross-platform";
+            clientExtensionResults: Record<string, unknown>;
+            type: "public-key";
+        };
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "CREDENTIAL_MISSING_ERROR" }
+        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
+        | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" }
+        | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+    >;
+
+    // used internally for creating a passkey during password reset flow or when adding a credential to an existing user
+    // email will be taken from the options
+    // no need for recoverAccountToken, as that will be used upstream
+    // (in consumeRecoverAccountToken invalidating the token and in registerOptions for storing the email in the generated options)
+    registerPasskey(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: {
+            id: string;
+            rawId: string;
+            response: {
+                clientDataJSON: string;
+                attestationObject: string;
+                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                userHandle: string;
+            };
+            authenticatorAttachment: "platform" | "cross-platform";
+            clientExtensionResults: Record<string, unknown>;
+            type: "public-key";
+        };
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "CREDENTIAL_MISSING_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
     >;
 
     // this function is meant only for creating the recipe in the core and nothing else.
@@ -195,6 +344,9 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "CREDENTIAL_MISSING_ERROR" }
+        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
     >;
 
     verifyCredentials(input: {
@@ -214,81 +366,24 @@ export type RecipeInterface = {
         };
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "CREDENTIAL_MISSING_ERROR" }
+        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
+    >;
 
-    signIn(input: {
-        webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
-        session: SessionContainerInterface | undefined;
-        shouldTryLinkingWithSessionUser: boolean | undefined;
+    // used for retrieving the user details (email) from the recover account token
+    // should be used in the registerOptions function when the user recovers the account and generates the credentials
+    getUserFromRecoverAccountToken(input: {
+        token: string;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-        | { status: "WRONG_CREDENTIALS_ERROR" }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
+        | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" }
+        | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
     >;
-
-    // todo uncomment one by one once starting implementation
-
-    /**
-     * We pass in the email as well to this function cause the input userId
-     * may not be associated with an passkey account. In this case, we
-     * need to know which email to use to create an passkey account later on.
-     */
-    // generateRecoverAccountToken(input: {
-    //     userId: string; // the id can be either recipeUserId or primaryUserId
-    //     email: string;
-    //     tenantId: string;
-    //     userContext: UserContext;
-    // }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
-
-    // // make sure the email maps to options email
-    // consumeRecoverAccountToken(input: {
-    //     token: string;
-    //     webauthnGeneratedOptionsId: string;
-    //     credential: {
-    //         id: string;
-    //         rawId: string;
-    //         response: {
-    //             clientDataJSON: string;
-    //             attestationObject: string;
-    //             transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-    //             userHandle: string;
-    //         };
-    //         authenticatorAttachment: "platform" | "cross-platform";
-    //         clientExtensionResults: Record<string, unknown>;
-    //         type: "public-key";
-    //     };
-    //     tenantId: string;
-    //     userContext: UserContext;
-    // }): Promise<
-    //     | {
-    //           status: "OK";
-    //           email: string;
-    //           userId: string;
-    //       }
-    //     | { status: "RECOVER_ACCOUNT_INVALID_TOKEN_ERROR" }
-    // >;
 };
 
 export type APIOptions = {
@@ -305,12 +400,13 @@ export type APIOptions = {
 export type APIInterface = {
     registerOptionsPOST:
         | undefined
-        | ((input: {
-              email: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
+        | ((
+              input: {
+                  tenantId: string;
+                  options: APIOptions;
+                  userContext: UserContext;
+              } & ({ email: string } | { recoverAccountToken: string } | { session: SessionContainerInterface })
+          ) => Promise<
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
@@ -327,7 +423,7 @@ export type APIInterface = {
                     timeout: number;
                     excludeCredentials: {
                         id: string;
-                        type: string;
+                        type: "public-key";
                         transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
                     }[];
                     attestation: "none" | "indirect" | "direct" | "enterprise";
@@ -342,6 +438,15 @@ export type APIInterface = {
                     };
                 }
               | GeneralErrorResponse
+              | { status: "EMAIL_MISSING_ERROR" } // email is required if not using session or recoverAccountToken
+              | { status: "SESSION_MISSING_ERROR" } // session is required if not using email or recoverAccountToken
+              | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" } // recoverAccountToken is required if not using email or session
+              | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+              | { status: "RELYING_PARTY_ID_MISSING_ERROR" }
+              | { status: "RELYING_PARTY_ID_INVALID_ERROR" } // wrong format; must be domain
+              | { status: "RELYING_PARTY_NAME_MISSING_ERROR" } // relyingPartyName is required
+              | { status: "ORIGIN_MISSING_ERROR" }
+              | { status: "ORIGIN_INVALID_ERROR" } // wrong format; must be domain url
           >);
 
     signInOptionsPOST:
@@ -359,12 +464,12 @@ export type APIInterface = {
                     userVerification: "required" | "preferred" | "discouraged";
                 }
               | GeneralErrorResponse
+              | { status: "SIGN_IN_OPTIONS_NOT_ALLOWED"; reason: string }
           >);
 
     signUpPOST:
         | undefined
         | ((input: {
-              email: string;
               webauthnGeneratedOptionsId: string;
               credential: {
                   id: string;
@@ -438,72 +543,72 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    // todo uncomment one by one once starting implementation
-    // generateRecoverAccountTokenPOST:
-    //     | undefined
-    //     | ((input: {
-    //           email: string;
-    //           tenantId: string;
-    //           options: APIOptions;
-    //           userContext: UserContext;
-    //       }) => Promise<
-    //           | {
-    //                 status: "OK";
-    //             }
-    //           | {
-    //                 status: "ACCOUNT_RECOVERY_NOT_ALLOWED";
-    //                 reason: string;
-    //             }
-    //           | GeneralErrorResponse
-    //       >);
+    generateRecoverAccountTokenPOST:
+        | undefined
+        | ((input: {
+              email: string;
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | {
+                    status: "ACCOUNT_RECOVERY_NOT_ALLOWED";
+                    reason: string;
+                }
+              | GeneralErrorResponse
+          >);
 
-    // recoverAccountPOST:
-    //     | undefined
-    //     | ((input: {
-    //           credential: {
-    //               id: string;
-    //               rawId: string;
-    //               response: {
-    //                   clientDataJSON: string;
-    //                   attestationObject: string;
-    //                   transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-    //                   userHandle: string;
-    //               };
-    //               authenticatorAttachment: "platform" | "cross-platform";
-    //               clientExtensionResults: Record<string, unknown>;
-    //               type: "public-key";
-    //           };
-    //           token: string;
-    //           tenantId: string;
-    //           options: APIOptions;
-    //           userContext: UserContext;
-    //       }) => Promise<
-    //           | {
-    //                 status: "OK";
-    //                 email: string;
-    //                 user: User;
-    //             }
-    //           | {
-    //                 status: "RECOVER_ACCOUNT_TOKEN_INVALID_TOKEN_ERROR";
-    //             }
-    //           | GeneralErrorResponse
-    //       >);
+    recoverAccountPOST:
+        | undefined
+        | ((input: {
+              webauthnGeneratedOptionsId: string;
+              credential: {
+                  id: string;
+                  rawId: string;
+                  response: {
+                      clientDataJSON: string;
+                      attestationObject: string;
+                      transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                      userHandle: string;
+                  };
+                  authenticatorAttachment: "platform" | "cross-platform";
+                  clientExtensionResults: Record<string, unknown>;
+                  type: "public-key";
+              };
+              token: string;
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    email: string;
+                    user: User;
+                }
+              | {
+                    status: "RECOVER_ACCOUNT_TOKEN_INVALID_TOKEN_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
 
-    // // used for checking if the email already exists before generating the passkey
-    // emailExistsGET:
-    //     | undefined
-    //     | ((input: {
-    //           email: string;
-    //           tenantId: string;
-    //           options: APIOptions;
-    //           userContext: UserContext;
-    //       }) => Promise<
-    //           | {
-    //                 status: "OK";
-    //                 exists: boolean;
-    //             }
-    //           | GeneralErrorResponse
-    //       >);
+    // used for checking if the email already exists before generating the credential
+    emailExistsGET:
+        | undefined
+        | ((input: {
+              email: string;
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
 };
 
 export type TypeWebauthnRecoverAccountEmailDeliveryInput = {
