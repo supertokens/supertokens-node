@@ -303,7 +303,6 @@ export function validateAndNormaliseUserInput(
         antiCsrfFunctionOrString: antiCsrf,
         override,
         invalidClaimStatusCode,
-        overwriteSessionDuringSignInUp: config?.overwriteSessionDuringSignInUp,
         jwksRefreshIntervalSec: config?.jwksRefreshIntervalSec ?? 3600 * 4,
     };
 }

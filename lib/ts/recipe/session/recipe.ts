@@ -42,7 +42,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import { logDebugMessage } from "../../logger";
 import { resetCombinedJWKS } from "../../combinedRemoteJWKSet";
-import { hasGreaterThanEqualToFDI, isTestEnv } from "../../utils";
+import { isTestEnv } from "../../utils";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -271,12 +271,5 @@ export default class SessionRecipe extends RecipeModule {
             },
             userContext,
         });
-    };
-
-    getNormalisedOverwriteSessionDuringSignInUp = (req: any) => {
-        const supportsFDI31 = hasGreaterThanEqualToFDI(req, "3.1");
-        const res = this.config.overwriteSessionDuringSignInUp ?? supportsFDI31;
-        logDebugMessage("getNormalisedOverwriteSessionDuringSignInUp returning: " + res);
-        return res;
     };
 }
