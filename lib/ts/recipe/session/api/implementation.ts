@@ -80,5 +80,8 @@ export default function getAPIInterface(): APIInterface {
                 status: "OK",
             };
         },
+
+        allSessionsGET: undefined,
+        revokeSessionPOST: undefined,
     };
 }
