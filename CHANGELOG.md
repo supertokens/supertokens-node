@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Changes type of value in formField object to be `unknown` instead of `string` to add support for accepting any type of value in form fields.
 -   Only supporting CDI 5.2, Compatible with Core version >= 10.0
--   Changed the default value of `overwriteSessionDuringSignInUp` to true.
+-   Removed the `overwriteSessionDuringSignInUp` option.
 -   Added a new `shouldTryLinkingWithSessionUser` to sign in/up related APIs (and the related recipe functions)
     -   This will default to false on the API
     -   This will be set to true in function calls if you pass a session, otherwise it is set to false
