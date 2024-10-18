@@ -45,9 +45,16 @@ export type TypeNormalisedInputRelyingPartyId = (input: {
     userContext: UserContext;
 }) => string; // should return the domain of the origin
 
-export type TypeNormalisedInputRelyingPartyName = () => string; // should return the app name
+export type TypeNormalisedInputRelyingPartyName = (input: {
+    tenantId: string;
+    userContext: UserContext;
+}) => Promise<string>; // should return the app name
 
-export type TypeNormalisedInputGetOrigin = (input: { request: BaseRequest; userContext: UserContext }) => string; // should return the app name
+export type TypeNormalisedInputGetOrigin = (input: {
+    tenantId: string;
+    request: BaseRequest;
+    userContext: UserContext;
+}) => Promise<string>; // should return the app name
 
 export type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeWebauthnEmailDeliveryInput>;
@@ -65,11 +72,17 @@ export type TypeInput = {
 
 export type TypeInputRelyingPartyId =
     | string
-    | ((input: { request: BaseRequest | undefined; userContext: UserContext }) => string);
+    | ((input: { tenantId: string; request: BaseRequest | undefined; userContext: UserContext }) => Promise<string>);
 
-export type TypeInputRelyingPartyName = string | (() => string);
+export type TypeInputRelyingPartyName =
+    | string
+    | ((input: { tenantId: string; userContext: UserContext }) => Promise<string>);
 
-export type TypeInputGetOrigin = (input: { request: BaseRequest; userContext: UserContext }) => string;
+export type TypeInputGetOrigin = (input: {
+    tenantId: string;
+    request: BaseRequest;
+    userContext: UserContext;
+}) => Promise<string>;
 
 export type RecipeInterface = {
     // should have a way to access the user email: passed as a param, through session, or using recoverAccountToken
@@ -133,15 +146,7 @@ export type RecipeInterface = {
                   userVerification: "required" | "preferred" | "discouraged";
               };
           }
-        | { status: "EMAIL_MISSING_ERROR" } // email is required if not using session or recoverAccountToken
-        | { status: "SESSION_MISSING_ERROR" } // session is required if not using email or recoverAccountToken
-        | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" } // recoverAccountToken is required if not using email or session
         | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-        | { status: "RELYING_PARTY_ID_MISSING_ERROR" }
-        | { status: "RELYING_PARTY_ID_INVALID_ERROR" } // wrong format; must be domain
-        | { status: "RELYING_PARTY_NAME_MISSING_ERROR" } // relyingPartyName is required
-        | { status: "ORIGIN_MISSING_ERROR" }
-        | { status: "ORIGIN_INVALID_ERROR" } // wrong format; must be domain url
     >;
 
     signInOptions(input: {
@@ -151,19 +156,13 @@ export type RecipeInterface = {
         timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              webauthnGeneratedOptionsId: string;
-              challenge: string;
-              timeout: number;
-              userVerification: "required" | "preferred" | "discouraged";
-          }
-        | { status: "RELYING_PARTY_ID_MISSING_ERROR" }
-        | { status: "RELYING_PARTY_ID_INVALID_ERROR" } // wrong format; must be domain
-        | { status: "ORIGIN_MISSING_ERROR" }
-        | { status: "ORIGIN_INVALID_ERROR" } // wrong format; must be domain url
-    >;
+    }): Promise<{
+        status: "OK";
+        webauthnGeneratedOptionsId: string;
+        challenge: string;
+        timeout: number;
+        userVerification: "required" | "preferred" | "discouraged";
+    }>;
 
     signUp(input: {
         webauthnGeneratedOptionsId: string;
@@ -191,9 +190,9 @@ export type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        // when the attestation is checked and is not valid or other cases in whcih the authenticator is not correct
+        | { status: "INVALID_AUTHENTICATOR_ERROR" }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "CREDENTIAL_MISSING_ERROR" }
-        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -226,8 +225,8 @@ export type RecipeInterface = {
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "CREDENTIAL_MISSING_ERROR" }
-        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
+        // when the attestation is checked and is not valid or other cases in which the authenticator is not correct
+        | { status: "INVALID_AUTHENTICATOR_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -278,13 +277,10 @@ export type RecipeInterface = {
               userId: string;
           }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "CREDENTIAL_MISSING_ERROR" }
-        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
-        | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" }
         | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
     >;
 
-    // used internally for creating a passkey during password reset flow or when adding a credential to an existing user
+    // used internally for creating a credential during account recovery flow or when adding a credential to an existing user
     // email will be taken from the options
     // no need for recoverAccountToken, as that will be used upstream
     // (in consumeRecoverAccountToken invalidating the token and in registerOptions for storing the email in the generated options)
@@ -311,9 +307,8 @@ export type RecipeInterface = {
               user: User;
               recipeUserId: RecipeUserId;
           }
-        | { status: "CREDENTIAL_MISSING_ERROR" }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR" }
     >;
 
     // this function is meant only for creating the recipe in the core and nothing else.
@@ -345,8 +340,6 @@ export type RecipeInterface = {
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "CREDENTIAL_MISSING_ERROR" }
-        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
     >;
 
     verifyCredentials(input: {
@@ -369,8 +362,7 @@ export type RecipeInterface = {
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "CREDENTIAL_MISSING_ERROR" }
-        | { status: "GENERATED_OPTIONS_ID_MISSING_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR" }
     >;
 
     // used for retrieving the user details (email) from the recover account token
@@ -380,9 +372,7 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: UserContext;
     }): Promise<
-        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-        | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" }
-        | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+        { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
     >;
 };
 
@@ -439,14 +429,7 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
               | { status: "EMAIL_MISSING_ERROR" } // email is required if not using session or recoverAccountToken
-              | { status: "SESSION_MISSING_ERROR" } // session is required if not using email or recoverAccountToken
-              | { status: "RECOVER_ACCOUNT_TOKEN_MISSING_ERROR" } // recoverAccountToken is required if not using email or session
               | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-              | { status: "RELYING_PARTY_ID_MISSING_ERROR" }
-              | { status: "RELYING_PARTY_ID_INVALID_ERROR" } // wrong format; must be domain
-              | { status: "RELYING_PARTY_NAME_MISSING_ERROR" } // relyingPartyName is required
-              | { status: "ORIGIN_MISSING_ERROR" }
-              | { status: "ORIGIN_INVALID_ERROR" } // wrong format; must be domain url
           >);
 
     signInOptionsPOST:
@@ -589,7 +572,7 @@ export type APIInterface = {
                     user: User;
                 }
               | {
-                    status: "RECOVER_ACCOUNT_TOKEN_INVALID_TOKEN_ERROR";
+                    status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
                 }
               | GeneralErrorResponse
           >);
