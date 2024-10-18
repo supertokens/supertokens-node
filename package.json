@@ -65,15 +65,15 @@
             "types": "./nextjs/index.d.ts",
             "default": "./nextjs/index.js"
         },
-        "./customframework": {
+        "./custom": {
             "types": "./custom/index.d.ts",
             "default": "./custom/index.js"
         },
-        "./customframework/index": {
+        "./custom/index": {
             "types": "./custom/index.d.ts",
             "default": "./custom/index.js"
         },
-        "./customframework/index.js": {
+        "./custom/index.js": {
             "types": "./custom/index.d.ts",
             "default": "./custom/index.js"
         },
