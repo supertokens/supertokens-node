@@ -1,5 +1,6 @@
 import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "../../../thirdpartyUtils";
+import { getUserContext } from "../../../utils";
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
 import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
@@ -312,7 +313,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                     await impl.config.validateIdTokenPayload({
                         idTokenPayload: rawUserInfoFromProvider.fromIdTokenPayload,
                         clientConfig: impl.config,
-                        userContext,
+                        userContext: getUserContext(userContext),
                     });
                 }
             }
@@ -321,7 +322,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 await impl.config.validateAccessToken({
                     accessToken: accessToken,
                     clientConfig: impl.config,
-                    userContext,
+                    userContext: getUserContext(userContext),
                 });
             }
 
