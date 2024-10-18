@@ -136,7 +136,7 @@ export type UserWithoutHelperFunctions = {
         userId: string;
     }[];
     loginMethods: {
-        recipeId: "emailpassword" | "thirdparty" | "passwordless";
+        recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
         recipeUserId: string;
         tenantIds: string[];
 
