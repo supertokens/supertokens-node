@@ -27,16 +27,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   By setting this to true you can enable MFA flows (trying to connect to the session user)
     -   If set to false, the sign-in/up will be considered a first-factor
     -   Changed APIs:
+        -   `EmailPassword.signInPOST`
+        -   `EmailPassword.signUpPOST`
         -   `ThirdParty.signInUpPOST`
         -   `Passwordless.createCodePOST`
         -   `Passwordless.consumeCodePOST`
-        -   `Passwordless.consumeCodePOST`
+        -   `Passwordless.resendCodePOST`
     -   Changed functions:
+        -   `EmailPassword.signIn`
+        -   `EmailPassword.signUp`
         -   `ThirdParty.signInUp`
         -   `ThirdPary.manuallyCreateOrUpdateUser`
         -   `Passwordless.createCode`
         -   `Passwordless.consumeCode`
--   We no longer try to load the session if `shouldTryLinkingWithSessionUser` is set to false and overwriteSessionDuringSignInUp is set to true or left as the default value.
+-   We no longer try to load the session if `shouldTryLinkingWithSessionUser` is set to false.
 -   Changed the return type of `getOpenIdConfiguration` and `getOpenIdDiscoveryConfigurationGET`, and added the following props:
     -   authorization_endpoint
     -   token_endpoint
