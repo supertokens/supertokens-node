@@ -192,6 +192,9 @@ export type AccountInfo = {
         id: string;
         userId: string;
     };
+    webauthn?: {
+        credentialIds: string[];
+    };
 };
 
 export type AccountInfoWithRecipeId = {
