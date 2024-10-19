@@ -13,7 +13,6 @@ import SessionError from "./recipe/session/error";
 import { Error as STError, getUser } from ".";
 import { AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 import { BaseRequest, BaseResponse } from "./framework";
-import SessionRecipe from "./recipe/session/recipe";
 import { logDebugMessage } from "./logger";
 import { EmailVerificationClaim } from "./recipe/emailverification";
 import SuperTokensError from "./error";
@@ -276,24 +275,14 @@ export const AuthUtils = {
                     await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
                 }
             } else {
-                logDebugMessage(`postAuthChecks checking overwriteSessionDuringSignInUp`);
-                // If the new user wasn't linked to the current one, we check the config and overwrite the session if required
+                // If the new user wasn't linked to the current one, we overwrite the session
                 // Note: we could also get here if MFA is enabled, but the app didn't want to link the user to the session user.
-                // This is intentional, since the MFA and overwriteSessionDuringSignInUp configs should work independently.
-                let overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().getNormalisedOverwriteSessionDuringSignInUp(
-                    req
-                );
-                if (overwriteSessionDuringSignInUp) {
-                    respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
-                    if (mfaInstance !== undefined) {
-                        await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
-                    }
+                respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
+                if (mfaInstance !== undefined) {
+                    await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
                 }
             }
         } else {
-            // We do not have to care about overwriting the session here, since we either:
-            // - have overwriteSessionDuringSignInUp true and we didn't even try to load the session because we ignore it anyway
-            // - have overwriteSessionDuringSignInUp false and we checked in the api imlp that there is no session
             logDebugMessage(`postAuthChecks creating session for first factor sign in/up`);
             // If there is no input session, we do not need to do anything other checks and create a new session
             respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
@@ -1024,10 +1013,6 @@ export const AuthUtils = {
         shouldTryLinkingWithSessionUser: boolean | undefined,
         userContext: UserContext
     ) {
-        const overwriteSessionDuringSignInUp = SessionRecipe.getInstanceOrThrowError().getNormalisedOverwriteSessionDuringSignInUp(
-            req
-        );
-
         if (shouldTryLinkingWithSessionUser !== false) {
             logDebugMessage(
                 "loadSessionInAuthAPIIfNeeded: loading session because shouldTryLinkingWithSessionUser is not set to false so we may want to link later"
@@ -1045,20 +1030,6 @@ export const AuthUtils = {
             );
         }
 
-        if (overwriteSessionDuringSignInUp === false) {
-            logDebugMessage(
-                "loadSessionInAuthAPIIfNeeded: loading session in optional mode because overwriteSessionDuringSignInUp is false so if it is not found we will skip session creation"
-            );
-            return await Session.getSession(
-                req,
-                res,
-                {
-                    sessionRequired: false,
-                    overrideGlobalClaimValidators: () => [],
-                },
-                userContext
-            );
-        }
         logDebugMessage(
             "loadSessionInAuthAPIIfNeeded: skipping session loading because we are not linking and we would overwrite it anyway"
         );

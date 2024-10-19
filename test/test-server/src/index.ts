@@ -386,7 +386,7 @@ app.get("/test/overrideparams", async (req, res, next) => {
 });
 
 app.get("/test/featureflag", async (req, res, next) => {
-    res.json([]);
+    res.json(["removedOverwriteSessionDuringSignInUp"]);
 });
 
 app.post("/test/resetoverrideparams", async (req, res, next) => {

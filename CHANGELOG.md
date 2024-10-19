@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Changes type of value in formField object to be `unknown` instead of `string` to add support for accepting any type of value in form fields.
 -   Only supporting CDI 5.2, Compatible with Core version >= 10.0
--   Changed the default value of `overwriteSessionDuringSignInUp` to true.
+-   Removed the `overwriteSessionDuringSignInUp` option.
 -   Added a new `shouldTryLinkingWithSessionUser` to sign in/up related APIs (and the related recipe functions)
     -   This will default to false on the API
     -   This will be set to true in function calls if you pass a session, otherwise it is set to false
@@ -161,6 +161,16 @@ import { getAppDirRequestHandler } from "supertokens-node/nextjs";
 
 const handleCall = getAppDirRequestHandler();
 ```
+
+## [20.1.5] - 2024-10-09
+
+-   Fixes an issue where users were not able to reset their password if a user with the same email address was created before account linking was enabled.
+-   Fixes and re-works some security checks connected to password reset.
+
+## [20.1.4] - 2024-10-07
+
+-   Fixes an issue where revoking sessions for a specific tenant didn't work well
+-   Fixes an issue where the automatic session revocation after linking didn't work across all tenants
 
 ## [20.1.3] - 2024-09-30
 

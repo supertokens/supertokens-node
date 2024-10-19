@@ -549,7 +549,12 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                 {
                     fileName: "lib/ts/nextjs.ts",
                     shouldNotContain: ["userContext: Record<String, any>", "userContext?: UserContext"],
-                    canContain: [{ text: "userContext?: Record<String, any>", count: 2 }],
+                    canContain: [{ text: "userContext?: Record<String, any>", count: 1 }],
+                },
+                {
+                    fileName: "lib/ts/customFramework.ts",
+                    shouldNotContain: ["userContext: Record<String, any>", "userContext?: UserContext"],
+                    canContain: [{ text: "userContext?: Record<String, any>", count: 1 }],
                 },
             ];
 
