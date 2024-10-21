@@ -4,9 +4,9 @@ branch=`git rev-parse --abbrev-ref HEAD`
 
 cdiCoreMap='{ "5.2": "feat/oauth/remaining-changes" }'
 cdiPluginInterfaceMap='{ "5.2": "feat/oauth/remaining-changes" }'
-fdiNodeMap='{ "3.1": "21.0", "4.0": "21.0" }'
+fdiNodeMap='{ "3.1": "feat/add_clientId_secret_and_refreshTokenRotation_settings", "4.0": "feat/add_clientId_secret_and_refreshTokenRotation_settings" }'
 fdiWebsiteMap='{ "1.17": "20.1", "1.18": "20.1", "1.19": "20.1", "2.0": "20.1", "3.0": "20.1", "3.1": "20.1", "4.0": "20.1" }'
-fdiAuthReactMap='{ "3.1": "0.49", "4.0": "0.49" }'
+fdiAuthReactMap='{ "3.1": "0.48", "4.0": "0.48" }'
 
 data=`jq -cn --arg branch "$branch" \
   --arg cdiCoreMap "$cdiCoreMap" \

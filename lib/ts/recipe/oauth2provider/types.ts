@@ -136,8 +136,7 @@ export type LoginRequest = {
 export type TokenInfo = {
     // The access token issued by the authorization server.
     access_token?: string;
-    // The lifetime in seconds of the access token. For example, the value "3600" denotes that the access token will expire in one hour from the time the response was generated.
-    // integer <int64>
+    // The lifetime in seconds of the access token (integer). For example, the value "3600" denotes that the access token will expire in one hour from the time the response was generated.
     expires_in: number;
     // To retrieve a refresh token request the id_token scope.
     id_token?: string;
