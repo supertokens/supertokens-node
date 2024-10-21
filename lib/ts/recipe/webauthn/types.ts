@@ -111,8 +111,6 @@ type ConsumeRecoverAccountTokenErrorResponse =
     | RegisterCredentialErrorResponse
     | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
 
-type AddCredentialErrorResponse = RegisterCredentialErrorResponse;
-
 type RemoveCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
 
 export type RecipeInterface = {
@@ -391,36 +389,8 @@ export type RecipeInterface = {
     }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | GetUserFromRecoverAccountTokenErrorResponse>;
 
     // credentials CRUD
-
-    // this will call registerCredential internally
-    addCredential(input: {
-        webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-          }
-        | AddCredentialErrorResponse
-    >;
-
-    // credentials CRUD
     removeCredential(input: {
         webauthnCredentialId: string;
-        tenantId: string;
         userContext: UserContext;
     }): Promise<
         | {
@@ -428,6 +398,17 @@ export type RecipeInterface = {
           }
         | RemoveCredentialErrorResponse
     >;
+
+    listCredentials(input: {
+        userContext: UserContext;
+    }): Promise<{
+        status: "OK";
+        credentials: {
+            id: string;
+            rp_id: string;
+            created_at: number;
+        }[];
+    }>;
 };
 
 export type APIOptions = {
@@ -478,7 +459,7 @@ type AddCredentialPOSTErrorResponse =
           status: "ADD_CREDENTIAL_NOT_ALLOWED";
           reason: string;
       }
-    | AddCredentialErrorResponse;
+    | RegisterCredentialErrorResponse;
 
 type RemoveCredentialPOSTErrorResponse =
     | {
@@ -486,6 +467,12 @@ type RemoveCredentialPOSTErrorResponse =
           reason: string;
       }
     | RemoveCredentialErrorResponse;
+
+type ListCredentialsPOSTErrorResponse = {
+    status: "LIST_CREDENTIALS_NOT_ALLOWED";
+    reason: string;
+};
+
 export type APIInterface = {
     registerOptionsPOST:
         | undefined
@@ -717,6 +704,26 @@ export type APIInterface = {
                     status: "OK";
                 }
               | RemoveCredentialPOSTErrorResponse
+              | GeneralErrorResponse
+          >);
+
+    listCredentialsPOST:
+        | undefined
+        | ((input: {
+              tenantId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    credentials: {
+                        id: string;
+                        rp_id: string;
+                        created_at: number;
+                    }[];
+                }
+              | ListCredentialsPOSTErrorResponse
               | GeneralErrorResponse
           >);
 };

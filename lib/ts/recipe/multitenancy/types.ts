@@ -173,9 +173,6 @@ export type APIInterface = {
               passwordless: {
                   enabled: boolean;
               };
-              webauthn: {
-                  credentialIds: string[];
-              };
               firstFactors: string[];
           }
         | GeneralErrorResponse
