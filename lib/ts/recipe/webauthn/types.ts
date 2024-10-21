@@ -88,7 +88,7 @@ export type TypeInputGetOrigin = (input: {
 type RegisterCredentialErrorResponse =
     | { status: "WRONG_CREDENTIALS_ERROR" }
     // when the attestation is checked and is not valid or other cases in whcih the authenticator is not correct
-    | { status: "INVALID_AUTHENTICATOR_ERROR" };
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
 
 type VerifyCredentialsErrorResponse =
     | { status: "WRONG_CREDENTIALS_ERROR" }
@@ -112,6 +112,10 @@ type ConsumeRecoverAccountTokenErrorResponse =
     | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
 
 type RemoveCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
+
+type DecodeCredentialErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
+
+type Base64URLString = string;
 
 export type RecipeInterface = {
     // should have a way to access the user email: passed as a param, through session, or using recoverAccountToken
@@ -138,9 +142,6 @@ export type RecipeInterface = {
               }
             | {
                   email: string;
-              }
-            | {
-                  session: SessionContainerInterface;
               }
         )
     ): Promise<
@@ -301,6 +302,78 @@ export type RecipeInterface = {
         | ConsumeRecoverAccountTokenErrorResponse
     >;
 
+    decodeCredential(input: {
+        credential: {
+            id: string;
+            rawId: string;
+            response: {
+                clientDataJSON: string;
+                attestationObject: string;
+                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                userHandle: string;
+            };
+            authenticatorAttachment: "platform" | "cross-platform";
+            clientExtensionResults: Record<string, unknown>;
+            type: "public-key";
+        };
+    }): Promise<
+        | {
+              status: "OK";
+              credential: {
+                  id: string;
+                  rawId: string;
+                  response: {
+                      clientDataJSON: {
+                          type: string;
+                          challenge: string;
+                          origin: string;
+                          crossOrigin?: boolean;
+                          tokenBinding?: {
+                              id?: string;
+                              status: "present" | "supported" | "not-supported";
+                          };
+                      };
+                      attestationObject: {
+                          fmt: "packed" | "tpm" | "android-key" | "android-safetynet" | "fido-u2f" | "none";
+                          authData: {
+                              rpIdHash: string;
+                              flags: {
+                                  up: boolean;
+                                  uv: boolean;
+                                  be: boolean;
+                                  bs: boolean;
+                                  at: boolean;
+                                  ed: boolean;
+                                  flagsInt: number;
+                              };
+                              counter: number;
+                              aaguid?: string;
+                              credentialID?: string;
+                              credentialPublicKey?: string;
+                              extensionsData?: unknown;
+                          };
+                          attStmt: {
+                              sig?: Base64URLString;
+                              x5c?: Base64URLString[];
+                              response?: Base64URLString;
+                              alg?: number;
+                              ver?: string;
+                              certInfo?: Base64URLString;
+                              pubArea?: Base64URLString;
+                              size: number;
+                          };
+                      };
+                      transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+                      userHandle: string;
+                  };
+                  authenticatorAttachment: "platform" | "cross-platform";
+                  clientExtensionResults: Record<string, unknown>;
+                  type: string;
+              };
+          }
+        | DecodeCredentialErrorResponse
+    >;
+
     // used internally for creating a credential during account recovery flow or when adding a credential to an existing user
     // email will be taken from the options
     // no need for recoverAccountToken, as that will be used upstream
@@ -322,11 +395,10 @@ export type RecipeInterface = {
         };
         tenantId: string;
         userContext: UserContext;
+        recipeUserId: RecipeUserId;
     }): Promise<
         | {
               status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
           }
         | RegisterCredentialErrorResponse
     >;
@@ -391,6 +463,7 @@ export type RecipeInterface = {
     // credentials CRUD
     removeCredential(input: {
         webauthnCredentialId: string;
+        recipeUserId: RecipeUserId;
         userContext: UserContext;
     }): Promise<
         | {
@@ -399,7 +472,24 @@ export type RecipeInterface = {
         | RemoveCredentialErrorResponse
     >;
 
+    getCredential(input: {
+        webauthnCredentialId: string;
+        recipeUserId: RecipeUserId;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              credential: {
+                  id: string;
+                  rp_id: string;
+                  created_at: number;
+              };
+          }
+        | RemoveCredentialErrorResponse
+    >;
+
     listCredentials(input: {
+        recipeUserId: RecipeUserId;
         userContext: UserContext;
     }): Promise<{
         status: "OK";
@@ -470,6 +560,11 @@ type RemoveCredentialPOSTErrorResponse =
 
 type ListCredentialsPOSTErrorResponse = {
     status: "LIST_CREDENTIALS_NOT_ALLOWED";
+    reason: string;
+};
+
+type GetCredentialGETErrorResponse = {
+    status: "GET_CREDENTIAL_NOT_ALLOWED";
     reason: string;
 };
 
@@ -707,7 +802,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    listCredentialsPOST:
+    listCredentialsGET:
         | undefined
         | ((input: {
               tenantId: string;
@@ -724,6 +819,27 @@ export type APIInterface = {
                     }[];
                 }
               | ListCredentialsPOSTErrorResponse
+              | GeneralErrorResponse
+          >);
+
+    getCredentialGET:
+        | undefined
+        | ((input: {
+              webauthnCredentialId: string;
+              tenantId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    credential: {
+                        id: string;
+                        rp_id: string;
+                        created_at: number;
+                    };
+                }
+              | GetCredentialGETErrorResponse
               | GeneralErrorResponse
           >);
 };
