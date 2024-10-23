@@ -125,5 +125,8 @@ export default function getAPIInterface(): APIInterface {
                 phoneNumbers: getPhoneNumbersForFactorsResult.factorIdToPhoneNumberMap,
             };
         },
+        factorsForUserGET: undefined,
+        addFactorForUserPOST: undefined,
+        deleteFactorForUserDELETE: undefined,
     };
 }

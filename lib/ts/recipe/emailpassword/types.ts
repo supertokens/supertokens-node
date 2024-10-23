@@ -325,6 +325,40 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
+
+    updatePasswordPOST:
+        | undefined
+        | ((input: {
+              newPassword: string;
+              oldPassword: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | { status: "WRONG_CREDENTIALS_ERROR" }
+              | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+              | GeneralErrorResponse
+          >);
+
+    changeEmailPOST:
+        | undefined
+        | ((input: {
+              email: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | { status: "EMAIL_VERIFICATION_SENT" }
+              | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+              | { status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR" }
+              | GeneralErrorResponse
+          >);
 };
 
 export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
