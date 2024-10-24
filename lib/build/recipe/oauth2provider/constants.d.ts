@@ -1,5 +1,4 @@
 // @ts-nocheck
-export declare const OAUTH2_BASE_PATH = "/oauth/";
 export declare const LOGIN_PATH = "/oauth/login";
 export declare const AUTH_PATH = "/oauth/auth";
 export declare const TOKEN_PATH = "/oauth/token";

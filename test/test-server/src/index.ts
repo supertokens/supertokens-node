@@ -304,22 +304,18 @@ function initST(config: any) {
             );
         }
         if (recipe.recipeId === "oauth2provider") {
-            let initConfig: OAuth2ProviderTypeInput = {
-                ...config,
-            };
-            if (initConfig.override?.functions) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    functions: getFunc(`${initConfig.override.functions}`),
-                };
-            }
-            if (initConfig.override?.apis) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    apis: getFunc(`${initConfig.override.apis}`),
-                };
-            }
-            recipeList.push(OAuth2Provider.init(initConfig));
+            recipeList.push(
+                OAuth2Provider.init({
+                    ...config,
+                    override: {
+                        apis: overrideBuilderWithLogging("OAuth2Provider.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "OAuth2Provider.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
     });
 
