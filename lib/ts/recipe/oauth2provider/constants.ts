@@ -13,8 +13,6 @@
  * under the License.
  */
 
-export const OAUTH2_BASE_PATH = "/oauth/";
-
 export const LOGIN_PATH = "/oauth/login";
 export const AUTH_PATH = "/oauth/auth";
 export const TOKEN_PATH = "/oauth/token";
