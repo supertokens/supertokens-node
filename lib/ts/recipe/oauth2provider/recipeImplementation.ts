@@ -280,6 +280,7 @@ export default function getRecipeInterface(
                         ...input.params,
                         scope: scopes.join(" "),
                     },
+                    iss: await OpenIdRecipe.getIssuer(input.userContext),
                     cookies: input.cookies,
                     session: payloads,
                 },
