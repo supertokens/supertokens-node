@@ -533,6 +533,7 @@ export declare type OAuth2ClientOptions = {
     policyUri?: string;
     tosUri?: string;
     metadata?: Record<string, any>;
+    enableRefreshTokenRotation?: boolean;
 };
 export declare type GetOAuth2ClientsInput = {
     /**
@@ -548,9 +549,7 @@ export declare type GetOAuth2ClientsInput = {
      */
     clientName?: string;
 };
-export declare type CreateOAuth2ClientInput = Partial<
-    Omit<OAuth2ClientOptions, "createdAt" | "updatedAt" | "clientId" | "clientSecret">
->;
+export declare type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
 export declare type UpdateOAuth2ClientInput = NonNullableProperties<
     Omit<CreateOAuth2ClientInput, "redirectUris" | "grantTypes" | "responseTypes" | "metadata">
 > & {

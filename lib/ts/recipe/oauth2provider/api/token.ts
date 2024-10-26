@@ -36,6 +36,7 @@ export default async function tokenPOST(
     });
 
     if ("error" in response) {
+        // We do not need to normalize as this is not expected to be called by frontends where interception is enabled
         sendNon200Response(options.res, response.statusCode ?? 400, {
             error: response.error,
             error_description: response.errorDescription,
