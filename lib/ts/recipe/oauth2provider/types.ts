@@ -412,7 +412,10 @@ export type RecipeInterface = {
         shouldTryRefresh: boolean;
         userContext: UserContext;
     }): Promise<{ redirectTo: string } | ErrorOAuth2>;
-    acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
+    acceptLogoutRequest(input: {
+        challenge: string;
+        userContext: UserContext;
+    }): Promise<{ redirectTo: string } | ErrorOAuth2>;
     rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ status: "OK" }>;
 };
 

@@ -354,9 +354,12 @@ export declare type RecipeInterface = {
     acceptLogoutRequest(input: {
         challenge: string;
         userContext: UserContext;
-    }): Promise<{
-        redirectTo: string;
-    }>;
+    }): Promise<
+        | {
+              redirectTo: string;
+          }
+        | ErrorOAuth2
+    >;
     rejectLogoutRequest(input: {
         challenge: string;
         userContext: UserContext;
