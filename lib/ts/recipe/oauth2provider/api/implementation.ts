@@ -185,6 +185,10 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
+            if ("error" in response) {
+                return response;
+            }
+
             const res = await handleLogoutInternalRedirects({
                 response,
                 recipeImplementation: options.recipeImplementation,

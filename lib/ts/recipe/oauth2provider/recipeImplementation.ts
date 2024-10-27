@@ -819,12 +819,14 @@ export default function getRecipeInterface(
                     };
                 } else {
                     // Accept the logout challenge immediately as there is no supertokens session
-                    redirectTo = (
-                        await this.acceptLogoutRequest({
-                            challenge: logoutChallenge,
-                            userContext: input.userContext,
-                        })
-                    ).redirectTo;
+                    const acceptLogoutResponse = await this.acceptLogoutRequest({
+                        challenge: logoutChallenge,
+                        userContext: input.userContext,
+                    });
+                    if ("error" in acceptLogoutResponse) {
+                        return acceptLogoutResponse;
+                    }
+                    return { redirectTo: acceptLogoutResponse.redirectTo };
                 }
             }
 
@@ -850,6 +852,15 @@ export default function getRecipeInterface(
                 {},
                 input.userContext
             );
+
+            if (resp.status !== "OK") {
+                return {
+                    status: "ERROR",
+                    statusCode: resp.statusCode,
+                    error: resp.error,
+                    errorDescription: resp.errorDescription,
+                };
+            }
 
             const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
 
