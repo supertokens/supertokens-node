@@ -98,11 +98,9 @@ export type TypeInputValidateEmailAddress = (
 ) => Promise<string | undefined> | string | undefined;
 
 // centralize error types in order to prevent missing cascading errors
-type RegisterOptionsErrorResponse =
-    | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-    | { status: "INVALID_EMAIL_ERROR" };
+type RegisterOptionsErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
 
-type SignInOptionsErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" } | { status: "INVALID_EMAIL_ERROR" };
+type SignInOptionsErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
 
 type SignUpErrorResponse =
     | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
@@ -113,7 +111,7 @@ type SignInErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
 
 type VerifyCredentialsErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
 
-type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" } | { status: "INVALID_EMAIL_ERROR" };
+type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" };
 
 type ConsumeRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
 
@@ -202,7 +200,6 @@ export type RecipeInterface = {
           }
         // | RegisterOptionsErrorResponse
         | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-        | { status: "INVALID_EMAIL_ERROR" }
     >;
 
     signInOptions(input: {
@@ -298,7 +295,6 @@ export type RecipeInterface = {
         | { status: "OK"; token: string }
         // | GenerateRecoverAccountTokenErrorResponse
         | { status: "UNKNOWN_USER_ID_ERROR" }
-        | { status: "INVALID_EMAIL_ERROR" }
     >;
 
     // make sure the email maps to options email
@@ -492,12 +488,9 @@ export type RecipeInterface = {
               status: "OK";
               id: string;
               relyingPartyId: string;
-              relyingPartyName: string;
               origin: string;
-              userName: string;
-              userDisplayName: string;
+              email: string;
               timeout: string;
-              attestation: string;
               challenge: string;
           }
         // | GetGeneratedOptionsErrorResponse
@@ -518,9 +511,9 @@ export type APIOptions = {
 
 type RegisterOptionsPOSTErrorResponse =
     | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-    | { status: "INVALID_EMAIL_ERROR" };
+    | { status: "INVALID_EMAIL_ERROR"; err: string };
 
-type SignInOptionsPOSTErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" } | { status: "INVALID_EMAIL_ERROR" };
+type SignInOptionsPOSTErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
 
 type SignUpPOSTErrorResponse =
     | {
@@ -533,13 +526,10 @@ type SignUpPOSTErrorResponse =
 
 type SignInPOSTErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
 
-type GenerateRecoverAccountTokenPOSTErrorResponse =
-    | {
-          status: "RECOVER_ACCOUNT_NOT_ALLOWED";
-          reason: string;
-      }
-    | { status: "UNKNOWN_USER_ID_ERROR" }
-    | { status: "INVALID_EMAIL_ERROR" };
+type GenerateRecoverAccountTokenPOSTErrorResponse = {
+    status: "RECOVER_ACCOUNT_NOT_ALLOWED";
+    reason: string;
+};
 
 type RecoverAccountPOSTErrorResponse =
     | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
@@ -589,7 +579,7 @@ export type APIInterface = {
               | GeneralErrorResponse
               //   | RegisterOptionsPOSTErrorResponse
               | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-              | { status: "INVALID_EMAIL_ERROR" }
+              | { status: "INVALID_EMAIL_ERROR"; err: string }
           >);
 
     signInOptionsPOST:
@@ -610,7 +600,6 @@ export type APIInterface = {
               | GeneralErrorResponse
               //   | SignInOptionsPOSTErrorResponse
               | { status: "WRONG_CREDENTIALS_ERROR" }
-              | { status: "INVALID_EMAIL_ERROR" }
           >);
 
     signUpPOST:
@@ -679,8 +668,6 @@ export type APIInterface = {
                     status: "RECOVER_ACCOUNT_NOT_ALLOWED";
                     reason: string;
                 }
-              | { status: "UNKNOWN_USER_ID_ERROR" }
-              | { status: "INVALID_EMAIL_ERROR" }
           >);
 
     recoverAccountPOST:

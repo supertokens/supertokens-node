@@ -30,7 +30,7 @@ export default async function registerOptions(
 
     const requestBody = await options.req.getJSONBody();
 
-    let email = requestBody.email;
+    let email = requestBody.email?.trim();
     let recoverAccountToken = requestBody.recoverAccountToken;
 
     if (
@@ -41,6 +41,18 @@ export default async function registerOptions(
             type: STError.BAD_INPUT_ERROR,
             message: "Please provide the email or the recover account token",
         });
+    }
+
+    // same as for passwordless lib/ts/recipe/passwordless/api/createCode.ts
+    if (email !== undefined) {
+        const validateError = await options.config.validateEmailAddress(email, tenantId);
+        if (validateError !== undefined) {
+            send200Response(options.res, {
+                status: "INVALID_EMAIL_ERROR",
+                err: validateError,
+            });
+            return true;
+        }
     }
 
     let result = await apiImplementation.registerOptionsPOST({
