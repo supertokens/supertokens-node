@@ -27,7 +27,7 @@ export default async function recoverAccount(
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
-    if (apiImplementation.recoverAccountTokenPOST === undefined) {
+    if (apiImplementation.recoverAccountPOST === undefined) {
         return false;
     }
 
@@ -41,17 +41,17 @@ export default async function recoverAccount(
     if (token === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the account recovery token",
+            message: "Please provide the recover account token",
         });
     }
     if (typeof token !== "string") {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "The account recovery token must be a string",
+            message: "The recover account token must be a string",
         });
     }
 
-    let result = await apiImplementation.recoverAccountTokenPOST({
+    let result = await apiImplementation.recoverAccountPOST({
         webauthnGeneratedOptionsId,
         credential,
         token,

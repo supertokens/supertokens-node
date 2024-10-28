@@ -29,7 +29,6 @@ import {
     DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
     DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
 } from "./constants";
-import { updateEmailOrPassword } from "../emailpassword/index";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -78,6 +77,7 @@ export default class Wrapper {
           }
         | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
         | { status: "EMAIL_MISSING_ERROR" }
+        | { status: "INVALID_EMAIL_ERROR" }
     > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerOptions({
             requireResidentKey: DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,

@@ -41,7 +41,7 @@ export const getMockQuerier = (recipeId: string) => {
             //     // @ts-ignore
             //     return {
             //         status: "OK",
-            //         token: "dummy-recovery-token",
+            //         token: "dummy-recover-token",
             //     };
             // } else if (path.getAsStringDangerous().includes("/recipe/webauthn/user/recover/token/consume")) {
             //     // @ts-ignore

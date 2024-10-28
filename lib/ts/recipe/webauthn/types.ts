@@ -31,6 +31,7 @@ export type TypeNormalisedInput = {
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeWebauthnEmailDeliveryInput>;
+    validateEmailAddress: TypeNormalisedInputValidateEmailAddress;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -57,10 +58,16 @@ export type TypeNormalisedInputGetOrigin = (input: {
     userContext: UserContext;
 }) => Promise<string>; // should return the app name
 
+export type TypeNormalisedInputValidateEmailAddress = (
+    email: string,
+    tenantId: string
+) => Promise<string | undefined> | string | undefined;
+
 export type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeWebauthnEmailDeliveryInput>;
     relyingPartyId?: TypeInputRelyingPartyId;
     relyingPartyName?: TypeInputRelyingPartyName;
+    validateEmailAddress?: TypeInputValidateEmailAddress;
     getOrigin?: TypeInputGetOrigin;
     override?: {
         functions?: (
@@ -85,36 +92,52 @@ export type TypeInputGetOrigin = (input: {
     userContext: UserContext;
 }) => Promise<string>;
 
+export type TypeInputValidateEmailAddress = (
+    email: string,
+    tenantId: string
+) => Promise<string | undefined> | string | undefined;
+
 // centralize error types in order to prevent missing cascading errors
+type RegisterOptionsErrorResponse =
+    | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+    | { status: "INVALID_EMAIL_ERROR" };
+
+type SignInOptionsErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" } | { status: "INVALID_EMAIL_ERROR" };
+
+type SignUpErrorResponse =
+    | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    | { status: "WRONG_CREDENTIALS_ERROR" }
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
+
+type SignInErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
+
+type VerifyCredentialsErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
+
+type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" } | { status: "INVALID_EMAIL_ERROR" };
+
+type ConsumeRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
+
 type RegisterCredentialErrorResponse =
     | { status: "WRONG_CREDENTIALS_ERROR" }
     // when the attestation is checked and is not valid or other cases in whcih the authenticator is not correct
     | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
 
-type VerifyCredentialsErrorResponse =
+type CreateNewRecipeUserErrorResponse =
     | { status: "WRONG_CREDENTIALS_ERROR" }
-    // when the attestation is checked and is not valid or other cases in which the authenticator is not correct
-    | { status: "INVALID_AUTHENTICATOR_ERROR" };
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+    | { status: "EMAIL_ALREADY_EXISTS_ERROR" };
 
-type CreateNewRecipeUserErrorResponse = RegisterCredentialErrorResponse | { status: "EMAIL_ALREADY_EXISTS_ERROR" };
+type DecodeCredentialErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
 
 type GetUserFromRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
-
-type RegisterOptionsErrorResponse = GetUserFromRecoverAccountTokenErrorResponse | { status: "EMAIL_MISSING_ERROR" };
-
-type SignUpErrorResponse = CreateNewRecipeUserErrorResponse;
-
-type SignInErrorResponse = VerifyCredentialsErrorResponse;
-
-type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" };
-
-type ConsumeRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
 
 type RemoveCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
 
 type GetCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
 
-type DecodeCredentialErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
+type RemoveGeneratedOptionsErrorResponse = { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" };
+
+type GetGeneratedOptionsErrorResponse = { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" };
 
 type Base64URLString = string;
 
@@ -177,23 +200,30 @@ export type RecipeInterface = {
                   userVerification: "required" | "preferred" | "discouraged";
               };
           }
-        | RegisterOptionsErrorResponse
+        // | RegisterOptionsErrorResponse
+        | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+        | { status: "INVALID_EMAIL_ERROR" }
     >;
 
     signInOptions(input: {
+        email?: string;
         relyingPartyId: string;
         origin: string;
         userVerification: "required" | "preferred" | "discouraged" | undefined; // see register options
         timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{
-        status: "OK";
-        webauthnGeneratedOptionsId: string;
-        challenge: string;
-        timeout: number;
-        userVerification: "required" | "preferred" | "discouraged";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              webauthnGeneratedOptionsId: string;
+              challenge: string;
+              timeout: number;
+              userVerification: "required" | "preferred" | "discouraged";
+          }
+        // | SignInOptionsErrorResponse
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+    >;
 
     signUp(input: {
         webauthnGeneratedOptionsId: string;
@@ -208,7 +238,10 @@ export type RecipeInterface = {
               user: User;
               recipeUserId: RecipeUserId;
           }
-        | SignUpErrorResponse
+        // | SignUpErrorResponse
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -228,7 +261,8 @@ export type RecipeInterface = {
         userContext: UserContext;
     }): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-        | SignInErrorResponse
+        // | SignInErrorResponse
+        | { status: "WRONG_CREDENTIALS_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -237,6 +271,17 @@ export type RecipeInterface = {
                   | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                   | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           }
+    >;
+
+    verifyCredentials(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: CredentialPayload;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        // | VerifyCredentialsErrorResponse
+        | { status: "WRONG_CREDENTIALS_ERROR" }
     >;
 
     /**
@@ -249,7 +294,12 @@ export type RecipeInterface = {
         email: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; token: string } | GenerateRecoverAccountTokenErrorResponse>;
+    }): Promise<
+        | { status: "OK"; token: string }
+        // | GenerateRecoverAccountTokenErrorResponse
+        | { status: "UNKNOWN_USER_ID_ERROR" }
+        | { status: "INVALID_EMAIL_ERROR" }
+    >;
 
     // make sure the email maps to options email
     consumeRecoverAccountToken(input: {
@@ -262,7 +312,48 @@ export type RecipeInterface = {
               email: string;
               userId: string;
           }
-        | ConsumeRecoverAccountTokenErrorResponse
+        // | ConsumeRecoverAccountTokenErrorResponse
+        | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+    >;
+
+    // used internally for creating a credential during recover account flow or when adding a credential to an existing user
+    // email will be taken from the options
+    // no need for recoverAccountToken, as that will be used upstream
+    // (in consumeRecoverAccountToken invalidating the token and in registerOptions for storing the email in the generated options)
+    registerCredential(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: CredentialPayload;
+        tenantId: string;
+        userContext: UserContext;
+        recipeUserId: RecipeUserId;
+    }): Promise<
+        | {
+              status: "OK";
+          }
+        // | RegisterCredentialErrorResponse
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+    >;
+
+    // this function is meant only for creating the recipe in the core and nothing else.
+    // we added this even though signUp exists cause devs may override signup expecting it
+    // to be called just during sign up. But we also need a version of signing up which can be
+    // called during operations like creating a user during password reset flow.
+    createNewRecipeUser(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: CredentialPayload;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        // | CreateNewRecipeUserErrorResponse
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
     >;
 
     decodeCredential(input: {
@@ -322,50 +413,9 @@ export type RecipeInterface = {
                   type: string;
               };
           }
-        | DecodeCredentialErrorResponse
+        // | DecodeCredentialErrorResponse
+        | { status: "WRONG_CREDENTIALS_ERROR" }
     >;
-
-    // used internally for creating a credential during account recovery flow or when adding a credential to an existing user
-    // email will be taken from the options
-    // no need for recoverAccountToken, as that will be used upstream
-    // (in consumeRecoverAccountToken invalidating the token and in registerOptions for storing the email in the generated options)
-    registerCredential(input: {
-        webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
-        tenantId: string;
-        userContext: UserContext;
-        recipeUserId: RecipeUserId;
-    }): Promise<
-        | {
-              status: "OK";
-          }
-        | RegisterCredentialErrorResponse
-    >;
-
-    // this function is meant only for creating the recipe in the core and nothing else.
-    // we added this even though signUp exists cause devs may override signup expecting it
-    // to be called just during sign up. But we also need a version of signing up which can be
-    // called during operations like creating a user during password reset flow.
-    createNewRecipeUser(input: {
-        webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | CreateNewRecipeUserErrorResponse
-    >;
-
-    verifyCredentials(input: {
-        webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | VerifyCredentialsErrorResponse>;
 
     // used for retrieving the user details (email) from the recover account token
     // should be used in the registerOptions function when the user recovers the account and generates the credentials
@@ -373,7 +423,11 @@ export type RecipeInterface = {
         token: string;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | GetUserFromRecoverAccountTokenErrorResponse>;
+    }): Promise<
+        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
+        // | GetUserFromRecoverAccountTokenErrorResponse
+        | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+    >;
 
     // credentials CRUD
     removeCredential(input: {
@@ -384,7 +438,8 @@ export type RecipeInterface = {
         | {
               status: "OK";
           }
-        | RemoveCredentialErrorResponse
+        // | RemoveCredentialErrorResponse
+        | { status: "CREDENTIAL_NOT_FOUND_ERROR" }
     >;
 
     getCredential(input: {
@@ -396,12 +451,13 @@ export type RecipeInterface = {
               status: "OK";
               credential: {
                   id: string;
-                  rpId: string;
+                  relyingPartyId: string;
                   recipeUserId: RecipeUserId;
                   createdAt: number;
               };
           }
-        | GetCredentialErrorResponse
+        // | GetCredentialErrorResponse
+        | { status: "CREDENTIAL_NOT_FOUND_ERROR" }
     >;
 
     listCredentials(input: {
@@ -411,10 +467,42 @@ export type RecipeInterface = {
         status: "OK";
         credentials: {
             id: string;
-            rpId: string;
+            relyingPartyId: string;
             createdAt: number;
         }[];
     }>;
+
+    // Generated options CRUD
+    removeGeneratedOptions(input: {
+        webauthnGeneratedOptionsId: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | { status: "OK" }
+        // | RemoveGeneratedOptionsErrorResponse
+        | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" }
+    >;
+
+    getGeneratedOptions(input: {
+        webauthnGeneratedOptionsId: string;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              id: string;
+              relyingPartyId: string;
+              relyingPartyName: string;
+              origin: string;
+              userName: string;
+              userDisplayName: string;
+              timeout: string;
+              attestation: string;
+              challenge: string;
+          }
+        // | GetGeneratedOptionsErrorResponse
+        | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" }
+    >;
 };
 
 export type APIOptions = {
@@ -429,67 +517,34 @@ export type APIOptions = {
 };
 
 type RegisterOptionsPOSTErrorResponse =
-    | RegisterOptionsErrorResponse
-    | { status: "REGISTER_OPTIONS_NOT_ALLOWED"; reason: string };
+    | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+    | { status: "INVALID_EMAIL_ERROR" };
 
-type SignInOptionsPOSTErrorResponse = { status: "SIGN_IN_OPTIONS_NOT_ALLOWED"; reason: string };
+type SignInOptionsPOSTErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" } | { status: "INVALID_EMAIL_ERROR" };
 
 type SignUpPOSTErrorResponse =
     | {
           status: "SIGN_UP_NOT_ALLOWED";
           reason: string;
       }
-    | SignUpErrorResponse;
+    | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    | { status: "WRONG_CREDENTIALS_ERROR" }
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
 
-type SignInPOSTErrorResponse =
+type SignInPOSTErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
+
+type GenerateRecoverAccountTokenPOSTErrorResponse =
     | {
-          status: "SIGN_IN_NOT_ALLOWED";
+          status: "RECOVER_ACCOUNT_NOT_ALLOWED";
           reason: string;
       }
-    | SignInErrorResponse;
-
-type GenerateRecoverAccountTokenPOSTErrorResponse = {
-    status: "ACCOUNT_RECOVERY_NOT_ALLOWED";
-    reason: string;
-};
+    | { status: "UNKNOWN_USER_ID_ERROR" }
+    | { status: "INVALID_EMAIL_ERROR" };
 
 type RecoverAccountPOSTErrorResponse =
-    | {
-          status: "ACCOUNT_RECOVERY_NOT_ALLOWED";
-          reason: string;
-      }
-    | ConsumeRecoverAccountTokenErrorResponse;
-
-type AddCredentialPOSTErrorResponse =
-    | {
-          status: "ADD_CREDENTIAL_NOT_ALLOWED";
-          reason: string;
-      }
-    | RegisterCredentialErrorResponse;
-
-type RemoveCredentialPOSTErrorResponse =
-    | {
-          status: "REMOVE_CREDENTIAL_NOT_ALLOWED";
-          reason: string;
-      }
-    | RemoveCredentialErrorResponse;
-
-type ListCredentialsPOSTErrorResponse = {
-    status: "LIST_CREDENTIALS_NOT_ALLOWED";
-    reason: string;
-};
-
-type GetCredentialGETErrorResponse = {
-    status: "GET_CREDENTIAL_NOT_ALLOWED";
-    reason: string;
-};
-
-type RecoverAccountTokenPOSTErrorResponse =
-    | {
-          status: "CONSUME_RECOVER_ACCOUNT_TOKEN_NOT_ALLOWED";
-          reason: string;
-      }
-    | ConsumeRecoverAccountTokenErrorResponse;
+    | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+    | { status: "WRONG_CREDENTIALS_ERROR" }
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
 
 export type APIInterface = {
     registerOptionsPOST:
@@ -532,12 +587,15 @@ export type APIInterface = {
                     };
                 }
               | GeneralErrorResponse
-              | RegisterOptionsPOSTErrorResponse
+              //   | RegisterOptionsPOSTErrorResponse
+              | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+              | { status: "INVALID_EMAIL_ERROR" }
           >);
 
     signInOptionsPOST:
         | undefined
         | ((input: {
+              email?: string;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
@@ -550,13 +608,14 @@ export type APIInterface = {
                     userVerification: "required" | "preferred" | "discouraged";
                 }
               | GeneralErrorResponse
-              | SignInOptionsPOSTErrorResponse
+              //   | SignInOptionsPOSTErrorResponse
+              | { status: "WRONG_CREDENTIALS_ERROR" }
+              | { status: "INVALID_EMAIL_ERROR" }
           >);
 
     signUpPOST:
         | undefined
         | ((input: {
-              email: string;
               webauthnGeneratedOptionsId: string;
               credential: CredentialPayload;
               tenantId: string;
@@ -572,7 +631,14 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | GeneralErrorResponse
-              | SignUpPOSTErrorResponse
+              //   | SignUpPOSTErrorResponse
+              | {
+                    status: "SIGN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+              | { status: "WRONG_CREDENTIALS_ERROR" }
+              | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
           >);
 
     signInPOST:
@@ -592,7 +658,8 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                 }
               | GeneralErrorResponse
-              | SignInPOSTErrorResponse
+              //   | SignInPOSTErrorResponse
+              | { status: "WRONG_CREDENTIALS_ERROR" }
           >);
 
     generateRecoverAccountTokenPOST:
@@ -606,32 +673,19 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
-              | GenerateRecoverAccountTokenPOSTErrorResponse
               | GeneralErrorResponse
+              //   | GenerateRecoverAccountTokenPOSTErrorResponse
+              | {
+                    status: "RECOVER_ACCOUNT_NOT_ALLOWED";
+                    reason: string;
+                }
+              | { status: "UNKNOWN_USER_ID_ERROR" }
+              | { status: "INVALID_EMAIL_ERROR" }
           >);
 
     recoverAccountPOST:
         | undefined
         | ((input: {
-              webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
-              token: string;
-              tenantId: string;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    email: string;
-                    user: User;
-                }
-              | RecoverAccountPOSTErrorResponse
-              | GeneralErrorResponse
-          >);
-
-    recoverAccountTokenPOST:
-        | undefined
-        | ((input: {
               token: string;
               webauthnGeneratedOptionsId: string;
               credential: CredentialPayload;
@@ -645,7 +699,10 @@ export type APIInterface = {
                     email: string;
                 }
               | GeneralErrorResponse
-              | RecoverAccountTokenPOSTErrorResponse
+              //   | RecoverAccountPOSTErrorResponse
+              | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+              | { status: "WRONG_CREDENTIALS_ERROR" }
+              | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
           >);
 
     // used for checking if the email already exists before generating the credential
@@ -661,81 +718,6 @@ export type APIInterface = {
                     status: "OK";
                     exists: boolean;
                 }
-              | GeneralErrorResponse
-          >);
-
-    //credentials CRUD
-    addCredentialPOST:
-        | undefined
-        | ((input: {
-              webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
-              tenantId: string;
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                }
-              | AddCredentialPOSTErrorResponse
-              | GeneralErrorResponse
-          >);
-
-    removeCredentialPOST:
-        | undefined
-        | ((input: {
-              webauthnCredentialId: string;
-              tenantId: string;
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                }
-              | RemoveCredentialPOSTErrorResponse
-              | GeneralErrorResponse
-          >);
-
-    listCredentialsGET:
-        | undefined
-        | ((input: {
-              tenantId: string;
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    credentials: {
-                        id: string;
-                        rp_id: string;
-                        created_at: number;
-                    }[];
-                }
-              | ListCredentialsPOSTErrorResponse
-              | GeneralErrorResponse
-          >);
-
-    getCredentialGET:
-        | undefined
-        | ((input: {
-              webauthnCredentialId: string;
-              tenantId: string;
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: UserContext;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    credential: {
-                        id: string;
-                        rp_id: string;
-                        created_at: number;
-                    };
-                }
-              | GetCredentialGETErrorResponse
               | GeneralErrorResponse
           >);
 };

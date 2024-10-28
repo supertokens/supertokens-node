@@ -65,6 +65,7 @@ export default function getAPIImplementation(): APIInterface {
               }
             | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
             | { status: "EMAIL_MISSING_ERROR" }
+            | { status: "REGISTER_OPTIONS_NOT_ALLOWED"; reason: string }
         > {
             const relyingPartyId = await options.config.relyingPartyId({
                 tenantId,
@@ -543,7 +544,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
               }
-            | { status: "ACCOUNT_RECOVERY_NOT_ALLOWED"; reason: string }
+            | { status: "RECOVER_ACCOUNT_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
             // NOTE: Check for email being a non-string value. This check will likely
@@ -562,7 +563,7 @@ export default function getAPIImplementation(): APIInterface {
                 | {
                       status: "OK";
                   }
-                | { status: "ACCOUNT_RECOVERY_NOT_ALLOWED"; reason: string }
+                | { status: "RECOVER_ACCOUNT_NOT_ALLOWED"; reason: string }
                 | GeneralErrorResponse
             > {
                 // the user ID here can be primary or recipe level.
@@ -575,7 +576,7 @@ export default function getAPIImplementation(): APIInterface {
 
                 if (response.status === "UNKNOWN_USER_ID_ERROR") {
                     logDebugMessage(
-                        `Account recovery email not sent, unknown user id: ${
+                        `Recover account email not sent, unknown user id: ${
                             recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
                         }`
                     );
@@ -592,7 +593,7 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
 
-                logDebugMessage(`Sending account recovery email to ${email}`);
+                logDebugMessage(`Sending recover account email to ${email}`);
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     tenantId,
                     type: "RECOVER_ACCOUNT",
@@ -639,10 +640,10 @@ export default function getAPIImplementation(): APIInterface {
             let primaryUserAssociatedWithEmail = users.find((u) => u.isPrimaryUser);
 
             // first we check if there even exists a primary user that has the input email
-            // if not, then we do the regular flow for account recovery
+            // if not, then we do the regular flow for recover account
             if (primaryUserAssociatedWithEmail === undefined) {
                 if (webauthnAccount === undefined) {
-                    logDebugMessage(`Account recovery email not sent, unknown user email: ${email}`);
+                    logDebugMessage(`Recover account email not sent, unknown user email: ${email}`);
                     return {
                         status: "OK",
                     };
@@ -675,9 +676,9 @@ export default function getAPIImplementation(): APIInterface {
 
             if (!emailVerified && hasOtherEmailOrPhone) {
                 return {
-                    status: "ACCOUNT_RECOVERY_NOT_ALLOWED",
+                    status: "RECOVER_ACCOUNT_NOT_ALLOWED",
                     reason:
-                        "Account recovery link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
+                        "Recover account link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
                 };
             }
 
@@ -704,12 +705,12 @@ export default function getAPIImplementation(): APIInterface {
                 // met.
 
                 // But first we must check if account linking is enabled at all - cause if it's
-                // not, then the new webauthn user that will be created in account recovery
+                // not, then the new webauthn user that will be created in recover account
                 // code consume cannot be linked to the primary user - therefore, we should
-                // not generate a account recovery reset token
+                // not generate a recover account reset token
                 if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
                     logDebugMessage(
-                        `Account recovery email not sent, since webauthn user didn't exist, and account linking not enabled`
+                        `Recover account email not sent, since webauthn user didn't exist, and account linking not enabled`
                     );
                     return {
                         status: "OK",
@@ -733,7 +734,7 @@ export default function getAPIImplementation(): APIInterface {
                     return await generateAndSendRecoverAccountToken(primaryUserAssociatedWithEmail.id, undefined);
                 } else {
                     logDebugMessage(
-                        `Account recovery email not sent, isSignUpAllowed returned false for email: ${email}`
+                        `Recover account email not sent, isSignUpAllowed returned false for email: ${email}`
                     );
                     return {
                         status: "OK",
@@ -772,7 +773,7 @@ export default function getAPIImplementation(): APIInterface {
 
             It is important to realize that the attacker had created another account with A because if they hadn't done that, then they wouldn't have access to this account after the real user recovers the account which is why it is important to check there is another non-webauthn account linked to the primary such that the email is not the same as B.
 
-            Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should allow account recovery token generation because user has already proven that the owns the email B
+            Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should allow recover account token generation because user has already proven that the owns the email B
             */
 
             // But first, this only matters it the user cares about checking for email verification status..
@@ -801,7 +802,7 @@ export default function getAPIImplementation(): APIInterface {
                 webauthnAccount.recipeUserId
             );
         },
-        recoverAccountTokenPOST: async function ({
+        recoverAccountPOST: async function ({
             webauthnGeneratedOptionsId,
             credential,
             token,
@@ -891,10 +892,10 @@ export default function getAPIImplementation(): APIInterface {
                     // status: "OK"
 
                     // If the update was successful, we try to mark the email as verified.
-                    // We do this because we assume that the account recovery token was delivered by email (and to the appropriate email address)
+                    // We do this because we assume that the recover account token was delivered by email (and to the appropriate email address)
                     // so consuming it means that the user actually has access to the emails we send.
 
-                    // We only do this if the account recovery was successful, otherwise the following scenario is possible:
+                    // We only do this if the recover account was successful, otherwise the following scenario is possible:
                     // 1. User M: signs up using the email of user V with their own credential. They can't validate the email, because it is not their own.
                     // 2. User A: tries signing up but sees the email already exists message
                     // 3. User A: recovers the account, but somehow this fails
@@ -903,7 +904,7 @@ export default function getAPIImplementation(): APIInterface {
                     // We refresh the user information here, because the verification status may be updated, which is used during linking.
                     const updatedUserAfterEmailVerification = await getUser(recipeUserId.getAsString(), userContext);
                     if (updatedUserAfterEmailVerification === undefined) {
-                        throw new Error("Should never happen - user deleted after during account recovery");
+                        throw new Error("Should never happen - user deleted after during recover account");
                     }
 
                     if (updatedUserAfterEmailVerification.isPrimaryUser) {
@@ -948,10 +949,6 @@ export default function getAPIImplementation(): APIInterface {
             // todo decide how to handle these
             if (tokenConsumptionResponse.status === "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR") {
                 return tokenConsumptionResponse;
-            } else if (tokenConsumptionResponse.status === "WRONG_CREDENTIALS_ERROR") {
-                return tokenConsumptionResponse;
-            } else if (tokenConsumptionResponse.status === "INVALID_AUTHENTICATOR_ERROR") {
-                return tokenConsumptionResponse;
             }
 
             let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
@@ -984,7 +981,7 @@ export default function getAPIImplementation(): APIInterface {
                         // resolve to false anyway, and that's what we want.
 
                         // there is an edge case where if the webauthn recipe user was created
-                        // after the account recovery token generation, and it was linked to the
+                        // after the recover account token generation, and it was linked to the
                         // primary user id (userIdForWhomTokenWasGenerated), in this case,
                         // we still don't allow credntials update, cause the user should try again
                         // and the token should be regenerated for the right recipe user.
@@ -1009,7 +1006,7 @@ export default function getAPIImplementation(): APIInterface {
                     // invalid error and the user can try again.
 
                     // NOTE: We do not ask the dev if we should do account linking or not here
-                    // cause we already have asked them this when generating an account recovery reset token.
+                    // cause we already have asked them this when generating an recover account reset token.
                     // In the edge case that the dev changes account linking allowance from true to false
                     // when it comes here, only a new recipe user id will be created and not linked
                     // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
@@ -1034,7 +1031,7 @@ export default function getAPIImplementation(): APIInterface {
                             status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
                         };
                     } else {
-                        // we mark the email as verified because account recovery also requires
+                        // we mark the email as verified because recover account also requires
                         // access to the email to work.. This has a good side effect that
                         // any other login method with the same email in existingAccount will also get marked
                         // as verified.
@@ -1044,7 +1041,7 @@ export default function getAPIImplementation(): APIInterface {
                         );
                         const updatedUser = await getUser(createUserResponse.user.id, userContext);
                         if (updatedUser === undefined) {
-                            throw new Error("Should never happen - user deleted after during account recovery");
+                            throw new Error("Should never happen - user deleted after during recover account");
                         }
                         createUserResponse.user = updatedUser;
                         // Now we try and link the accounts. The function below will try and also

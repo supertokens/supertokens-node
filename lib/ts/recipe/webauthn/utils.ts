@@ -19,10 +19,12 @@ import {
     TypeInputGetOrigin,
     TypeInputRelyingPartyId,
     TypeInputRelyingPartyName,
+    TypeInputValidateEmailAddress,
     TypeNormalisedInput,
     TypeNormalisedInputGetOrigin,
     TypeNormalisedInputRelyingPartyId,
     TypeNormalisedInputRelyingPartyName,
+    TypeNormalisedInputValidateEmailAddress,
 } from "./types";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { RecipeInterface, APIInterface } from "./types";
@@ -40,6 +42,11 @@ export function validateAndNormaliseUserInput(
         config?.relyingPartyName
     );
     let getOrigin = validateAndNormaliseGetOriginConfig(recipeInstance, appInfo, config?.getOrigin);
+    let validateEmailAddress = validateAndNormaliseValidateEmailAddressConfig(
+        recipeInstance,
+        appInfo,
+        config?.validateEmailAddress
+    );
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
@@ -78,6 +85,7 @@ export function validateAndNormaliseUserInput(
         getOrigin,
         relyingPartyId,
         relyingPartyName,
+        validateEmailAddress,
         getEmailDeliveryConfig,
     };
 }
@@ -128,6 +136,20 @@ function validateAndNormaliseGetOriginConfig(
             return Promise.resolve(
                 __.getOrigin({ request: props.request, userContext: props.userContext }).getAsStringDangerous()
             );
+        }
+    };
+}
+
+function validateAndNormaliseValidateEmailAddressConfig(
+    _: Recipe,
+    __: NormalisedAppinfo,
+    validateEmailAddressConfig: TypeInputValidateEmailAddress | undefined
+): TypeNormalisedInputValidateEmailAddress {
+    return (email, tenantId) => {
+        if (typeof validateEmailAddressConfig === "function") {
+            return validateEmailAddressConfig(email, tenantId);
+        } else {
+            return defaultEmailValidator(email);
         }
     };
 }
