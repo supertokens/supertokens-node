@@ -19,11 +19,22 @@ import { NormalisedAppinfo, APIHandled, HTTPMethod, RecipeListFunction, UserCont
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { SIGN_UP_API, SIGN_IN_API, REGISTER_OPTIONS_API, SIGNIN_OPTIONS_API } from "./constants";
+import {
+    SIGN_UP_API,
+    SIGN_IN_API,
+    REGISTER_OPTIONS_API,
+    SIGNIN_OPTIONS_API,
+    GENERATE_RECOVER_ACCOUNT_TOKEN_API,
+    RECOVER_ACCOUNT_API,
+    SIGNUP_EMAIL_EXISTS_API,
+} from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import registerOptionsAPI from "./api/registerOptions";
 import signInOptionsAPI from "./api/signInOptions";
+import generateRecoverAccountTokenAPI from "./api/generateRecoverAccountToken";
+import recoverAccountAPI from "./api/recoverAccount";
+import emailExistsAPI from "./api/emailExists";
 import { isTestEnv, send200Response } from "../../utils";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -86,6 +97,7 @@ export default class Recipe extends RecipeModule {
                 ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig(this.isInServerlessEnv))
                 : ingredients.emailDelivery;
 
+        // todo check correctness
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
@@ -190,8 +202,6 @@ export default class Recipe extends RecipeModule {
                         ];
                     }
 
-                    // todo how to implement this?
-
                     // If the list is empty we generate an email address to make the flow where the user is never asked for
                     // an email address easier to implement. In many cases when the user adds an email-password factor, they
                     // actually only want to add a password and do not care about the associated email address.
@@ -203,7 +213,7 @@ export default class Recipe extends RecipeModule {
                     return {
                         status: "OK",
                         factorIdToEmailsMap: {
-                            emailpassword: result,
+                            webauthn: result,
                         },
                     };
                 });
@@ -273,24 +283,24 @@ export default class Recipe extends RecipeModule {
                 disabled: this.apiImpl.signInPOST === undefined,
             },
 
-            // {
-            //     method: "post",
-            //     pathWithoutApiBasePath: new NormalisedURLPath(GENERATE_RECOVER_ACCOUNT_TOKEN_API),
-            //     id: GENERATE_RECOVER_ACCOUNT_TOKEN_API,
-            //     disabled: this.apiImpl.generateRecoverAccountTokenPOST === undefined,
-            // },
-            // {
-            //     method: "post",
-            //     pathWithoutApiBasePath: new NormalisedURLPath(RECOVER_ACCOUNT_API),
-            //     id: RECOVER_ACCOUNT_API,
-            //     disabled: this.apiImpl.recoverAccountPOST === undefined,
-            // },
-            // {
-            //     method: "get",
-            //     pathWithoutApiBasePath: new NormalisedURLPath(SIGNUP_EMAIL_EXISTS_API),
-            //     id: SIGNUP_EMAIL_EXISTS_API,
-            //     disabled: this.apiImpl.emailExistsGET === undefined,
-            // },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(GENERATE_RECOVER_ACCOUNT_TOKEN_API),
+                id: GENERATE_RECOVER_ACCOUNT_TOKEN_API,
+                disabled: this.apiImpl.generateRecoverAccountTokenPOST === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(RECOVER_ACCOUNT_API),
+                id: RECOVER_ACCOUNT_API,
+                disabled: this.apiImpl.recoverAccountPOST === undefined,
+            },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGNUP_EMAIL_EXISTS_API),
+                id: SIGNUP_EMAIL_EXISTS_API,
+                disabled: this.apiImpl.emailExistsGET === undefined,
+            },
         ];
     };
 
@@ -321,15 +331,13 @@ export default class Recipe extends RecipeModule {
             return await signUpAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGN_IN_API) {
             return await signInAPI(this.apiImpl, tenantId, options, userContext);
-        }
-        //else if (id === GENERATE_RECOVER_ACCOUNT_TOKEN_API) {
-        //     return await generateRecoverAccountTokenAPI(this.apiImpl, tenantId, options, userContext);
-        // } else if (id === RECOVER_ACCOUNT_API) {
-        //     return await recoverAccountAPI(this.apiImpl, tenantId, options, userContext);
-        // } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-        //     return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
-        // }
-        else return false;
+        } else if (id === GENERATE_RECOVER_ACCOUNT_TOKEN_API) {
+            return await generateRecoverAccountTokenAPI(this.apiImpl, tenantId, options, userContext);
+        } else if (id === RECOVER_ACCOUNT_API) {
+            return await recoverAccountAPI(this.apiImpl, tenantId, options, userContext);
+        } else if (id === SIGNUP_EMAIL_EXISTS_API) {
+            return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
+        } else return false;
     };
 
     handleError = async (err: STError, _request: BaseRequest, response: BaseResponse): Promise<void> => {

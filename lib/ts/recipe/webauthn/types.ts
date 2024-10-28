@@ -41,14 +41,15 @@ export type TypeNormalisedInput = {
 };
 
 export type TypeNormalisedInputRelyingPartyId = (input: {
+    tenantId: string;
     request: BaseRequest | undefined;
     userContext: UserContext;
-}) => string; // should return the domain of the origin
+}) => Promise<string>; // should return the domain of the origin
 
 export type TypeNormalisedInputRelyingPartyName = (input: {
     tenantId: string;
     userContext: UserContext;
-}) => Promise<string>; // should return the app name
+}) => Promise<string>;
 
 export type TypeNormalisedInputGetOrigin = (input: {
     tenantId: string;
@@ -105,11 +106,9 @@ type SignUpErrorResponse = CreateNewRecipeUserErrorResponse;
 
 type SignInErrorResponse = VerifyCredentialsErrorResponse;
 
-type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" } | { status: "UNKNOWN_EMAIL_ERROR" };
+type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" };
 
-type ConsumeRecoverAccountTokenErrorResponse =
-    | RegisterCredentialErrorResponse
-    | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
+type ConsumeRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
 
 type RemoveCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
 
@@ -196,19 +195,7 @@ export type RecipeInterface = {
 
     signUp(input: {
         webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
+        credential: CredentialPayload;
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
@@ -232,19 +219,7 @@ export type RecipeInterface = {
 
     signIn(input: {
         webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
+        credential: CredentialPayload;
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
@@ -277,20 +252,6 @@ export type RecipeInterface = {
     // make sure the email maps to options email
     consumeRecoverAccountToken(input: {
         token: string;
-        webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -303,19 +264,7 @@ export type RecipeInterface = {
     >;
 
     decodeCredential(input: {
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
+        credential: CredentialPayload;
     }): Promise<
         | {
               status: "OK";
@@ -380,19 +329,7 @@ export type RecipeInterface = {
     // (in consumeRecoverAccountToken invalidating the token and in registerOptions for storing the email in the generated options)
     registerCredential(input: {
         webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
+        credential: CredentialPayload;
         tenantId: string;
         userContext: UserContext;
         recipeUserId: RecipeUserId;
@@ -409,19 +346,7 @@ export type RecipeInterface = {
     // called during operations like creating a user during password reset flow.
     createNewRecipeUser(input: {
         webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
+        credential: CredentialPayload;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -435,19 +360,7 @@ export type RecipeInterface = {
 
     verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
-        credential: {
-            id: string;
-            rawId: string;
-            response: {
-                clientDataJSON: string;
-                attestationObject: string;
-                transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                userHandle: string;
-            };
-            authenticatorAttachment: "platform" | "cross-platform";
-            clientExtensionResults: Record<string, unknown>;
-            type: "public-key";
-        };
+        credential: CredentialPayload;
         tenantId: string;
         userContext: UserContext;
     }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | VerifyCredentialsErrorResponse>;
@@ -568,6 +481,13 @@ type GetCredentialGETErrorResponse = {
     reason: string;
 };
 
+type RecoverAccountTokenPOSTErrorResponse =
+    | {
+          status: "CONSUME_RECOVER_ACCOUNT_TOKEN_NOT_ALLOWED";
+          reason: string;
+      }
+    | ConsumeRecoverAccountTokenErrorResponse;
+
 export type APIInterface = {
     registerOptionsPOST:
         | undefined
@@ -576,7 +496,7 @@ export type APIInterface = {
                   tenantId: string;
                   options: APIOptions;
                   userContext: UserContext;
-              } & ({ email: string } | { recoverAccountToken: string } | { session: SessionContainerInterface })
+              } & ({ email: string } | { recoverAccountToken: string })
           ) => Promise<
               | {
                     status: "OK";
@@ -633,25 +553,15 @@ export type APIInterface = {
     signUpPOST:
         | undefined
         | ((input: {
+              email: string;
               webauthnGeneratedOptionsId: string;
-              credential: {
-                  id: string;
-                  rawId: string;
-                  response: {
-                      clientDataJSON: string;
-                      attestationObject: string;
-                      transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                      userHandle: string;
-                  };
-                  authenticatorAttachment: "platform" | "cross-platform";
-                  clientExtensionResults: Record<string, unknown>;
-                  type: "public-key";
-              };
+              credential: CredentialPayload;
               tenantId: string;
               session: SessionContainerInterface | undefined;
               shouldTryLinkingWithSessionUser: boolean | undefined;
               options: APIOptions;
               userContext: UserContext;
+              // should also have the email or recoverAccountToken in order to do the preauth checks
           }) => Promise<
               | {
                     status: "OK";
@@ -666,19 +576,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: {
-                  id: string;
-                  rawId: string;
-                  response: {
-                      clientDataJSON: string;
-                      attestationObject: string;
-                      transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                      userHandle: string;
-                  };
-                  authenticatorAttachment: "platform" | "cross-platform";
-                  clientExtensionResults: Record<string, unknown>;
-                  type: "public-key";
-              };
+              credential: CredentialPayload;
               tenantId: string;
               session: SessionContainerInterface | undefined;
               shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -713,19 +611,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: {
-                  id: string;
-                  rawId: string;
-                  response: {
-                      clientDataJSON: string;
-                      attestationObject: string;
-                      transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                      userHandle: string;
-                  };
-                  authenticatorAttachment: "platform" | "cross-platform";
-                  clientExtensionResults: Record<string, unknown>;
-                  type: "public-key";
-              };
+              credential: CredentialPayload;
               token: string;
               tenantId: string;
               options: APIOptions;
@@ -738,6 +624,25 @@ export type APIInterface = {
                 }
               | RecoverAccountPOSTErrorResponse
               | GeneralErrorResponse
+          >);
+
+    recoverAccountTokenPOST:
+        | undefined
+        | ((input: {
+              token: string;
+              webauthnGeneratedOptionsId: string;
+              credential: CredentialPayload;
+              tenantId: string;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    email: string;
+                }
+              | GeneralErrorResponse
+              | RecoverAccountTokenPOSTErrorResponse
           >);
 
     // used for checking if the email already exists before generating the credential
@@ -761,19 +666,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: {
-                  id: string;
-                  rawId: string;
-                  response: {
-                      clientDataJSON: string;
-                      attestationObject: string;
-                      transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                      userHandle: string;
-                  };
-                  authenticatorAttachment: "platform" | "cross-platform";
-                  clientExtensionResults: Record<string, unknown>;
-                  type: "public-key";
-              };
+              credential: CredentialPayload;
               tenantId: string;
               session: SessionContainerInterface;
               options: APIOptions;
@@ -856,3 +749,17 @@ export type TypeWebauthnRecoverAccountEmailDeliveryInput = {
 };
 
 export type TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput;
+
+export type CredentialPayload = {
+    id: string;
+    rawId: string;
+    response: {
+        clientDataJSON: string;
+        attestationObject: string;
+        transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+        userHandle: string;
+    };
+    authenticatorAttachment: "platform" | "cross-platform";
+    clientExtensionResults: Record<string, unknown>;
+    type: "public-key";
+};

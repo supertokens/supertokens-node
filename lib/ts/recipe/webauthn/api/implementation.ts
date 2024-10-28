@@ -1,17 +1,125 @@
 import { APIInterface, APIOptions } from "..";
 import { GeneralErrorResponse, User, UserContext } from "../../../types";
 import AccountLinking from "../../accountlinking/recipe";
+import EmailVerification from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
 import { SessionContainerInterface } from "../../session/types";
 import {
-    DEFAULT_REGISTER_ATTESTATION,
+    DEFAULT_REGISTER_OPTIONS_ATTESTATION,
     DEFAULT_REGISTER_OPTIONS_TIMEOUT,
+    DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
+    DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
+    DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
     DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
+    DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
 } from "../constants";
+import RecipeUserId from "../../../recipeUserId";
+import { getRecoverAccountLink } from "../utils";
+import { logDebugMessage } from "../../../logger";
+import { RecipeLevelUser } from "../../accountlinking/types";
+import { getUser } from "../../..";
+import { CredentialPayload } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
+        registerOptionsPOST: async function ({
+            tenantId,
+            options,
+            userContext,
+            ...props
+        }: {
+            tenantId: string;
+            options: APIOptions;
+            userContext: UserContext;
+        } & ({ email: string } | { recoverAccountToken: string })): Promise<
+            | {
+                  status: "OK";
+                  webauthnGeneratedOptionsId: string;
+                  rp: {
+                      id: string;
+                      name: string;
+                  };
+                  user: {
+                      id: string;
+                      name: string;
+                      displayName: string;
+                  };
+                  challenge: string;
+                  timeout: number;
+                  excludeCredentials: {
+                      id: string;
+                      type: "public-key";
+                      transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
+                  }[];
+                  attestation: "none" | "indirect" | "direct" | "enterprise";
+                  pubKeyCredParams: {
+                      alg: number;
+                      type: "public-key";
+                  }[];
+                  authenticatorSelection: {
+                      requireResidentKey: boolean;
+                      residentKey: "required" | "preferred" | "discouraged";
+                      userVerification: "required" | "preferred" | "discouraged";
+                  };
+              }
+            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+            | { status: "EMAIL_MISSING_ERROR" }
+        > {
+            const relyingPartyId = await options.config.relyingPartyId({
+                tenantId,
+                request: options.req,
+                userContext,
+            });
+            const relyingPartyName = await options.config.relyingPartyName({
+                tenantId,
+                userContext,
+            });
+
+            const origin = await options.config.getOrigin({
+                tenantId,
+                request: options.req,
+                userContext,
+            });
+
+            const timeout = DEFAULT_REGISTER_OPTIONS_TIMEOUT;
+            const attestation = DEFAULT_REGISTER_OPTIONS_ATTESTATION;
+            const requireResidentKey = DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY;
+            const residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY;
+            const userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION;
+
+            let response = await options.recipeImplementation.registerOptions({
+                ...props,
+                attestation,
+                requireResidentKey,
+                residentKey,
+                userVerification,
+                origin,
+                relyingPartyId,
+                relyingPartyName,
+                timeout,
+                tenantId,
+                userContext,
+            });
+
+            if (response.status !== "OK") {
+                return response;
+            }
+
+            return {
+                status: "OK",
+                webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
+                challenge: response.challenge,
+                timeout: response.timeout,
+                attestation: response.attestation,
+                pubKeyCredParams: response.pubKeyCredParams,
+                excludeCredentials: response.excludeCredentials,
+                rp: response.rp,
+                user: response.user,
+                authenticatorSelection: response.authenticatorSelection,
+            };
+        },
+
         signInOptionsPOST: async function ({
             tenantId,
             options,
@@ -30,23 +138,34 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            // todo move to recipe implementation
-            const timeout = DEFAULT_SIGNIN_OPTIONS_TIMEOUT;
-
-            const relyingPartyId = options.config.relyingPartyId({ request: options.req, userContext: userContext });
+            const relyingPartyId = await options.config.relyingPartyId({
+                tenantId,
+                request: options.req,
+                userContext,
+            });
 
             // use this to get the full url instead of only the domain url
-            const origin = options.appInfo
-                .getOrigin({ request: options.req, userContext: userContext })
-                .getAsStringDangerous();
+            const origin = await options.config.getOrigin({
+                tenantId,
+                request: options.req,
+                userContext,
+            });
+
+            const timeout = DEFAULT_SIGNIN_OPTIONS_TIMEOUT;
+            const userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION;
 
             let response = await options.recipeImplementation.signInOptions({
+                userVerification,
                 origin,
                 relyingPartyId,
                 timeout,
                 tenantId,
                 userContext,
             });
+
+            if (response.status !== "OK") {
+                return response;
+            }
 
             return {
                 status: "OK",
@@ -56,88 +175,7 @@ export default function getAPIImplementation(): APIInterface {
                 userVerification: response.userVerification,
             };
         },
-        registerOptionsPOST: async function ({
-            email,
-            tenantId,
-            options,
-            userContext,
-        }: {
-            email: string;
-            tenantId: string;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  webauthnGeneratedOptionsId: string;
-                  rp: {
-                      id: string;
-                      name: string;
-                  };
-                  user: {
-                      id: string;
-                      name: string;
-                      displayName: string;
-                  };
-                  challenge: string;
-                  timeout: number;
-                  excludeCredentials: {
-                      id: string;
-                      type: string;
-                      transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
-                  }[];
-                  attestation: "none" | "indirect" | "direct" | "enterprise";
-                  pubKeyCredParams: {
-                      alg: number;
-                      type: string;
-                  }[];
-                  authenticatorSelection: {
-                      requireResidentKey: boolean;
-                      residentKey: "required" | "preferred" | "discouraged";
-                      userVerification: "required" | "preferred" | "discouraged";
-                  };
-              }
-            | GeneralErrorResponse
-        > {
-            // todo move to recipe implementation
-            const timeout = DEFAULT_REGISTER_OPTIONS_TIMEOUT;
-            // todo move to recipe implementation
-            const attestation = DEFAULT_REGISTER_ATTESTATION;
 
-            const relyingPartyId = options.config.relyingPartyId({ request: options.req, userContext: userContext });
-            const relyingPartyName = options.config.relyingPartyName({
-                request: options.req,
-                userContext: userContext,
-            });
-
-            const origin = options.appInfo
-                .getOrigin({ request: options.req, userContext: userContext })
-                .getAsStringDangerous();
-
-            let response = await options.recipeImplementation.registerOptions({
-                email,
-                attestation,
-                origin,
-                relyingPartyId,
-                relyingPartyName,
-                timeout,
-                tenantId,
-                userContext,
-            });
-
-            return {
-                status: "OK",
-                webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
-                challenge: response.challenge,
-                timeout: response.timeout,
-                attestation: response.attestation,
-                pubKeyCredParams: response.pubKeyCredParams,
-                excludeCredentials: response.excludeCredentials,
-                rp: response.rp,
-                user: response.user,
-                authenticatorSelection: response.authenticatorSelection,
-            };
-        },
         signUpPOST: async function ({
             email,
             webauthnGeneratedOptionsId,
@@ -150,19 +188,7 @@ export default function getAPIImplementation(): APIInterface {
         }: {
             email: string;
             webauthnGeneratedOptionsId: string;
-            credential: {
-                id: string;
-                rawId: string;
-                response: {
-                    clientDataJSON: string;
-                    attestationObject: string;
-                    transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                    userHandle: string;
-                };
-                authenticatorAttachment: "platform" | "cross-platform";
-                clientExtensionResults: Record<string, unknown>;
-                type: "public-key";
-            };
+            credential: CredentialPayload;
             tenantId: string;
             session?: SessionContainerInterface;
             shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -178,14 +204,18 @@ export default function getAPIImplementation(): APIInterface {
                   status: "SIGN_UP_NOT_ALLOWED";
                   reason: string;
               }
-            | {
-                  status: "EMAIL_ALREADY_EXISTS_ERROR";
-              }
+            | { status: "WRONG_CREDENTIALS_ERROR" }
+            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
             | GeneralErrorResponse
         > {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                INVALID_AUTHENTICATOR_ERROR: {
+                    // TODO: add more cases
+                },
+                WRONG_CREDENTIALS_ERROR: "The sign up credentials are incorrect. Please use a different authenticator.",
                 LINKING_TO_SESSION_USER_FAILED: {
                     EMAIL_VERIFICATION_REQUIRED:
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_013)",
@@ -274,7 +304,7 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
                 isSignUp: true,
-                factorId: "emailpassword",
+                factorId: "webauthn",
                 session,
                 req: options.req,
                 res: options.res,
@@ -307,19 +337,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }: {
             webauthnGeneratedOptionsId: string;
-            credential: {
-                id: string;
-                rawId: string;
-                response: {
-                    clientDataJSON: string;
-                    attestationObject: string;
-                    transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
-                    userHandle: string;
-                };
-                authenticatorAttachment: "platform" | "cross-platform";
-                clientExtensionResults: Record<string, unknown>;
-                type: "public-key";
-            };
+            credential: CredentialPayload;
             tenantId: string;
             session?: SessionContainerInterface;
             shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -342,7 +360,7 @@ export default function getAPIImplementation(): APIInterface {
         > {
             const errorCodeMap = {
                 SIGN_IN_NOT_ALLOWED:
-                    "Cannot sign in due to security reasons. Please try resetting your password, use a different login method or contact support. (ERR_CODE_008)",
+                    "Cannot sign in due to security reasons. Please try recovering your account, use a different login method or contact support. (ERR_CODE_008)",
                 LINKING_TO_SESSION_USER_FAILED: {
                     EMAIL_VERIFICATION_REQUIRED:
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_009)",
@@ -368,10 +386,19 @@ export default function getAPIImplementation(): APIInterface {
                 return verifyCredentialsResponse.status === "OK";
             };
 
-            // todo check if this is the correct way to retrieve the email
+            // doing it like this because the email is only available after verifyCredentials is called
             let email: string;
             if (verifyCredentialsResponse.status == "OK") {
-                email = verifyCredentialsResponse.user.emails[0];
+                const loginMethod = verifyCredentialsResponse.user.loginMethods.find((lm) => lm.recipeId === recipeId);
+                // there should be a webauthn login method  and an email when trying to sign in using webauthn
+                if (!loginMethod || !loginMethod.email) {
+                    return AuthUtils.getErrorStatusResponseWithReason(
+                        verifyCredentialsResponse,
+                        errorCodeMap,
+                        "SIGN_IN_NOT_ALLOWED"
+                    );
+                }
+                email = loginMethod?.email;
             } else {
                 return {
                     status: "WRONG_CREDENTIALS_ERROR",
@@ -402,7 +429,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId,
                     email,
                 },
-                factorIds: ["webauthn"],
+                factorIds: [recipeId],
                 isSignUp: false,
                 authenticatingUser: authenticatingUser?.user,
                 isVerified,
@@ -447,7 +474,7 @@ export default function getAPIImplementation(): APIInterface {
                 authenticatedUser: signInResponse.user,
                 recipeUserId: signInResponse.recipeUserId,
                 isSignUp: false,
-                factorId: "webauthn",
+                factorId: recipeId,
                 session,
                 req: options.req,
                 res: options.res,
@@ -466,594 +493,596 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
 
-        // emailExistsGET: async function ({
-        //     email,
-        //     tenantId,
-        //     userContext,
-        // }: {
-        //     email: string;
-        //     tenantId: string;
-        //     options: APIOptions;
-        //     userContext: UserContext;
-        // }): Promise<
-        //     | {
-        //           status: "OK";
-        //           exists: boolean;
-        //       }
-        //     | GeneralErrorResponse
-        // > {
-        //     // even if the above returns true, we still need to check if there
-        //     // exists an email password user with the same email cause the function
-        //     // above does not check for that.
-        //     let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-        //         tenantId,
-        //         accountInfo: {
-        //             email,
-        //         },
-        //         doUnionOfAccountInfo: false,
-        //         userContext,
-        //     });
-        //     let emailPasswordUserExists =
-        //         users.find((u) => {
-        //             return (
-        //                 u.loginMethods.find((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email)) !==
-        //                 undefined
-        //             );
-        //         }) !== undefined;
+        emailExistsGET: async function ({
+            email,
+            tenantId,
+            userContext,
+        }: {
+            email: string;
+            tenantId: string;
+            options: APIOptions;
+            userContext: UserContext;
+        }): Promise<
+            | {
+                  status: "OK";
+                  exists: boolean;
+              }
+            | GeneralErrorResponse
+        > {
+            // even if the above returns true, we still need to check if there
+            // exists an webauthn user with the same email cause the function
+            // above does not check for that.
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId,
+                accountInfo: {
+                    email,
+                },
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
+            let webauthnUserExists =
+                users.find((u) => {
+                    return (
+                        u.loginMethods.find((lm) => lm.recipeId === "webauthn" && lm.hasSameEmailAs(email)) !==
+                        undefined
+                    );
+                }) !== undefined;
 
-        //     return {
-        //         status: "OK",
-        //         exists: emailPasswordUserExists,
-        //     };
-        // },
-        // generatePasswordResetTokenPOST: async function ({
-        //     formFields,
-        //     tenantId,
-        //     options,
-        //     userContext,
-        // }): Promise<
-        //     | {
-        //           status: "OK";
-        //       }
-        //     | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
-        //     | GeneralErrorResponse
-        // > {
-        //     // NOTE: Check for email being a non-string value. This check will likely
-        //     // never evaluate to `true` as there is an upper-level check for the type
-        //     // in validation but kept here to be safe.
-        //     const emailAsUnknown = formFields.filter((f) => f.id === "email")[0].value;
-        //     if (typeof emailAsUnknown !== "string")
-        //         throw new Error(
-        //             "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
-        //         );
-        //     const email: string = emailAsUnknown;
+            return {
+                status: "OK",
+                exists: webauthnUserExists,
+            };
+        },
 
-        //     // this function will be reused in different parts of the flow below..
-        //     async function generateAndSendPasswordResetToken(
-        //         primaryUserId: string,
-        //         recipeUserId: RecipeUserId | undefined
-        //     ): Promise<
-        //         | {
-        //               status: "OK";
-        //           }
-        //         | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
-        //         | GeneralErrorResponse
-        //     > {
-        //         // the user ID here can be primary or recipe level.
-        //         let response = await options.recipeImplementation.createResetPasswordToken({
-        //             tenantId,
-        //             userId: recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString(),
-        //             email,
-        //             userContext,
-        //         });
-        //         if (response.status === "UNKNOWN_USER_ID_ERROR") {
-        //             logDebugMessage(
-        //                 `Password reset email not sent, unknown user id: ${
-        //                     recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
-        //                 }`
-        //             );
-        //             return {
-        //                 status: "OK",
-        //             };
-        //         }
+        generateRecoverAccountTokenPOST: async function ({
+            email,
+            tenantId,
+            options,
+            userContext,
+        }): Promise<
+            | {
+                  status: "OK";
+              }
+            | { status: "ACCOUNT_RECOVERY_NOT_ALLOWED"; reason: string }
+            | GeneralErrorResponse
+        > {
+            // NOTE: Check for email being a non-string value. This check will likely
+            // never evaluate to `true` as there is an upper-level check for the type
+            // in validation but kept here to be safe.
+            if (typeof email !== "string")
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                );
 
-        //         let passwordResetLink = getPasswordResetLink({
-        //             appInfo: options.appInfo,
-        //             token: response.token,
-        //             tenantId,
-        //             request: options.req,
-        //             userContext,
-        //         });
+            // this function will be reused in different parts of the flow below..
+            async function generateAndSendRecoverAccountToken(
+                primaryUserId: string,
+                recipeUserId: RecipeUserId | undefined
+            ): Promise<
+                | {
+                      status: "OK";
+                  }
+                | { status: "ACCOUNT_RECOVERY_NOT_ALLOWED"; reason: string }
+                | GeneralErrorResponse
+            > {
+                // the user ID here can be primary or recipe level.
+                let response = await options.recipeImplementation.generateRecoverAccountToken({
+                    tenantId,
+                    userId: recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString(),
+                    email,
+                    userContext,
+                });
 
-        //         logDebugMessage(`Sending password reset email to ${email}`);
-        //         await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-        //             tenantId,
-        //             type: "PASSWORD_RESET",
-        //             user: {
-        //                 id: primaryUserId,
-        //                 recipeUserId,
-        //                 email,
-        //             },
-        //             passwordResetLink,
-        //             userContext,
-        //         });
+                if (response.status === "UNKNOWN_USER_ID_ERROR") {
+                    logDebugMessage(
+                        `Account recovery email not sent, unknown user id: ${
+                            recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
+                        }`
+                    );
+                    return {
+                        status: "OK",
+                    };
+                }
 
-        //         return {
-        //             status: "OK",
-        //         };
-        //     }
+                let recoverAccountLink = getRecoverAccountLink({
+                    appInfo: options.appInfo,
+                    token: response.token,
+                    tenantId,
+                    request: options.req,
+                    userContext,
+                });
 
-        //     /**
-        //      * check if primaryUserId is linked with this email
-        //      */
-        //     let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-        //         tenantId,
-        //         accountInfo: {
-        //             email,
-        //         },
-        //         doUnionOfAccountInfo: false,
-        //         userContext,
-        //     });
+                logDebugMessage(`Sending account recovery email to ${email}`);
+                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    tenantId,
+                    type: "RECOVER_ACCOUNT",
+                    user: {
+                        id: primaryUserId,
+                        recipeUserId,
+                        email,
+                    },
+                    recoverAccountLink,
+                    userContext,
+                });
 
-        //     // we find the recipe user ID of the email password account from the user's list
-        //     // for later use.
-        //     let emailPasswordAccount: RecipeLevelUser | undefined = undefined;
-        //     for (let i = 0; i < users.length; i++) {
-        //         let emailPasswordAccountTmp = users[i].loginMethods.find(
-        //             (l) => l.recipeId === "emailpassword" && l.hasSameEmailAs(email)
-        //         );
-        //         if (emailPasswordAccountTmp !== undefined) {
-        //             emailPasswordAccount = emailPasswordAccountTmp;
-        //             break;
-        //         }
-        //     }
+                return {
+                    status: "OK",
+                };
+            }
 
-        //     // we find the primary user ID from the user's list for later use.
-        //     let primaryUserAssociatedWithEmail = users.find((u) => u.isPrimaryUser);
+            /**
+             * check if primaryUserId is linked with this email
+             */
+            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+                tenantId,
+                accountInfo: {
+                    email,
+                },
+                doUnionOfAccountInfo: false,
+                userContext,
+            });
 
-        //     // first we check if there even exists a primary user that has the input email
-        //     // if not, then we do the regular flow for password reset.
-        //     if (primaryUserAssociatedWithEmail === undefined) {
-        //         if (emailPasswordAccount === undefined) {
-        //             logDebugMessage(`Password reset email not sent, unknown user email: ${email}`);
-        //             return {
-        //                 status: "OK",
-        //             };
-        //         }
-        //         return await generateAndSendPasswordResetToken(
-        //             emailPasswordAccount.recipeUserId.getAsString(),
-        //             emailPasswordAccount.recipeUserId
-        //         );
-        //     }
+            // we find the recipe user ID of the webauthn account from the user's list
+            // for later use.
+            let webauthnAccount: RecipeLevelUser | undefined = undefined;
+            for (let i = 0; i < users.length; i++) {
+                let webauthnAccountTmp = users[i].loginMethods.find(
+                    (l) => l.recipeId === "webauthn" && l.hasSameEmailAs(email)
+                );
+                if (webauthnAccountTmp !== undefined) {
+                    webauthnAccount = webauthnAccountTmp;
+                    break;
+                }
+            }
 
-        //     // Next we check if there is any login method in which the input email is verified.
-        //     // If that is the case, then it's proven that the user owns the email and we can
-        //     // trust linking of the email password account.
-        //     let emailVerified =
-        //         primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-        //             return lm.hasSameEmailAs(email) && lm.verified;
-        //         }) !== undefined;
+            // we find the primary user ID from the user's list for later use.
+            let primaryUserAssociatedWithEmail = users.find((u) => u.isPrimaryUser);
 
-        //     // finally, we check if the primary user has any other email / phone number
-        //     // associated with this account - and if it does, then it means that
-        //     // there is a risk of account takeover, so we do not allow the token to be generated
-        //     let hasOtherEmailOrPhone =
-        //         primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-        //             // we do the extra undefined check below cause
-        //             // hasSameEmailAs returns false if the lm.email is undefined, and
-        //             // we want to check that the email is different as opposed to email
-        //             // not existing in lm.
-        //             return (lm.email !== undefined && !lm.hasSameEmailAs(email)) || lm.phoneNumber !== undefined;
-        //         }) !== undefined;
+            // first we check if there even exists a primary user that has the input email
+            // if not, then we do the regular flow for account recovery
+            if (primaryUserAssociatedWithEmail === undefined) {
+                if (webauthnAccount === undefined) {
+                    logDebugMessage(`Account recovery email not sent, unknown user email: ${email}`);
+                    return {
+                        status: "OK",
+                    };
+                }
+                return await generateAndSendRecoverAccountToken(
+                    webauthnAccount.recipeUserId.getAsString(),
+                    webauthnAccount.recipeUserId
+                );
+            }
 
-        //     if (!emailVerified && hasOtherEmailOrPhone) {
-        //         return {
-        //             status: "PASSWORD_RESET_NOT_ALLOWED",
-        //             reason:
-        //                 "Reset password link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
-        //         };
-        //     }
+            // Next we check if there is any login method in which the input email is verified.
+            // If that is the case, then it's proven that the user owns the email and we can
+            // trust linking of the webauthn account.
+            let emailVerified =
+                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                    return lm.hasSameEmailAs(email) && lm.verified;
+                }) !== undefined;
 
-        //     let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-        //         emailPasswordAccount !== undefined
-        //             ? emailPasswordAccount
-        //             : {
-        //                   recipeId: "emailpassword",
-        //                   email,
-        //               },
-        //         primaryUserAssociatedWithEmail,
-        //         undefined,
-        //         tenantId,
-        //         userContext
-        //     );
+            // finally, we check if the primary user has any other email / phone number
+            // associated with this account - and if it does, then it means that
+            // there is a risk of account takeover, so we do not allow the token to be generated
+            let hasOtherEmailOrPhone =
+                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                    // we do the extra undefined check below cause
+                    // hasSameEmailAs returns false if the lm.email is undefined, and
+                    // we want to check that the email is different as opposed to email
+                    // not existing in lm.
+                    return (lm.email !== undefined && !lm.hasSameEmailAs(email)) || lm.phoneNumber !== undefined;
+                }) !== undefined;
 
-        //     // Now we need to check that if there exists any email password user at all
-        //     // for the input email. If not, then it implies that when the token is consumed,
-        //     // then we will create a new user - so we should only generate the token if
-        //     // the criteria for the new user is met.
-        //     if (emailPasswordAccount === undefined) {
-        //         // this means that there is no email password user that exists for the input email.
-        //         // So we check for the sign up condition and only go ahead if that condition is
-        //         // met.
+            if (!emailVerified && hasOtherEmailOrPhone) {
+                return {
+                    status: "ACCOUNT_RECOVERY_NOT_ALLOWED",
+                    reason:
+                        "Account recovery link was not created because of account take over risk. Please contact support. (ERR_CODE_001)",
+                };
+            }
 
-        //         // But first we must check if account linking is enabled at all - cause if it's
-        //         // not, then the new email password user that will be created in password reset
-        //         // code consume cannot be linked to the primary user - therefore, we should
-        //         // not generate a password reset token
-        //         if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
-        //             logDebugMessage(
-        //                 `Password reset email not sent, since email password user didn't exist, and account linking not enabled`
-        //             );
-        //             return {
-        //                 status: "OK",
-        //             };
-        //         }
+            let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+                webauthnAccount !== undefined
+                    ? webauthnAccount
+                    : {
+                          recipeId: "webauthn",
+                          email,
+                      },
+                primaryUserAssociatedWithEmail,
+                undefined,
+                tenantId,
+                userContext
+            );
 
-        //         let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
-        //             newUser: {
-        //                 recipeId: "emailpassword",
-        //                 email,
-        //             },
-        //             isVerified: true, // cause when the token is consumed, we will mark the email as verified
-        //             session: undefined,
-        //             tenantId,
-        //             userContext,
-        //         });
-        //         if (isSignUpAllowed) {
-        //             // notice that we pass in the primary user ID here. This means that
-        //             // we will be creating a new email password account when the token
-        //             // is consumed and linking it to this primary user.
-        //             return await generateAndSendPasswordResetToken(primaryUserAssociatedWithEmail.id, undefined);
-        //         } else {
-        //             logDebugMessage(
-        //                 `Password reset email not sent, isSignUpAllowed returned false for email: ${email}`
-        //             );
-        //             return {
-        //                 status: "OK",
-        //             };
-        //         }
-        //     }
+            // Now we need to check that if there exists any webauthn user at all
+            // for the input email. If not, then it implies that when the token is consumed,
+            // then we will create a new user - so we should only generate the token if
+            // the criteria for the new user is met.
+            if (webauthnAccount === undefined) {
+                // this means that there is no webauthn user that exists for the input email.
+                // So we check for the sign up condition and only go ahead if that condition is
+                // met.
 
-        //     // At this point, we know that some email password user exists with this email
-        //     // and also some primary user ID exist. We now need to find out if they are linked
-        //     // together or not. If they are linked together, then we can just generate the token
-        //     // else we check for more security conditions (since we will be linking them post token generation)
-        //     let areTheTwoAccountsLinked =
-        //         primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-        //             return lm.recipeUserId.getAsString() === emailPasswordAccount!.recipeUserId.getAsString();
-        //         }) !== undefined;
+                // But first we must check if account linking is enabled at all - cause if it's
+                // not, then the new webauthn user that will be created in account recovery
+                // code consume cannot be linked to the primary user - therefore, we should
+                // not generate a account recovery reset token
+                if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
+                    logDebugMessage(
+                        `Account recovery email not sent, since webauthn user didn't exist, and account linking not enabled`
+                    );
+                    return {
+                        status: "OK",
+                    };
+                }
 
-        //     if (areTheTwoAccountsLinked) {
-        //         return await generateAndSendPasswordResetToken(
-        //             primaryUserAssociatedWithEmail.id,
-        //             emailPasswordAccount.recipeUserId
-        //         );
-        //     }
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                    newUser: {
+                        recipeId: "webauthn",
+                        email,
+                    },
+                    isVerified: true, // cause when the token is consumed, we will mark the email as verified
+                    session: undefined,
+                    tenantId,
+                    userContext,
+                });
+                if (isSignUpAllowed) {
+                    // notice that we pass in the primary user ID here. This means that
+                    // we will be creating a new webauthn account when the token
+                    // is consumed and linking it to this primary user.
+                    return await generateAndSendRecoverAccountToken(primaryUserAssociatedWithEmail.id, undefined);
+                } else {
+                    logDebugMessage(
+                        `Account recovery email not sent, isSignUpAllowed returned false for email: ${email}`
+                    );
+                    return {
+                        status: "OK",
+                    };
+                }
+            }
 
-        //     // Here we know that the two accounts are NOT linked. We now need to check for an
-        //     // extra security measure here to make sure that the input email in the primary user
-        //     // is verified, and if not, we need to make sure that there is no other email / phone number
-        //     // associated with the primary user account. If there is, then we do not proceed.
+            // At this point, we know that some webauthn user exists with this email
+            // and also some primary user ID exist. We now need to find out if they are linked
+            // together or not. If they are linked together, then we can just generate the token
+            // else we check for more security conditions (since we will be linking them post token generation)
+            let areTheTwoAccountsLinked =
+                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                    return lm.recipeUserId.getAsString() === webauthnAccount!.recipeUserId.getAsString();
+                }) !== undefined;
 
-        //     /*
-        //     This security measure helps prevent the following attack:
-        //     An attacker has email A and they create an account using TP and it doesn't matter if A is verified or not. Now they create another account using EP with email A and verifies it. Both these accounts are linked. Now the attacker changes the email for EP recipe to B which makes the EP account unverified, but it's still linked.
+            if (areTheTwoAccountsLinked) {
+                return await generateAndSendRecoverAccountToken(
+                    primaryUserAssociatedWithEmail.id,
+                    webauthnAccount.recipeUserId
+                );
+            }
 
-        //     If the real owner of B tries to signup using EP, it will say that the account already exists so they may try to reset password which should be denied because then they will end up getting access to attacker's account and verify the EP account.
+            // Here we know that the two accounts are NOT linked. We now need to check for an
+            // extra security measure here to make sure that the input email in the primary user
+            // is verified, and if not, we need to make sure that there is no other email / phone number
+            // associated with the primary user account. If there is, then we do not proceed.
 
-        //     The problem with this situation is if the EP account is verified, it will allow further sign-ups with email B which will also be linked to this primary account (that the attacker had created with email A).
+            /*
+            This security measure helps prevent the following attack:
+            An attacker has email A and they create an account using TP and it doesn't matter if A is verified or not. Now they create another account using the webauthn with email A and verifies it. Both these accounts are linked. Now the attacker changes the email for webauthn recipe to B which makes the webauthn account unverified, but it's still linked.
 
-        //     It is important to realize that the attacker had created another account with A because if they hadn't done that, then they wouldn't have access to this account after the real user resets the password which is why it is important to check there is another non-EP account linked to the primary such that the email is not the same as B.
+            If the real owner of B tries to signup using webauthn, it will say that the account already exists so they may try to recover the account which should be denied because then they will end up getting access to attacker's account and verify the webauthn account.
 
-        //     Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should allow reset password token generation because user has already proven that the owns the email B
-        //     */
+            The problem with this situation is if the webauthn account is verified, it will allow further sign-ups with email B which will also be linked to this primary account (that the attacker had created with email A).
 
-        //     // But first, this only matters it the user cares about checking for email verification status..
+            It is important to realize that the attacker had created another account with A because if they hadn't done that, then they wouldn't have access to this account after the real user recovers the account which is why it is important to check there is another non-webauthn account linked to the primary such that the email is not the same as B.
 
-        //     if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
-        //         // here we will go ahead with the token generation cause
-        //         // even when the token is consumed, we will not be linking the accounts
-        //         // so no need to check for anything
-        //         return await generateAndSendPasswordResetToken(
-        //             emailPasswordAccount.recipeUserId.getAsString(),
-        //             emailPasswordAccount.recipeUserId
-        //         );
-        //     }
+            Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should allow account recovery token generation because user has already proven that the owns the email B
+            */
 
-        //     if (!shouldDoAccountLinkingResponse.shouldRequireVerification) {
-        //         // the checks below are related to email verification, and if the user
-        //         // does not care about that, then we should just continue with token generation
-        //         return await generateAndSendPasswordResetToken(
-        //             primaryUserAssociatedWithEmail.id,
-        //             emailPasswordAccount.recipeUserId
-        //         );
-        //     }
+            // But first, this only matters it the user cares about checking for email verification status..
 
-        //     return await generateAndSendPasswordResetToken(
-        //         primaryUserAssociatedWithEmail.id,
-        //         emailPasswordAccount.recipeUserId
-        //     );
-        // },
-        // passwordResetPOST: async function ({
-        //     formFields,
-        //     token,
-        //     tenantId,
-        //     options,
-        //     userContext,
-        // }: {
-        //     formFields: {
-        //         id: string;
-        //         value: unknown;
-        //     }[];
-        //     token: string;
-        //     tenantId: string;
-        //     options: APIOptions;
-        //     userContext: UserContext;
-        // }): Promise<
-        //     | {
-        //           status: "OK";
-        //           user: User;
-        //           email: string;
-        //       }
-        //     | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
-        //     | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
-        //     | GeneralErrorResponse
-        // > {
-        //     async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
-        //         const emailVerificationInstance = EmailVerification.getInstance();
-        //         if (emailVerificationInstance) {
-        //             const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-        //                 {
-        //                     tenantId,
-        //                     recipeUserId,
-        //                     email,
-        //                     userContext,
-        //                 }
-        //             );
+            if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
+                // here we will go ahead with the token generation cause
+                // even when the token is consumed, we will not be linking the accounts
+                // so no need to check for anything
+                return await generateAndSendRecoverAccountToken(
+                    webauthnAccount.recipeUserId.getAsString(),
+                    webauthnAccount.recipeUserId
+                );
+            }
 
-        //             if (tokenResponse.status === "OK") {
-        //                 await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-        //                     tenantId,
-        //                     token: tokenResponse.token,
-        //                     attemptAccountLinking: false, // we pass false here cause
-        //                     // we anyway do account linking in this API after this function is
-        //                     // called.
-        //                     userContext,
-        //                 });
-        //             }
-        //         }
-        //     }
+            if (!shouldDoAccountLinkingResponse.shouldRequireVerification) {
+                // the checks below are related to email verification, and if the user
+                // does not care about that, then we should just continue with token generation
+                return await generateAndSendRecoverAccountToken(
+                    primaryUserAssociatedWithEmail.id,
+                    webauthnAccount.recipeUserId
+                );
+            }
 
-        //     async function doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
-        //         recipeUserId: RecipeUserId
-        //     ): Promise<
-        //         | {
-        //               status: "OK";
-        //               user: User;
-        //               email: string;
-        //           }
-        //         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
-        //         | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
-        //         | GeneralErrorResponse
-        //     > {
-        //         let updateResponse = await options.recipeImplementation.updateEmailOrPassword({
-        //             tenantIdForPasswordPolicy: tenantId,
-        //             // we can treat userIdForWhomTokenWasGenerated as a recipe user id cause
-        //             // whenever this function is called,
-        //             recipeUserId,
-        //             password: newPassword,
-        //             userContext,
-        //         });
-        //         if (
-        //             updateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
-        //             updateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR"
-        //         ) {
-        //             throw new Error("This should never come here because we are not updating the email");
-        //         } else if (updateResponse.status === "UNKNOWN_USER_ID_ERROR") {
-        //             // This should happen only cause of a race condition where the user
-        //             // might be deleted before token creation and consumption.
-        //             return {
-        //                 status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-        //             };
-        //         } else if (updateResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
-        //             return {
-        //                 status: "PASSWORD_POLICY_VIOLATED_ERROR",
-        //                 failureReason: updateResponse.failureReason,
-        //             };
-        //         } else {
-        //             // status: "OK"
+            return await generateAndSendRecoverAccountToken(
+                primaryUserAssociatedWithEmail.id,
+                webauthnAccount.recipeUserId
+            );
+        },
+        recoverAccountTokenPOST: async function ({
+            webauthnGeneratedOptionsId,
+            credential,
+            token,
+            tenantId,
+            options,
+            userContext,
+        }: {
+            token: string;
+            webauthnGeneratedOptionsId: string;
+            credential: CredentialPayload;
+            tenantId: string;
+            options: APIOptions;
+            userContext: UserContext;
+        }): Promise<
+            | {
+                  status: "OK";
+                  user: User;
+                  email: string;
+              }
+            | GeneralErrorResponse
+            | {
+                  status: "CONSUME_RECOVER_ACCOUNT_TOKEN_NOT_ALLOWED";
+                  reason: string;
+              }
+            | { status: "WRONG_CREDENTIALS_ERROR" }
+            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+        > {
+            async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
+                const emailVerificationInstance = EmailVerification.getInstance();
+                if (emailVerificationInstance) {
+                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                        {
+                            tenantId,
+                            recipeUserId,
+                            email,
+                            userContext,
+                        }
+                    );
 
-        //             // If the update was successful, we try to mark the email as verified.
-        //             // We do this because we assume that the password reset token was delivered by email (and to the appropriate email address)
-        //             // so consuming it means that the user actually has access to the emails we send.
+                    if (tokenResponse.status === "OK") {
+                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                            tenantId,
+                            token: tokenResponse.token,
+                            attemptAccountLinking: false, // we pass false here cause
+                            // we anyway do account linking in this API after this function is
+                            // called.
+                            userContext,
+                        });
+                    }
+                }
+            }
 
-        //             // We only do this if the password update was successful, otherwise the following scenario is possible:
-        //             // 1. User M: signs up using the email of user V with their own password. They can't validate the email, because it is not their own.
-        //             // 2. User A: tries signing up but sees the email already exists message
-        //             // 3. User A: resets their password, but somehow this fails (e.g.: password policy issue)
-        //             // If we verified (and linked) the existing user with the original password, User M would get access to the current user and any linked users.
-        //             await markEmailAsVerified(recipeUserId, emailForWhomTokenWasGenerated);
-        //             // We refresh the user information here, because the verification status may be updated, which is used during linking.
-        //             const updatedUserAfterEmailVerification = await getUser(recipeUserId.getAsString(), userContext);
-        //             if (updatedUserAfterEmailVerification === undefined) {
-        //                 throw new Error("Should never happen - user deleted after during password reset");
-        //             }
+            async function doRegisterCredentialAndVerifyEmailAndTryLinkIfNotPrimary(
+                recipeUserId: RecipeUserId
+            ): Promise<
+                | {
+                      status: "OK";
+                      user: User;
+                      email: string;
+                  }
+                | { status: "WRONG_CREDENTIALS_ERROR" }
+                | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+                | GeneralErrorResponse
+            > {
+                let updateResponse = await options.recipeImplementation.registerCredential({
+                    recipeUserId,
+                    webauthnGeneratedOptionsId,
+                    tenantId,
+                    credential,
+                    userContext,
+                });
 
-        //             if (updatedUserAfterEmailVerification.isPrimaryUser) {
-        //                 // If the user is already primary, we do not need to do any linking
-        //                 return {
-        //                     status: "OK",
-        //                     email: emailForWhomTokenWasGenerated,
-        //                     user: updatedUserAfterEmailVerification,
-        //                 };
-        //             }
+                // todo decide how to handle these
+                if (updateResponse.status === "INVALID_AUTHENTICATOR_ERROR") {
+                    // This should happen only cause of a race condition where the user
+                    // might be deleted before token creation and consumption.
+                    return {
+                        status: "INVALID_AUTHENTICATOR_ERROR",
+                        reason: updateResponse.reason,
+                    };
+                } else if (updateResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                    return {
+                        status: "WRONG_CREDENTIALS_ERROR",
+                    };
+                } else {
+                    // status: "OK"
 
-        //             // If the user was not primary:
+                    // If the update was successful, we try to mark the email as verified.
+                    // We do this because we assume that the account recovery token was delivered by email (and to the appropriate email address)
+                    // so consuming it means that the user actually has access to the emails we send.
 
-        //             // Now we try and link the accounts.
-        //             // The function below will try and also create a primary user of the new account, this can happen if:
-        //             // 1. the user was unverified and linking requires verification
-        //             // We do not take try linking by session here, since this is supposed to be called without a session
-        //             // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-        //             const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-        //                 tenantId,
-        //                 inputUser: updatedUserAfterEmailVerification,
-        //                 session: undefined,
-        //                 userContext,
-        //             });
-        //             const userAfterWeTriedLinking =
-        //                 linkRes.status === "OK" ? linkRes.user : updatedUserAfterEmailVerification;
+                    // We only do this if the account recovery was successful, otherwise the following scenario is possible:
+                    // 1. User M: signs up using the email of user V with their own credential. They can't validate the email, because it is not their own.
+                    // 2. User A: tries signing up but sees the email already exists message
+                    // 3. User A: recovers the account, but somehow this fails
+                    // If we verified (and linked) the existing user with the original credential, User M would get access to the current user and any linked users.
+                    await markEmailAsVerified(recipeUserId, emailForWhomTokenWasGenerated);
+                    // We refresh the user information here, because the verification status may be updated, which is used during linking.
+                    const updatedUserAfterEmailVerification = await getUser(recipeUserId.getAsString(), userContext);
+                    if (updatedUserAfterEmailVerification === undefined) {
+                        throw new Error("Should never happen - user deleted after during account recovery");
+                    }
 
-        //             return {
-        //                 status: "OK",
-        //                 email: emailForWhomTokenWasGenerated,
-        //                 user: userAfterWeTriedLinking,
-        //             };
-        //         }
-        //     }
+                    if (updatedUserAfterEmailVerification.isPrimaryUser) {
+                        // If the user is already primary, we do not need to do any linking
+                        return {
+                            status: "OK",
+                            email: emailForWhomTokenWasGenerated,
+                            user: updatedUserAfterEmailVerification,
+                        };
+                    }
 
-        //     // NOTE: Check for password being a non-string value. This check will likely
-        //     // never evaluate to `true` as there is an upper-level check for the type
-        //     // in validation but kept here to be safe.
-        //     const newPasswordAsUnknown = formFields.filter((f) => f.id === "password")[0].value;
-        //     if (typeof newPasswordAsUnknown !== "string")
-        //         throw new Error(
-        //             "Should never come here since we already check that the password value is a string in validateFormFieldsOrThrowError"
-        //         );
-        //     let newPassword: string = newPasswordAsUnknown;
+                    // If the user was not primary:
 
-        //     let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
-        //         token,
-        //         tenantId,
-        //         userContext,
-        //     });
+                    // Now we try and link the accounts.
+                    // The function below will try and also create a primary user of the new account, this can happen if:
+                    // 1. the user was unverified and linking requires verification
+                    // We do not take try linking by session here, since this is supposed to be called without a session
+                    // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
+                    const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                        tenantId,
+                        inputUser: updatedUserAfterEmailVerification,
+                        session: undefined,
+                        userContext,
+                    });
+                    const userAfterWeTriedLinking =
+                        linkRes.status === "OK" ? linkRes.user : updatedUserAfterEmailVerification;
 
-        //     if (tokenConsumptionResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
-        //         return tokenConsumptionResponse;
-        //     }
+                    return {
+                        status: "OK",
+                        email: emailForWhomTokenWasGenerated,
+                        user: userAfterWeTriedLinking,
+                    };
+                }
+            }
 
-        //     let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
-        //     let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
+            let tokenConsumptionResponse = await options.recipeImplementation.consumeRecoverAccountToken({
+                token,
+                tenantId,
+                userContext,
+            });
 
-        //     let existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
+            // todo decide how to handle these
+            if (tokenConsumptionResponse.status === "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR") {
+                return tokenConsumptionResponse;
+            } else if (tokenConsumptionResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                return tokenConsumptionResponse;
+            } else if (tokenConsumptionResponse.status === "INVALID_AUTHENTICATOR_ERROR") {
+                return tokenConsumptionResponse;
+            }
 
-        //     if (existingUser === undefined) {
-        //         // This should happen only cause of a race condition where the user
-        //         // might be deleted before token creation and consumption.
-        //         // Also note that this being undefined doesn't mean that the email password
-        //         // user does not exist, but it means that there is no recipe or primary user
-        //         // for whom the token was generated.
-        //         return {
-        //             status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-        //         };
-        //     }
+            let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
+            let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
 
-        //     // We start by checking if the existingUser is a primary user or not. If it is,
-        //     // then we will try and create a new email password user and link it to the primary user (if required)
+            let existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
 
-        //     if (existingUser.isPrimaryUser) {
-        //         // If this user contains an email password account for whom the token was generated,
-        //         // then we update that user's password.
-        //         let emailPasswordUserIsLinkedToExistingUser =
-        //             existingUser.loginMethods.find((lm) => {
-        //                 // we check based on user ID and not email because the only time
-        //                 // the primary user ID is used for token generation is if the email password
-        //                 // user did not exist - in which case the value of emailPasswordUserExists will
-        //                 // resolve to false anyway, and that's what we want.
+            if (existingUser === undefined) {
+                // This should happen only cause of a race condition where the user
+                // might be deleted before token creation and consumption.
+                // Also note that this being undefined doesn't mean that the webauthn
+                // user does not exist, but it means that there is no recipe or primary user
+                // for whom the token was generated.
+                return {
+                    status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
+                };
+            }
 
-        //                 // there is an edge case where if the email password recipe user was created
-        //                 // after the password reset token generation, and it was linked to the
-        //                 // primary user id (userIdForWhomTokenWasGenerated), in this case,
-        //                 // we still don't allow password update, cause the user should try again
-        //                 // and the token should be regenerated for the right recipe user.
-        //                 return (
-        //                     lm.recipeUserId.getAsString() === userIdForWhomTokenWasGenerated &&
-        //                     lm.recipeId === "emailpassword"
-        //                 );
-        //             }) !== undefined;
+            // We start by checking if the existingUser is a primary user or not. If it is,
+            // then we will try and create a new webauthn user and link it to the primary user (if required)
 
-        //         if (emailPasswordUserIsLinkedToExistingUser) {
-        //             return doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
-        //                 new RecipeUserId(userIdForWhomTokenWasGenerated)
-        //             );
-        //         } else {
-        //             // this means that the existingUser does not have an emailpassword user associated
-        //             // with it. It could now mean that no emailpassword user exists, or it could mean that
-        //             // the the ep user exists, but it's not linked to the current account.
-        //             // If no ep user doesn't exists, we will create one, and link it to the existing account.
-        //             // If ep user exists, then it means there is some race condition cause
-        //             // then the token should have been generated for that user instead of the primary user,
-        //             // and it shouldn't have come into this branch. So we can simply send a password reset
-        //             // invalid error and the user can try again.
+            if (existingUser.isPrimaryUser) {
+                // If this user contains an webauthn account for whom the token was generated,
+                // then we update that user's credential.
+                let webauthnUserIsLinkedToExistingUser =
+                    existingUser.loginMethods.find((lm) => {
+                        // we check based on user ID and not email because the only time
+                        // the primary user ID is used for token generation is if the webauthn
+                        // user did not exist - in which case the value of emailPasswordUserExists will
+                        // resolve to false anyway, and that's what we want.
 
-        //             // NOTE: We do not ask the dev if we should do account linking or not here
-        //             // cause we already have asked them this when generating an password reset token.
-        //             // In the edge case that the dev changes account linking allowance from true to false
-        //             // when it comes here, only a new recipe user id will be created and not linked
-        //             // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
-        //             // really cause any security issue.
+                        // there is an edge case where if the webauthn recipe user was created
+                        // after the account recovery token generation, and it was linked to the
+                        // primary user id (userIdForWhomTokenWasGenerated), in this case,
+                        // we still don't allow credntials update, cause the user should try again
+                        // and the token should be regenerated for the right recipe user.
+                        return (
+                            lm.recipeUserId.getAsString() === userIdForWhomTokenWasGenerated &&
+                            lm.recipeId === "webauthn"
+                        );
+                    }) !== undefined;
 
-        //             let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
-        //                 tenantId,
-        //                 email: tokenConsumptionResponse.email,
-        //                 password: newPassword,
-        //                 userContext,
-        //             });
-        //             if (createUserResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-        //                 // this means that the user already existed and we can just return an invalid
-        //                 // token (see the above comment)
-        //                 return {
-        //                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-        //                 };
-        //             } else {
-        //                 // we mark the email as verified because password reset also requires
-        //                 // access to the email to work.. This has a good side effect that
-        //                 // any other login method with the same email in existingAccount will also get marked
-        //                 // as verified.
-        //                 await markEmailAsVerified(
-        //                     createUserResponse.user.loginMethods[0].recipeUserId,
-        //                     tokenConsumptionResponse.email
-        //                 );
-        //                 const updatedUser = await getUser(createUserResponse.user.id, userContext);
-        //                 if (updatedUser === undefined) {
-        //                     throw new Error("Should never happen - user deleted after during password reset");
-        //                 }
-        //                 createUserResponse.user = updatedUser;
-        //                 // Now we try and link the accounts. The function below will try and also
-        //                 // create a primary user of the new account, and if it does that, it's OK..
-        //                 // But in most cases, it will end up linking to existing account since the
-        //                 // email is shared.
-        //                 // We do not take try linking by session here, since this is supposed to be called without a session
-        //                 // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
-        //                 const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
-        //                     tenantId,
-        //                     inputUser: createUserResponse.user,
-        //                     session: undefined,
-        //                     userContext,
-        //                 });
-        //                 const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
-        //                 if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
-        //                     // this means that the account we just linked to
-        //                     // was not the one we had expected to link it to. This can happen
-        //                     // due to some race condition or the other.. Either way, this
-        //                     // is not an issue and we can just return OK
-        //                 }
-        //                 return {
-        //                     status: "OK",
-        //                     email: tokenConsumptionResponse.email,
-        //                     user: userAfterLinking,
-        //                 };
-        //             }
-        //         }
-        //     } else {
-        //         // This means that the existing user is not a primary account, which implies that
-        //         // it must be a non linked email password account. In this case, we simply update the password.
-        //         // Linking to an existing account will be done after the user goes through the email
-        //         // verification flow once they log in (if applicable).
-        //         return doUpdatePasswordAndVerifyEmailAndTryLinkIfNotPrimary(
-        //             new RecipeUserId(userIdForWhomTokenWasGenerated)
-        //         );
-        //     }
-        // },
+                if (webauthnUserIsLinkedToExistingUser) {
+                    return doRegisterCredentialAndVerifyEmailAndTryLinkIfNotPrimary(
+                        new RecipeUserId(userIdForWhomTokenWasGenerated)
+                    );
+                } else {
+                    // this means that the existingUser does not have an webauthn user associated
+                    // with it. It could now mean that no webauthn user exists, or it could mean that
+                    // the the webauthn user exists, but it's not linked to the current account.
+                    // If no webauthn user doesn't exists, we will create one, and link it to the existing account.
+                    // If webauthn user exists, then it means there is some race condition cause
+                    // then the token should have been generated for that user instead of the primary user,
+                    // and it shouldn't have come into this branch. So we can simply send a recover account
+                    // invalid error and the user can try again.
+
+                    // NOTE: We do not ask the dev if we should do account linking or not here
+                    // cause we already have asked them this when generating an account recovery reset token.
+                    // In the edge case that the dev changes account linking allowance from true to false
+                    // when it comes here, only a new recipe user id will be created and not linked
+                    // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
+                    // really cause any security issue.
+
+                    let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
+                        tenantId,
+                        webauthnGeneratedOptionsId,
+                        credential,
+                        userContext,
+                    });
+
+                    // todo decide how to handle these
+                    if (createUserResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                        return createUserResponse;
+                    } else if (createUserResponse.status === "INVALID_AUTHENTICATOR_ERROR") {
+                        return createUserResponse;
+                    } else if (createUserResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                        // this means that the user already existed and we can just return an invalid
+                        // token (see the above comment)
+                        return {
+                            status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
+                        };
+                    } else {
+                        // we mark the email as verified because account recovery also requires
+                        // access to the email to work.. This has a good side effect that
+                        // any other login method with the same email in existingAccount will also get marked
+                        // as verified.
+                        await markEmailAsVerified(
+                            createUserResponse.user.loginMethods[0].recipeUserId,
+                            tokenConsumptionResponse.email
+                        );
+                        const updatedUser = await getUser(createUserResponse.user.id, userContext);
+                        if (updatedUser === undefined) {
+                            throw new Error("Should never happen - user deleted after during account recovery");
+                        }
+                        createUserResponse.user = updatedUser;
+                        // Now we try and link the accounts. The function below will try and also
+                        // create a primary user of the new account, and if it does that, it's OK..
+                        // But in most cases, it will end up linking to existing account since the
+                        // email is shared.
+                        // We do not take try linking by session here, since this is supposed to be called without a session
+                        // Still, the session object is passed around because it is a required input for shouldDoAutomaticAccountLinking
+                        const linkRes = await AccountLinking.getInstance().tryLinkingByAccountInfoOrCreatePrimaryUser({
+                            tenantId,
+                            inputUser: createUserResponse.user,
+                            session: undefined,
+                            userContext,
+                        });
+                        const userAfterLinking = linkRes.status === "OK" ? linkRes.user : createUserResponse.user;
+                        if (linkRes.status === "OK" && linkRes.user.id !== existingUser.id) {
+                            // this means that the account we just linked to
+                            // was not the one we had expected to link it to. This can happen
+                            // due to some race condition or the other.. Either way, this
+                            // is not an issue and we can just return OK
+                        }
+
+                        return {
+                            status: "OK",
+                            email: tokenConsumptionResponse.email,
+                            user: userAfterLinking,
+                        };
+                    }
+                }
+            } else {
+                // This means that the existing user is not a primary account, which implies that
+                // it must be a non linked webauthn account. In this case, we simply update the credential.
+                // Linking to an existing account will be done after the user goes through the email
+                // verification flow once they log in (if applicable).
+                return doRegisterCredentialAndVerifyEmailAndTryLinkIfNotPrimary(
+                    new RecipeUserId(userIdForWhomTokenWasGenerated)
+                );
+            }
+        },
     };
 }

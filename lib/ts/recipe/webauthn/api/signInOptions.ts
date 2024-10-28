@@ -34,5 +34,6 @@ export default async function signInOptions(
     });
 
     send200Response(options.res, result);
+
     return true;
 }

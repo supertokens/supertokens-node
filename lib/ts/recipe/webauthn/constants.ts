@@ -13,12 +13,6 @@
  * under the License.
  */
 
-export const DEFAULT_REGISTER_ATTESTATION = "none";
-
-export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 5000;
-
-export const DEFAULT_SIGNIN_OPTIONS_TIMEOUT = 5000;
-
 export const REGISTER_OPTIONS_API = "/webauthn/options/register";
 
 export const SIGNIN_OPTIONS_API = "/webauthn/options/signin";
@@ -32,3 +26,15 @@ export const GENERATE_RECOVER_ACCOUNT_TOKEN_API = "/user/webauthn/reset/token";
 export const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 
 export const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
+
+// defaults that can be overridden by the developer
+export const DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none";
+export const DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY = false;
+export const DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY = "required";
+export const DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION = "preferred";
+
+export const DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION = "preferred";
+
+export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 5000;
+
+export const DEFAULT_SIGNIN_OPTIONS_TIMEOUT = 5000;

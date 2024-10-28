@@ -15,37 +15,32 @@
 
 import { send200Response } from "../../../utils";
 import STError from "../error";
-import { APIInterface, APIOptions } from "..";
+import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
 
-export default async function registerOptions(
+export default async function emailExists(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (apiImplementation.registerOptionsPOST === undefined) {
+    // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
+
+    if (apiImplementation.emailExistsGET === undefined) {
         return false;
     }
 
-    const requestBody = await options.req.getJSONBody();
+    let email = options.req.getKeyValueFromQuery("email");
 
-    let email = requestBody.email;
-    let recoverAccountToken = requestBody.recoverAccountToken;
-
-    if (
-        (email === undefined || typeof email !== "string") &&
-        (recoverAccountToken === undefined || typeof recoverAccountToken !== "string")
-    ) {
+    if (email === undefined || typeof email !== "string") {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the email or the recover account token",
+            message: "Please provide the email as a GET param",
         });
     }
 
-    let result = await apiImplementation.registerOptionsPOST({
+    let result = await apiImplementation.emailExistsGET({
         email,
-        recoverAccountToken,
         tenantId,
         options,
         userContext,

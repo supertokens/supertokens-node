@@ -14,38 +14,32 @@
  */
 
 import { send200Response } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "..";
+import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
+import STError from "../error";
 
-export default async function registerOptions(
+export default async function generateRecoverAccountToken(
     apiImplementation: APIInterface,
     tenantId: string,
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    if (apiImplementation.registerOptionsPOST === undefined) {
+    if (apiImplementation.generateRecoverAccountTokenPOST === undefined) {
         return false;
     }
 
     const requestBody = await options.req.getJSONBody();
+    const email = requestBody.email;
 
-    let email = requestBody.email;
-    let recoverAccountToken = requestBody.recoverAccountToken;
-
-    if (
-        (email === undefined || typeof email !== "string") &&
-        (recoverAccountToken === undefined || typeof recoverAccountToken !== "string")
-    ) {
+    if (email === undefined || typeof email !== "string") {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the email or the recover account token",
+            message: "Please provide the email",
         });
     }
 
-    let result = await apiImplementation.registerOptionsPOST({
+    let result = await apiImplementation.generateRecoverAccountTokenPOST({
         email,
-        recoverAccountToken,
         tenantId,
         options,
         userContext,

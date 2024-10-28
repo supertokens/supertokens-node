@@ -89,11 +89,13 @@ function validateAndNormaliseRelyingPartyIdConfig(
 ): TypeNormalisedInputRelyingPartyId {
     return (props) => {
         if (typeof relyingPartyIdConfig === "string") {
-            return relyingPartyIdConfig;
+            return Promise.resolve(relyingPartyIdConfig);
         } else if (typeof relyingPartyIdConfig === "function") {
             return relyingPartyIdConfig(props);
         } else {
-            return __.getOrigin({ request: props.request, userContext: props.userContext }).getAsStringDangerous();
+            return Promise.resolve(
+                __.getOrigin({ request: props.request, userContext: props.userContext }).getAsStringDangerous()
+            );
         }
     };
 }
@@ -105,11 +107,11 @@ function validateAndNormaliseRelyingPartyNameConfig(
 ): TypeNormalisedInputRelyingPartyName {
     return (props) => {
         if (typeof relyingPartyNameConfig === "string") {
-            return relyingPartyNameConfig;
+            return Promise.resolve(relyingPartyNameConfig);
         } else if (typeof relyingPartyNameConfig === "function") {
             return relyingPartyNameConfig(props);
         } else {
-            return __.appName;
+            return Promise.resolve(__.appName);
         }
     };
 }
@@ -123,7 +125,9 @@ function validateAndNormaliseGetOriginConfig(
         if (typeof getOriginConfig === "function") {
             return getOriginConfig(props);
         } else {
-            return __.getOrigin({ request: props.request, userContext: props.userContext }).getAsStringDangerous();
+            return Promise.resolve(
+                __.getOrigin({ request: props.request, userContext: props.userContext }).getAsStringDangerous()
+            );
         }
     };
 }
@@ -148,7 +152,7 @@ export async function defaultEmailValidator(value: any) {
     return undefined;
 }
 
-export function getPasswordResetLink(input: {
+export function getRecoverAccountLink(input: {
     appInfo: NormalisedAppinfo;
     token: string;
     tenantId: string;
@@ -163,7 +167,7 @@ export function getPasswordResetLink(input: {
             })
             .getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
-        "/reset-password?token=" +
+        "/recover-account?token=" +
         input.token +
         "&tenantId=" +
         input.tenantId
