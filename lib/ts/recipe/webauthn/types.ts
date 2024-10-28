@@ -112,6 +112,8 @@ type ConsumeRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_
 
 type RemoveCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
 
+type GetCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
+
 type DecodeCredentialErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
 
 type Base64URLString = string;
@@ -394,11 +396,12 @@ export type RecipeInterface = {
               status: "OK";
               credential: {
                   id: string;
-                  rp_id: string;
-                  created_at: number;
+                  rpId: string;
+                  recipeUserId: RecipeUserId;
+                  createdAt: number;
               };
           }
-        | RemoveCredentialErrorResponse
+        | GetCredentialErrorResponse
     >;
 
     listCredentials(input: {
@@ -408,8 +411,8 @@ export type RecipeInterface = {
         status: "OK";
         credentials: {
             id: string;
-            rp_id: string;
-            created_at: number;
+            rpId: string;
+            createdAt: number;
         }[];
     }>;
 };
