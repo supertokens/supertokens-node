@@ -1,11 +1,10 @@
-import { CredentialPayload, RecipeInterface, TypeNormalisedInput } from "./types";
+import { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import { UserContext, User as UserType } from "../../types";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
 import * as jose from "jose";
@@ -23,77 +22,21 @@ export default function getRecipeInterface(
             attestation = "none",
             tenantId,
             userContext,
+            supportedAlgorithmIds,
             ...rest
-        }: {
-            relyingPartyId: string;
-            relyingPartyName: string;
-            origin: string;
-            requireResidentKey: boolean | undefined; // should default to false in order to allow multiple authenticators to be used; see https://auth0.com/blog/a-look-at-webauthn-resident-credentials/
-            // default to 'required' in order store the private key locally on the device and not on the server
-            residentKey: "required" | "preferred" | "discouraged" | undefined;
-            // default to 'preferred' in order to verify the user (biometrics, pin, etc) based on the device preferences
-            userVerification: "required" | "preferred" | "discouraged" | undefined;
-            // default to 'none' in order to allow any authenticator and not verify attestation
-            attestation: "none" | "indirect" | "direct" | "enterprise" | undefined;
-            // default to 5 seconds
-            timeout: number | undefined;
-            tenantId: string;
-            userContext: UserContext;
-        } & (
-            | {
-                  recoverAccountToken: string;
-              }
-            | {
-                  email: string;
-              }
-        )): Promise<
-            | {
-                  status: "OK";
-                  webauthnGeneratedOptionsId: string;
-                  rp: {
-                      id: string;
-                      name: string;
-                  };
-                  user: {
-                      id: string;
-                      name: string;
-                      displayName: string;
-                  };
-                  challenge: string;
-                  timeout: number;
-                  excludeCredentials: {
-                      id: string;
-                      type: "public-key";
-                      transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
-                  }[];
-                  attestation: "none" | "indirect" | "direct" | "enterprise";
-                  pubKeyCredParams: {
-                      alg: number;
-                      type: "public-key";
-                  }[];
-                  authenticatorSelection: {
-                      requireResidentKey: boolean;
-                      residentKey: "required" | "preferred" | "discouraged";
-                      userVerification: "required" | "preferred" | "discouraged";
-                  };
-              }
-            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-            | { status: "EMAIL_MISSING_ERROR" }
-        > {
-            let email = "email" in rest ? rest.email : undefined;
-            const recoverAccountToken = "recoverAccountToken" in rest ? rest.recoverAccountToken : undefined;
-            if (email === undefined && recoverAccountToken === undefined) {
-                return {
-                    status: "EMAIL_MISSING_ERROR",
-                };
-            }
+        }) {
+            const emailInput = "email" in rest ? rest.email : undefined;
+            const recoverAccountTokenInput = "recoverAccountToken" in rest ? rest.recoverAccountToken : undefined;
 
-            // todo check if should decode using Core or using sdk; atm decided on usinng the sdk so to not make another roundtrip to the server
-            // the actual verification will be done during consumeRecoverAccountToken
-            if (recoverAccountToken !== undefined) {
+            let email: string | undefined;
+            if (emailInput !== undefined) {
+                email = emailInput;
+            } else if (recoverAccountTokenInput !== undefined) {
+                // todo check if should decode using Core or using sdk; atm decided on usinng the sdk so to not make another roundtrip to the server
+                // the actual verification of the token will be done during consumeRecoverAccountToken
                 let decoded: jose.JWTPayload | undefined;
                 try {
-                    decoded = await jose.decodeJwt(recoverAccountToken);
+                    decoded = await jose.decodeJwt(recoverAccountTokenInput);
                 } catch (e) {
                     console.error(e);
 
@@ -107,7 +50,16 @@ export default function getRecipeInterface(
 
             if (!email) {
                 return {
-                    status: "EMAIL_MISSING_ERROR",
+                    status: "INVALID_EMAIL_ERROR",
+                    err: "The email is missing",
+                };
+            }
+
+            const err = await getWebauthnConfig().validateEmailAddress(email, tenantId);
+            if (err) {
+                return {
+                    status: "INVALID_EMAIL_ERROR",
+                    err,
                 };
             }
 
@@ -122,31 +74,13 @@ export default function getRecipeInterface(
                     origin,
                     timeout,
                     attestation,
+                    supportedAlgorithmIds,
                 },
                 userContext
             );
         },
 
-        signInOptions: async function ({
-            relyingPartyId,
-            origin,
-            timeout,
-            tenantId,
-            userContext,
-        }: {
-            relyingPartyId: string;
-            origin: string;
-            userVerification: "required" | "preferred" | "discouraged" | undefined; // see register options
-            timeout: number | undefined;
-            tenantId: string;
-            userContext: UserContext;
-        }): Promise<{
-            status: "OK";
-            webauthnGeneratedOptionsId: string;
-            challenge: string;
-            timeout: number;
-            userVerification: "required" | "preferred" | "discouraged";
-        }> {
+        signInOptions: async function ({ relyingPartyId, origin, timeout, tenantId, userContext }) {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
@@ -164,25 +98,7 @@ export default function getRecipeInterface(
         signUp: async function (
             this: RecipeInterface,
             { webauthnGeneratedOptionsId, credential, tenantId, session, shouldTryLinkingWithSessionUser, userContext }
-        ): Promise<
-            | {
-                  status: "OK";
-                  user: UserType;
-                  recipeUserId: RecipeUserId;
-              }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-            | {
-                  status: "LINKING_TO_SESSION_USER_FAILED";
-                  reason:
-                      | "EMAIL_VERIFICATION_REQUIRED"
-                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                      | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              }
-        > {
+        ) {
             const response = await this.createNewRecipeUser({
                 credential,
                 webauthnGeneratedOptionsId,
@@ -216,57 +132,63 @@ export default function getRecipeInterface(
             };
         },
 
-        createNewRecipeUser: async function (input: {
-            tenantId: string;
-            credential: CredentialPayload;
-            webauthnGeneratedOptionsId: string;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  user: User;
-                  recipeUserId: RecipeUserId;
-              }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
-            // when the attestation is checked and is not valid or other cases in whcih the authenticator is not correct
-            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-        > {
-            const resp = await querier.sendPostRequest(
-                new NormalisedURLPath(
-                    `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/webauthn/signup`
-                ),
-                {
-                    webauthnGeneratedOptionsId: input.webauthnGeneratedOptionsId,
-                    credential: input.credential,
-                },
-                input.userContext
-            );
-
-            if (resp.status === "OK") {
-                return {
-                    status: "OK",
-                    user: new User(resp.user),
-                    recipeUserId: new RecipeUserId(resp.recipeUserId),
-                };
+        signIn: async function (
+            this: RecipeInterface,
+            { credential, webauthnGeneratedOptionsId, tenantId, session, shouldTryLinkingWithSessionUser, userContext }
+        ) {
+            const response = await this.verifyCredentials({
+                credential,
+                webauthnGeneratedOptionsId,
+                tenantId,
+                userContext,
+            });
+            if (response.status !== "OK") {
+                return response;
             }
 
-            return resp;
+            const loginMethod: LoginMethod = response.user.loginMethods.find(
+                (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
+            )!;
+
+            if (!loginMethod.verified) {
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    user: response.user,
+                    recipeUserId: response.recipeUserId,
+                    userContext,
+                });
+
+                // Unlike in the sign up recipe function, we do not do account linking here
+                // cause we do not want sign in to change the potentially user ID of a user
+                // due to linking when this function is called by the dev in their API -
+                // for example in their update password API. If we did account linking
+                // then we would have to ask the dev to also change the session
+                // in such API calls.
+                // In the case of sign up, since we are creating a new user, it's fine
+                // to link there since there is no user id change really from the dev's
+                // point of view who is calling the sign up recipe function.
+
+                // We do this so that we get the updated user (in case the above
+                // function updated the verification status) and can return that
+                response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
+            }
+
+            const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
+                tenantId,
+                inputUser: response.user,
+                recipeUserId: response.recipeUserId,
+                session,
+                shouldTryLinkingWithSessionUser,
+                userContext,
+            });
+            if (linkResult.status === "LINKING_TO_SESSION_USER_FAILED") {
+                return linkResult;
+            }
+            response.user = linkResult.user;
+
+            return response;
         },
 
-        verifyCredentials: async function ({
-            credential,
-            webauthnGeneratedOptionsId,
-            tenantId,
-            userContext,
-        }): Promise<
-            | {
-                  status: "OK";
-                  user: User;
-                  recipeUserId: RecipeUserId;
-              }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
-        > {
+        verifyCredentials: async function ({ credential, webauthnGeneratedOptionsId, tenantId, userContext }) {
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/signin`
@@ -291,72 +213,30 @@ export default function getRecipeInterface(
             };
         },
 
-        signIn: async function (
-            this: RecipeInterface,
-            { credential, webauthnGeneratedOptionsId, tenantId, session, shouldTryLinkingWithSessionUser, userContext }
-        ) {
-            const response = await this.verifyCredentials({
-                credential,
-                webauthnGeneratedOptionsId,
-                tenantId,
-                userContext,
-            });
+        createNewRecipeUser: async function (input) {
+            const resp = await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/webauthn/signup`
+                ),
+                {
+                    webauthnGeneratedOptionsId: input.webauthnGeneratedOptionsId,
+                    credential: input.credential,
+                },
+                input.userContext
+            );
 
-            if (response.status === "OK") {
-                const loginMethod: LoginMethod = response.user.loginMethods.find(
-                    (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
-                )!;
-
-                if (!loginMethod.verified) {
-                    await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                        user: response.user,
-                        recipeUserId: response.recipeUserId,
-                        userContext,
-                    });
-
-                    // Unlike in the sign up recipe function, we do not do account linking here
-                    // cause we do not want sign in to change the potentially user ID of a user
-                    // due to linking when this function is called by the dev in their API -
-                    // for example in their update password API. If we did account linking
-                    // then we would have to ask the dev to also change the session
-                    // in such API calls.
-                    // In the case of sign up, since we are creating a new user, it's fine
-                    // to link there since there is no user id change really from the dev's
-                    // point of view who is calling the sign up recipe function.
-
-                    // We do this so that we get the updated user (in case the above
-                    // function updated the verification status) and can return that
-                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
-                }
-
-                const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
-                    tenantId,
-                    inputUser: response.user,
-                    recipeUserId: response.recipeUserId,
-                    session,
-                    shouldTryLinkingWithSessionUser,
-                    userContext,
-                });
-                if (linkResult.status === "LINKING_TO_SESSION_USER_FAILED") {
-                    return linkResult;
-                }
-                response.user = linkResult.user;
+            if (resp.status === "OK") {
+                return {
+                    status: "OK",
+                    user: new User(resp.user),
+                    recipeUserId: new RecipeUserId(resp.recipeUserId),
+                };
             }
 
-            return response;
+            return resp;
         },
 
-        generateRecoverAccountToken: async function ({
-            userId,
-            email,
-            tenantId,
-            userContext,
-        }: {
-            userId: string;
-            email: string;
-            tenantId: string;
-            userContext: UserContext;
-        }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+        generateRecoverAccountToken: async function ({ userId, email, tenantId, userContext }) {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
@@ -370,29 +250,107 @@ export default function getRecipeInterface(
             );
         },
 
-        consumeRecoverAccountToken: async function ({
-            token,
-            tenantId,
-            userContext,
-        }: {
-            token: string;
-            tenantId: string;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  userId: string;
-                  email: string;
-              }
-            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-        > {
+        consumeRecoverAccountToken: async function ({ token, tenantId, userContext }) {
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
-                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/paskey/user/recover/token/consume`
+                    `/${
+                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
+                    }/recipe/webauthn/user/recover/token/consume`
                 ),
                 {
                     token,
                 },
+                userContext
+            );
+        },
+
+        registerCredential: async function ({ webauthnGeneratedOptionsId, credential, userContext, recipeUserId }) {
+            return await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/register`),
+                {
+                    webauthnGeneratedOptionsId,
+                    credential,
+                },
+                userContext
+            );
+        },
+
+        decodeCredential: async function ({ credential, userContext }) {
+            const response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/recipe/webauthn/credential/decode`),
+                {
+                    credential,
+                },
+                userContext
+            );
+
+            if (response.status === "OK") {
+                return response;
+            }
+
+            return {
+                status: "WRONG_CREDENTIALS_ERROR",
+            };
+        },
+
+        getUserFromRecoverAccountToken: async function ({ token, tenantId, userContext }) {
+            return await querier.sendGetRequest(
+                new NormalisedURLPath(
+                    `/${
+                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
+                    }/recipe/webauthn/user/recover/token/${token}`
+                ),
+                {},
+                userContext
+            );
+        },
+
+        removeCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
+            return await querier.sendDeleteRequest(
+                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/${webauthnCredentialId}`),
+                {},
+                {},
+                userContext
+            );
+        },
+
+        getCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
+            return await querier.sendGetRequest(
+                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/${webauthnCredentialId}`),
+                {},
+                userContext
+            );
+        },
+
+        listCredentials: async function ({ recipeUserId, userContext }) {
+            return await querier.sendGetRequest(
+                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/list`),
+                {},
+                userContext
+            );
+        },
+
+        removeGeneratedOptions: async function ({ webauthnGeneratedOptionsId, tenantId, userContext }) {
+            return await querier.sendDeleteRequest(
+                new NormalisedURLPath(
+                    `/${
+                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
+                    }/recipe/webauthn/options/${webauthnGeneratedOptionsId}`
+                ),
+                {},
+                {},
+                userContext
+            );
+        },
+
+        getGeneratedOptions: async function ({ webauthnGeneratedOptionsId, tenantId, userContext }) {
+            return await querier.sendGetRequest(
+                new NormalisedURLPath(
+                    `/${
+                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
+                    }/recipe/webauthn/options/${webauthnGeneratedOptionsId}`
+                ),
+                {},
                 userContext
             );
         },

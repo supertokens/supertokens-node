@@ -13,6 +13,7 @@ import {
     DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
     DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
     DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
+    DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
 } from "../constants";
 import RecipeUserId from "../../../recipeUserId";
 import { getRecoverAccountLink } from "../utils";
@@ -88,6 +89,7 @@ export default function getAPIImplementation(): APIInterface {
             const requireResidentKey = DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY;
             const residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY;
             const userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION;
+            const supportedAlgorithmIds = DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS;
 
             let response = await options.recipeImplementation.registerOptions({
                 ...props,
@@ -101,6 +103,7 @@ export default function getAPIImplementation(): APIInterface {
                 timeout,
                 tenantId,
                 userContext,
+                supportedAlgorithmIds,
             });
 
             if (response.status !== "OK") {

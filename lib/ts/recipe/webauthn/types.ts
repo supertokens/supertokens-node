@@ -154,6 +154,8 @@ export type RecipeInterface = {
             userVerification: "required" | "preferred" | "discouraged" | undefined;
             // default to 'none' in order to allow any authenticator and not verify attestation
             attestation: "none" | "indirect" | "direct" | "enterprise" | undefined;
+            // default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms.
+            supportedAlgorithmIds: number[] | undefined;
             // default to 5 seconds
             timeout: number | undefined;
             tenantId: string;
@@ -200,6 +202,7 @@ export type RecipeInterface = {
           }
         // | RegisterOptionsErrorResponse
         | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+        | { status: "INVALID_EMAIL_ERROR"; err: string }
     >;
 
     signInOptions(input: {
@@ -281,6 +284,27 @@ export type RecipeInterface = {
         | { status: "WRONG_CREDENTIALS_ERROR" }
     >;
 
+    // this function is meant only for creating the recipe in the core and nothing else.
+    // we added this even though signUp exists cause devs may override signup expecting it
+    // to be called just during sign up. But we also need a version of signing up which can be
+    // called during operations like creating a user during password reset flow.
+    createNewRecipeUser(input: {
+        webauthnGeneratedOptionsId: string;
+        credential: CredentialPayload;
+        tenantId: string;
+        userContext: UserContext;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        // | CreateNewRecipeUserErrorResponse
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
+
     /**
      * We pass in the email as well to this function cause the input userId
      * may not be associated with an webauthn account. In this case, we
@@ -319,7 +343,6 @@ export type RecipeInterface = {
     registerCredential(input: {
         webauthnGeneratedOptionsId: string;
         credential: CredentialPayload;
-        tenantId: string;
         userContext: UserContext;
         recipeUserId: RecipeUserId;
     }): Promise<
@@ -331,29 +354,9 @@ export type RecipeInterface = {
         | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
     >;
 
-    // this function is meant only for creating the recipe in the core and nothing else.
-    // we added this even though signUp exists cause devs may override signup expecting it
-    // to be called just during sign up. But we also need a version of signing up which can be
-    // called during operations like creating a user during password reset flow.
-    createNewRecipeUser(input: {
-        webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
-        tenantId: string;
-        userContext: UserContext;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        // | CreateNewRecipeUserErrorResponse
-        | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-    >;
-
     decodeCredential(input: {
         credential: CredentialPayload;
+        userContext: UserContext;
     }): Promise<
         | {
               status: "OK";
@@ -445,12 +448,10 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              credential: {
-                  id: string;
-                  relyingPartyId: string;
-                  recipeUserId: RecipeUserId;
-                  createdAt: number;
-              };
+              id: string;
+              relyingPartyId: string;
+              recipeUserId: RecipeUserId;
+              createdAt: number;
           }
         // | GetCredentialErrorResponse
         | { status: "CREDENTIAL_NOT_FOUND_ERROR" }
