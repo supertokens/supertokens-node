@@ -10,10 +10,11 @@
     "dependencies": {
         "cors": "^2.8.5",
         "express": "^4.18.1",
+        "jose": "^4.13.1",
         "helmet": "^5.1.0",
         "morgan": "^1.10.0",
         "npm-run-all": "^4.1.5",
-        "supertokens-node": "github:supertokens/supertokens-node#21.0",
+        "supertokens-node": "file:../../../../lib/build",
         "ts-node-dev": "^2.0.0",
         "typescript": "^4.7.2"
     },

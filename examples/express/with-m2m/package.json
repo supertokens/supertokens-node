@@ -1,0 +1,23 @@
+{
+    "name": "with-emailpassword",
+    "version": "0.0.1",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "postinstall": "cd auth-provider-service && npm install && cd ../calendar-service && npm install && cd ../note-service && npm install",
+        "start:auth-provider-service": "cd auth-provider-service && npm run start",
+        "start:calendar-service": "cd calendar-service && npm run start",
+        "start:note-service": "cd note-service && npm run start",
+        "start": "npm-run-all --parallel start:auth-provider-service start:calendar-service start:note-service",
+        "assistant": "node ./index.mjs"
+    },
+    "dependencies": {
+        "commander": "^12.1.0"
+    },
+    "devDependencies": {
+        "npm-run-all": "^4.1.5"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

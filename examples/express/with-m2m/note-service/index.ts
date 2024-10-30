@@ -79,9 +79,13 @@ app.post("/note", verifyAccessToken("note.write"), (req: express.Request, res: e
 
 app.put("/note/:id", verifyAccessToken("note.write"), (req: express.Request, res: express.Response) => {
     const noteId = parseInt(req.params.id);
-    const note = req.body;
+    if (!notes.some((note) => note.id === noteId)) {
+        res.status(404).send("Not found: Note not found");
+        return;
+    }
+
     notes = notes.map((note) => (note.id === noteId ? { ...note, ...req.body, id: noteId } : note));
-    res.send(note);
+    res.send(notes.find((note) => note.id === noteId));
 });
 
 app.delete("/note/:id", verifyAccessToken("note.write"), (req: express.Request, res: express.Response) => {
