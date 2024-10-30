@@ -12,6 +12,7 @@ import ThirdParty from "../../recipe/thirdparty";
 import Multitenancy from "../../recipe/multitenancy";
 import Passwordless from "../../recipe/passwordless";
 import OpenId from "../../recipe/openid";
+import OAuth2Provider from "../../recipe/oauth2provider";
 import { SMTPService as SMTPServiceTPP } from "../../recipe/passwordless/emaildelivery";
 import { SMTPService as SMTPServiceP } from "../../recipe/passwordless/emaildelivery";
 import { SMTPService as SMTPServiceTPEP } from "../../recipe/emailpassword/emaildelivery";
@@ -2303,4 +2304,9 @@ EmailPassword.resetPasswordUsingToken("", "", "").then((resp) => {
     ) {
         return;
     }
+});
+
+OAuth2Provider.createOAuth2Client({
+    clientId: "asdf",
+    clientSecret: "nope!",
 });
