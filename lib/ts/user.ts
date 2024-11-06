@@ -94,7 +94,7 @@ export class User implements UserType {
     }[];
     public readonly webauthn: {
         credentialIds: string[];
-    }[];
+    };
     public readonly loginMethods: LoginMethod[];
 
     public readonly timeJoined: number; // minimum timeJoined value from linkedRecipes
@@ -143,7 +143,7 @@ export type UserWithoutHelperFunctions = {
     }[];
     webauthn: {
         credentialIds: string[];
-    }[];
+    };
     loginMethods: {
         recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
         recipeUserId: string;

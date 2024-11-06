@@ -65,8 +65,7 @@ export default function getAPIImplementation(): APIInterface {
                   };
               }
             | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-            | { status: "EMAIL_MISSING_ERROR" }
-            | { status: "REGISTER_OPTIONS_NOT_ALLOWED"; reason: string }
+            | { status: "INVALID_EMAIL_ERROR"; err: string }
         > {
             const relyingPartyId = await options.config.relyingPartyId({
                 tenantId,
@@ -125,10 +124,12 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         signInOptionsPOST: async function ({
+            email,
             tenantId,
             options,
             userContext,
         }: {
+            email?: string;
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;
@@ -141,6 +142,7 @@ export default function getAPIImplementation(): APIInterface {
                   userVerification: "required" | "preferred" | "discouraged";
               }
             | GeneralErrorResponse
+            | { status: "WRONG_CREDENTIALS_ERROR" }
         > {
             const relyingPartyId = await options.config.relyingPartyId({
                 tenantId,
@@ -159,6 +161,7 @@ export default function getAPIImplementation(): APIInterface {
             const userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION;
 
             let response = await options.recipeImplementation.signInOptions({
+                email,
                 userVerification,
                 origin,
                 relyingPartyId,
@@ -181,7 +184,6 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         signUpPOST: async function ({
-            email,
             webauthnGeneratedOptionsId,
             credential,
             tenantId,
@@ -190,28 +192,28 @@ export default function getAPIImplementation(): APIInterface {
             options,
             userContext,
         }: {
-            email: string;
             webauthnGeneratedOptionsId: string;
             credential: CredentialPayload;
             tenantId: string;
-            session?: SessionContainerInterface;
+            session: SessionContainerInterface | undefined;
             shouldTryLinkingWithSessionUser: boolean | undefined;
             options: APIOptions;
             userContext: UserContext;
+            // should also have the email or recoverAccountToken in order to do the preauth checks
         }): Promise<
             | {
                   status: "OK";
                   session: SessionContainerInterface;
                   user: User;
               }
+            | GeneralErrorResponse
             | {
                   status: "SIGN_UP_NOT_ALLOWED";
                   reason: string;
               }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
             | { status: "WRONG_CREDENTIALS_ERROR" }
             | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-            | GeneralErrorResponse
         > {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
@@ -232,13 +234,25 @@ export default function getAPIImplementation(): APIInterface {
                 },
             };
 
+            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
+                webauthnGeneratedOptionsId,
+                tenantId,
+                userContext,
+            });
+            if (generatedOptions.status !== "OK") {
+                return { status: "WRONG_CREDENTIALS_ERROR" };
+            }
+
+            const email = generatedOptions.email;
+
             // NOTE: Following checks will likely never throw an error as the
             // check for type is done in a parent function but they are kept
             // here to be on the safe side.
-            if (typeof email !== "string")
+            if (!email) {
                 throw new Error(
                     "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
                 );
+            }
 
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
@@ -353,9 +367,7 @@ export default function getAPIImplementation(): APIInterface {
                   session: SessionContainerInterface;
                   user: User;
               }
-            | {
-                  status: "WRONG_CREDENTIALS_ERROR";
-              }
+            | { status: "WRONG_CREDENTIALS_ERROR" }
             | {
                   status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
@@ -826,13 +838,9 @@ export default function getAPIImplementation(): APIInterface {
                   email: string;
               }
             | GeneralErrorResponse
-            | {
-                  status: "CONSUME_RECOVER_ACCOUNT_TOKEN_NOT_ALLOWED";
-                  reason: string;
-              }
+            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
             | { status: "WRONG_CREDENTIALS_ERROR" }
             | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
         > {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
                 const emailVerificationInstance = EmailVerification.getInstance();
@@ -874,7 +882,6 @@ export default function getAPIImplementation(): APIInterface {
                 let updateResponse = await options.recipeImplementation.registerCredential({
                     recipeUserId,
                     webauthnGeneratedOptionsId,
-                    tenantId,
                     credential,
                     userContext,
                 });

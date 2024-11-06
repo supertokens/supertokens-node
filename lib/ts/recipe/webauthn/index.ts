@@ -22,10 +22,11 @@ import { getRecoverAccountLink } from "./utils";
 import { getRequestFromUserContext, getUser } from "../..";
 import { getUserContext } from "../../utils";
 import { SessionContainerInterface } from "../session/types";
-import { User, UserContext } from "../../types";
+import { User } from "../../types";
 import {
     DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
     DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
+    DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
     DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
     DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
 } from "./constants";
@@ -35,8 +36,9 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static registerOptions(
-        email: string,
+    static async registerOptions(
+        email: string | undefined,
+        recoverAccountToken: string | undefined,
         relyingPartyId: string,
         relyingPartyName: string,
         origin: string,
@@ -76,14 +78,24 @@ export default class Wrapper {
               };
           }
         | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-        | { status: "EMAIL_MISSING_ERROR" }
-        | { status: "INVALID_EMAIL_ERROR" }
+        | { status: "INVALID_EMAIL_ERROR"; err: string }
     > {
+        let payload: { email: string } | { recoverAccountToken: string } | null = email
+            ? { email }
+            : recoverAccountToken
+            ? { recoverAccountToken }
+            : null;
+
+        if (!payload) {
+            return { status: "INVALID_EMAIL_ERROR", err: "Email is missing" };
+        }
+
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerOptions({
             requireResidentKey: DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
             residentKey: DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
             userVerification: DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
-            email,
+            supportedAlgorithmIds: DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
+            ...payload,
             relyingPartyId,
             relyingPartyName,
             origin,
@@ -100,13 +112,16 @@ export default class Wrapper {
         timeout: number,
         tenantId: string,
         userContext: Record<string, any>
-    ): Promise<{
-        status: "OK";
-        webauthnGeneratedOptionsId: string;
-        challenge: string;
-        timeout: number;
-        userVerification: "required" | "preferred" | "discouraged";
-    }> {
+    ): Promise<
+        | {
+              status: "OK";
+              webauthnGeneratedOptionsId: string;
+              challenge: string;
+              timeout: number;
+              userVerification: "required" | "preferred" | "discouraged";
+          }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInOptions({
             userVerification: DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
             relyingPartyId,
@@ -123,11 +138,7 @@ export default class Wrapper {
         credential: CredentialPayload,
         session?: undefined,
         userContext?: Record<string, any>
-    ): Promise<
-        | { status: "OK"; user: User; recipeUserId: RecipeUserId }
-        | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "INVALID_AUTHENTICATOR_ERROR" }
-    >;
+    ): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
     static signIn(
         tenantId: string,
         webauthnGeneratedOptionsId: string,
@@ -137,7 +148,6 @@ export default class Wrapper {
     ): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "INVALID_AUTHENTICATOR_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -156,7 +166,6 @@ export default class Wrapper {
     ): Promise<
         | { status: "OK"; user: User; recipeUserId: RecipeUserId }
         | { status: "WRONG_CREDENTIALS_ERROR" }
-        | { status: "INVALID_AUTHENTICATOR_ERROR" }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
               reason:
@@ -181,7 +190,7 @@ export default class Wrapper {
         webauthnGeneratedOptionsId: string,
         credential: CredentialPayload,
         userContext?: Record<string, any>
-    ): Promise<{ status: "OK" } | { status: "WRONG_CREDENTIALS_ERROR" } | { status: "INVALID_AUTHENTICATOR_ERROR" }> {
+    ): Promise<{ status: "OK" } | { status: "WRONG_CREDENTIALS_ERROR" }> {
         const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
             webauthnGeneratedOptionsId,
             credential,
@@ -220,7 +229,7 @@ export default class Wrapper {
         });
     }
 
-    static async recoverAccountUsingToken(
+    static async recoverAccount(
         tenantId: string,
         webauthnGeneratedOptionsId: string,
         token: string,
@@ -286,6 +295,7 @@ export default class Wrapper {
         | {
               status: "OK" | "WRONG_CREDENTIALS_ERROR";
           }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
         | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
     > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerCredential({
@@ -383,7 +393,7 @@ export let verifyCredentials = Wrapper.verifyCredentials;
 
 export let generateRecoverAccountToken = Wrapper.generateRecoverAccountToken;
 
-export let recoverAccountUsingToken = Wrapper.recoverAccountUsingToken;
+export let recoverAccount = Wrapper.recoverAccount;
 
 export let consumeRecoverAccountToken = Wrapper.consumeRecoverAccountToken;
 

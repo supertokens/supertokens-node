@@ -13,16 +13,6 @@
  * under the License.
  */
 import STError from "../error";
-import { defaultEmailValidator } from "../utils";
-
-export async function validateEmailOrThrowError(email: string): Promise<string> {
-    const error = await defaultEmailValidator(email);
-    if (error) {
-        throw newBadRequestError(error);
-    }
-
-    return email;
-}
 
 export async function validatewebauthnGeneratedOptionsIdOrThrowError(
     webauthnGeneratedOptionsId: string

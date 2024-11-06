@@ -525,7 +525,12 @@ type SignUpPOSTErrorResponse =
     | { status: "WRONG_CREDENTIALS_ERROR" }
     | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
 
-type SignInPOSTErrorResponse = { status: "WRONG_CREDENTIALS_ERROR" };
+type SignInPOSTErrorResponse =
+    | { status: "WRONG_CREDENTIALS_ERROR" }
+    | {
+          status: "SIGN_IN_NOT_ALLOWED";
+          reason: string;
+      };
 
 type GenerateRecoverAccountTokenPOSTErrorResponse = {
     status: "RECOVER_ACCOUNT_NOT_ALLOWED";
@@ -649,6 +654,10 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
               //   | SignInPOSTErrorResponse
+              | {
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
+                }
               | { status: "WRONG_CREDENTIALS_ERROR" }
           >);
 

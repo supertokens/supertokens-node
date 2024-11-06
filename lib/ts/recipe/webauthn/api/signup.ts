@@ -18,11 +18,7 @@ import {
     getNormalisedShouldTryLinkingWithSessionUserFlag,
     send200Response,
 } from "../../../utils";
-import {
-    validateEmailOrThrowError,
-    validatewebauthnGeneratedOptionsIdOrThrowError,
-    validateCredentialOrThrowError,
-} from "./utils";
+import { validatewebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
 import STError from "../error";
 import { UserContext } from "../../../types";
@@ -39,7 +35,6 @@ export default async function signUpAPI(
     }
 
     const requestBody = await options.req.getJSONBody();
-    const email = await validateEmailOrThrowError(requestBody.email);
     const webauthnGeneratedOptionsId = await validatewebauthnGeneratedOptionsIdOrThrowError(
         requestBody.webauthnGeneratedOptionsId
     );
@@ -58,7 +53,6 @@ export default async function signUpAPI(
     }
 
     let result = await apiImplementation.signUpPOST({
-        email,
         credential,
         webauthnGeneratedOptionsId,
         tenantId,
