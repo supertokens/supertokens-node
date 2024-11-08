@@ -31,22 +31,14 @@ import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest } from "../../framework";
 
 export function validateAndNormaliseUserInput(
-    recipeInstance: Recipe,
+    _: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    let relyingPartyId = validateAndNormaliseRelyingPartyIdConfig(recipeInstance, appInfo, config?.relyingPartyId);
-    let relyingPartyName = validateAndNormaliseRelyingPartyNameConfig(
-        recipeInstance,
-        appInfo,
-        config?.relyingPartyName
-    );
-    let getOrigin = validateAndNormaliseGetOriginConfig(recipeInstance, appInfo, config?.getOrigin);
-    let validateEmailAddress = validateAndNormaliseValidateEmailAddressConfig(
-        recipeInstance,
-        appInfo,
-        config?.validateEmailAddress
-    );
+    let getRelyingPartyId = validateAndNormaliseRelyingPartyIdConfig(appInfo, config?.getRelyingPartyId);
+    let getRelyingPartyName = validateAndNormaliseRelyingPartyNameConfig(appInfo, config?.getRelyingPartyName);
+    let getOrigin = validateAndNormaliseGetOriginConfig(appInfo, config?.getOrigin);
+    let validateEmailAddress = validateAndNormaliseValidateEmailAddressConfig(config?.validateEmailAddress);
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
@@ -56,8 +48,6 @@ export function validateAndNormaliseUserInput(
 
     function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
         let emailService = config?.emailDelivery?.service;
-        console.log("emailService", emailService);
-        console.log("isInServerlessEnv", isInServerlessEnv);
         /**
          * If the user has not passed even that config, we use the default
          * createAndSendCustomEmail implementation which calls our supertokens API
@@ -85,16 +75,15 @@ export function validateAndNormaliseUserInput(
     return {
         override,
         getOrigin,
-        relyingPartyId,
-        relyingPartyName,
+        getRelyingPartyId,
+        getRelyingPartyName,
         validateEmailAddress,
         getEmailDeliveryConfig,
     };
 }
 
 function validateAndNormaliseRelyingPartyIdConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
+    normalisedAppinfo: NormalisedAppinfo,
     relyingPartyIdConfig: TypeInputRelyingPartyId | undefined
 ): TypeNormalisedInputRelyingPartyId {
     return (props) => {
@@ -104,15 +93,16 @@ function validateAndNormaliseRelyingPartyIdConfig(
             return relyingPartyIdConfig(props);
         } else {
             return Promise.resolve(
-                __.getOrigin({ request: props.request, userContext: props.userContext }).getAsStringDangerous()
+                normalisedAppinfo
+                    .getOrigin({ request: props.request, userContext: props.userContext })
+                    .getAsStringDangerous()
             );
         }
     };
 }
 
 function validateAndNormaliseRelyingPartyNameConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
+    normalisedAppInfo: NormalisedAppinfo,
     relyingPartyNameConfig: TypeInputRelyingPartyName | undefined
 ): TypeNormalisedInputRelyingPartyName {
     return (props) => {
@@ -121,14 +111,13 @@ function validateAndNormaliseRelyingPartyNameConfig(
         } else if (typeof relyingPartyNameConfig === "function") {
             return relyingPartyNameConfig(props);
         } else {
-            return Promise.resolve(__.appName);
+            return Promise.resolve(normalisedAppInfo.appName);
         }
     };
 }
 
 function validateAndNormaliseGetOriginConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
+    normalisedAppinfo: NormalisedAppinfo,
     getOriginConfig: TypeInputGetOrigin | undefined
 ): TypeNormalisedInputGetOrigin {
     return (props) => {
@@ -136,15 +125,15 @@ function validateAndNormaliseGetOriginConfig(
             return getOriginConfig(props);
         } else {
             return Promise.resolve(
-                __.getOrigin({ request: props.request, userContext: props.userContext }).getAsStringDangerous()
+                normalisedAppinfo
+                    .getOrigin({ request: props.request, userContext: props.userContext })
+                    .getAsStringDangerous()
             );
         }
     };
 }
 
 function validateAndNormaliseValidateEmailAddressConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
     validateEmailAddressConfig: TypeInputValidateEmailAddress | undefined
 ): TypeNormalisedInputValidateEmailAddress {
     return (email, tenantId) => {

@@ -18,7 +18,7 @@ import {
     getNormalisedShouldTryLinkingWithSessionUserFlag,
     send200Response,
 } from "../../../utils";
-import { validatewebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
+import { validateWebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
 import STError from "../error";
 import { UserContext } from "../../../types";
@@ -35,7 +35,7 @@ export default async function signUpAPI(
     }
 
     const requestBody = await options.req.getJSONBody();
-    const webauthnGeneratedOptionsId = await validatewebauthnGeneratedOptionsIdOrThrowError(
+    const webauthnGeneratedOptionsId = await validateWebauthnGeneratedOptionsIdOrThrowError(
         requestBody.webauthnGeneratedOptionsId
     );
     const credential = await validateCredentialOrThrowError(requestBody.credential);
@@ -70,14 +70,8 @@ export default async function signUpAPI(
         send200Response(options.res, result);
     } else if (result.status === "EMAIL_ALREADY_EXISTS_ERROR") {
         throw new STError({
-            type: STError.FIELD_ERROR,
-            payload: [
-                {
-                    id: "email",
-                    error: "This email already exists. Please sign in instead.",
-                },
-            ],
-            message: "Error in input formFields",
+            type: STError.BAD_INPUT_ERROR,
+            message: "This email already exists. Please sign in instead.",
         });
     } else {
         send200Response(options.res, result);

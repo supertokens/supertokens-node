@@ -14,7 +14,7 @@
  */
 import STError from "../error";
 
-export async function validatewebauthnGeneratedOptionsIdOrThrowError(
+export async function validateWebauthnGeneratedOptionsIdOrThrowError(
     webauthnGeneratedOptionsId: string
 ): Promise<string> {
     if (webauthnGeneratedOptionsId === undefined) {

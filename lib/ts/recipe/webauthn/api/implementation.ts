@@ -20,7 +20,7 @@ import { getRecoverAccountLink } from "../utils";
 import { logDebugMessage } from "../../../logger";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { getUser } from "../../..";
-import { CredentialPayload } from "../types";
+import { CredentialPayload, ResidentKey, UserVerification } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -60,19 +60,19 @@ export default function getAPIImplementation(): APIInterface {
                   }[];
                   authenticatorSelection: {
                       requireResidentKey: boolean;
-                      residentKey: "required" | "preferred" | "discouraged";
-                      userVerification: "required" | "preferred" | "discouraged";
+                      residentKey: ResidentKey;
+                      userVerification: UserVerification;
                   };
               }
             | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
             | { status: "INVALID_EMAIL_ERROR"; err: string }
         > {
-            const relyingPartyId = await options.config.relyingPartyId({
+            const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
                 request: options.req,
                 userContext,
             });
-            const relyingPartyName = await options.config.relyingPartyName({
+            const relyingPartyName = await options.config.getRelyingPartyName({
                 tenantId,
                 userContext,
             });
@@ -139,12 +139,12 @@ export default function getAPIImplementation(): APIInterface {
                   webauthnGeneratedOptionsId: string;
                   challenge: string;
                   timeout: number;
-                  userVerification: "required" | "preferred" | "discouraged";
+                  userVerification: UserVerification;
               }
             | GeneralErrorResponse
             | { status: "WRONG_CREDENTIALS_ERROR" }
         > {
-            const relyingPartyId = await options.config.relyingPartyId({
+            const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
                 request: options.req,
                 userContext,
@@ -391,35 +391,30 @@ export default function getAPIImplementation(): APIInterface {
 
             const recipeId = "webauthn";
 
-            // do the verification before in order to retrieve the user email
-            const verifyCredentialsResponse = await options.recipeImplementation.verifyCredentials({
-                credential,
+            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
                 webauthnGeneratedOptionsId,
                 tenantId,
                 userContext,
             });
-            const checkCredentialsOnTenant = async () => {
-                return verifyCredentialsResponse.status === "OK";
-            };
-
-            // doing it like this because the email is only available after verifyCredentials is called
-            let email: string;
-            if (verifyCredentialsResponse.status == "OK") {
-                const loginMethod = verifyCredentialsResponse.user.loginMethods.find((lm) => lm.recipeId === recipeId);
-                // there should be a webauthn login method  and an email when trying to sign in using webauthn
-                if (!loginMethod || !loginMethod.email) {
-                    return AuthUtils.getErrorStatusResponseWithReason(
-                        verifyCredentialsResponse,
-                        errorCodeMap,
-                        "SIGN_IN_NOT_ALLOWED"
-                    );
-                }
-                email = loginMethod?.email;
-            } else {
+            if (generatedOptions.status !== "OK") {
                 return {
                     status: "WRONG_CREDENTIALS_ERROR",
                 };
             }
+            let email = generatedOptions.email;
+
+            const checkCredentialsOnTenant = async () => {
+                return (
+                    (
+                        await options.recipeImplementation.verifyCredentials({
+                            credential,
+                            webauthnGeneratedOptionsId,
+                            tenantId,
+                            userContext,
+                        })
+                    ).status === "OK"
+                );
+            };
 
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
                 accountInfo: { email },

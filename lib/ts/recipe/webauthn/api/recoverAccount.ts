@@ -14,7 +14,7 @@
  */
 
 import { send200Response } from "../../../utils";
-import { validateCredentialOrThrowError, validatewebauthnGeneratedOptionsIdOrThrowError } from "./utils";
+import { validateCredentialOrThrowError, validateWebauthnGeneratedOptionsIdOrThrowError } from "./utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 import { UserContext } from "../../../types";
@@ -25,14 +25,12 @@ export default async function recoverAccount(
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
-
     if (apiImplementation.recoverAccountPOST === undefined) {
         return false;
     }
 
     const requestBody = await options.req.getJSONBody();
-    let webauthnGeneratedOptionsId = await validatewebauthnGeneratedOptionsIdOrThrowError(
+    let webauthnGeneratedOptionsId = await validateWebauthnGeneratedOptionsIdOrThrowError(
         requestBody.webauthnGeneratedOptionsId
     );
     let credential = await validateCredentialOrThrowError(requestBody.credential);

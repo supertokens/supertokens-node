@@ -25,8 +25,8 @@ import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../.
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeNormalisedInput = {
-    relyingPartyId: TypeNormalisedInputRelyingPartyId;
-    relyingPartyName: TypeNormalisedInputRelyingPartyName;
+    getRelyingPartyId: TypeNormalisedInputRelyingPartyId;
+    getRelyingPartyName: TypeNormalisedInputRelyingPartyName;
     getOrigin: TypeNormalisedInputGetOrigin;
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
@@ -65,8 +65,8 @@ export type TypeNormalisedInputValidateEmailAddress = (
 
 export type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeWebauthnEmailDeliveryInput>;
-    relyingPartyId?: TypeInputRelyingPartyId;
-    relyingPartyName?: TypeInputRelyingPartyName;
+    getRelyingPartyId?: TypeInputRelyingPartyId;
+    getRelyingPartyName?: TypeInputRelyingPartyName;
     validateEmailAddress?: TypeInputValidateEmailAddress;
     getOrigin?: TypeInputGetOrigin;
     override?: {
@@ -139,9 +139,11 @@ export type TypeInputValidateEmailAddress = (
 
 type Base64URLString = string;
 
+export type ResidentKey = "required" | "preferred" | "discouraged";
+export type UserVerification = "required" | "preferred" | "discouraged";
+export type Attestation = "none" | "indirect" | "direct" | "enterprise";
+
 export type RecipeInterface = {
-    // should have a way to access the user email: passed as a param, through session, or using recoverAccountToken
-    // it should have at least one of those 3 options
     registerOptions(
         input: {
             relyingPartyId: string;
@@ -149,11 +151,11 @@ export type RecipeInterface = {
             origin: string;
             requireResidentKey: boolean | undefined; // should default to false in order to allow multiple authenticators to be used; see https://auth0.com/blog/a-look-at-webauthn-resident-credentials/
             // default to 'required' in order store the private key locally on the device and not on the server
-            residentKey: "required" | "preferred" | "discouraged" | undefined;
+            residentKey: ResidentKey | undefined;
             // default to 'preferred' in order to verify the user (biometrics, pin, etc) based on the device preferences
-            userVerification: "required" | "preferred" | "discouraged" | undefined;
+            userVerification: UserVerification | undefined;
             // default to 'none' in order to allow any authenticator and not verify attestation
-            attestation: "none" | "indirect" | "direct" | "enterprise" | undefined;
+            attestation: Attestation | undefined;
             // default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms.
             supportedAlgorithmIds: number[] | undefined;
             // default to 5 seconds
@@ -172,6 +174,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
+              // for understanding the response, see https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
               rp: {
                   id: string;
                   name: string;
@@ -188,7 +191,7 @@ export type RecipeInterface = {
                   type: "public-key";
                   transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
               }[];
-              attestation: "none" | "indirect" | "direct" | "enterprise";
+              attestation: Attestation;
               pubKeyCredParams: {
                   // we will default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
                   alg: number;
@@ -196,8 +199,8 @@ export type RecipeInterface = {
               }[];
               authenticatorSelection: {
                   requireResidentKey: boolean;
-                  residentKey: "required" | "preferred" | "discouraged";
-                  userVerification: "required" | "preferred" | "discouraged";
+                  residentKey: ResidentKey;
+                  userVerification: UserVerification;
               };
           }
         // | RegisterOptionsErrorResponse
@@ -209,7 +212,7 @@ export type RecipeInterface = {
         email?: string;
         relyingPartyId: string;
         origin: string;
-        userVerification: "required" | "preferred" | "discouraged" | undefined; // see register options
+        userVerification: UserVerification | undefined; // see register options
         timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
@@ -219,7 +222,7 @@ export type RecipeInterface = {
               webauthnGeneratedOptionsId: string;
               challenge: string;
               timeout: number;
-              userVerification: "required" | "preferred" | "discouraged";
+              userVerification: UserVerification;
           }
         // | SignInOptionsErrorResponse
         | { status: "WRONG_CREDENTIALS_ERROR" }
@@ -578,8 +581,8 @@ export type APIInterface = {
                     }[];
                     authenticatorSelection: {
                         requireResidentKey: boolean;
-                        residentKey: "required" | "preferred" | "discouraged";
-                        userVerification: "required" | "preferred" | "discouraged";
+                        residentKey: ResidentKey;
+                        userVerification: UserVerification;
                     };
                 }
               | GeneralErrorResponse
@@ -601,7 +604,7 @@ export type APIInterface = {
                     webauthnGeneratedOptionsId: string;
                     challenge: string;
                     timeout: number;
-                    userVerification: "required" | "preferred" | "discouraged";
+                    userVerification: UserVerification;
                 }
               | GeneralErrorResponse
               //   | SignInOptionsPOSTErrorResponse

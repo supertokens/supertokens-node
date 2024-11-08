@@ -15,7 +15,15 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, TypeWebauthnEmailDeliveryInput, CredentialPayload } from "./types";
+import {
+    RecipeInterface,
+    APIOptions,
+    APIInterface,
+    TypeWebauthnEmailDeliveryInput,
+    CredentialPayload,
+    UserVerification,
+    ResidentKey,
+} from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getRecoverAccountLink } from "./utils";
@@ -73,8 +81,8 @@ export default class Wrapper {
               }[];
               authenticatorSelection: {
                   requireResidentKey: boolean;
-                  residentKey: "required" | "preferred" | "discouraged";
-                  userVerification: "required" | "preferred" | "discouraged";
+                  residentKey: ResidentKey;
+                  userVerification: UserVerification;
               };
           }
         | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
@@ -118,7 +126,7 @@ export default class Wrapper {
               webauthnGeneratedOptionsId: string;
               challenge: string;
               timeout: number;
-              userVerification: "required" | "preferred" | "discouraged";
+              userVerification: UserVerification;
           }
         | { status: "WRONG_CREDENTIALS_ERROR" }
     > {
@@ -127,6 +135,80 @@ export default class Wrapper {
             relyingPartyId,
             origin,
             timeout,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext: getUserContext(userContext),
+        });
+    }
+
+    static signUp(
+        tenantId: string,
+        webauthnGeneratedOptionsId: string,
+        credential: CredentialPayload,
+        session?: undefined,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+    >;
+    static signUp(
+        tenantId: string,
+        webauthnGeneratedOptionsId: string,
+        credential: CredentialPayload,
+        session: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
+    static signUp(
+        tenantId: string,
+        webauthnGeneratedOptionsId: string,
+        credential: CredentialPayload,
+        session?: SessionContainerInterface,
+        userContext?: Record<string, any>
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+        | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+        | {
+              status: "LINKING_TO_SESSION_USER_FAILED";
+              reason:
+                  | "EMAIL_VERIFICATION_REQUIRED"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    > {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
+            webauthnGeneratedOptionsId,
+            credential,
+            session,
+            shouldTryLinkingWithSessionUser: !!session,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: getUserContext(userContext),
         });

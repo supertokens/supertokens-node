@@ -18,7 +18,7 @@ import {
     getNormalisedShouldTryLinkingWithSessionUserFlag,
     send200Response,
 } from "../../../utils";
-import { validatewebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
+import { validateWebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import { AuthUtils } from "../../../authUtils";
@@ -34,7 +34,7 @@ export default async function signInAPI(
     }
 
     const requestBody = await options.req.getJSONBody();
-    const webauthnGeneratedOptionsId = await validatewebauthnGeneratedOptionsIdOrThrowError(
+    const webauthnGeneratedOptionsId = await validateWebauthnGeneratedOptionsIdOrThrowError(
         requestBody.webauthnGeneratedOptionsId
     );
     const credential = await validateCredentialOrThrowError(requestBody.credential);
