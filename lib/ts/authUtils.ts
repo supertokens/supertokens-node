@@ -252,7 +252,11 @@ export const AuthUtils = {
         userContext: UserContext;
         req: BaseRequest;
         res: BaseResponse;
-    }): Promise<{ status: "OK"; session: SessionContainerInterface; user: User } | { status: "SIGN_IN_NOT_ALLOWED" }> {
+    }): Promise<
+        | { status: "OK"; session: SessionContainerInterface; user: User }
+        | { status: "SIGN_IN_NOT_ALLOWED" }
+        | { status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR" }
+    > {
         logDebugMessage(
             `postAuthChecks called ${session !== undefined ? "with" : "without"} a session to ${
                 isSignUp ? "sign in" : "sign up"
@@ -277,7 +281,19 @@ export const AuthUtils = {
             } else {
                 // If the new user wasn't linked to the current one, we overwrite the session
                 // Note: we could also get here if MFA is enabled, but the app didn't want to link the user to the session user.
-                respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
+                const createNewSessionResponse = await Session.createNewSession(
+                    req,
+                    res,
+                    tenantId,
+                    recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+                if (createNewSessionResponse.status !== "OK") {
+                    return { status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR" };
+                }
+                respSession = createNewSessionResponse.session;
                 if (mfaInstance !== undefined) {
                     await MultiFactorAuth.markFactorAsCompleteInSession(respSession!, factorId, userContext);
                 }
@@ -285,7 +301,19 @@ export const AuthUtils = {
         } else {
             logDebugMessage(`postAuthChecks creating session for first factor sign in/up`);
             // If there is no input session, we do not need to do anything other checks and create a new session
-            respSession = await Session.createNewSession(req, res, tenantId, recipeUserId, {}, {}, userContext);
+            const createNewSessionResponse = await Session.createNewSession(
+                req,
+                res,
+                tenantId,
+                recipeUserId,
+                {},
+                {},
+                userContext
+            );
+            if (createNewSessionResponse.status !== "OK") {
+                return { status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR" };
+            }
+            respSession = createNewSessionResponse.session;
 
             // Here we can always mark the factor as completed, since we just created the session
             if (mfaInstance !== undefined) {

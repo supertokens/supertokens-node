@@ -56,7 +56,15 @@ export async function createNewSession(
         userContext
     );
 
+    if (response.status !== "OK") {
+        return {
+            status: response.status,
+            message: response.message,
+        };
+    }
+
     return {
+        status: response.status,
         session: {
             handle: response.session.handle,
             userId: response.session.userId,
@@ -354,6 +362,7 @@ export async function refreshSession(
 
     if (response.status === "OK") {
         return {
+            status: "OK",
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
@@ -373,7 +382,7 @@ export async function refreshSession(
             },
             antiCsrfToken: response.antiCsrfToken,
         };
-    } else if (response.status === "UNAUTHORISED") {
+    } else if (response.status === "UNAUTHORISED" || response.status === "USER_DOES_NOT_BELONG_TO_TENANT_ERROR") {
         logDebugMessage("refreshSession: Returning UNAUTHORISED because of core response");
         throw new STError({
             message: response.message,

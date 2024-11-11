@@ -344,7 +344,7 @@ export default class Recipe extends RecipeModule {
                     );
 
                     // create a new session and return that..
-                    return await Session.createNewSession(
+                    const createNewSessionResponse = await Session.createNewSession(
                         input.req,
                         input.res,
                         input.session.getTenantId(),
@@ -353,6 +353,16 @@ export default class Recipe extends RecipeModule {
                         {},
                         input.userContext
                     );
+
+                    if (createNewSessionResponse.status !== "OK") {
+                        // This means that the user was disassociated from the tenant in some kind of race condition (since we checked above)
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: createNewSessionResponse.status,
+                        });
+                    }
+
+                    return createNewSessionResponse.session;
                 }
             } else {
                 logDebugMessage(

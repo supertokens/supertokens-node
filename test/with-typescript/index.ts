@@ -963,27 +963,34 @@ let sessionConfig: SessionTypeInput = {
             return {
                 getSession: originalImpl.getSession,
                 createNewSession: async (input) => {
-                    let session = await originalImpl.createNewSession(input);
+                    let createNewSessionResponse = await originalImpl.createNewSession(input);
+                    if (createNewSessionResponse.status !== "OK") {
+                        return createNewSessionResponse;
+                    }
+                    let session = createNewSessionResponse.session;
                     return {
-                        getAccessToken: session.getAccessToken,
-                        getHandle: session.getHandle,
-                        getAccessTokenPayload: session.getAccessTokenPayload,
-                        getSessionDataFromDatabase: session.getSessionDataFromDatabase,
-                        getUserId: session.getUserId,
-                        getRecipeUserId: session.getRecipeUserId,
-                        getTenantId: session.getTenantId,
-                        revokeSession: session.revokeSession,
-                        updateSessionDataInDatabase: session.updateSessionDataInDatabase,
-                        mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
-                        assertClaims: session.assertClaims,
-                        fetchAndSetClaim: session.fetchAndSetClaim,
-                        setClaimValue: session.setClaimValue,
-                        getClaimValue: session.getClaimValue,
-                        removeClaim: session.removeClaim,
-                        getExpiry: session.getExpiry,
-                        getTimeCreated: session.getTimeCreated,
-                        getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
-                        attachToRequestResponse: session.attachToRequestResponse,
+                        status: "OK",
+                        session: {
+                            getAccessToken: session.getAccessToken,
+                            getHandle: session.getHandle,
+                            getAccessTokenPayload: session.getAccessTokenPayload,
+                            getSessionDataFromDatabase: session.getSessionDataFromDatabase,
+                            getUserId: session.getUserId,
+                            getRecipeUserId: session.getRecipeUserId,
+                            getTenantId: session.getTenantId,
+                            revokeSession: session.revokeSession,
+                            updateSessionDataInDatabase: session.updateSessionDataInDatabase,
+                            mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
+                            assertClaims: session.assertClaims,
+                            fetchAndSetClaim: session.fetchAndSetClaim,
+                            setClaimValue: session.setClaimValue,
+                            getClaimValue: session.getClaimValue,
+                            removeClaim: session.removeClaim,
+                            getExpiry: session.getExpiry,
+                            getTimeCreated: session.getTimeCreated,
+                            getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
+                            attachToRequestResponse: session.attachToRequestResponse,
+                        },
                     };
                 },
                 getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
@@ -1395,12 +1402,19 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        let session = await Session.createNewSession(
+                        let createNewSessionResponse = await Session.createNewSession(
                             options.req,
                             options.res,
                             "public",
                             Supertokens.convertToRecipeUserId(user.id)
                         );
+                        if (createNewSessionResponse.status !== "OK") {
+                            // This should never happen, except in some race conditions when the user was disassociated from the tenant since the login above
+                            return {
+                                status: "WRONG_CREDENTIALS_ERROR",
+                            };
+                        }
+                        const session = createNewSessionResponse.session;
                         return {
                             status: "OK",
                             session,
@@ -1812,10 +1826,15 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
 async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
     const userId = "user-id"; // This would be fetched from somewhere
 
-    const session = await Session.createNewSessionWithoutRequestResponse(
+    const createNewSessionResponse = await Session.createNewSessionWithoutRequestResponse(
         "public",
         Supertokens.convertToRecipeUserId(userId)
     );
+
+    if (createNewSessionResponse.status !== "OK") {
+        throw new Error(createNewSessionResponse.status);
+    }
+    const session = createNewSessionResponse.session;
 
     const tokens = session.getAllSessionTokensDangerously();
     if (tokens.accessAndFrontTokenUpdated) {
@@ -1906,10 +1925,15 @@ JWT.init({
 });
 
 async function accountLinkingFuncsTest() {
-    const session = await Session.createNewSessionWithoutRequestResponse(
+    const createNewSessionResponse = await Session.createNewSessionWithoutRequestResponse(
         "public",
         Supertokens.convertToRecipeUserId("asdf")
     );
+
+    if (createNewSessionResponse.status !== "OK") {
+        throw new Error(createNewSessionResponse.status);
+    }
+    const session = createNewSessionResponse.session;
 
     const signUpResp = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw");
     // @ts-expect-error
@@ -2193,9 +2217,13 @@ Supertokens.init({
                     ...oI,
                     createNewSession: async (input) => {
                         const resp = await oI.createNewSession(input);
-                        if (input.userContext.shouldCompleteTOTP) {
+                        if (resp.status === "OK" && input.userContext.shouldCompleteTOTP) {
                             // this is a stand-in for the "remember me" check
-                            await MultiFactorAuth.markFactorAsCompleteInSession(resp, "totp", input.userContext);
+                            await MultiFactorAuth.markFactorAsCompleteInSession(
+                                resp.session,
+                                "totp",
+                                input.userContext
+                            );
                         }
                         return resp;
                     },

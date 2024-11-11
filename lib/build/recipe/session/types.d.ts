@@ -16,18 +16,24 @@ export declare type TokenInfo = {
     expiry: number;
     createdTime: number;
 };
-export declare type CreateOrRefreshAPIResponse = {
-    session: {
-        handle: string;
-        userId: string;
-        recipeUserId: RecipeUserId;
-        userDataInJWT: any;
-        tenantId: string;
-    };
-    accessToken: TokenInfo;
-    refreshToken: TokenInfo;
-    antiCsrfToken: string | undefined;
-};
+export declare type CreateOrRefreshAPIResponse =
+    | {
+          status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR";
+          message: string;
+      }
+    | {
+          status: "OK";
+          session: {
+              handle: string;
+              userId: string;
+              recipeUserId: RecipeUserId;
+              userDataInJWT: any;
+              tenantId: string;
+          };
+          accessToken: TokenInfo;
+          refreshToken: TokenInfo;
+          antiCsrfToken: string | undefined;
+      };
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTryRefreshToken?: ErrorHandlerMiddleware;
@@ -147,7 +153,15 @@ export declare type RecipeInterface = {
         disableAntiCsrf?: boolean;
         tenantId: string;
         userContext: UserContext;
-    }): Promise<SessionContainerInterface>;
+    }): Promise<
+        | {
+              status: "OK";
+              session: SessionContainerInterface;
+          }
+        | {
+              status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR";
+          }
+    >;
     getGlobalClaimValidators(input: {
         tenantId: string;
         userId: string;

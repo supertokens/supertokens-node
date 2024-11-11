@@ -25,7 +25,15 @@ export default class SessionWrapper {
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         userContext?: Record<string, any>
-    ): Promise<SessionContainer>;
+    ): Promise<
+        | {
+              status: "OK";
+              session: SessionContainer;
+          }
+        | {
+              status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR";
+          }
+    >;
     static createNewSessionWithoutRequestResponse(
         tenantId: string,
         recipeUserId: RecipeUserId,
@@ -33,7 +41,15 @@ export default class SessionWrapper {
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
         userContext?: Record<string, any>
-    ): Promise<SessionContainer>;
+    ): Promise<
+        | {
+              status: "OK";
+              session: SessionContainer;
+          }
+        | {
+              status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR";
+          }
+    >;
     static validateClaimsForSessionHandle(
         sessionHandle: string,
         overrideGlobalClaimValidators?: (

@@ -131,6 +131,9 @@ export declare const AuthUtils: {
         | {
               status: "SIGN_IN_NOT_ALLOWED";
           }
+        | {
+              status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR";
+          }
     >;
     /**
      * This function tries to find the authenticating user (we use this information to see if the current auth is sign in or up)

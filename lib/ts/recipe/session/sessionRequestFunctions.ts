@@ -505,7 +505,7 @@ export async function createNewSessionInRequest({
         );
     }
     const disableAntiCsrf = outputTransferMethod === "header";
-    const session = await recipeInstance.recipeInterfaceImpl.createNewSession({
+    const createNewSessionResponse = await recipeInstance.recipeInterfaceImpl.createNewSession({
         userId,
         recipeUserId,
         accessTokenPayload: finalAccessTokenPayload,
@@ -514,6 +514,11 @@ export async function createNewSessionInRequest({
         tenantId,
         userContext,
     });
+
+    if (createNewSessionResponse.status !== "OK") {
+        return createNewSessionResponse;
+    }
+    const session = createNewSessionResponse.session;
 
     logDebugMessage("createNewSession: Session created in core built");
 
@@ -534,5 +539,5 @@ export async function createNewSessionInRequest({
     );
     logDebugMessage("createNewSession: Attached new tokens to res");
 
-    return session;
+    return createNewSessionResponse;
 }

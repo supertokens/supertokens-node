@@ -70,4 +70,12 @@ export declare function createNewSessionInRequest({
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
     tenantId: string;
-}): Promise<SessionContainerInterface>;
+}): Promise<
+    | {
+          status: "OK";
+          session: SessionContainerInterface;
+      }
+    | {
+          status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR";
+      }
+>;

@@ -53,7 +53,10 @@ export default function getRecipeInterface(
             sessionDataInDatabase?: any;
             tenantId: string;
             userContext: UserContext;
-        }): Promise<SessionContainerInterface> {
+        }): Promise<
+            | { status: "OK"; session: SessionContainerInterface }
+            | { status: "USER_DOES_NOT_BELONG_TO_TENANT_ERROR"; message: string }
+        > {
             logDebugMessage("createNewSession: Started");
 
             let response = await SessionFunctions.createNewSession(
@@ -65,23 +68,30 @@ export default function getRecipeInterface(
                 sessionDataInDatabase,
                 userContext
             );
-            logDebugMessage("createNewSession: Finished");
+            logDebugMessage("createNewSession: Finished with status " + response.status);
+
+            if (response.status !== "OK") {
+                return response;
+            }
 
             const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
-            return new Session(
-                helpers,
-                response.accessToken.token,
-                buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
-                response.refreshToken,
-                response.antiCsrfToken,
-                response.session.handle,
-                response.session.userId,
-                response.session.recipeUserId,
-                payload,
-                undefined,
-                true,
-                tenantId
-            );
+            return {
+                status: "OK",
+                session: new Session(
+                    helpers,
+                    response.accessToken.token,
+                    buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
+                    response.refreshToken,
+                    response.antiCsrfToken,
+                    response.session.handle,
+                    response.session.userId,
+                    response.session.recipeUserId,
+                    payload,
+                    undefined,
+                    true,
+                    tenantId
+                ),
+            };
         },
 
         getGlobalClaimValidators: async function (input: {
@@ -295,7 +305,14 @@ export default function getRecipeInterface(
                 userContext
             );
 
-            logDebugMessage("refreshSession: Success!");
+            logDebugMessage("refreshSession: Finished with status " + response.status);
+
+            if (response.status !== "OK") {
+                throw new SessionError({
+                    type: "UNAUTHORISED",
+                    message: response.message,
+                });
+            }
 
             const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
             return new Session(
