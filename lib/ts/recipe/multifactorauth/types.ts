@@ -135,6 +135,48 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
+
+    factorsForUserGET:
+        | undefined
+        | ((input: {
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    factors: string[];
+                }
+              | GeneralErrorResponse
+          >);
+
+    addFactorForUserPOST:
+        | undefined
+        | ((input: {
+              factorId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
+
+    deleteFactorForUserDELETE:
+        | undefined
+        | ((input: {
+              factorId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
 };
 
 export type GetFactorsSetupForUserFromOtherRecipesFunc = (user: User, userContext: UserContext) => Promise<string[]>;

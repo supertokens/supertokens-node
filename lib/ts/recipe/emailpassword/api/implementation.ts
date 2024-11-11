@@ -991,5 +991,8 @@ export default function getAPIImplementation(): APIInterface {
                 user: postAuthChecks.user,
             };
         },
+
+        updatePasswordPOST: undefined,
+        changeEmailPOST: undefined,
     };
 }
