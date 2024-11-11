@@ -51,9 +51,11 @@ import userMetadataRoutes from "./usermetadata";
 import TOTPRoutes from "./totp";
 import { getFunc, resetOverrideParams, getOverrideParams } from "./testFunctionMapper";
 import OverrideableBuilder from "supertokens-js-override";
-import { resetOverrideLogs, logOverrideEvent, getOverrideLogs } from "./overrideLogging";
+import { resetOverrideLogs, logOverrideEvent, getOverrideLogs, transformLoggedData } from "./overrideLogging";
 import Dashboard from "../../../recipe/dashboard";
 import DashboardRecipe from "../../../lib/build/recipe/dashboard/recipe";
+
+import WebSocket from "ws";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
@@ -111,6 +113,10 @@ function initST(config: any) {
     ];
 
     const parsedConfig = JSON.parse(config);
+    let ws: WebSocketOverrideController;
+    if (parsedConfig.wsPort) {
+        ws = new WebSocketOverrideController(new WebSocket(`ws://localhost:${parsedConfig.wsPort}`));
+    }
     const init = {
         ...parsedConfig,
     };
@@ -130,14 +136,16 @@ function initST(config: any) {
                         ...config?.emailDelivery,
                         override: overrideBuilderWithLogging(
                             "EmailPassword.emailDelivery.override",
-                            config?.emailDelivery?.override
+                            config?.emailDelivery?.override,
+                            ws
                         ),
                     },
                     override: {
-                        apis: overrideBuilderWithLogging("EmailPassword.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("EmailPassword.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "EmailPassword.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -148,10 +156,11 @@ function initST(config: any) {
                 Session.init({
                     ...config,
                     override: {
-                        apis: overrideBuilderWithLogging("Session.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("Session.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "Session.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -166,13 +175,20 @@ function initST(config: any) {
                         config.shouldDoAutomaticAccountLinking,
                         {
                             shouldAutomaticallyLink: false,
-                        }
+                        },
+                        ws
                     ),
-                    onAccountLinked: callbackWithLog("AccountLinking.onAccountLinked", config.onAccountLinked),
+                    onAccountLinked: callbackWithLog(
+                        "AccountLinking.onAccountLinked",
+                        config.onAccountLinked,
+                        undefined,
+                        ws
+                    ),
                     override: {
                         functions: overrideBuilderWithLogging(
                             "AccountLinking.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -196,10 +212,11 @@ function initST(config: any) {
                 ThirdParty.init({
                     ...init,
                     override: {
-                        apis: overrideBuilderWithLogging("ThirdParty.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("ThirdParty.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "ThirdParty.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -213,19 +230,22 @@ function initST(config: any) {
                         ...config?.emailDelivery,
                         override: overrideBuilderWithLogging(
                             "EmailVerification.emailDelivery",
-                            config?.emailDelivery?.override
+                            config?.emailDelivery?.override,
+                            ws
                         ),
                     },
                     getEmailForRecipeUserId: callbackWithLog(
                         "EmailVerification.getEmailForRecipeUserId",
                         config?.getEmailForRecipeUserId,
-                        { status: "UNKNOWN_USER_ID_ERROR" }
+                        { status: "UNKNOWN_USER_ID_ERROR" },
+                        ws
                     ),
                     override: {
-                        apis: overrideBuilderWithLogging("EmailVerification.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("EmailVerification.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "EmailVerification.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -236,10 +256,11 @@ function initST(config: any) {
                 Multitenancy.init({
                     ...config,
                     override: {
-                        apis: overrideBuilderWithLogging("Multitenancy.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("Multitenancy.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "Multitenancy.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -251,7 +272,7 @@ function initST(config: any) {
                     ...config,
                     emailDelivery: {
                         ...config?.emailDelivery,
-                        override: overrideBuilderWithLogging("Passwordless.emailDelivery", undefined),
+                        override: overrideBuilderWithLogging("Passwordless.emailDelivery", undefined, ws),
                         service: {
                             ...config?.emailDelivery?.service,
                             sendEmail:
@@ -261,7 +282,7 @@ function initST(config: any) {
                     },
                     smsDelivery: {
                         ...config?.smsDelivery,
-                        override: overrideBuilderWithLogging("Passwordless.smsDelivery", undefined),
+                        override: overrideBuilderWithLogging("Passwordless.smsDelivery", undefined, ws),
                         service: {
                             ...config?.smsDelivery?.service,
                             sendSms:
@@ -269,10 +290,11 @@ function initST(config: any) {
                         },
                     },
                     override: {
-                        apis: overrideBuilderWithLogging("Passwordless.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("Passwordless.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "Passwordless.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -283,10 +305,11 @@ function initST(config: any) {
                 MultiFactorAuth.init({
                     ...config,
                     override: {
-                        apis: overrideBuilderWithLogging("MultiFactorAuth.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("MultiFactorAuth.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "MultiFactorAuth.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -297,8 +320,12 @@ function initST(config: any) {
                 TOTP.init({
                     ...config,
                     override: {
-                        apis: overrideBuilderWithLogging("TOTP.override.apis", config?.override?.apis),
-                        functions: overrideBuilderWithLogging("TOTP.override.functions", config?.override?.functions),
+                        apis: overrideBuilderWithLogging("TOTP.override.apis", config?.override?.apis, ws),
+                        functions: overrideBuilderWithLogging(
+                            "TOTP.override.functions",
+                            config?.override?.functions,
+                            ws
+                        ),
                     },
                 })
             );
@@ -308,10 +335,11 @@ function initST(config: any) {
                 OAuth2Provider.init({
                     ...config,
                     override: {
-                        apis: overrideBuilderWithLogging("OAuth2Provider.override.apis", config?.override?.apis),
+                        apis: overrideBuilderWithLogging("OAuth2Provider.override.apis", config?.override?.apis, ws),
                         functions: overrideBuilderWithLogging(
                             "OAuth2Provider.override.functions",
-                            config?.override?.functions
+                            config?.override?.functions,
+                            ws
                         ),
                     },
                 })
@@ -360,7 +388,7 @@ app.get("/test/overrideparams", async (req, res, next) => {
 });
 
 app.get("/test/featureflag", async (req, res, next) => {
-    res.json(["removedOverwriteSessionDuringSignInUp"]);
+    res.json(["removedOverwriteSessionDuringSignInUp", "remoteOverride"]);
 });
 
 app.post("/test/resetoverrideparams", async (req, res, next) => {
@@ -490,14 +518,25 @@ function loggingOverrideFunc<T>(name: string, originalImpl: (...args: any[]) => 
     };
 }
 
-function callbackWithLog<T = undefined>(name: string, overrideName: string, defaultValue?: T) {
-    const impl = overrideName ? getFunc(overrideName) : () => defaultValue;
+function callbackWithLog<T = undefined>(
+    name: string,
+    overrideName: string,
+    defaultValue: T | undefined,
+    ws: WebSocketOverrideController | undefined
+) {
+    const impl =
+        ws !== undefined
+            ? ws.getOverrideFunc(name, overrideName ? getFunc(overrideName) : () => defaultValue)
+            : overrideName
+            ? getFunc(overrideName)
+            : () => defaultValue;
     return loggingOverrideFunc<T>(name, impl);
 }
 
 function overrideBuilderWithLogging<T extends Record<string, ((...args: any[]) => any) | undefined>>(
     name: string,
-    overrideName?: string
+    overrideName: string | undefined,
+    ws: WebSocketOverrideController | undefined
 ) {
     return (originalImpl: T, builder: OverrideableBuilder<T>) => {
         builder.override((oI) => {
@@ -507,14 +546,83 @@ function overrideBuilderWithLogging<T extends Record<string, ((...args: any[]) =
             const ret: any = {}; // Partial<T>
 
             for (const k of keys) {
-                ret[k] = loggingOverrideFunc(`${name}.${k}`, oI[k]!.bind(oI));
+                const origImpl = oI[k]!.bind(oI);
+                ret[k] = loggingOverrideFunc(
+                    `${name}.${k}`,
+                    ws !== undefined && overrideName?.startsWith("ws:") && overrideName.includes(`|${k}|`)
+                        ? ws.getOverrideFunc(k, origImpl)
+                        : origImpl
+                );
             }
             return ret;
         });
 
-        if (overrideName !== undefined) {
+        if (overrideName !== undefined && !overrideName.startsWith("ws:")) {
             builder.override(getFunc(overrideName));
         }
         return originalImpl;
     };
+}
+
+class RemoteOverrideCall {
+    public promise: Promise<unknown>;
+    public resolve: (value: unknown) => void;
+    public reject: (reason?: any) => void;
+
+    constructor(
+        public ts: number,
+        public name: string,
+        public origArgs: any[],
+        public impl: (...args: any[]) => Promise<unknown>
+    ) {
+        this.promise = new Promise((res, rej) => {
+            this.resolve = res;
+            this.reject = rej;
+        });
+    }
+}
+
+class WebSocketOverrideController {
+    private connectedPromise: Promise<void>;
+    private waiting: RemoteOverrideCall[];
+
+    constructor(private ws: WebSocket) {
+        this.waiting = [];
+        this.connectedPromise = new Promise((resolve, reject) => {
+            ws.on("open", resolve);
+            ws.on("error", reject);
+        });
+
+        ws.on("message", async (msg) => {
+            const { name, type, ts, value } = JSON.parse(msg);
+            const info = this.waiting.find((def) => def.ts === ts && def.name === name);
+            if (!info) {
+                return;
+            }
+            if (type === "RET") {
+                // we'll need deserialization I think.
+                info.resolve(value);
+            } else if (type === "REJ") {
+                info.reject(value);
+            } else if (type === "OI") {
+                // we'll need deserialization I think.
+                const resp = await info.impl(...value);
+                ws.send(JSON.stringify({ name, type: "OI_RES", ts, value: transformLoggedData(resp) }));
+            } else if (type === "NO_INTERCEPT") {
+                const resp = await info.impl(...info.origArgs);
+                info.resolve(resp);
+            }
+        });
+    }
+
+    getOverrideFunc<T>(name: string, originalImpl: (...args: any[]) => Promise<T>) {
+        return async (...args: any[]) => {
+            const ts = Date.now();
+            const def = new RemoteOverrideCall(ts, name, args, originalImpl);
+            this.waiting.push(def);
+            await this.connectedPromise;
+            this.ws.send(JSON.stringify({ name, type: "CALL", ts, args: transformLoggedData(args) }));
+            return def.promise;
+        };
+    }
 }

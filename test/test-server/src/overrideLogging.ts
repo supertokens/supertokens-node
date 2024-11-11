@@ -19,7 +19,7 @@ export function logOverrideEvent(name: string, type: "RES" | "REJ" | "CALL", dat
     });
 }
 
-function transformLoggedData(data: any, visited: Set<unknown> = new Set()) {
+export function transformLoggedData(data: any, visited: Set<unknown> = new Set()) {
     if (typeof data !== "object") {
         return data;
     }
