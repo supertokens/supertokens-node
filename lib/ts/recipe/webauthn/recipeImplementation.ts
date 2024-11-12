@@ -33,8 +33,7 @@ export default function getRecipeInterface(
             if (emailInput !== undefined) {
                 email = emailInput;
             } else if (recoverAccountTokenInput !== undefined) {
-                // todo check if should decode using Core or using sdk; atm decided on usinng the sdk so to not make another roundtrip to the server
-                // the actual verification of the token will be done during consumeRecoverAccountToken
+                // the actual validation of the token will be done during consumeRecoverAccountToken
                 let decoded: jose.JWTPayload | undefined;
                 try {
                     decoded = await jose.decodeJwt(recoverAccountTokenInput);

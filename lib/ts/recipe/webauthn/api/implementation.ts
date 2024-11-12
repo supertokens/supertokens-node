@@ -1050,7 +1050,6 @@ export default function getAPIImplementation(): APIInterface {
                         userContext,
                     });
 
-                    // todo decide how to handle these
                     if (
                         createUserResponse.status === "INVALID_CREDENTIALS_ERROR" ||
                         createUserResponse.status === "GENERATED_OPTIONS_NOT_FOUND_ERROR" ||

@@ -97,7 +97,6 @@ export default class Recipe extends RecipeModule {
                 ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig(this.isInServerlessEnv))
                 : ingredients.emailDelivery;
 
-        // todo check correctness
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const mfaInstance = MultiFactorAuthRecipe.getInstance();
             if (mfaInstance !== undefined) {
