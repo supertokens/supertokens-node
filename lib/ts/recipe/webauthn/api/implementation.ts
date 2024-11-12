@@ -33,6 +33,7 @@ export default function getAPIImplementation(): APIInterface {
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;
+            displayName?: string;
         } & ({ email: string } | { recoverAccountToken: string })): Promise<
             | {
                   status: "OK";
@@ -66,6 +67,7 @@ export default function getAPIImplementation(): APIInterface {
               }
             | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
             | { status: "INVALID_EMAIL_ERROR"; err: string }
+            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
         > {
             const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
@@ -142,7 +144,7 @@ export default function getAPIImplementation(): APIInterface {
                   userVerification: UserVerification;
               }
             | GeneralErrorResponse
-            | { status: "WRONG_CREDENTIALS_ERROR" }
+            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
         > {
             const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
@@ -211,17 +213,21 @@ export default function getAPIImplementation(): APIInterface {
                   status: "SIGN_UP_NOT_ALLOWED";
                   reason: string;
               }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
+            | { status: "INVALID_CREDENTIALS_ERROR" }
+            | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" }
+            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
             | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
+            // TODO update error codes (ERR_CODE_XXX) after final implementation
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
                     "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
                 INVALID_AUTHENTICATOR_ERROR: {
                     // TODO: add more cases
                 },
-                WRONG_CREDENTIALS_ERROR: "The sign up credentials are incorrect. Please use a different authenticator.",
+                INVALID_CREDENTIALS_ERROR:
+                    "The sign up credentials are incorrect. Please use a different authenticator.",
                 LINKING_TO_SESSION_USER_FAILED: {
                     EMAIL_VERIFICATION_REQUIRED:
                         "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_013)",
@@ -240,7 +246,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (generatedOptions.status !== "OK") {
-                return { status: "WRONG_CREDENTIALS_ERROR" };
+                return generatedOptions;
             }
 
             const email = generatedOptions.email;
@@ -250,10 +256,11 @@ export default function getAPIImplementation(): APIInterface {
             // here to be on the safe side.
             if (!email) {
                 throw new Error(
-                    "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
+                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
                 );
             }
 
+            // todo familiarize with this method
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
                     recipeId: "webauthn",
@@ -318,6 +325,8 @@ export default function getAPIImplementation(): APIInterface {
                 return AuthUtils.getErrorStatusResponseWithReason(signUpResponse, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
             }
 
+            // todo familiarize with this method
+            // todo check if we need to remove webauthn credential ids from the type - it is not used atm.
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
@@ -367,7 +376,7 @@ export default function getAPIImplementation(): APIInterface {
                   session: SessionContainerInterface;
                   user: User;
               }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
+            | { status: "INVALID_CREDENTIALS_ERROR" }
             | {
                   status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
@@ -391,6 +400,16 @@ export default function getAPIImplementation(): APIInterface {
 
             const recipeId = "webauthn";
 
+            const verifyResult = await options.recipeImplementation.verifyCredentials({
+                credential,
+                webauthnGeneratedOptionsId,
+                tenantId,
+                userContext,
+            });
+            if (verifyResult.status !== "OK") {
+                return verifyResult;
+            }
+
             const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
                 webauthnGeneratedOptionsId,
                 tenantId,
@@ -398,24 +417,24 @@ export default function getAPIImplementation(): APIInterface {
             });
             if (generatedOptions.status !== "OK") {
                 return {
-                    status: "WRONG_CREDENTIALS_ERROR",
+                    status: "INVALID_CREDENTIALS_ERROR",
                 };
             }
             let email = generatedOptions.email;
 
             const checkCredentialsOnTenant = async () => {
-                return (
-                    (
-                        await options.recipeImplementation.verifyCredentials({
-                            credential,
-                            webauthnGeneratedOptionsId,
-                            tenantId,
-                            userContext,
-                        })
-                    ).status === "OK"
-                );
+                return true;
             };
 
+            // todo familiarize with this method
+            // todo make sure the section below (from getAuthenticatingUserAndAddToCurrentTenantIfRequired to isVerified) is correct
+            // const matchingLoginMethodsFromSessionUser = sessionUser.loginMethods.filter(
+            //     (lm) =>
+            //         lm.recipeId === recipeId &&
+            //         (lm.hasSameEmailAs(accountInfo.email) ||
+            //             lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) ||
+            //             lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty))
+            // );
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
                 accountInfo: { email },
                 userContext,
@@ -432,7 +451,7 @@ export default function getAPIImplementation(): APIInterface {
             // isSignUpAllowed will be called as expected.
             if (authenticatingUser === undefined) {
                 return {
-                    status: "WRONG_CREDENTIALS_ERROR",
+                    status: "INVALID_CREDENTIALS_ERROR",
                 };
             }
             const preAuthChecks = await AuthUtils.preAuthChecks({
@@ -461,7 +480,7 @@ export default function getAPIImplementation(): APIInterface {
             if (isFakeEmail(email) && preAuthChecks.isFirstFactor) {
                 // Fake emails cannot be used as a first factor
                 return {
-                    status: "WRONG_CREDENTIALS_ERROR",
+                    status: "INVALID_CREDENTIALS_ERROR",
                 };
             }
 
@@ -474,7 +493,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            if (signInResponse.status === "WRONG_CREDENTIALS_ERROR") {
+            if (signInResponse.status === "INVALID_CREDENTIALS_ERROR") {
                 return signInResponse;
             }
             if (signInResponse.status !== "OK") {
@@ -550,6 +569,11 @@ export default function getAPIImplementation(): APIInterface {
             tenantId,
             options,
             userContext,
+        }: {
+            email: string;
+            tenantId: string;
+            options: APIOptions;
+            userContext: UserContext;
         }): Promise<
             | {
                   status: "OK";
@@ -834,7 +858,9 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
             | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-            | { status: "WRONG_CREDENTIALS_ERROR" }
+            | { status: "INVALID_CREDENTIALS_ERROR" } // the credential is not valid for various reasons - will discover this during implementation
+            | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" } // i.e. options not found
+            | { status: "INVALID_GENERATED_OPTIONS_ERROR" } // i.e. timeout expired
             | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
         > {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
@@ -870,7 +896,7 @@ export default function getAPIImplementation(): APIInterface {
                       user: User;
                       email: string;
                   }
-                | { status: "WRONG_CREDENTIALS_ERROR" }
+                | { status: "INVALID_CREDENTIALS_ERROR" }
                 | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
                 | GeneralErrorResponse
             > {
@@ -889,9 +915,9 @@ export default function getAPIImplementation(): APIInterface {
                         status: "INVALID_AUTHENTICATOR_ERROR",
                         reason: updateResponse.reason,
                     };
-                } else if (updateResponse.status === "WRONG_CREDENTIALS_ERROR") {
+                } else if (updateResponse.status === "INVALID_CREDENTIALS_ERROR") {
                     return {
-                        status: "WRONG_CREDENTIALS_ERROR",
+                        status: "INVALID_CREDENTIALS_ERROR",
                     };
                 } else {
                     // status: "OK"
@@ -1025,9 +1051,12 @@ export default function getAPIImplementation(): APIInterface {
                     });
 
                     // todo decide how to handle these
-                    if (createUserResponse.status === "WRONG_CREDENTIALS_ERROR") {
-                        return createUserResponse;
-                    } else if (createUserResponse.status === "INVALID_AUTHENTICATOR_ERROR") {
+                    if (
+                        createUserResponse.status === "INVALID_CREDENTIALS_ERROR" ||
+                        createUserResponse.status === "GENERATED_OPTIONS_NOT_FOUND_ERROR" ||
+                        createUserResponse.status === "INVALID_GENERATED_OPTIONS_ERROR" ||
+                        createUserResponse.status === "INVALID_AUTHENTICATOR_ERROR"
+                    ) {
                         return createUserResponse;
                     } else if (createUserResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
                         // this means that the user already existed and we can just return an invalid

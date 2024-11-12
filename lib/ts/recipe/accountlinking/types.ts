@@ -201,6 +201,7 @@ export type AccountInfoWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 } & AccountInfo;
 
+// todo check if possible to split this into returnable (implementation) types because of webauthn credentialIds being an array
 export type RecipeLevelUser = {
     tenantIds: string[];
     timeJoined: number;

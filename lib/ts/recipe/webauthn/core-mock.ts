@@ -10,9 +10,6 @@ export const getMockQuerier = (recipeId: string) => {
         body: any,
         userContext: UserContext
     ): Promise<T> => {
-        console.log("body", body);
-        console.log("userContext", userContext);
-
         if (path.getAsStringDangerous().includes("/recipe/webauthn/options/register")) {
             // @ts-ignore
             return {

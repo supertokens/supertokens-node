@@ -8,6 +8,7 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
 import * as jose from "jose";
+import { isFakeEmail } from "../thirdparty/utils";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -63,12 +64,26 @@ export default function getRecipeInterface(
                 };
             }
 
+            // set a nice default display name
+            // if the user has a fake email, we use the username part of the email instead (which should be the recipe user id)
+            let displayName: string;
+            if (rest.displayName) {
+                displayName = rest.displayName;
+            } else {
+                if (isFakeEmail(email)) {
+                    displayName = email.split("@")[0];
+                } else {
+                    displayName = email;
+                }
+            }
+
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/register`
                 ),
                 {
                     email,
+                    displayName,
                     relyingPartyName,
                     relyingPartyId,
                     origin,
@@ -209,7 +224,7 @@ export default function getRecipeInterface(
             }
 
             return {
-                status: "WRONG_CREDENTIALS_ERROR",
+                status: "INVALID_CREDENTIALS_ERROR",
             };
         },
 
@@ -289,7 +304,7 @@ export default function getRecipeInterface(
             }
 
             return {
-                status: "WRONG_CREDENTIALS_ERROR",
+                status: "INVALID_CREDENTIALS_ERROR",
             };
         },
 

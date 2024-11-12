@@ -342,14 +342,7 @@ export default class Recipe extends RecipeModule {
 
     handleError = async (err: STError, _request: BaseRequest, response: BaseResponse): Promise<void> => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
-            if (err.type === STError.FIELD_ERROR) {
-                return send200Response(response, {
-                    status: "FIELD_ERROR",
-                    formFields: err.payload,
-                });
-            } else {
-                throw err;
-            }
+            throw err;
         } else {
             throw err;
         }
