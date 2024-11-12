@@ -907,7 +907,6 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
 
-                // todo decide how to handle these
                 if (updateResponse.status === "INVALID_AUTHENTICATOR_ERROR") {
                     // This should happen only cause of a race condition where the user
                     // might be deleted before token creation and consumption.
@@ -977,7 +976,6 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            // todo decide how to handle these
             if (tokenConsumptionResponse.status === "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR") {
                 return tokenConsumptionResponse;
             }
