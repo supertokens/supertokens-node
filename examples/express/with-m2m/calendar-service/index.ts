@@ -79,6 +79,17 @@ app.post("/event", verifyAccessToken("calendar.write"), (req: express.Request, r
     res.send(event);
 });
 
+app.put("/event/:id", verifyAccessToken("calendar.write"), (req: express.Request, res: express.Response) => {
+    const eventId = parseInt(req.params.id);
+    if (!events.some((event) => event.id === eventId)) {
+        res.status(404).send("Not found: event not found");
+        return;
+    }
+
+    events = events.map((event) => (event.id === eventId ? { ...event, ...req.body, id: eventId } : event));
+    res.send(events.find((event) => event.id === eventId));
+});
+
 app.delete("/event/:id", verifyAccessToken("calendar.write"), (req: express.Request, res: express.Response) => {
     const eventId = parseInt(req.params.id);
     let eventCount = events.length;

@@ -37,14 +37,40 @@ OR
 ./assistant --help
 ```
 
-## Project structure (notable files/folders)
+## Project structure
+
+### Allowed call flows
 
 ```
-├── assistant-client
-    ├── eventFunctions.mjs The functions to interact with the calendar-service
-    ├── noteFunctions.mjs The functions to interact with the note-service
-    ├── getAccessToken.mjs The function to get the access token from the auth-service
-    ├── index.mjs The main function to run the assistant
+                               ┌──────────────────────┐
+                               │                      │
+    ┌──────────────────────────►   Calendar Service   │
+    │                          │                      │
+    │                          └──────────┬───────────┘
+┌───┴─────┐                               │
+│         │                               │
+│ CLI     │                               │
+│         │                             xxxxx
+└───┬─────┘                               │
+    │                                     │
+    │                                     │
+    │                          ┌──────────▼───────────┐
+    │                          │                      │
+    └──────────────────────────►     Note Service     │
+                               │                      │
+                               └──────────────────────┘
+```
+
+### Notable files
+
+```
+├── assistant-cli
+    ├── src/eventFunctions.ts The functions to interact with the calendar-service
+    ├── src/noteFunctions.ts The functions to interact with the note-service
+    ├── src/getAccessToken.ts The function to get the access token from the auth-service
+    ├── src/cli.tsx The main function to run the assistant
+    ├── src/ui/* The UI components for the assistant-cli
+
 
 ├── auth-provider-service
     ├── config.ts The configuration for SuperTokens
@@ -57,6 +83,14 @@ OR
 ├── note-service
     ├── index.ts Sets up the APIs for note-service (w/ token validation and a simple in-memory DB)
 ```
+
+## How it works
+
+In the example, we use the client credentials flow to obtain a token from the auth-provider-service and use it to call the APIs exposed by the calendar-service and note-service.
+
+It's important to note that we have to use the right audience for the API we are trying to call. In this example, the calendar-service is expecting the audience to be `calendar-service` and the note-service is expecting the audience to be `note-service`. If we didn't validate the audience and one of the services was compromised, a malicious actor could use the tokens the compromised service receives to call the APIs exposed by the other services and impersonate the assistant-cli.
+
+Setting minimal scopes and scope validation is similarly important, for example as a way to limit what a leaked/stolen token can be used for.
 
 ## Author
 
