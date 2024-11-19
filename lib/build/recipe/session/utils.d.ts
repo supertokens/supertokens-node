@@ -75,7 +75,7 @@ export declare function validateClaimsInPayload(
         reason: import("../../types").JSONValue;
     }[]
 >;
-export declare function getCookieNameFromTokenType(
+export declare function getCookieNameForTokenType(
     _req: BaseRequest,
     tokenType: TokenType
 ): "sAccessToken" | "sRefreshToken";

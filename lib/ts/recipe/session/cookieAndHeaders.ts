@@ -98,7 +98,7 @@ export function getToken(
     userContext: UserContext
 ) {
     if (transferMethod === "cookie") {
-        return req.getCookieValue(config.getCookieNameFromTokenType(req, tokenType, userContext));
+        return req.getCookieValue(config.getCookieNameForTokenType(req, tokenType, userContext));
     } else if (transferMethod === "header") {
         const value = req.getHeaderValue(authorizationHeaderKey);
         if (value === undefined || !value.startsWith("Bearer ")) {
@@ -126,7 +126,7 @@ export function setToken(
         setCookie(
             config,
             res,
-            config.getCookieNameFromTokenType(req, tokenType, userContext),
+            config.getCookieNameForTokenType(req, tokenType, userContext),
             value,
             expires,
             tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath",
@@ -274,7 +274,7 @@ export function hasMultipleCookiesForTokenType(
     }
 
     const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
-    const cookieName = config.getCookieNameFromTokenType(req, tokenType, userContext);
+    const cookieName = config.getCookieNameForTokenType(req, tokenType, userContext);
     return cookies[cookieName] !== undefined && cookies[cookieName].length > 1;
 }
 

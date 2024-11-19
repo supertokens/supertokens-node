@@ -33,7 +33,7 @@ import Multitenancy from "../../../recipe/multitenancy";
 import Passwordless from "../../../recipe/passwordless";
 import Session from "../../../recipe/session";
 import { verifySession } from "../../../recipe/session/framework/express";
-import { getResponseHeaderNameForTokenType, getCookieNameFromTokenType } from "../../../lib/build/recipe/session/utils";
+import { getResponseHeaderNameForTokenType, getCookieNameForTokenType } from "../../../lib/build/recipe/session/utils";
 import ThirdParty from "../../../recipe/thirdparty";
 import TOTP from "../../../recipe/totp";
 import OAuth2Provider from "../../../recipe/oauth2provider";
@@ -148,15 +148,13 @@ function initST(config: any) {
             recipeList.push(
                 Session.init({
                     ...config,
-                    getResponseHeaderNameForTokenType: callbackWithLog(
+                    getResponseHeaderNameForTokenType: loggingOverrideFuncSync(
                         "Session.getResponseHeaderNameForTokenType",
-                        config?.getResponseHeaderNameForTokenType,
                         getResponseHeaderNameForTokenType
                     ),
-                    getCookieNameFromTokenType: callbackWithLog(
-                        "Session.getCookieNameFromTokenType",
-                        config?.getCookieNameFromTokenType,
-                        getCookieNameFromTokenType
+                    getCookieNameForTokenType: loggingOverrideFuncSync(
+                        "Session.getCookieNameForTokenType",
+                        getCookieNameForTokenType
                     ),
                     override: {
                         apis: overrideBuilderWithLogging("Session.override.apis", config?.override?.apis),
@@ -230,9 +228,9 @@ function initST(config: any) {
                     getEmailForRecipeUserId: callbackWithLog(
                         "EmailVerification.getEmailForRecipeUserId",
                         config?.getEmailForRecipeUserId,
-                        () => {
-                            status: "UNKNOWN_USER_ID_ERROR";
-                        }
+                        () => ({
+                            status: "UNKNOWN_USER_ID_ERROR",
+                        })
                     ),
                     override: {
                         apis: overrideBuilderWithLogging("EmailVerification.override.apis", config?.override?.apis),
@@ -476,7 +474,7 @@ app.listen(API_PORT, "localhost", () => {
     logDebugMessage(`node-test-server-server started on localhost:${API_PORT}`);
 });
 
-function loggingOverrideFuncSync<T>(name: string, originalImpl: (...args: any[]) => Promise<T>) {
+function loggingOverrideFuncSync<T>(name: string, originalImpl: (...args: any[]) => T) {
     return function (...args: any[]) {
         logOverrideEvent(name, "CALL", args);
         try {

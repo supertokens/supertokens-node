@@ -74,7 +74,7 @@ export type TypeInput = {
         forCreateNewSession: boolean;
         userContext: UserContext;
     }) => TokenTransferMethod | "any";
-    getCookieNameFromTokenType?: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
+    getCookieNameForTokenType?: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
     getResponseHeaderNameForTokenType?: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
 
     errorHandlers?: ErrorHandlers;
@@ -101,7 +101,7 @@ export type TypeNormalisedInput = {
         userContext: UserContext;
     }) => "strict" | "lax" | "none";
     cookieSecure: boolean;
-    getCookieNameFromTokenType: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
+    getCookieNameForTokenType: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
     getResponseHeaderNameForTokenType: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;

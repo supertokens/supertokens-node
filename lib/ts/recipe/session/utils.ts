@@ -302,7 +302,7 @@ export function validateAndNormaliseUserInput(
             config?.getTokenTransferMethod === undefined
                 ? defaultGetTokenTransferMethod
                 : config.getTokenTransferMethod,
-        getCookieNameFromTokenType: config?.getCookieNameFromTokenType ?? getCookieNameFromTokenType,
+        getCookieNameForTokenType: config?.getCookieNameForTokenType ?? getCookieNameForTokenType,
         getResponseHeaderNameForTokenType:
             config?.getResponseHeaderNameForTokenType ?? getResponseHeaderNameForTokenType,
         cookieDomain,
@@ -435,7 +435,7 @@ function defaultGetTokenTransferMethod({
     }
 }
 
-export function getCookieNameFromTokenType(_req: BaseRequest, tokenType: TokenType) {
+export function getCookieNameForTokenType(_req: BaseRequest, tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             return accessTokenCookieKey;
