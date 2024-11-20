@@ -1,8 +1,8 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {ListView} from './listScreen.js';
 import {AssistantEvent} from '../eventFunctions.js';
 import {AssistantNote} from '../noteFunctions.js';
-import {Box, Text} from 'ink';
+import {Box, Text, useInput} from 'ink';
 
 export default function App({
 	getAccessToken,
@@ -39,22 +39,37 @@ export default function App({
 	const [accessTokenForNoteService, setAccessTokenForNoteService] = useState<
 		string
 	>();
+	const [isLoading, setIsLoading] = useState(false);
 
-	useEffect(() => {
-		async function fetchAccessTokens() {
-			const calendarAccessToken = await getAccessToken(
-				'calendar-service',
-				'calendar.read calendar.write',
-			);
-			const noteAccessToken = await getAccessToken(
-				'note-service',
-				'note.read note.write',
-			);
-			setAccessTokenForCalendarService(calendarAccessToken);
-			setAccessTokenForNoteService(noteAccessToken);
-		}
-		fetchAccessTokens().catch(console.error);
+	const loadAccessTokens = useCallback(async () => {
+		setIsLoading(true);
+		const calendarAccessToken = await getAccessToken(
+			'calendar-service',
+			'calendar.read calendar.write',
+		);
+		const noteAccessToken = await getAccessToken(
+			'note-service',
+			'note.read note.write',
+		);
+		setAccessTokenForCalendarService(calendarAccessToken);
+		setAccessTokenForNoteService(noteAccessToken);
+		setIsLoading(false);
 	}, []);
+
+	useInput(
+		input => {
+			if (input === 'r') {
+				loadAccessTokens().catch(console.error);
+			}
+		},
+		{
+			isActive:
+				!isLoading &&
+				!accessTokenForCalendarService &&
+				!accessTokenForNoteService,
+		},
+	);
+
 	const getEvents = useCallback(() => {
 		if (!accessTokenForCalendarService)
 			return Promise.reject(new Error('No access token'));
@@ -125,9 +140,6 @@ export default function App({
 		[accessTokenForNoteService],
 	);
 
-	if (!accessTokenForNoteService || !accessTokenForCalendarService)
-		return <Text> Loading access token... </Text>;
-
 	return (
 		<>
 			<Box padding={2}>
@@ -136,40 +148,54 @@ export default function App({
 				</Text>
 			</Box>
 			<Box padding={1} flexDirection="column">
-				<Text wrap="wrap">
-					You can navigate using the arrow keys and press enter to select an
-					item.
-				</Text>
-				<Text wrap="wrap">
-					If you select the Add Item or Edit Item options, you will add a new
-					item and immediately enter edit mode.
-				</Text>
-				<Text wrap="wrap">
-					You can also delete items by selecting them and pressing the delete
-					key.
-				</Text>
-				<Text wrap="wrap">
-					While editing, you can navigate between fields using the arrow keys
-					and press enter to save your changes.
-				</Text>
-				<Text wrap="wrap">You can leave editing mode by pressing escape.</Text>
-				<Text wrap="wrap">
-					You can exit the application by pressing escape outside of editing
-					mode.
-				</Text>
+				{accessTokenForNoteService && accessTokenForCalendarService && (
+					<>
+						<Text wrap="wrap">
+							You can navigate using the arrow keys and press enter to select an
+							item.
+						</Text>
+						<Text wrap="wrap">
+							If you select the Add Item or Edit Item options, you will add a
+							new item and immediately enter edit mode.
+						</Text>
+						<Text wrap="wrap">
+							You can also delete items by selecting them and pressing the
+							delete key.
+						</Text>
+						<Text wrap="wrap">
+							While editing, you can navigate between fields using the arrow
+							keys and press enter to save your changes.
+						</Text>
+						<Text wrap="wrap">
+							You can leave editing mode by pressing escape.
+						</Text>
+						<Text wrap="wrap">
+							You can exit the application by pressing escape outside of editing
+							mode.
+						</Text>
+					</>
+				)}
 				{/* <Text> Your current access token is for the calendar service: {accessTokenForCalendarService}</Text> */}
 				{/* <Text> Your current access token is for the note service: {accessTokenForNoteService}</Text> */}
 			</Box>
-			<ListView
-				createNewEvent={createNewEvent}
-				getEvents={getEvents}
-				deleteEvent={deleteEvent}
-				updateEvent={updateEvent}
-				getNotes={getNotes}
-				createNewNote={createNewNote}
-				deleteNote={deleteNote}
-				updateNote={updateNote}
-			/>
+			{accessTokenForNoteService && accessTokenForCalendarService ? (
+				<ListView
+					createNewEvent={createNewEvent}
+					getEvents={getEvents}
+					deleteEvent={deleteEvent}
+					updateEvent={updateEvent}
+					getNotes={getNotes}
+					createNewNote={createNewNote}
+					deleteNote={deleteNote}
+					updateNote={updateNote}
+				/>
+			) : (
+				<Text>
+					{isLoading
+						? 'Loading...'
+						: "Please press 'r' to get your access tokens from the auth service!"}
+				</Text>
+			)}
 		</>
 	);
 }
