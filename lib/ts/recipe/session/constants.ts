@@ -36,3 +36,14 @@ export const protectedProps = [
     "tId",
     "stt",
 ];
+export const authorizationHeaderKey = "authorization";
+export const accessTokenHeaderKey = "st-access-token";
+export const accessTokenCookieKey = "sAccessToken";
+export const refreshTokenCookieKey = "sRefreshToken";
+export const refreshTokenHeaderKey = "st-refresh-token";
+
+export const antiCsrfHeaderKey = "anti-csrf";
+
+export const frontTokenHeaderKey = "front-token";
+
+export const authModeHeaderKey = "st-auth-mode";

@@ -100,6 +100,14 @@ function getSessionVars() {
 }
 
 export function getFunc(evalStr: string): (...args: any[]) => any {
+    if (evalStr.startsWith("defaultValues:")) {
+        const defaultValues = JSON.parse(evalStr.split("defaultValues:")[1]);
+        if (!Array.isArray(defaultValues)) {
+            throw new Error("defaultValues must be an array");
+        }
+        return () => defaultValues.pop();
+    }
+
     if (evalStr.startsWith("session.fetchAndSetClaim")) {
         return async (a, c) => {
             userIdInCallback = a;

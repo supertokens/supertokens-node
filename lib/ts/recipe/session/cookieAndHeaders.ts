@@ -17,26 +17,20 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
 import { UserContext } from "../../types";
 import { encodeBase64 } from "../../utils";
-import { availableTokenTransferMethods } from "./constants";
+import {
+    availableTokenTransferMethods,
+    authorizationHeaderKey,
+    antiCsrfHeaderKey,
+    frontTokenHeaderKey,
+    authModeHeaderKey,
+} from "./constants";
 import SessionError from "./error";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
-
-const authorizationHeaderKey = "authorization";
-const accessTokenCookieKey = "sAccessToken";
-const accessTokenHeaderKey = "st-access-token";
-const refreshTokenCookieKey = "sRefreshToken";
-const refreshTokenHeaderKey = "st-refresh-token";
-
-const antiCsrfHeaderKey = "anti-csrf";
-
-const frontTokenHeaderKey = "front-token";
-
-const authModeHeaderKey = "st-auth-mode";
 
 export function clearSessionFromAllTokenTransferMethods(
     config: TypeNormalisedInput,
     res: BaseResponse,
-    request: BaseRequest | undefined,
+    request: BaseRequest,
     userContext: UserContext
 ) {
     // We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
@@ -54,7 +48,7 @@ export function clearSession(
     config: TypeNormalisedInput,
     res: BaseResponse,
     transferMethod: TokenTransferMethod,
-    request: BaseRequest | undefined,
+    request: BaseRequest,
     userContext: UserContext
 ) {
     // If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
@@ -96,31 +90,15 @@ export function getCORSAllowedHeaders(): string[] {
     return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, authModeHeaderKey];
 }
 
-export function getCookieNameFromTokenType(tokenType: TokenType) {
-    switch (tokenType) {
-        case "access":
-            return accessTokenCookieKey;
-        case "refresh":
-            return refreshTokenCookieKey;
-        default:
-            throw new Error("Unknown token type, should never happen.");
-    }
-}
-
-export function getResponseHeaderNameForTokenType(tokenType: TokenType) {
-    switch (tokenType) {
-        case "access":
-            return accessTokenHeaderKey;
-        case "refresh":
-            return refreshTokenHeaderKey;
-        default:
-            throw new Error("Unknown token type, should never happen.");
-    }
-}
-
-export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod: TokenTransferMethod) {
+export function getToken(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    tokenType: TokenType,
+    transferMethod: TokenTransferMethod,
+    userContext: UserContext
+) {
     if (transferMethod === "cookie") {
-        return req.getCookieValue(getCookieNameFromTokenType(tokenType));
+        return req.getCookieValue(config.getCookieNameForTokenType(req, tokenType, userContext));
     } else if (transferMethod === "header") {
         const value = req.getHeaderValue(authorizationHeaderKey);
         if (value === undefined || !value.startsWith("Bearer ")) {
@@ -140,7 +118,7 @@ export function setToken(
     value: string,
     expires: number,
     transferMethod: TokenTransferMethod,
-    req: BaseRequest | undefined,
+    req: BaseRequest,
     userContext: UserContext
 ) {
     logDebugMessage(`setToken: Setting ${tokenType} token as ${transferMethod}`);
@@ -148,7 +126,7 @@ export function setToken(
         setCookie(
             config,
             res,
-            getCookieNameFromTokenType(tokenType),
+            config.getCookieNameForTokenType(req, tokenType, userContext),
             value,
             expires,
             tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath",
@@ -156,7 +134,7 @@ export function setToken(
             userContext
         );
     } else if (transferMethod === "header") {
-        setHeader(res, getResponseHeaderNameForTokenType(tokenType), value);
+        setHeader(res, config.getResponseHeaderNameForTokenType(req, tokenType, userContext), value);
     }
 }
 
@@ -246,7 +224,7 @@ export function clearSessionCookiesFromOlderCookieDomain({
 
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        if (hasMultipleCookiesForTokenType(req, token)) {
+        if (hasMultipleCookiesForTokenType(config, req, token, userContext)) {
             // If a request has multiple session cookies and 'olderCookieDomain' is
             // unset, we can't identify the correct cookie for refreshing the session.
             // Using the wrong cookie can cause an infinite refresh loop. To avoid this,
@@ -283,7 +261,12 @@ export function clearSessionCookiesFromOlderCookieDomain({
     }
 }
 
-export function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: TokenType): boolean {
+export function hasMultipleCookiesForTokenType(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    tokenType: TokenType,
+    userContext: UserContext
+): boolean {
     const cookieString = req.getHeaderValue("cookie");
 
     if (cookieString === undefined) {
@@ -291,7 +274,7 @@ export function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: Toke
     }
 
     const cookies = parseCookieStringFromRequestHeaderAllowingDuplicates(cookieString);
-    const cookieName = getCookieNameFromTokenType(tokenType);
+    const cookieName = config.getCookieNameForTokenType(req, tokenType, userContext);
     return cookies[cookieName] !== undefined && cookies[cookieName].length > 1;
 }
 
