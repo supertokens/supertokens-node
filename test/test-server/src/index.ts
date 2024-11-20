@@ -33,6 +33,7 @@ import Multitenancy from "../../../recipe/multitenancy";
 import Passwordless from "../../../recipe/passwordless";
 import Session from "../../../recipe/session";
 import { verifySession } from "../../../recipe/session/framework/express";
+import { getResponseHeaderNameForTokenType, getCookieNameForTokenType } from "../../../lib/build/recipe/session/utils";
 import ThirdParty from "../../../recipe/thirdparty";
 import TOTP from "../../../recipe/totp";
 import OAuth2Provider from "../../../recipe/oauth2provider";
@@ -147,6 +148,14 @@ function initST(config: any) {
             recipeList.push(
                 Session.init({
                     ...config,
+                    getResponseHeaderNameForTokenType: loggingOverrideFuncSync(
+                        "Session.getResponseHeaderNameForTokenType",
+                        getResponseHeaderNameForTokenType
+                    ),
+                    getCookieNameForTokenType: loggingOverrideFuncSync(
+                        "Session.getCookieNameForTokenType",
+                        getCookieNameForTokenType
+                    ),
                     override: {
                         apis: overrideBuilderWithLogging("Session.override.apis", config?.override?.apis),
                         functions: overrideBuilderWithLogging(
@@ -164,9 +173,9 @@ function initST(config: any) {
                     shouldDoAutomaticAccountLinking: callbackWithLog(
                         "AccountLinking.shouldDoAutomaticAccountLinking",
                         config.shouldDoAutomaticAccountLinking,
-                        {
+                        () => ({
                             shouldAutomaticallyLink: false,
-                        }
+                        })
                     ),
                     onAccountLinked: callbackWithLog("AccountLinking.onAccountLinked", config.onAccountLinked),
                     override: {
@@ -219,7 +228,9 @@ function initST(config: any) {
                     getEmailForRecipeUserId: callbackWithLog(
                         "EmailVerification.getEmailForRecipeUserId",
                         config?.getEmailForRecipeUserId,
-                        { status: "UNKNOWN_USER_ID_ERROR" }
+                        () => ({
+                            status: "UNKNOWN_USER_ID_ERROR",
+                        })
                     ),
                     override: {
                         apis: overrideBuilderWithLogging("EmailVerification.override.apis", config?.override?.apis),
@@ -360,7 +371,7 @@ app.get("/test/overrideparams", async (req, res, next) => {
 });
 
 app.get("/test/featureflag", async (req, res, next) => {
-    res.json(["removedOverwriteSessionDuringSignInUp"]);
+    res.json(["removedOverwriteSessionDuringSignInUp", "configurableCookieAndHeaderNames"]);
 });
 
 app.post("/test/resetoverrideparams", async (req, res, next) => {
@@ -463,7 +474,7 @@ app.listen(API_PORT, "localhost", () => {
     logDebugMessage(`node-test-server-server started on localhost:${API_PORT}`);
 });
 
-function loggingOverrideFuncSync<T>(name: string, originalImpl: (...args: any[]) => Promise<T>) {
+function loggingOverrideFuncSync<T>(name: string, originalImpl: (...args: any[]) => T) {
     return function (...args: any[]) {
         logOverrideEvent(name, "CALL", args);
         try {
@@ -490,8 +501,8 @@ function loggingOverrideFunc<T>(name: string, originalImpl: (...args: any[]) => 
     };
 }
 
-function callbackWithLog<T = undefined>(name: string, overrideName: string, defaultValue?: T) {
-    const impl = overrideName ? getFunc(overrideName) : () => defaultValue;
+function callbackWithLog<T = undefined>(name: string, overrideName: string, defaultImpl?: (...args: any[]) => T) {
+    const impl = overrideName ? getFunc(overrideName) : defaultImpl ?? (() => undefined);
     return loggingOverrideFunc<T>(name, impl);
 }
 
