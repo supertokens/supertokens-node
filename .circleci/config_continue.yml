@@ -103,6 +103,8 @@ jobs:
         parameters:
             fdi-version:
                 type: string
+        environment:
+            MOCHA_FILE: test_report/report_node-<< parameters.fdi-version >>.xml
         parallelism: 4
         steps:
             - checkout
@@ -114,14 +116,16 @@ jobs:
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./authReact.sh << parameters.fdi-version >>)
             - store_artifacts:
-                  path: test_report/backend.log
+                  path: ~/test_report/backend.log
                   destination: logs
             - store_artifacts:
-                  path: test_report/screenshots
+                  path: ~/test_report/screenshots
                   destination: screenshots
             - store_artifacts:
-                  path: test_report/react-logs
+                  path: ~/test_report/react-logs
                   destination: react-logs
+            - store_test_results:
+                  path: ~/test_report/report_node-<< parameters.fdi-version >>.xml
             - slack/status
     test-success:
         docker:
