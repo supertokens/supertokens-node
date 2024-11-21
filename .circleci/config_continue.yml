@@ -104,7 +104,7 @@ jobs:
             fdi-version:
                 type: string
         environment:
-            MOCHA_FILE: test_report/report_node-<< parameters.fdi-version >>.xml
+            MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
         parallelism: 4
         steps:
             - checkout
