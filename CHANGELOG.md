@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Adds `getCookieNameForTokenType` config option to allow customizing the cookie name for a token type.
 -   Adds `getResponseHeaderNameForTokenType` config option to allow customizing the response header name for a token type.
     -   Please note, that using this will require further customizations on the frontend
+-   Fixes an issue where `removeDevice` API allowed removing TOTP devices without the user completing MFA.
 
 ## [21.0.0] - 2024-10-07
 
