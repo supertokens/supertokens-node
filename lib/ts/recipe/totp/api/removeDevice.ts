@@ -31,8 +31,7 @@ export default async function removeDeviceAPI(
         options.req,
         options.res,
         {
-            overrideGlobalClaimValidators: (globalClaimValidators) =>
-                globalClaimValidators.filter((v) => v.id === "st-mfa"),
+            overrideGlobalClaimValidators: () => [],
             sessionRequired: true,
         },
         userContext
