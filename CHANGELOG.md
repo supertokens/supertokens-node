@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [20.1.6] - 2024-11-22
+## [20.1.6] - 2024-11-26
 
--   Fixes an issue where `removeDevice` API allowed removing TOTP devices without the user completing MFA.
+-   Fixes an issue where `removeDevice` API allowed removing verifiedTOTP devices without the user completing MFA.
 
 ## [20.1.5] - 2024-10-09
 
