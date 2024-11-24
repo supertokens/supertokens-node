@@ -97,29 +97,80 @@ npm i
 cd ../../
 cd ../project/test/auth-react-server
 npm i
-mkdir -p ../../test_report
+mkdir -p ~/test_report
 
-echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion" >> ../../test_report/backend.log
-NODE_PORT=8083 DEBUG=com.supertokens TEST_MODE=testing node . >> ../../test_report/backend.log 2>&1 &
+apiPort=8083
+
+echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion" >> ~/test_report/backend.log
+NODE_PORT=$apiPort DEBUG=com.supertokens TEST_MODE=testing node . >> ~/test_report/backend.log 2>&1 &
 pid=$!
 cd ../../../supertokens-auth-react/
 
-# This says non-node, but what it actually means is that we will
-# be using the sever on this repo instead of the one in auth-react repo
+# Exit script from startEndToEnd func.
+trap "exit 1" TERM
+export EXIT_PID=$$
 
-# When testing with supertokens-auth-react for version >= 0.18 the SKIP_OAUTH 
-# flag will not be checked because Auth0 is used as a provider so that the Thirdparty tests can run reliably. 
-# In versions lower than 0.18 Github is used as the provider.
+function killServers () {
+    if [[ "${SERVER_STARTED}" != "true" ]]; then
+        echo "Kill servers."
+        lsof -i tcp:8082 | grep -m 1 node | awk '{printf $2}' | cut -c 1- | xargs -I {} kill -9 {} > /dev/null 2>&1
+        lsof -i tcp:3031 | grep -m 1 node | awk '{printf $2}' | cut -c 1- | xargs -I {} kill -9 {} > /dev/null 2>&1
+    else
+        echo "Leaving servers running because SERVER_STARTED=true"
+    fi
+}
 
-DEBUG=com.supertokens MOCHA_FILE=test_report/report_node.xml SKIP_OAUTH=true npm run test-with-non-node
-if [[ $? -ne 0 ]]
+#
+# Run.
+#
+
+trap "killServers" EXIT # Trap to execute on script shutdown
+
+
+# Start by killing any servers up on 8082 and 3031 if any.
+killServers
+
+mkdir -p ~/test_report/logs
+mkdir -p ~/test_report/react-logs
+mkdir -p ~/test_report/screenshots
+
+echo "Running tests with React 18"
+# Run node server in background.
+if [[ "${SERVER_STARTED}" != "true" ]]; then
+    (cd test/server/ && TEST_MODE=testing INSTALL_PATH=../../../supertokens-root NODE_PORT=8082 node . >> ~/test_report/react-logs/backend.log 2>&1 &)
+
+    (cd ./examples/for-tests/ && cat | CI=true BROWSER=none PORT=3031 REACT_APP_API_PORT=$apiPort npm run start >> ~/test_report/react-logs/frontend.log 2>&1 &)
+fi
+# Start front end test app and run tests.
+
+# Wait for the test app to be up before running tests.
+while ! curl -s localhost:3031 > /dev/null 2>&1
+do
+    echo "Waiting for front end test application to start..."
+    sleep 5
+done
+
+while ! curl -s localhost:8082 > /dev/null 2>&1
+do
+    echo "Waiting for backend test application to start..."
+    sleep 5
+done
+
+sleep 2 # Because the server is responding does not mean the app is ready. Let's wait another 2secs to make sure the app is up.
+echo "Start mocha testing"
+
+export SPEC_FILES=$(circleci tests glob 'test/end-to-end/**/*.test.js' 'test/unit/**/*.test.js')
+echo $SPEC_FILES | SCREENSHOT_ROOT=~/test_report/screenshots APP_SERVER=$apiPort TEST_MODE=testing multi="spec=- mocha-junit-reporter=/dev/null" circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config" --verbose --split-by=timings
+
+testPassed=$?;
+cp ../supertokens-root/logs/error.log ~/test_report/logs/core_error.log
+cp ../supertokens-root/logs/info.log ~/test_report/logs/core_info.log
+
+echo "testPassed exit code: $testPassed"
+killServers
+
+if [[ $testPassed -ne 0 ]]
 then
-    mkdir -p ../project/test_report/screenshots
-    mv ./test_report/screenshots/* ../project/test_report/screenshots/
-
-    mkdir -p ../project/test_report/react-logs
-    mv ./test_report/logs/* ../project/test_report/react-logs/
-
     echo "test failed... exiting!"
     rm -rf ./test/server/node_modules/supertokens-node
     git checkout HEAD -- ./test/server/package.json
