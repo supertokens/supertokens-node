@@ -1,6 +1,18 @@
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { UserContext } from "../../types";
+import { generateAuthenticationOptions, generateRegistrationOptions } from "@simplewebauthn/server";
+import crypto from "crypto";
+
+const db = {
+    generatedOptions: {} as Record<string, any>,
+};
+const writeDb = (table: keyof typeof db, key: string, value: any) => {
+    db[table][key] = value;
+};
+// const readDb = (table: keyof typeof db, key: string) => {
+//     return db[table][key];
+// };
 
 export const getMockQuerier = (recipeId: string) => {
     const querier = Querier.getNewInstanceOrThrowError(recipeId);
@@ -8,34 +20,50 @@ export const getMockQuerier = (recipeId: string) => {
     const sendPostRequest = async <T = any>(
         path: NormalisedURLPath,
         body: any,
-        userContext: UserContext
+        _userContext: UserContext
     ): Promise<T> => {
         if (path.getAsStringDangerous().includes("/recipe/webauthn/options/register")) {
+            const registrationOptions = await generateRegistrationOptions({
+                rpID: body.relyingPartyId,
+                rpName: body.relyingPartyName,
+                userName: body.email,
+                timeout: body.timeout,
+                attestationType: body.attestation || "none",
+                authenticatorSelection: {
+                    userVerification: body.userVerification || "preferred",
+                    requireResidentKey: body.requireResidentKey || false,
+                    residentKey: body.residentKey || "required",
+                },
+                supportedAlgorithmIDs: body.supportedAlgorithmIDs || [-8, -7, -257],
+                userDisplayName: body.displayName || body.email,
+            });
+            const id = crypto.randomUUID();
+            writeDb("generatedOptions", id, {
+                ...registrationOptions,
+                id,
+                origin: body.origin,
+                tenantId: body.tenantId,
+            });
             // @ts-ignore
             return {
                 status: "OK",
-                webauthnGeneratedOptionsId: "7ab03f6a-61b8-4f65-992f-b8b8469bc18f",
-                rp: { id: "example.com", name: "Example App" },
-                user: { id: "dummy-user-id", name: "user@example.com", displayName: "User" },
-                challenge: "dummy-challenge",
-                timeout: 60000,
-                excludeCredentials: [],
-                attestation: "none",
-                pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-                authenticatorSelection: {
-                    requireResidentKey: false,
-                    residentKey: "preferred",
-                    userVerification: "preferred",
-                },
+                webauthnGeneratedOptionsId: id,
+                ...registrationOptions,
             };
         } else if (path.getAsStringDangerous().includes("/recipe/webauthn/options/signin")) {
+            const signInOptions = await generateAuthenticationOptions({
+                rpID: body.relyingPartyId,
+                timeout: body.timeout,
+                userVerification: body.userVerification || "preferred",
+            });
+            const id = crypto.randomUUID();
+            writeDb("generatedOptions", id, { ...signInOptions, id, origin: body.origin, tenantId: body.tenantId });
+
             // @ts-ignore
             return {
                 status: "OK",
-                webauthnGeneratedOptionsId: "18302759-87c6-4d88-990d-c7cab43653cc",
-                challenge: "dummy-signin-challenge",
-                timeout: 60000,
-                userVerification: "preferred",
+                webauthnGeneratedOptionsId: id,
+                ...signInOptions,
             };
             // } else if (path.getAsStringDangerous().includes("/recipe/webauthn/user/recover/token")) {
             //     // @ts-ignore

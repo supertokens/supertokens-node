@@ -10,8 +10,8 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare type TypeNormalisedInput = {
-    relyingPartyId: TypeNormalisedInputRelyingPartyId;
-    relyingPartyName: TypeNormalisedInputRelyingPartyName;
+    getRelyingPartyId: TypeNormalisedInputRelyingPartyId;
+    getRelyingPartyName: TypeNormalisedInputRelyingPartyName;
     getOrigin: TypeNormalisedInputGetOrigin;
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
@@ -45,8 +45,8 @@ export declare type TypeNormalisedInputValidateEmailAddress = (
 ) => Promise<string | undefined> | string | undefined;
 export declare type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeWebauthnEmailDeliveryInput>;
-    relyingPartyId?: TypeInputRelyingPartyId;
-    relyingPartyName?: TypeInputRelyingPartyName;
+    getRelyingPartyId?: TypeInputRelyingPartyId;
+    getRelyingPartyName?: TypeInputRelyingPartyName;
     validateEmailAddress?: TypeInputValidateEmailAddress;
     getOrigin?: TypeInputGetOrigin;
     override?: {
@@ -73,16 +73,20 @@ export declare type TypeInputValidateEmailAddress = (
     tenantId: string
 ) => Promise<string | undefined> | string | undefined;
 declare type Base64URLString = string;
+export declare type ResidentKey = "required" | "preferred" | "discouraged";
+export declare type UserVerification = "required" | "preferred" | "discouraged";
+export declare type Attestation = "none" | "indirect" | "direct" | "enterprise";
 export declare type RecipeInterface = {
     registerOptions(
         input: {
             relyingPartyId: string;
             relyingPartyName: string;
+            displayName?: string;
             origin: string;
             requireResidentKey: boolean | undefined;
-            residentKey: "required" | "preferred" | "discouraged" | undefined;
-            userVerification: "required" | "preferred" | "discouraged" | undefined;
-            attestation: "none" | "indirect" | "direct" | "enterprise" | undefined;
+            residentKey: ResidentKey | undefined;
+            userVerification: UserVerification | undefined;
+            attestation: Attestation | undefined;
             supportedAlgorithmIds: number[] | undefined;
             timeout: number | undefined;
             tenantId: string;
@@ -115,15 +119,15 @@ export declare type RecipeInterface = {
                   type: "public-key";
                   transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
               }[];
-              attestation: "none" | "indirect" | "direct" | "enterprise";
+              attestation: Attestation;
               pubKeyCredParams: {
                   alg: number;
                   type: "public-key";
               }[];
               authenticatorSelection: {
                   requireResidentKey: boolean;
-                  residentKey: "required" | "preferred" | "discouraged";
-                  userVerification: "required" | "preferred" | "discouraged";
+                  residentKey: ResidentKey;
+                  userVerification: UserVerification;
               };
           }
         | {
@@ -133,12 +137,15 @@ export declare type RecipeInterface = {
               status: "INVALID_EMAIL_ERROR";
               err: string;
           }
+        | {
+              status: "INVALID_GENERATED_OPTIONS_ERROR";
+          }
     >;
     signInOptions(input: {
         email?: string;
         relyingPartyId: string;
         origin: string;
-        userVerification: "required" | "preferred" | "discouraged" | undefined;
+        userVerification: UserVerification | undefined;
         timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
@@ -148,10 +155,10 @@ export declare type RecipeInterface = {
               webauthnGeneratedOptionsId: string;
               challenge: string;
               timeout: number;
-              userVerification: "required" | "preferred" | "discouraged";
+              userVerification: UserVerification;
           }
         | {
-              status: "WRONG_CREDENTIALS_ERROR";
+              status: "INVALID_GENERATED_OPTIONS_ERROR";
           }
     >;
     signUp(input: {
@@ -171,7 +178,13 @@ export declare type RecipeInterface = {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
         | {
-              status: "WRONG_CREDENTIALS_ERROR";
+              status: "INVALID_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
+          }
+        | {
+              status: "INVALID_GENERATED_OPTIONS_ERROR";
           }
         | {
               status: "INVALID_AUTHENTICATOR_ERROR";
@@ -200,7 +213,7 @@ export declare type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | {
-              status: "WRONG_CREDENTIALS_ERROR";
+              status: "INVALID_CREDENTIALS_ERROR";
           }
         | {
               status: "LINKING_TO_SESSION_USER_FAILED";
@@ -223,7 +236,7 @@ export declare type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | {
-              status: "WRONG_CREDENTIALS_ERROR";
+              status: "INVALID_CREDENTIALS_ERROR";
           }
     >;
     createNewRecipeUser(input: {
@@ -238,7 +251,13 @@ export declare type RecipeInterface = {
               recipeUserId: RecipeUserId;
           }
         | {
-              status: "WRONG_CREDENTIALS_ERROR";
+              status: "INVALID_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
+          }
+        | {
+              status: "INVALID_GENERATED_OPTIONS_ERROR";
           }
         | {
               status: "INVALID_AUTHENTICATOR_ERROR";
@@ -291,7 +310,13 @@ export declare type RecipeInterface = {
               status: "OK";
           }
         | {
-              status: "WRONG_CREDENTIALS_ERROR";
+              status: "INVALID_CREDENTIALS_ERROR";
+          }
+        | {
+              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
+          }
+        | {
+              status: "INVALID_GENERATED_OPTIONS_ERROR";
           }
         | {
               status: "INVALID_AUTHENTICATOR_ERROR";
@@ -357,7 +382,7 @@ export declare type RecipeInterface = {
               };
           }
         | {
-              status: "WRONG_CREDENTIALS_ERROR";
+              status: "INVALID_CREDENTIALS_ERROR";
           }
     >;
     getUserFromRecoverAccountToken(input: {
@@ -497,8 +522,8 @@ export declare type APIInterface = {
                     }[];
                     authenticatorSelection: {
                         requireResidentKey: boolean;
-                        residentKey: "required" | "preferred" | "discouraged";
-                        userVerification: "required" | "preferred" | "discouraged";
+                        residentKey: ResidentKey;
+                        userVerification: UserVerification;
                     };
                 }
               | GeneralErrorResponse
@@ -508,6 +533,9 @@ export declare type APIInterface = {
               | {
                     status: "INVALID_EMAIL_ERROR";
                     err: string;
+                }
+              | {
+                    status: "INVALID_GENERATED_OPTIONS_ERROR";
                 }
           >);
     signInOptionsPOST:
@@ -523,11 +551,11 @@ export declare type APIInterface = {
                     webauthnGeneratedOptionsId: string;
                     challenge: string;
                     timeout: number;
-                    userVerification: "required" | "preferred" | "discouraged";
+                    userVerification: UserVerification;
                 }
               | GeneralErrorResponse
               | {
-                    status: "WRONG_CREDENTIALS_ERROR";
+                    status: "INVALID_GENERATED_OPTIONS_ERROR";
                 }
           >);
     signUpPOST:
@@ -552,14 +580,20 @@ export declare type APIInterface = {
                     reason: string;
                 }
               | {
-                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                    status: "INVALID_CREDENTIALS_ERROR";
                 }
               | {
-                    status: "WRONG_CREDENTIALS_ERROR";
+                    status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
+                }
+              | {
+                    status: "INVALID_GENERATED_OPTIONS_ERROR";
                 }
               | {
                     status: "INVALID_AUTHENTICATOR_ERROR";
                     reason: string;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
           >);
     signInPOST:
@@ -584,7 +618,7 @@ export declare type APIInterface = {
                     reason: string;
                 }
               | {
-                    status: "WRONG_CREDENTIALS_ERROR";
+                    status: "INVALID_CREDENTIALS_ERROR";
                 }
           >);
     generateRecoverAccountTokenPOST:
@@ -624,7 +658,13 @@ export declare type APIInterface = {
                     status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
                 }
               | {
-                    status: "WRONG_CREDENTIALS_ERROR";
+                    status: "INVALID_CREDENTIALS_ERROR";
+                }
+              | {
+                    status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
+                }
+              | {
+                    status: "INVALID_GENERATED_OPTIONS_ERROR";
                 }
               | {
                     status: "INVALID_AUTHENTICATOR_ERROR";
