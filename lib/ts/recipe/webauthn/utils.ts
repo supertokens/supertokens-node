@@ -29,6 +29,7 @@ import {
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest } from "../../framework";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -52,9 +53,10 @@ export function validateAndNormaliseUserInput(
          * If the user has not passed even that config, we use the default
          * createAndSendCustomEmail implementation which calls our supertokens API
          */
-        // if (emailService === undefined) {
-        //     emailService = new BackwardCompatibilityService(appInfo, isInServerlessEnv);
-        // }
+        if (emailService === undefined) {
+            emailService = new BackwardCompatibilityService(appInfo, isInServerlessEnv);
+        }
+
         return {
             ...config?.emailDelivery,
             /**
@@ -69,7 +71,7 @@ export function validateAndNormaliseUserInput(
              * set service at the end
              */
             // todo implemenet this
-            service: null as any,
+            service: emailService,
         };
     }
     return {
@@ -92,11 +94,16 @@ function validateAndNormaliseRelyingPartyIdConfig(
         } else if (typeof relyingPartyIdConfig === "function") {
             return relyingPartyIdConfig(props);
         } else {
-            return Promise.resolve(
-                normalisedAppinfo
-                    .getOrigin({ request: props.request, userContext: props.userContext })
-                    .getAsStringDangerous()
-            );
+            const urlString = normalisedAppinfo
+                .getOrigin({ request: props.request, userContext: props.userContext })
+                .getAsStringDangerous();
+
+            // should let this throw if the url is invalid
+            const url = new URL(urlString);
+
+            const hostname = url.hostname;
+
+            return Promise.resolve(hostname);
         }
     };
 }

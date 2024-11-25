@@ -35,7 +35,7 @@ import signInOptionsAPI from "./api/signInOptions";
 import generateRecoverAccountTokenAPI from "./api/generateRecoverAccountToken";
 import recoverAccountAPI from "./api/recoverAccount";
 import emailExistsAPI from "./api/emailExists";
-import { isTestEnv, send200Response } from "../../utils";
+import { isTestEnv } from "../../utils";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -322,6 +322,7 @@ export default class Recipe extends RecipeModule {
             emailDelivery: this.emailDelivery,
             appInfo: this.getAppInfo(),
         };
+
         if (id === REGISTER_OPTIONS_API) {
             return await registerOptionsAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGNIN_OPTIONS_API) {
@@ -339,7 +340,7 @@ export default class Recipe extends RecipeModule {
         } else return false;
     };
 
-    handleError = async (err: STError, _request: BaseRequest, response: BaseResponse): Promise<void> => {
+    handleError = async (err: STError, _request: BaseRequest, _response: BaseResponse): Promise<void> => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
             throw err;
         } else {
