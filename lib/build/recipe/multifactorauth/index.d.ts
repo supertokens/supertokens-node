@@ -9,6 +9,7 @@ export default class Wrapper {
     static MultiFactorAuthClaim: import("./multiFactorAuthClaim").MultiFactorAuthClaimClass;
     static FactorIds: {
         EMAILPASSWORD: string;
+        WEBAUTHN: string;
         OTP_EMAIL: string;
         OTP_PHONE: string;
         LINK_EMAIL: string;
