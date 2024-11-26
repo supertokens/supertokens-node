@@ -14,7 +14,7 @@
  */
 
 import { APIInterface } from "../";
-import MultiFactorAuth from "../../multifactorauth";
+import MultiFactorAuth, { MultiFactorAuthClaim } from "../../multifactorauth";
 import MultiFactorAuthRecipe from "../../multifactorauth/recipe";
 import SessionError from "../../session/error";
 
@@ -58,6 +58,15 @@ export default function getAPIInterface(): APIInterface {
 
         removeDevicePOST: async function ({ deviceName, options, session, userContext }) {
             const userId = session.getUserId();
+
+            const deviceList = await options.recipeImplementation.listDevices({
+                userId,
+                userContext,
+            });
+
+            if (deviceList.devices.some((device) => device.name === deviceName && device.verified)) {
+                await session.assertClaims([MultiFactorAuthClaim.validators.hasCompletedMFARequirementsForAuth()]);
+            }
 
             return await options.recipeImplementation.removeDevice({
                 userId,

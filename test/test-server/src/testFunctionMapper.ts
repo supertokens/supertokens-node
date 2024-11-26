@@ -385,6 +385,16 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
     }
 
     if (evalStr.startsWith("multifactorauth.init.override.functions")) {
+        if (evalStr.includes(`getMFARequirementsForAuth:async()=>["totp"]`)) {
+            return (e) => {
+                return {
+                    ...e,
+                    getMFARequirementsForAuth: (e) => {
+                        return ["totp"];
+                    },
+                };
+            };
+        }
         return (e) => {
             return {
                 ...e,
