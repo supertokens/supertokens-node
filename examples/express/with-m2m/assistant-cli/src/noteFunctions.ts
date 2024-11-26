@@ -1,4 +1,4 @@
-import {noteServiceBaseUrl} from './constants.js';
+import { noteServiceBaseUrl } from "./constants.js";
 
 export type AssistantNote = {
 	id: number;
@@ -9,15 +9,12 @@ export type AssistantNote = {
 /**
  * Adds a new note to the note service
  */
-export async function addNote(
-	accessToken: string,
-	note: Omit<AssistantNote, 'id'>,
-): Promise<AssistantNote> {
+export async function addNote(accessToken: string, note: Omit<AssistantNote, "id">): Promise<AssistantNote> {
 	const resp = await fetch(`${noteServiceBaseUrl}/note`, {
-		method: 'POST',
+		method: "POST",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
-			'Content-Type': 'application/json',
+			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(note),
 	});
@@ -30,12 +27,9 @@ export async function addNote(
 /**
  * Deletes a note from the note service
  */
-export async function deleteNote(
-	accessToken: string,
-	noteId: number,
-): Promise<{deleted: boolean}> {
+export async function deleteNote(accessToken: string, noteId: number): Promise<{ deleted: boolean }> {
 	const resp = await fetch(`${noteServiceBaseUrl}/note/${noteId}`, {
-		method: 'DELETE',
+		method: "DELETE",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 		},
@@ -51,7 +45,7 @@ export async function deleteNote(
  */
 export async function getNotes(accessToken: string): Promise<AssistantNote[]> {
 	const resp = await fetch(`${noteServiceBaseUrl}/note`, {
-		method: 'GET',
+		method: "GET",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 		},
@@ -68,13 +62,13 @@ export async function getNotes(accessToken: string): Promise<AssistantNote[]> {
 export async function updateNote(
 	accessToken: string,
 	noteId: number,
-	note: Partial<Omit<AssistantNote, 'id'>>,
+	note: Partial<Omit<AssistantNote, "id">>
 ): Promise<AssistantNote> {
 	const resp = await fetch(`${noteServiceBaseUrl}/note/${noteId}`, {
-		method: 'PUT',
+		method: "PUT",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
-			'Content-Type': 'application/json',
+			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(note),
 	});

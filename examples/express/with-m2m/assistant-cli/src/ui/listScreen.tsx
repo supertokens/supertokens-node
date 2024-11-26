@@ -1,21 +1,19 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {useInput, Box, Text} from 'ink';
-import {exit} from 'process';
-import {AssistantNote} from '../noteFunctions.js';
-import {AssistantEvent} from '../eventFunctions.js';
-import {NoteCard} from './note.js';
-import {EventCard} from './event.js';
+import React, { useCallback, useEffect, useState } from "react";
+import { useInput, Box, Text } from "ink";
+import { exit } from "process";
+import { AssistantNote } from "../noteFunctions.js";
+import { AssistantEvent } from "../eventFunctions.js";
+import { NoteCard } from "./note.js";
+import { EventCard } from "./event.js";
 
 type ListViewProps = {
 	getEvents: () => Promise<AssistantEvent[]>;
-	createNewEvent: (
-		event: Omit<AssistantEvent, 'id'>,
-	) => Promise<AssistantEvent>;
-	deleteEvent: (id: number) => Promise<{deleted: boolean}>;
+	createNewEvent: (event: Omit<AssistantEvent, "id">) => Promise<AssistantEvent>;
+	deleteEvent: (id: number) => Promise<{ deleted: boolean }>;
 	updateEvent: (event: AssistantEvent) => Promise<AssistantEvent>;
 	getNotes: () => Promise<AssistantNote[]>;
-	createNewNote: (note: Omit<AssistantNote, 'id'>) => Promise<AssistantNote>;
-	deleteNote: (id: number) => Promise<{deleted: boolean}>;
+	createNewNote: (note: Omit<AssistantNote, "id">) => Promise<AssistantNote>;
+	deleteNote: (id: number) => Promise<{ deleted: boolean }>;
 	updateNote: (note: AssistantNote) => Promise<AssistantNote>;
 };
 
@@ -32,7 +30,7 @@ export function ListView({
 	const [isEditing, setIsEditing] = useState(false);
 	const [notes, setNotes] = useState<AssistantNote[] | null>(null);
 	const [events, setEvents] = useState<AssistantEvent[] | null>(null);
-	const [selectedType, setSelectedType] = useState<'note' | 'event'>('note');
+	const [selectedType, setSelectedType] = useState<"note" | "event">("note");
 	const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
 	const refreshEvents = useCallback(async () => {
@@ -55,11 +53,11 @@ export function ListView({
 			return;
 		}
 
-		if (input === 'q' || key.escape) {
+		if (input === "q" || key.escape) {
 			exit();
 		}
 
-		if (input === 'r') {
+		if (input === "r") {
 			refreshEvents();
 			refreshNotes();
 		}
@@ -68,11 +66,11 @@ export function ListView({
 		}
 
 		if (key.leftArrow) {
-			setSelectedType('note');
+			setSelectedType("note");
 		}
 
 		if (key.rightArrow) {
-			setSelectedType('event');
+			setSelectedType("event");
 		}
 
 		if (key.upArrow) {
@@ -80,23 +78,18 @@ export function ListView({
 		}
 
 		if (key.downArrow) {
-			setSelectedIndex(
-				Math.min(
-					selectedIndex + 1,
-					selectedType === 'note' ? notes.length : events.length,
-				),
-			);
+			setSelectedIndex(Math.min(selectedIndex + 1, selectedType === "note" ? notes.length : events.length));
 		}
 
 		if (key.delete) {
-			if (selectedType === 'note') {
+			if (selectedType === "note") {
 				if (selectedIndex >= notes.length) {
 					return;
 				}
 				await deleteNote(notes[selectedIndex]!.id);
 				await refreshNotes();
 			}
-			if (selectedType === 'event') {
+			if (selectedType === "event") {
 				if (selectedIndex >= events.length) {
 					return;
 				}
@@ -106,11 +99,11 @@ export function ListView({
 		}
 
 		if (key.return) {
-			if (selectedType === 'note') {
+			if (selectedType === "note") {
 				if (selectedIndex >= notes.length) {
 					await createNewNote({
-						title: 'New Note',
-						description: 'New Description',
+						title: "New Note",
+						description: "New Description",
 					});
 					await refreshNotes();
 					setIsEditing(true);
@@ -119,11 +112,11 @@ export function ListView({
 				}
 			}
 
-			if (selectedType === 'event') {
+			if (selectedType === "event") {
 				if (selectedIndex >= events.length) {
 					await createNewEvent({
-						title: 'New Event',
-						description: 'Description',
+						title: "New Event",
+						description: "Description",
 						start: Date.now() + 1000 * 60 * 60 * 3,
 						end: Date.now() + 1000 * 60 * 60 * 4,
 					});
@@ -138,34 +131,22 @@ export function ListView({
 
 	if (notes === null || events === null) {
 		return (
-			<Box
-				width={150}
-				justifyContent="space-between"
-				alignItems="flex-start"
-				flexDirection="row"
-			>
+			<Box width={150} justifyContent="space-between" alignItems="flex-start" flexDirection="row">
 				<Text>Loading...</Text>
 			</Box>
 		);
 	}
 
 	return (
-		<Box
-			width={150}
-			justifyContent="space-between"
-			alignItems="flex-start"
-			flexDirection="row"
-		>
+		<Box width={150} justifyContent="space-between" alignItems="flex-start" flexDirection="row">
 			<Box flexDirection="column">
 				{notes.map((note, index) => (
 					<NoteCard
 						note={note}
-						key={'nt' + note.id}
-						selected={selectedType === 'note' && index === selectedIndex}
-						isEditing={
-							selectedType === 'note' && index === selectedIndex && isEditing
-						}
-						onSave={note => updateNote(note).then(() => refreshNotes())}
+						key={"nt" + note.id}
+						selected={selectedType === "note" && index === selectedIndex}
+						isEditing={selectedType === "note" && index === selectedIndex && isEditing}
+						onSave={(note) => updateNote(note).then(() => refreshNotes())}
 						onDone={() => setIsEditing(false)}
 					/>
 				))}
@@ -174,12 +155,7 @@ export function ListView({
 					flexDirection="column"
 					padding={1}
 					borderStyle="round"
-					borderColor={
-						selectedType === 'note' && selectedIndex >= notes.length
-							? 'green'
-							: 'white'
-					}
-				>
+					borderColor={selectedType === "note" && selectedIndex >= notes.length ? "green" : "white"}>
 					<Text>Add Note</Text>
 				</Box>
 			</Box>
@@ -187,12 +163,10 @@ export function ListView({
 				{events.map((event, index) => (
 					<EventCard
 						event={event}
-						key={'ev' + event.id}
-						selected={selectedType === 'event' && index === selectedIndex}
-						isEditing={
-							selectedType === 'event' && index === selectedIndex && isEditing
-						}
-						onSave={event => updateEvent(event).then(() => refreshEvents())}
+						key={"ev" + event.id}
+						selected={selectedType === "event" && index === selectedIndex}
+						isEditing={selectedType === "event" && index === selectedIndex && isEditing}
+						onSave={(event) => updateEvent(event).then(() => refreshEvents())}
 						onDone={() => setIsEditing(false)}
 					/>
 				))}
@@ -201,12 +175,7 @@ export function ListView({
 					flexDirection="column"
 					padding={1}
 					borderStyle="round"
-					borderColor={
-						selectedType === 'event' && selectedIndex >= events.length
-							? 'green'
-							: 'white'
-					}
-				>
+					borderColor={selectedType === "event" && selectedIndex >= events.length ? "green" : "white"}>
 					<Text>Add Event</Text>
 				</Box>
 			</Box>

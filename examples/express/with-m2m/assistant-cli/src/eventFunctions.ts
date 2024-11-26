@@ -1,4 +1,4 @@
-import {calendarServiceBaseUrl} from './constants.js';
+import { calendarServiceBaseUrl } from "./constants.js";
 
 export type AssistantEvent = {
 	id: number;
@@ -11,15 +11,12 @@ export type AssistantEvent = {
 /**
  * Adds a new event to the calendar service
  */
-export async function addEvent(
-	accessToken: string,
-	event: Omit<AssistantEvent, 'id'>,
-): Promise<AssistantEvent> {
+export async function addEvent(accessToken: string, event: Omit<AssistantEvent, "id">): Promise<AssistantEvent> {
 	const resp = await fetch(`${calendarServiceBaseUrl}/event`, {
-		method: 'POST',
+		method: "POST",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
-			'Content-Type': 'application/json',
+			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(event),
 	});
@@ -36,13 +33,13 @@ export async function addEvent(
 export async function updateEvent(
 	accessToken: string,
 	eventId: number,
-	event: Partial<Omit<AssistantEvent, 'id'>>,
+	event: Partial<Omit<AssistantEvent, "id">>
 ): Promise<AssistantEvent> {
 	const resp = await fetch(`${calendarServiceBaseUrl}/event/${eventId}`, {
-		method: 'PUT',
+		method: "PUT",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
-			'Content-Type': 'application/json',
+			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(event),
 	});
@@ -55,12 +52,9 @@ export async function updateEvent(
 /**
  * Deletes an event from the calendar service
  */
-export async function deleteEvent(
-	accessToken: string,
-	eventId: number,
-): Promise<{deleted: boolean}> {
+export async function deleteEvent(accessToken: string, eventId: number): Promise<{ deleted: boolean }> {
 	const resp = await fetch(`${calendarServiceBaseUrl}/event/${eventId}`, {
-		method: 'DELETE',
+		method: "DELETE",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 		},
@@ -74,11 +68,9 @@ export async function deleteEvent(
 /**
  * Retrieves all events from the calendar service
  */
-export async function getEvents(
-	accessToken: string,
-): Promise<AssistantEvent[]> {
+export async function getEvents(accessToken: string): Promise<AssistantEvent[]> {
 	const resp = await fetch(`${calendarServiceBaseUrl}/event`, {
-		method: 'GET',
+		method: "GET",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 		},

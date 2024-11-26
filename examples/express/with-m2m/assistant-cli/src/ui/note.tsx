@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
-import {Text, Box, useInput} from 'ink';
-import {AssistantNote} from '../noteFunctions.js';
-import {UncontrolledTextInput} from 'ink-text-input';
+import React, { useState } from "react";
+import { Text, Box, useInput } from "ink";
+import { AssistantNote } from "../noteFunctions.js";
+import { UncontrolledTextInput } from "ink-text-input";
 
 type Props = {
 	note: AssistantNote;
@@ -11,10 +11,8 @@ type Props = {
 	onDone: () => void;
 };
 
-export function NoteCard({note, selected, isEditing, onSave, onDone}: Props) {
-	const [selectedField, setSelectedField] = useState<keyof AssistantNote>(
-		'title',
-	);
+export function NoteCard({ note, selected, isEditing, onSave, onDone }: Props) {
+	const [selectedField, setSelectedField] = useState<keyof AssistantNote>("title");
 
 	useInput(
 		(_input, key) => {
@@ -23,17 +21,17 @@ export function NoteCard({note, selected, isEditing, onSave, onDone}: Props) {
 			}
 
 			if (key.downArrow) {
-				setSelectedField('description');
+				setSelectedField("description");
 			}
 			if (key.upArrow) {
-				setSelectedField('title');
+				setSelectedField("title");
 			}
 			if (key.escape) {
-				setSelectedField('title');
+				setSelectedField("title");
 				onDone();
 			}
 		},
-		{isActive: isEditing},
+		{ isActive: isEditing }
 	);
 
 	return (
@@ -42,23 +40,22 @@ export function NoteCard({note, selected, isEditing, onSave, onDone}: Props) {
 			flexDirection="column"
 			gap={1}
 			borderStyle="round"
-			borderColor={selected ? (isEditing ? 'yellowBright' : 'green') : 'white'}
-		>
+			borderColor={selected ? (isEditing ? "yellowBright" : "green") : "white"}>
 			<Box alignItems="center">
-				{isEditing && selectedField === 'title' ? (
+				{isEditing && selectedField === "title" ? (
 					<UncontrolledTextInput
 						initialValue={note.title}
-						onSubmit={value => onSave({...note, title: value})}
+						onSubmit={(value) => onSave({ ...note, title: value })}
 					/>
 				) : (
 					<Text bold> {note.title} </Text>
 				)}
 			</Box>
 			<Box justifyContent="flex-start">
-				{isEditing && selectedField === 'description' ? (
+				{isEditing && selectedField === "description" ? (
 					<UncontrolledTextInput
 						initialValue={note.description}
-						onSubmit={value => onSave({...note, description: value})}
+						onSubmit={(value) => onSave({ ...note, description: value })}
 					/>
 				) : (
 					<Text> {note.description} </Text>

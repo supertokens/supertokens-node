@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
-import {Text, Box, useInput} from 'ink';
-import {AssistantEvent} from '../eventFunctions.js';
-import {UncontrolledTextInput} from 'ink-text-input';
+import React, { useState } from "react";
+import { Text, Box, useInput } from "ink";
+import { AssistantEvent } from "../eventFunctions.js";
+import { UncontrolledTextInput } from "ink-text-input";
 
 type Props = {
 	event: AssistantEvent;
@@ -11,10 +11,8 @@ type Props = {
 	onDone: () => void;
 };
 
-export function EventCard({event, selected, isEditing, onSave, onDone}: Props) {
-	const [selectedField, setSelectedField] = useState<keyof AssistantEvent>(
-		'title',
-	);
+export function EventCard({ event, selected, isEditing, onSave, onDone }: Props) {
+	const [selectedField, setSelectedField] = useState<keyof AssistantEvent>("title");
 
 	useInput(
 		(_input, key) => {
@@ -24,46 +22,46 @@ export function EventCard({event, selected, isEditing, onSave, onDone}: Props) {
 
 			if (key.downArrow) {
 				switch (selectedField) {
-					case 'title':
-						setSelectedField('start');
+					case "title":
+						setSelectedField("start");
 						break;
-					case 'start':
-						setSelectedField('end');
+					case "start":
+						setSelectedField("end");
 						break;
-					case 'end':
-						setSelectedField('description');
+					case "end":
+						setSelectedField("description");
 						break;
-					case 'description':
-						setSelectedField('title');
+					case "description":
+						setSelectedField("title");
 						break;
 					default:
-						setSelectedField('title');
+						setSelectedField("title");
 				}
 			}
 			if (key.upArrow) {
 				switch (selectedField) {
-					case 'description':
-						setSelectedField('end');
+					case "description":
+						setSelectedField("end");
 						break;
-					case 'end':
-						setSelectedField('start');
+					case "end":
+						setSelectedField("start");
 						break;
-					case 'start':
-						setSelectedField('title');
+					case "start":
+						setSelectedField("title");
 						break;
-					case 'title':
-						setSelectedField('title');
+					case "title":
+						setSelectedField("title");
 						break;
 					default:
-						setSelectedField('title');
+						setSelectedField("title");
 				}
 			}
 			if (key.escape) {
-				setSelectedField('title');
+				setSelectedField("title");
 				onDone();
 			}
 		},
-		{isActive: isEditing},
+		{ isActive: isEditing }
 	);
 
 	return (
@@ -72,35 +70,33 @@ export function EventCard({event, selected, isEditing, onSave, onDone}: Props) {
 			flexDirection="column"
 			gap={1}
 			borderStyle="round"
-			borderColor={selected ? (isEditing ? 'yellowBright' : 'green') : 'white'}
-		>
+			borderColor={selected ? (isEditing ? "yellowBright" : "green") : "white"}>
 			<Box alignItems="center">
-				{isEditing &&
-				(selectedField === 'title' || selectedField === undefined) ? (
+				{isEditing && (selectedField === "title" || selectedField === undefined) ? (
 					<UncontrolledTextInput
 						initialValue={event.title}
-						onSubmit={value => onSave({...event, title: value})}
+						onSubmit={(value) => onSave({ ...event, title: value })}
 					/>
 				) : (
 					<Text bold> {event.title} </Text>
 				)}
 			</Box>
 			<Box>
-				{isEditing && selectedField === 'start' ? (
+				{isEditing && selectedField === "start" ? (
 					<UncontrolledTextInput
 						initialValue={new Date(event.start).toLocaleString()}
-						onSubmit={value => onSave({...event, start: Date.parse(value)})}
+						onSubmit={(value) => onSave({ ...event, start: Date.parse(value) })}
 					/>
 				) : (
 					<Text bold> {new Date(event.start).toLocaleString()} </Text>
 				)}
 				<Text> - </Text>
-				{isEditing && selectedField === 'end' ? (
+				{isEditing && selectedField === "end" ? (
 					<UncontrolledTextInput
 						initialValue={new Date(event.end).toLocaleString()}
-						onSubmit={value => {
+						onSubmit={(value) => {
 							if (Number.isNaN(Date.parse(value))) {
-								return onSave({...event, end: Date.parse(value)});
+								return onSave({ ...event, end: Date.parse(value) });
 							}
 						}}
 					/>
@@ -109,10 +105,10 @@ export function EventCard({event, selected, isEditing, onSave, onDone}: Props) {
 				)}
 			</Box>
 			<Box justifyContent="flex-start">
-				{isEditing && selectedField === 'description' ? (
+				{isEditing && selectedField === "description" ? (
 					<UncontrolledTextInput
 						initialValue={event.description}
-						onSubmit={value => onSave({...event, description: value})}
+						onSubmit={(value) => onSave({ ...event, description: value })}
 					/>
 				) : (
 					<Text> {event.description} </Text>
