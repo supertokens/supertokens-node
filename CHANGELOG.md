@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [18.0.3] - 2024-11-28
+
+-   Fixes an issue where `removeDevice` API allowed removing verifiedTOTP devices without the user completing MFA.
+
 ## [18.0.2] - 2024-07-09
 
 -   `refreshPOST` and `refreshSession` now clears all user tokens upon CSRF failures and if no tokens are found. See the latest comment on https://github.com/supertokens/supertokens-node/issues/141 for more details.
