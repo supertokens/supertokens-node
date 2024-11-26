@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [19.0.2] - 2024-11-26
+
+-   Fixes an issue where `removeDevice` API allowed removing verifiedTOTP devices without the user completing MFA.
+
 ## [19.0.1] - 2024-07-18
 
 -   Fixes issue in fetching `thirdPartyConfig` for dashboard when OIDC discovery endpoint is added in core.

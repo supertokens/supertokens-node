@@ -1,5 +1,6 @@
 /node_modules
 /examples/**/node_modules
+/examples/**/dist
 .DS_Store
 /.history
 *.js.map
@@ -13,3 +14,5 @@ releasePassword
 /temp_test_exports
 /temp_*
 /.nyc_output
+.circleci/.pat
+examples/express/with-m2m/clients.json
