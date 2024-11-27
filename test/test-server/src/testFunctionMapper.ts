@@ -100,6 +100,14 @@ function getSessionVars() {
 }
 
 export function getFunc(evalStr: string): (...args: any[]) => any {
+    if (evalStr.startsWith("defaultValues:")) {
+        const defaultValues = JSON.parse(evalStr.split("defaultValues:")[1]);
+        if (!Array.isArray(defaultValues)) {
+            throw new Error("defaultValues must be an array");
+        }
+        return () => defaultValues.pop();
+    }
+
     if (evalStr.startsWith("session.fetchAndSetClaim")) {
         return async (a, c) => {
             userIdInCallback = a;
@@ -115,6 +123,44 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
     }
 
     if (evalStr.startsWith("accountlinking.init.shouldDoAutomaticAccountLinking")) {
+        if (evalStr.includes("onlyLinkIfNewUserVerified")) {
+            return async (newUserAccount, existingUser, session, tenantId, userContext) => {
+                if (userContext.DO_NOT_LINK) {
+                    return { shouldAutomaticallyLink: false };
+                }
+                // if the user account uses third party, and if it is about to be linked to an existing user
+                if (newUserAccount.thirdParty !== undefined && existingUser !== undefined) {
+                    // The main idea here is that we want to do account linking only if we know that the
+                    // email is already verified for the newUserAccount. If we know that that's not the case,
+                    // then we do not link it. It will result in a new user being created, and then an email
+                    // verification email being sent out to them. Once they verify it, we will try linking again,
+                    // but this time, we know that the email is verified, so it will succeed.
+                    if (userContext.isVerified) {
+                        // This signal comes in from the signInUp function override - from the third party provider.
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    }
+                    // if (newUserAccount.recipeUserId !== undefined) {
+                    //     let isEmailVerified = await EmailVerification.isEmailVerified(newUserAccount.recipeUserId, undefined, userContext);
+                    //     if (isEmailVerified) {
+                    //         return {
+                    //             shouldAutomaticallyLink: true,
+                    //             shouldRequireVerification: true,
+                    //         }
+                    //     }
+                    // }
+                    return {
+                        shouldAutomaticallyLink: false,
+                    };
+                }
+                return {
+                    shouldAutomaticallyLink: true,
+                    shouldRequireVerification: true,
+                };
+            };
+        }
         return async (i, l, o, u, a) => {
             // Handle specific user context cases
             if (evalStr.includes("()=>({shouldAutomaticallyLink:!0,shouldRequireVerification:!1})")) {
@@ -426,6 +472,18 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
         };
     }
 
+    if (evalStr.startsWith("thirdparty.init.override.functions")) {
+        if (evalStr.includes("setIsVerifiedInSignInUp")) {
+            return (originalImplementation) => ({
+                ...originalImplementation,
+                signInUpPOST: async function (input) {
+                    input.userContext.isVerified = input.isVerified; // this information comes from the third party provider
+                    return await originalImplementation.signInUp(input);
+                },
+            });
+        }
+    }
+
     if (evalStr.startsWith("thirdparty.init.override.apis")) {
         return (n) => ({
             ...n,
@@ -458,10 +516,10 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
         if (evalStr.includes("custom-no-ev")) {
             return (e) => ({
                 ...e,
-                exchangeAuthCodeForOAuthTokens: () => ({}),
-                getUserInfo: () => ({
-                    thirdPartyUserId: "user",
-                    email: { id: "email@test.com", isVerified: false },
+                exchangeAuthCodeForOAuthTokens: ({ redirectURIInfo: e }) => e,
+                getUserInfo: ({ oAuthTokens: e }) => ({
+                    thirdPartyUserId: e.userId ?? "user",
+                    email: { id: e.email ?? "email@test.com", isVerified: false },
                     rawUserInfoFromProvider: {},
                 }),
             });
@@ -502,5 +560,5 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
         }
     }
 
-    throw new Error("Unknown eval string");
+    throw new Error("Unknown eval string: " + evalStr);
 }

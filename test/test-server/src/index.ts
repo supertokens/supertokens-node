@@ -47,6 +47,8 @@ import TOTPRoutes from "./totp";
 import { getFunc, resetOverrideParams, getOverrideParams } from "./testFunctionMapper";
 import OverrideableBuilder from "supertokens-js-override";
 import { resetOverrideLogs, logOverrideEvent, getOverrideLogs } from "./overrideLogging";
+import Dashboard from "../../../recipe/dashboard";
+import DashboardRecipe from "../../../lib/build/recipe/dashboard/recipe";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
@@ -63,7 +65,12 @@ function defaultSTInit() {
         supertokens: {
             connectionURI: process.env.ST_CONNECTION_URI || "http://localhost:8080",
         },
-        recipeList: [Session.init()],
+        recipeList: [
+            Session.init(),
+            Dashboard.init({
+                apiKey: "test",
+            }),
+        ],
     });
 }
 
@@ -85,12 +92,17 @@ function STReset() {
     MultiFactorAuthRecipe.reset();
     TOTPRecipe.reset();
     SuperTokensRecipe.reset();
+    DashboardRecipe.reset();
 }
 
 function initST(config: any) {
     STReset();
 
-    const recipeList: RecipeListFunction[] = [];
+    const recipeList: RecipeListFunction[] = [
+        Dashboard.init({
+            apiKey: "test",
+        }),
+    ];
 
     const parsedConfig = JSON.parse(config);
     const init = {
