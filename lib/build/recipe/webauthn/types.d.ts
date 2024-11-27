@@ -142,7 +142,7 @@ export declare type RecipeInterface = {
           }
     >;
     signInOptions(input: {
-        email?: string;
+        email: string;
         relyingPartyId: string;
         origin: string;
         userVerification: UserVerification | undefined;
@@ -541,7 +541,7 @@ export declare type APIInterface = {
     signInOptionsPOST:
         | undefined
         | ((input: {
-              email?: string;
+              email: string;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;

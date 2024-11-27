@@ -187,7 +187,7 @@ export default class Wrapper {
         userContext,
         ...rest
     }: {
-        email?: string;
+        email: string;
         timeout?: number;
         userVerification?: UserVerification;
         tenantId?: string;
@@ -241,6 +241,22 @@ export default class Wrapper {
             timeout,
             tenantId,
             userVerification,
+            userContext: getUserContext(userContext),
+        });
+    }
+
+    static getGeneratedOptions({
+        webauthnGeneratedOptionsId,
+        tenantId = DEFAULT_TENANT_ID,
+        userContext,
+    }: {
+        webauthnGeneratedOptionsId: string;
+        tenantId?: string;
+        userContext?: Record<string, any>;
+    }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getGeneratedOptions({
+            webauthnGeneratedOptionsId,
+            tenantId,
             userContext: getUserContext(userContext),
         });
     }
@@ -583,3 +599,5 @@ export let createRecoverAccountLink = Wrapper.createRecoverAccountLink;
 export let sendRecoverAccountEmail = Wrapper.sendRecoverAccountEmail;
 
 export let sendEmail = Wrapper.sendEmail;
+
+export let getGeneratedOptions = Wrapper.getGeneratedOptions;
