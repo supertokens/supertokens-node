@@ -1,6 +1,6 @@
 import { Router } from "express";
 import EmailPassword from "../../../recipe/emailpassword";
-import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
+import { convertRequestSessionToSessionObject, serializeResponse } from "./utils";
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
 
@@ -19,11 +19,7 @@ const router = Router()
                 session,
                 req.body.userContext
             );
-            res.json({
-                ...response,
-                ...serializeUser(response),
-                ...serializeRecipeUserId(response),
-            });
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }
@@ -39,11 +35,7 @@ const router = Router()
                 session,
                 req.body.userContext
             );
-            res.json({
-                ...response,
-                ...serializeUser(response),
-                ...serializeRecipeUserId(response),
-            });
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }

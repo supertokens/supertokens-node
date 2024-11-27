@@ -1,7 +1,7 @@
 import { Router } from "express";
 import SuperTokens from "../../..";
 import Passwordless from "../../../recipe/passwordless";
-import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeUser } from "./utils";
+import { convertRequestSessionToSessionObject, serializeResponse } from "./utils";
 import { logger } from "./logger";
 
 const namespace = "com.supertokens:node-test-server:passwordless";
@@ -23,11 +23,8 @@ const router = Router()
                 session: req.body.session && (await convertRequestSessionToSessionObject(req.body.session)),
                 userContext: req.body.userContext,
             });
-            res.json({
-                ...response,
-                ...serializeUser(response),
-                ...serializeRecipeUserId(response),
-            });
+
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }
@@ -60,11 +57,8 @@ const router = Router()
                 session: req.body.session && (await convertRequestSessionToSessionObject(req.body.session)),
                 userContext: req.body.userContext,
             });
-            res.json({
-                ...response,
-                ...serializeUser(response),
-                ...serializeRecipeUserId(response),
-            });
+
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }
@@ -78,11 +72,8 @@ const router = Router()
                 phoneNumber: req.body.phoneNumber,
                 userContext: req.body.userContext,
             });
-            res.json({
-                ...response,
-                ...serializeUser(response),
-                ...serializeRecipeUserId(response),
-            });
+
+            await serializeResponse(req, res, response);
         } catch (e) {
             next(e);
         }
