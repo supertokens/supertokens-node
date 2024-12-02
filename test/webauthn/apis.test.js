@@ -66,7 +66,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             app.use(errorHandler());
 
             // passing valid field
-            let registerOptionsResponse = await new Promise((resolve) =>
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/register")
                     .send({
@@ -76,7 +76,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -143,7 +143,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             app.use(errorHandler());
 
             // passing valid field
-            let registerOptionsResponse = await new Promise((resolve) =>
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/register")
                     .send({
@@ -153,7 +153,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -206,7 +206,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             app.use(errorHandler());
 
             // passing valid field
-            let signInOptionsResponse = await new Promise((resolve) =>
+            let signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/signin")
                     .send({ email: "test@example.com" })
@@ -214,7 +214,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -272,7 +272,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             app.use(errorHandler());
 
             // passing valid field
-            let signInOptionsResponse = await new Promise((resolve) =>
+            let signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/signin")
                     .send({ email: "test@example.com" })
@@ -280,7 +280,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -345,7 +345,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             app.use(errorHandler());
 
             const email = `${Math.random().toString().slice(2)}@supertokens.com`;
-            let registerOptionsResponse = await new Promise((resolve) =>
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/register")
                     .send({
@@ -355,7 +355,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -372,7 +372,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let signUpResponse = await new Promise((resolve) =>
+            let signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signup")
                     .send({
@@ -384,7 +384,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -442,7 +442,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             app.use(errorHandler());
 
             const email = `${Math.random().toString().slice(2)}@supertokens.com`;
-            let registerOptionsResponse = await new Promise((resolve) =>
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/register")
                     .send({
@@ -452,7 +452,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -460,7 +460,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
             assert(registerOptionsResponse.status === "OK");
 
-            let signInOptionsResponse = await new Promise((resolve) =>
+            let signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/signin")
                     .send({ email })
@@ -468,7 +468,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -485,7 +485,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let signUpResponse = await new Promise((resolve) =>
+            let signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signup")
                     .send({
@@ -497,7 +497,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -520,7 +520,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     return { status: "OK", user: signUpResponse.user };
                 });
 
-            let signInResponse = await new Promise((resolve) =>
+            let signInResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signin")
                     .send({
@@ -532,7 +532,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -588,7 +588,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             app.use(errorHandler());
 
             const email = `${Math.random().toString().slice(2)}@supertokens.com`;
-            let registerOptionsResponse = await new Promise((resolve) =>
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/register")
                     .send({
@@ -598,7 +598,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -606,7 +606,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
             assert(registerOptionsResponse.status === "OK");
 
-            let signInOptionsResponse = await new Promise((resolve) =>
+            let signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/signin")
                     .send({ email: email + "wrong" })
@@ -614,7 +614,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -631,7 +631,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let signUpResponse = await new Promise((resolve) =>
+            let signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signup")
                     .send({
@@ -643,7 +643,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
@@ -666,7 +666,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     return { status: "OK", user: signUpResponse.user };
                 });
 
-            let signInResponse = await new Promise((resolve) =>
+            let signInResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signin")
                     .send({
@@ -678,7 +678,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
