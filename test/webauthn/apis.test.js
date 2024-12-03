@@ -59,6 +59,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             // run test if current CDI version >= 2.11
+            // todo update this to crrect version
             if (!(await isCDIVersionCompatible("2.11"))) return;
 
             const app = express();
@@ -136,6 +137,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             // run test if current CDI version >= 2.11
+            // todo update this to crrect version
             if (!(await isCDIVersionCompatible("2.11"))) return;
 
             const app = express();
@@ -199,6 +201,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             // run test if current CDI version >= 2.11
+            // todo update this to crrect version
             if (!(await isCDIVersionCompatible("2.11"))) return;
 
             const app = express();
@@ -265,6 +268,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             // run test if current CDI version >= 2.11
+            // todo update this to crrect version
             if (!(await isCDIVersionCompatible("2.11"))) return;
 
             const app = express();
@@ -338,6 +342,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             // run test if current CDI version >= 2.11
+            // todo update this to crrect version
             if (!(await isCDIVersionCompatible("2.11"))) return;
 
             const app = express();
@@ -435,6 +440,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             // run test if current CDI version >= 2.11
+            // todo update this to crrect version
             if (!(await isCDIVersionCompatible("2.11"))) return;
 
             const app = express();
@@ -581,6 +587,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             // run test if current CDI version >= 2.11
+            // todo update this to crrect version
             if (!(await isCDIVersionCompatible("2.11"))) return;
 
             const app = express();
