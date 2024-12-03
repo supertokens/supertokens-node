@@ -98,8 +98,8 @@ npm i
 cd ../../
 npm i -d
 
-TEST_FILES=$(circleci tests glob "test/**/*.test.js")
-TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root multi="spec=- mocha-junit-reporter=./junit-results.xml" echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --node-option no-experimental-fetch --timeout 40000 --no-config" --verbose --split-by=timings
+TEST_FILES=$(circleci tests glob "test/*.test.js")
+TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root multi="spec=- mocha-junit-reporter=/dev/null" echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha npx mocha --exit --reporter mocha-multi --no-config --require isomorphic-fetch --timeout 500000" --verbose --split-by=timings
 
 if [[ $? -ne 0 ]]
 then
