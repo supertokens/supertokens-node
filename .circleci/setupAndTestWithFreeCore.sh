@@ -85,7 +85,7 @@ cd ../
 echo $SUPERTOKENS_API_KEY > apiPassword
 ./utils/setupTestEnvLocal
 cd ../project/
-npm i mocha-multi
+npm i mocha-multi mocha-junit-reporter
 
 # Set the script to exit on error
 set -e

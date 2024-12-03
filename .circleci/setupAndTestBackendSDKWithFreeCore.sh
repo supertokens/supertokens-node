@@ -107,7 +107,7 @@ git clone git@github.com:supertokens/backend-sdk-testing.git
 cd backend-sdk-testing
 git checkout $frontendDriverVersion
 npm install
-npm i mocha-multi
+npm i mocha-multi mocha-junit-reporter
 npm run build
 
 export API_PORT=$API_PORT
