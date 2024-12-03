@@ -85,6 +85,7 @@ cd ../
 echo $SUPERTOKENS_API_KEY > apiPassword
 ./utils/setupTestEnvLocal
 cd ../project/
+npm i mocha-multi
 
 # Set the script to exit on error
 set -e
@@ -95,4 +96,4 @@ export NODE_PORT=8081
 export INSTALL_PATH=../supertokens-root
 
 TEST_FILES=$(circleci tests glob "test/**/*.test.js")
-echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --node-option no-experimental-fetch --timeout 40000 --no-config" --verbose --split-by=timings
+multi="spec=- mocha-junit-reporter=/dev/null" echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --node-option no-experimental-fetch --timeout 40000 --no-config" --verbose --split-by=timings
