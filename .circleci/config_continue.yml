@@ -172,7 +172,7 @@ workflows:
                           only: /test-cicd\/.*/
                   matrix:
                       parameters:
-                          cdi-version: [<< parameters.cdi-version >>]
+                          cdi-version: [placeholder]
             - test-backend-sdk-testing:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -185,8 +185,8 @@ workflows:
                           only: /test-cicd\/.*/
                   matrix:
                       parameters:
-                          cdi-version: placeholder
-                          fdi-version: placeholder
+                          cdi-version: [placeholder]
+                          fdi-version: [placeholder]
             - test-website:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -199,7 +199,7 @@ workflows:
                           only: /test-cicd\/.*/
                   matrix:
                       parameters:
-                          fdi-version: placeholder
+                          fdi-version: [placeholder]
             - test-authreact:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -212,7 +212,7 @@ workflows:
                           only: /test-cicd\/.*/
                   matrix:
                       parameters:
-                          fdi-version: placeholder
+                          fdi-version: [placeholder]
             - test-success:
                   requires:
                       - test-unit
