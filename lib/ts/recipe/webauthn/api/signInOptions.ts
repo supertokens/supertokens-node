@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
+import STError from "../error";
 
 export default async function signInOptions(
     apiImplementation: APIInterface,
@@ -26,8 +27,19 @@ export default async function signInOptions(
     if (apiImplementation.signInOptionsPOST === undefined) {
         return false;
     }
+    const requestBody = await options.req.getJSONBody();
+
+    let email = requestBody.email?.trim();
+
+    if (email === undefined || typeof email !== "string") {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the email",
+        });
+    }
 
     let result = await apiImplementation.signInOptionsPOST({
+        email,
         tenantId,
         options,
         userContext,

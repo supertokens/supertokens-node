@@ -131,7 +131,7 @@ export default function getAPIImplementation(): APIInterface {
             options,
             userContext,
         }: {
-            email?: string;
+            email: string;
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;
@@ -470,7 +470,7 @@ export default function getAPIImplementation(): APIInterface {
                 session,
                 shouldTryLinkingWithSessionUser,
             });
-            if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
+            if (preAuthChecks.status === "SIGN_IN_NOT_ALLOWED") {
                 throw new Error("This should never happen: pre-auth checks should not fail for sign in");
             }
             if (preAuthChecks.status !== "OK") {
