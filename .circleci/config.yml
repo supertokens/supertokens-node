@@ -62,7 +62,6 @@ jobs:
                   configuration_path: .circleci/config_continue.yml # use newly generated config to continue
 
 workflows:
-    version: 2
     tagged-build:
         when: # One must be true to trigger
             or:
