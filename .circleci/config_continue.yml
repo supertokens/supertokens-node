@@ -47,6 +47,10 @@ jobs:
         parameters:
             cdi-version:
                 type: string
+            fdi-version:
+                type: string
+        environment:
+            MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
         parallelism: 4
         steps:
             - checkout
@@ -56,6 +60,8 @@ jobs:
             - run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
+            - store_test_results:
+                  path: ~/test_report/report_node-<< parameters.fdi-version >>.xml
             - slack/status
     test-backend-sdk-testing:
         docker:
@@ -173,6 +179,7 @@ workflows:
                   matrix:
                       parameters:
                           cdi-version: placeholder
+                          fdi-version: placeholder
             - test-backend-sdk-testing:
                   requires:
                       - test-dev-tag-as-not-passed

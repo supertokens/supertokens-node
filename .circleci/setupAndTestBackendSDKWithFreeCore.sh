@@ -107,6 +107,7 @@ git clone git@github.com:supertokens/backend-sdk-testing.git
 cd backend-sdk-testing
 git checkout $frontendDriverVersion
 npm install
+npm i mocha-multi
 npm run build
 
 export API_PORT=$API_PORT
@@ -116,7 +117,7 @@ export NODE_PORT=8081
 export INSTALL_PATH=../supertokens-root
 
 TEST_FILES=$(circleci tests glob "test/**/*.test.js")
-echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000 --no-config" --verbose --split-by=timings
+multi="spec=- mocha-junit-reporter=/dev/null" echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000 --no-config" --verbose --split-by=timings
 
 # kill test-server
 kill $(lsof -t -i:$API_PORT)
