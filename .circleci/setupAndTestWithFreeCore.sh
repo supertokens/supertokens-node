@@ -90,4 +90,4 @@ cd ../project/
 set -e
 
 TEST_FILES=$(circleci tests glob "test/**/*.test.js")
-TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root multi="spec=- mocha-junit-reporter=./junit-results.xml" echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --node-option no-experimental-fetch --reporter mocha-multi --require test/test.mocha.env --timeout 40000 --no-config" --verbose --split-by=timings
+TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root multi="spec=- mocha-junit-reporter=./junit-results.xml" echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --node-option no-experimental-fetch --reporter mocha-multi --timeout 40000 --no-config" --verbose --split-by=timings
