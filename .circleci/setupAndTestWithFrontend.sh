@@ -96,11 +96,7 @@ npm i
 cd ../../
 npm i -d
 
-if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
-    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npx mocha --exit --no-config --require isomorphic-fetch --timeout 500000 $(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/*.test.js')
-else
-    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
-fi
+TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root multi="spec=- mocha-junit-reporter=./junit-results.xml" circleci tests run --command="xargs npx mocha mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --reporter mocha-multi --require @babel/register --require test/test.mocha.env --timeout 40000 --no-config -f test/**/*.test.js" --verbose --split-by=timings
 
 if [[ $? -ne 0 ]]
 then
