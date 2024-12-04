@@ -82,7 +82,7 @@ jobs:
             - run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
             - run: (cd .circleci/ && ./doBackendSDKTests.sh << parameters.cdi-version >> << parameters.fdi-version >>)
             - store_test_results:
-                  path: test-results/junit.xml
+                  path: ~/backend-sdk-testing/test-results/junit.xml
             - slack/status
     test-website:
         docker:
