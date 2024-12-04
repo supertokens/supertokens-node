@@ -60,6 +60,7 @@ then
 fi
 echo "Testing with FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
 
+mkdir -p ~/test_report
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git
 cd supertokens-root
@@ -84,12 +85,17 @@ cd ../
 echo $SUPERTOKENS_API_KEY > apiPassword
 ./utils/setupTestEnvLocal
 cd ../project/
+npm i mocha-multi mocha-junit-reporter
 
 # Set the script to exit on error
 set -e
 
-if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
-    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --no-config --timeout 500000 $(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/**/*.test.js')
-else
-    TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
-fi
+export TEST_MODE=testing
+export SUPERTOKENS_CORE_TAG=$coreTag
+export NODE_PORT=8081
+export INSTALL_PATH=../supertokens-root
+export MOCHA_FILE=~/test_report/free-core-junit.xml
+export multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
+
+TEST_FILES=$(circleci tests glob "test/**/*.test.js")
+echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --node-option no-experimental-fetch --timeout 40000 --no-config" --verbose --split-by=timings

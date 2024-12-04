@@ -105,13 +105,20 @@ git clone git@github.com:supertokens/backend-sdk-testing.git
 cd backend-sdk-testing
 git checkout $frontendDriverVersion
 npm install
+npm i mocha-multi mocha-junit-reporter
 npm run build
 
-if ! [[ -z "${CIRCLE_NODE_TOTAL}" ]]; then
-    API_PORT=$API_PORT TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npx mocha --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --no-config --timeout 500000 $(npx mocha-split-tests -r ./runtime.log -t $CIRCLE_NODE_TOTAL -g $CIRCLE_NODE_INDEX -f 'test/**/*.test.js')
-else
-    API_PORT=$API_PORT TEST_MODE=testing SUPERTOKENS_CORE_TAG=$coreTag NODE_PORT=8081 INSTALL_PATH=../supertokens-root npm test
-fi
+export API_PORT=$API_PORT
+export TEST_MODE=testing
+export SUPERTOKENS_CORE_TAG=$coreTag
+export NODE_PORT=8081
+export INSTALL_PATH=../supertokens-root
+export MOCHA_FILE=test-results/junit.xml
+export multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
+
+mkdir -p test-results
+TEST_FILES=$(circleci tests glob "test/**/*.test.js")
+echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000 --no-config" --verbose --split-by=timings
 
 # kill test-server
 kill $(lsof -t -i:$API_PORT)
