@@ -159,7 +159,8 @@ done
 sleep 2 # Because the server is responding does not mean the app is ready. Let's wait another 2secs to make sure the app is up.
 echo "Start mocha testing"
 
-export multi="spec=- mocha-junit-reporter=/dev/null"
+export MOCHA_FILE=~/test_report/auth-react-junit.xml
+export multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
 export TEST_MODE=testing
 export APP_SERVER=$apiPort
 export SCREENSHOT_ROOT=~/test_report/screenshots

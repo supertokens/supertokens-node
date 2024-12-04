@@ -94,7 +94,8 @@ export TEST_MODE=testing
 export SUPERTOKENS_CORE_TAG=$coreTag
 export NODE_PORT=8081
 export INSTALL_PATH=../supertokens-root
-export multi="spec=- mocha-junit-reporter=/dev/null"
+export MOCHA_FILE=~/test_report/free-core-junit.xml
+export multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
 
 TEST_FILES=$(circleci tests glob "test/**/*.test.js")
 echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --node-option no-experimental-fetch --timeout 40000 --no-config" --verbose --split-by=timings
