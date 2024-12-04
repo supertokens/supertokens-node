@@ -61,8 +61,6 @@ fi
 
 echo "Testing with FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
 
-mkdir -p ~/test_report
-
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git
 cd supertokens-root
@@ -117,6 +115,7 @@ export NODE_PORT=8081
 export INSTALL_PATH=../supertokens-root
 export multi="spec=- mocha-junit-reporter=/dev/null"
 
+mkdir test_report
 TEST_FILES=$(circleci tests glob "test/**/*.test.js")
 echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000 --no-config" --verbose --split-by=timings
 
