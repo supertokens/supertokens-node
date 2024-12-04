@@ -119,6 +119,9 @@ export multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
 mkdir -p test-results
 TEST_FILES=$(circleci tests glob "test/**/*.test.js")
 echo "$TEST_FILES" | circleci tests run --command="xargs npx mocha mocha --reporter mocha-multi --node-option no-experimental-fetch -r test/fetch-polyfill.mjs --timeout 500000 --no-config" --verbose --split-by=timings
+ls -al
+echo "Printing previous directory"
+cd .. && ls -al
 
 # kill test-server
 kill $(lsof -t -i:$API_PORT)
