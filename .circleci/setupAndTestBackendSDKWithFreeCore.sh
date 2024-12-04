@@ -114,7 +114,7 @@ export SUPERTOKENS_CORE_TAG=$coreTag
 export NODE_PORT=8081
 export INSTALL_PATH=../supertokens-root
 export MOCHA_FILE=test-results/junit.xml
-multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
+export multi="spec=- mocha-junit-reporter=$MOCHA_FILE"
 
 mkdir -p test-results
 TEST_FILES=$(circleci tests glob "test/**/*.test.js")
