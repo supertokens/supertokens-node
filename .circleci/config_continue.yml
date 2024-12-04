@@ -47,8 +47,6 @@ jobs:
         parameters:
             cdi-version:
                 type: string
-            fdi-version:
-                type: string
         parallelism: 4
         steps:
             - checkout
@@ -171,7 +169,6 @@ workflows:
                   matrix:
                       parameters:
                           cdi-version: placeholder
-                          fdi-version: placeholder
             - test-backend-sdk-testing:
                   requires:
                       - test-dev-tag-as-not-passed
