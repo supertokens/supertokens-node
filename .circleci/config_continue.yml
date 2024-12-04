@@ -74,7 +74,7 @@ jobs:
             fdi-version:
                 type: string
         environment:
-            MOCHA_FILE: ~/test_report/report_node-<< parameters.fdi-version >>.xml
+            MOCHA_FILE: test_report/report_node-<< parameters.fdi-version >>.xml
         steps:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
