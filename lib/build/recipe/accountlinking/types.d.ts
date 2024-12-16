@@ -182,9 +182,12 @@ export declare type AccountInfo = {
         id: string;
         userId: string;
     };
+    webauthn?: {
+        credentialIds: string[];
+    };
 };
 export declare type AccountInfoWithRecipeId = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+    recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 } & AccountInfo;
 export declare type RecipeLevelUser = {
     tenantIds: string[];

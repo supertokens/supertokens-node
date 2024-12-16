@@ -9,6 +9,7 @@ export declare class LoginMethod implements RecipeLevelUser {
     readonly email?: string;
     readonly phoneNumber?: string;
     readonly thirdParty?: RecipeLevelUser["thirdParty"];
+    readonly webauthn?: RecipeLevelUser["webauthn"];
     readonly verified: boolean;
     readonly timeJoined: number;
     constructor(loginMethod: UserWithoutHelperFunctions["loginMethods"][number]);
@@ -27,6 +28,9 @@ export declare class User implements UserType {
         id: string;
         userId: string;
     }[];
+    readonly webauthn: {
+        credentialIds: string[];
+    };
     readonly loginMethods: LoginMethod[];
     readonly timeJoined: number;
     constructor(user: UserWithoutHelperFunctions);
@@ -43,8 +47,11 @@ export declare type UserWithoutHelperFunctions = {
         id: string;
         userId: string;
     }[];
+    webauthn: {
+        credentialIds: string[];
+    };
     loginMethods: {
-        recipeId: "emailpassword" | "thirdparty" | "passwordless";
+        recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
         recipeUserId: string;
         tenantIds: string[];
         email?: string;
@@ -52,6 +59,9 @@ export declare type UserWithoutHelperFunctions = {
         thirdParty?: {
             id: string;
             userId: string;
+        };
+        webauthn?: {
+            credentialIds: string[];
         };
         verified: boolean;
         timeJoined: number;

@@ -11,6 +11,7 @@ export class LoginMethod implements RecipeLevelUser {
     public readonly email?: string;
     public readonly phoneNumber?: string;
     public readonly thirdParty?: RecipeLevelUser["thirdParty"];
+    public readonly webauthn?: RecipeLevelUser["webauthn"];
     public readonly verified: boolean;
 
     public readonly timeJoined: number;
@@ -23,7 +24,7 @@ export class LoginMethod implements RecipeLevelUser {
         this.email = loginMethod.email;
         this.phoneNumber = loginMethod.phoneNumber;
         this.thirdParty = loginMethod.thirdParty;
-
+        this.webauthn = loginMethod.webauthn;
         this.timeJoined = loginMethod.timeJoined;
         this.verified = loginMethod.verified;
     }
@@ -73,6 +74,7 @@ export class LoginMethod implements RecipeLevelUser {
             email: this.email,
             phoneNumber: this.phoneNumber,
             thirdParty: this.thirdParty,
+            webauthn: this.webauthn,
             timeJoined: this.timeJoined,
             verified: this.verified,
         };
@@ -90,6 +92,9 @@ export class User implements UserType {
         id: string;
         userId: string;
     }[];
+    public readonly webauthn: {
+        credentialIds: string[];
+    };
     public readonly loginMethods: LoginMethod[];
 
     public readonly timeJoined: number; // minimum timeJoined value from linkedRecipes
@@ -102,7 +107,7 @@ export class User implements UserType {
         this.emails = user.emails;
         this.phoneNumbers = user.phoneNumbers;
         this.thirdParty = user.thirdParty;
-
+        this.webauthn = user.webauthn;
         this.timeJoined = user.timeJoined;
 
         this.loginMethods = user.loginMethods.map((m) => new LoginMethod(m));
@@ -117,6 +122,7 @@ export class User implements UserType {
             emails: this.emails,
             phoneNumbers: this.phoneNumbers,
             thirdParty: this.thirdParty,
+            webauthn: this.webauthn,
             loginMethods: this.loginMethods.map((m) => m.toJson()),
 
             timeJoined: this.timeJoined,
@@ -135,8 +141,11 @@ export type UserWithoutHelperFunctions = {
         id: string;
         userId: string;
     }[];
+    webauthn: {
+        credentialIds: string[];
+    };
     loginMethods: {
-        recipeId: "emailpassword" | "thirdparty" | "passwordless";
+        recipeId: "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
         recipeUserId: string;
         tenantIds: string[];
 
@@ -145,6 +154,9 @@ export type UserWithoutHelperFunctions = {
         thirdParty?: {
             id: string;
             userId: string;
+        };
+        webauthn?: {
+            credentialIds: string[];
         };
 
         verified: boolean;

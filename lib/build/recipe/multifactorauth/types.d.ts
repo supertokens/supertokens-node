@@ -136,6 +136,7 @@ export declare type GetPhoneNumbersForFactorsFromOtherRecipesFunc = (
       };
 export declare const FactorIds: {
     EMAILPASSWORD: string;
+    WEBAUTHN: string;
     OTP_EMAIL: string;
     OTP_PHONE: string;
     LINK_EMAIL: string;

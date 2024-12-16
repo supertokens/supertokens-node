@@ -115,6 +115,9 @@ export type User = {
         id: string;
         userId: string;
     }[];
+    webauthn: {
+        credentialIds: string[];
+    };
     loginMethods: (RecipeLevelUser & {
         verified: boolean;
         hasSameEmailAs: (email: string | undefined) => boolean;
