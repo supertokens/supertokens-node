@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [21.2.0] - 2024-12-27
+## [21.1.1] - 2024-12-27
 
 -   Fixes type of `cookies` to `string[]` instead of `string` in:
     -   Return type of `authorization` in `RecipeInterface` in `oauth2provider` recipe
