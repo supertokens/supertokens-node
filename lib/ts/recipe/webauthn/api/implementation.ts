@@ -19,7 +19,7 @@ import { getRecoverAccountLink } from "../utils";
 import { logDebugMessage } from "../../../logger";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { getUser } from "../../..";
-import { CredentialPayload, ResidentKey, UserVerification } from "../types";
+import { AuthenticationPayload, RegistrationPayload, ResidentKey, UserVerification } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -192,7 +192,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }: {
             webauthnGeneratedOptionsId: string;
-            credential: CredentialPayload;
+            credential: RegistrationPayload;
             tenantId: string;
             session: SessionContainerInterface | undefined;
             shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -361,7 +361,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }: {
             webauthnGeneratedOptionsId: string;
-            credential: CredentialPayload;
+            credential: AuthenticationPayload;
             tenantId: string;
             session?: SessionContainerInterface;
             shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -843,7 +843,7 @@ export default function getAPIImplementation(): APIInterface {
         }: {
             token: string;
             webauthnGeneratedOptionsId: string;
-            credential: CredentialPayload;
+            credential: RegistrationPayload;
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;

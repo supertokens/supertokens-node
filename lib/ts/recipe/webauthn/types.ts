@@ -237,7 +237,7 @@ export type RecipeInterface = {
 
     signUp(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
@@ -266,7 +266,7 @@ export type RecipeInterface = {
 
     signIn(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
@@ -287,7 +287,7 @@ export type RecipeInterface = {
 
     verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -302,7 +302,7 @@ export type RecipeInterface = {
     // called during operations like creating a user during password reset flow.
     createNewRecipeUser(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -356,7 +356,7 @@ export type RecipeInterface = {
     // (in consumeRecoverAccountToken invalidating the token and in registerOptions for storing the email in the generated options)
     registerCredential(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext: UserContext;
         recipeUserId: RecipeUserId;
     }): Promise<
@@ -635,7 +635,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: RegistrationPayload;
               tenantId: string;
               session: SessionContainerInterface | undefined;
               shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -665,7 +665,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: AuthenticationPayload;
               tenantId: string;
               session: SessionContainerInterface | undefined;
               shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -710,7 +710,7 @@ export type APIInterface = {
         | ((input: {
               token: string;
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: RegistrationPayload;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
@@ -759,16 +759,43 @@ export type TypeWebauthnRecoverAccountEmailDeliveryInput = {
 
 export type TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput;
 
-export type CredentialPayload = {
+export type CredentialPayloadBase = {
     id: string;
     rawId: string;
+    authenticatorAttachment?: "platform" | "cross-platform";
+    clientExtensionResults: Record<string, unknown>;
+    type: "public-key";
+};
+
+export type AuthenticatorAssertionResponseJSON = {
+    clientDataJSON: Base64URLString;
+    authenticatorData: Base64URLString;
+    signature: Base64URLString;
+    userHandle?: Base64URLString;
+};
+
+export type AuthenticatorAttestationResponseJSON = {
+    clientDataJSON: Base64URLString;
+    attestationObject: Base64URLString;
+    authenticatorData?: Base64URLString;
+    transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+    publicKeyAlgorithm?: COSEAlgorithmIdentifier;
+    publicKey?: Base64URLString;
+};
+
+export type AuthenticationPayload = CredentialPayloadBase & {
+    response: AuthenticatorAssertionResponseJSON;
+};
+
+export type RegistrationPayload = CredentialPayloadBase & {
+    response: AuthenticatorAttestationResponseJSON;
+};
+
+export type CredentialPayload = CredentialPayloadBase & {
     response: {
         clientDataJSON: string;
         attestationObject: string;
         transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
         userHandle: string;
     };
-    authenticatorAttachment: "platform" | "cross-platform";
-    clientExtensionResults: Record<string, unknown>;
-    type: "public-key";
 };

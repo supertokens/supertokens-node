@@ -24,6 +24,7 @@ import {
     UserVerification,
     ResidentKey,
     Attestation,
+    AuthenticationPayload,
 } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
@@ -308,7 +309,7 @@ export default class Wrapper {
     }: {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         session?: SessionContainerInterface;
         userContext?: Record<string, any>;
     }): Promise<
@@ -341,7 +342,7 @@ export default class Wrapper {
     }: {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         userContext?: Record<string, any>;
     }): Promise<{ status: "OK" } | { status: "INVALID_CREDENTIALS_ERROR" }> {
         const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
