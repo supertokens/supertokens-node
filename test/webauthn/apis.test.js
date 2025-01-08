@@ -132,6 +132,21 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         validateEmailAddress: (email) => {
                             return email === "test@example.com" ? undefined : "Invalid email";
                         },
+                        override: {
+                            functions: (originalImplementation) => {
+                                return {
+                                    ...originalImplementation,
+                                    signInOptions: (input) => {
+                                        return originalImplementation.signInOptions({
+                                            ...input,
+                                            timeout: 10 * 1000,
+                                            userVerification: "required",
+                                            relyingPartyId: "testId.com",
+                                        });
+                                    },
+                                };
+                            },
+                        },
                     }),
                 ],
             });

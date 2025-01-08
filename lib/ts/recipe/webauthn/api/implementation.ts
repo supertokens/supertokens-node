@@ -8,7 +8,6 @@ import { SessionContainerInterface } from "../../session/types";
 import {
     DEFAULT_REGISTER_OPTIONS_ATTESTATION,
     DEFAULT_REGISTER_OPTIONS_TIMEOUT,
-    DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
     DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
     DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
     DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
@@ -87,7 +86,6 @@ export default function getAPIImplementation(): APIInterface {
 
             const timeout = DEFAULT_REGISTER_OPTIONS_TIMEOUT;
             const attestation = DEFAULT_REGISTER_OPTIONS_ATTESTATION;
-            const requireResidentKey = DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY;
             const residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY;
             const userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION;
             const supportedAlgorithmIds = DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS;
@@ -95,7 +93,6 @@ export default function getAPIImplementation(): APIInterface {
             let response = await options.recipeImplementation.registerOptions({
                 ...props,
                 attestation,
-                requireResidentKey,
                 residentKey,
                 userVerification,
                 origin,

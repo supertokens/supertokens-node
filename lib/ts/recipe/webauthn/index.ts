@@ -34,7 +34,6 @@ import { getUserContext } from "../../utils";
 import { SessionContainerInterface } from "../session/types";
 import { User } from "../../types";
 import {
-    DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
     DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
     DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
     DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
@@ -51,7 +50,6 @@ export default class Wrapper {
     static Error = SuperTokensError;
 
     static async registerOptions({
-        requireResidentKey = DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
         residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
         userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
         attestation = DEFAULT_REGISTER_OPTIONS_ATTESTATION,
@@ -61,7 +59,6 @@ export default class Wrapper {
         userContext,
         ...rest
     }: {
-        requireResidentKey?: boolean;
         residentKey?: ResidentKey;
         userVerification?: UserVerification;
         attestation?: Attestation;
@@ -166,7 +163,6 @@ export default class Wrapper {
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerOptions({
             ...emailOrRecoverAccountToken,
-            requireResidentKey,
             residentKey,
             userVerification,
             supportedAlgorithmIds,

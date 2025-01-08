@@ -156,7 +156,6 @@ export type RecipeInterface = {
             relyingPartyName: string;
             displayName?: string;
             origin: string;
-            requireResidentKey: boolean | undefined; // should default to false in order to allow multiple authenticators to be used; see https://auth0.com/blog/a-look-at-webauthn-resident-credentials/
             // default to 'required' in order store the private key locally on the device and not on the server
             residentKey: ResidentKey | undefined;
             // default to 'preferred' in order to verify the user (biometrics, pin, etc) based on the device preferences
