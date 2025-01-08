@@ -24,6 +24,8 @@ export default function getRecipeInterface(
             tenantId,
             userContext,
             supportedAlgorithmIds,
+            userVerification,
+            residentKey,
             ...rest
         }) {
             const emailInput = "email" in rest ? rest.email : undefined;
@@ -89,6 +91,8 @@ export default function getRecipeInterface(
                     timeout,
                     attestation,
                     supportedAlgorithmIds,
+                    userVerification,
+                    residentKey,
                 },
                 userContext
             );

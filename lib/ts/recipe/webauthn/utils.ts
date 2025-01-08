@@ -94,9 +94,7 @@ function validateAndNormaliseRelyingPartyIdConfig(
         } else if (typeof relyingPartyIdConfig === "function") {
             return relyingPartyIdConfig(props);
         } else {
-            const urlString = normalisedAppinfo
-                .getOrigin({ request: props.request, userContext: props.userContext })
-                .getAsStringDangerous();
+            const urlString = normalisedAppinfo.apiDomain.getAsStringDangerous();
 
             // should let this throw if the url is invalid
             const url = new URL(urlString);
