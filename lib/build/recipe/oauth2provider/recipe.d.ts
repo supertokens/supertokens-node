@@ -15,7 +15,7 @@ import {
 } from "./types";
 import { User } from "../../user";
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID: string;
+    static RECIPE_ID: "oauth2provider";
     private static instance;
     private accessTokenBuilders;
     private idTokenBuilders;

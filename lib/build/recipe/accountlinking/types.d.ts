@@ -3,7 +3,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import type { User, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { SessionContainerInterface } from "../session/types";
-export declare type TypeInput = {
+export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: UserContext) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoWithRecipeId & {
@@ -25,11 +25,11 @@ export declare type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: UserContext) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoWithRecipeId & {
@@ -51,11 +51,11 @@ export declare type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
     };
 };
-export declare type RecipeInterface = {
+export type RecipeInterface = {
     getUsers: (input: {
         tenantId: string;
         timeJoinedOrder: "ASC" | "DESC";
@@ -175,7 +175,7 @@ export declare type RecipeInterface = {
         status: "OK";
     }>;
 };
-export declare type AccountInfo = {
+export type AccountInfo = {
     email?: string;
     phoneNumber?: string;
     thirdParty?: {
@@ -183,10 +183,10 @@ export declare type AccountInfo = {
         userId: string;
     };
 };
-export declare type AccountInfoWithRecipeId = {
+export type AccountInfoWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
 } & AccountInfo;
-export declare type RecipeLevelUser = {
+export type RecipeLevelUser = {
     tenantIds: string[];
     timeJoined: number;
     recipeUserId: RecipeUserId;

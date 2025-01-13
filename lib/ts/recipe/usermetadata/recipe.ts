@@ -20,7 +20,7 @@ import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 import RecipeImplementation from "./recipeImplementation";
 import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
@@ -28,7 +28,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID = "usermetadata";
+    static RECIPE_ID = "usermetadata" as const;
     private static instance: Recipe | undefined = undefined;
 
     config: TypeNormalisedInput;
@@ -58,9 +58,14 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? [])
+                );
                 return Recipe.instance;
             } else {
                 throw new Error("UserMetadata recipe has already been initialised. Please check your code for bugs.");

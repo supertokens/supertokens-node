@@ -94,11 +94,11 @@ import updateTenantFirstFactor from "./api/multitenancy/updateTenantFirstFactor"
 import updateTenantSecondaryFactor from "./api/multitenancy/updateTenantSecondaryFactor";
 import updateTenantCoreConfig from "./api/multitenancy/updateTenantCoreConfig";
 import getThirdPartyConfig from "./api/multitenancy/getThirdPartyConfig";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "dashboard";
+    static RECIPE_ID = "dashboard" as const;
 
     config: TypeNormalisedInput;
 
@@ -132,9 +132,14 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config, plugins ?? [])
+                );
                 return Recipe.instance;
             } else {
                 throw new Error("Dashboard recipe has already been initialised. Please check your code for bugs.");

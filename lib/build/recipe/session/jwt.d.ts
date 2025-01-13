@@ -1,5 +1,5 @@
 // @ts-nocheck
-export declare type ParsedJWTInfo = {
+export type ParsedJWTInfo = {
     version: number;
     rawTokenString: string;
     rawPayload: string;

@@ -21,7 +21,7 @@ import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 import getJWKS from "./api/getJWKS";
 import APIImplementation from "./api/implementation";
 import { GET_JWKS_API } from "./constants";
@@ -31,7 +31,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID = "jwt";
+    static RECIPE_ID = "jwt" as const;
     private static instance: Recipe | undefined = undefined;
 
     config: TypeNormalisedInput;
@@ -66,9 +66,14 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config, plugins ?? [])
+                );
                 return Recipe.instance;
             } else {
                 throw new Error("JWT recipe has already been initialised. Please check your code for bugs.");

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
-export declare type Response = {
+export type Response = {
     status: "OK";
     nextPaginationToken?: string;
     users: UserWithFirstAndLastName[];

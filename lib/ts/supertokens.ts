@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext, PluginRouteHandler } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -33,6 +33,7 @@ import STError from "./error";
 import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
+import { version } from "./version";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -45,11 +46,25 @@ export default class SuperTokens {
 
     recipeModules: RecipeModule[];
 
+    pluginRouteHandlers: PluginRouteHandler[];
+
     supertokens: undefined | SuperTokensInfo;
 
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
+        const pluginList = config.plugins ?? [];
+        this.pluginRouteHandlers = [];
+        for (const plugin of pluginList) {
+            const versionContraints = Array.isArray(plugin.sdkVersion) ? plugin.sdkVersion : [plugin.sdkVersion];
+            if (!versionContraints.includes(version)) {
+                // TODO: better checks
+                throw new Error("Plugin version mismatch");
+            }
+            if (plugin.routeHandlers) {
+                this.pluginRouteHandlers.push(...plugin.routeHandlers);
+            }
+        }
         if (config.debug === true) {
             enableDebugLogs();
         }
@@ -120,7 +135,11 @@ export default class SuperTokens {
         let jwtRecipe = require("./recipe/jwt/recipe").default;
 
         this.recipeModules = config.recipeList.map((func) => {
-            const recipeModule = func(this.appInfo, this.isInServerlessEnv);
+            const recipeModule = func(
+                this.appInfo,
+                this.isInServerlessEnv,
+                pluginList.map((p) => p.overrideMap)
+            );
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
             } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {
@@ -239,7 +258,7 @@ export default class SuperTokens {
                 "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())"
             );
         }
-        let includeRecipeIdsStr = undefined;
+        let includeRecipeIdsStr: string | undefined = undefined;
         if (includeRecipeIds !== undefined) {
             includeRecipeIdsStr = includeRecipeIds.join(",");
         }

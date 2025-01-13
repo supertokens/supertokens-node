@@ -26,7 +26,7 @@ export interface FastifyInstance<
 > {
     addHook(this: Instance, name: string, hook: (req: Request, reply: Reply) => void): Instance;
 }
-export declare type FastifyPluginCallback<Instance = FastifyInstance> = (
+export type FastifyPluginCallback<Instance = FastifyInstance> = (
     instance: Instance,
     opts: unknown,
     done: (err?: Error) => void

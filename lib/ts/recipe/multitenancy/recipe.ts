@@ -30,11 +30,11 @@ import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import loginMethodsAPI from "./api/loginMethods";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "multitenancy";
+    static RECIPE_ID = "multitenancy" as const;
 
     config: TypeNormalisedInput;
 
@@ -81,9 +81,14 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? [])
+                );
 
                 if (Recipe.instance.getAllowedDomainsForTenantId !== undefined) {
                     PostSuperTokensInitCallbacks.addPostInitCallback(() => {

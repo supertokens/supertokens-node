@@ -42,11 +42,11 @@ import RecipeUserId from "../../recipeUserId";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import { Querier } from "../../querier";
 import { TenantConfig } from "../multitenancy/types";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "multifactorauth";
+    static RECIPE_ID = "multifactorauth" as const;
 
     getFactorsSetupForUserFromOtherRecipesFuncs: GetFactorsSetupForUserFromOtherRecipesFunc[] = [];
     getAllAvailableSecondaryFactorIdsFromOtherRecipesFuncs: GetAllAvailableSecondaryFactorIdsFromOtherRecipesFunc[] = [];
@@ -116,9 +116,14 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? [])
+                );
                 return Recipe.instance;
             } else {
                 throw new Error(

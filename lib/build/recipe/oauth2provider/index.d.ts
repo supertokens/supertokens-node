@@ -31,8 +31,8 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              clients: import("./OAuth2Client").OAuth2Client[];
-              nextPaginationToken?: string | undefined;
+              clients: Array<import("./OAuth2Client").OAuth2Client>;
+              nextPaginationToken?: string;
           }
         | {
               status: "ERROR";

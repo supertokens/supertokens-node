@@ -11,7 +11,7 @@ import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 export default class Recipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "emailverification";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;

@@ -3,7 +3,7 @@ import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { SessionContainerInterface } from "../../recipe/session/types";
-declare type RequestInfo = {
+type RequestInfo = {
     url: string;
     method: HTTPMethod;
     headers: Headers;
@@ -27,7 +27,7 @@ export declare class PreParsedRequest extends BaseRequest {
     getHeaderValue: (key: string) => string | undefined;
     getOriginalURL: () => string;
 }
-export declare type CookieInfo = {
+export type CookieInfo = {
     key: string;
     value: string;
     domain: string | undefined;
@@ -62,14 +62,14 @@ export declare class CollectingResponse extends BaseResponse {
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
 }
-export declare type NextFunction = (err?: any) => void;
+export type NextFunction = (err?: any) => void;
 export declare const middleware: <OrigReqType = BaseRequest, OrigRespType = BaseResponse>(
     wrapRequest?: (req: OrigReqType) => BaseRequest,
     wrapResponse?: (req: OrigRespType) => BaseResponse
 ) => (
     request: OrigReqType,
     response: OrigRespType,
-    next?: NextFunction | undefined
+    next?: NextFunction
 ) => Promise<
     | {
           handled: boolean;
@@ -93,7 +93,7 @@ export declare const CustomFrameworkWrapper: {
     ) => (
         request: OrigReqType,
         response: OrigRespType,
-        next?: NextFunction | undefined
+        next?: NextFunction
     ) => Promise<
         | {
               handled: boolean;

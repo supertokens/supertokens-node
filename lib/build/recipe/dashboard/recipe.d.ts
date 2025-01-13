@@ -7,7 +7,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import error from "../../error";
 export default class Recipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "dashboard";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;

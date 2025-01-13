@@ -31,12 +31,12 @@ import { logDebugMessage } from "../../logger";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import { LoginMethod } from "../../user";
 import { SessionContainerInterface } from "../session/types";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
 
-    static RECIPE_ID = "accountlinking";
+    static RECIPE_ID = "accountlinking" as const;
 
     config: TypeNormalisedInput;
 
@@ -61,12 +61,12 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo) => {
+        return (appInfo, _isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
                     Recipe.RECIPE_ID,
                     appInfo,
-                    config,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? []),
                     {},
                     {
                         emailDelivery: undefined,

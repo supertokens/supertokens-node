@@ -1,6 +1,14 @@
 import { parse } from "tldts";
 
-import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
+import type {
+    AppInfo,
+    NormalisedAppinfo,
+    HTTPMethod,
+    JSONObject,
+    UserContext,
+    SuperTokensPlugin,
+    AllRecipeConfigs,
+} from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
@@ -10,6 +18,7 @@ import crossFetch from "cross-fetch";
 import { LoginMethod, User } from "./user";
 import { SessionContainer } from "./recipe/session";
 import { ProcessState, PROCESS_STATE } from "./processState";
+import OverrideableBuilder from "supertokens-js-override";
 
 export const doFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
     // frameworks like nextJS cache fetch GET requests (https://nextjs.org/docs/app/building-your-application/caching#data-cache)
@@ -512,3 +521,50 @@ export const isBuffer = (obj: any): boolean => {
      */
     return getBuffer().isBuffer(obj);
 };
+
+export function applyPlugins<T extends keyof AllRecipeConfigs>(
+    recipeId: T,
+    config: AllRecipeConfigs[T] | undefined,
+    plugins: SuperTokensPlugin["overrideMap"][]
+): AllRecipeConfigs[T] {
+    config = config ?? ({} as AllRecipeConfigs[T]);
+    let functionLayers = [config.override?.functions];
+    let apiLayers = [config.override?.apis];
+    for (const plugin of plugins) {
+        const overrides = plugin[recipeId];
+        if (overrides) {
+            config = overrides.config ? overrides.config(config) : config;
+            if (overrides.functions !== undefined) {
+                functionLayers.push(overrides.functions as any);
+            }
+            if (overrides.apis !== undefined) {
+                apiLayers.push(overrides.apis as any);
+            }
+        }
+    }
+    functionLayers = functionLayers.reverse().filter((layer) => layer !== undefined);
+    apiLayers = apiLayers.reverse().filter((layer) => layer !== undefined);
+    if (recipeId !== "accountlinking" && apiLayers.length > 0) {
+        config.override = {
+            ...config.override,
+            apis: (oI: any, builder: OverrideableBuilder<any>) => {
+                for (const layer of apiLayers) {
+                    builder.override(layer as any);
+                }
+                return oI as any;
+            },
+        } as any;
+    }
+    if (functionLayers.length > 0) {
+        config.override = {
+            ...config.override,
+            functions: (oI: any, builder: OverrideableBuilder<any>) => {
+                for (const layer of functionLayers) {
+                    builder.override(layer as any);
+                }
+                return oI as any;
+            },
+        };
+    }
+    return config;
+}

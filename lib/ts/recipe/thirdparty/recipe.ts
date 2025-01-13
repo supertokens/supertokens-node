@@ -32,11 +32,11 @@ import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { FactorIds } from "../multifactorauth";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "thirdparty";
+    static RECIPE_ID = "thirdparty" as const;
 
     config: TypeNormalisedInput;
 
@@ -83,13 +83,13 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
                     Recipe.RECIPE_ID,
                     appInfo,
                     isInServerlessEnv,
-                    config,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? []),
                     {},
                     {
                         emailDelivery: undefined,

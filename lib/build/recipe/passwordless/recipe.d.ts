@@ -11,7 +11,7 @@ import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "passwordless";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;

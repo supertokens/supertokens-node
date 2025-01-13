@@ -7,7 +7,7 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserCont
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "totp";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;

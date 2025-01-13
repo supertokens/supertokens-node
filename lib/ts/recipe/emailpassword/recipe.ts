@@ -31,7 +31,7 @@ import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
-import { isTestEnv, send200Response } from "../../utils";
+import { applyPlugins, isTestEnv, send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -49,7 +49,7 @@ import { FactorIds } from "../multifactorauth";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "emailpassword";
+    static RECIPE_ID = "emailpassword" as const;
 
     config: TypeNormalisedInput;
 
@@ -230,11 +230,17 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
-                    emailDelivery: undefined,
-                });
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? []),
+                    {
+                        emailDelivery: undefined,
+                    }
+                );
 
                 return Recipe.instance;
             } else {

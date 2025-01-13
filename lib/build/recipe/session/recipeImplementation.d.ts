@@ -2,7 +2,7 @@
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
-export declare type Helpers = {
+export type Helpers = {
     querier: Querier;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;

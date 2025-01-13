@@ -2,32 +2,32 @@
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { GeneralErrorResponse, UserContext } from "../../types";
-export declare type TypeInput = {
+export type TypeInput = {
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type APIOptions = {
+export type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     req: BaseRequest;
     res: BaseResponse;
 };
-export declare type APIInterface = {
+export type APIInterface = {
     getOpenIdDiscoveryConfigurationGET:
         | undefined
         | ((input: {
@@ -51,7 +51,7 @@ export declare type APIInterface = {
               | GeneralErrorResponse
           >);
 };
-export declare type RecipeInterface = {
+export type RecipeInterface = {
     getOpenIdDiscoveryConfiguration(input: {
         userContext: UserContext;
     }): Promise<{

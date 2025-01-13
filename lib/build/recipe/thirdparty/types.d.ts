@@ -5,7 +5,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-export declare type UserInfo = {
+export type UserInfo = {
     thirdPartyUserId: string;
     email?: {
         id: string;
@@ -20,7 +20,7 @@ export declare type UserInfo = {
         };
     };
 };
-export declare type UserInfoMap = {
+export type UserInfoMap = {
     fromIdTokenPayload?: {
         userId?: string;
         email?: string;
@@ -32,7 +32,7 @@ export declare type UserInfoMap = {
         emailVerified?: string;
     };
 };
-export declare type ProviderClientConfig = {
+export type ProviderClientConfig = {
     clientType?: string;
     clientId: string;
     clientSecret?: string;
@@ -42,7 +42,7 @@ export declare type ProviderClientConfig = {
         [key: string]: any;
     };
 };
-declare type CommonProviderConfig = {
+type CommonProviderConfig = {
     thirdPartyId: string;
     name?: string;
     authorizationEndpoint?: string;
@@ -92,8 +92,8 @@ declare type CommonProviderConfig = {
         userContext: UserContext;
     }) => Promise<string>;
 };
-export declare type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
-export declare type TypeProvider = {
+export type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
+export type TypeProvider = {
     id: string;
     config: ProviderConfigForClientType;
     getConfigForClientType: (input: {
@@ -117,41 +117,41 @@ export declare type TypeProvider = {
     }) => Promise<any>;
     getUserInfo: (input: { oAuthTokens: any; userContext?: UserContext }) => Promise<UserInfo>;
 };
-export declare type ProviderConfig = CommonProviderConfig & {
+export type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];
 };
-export declare type ProviderInput = {
+export type ProviderInput = {
     config: ProviderConfig;
     includeInNonPublicTenantsByDefault?: boolean;
     override?: (originalImplementation: TypeProvider) => TypeProvider;
 };
-export declare type TypeInputSignInAndUp = {
+export type TypeInputSignInAndUp = {
     providers?: ProviderInput[];
 };
-export declare type TypeNormalisedInputSignInAndUp = {
+export type TypeNormalisedInputSignInAndUp = {
     providers: ProviderInput[];
 };
-export declare type TypeInput = {
+export type TypeInput = {
     signInAndUpFeature?: TypeInputSignInAndUp;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type RecipeInterface = {
+export type RecipeInterface = {
     getProvider(input: {
         thirdPartyId: string;
         tenantId: string;
@@ -243,7 +243,7 @@ export declare type RecipeInterface = {
           }
     >;
 };
-export declare type APIOptions = {
+export type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
@@ -253,7 +253,7 @@ export declare type APIOptions = {
     res: BaseResponse;
     appInfo: NormalisedAppinfo;
 };
-export declare type APIInterface = {
+export type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {

@@ -2310,3 +2310,31 @@ OAuth2Provider.createOAuth2Client({
     clientId: "asdf",
     clientSecret: "nope!",
 });
+
+Supertokens.init({
+    appInfo,
+    recipeList: [OpenId.init()],
+    plugins: [
+        {
+            id: "asdf",
+            sdkVersion: "1.2.3",
+            overrideMap: {
+                emailpassword: {
+                    id: "emailpassword",
+                    functions: (oI) => ({
+                        ...oI,
+                        signIn: (input) => {
+                            return oI.signIn(input);
+                        },
+                    }),
+                    apis: (apis) => ({
+                        ...apis,
+                        signInPOST: (input) => {
+                            return apis.signInPOST!(input);
+                        },
+                    }),
+                },
+            },
+        },
+    ],
+});

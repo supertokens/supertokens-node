@@ -38,11 +38,11 @@ import Session from "../session";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 import { logDebugMessage } from "../../logger";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "emailverification";
+    static RECIPE_ID = "emailverification" as const;
 
     config: TypeNormalisedInput;
 
@@ -100,11 +100,17 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
-                    emailDelivery: undefined,
-                });
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? []),
+                    {
+                        emailDelivery: undefined,
+                    }
+                );
 
                 PostSuperTokensInitCallbacks.addPostInitCallback(() => {
                     SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(EmailVerificationClaim);

@@ -1,5 +1,13 @@
 // @ts-nocheck
-import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject, UserContext } from "./types";
+import type {
+    AppInfo,
+    NormalisedAppinfo,
+    HTTPMethod,
+    JSONObject,
+    UserContext,
+    SuperTokensPlugin,
+    AllRecipeConfigs,
+} from "./types";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { User } from "./user";
 import { SessionContainer } from "./recipe/session";
@@ -72,3 +80,8 @@ export declare const isTestEnv: () => boolean;
 export declare const encodeBase64: (value: string) => string;
 export declare const decodeBase64: (value: string) => string;
 export declare const isBuffer: (obj: any) => boolean;
+export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
+    recipeId: T,
+    config: AllRecipeConfigs[T] | undefined,
+    plugins: SuperTokensPlugin["overrideMap"][]
+): AllRecipeConfigs[T];

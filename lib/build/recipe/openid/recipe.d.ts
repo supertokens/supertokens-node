@@ -6,7 +6,7 @@ import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, UserContext } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 export default class OpenIdRecipe extends RecipeModule {
-    static RECIPE_ID: string;
+    static RECIPE_ID: "openid";
     private static instance;
     config: TypeNormalisedInput;
     recipeImplementation: RecipeInterface;

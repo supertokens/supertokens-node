@@ -15,7 +15,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "session";
     private claimsAddedByOtherRecipes;
     private claimValidatorsAddedByOtherRecipes;
     config: TypeNormalisedInput;

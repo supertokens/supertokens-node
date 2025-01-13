@@ -4,27 +4,27 @@ import OverrideableBuilder from "supertokens-js-override";
 import { ProviderConfig, ProviderInput } from "../thirdparty/types";
 import { GeneralErrorResponse, UserContext } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-export declare type TypeInput = {
+export type TypeInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeNormalisedInput = {
+export type TypeNormalisedInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: UserContext) => Promise<string[] | undefined>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
+            builder: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TenantConfig = {
+export type TenantConfig = {
     thirdParty: {
         providers: ProviderConfig[];
     };
@@ -34,7 +34,7 @@ export declare type TenantConfig = {
         [key: string]: any;
     };
 };
-export declare type RecipeInterface = {
+export type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: UserContext }) => Promise<string>;
     createOrUpdateTenant: (input: {
         tenantId: string;
@@ -121,7 +121,7 @@ export declare type RecipeInterface = {
         wasAssociated: boolean;
     }>;
 };
-export declare type APIOptions = {
+export type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
@@ -132,7 +132,7 @@ export declare type APIOptions = {
     allAvailableFirstFactors: string[];
     staticFirstFactors: string[] | undefined;
 };
-export declare type APIInterface = {
+export type APIInterface = {
     loginMethodsGET: (input: {
         tenantId: string;
         clientType?: string;

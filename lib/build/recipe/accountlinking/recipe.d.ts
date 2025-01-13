@@ -10,7 +10,7 @@ import { LoginMethod } from "../../user";
 import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "accountlinking";
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     constructor(

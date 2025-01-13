@@ -25,10 +25,10 @@ import APIImplementation from "./api/implementation";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_DISCOVERY_CONFIG_URL } from "./constants";
 import getOpenIdDiscoveryConfiguration from "./api/getOpenIdDiscoveryConfiguration";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class OpenIdRecipe extends RecipeModule {
-    static RECIPE_ID = "openid";
+    static RECIPE_ID = "openid" as const;
     private static instance: OpenIdRecipe | undefined = undefined;
     config: TypeNormalisedInput;
     recipeImplementation: RecipeInterface;
@@ -56,9 +56,13 @@ export default class OpenIdRecipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo) => {
+        return (appInfo, _isInServerlessEnv, plugins) => {
             if (OpenIdRecipe.instance === undefined) {
-                OpenIdRecipe.instance = new OpenIdRecipe(OpenIdRecipe.RECIPE_ID, appInfo, config);
+                OpenIdRecipe.instance = new OpenIdRecipe(
+                    OpenIdRecipe.RECIPE_ID,
+                    appInfo,
+                    applyPlugins(OpenIdRecipe.RECIPE_ID, config as any, plugins ?? [])
+                );
                 return OpenIdRecipe.instance;
             } else {
                 throw new Error("OpenId recipe has already been initialised. Please check your code for bugs.");

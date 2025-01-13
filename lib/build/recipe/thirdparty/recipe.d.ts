@@ -7,7 +7,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
 export default class Recipe extends RecipeModule {
     private static instance;
-    static RECIPE_ID: string;
+    static RECIPE_ID: "thirdparty";
     config: TypeNormalisedInput;
     providers: ProviderInput[];
     recipeInterfaceImpl: RecipeInterface;

@@ -32,10 +32,10 @@ import { UserRoleClaim } from "./userRoleClaim";
 import { PermissionClaim } from "./permissionClaim";
 import { User } from "../../user";
 import { getSessionInformation } from "../session";
-import { isTestEnv } from "../../utils";
+import { applyPlugins, isTestEnv } from "../../utils";
 
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID = "userroles";
+    static RECIPE_ID = "userroles" as const;
     private static instance: Recipe | undefined = undefined;
 
     config: TypeNormalisedInput;
@@ -182,9 +182,14 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
+        return (appInfo, isInServerlessEnv, plugins) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    applyPlugins(Recipe.RECIPE_ID, config as any, plugins ?? [])
+                );
                 return Recipe.instance;
             } else {
                 throw new Error("UserRoles recipe has already been initialised. Please check your code for bugs.");
