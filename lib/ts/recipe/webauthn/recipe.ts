@@ -48,7 +48,7 @@ import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
-import { getMockQuerier } from "./core-mock";
+import { getMockQuerier } from "../../core-mock";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

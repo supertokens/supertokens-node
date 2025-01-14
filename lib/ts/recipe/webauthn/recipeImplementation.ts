@@ -24,6 +24,8 @@ export default function getRecipeInterface(
             tenantId,
             userContext,
             supportedAlgorithmIds,
+            userVerification,
+            residentKey,
             ...rest
         }) {
             const emailInput = "email" in rest ? rest.email : undefined;
@@ -89,18 +91,21 @@ export default function getRecipeInterface(
                     timeout,
                     attestation,
                     supportedAlgorithmIds,
+                    userVerification,
+                    residentKey,
                 },
                 userContext
             );
         },
 
-        signInOptions: async function ({ relyingPartyId, origin, timeout, tenantId, userContext }) {
+        signInOptions: async function ({ relyingPartyId, origin, timeout, tenantId, userContext, email }) {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/signin`
                 ),
                 {
+                    email,
                     relyingPartyId,
                     origin,
                     timeout,

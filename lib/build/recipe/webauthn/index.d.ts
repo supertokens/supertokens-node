@@ -107,7 +107,7 @@ export default class Wrapper {
         userContext,
         ...rest
     }: {
-        email?: string;
+        email: string;
         timeout?: number;
         userVerification?: UserVerification;
         tenantId?: string;
@@ -132,6 +132,28 @@ export default class Wrapper {
           }
         | {
               status: "INVALID_GENERATED_OPTIONS_ERROR";
+          }
+    >;
+    static getGeneratedOptions({
+        webauthnGeneratedOptionsId,
+        tenantId,
+        userContext,
+    }: {
+        webauthnGeneratedOptionsId: string;
+        tenantId?: string;
+        userContext?: Record<string, any>;
+    }): Promise<
+        | {
+              status: "OK";
+              id: string;
+              relyingPartyId: string;
+              origin: string;
+              email: string;
+              timeout: string;
+              challenge: string;
+          }
+        | {
+              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
           }
     >;
     static signUp({
@@ -386,3 +408,4 @@ export type { RecipeInterface, APIOptions, APIInterface };
 export declare let createRecoverAccountLink: typeof Wrapper.createRecoverAccountLink;
 export declare let sendRecoverAccountEmail: typeof Wrapper.sendRecoverAccountEmail;
 export declare let sendEmail: typeof Wrapper.sendEmail;
+export declare let getGeneratedOptions: typeof Wrapper.getGeneratedOptions;

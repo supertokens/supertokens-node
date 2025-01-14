@@ -24,6 +24,7 @@ import {
     UserVerification,
     ResidentKey,
     Attestation,
+    AuthenticationPayload,
 } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
@@ -33,7 +34,6 @@ import { getUserContext } from "../../utils";
 import { SessionContainerInterface } from "../session/types";
 import { User } from "../../types";
 import {
-    DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
     DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
     DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
     DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
@@ -50,7 +50,6 @@ export default class Wrapper {
     static Error = SuperTokensError;
 
     static async registerOptions({
-        requireResidentKey = DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY,
         residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
         userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
         attestation = DEFAULT_REGISTER_OPTIONS_ATTESTATION,
@@ -60,7 +59,6 @@ export default class Wrapper {
         userContext,
         ...rest
     }: {
-        requireResidentKey?: boolean;
         residentKey?: ResidentKey;
         userVerification?: UserVerification;
         attestation?: Attestation;
@@ -165,7 +163,6 @@ export default class Wrapper {
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerOptions({
             ...emailOrRecoverAccountToken,
-            requireResidentKey,
             residentKey,
             userVerification,
             supportedAlgorithmIds,
@@ -187,7 +184,7 @@ export default class Wrapper {
         userContext,
         ...rest
     }: {
-        email?: string;
+        email: string;
         timeout?: number;
         userVerification?: UserVerification;
         tenantId?: string;
@@ -245,6 +242,22 @@ export default class Wrapper {
         });
     }
 
+    static getGeneratedOptions({
+        webauthnGeneratedOptionsId,
+        tenantId = DEFAULT_TENANT_ID,
+        userContext,
+    }: {
+        webauthnGeneratedOptionsId: string;
+        tenantId?: string;
+        userContext?: Record<string, any>;
+    }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getGeneratedOptions({
+            webauthnGeneratedOptionsId,
+            tenantId,
+            userContext: getUserContext(userContext),
+        });
+    }
+
     static signUp({
         tenantId = DEFAULT_TENANT_ID,
         webauthnGeneratedOptionsId,
@@ -296,7 +309,7 @@ export default class Wrapper {
     }: {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         session?: SessionContainerInterface;
         userContext?: Record<string, any>;
     }): Promise<
@@ -329,7 +342,7 @@ export default class Wrapper {
     }: {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         userContext?: Record<string, any>;
     }): Promise<{ status: "OK" } | { status: "INVALID_CREDENTIALS_ERROR" }> {
         const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
@@ -583,3 +596,5 @@ export let createRecoverAccountLink = Wrapper.createRecoverAccountLink;
 export let sendRecoverAccountEmail = Wrapper.sendRecoverAccountEmail;
 
 export let sendEmail = Wrapper.sendEmail;
+
+export let getGeneratedOptions = Wrapper.getGeneratedOptions;
