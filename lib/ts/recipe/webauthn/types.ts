@@ -181,6 +181,8 @@ export type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
+              createdAt: string;
+              expiresAt: string;
               // for understanding the response, see https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential and https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
               rp: {
                   id: string;
@@ -228,6 +230,8 @@ export type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
+              createdAt: string;
+              expiresAt: string;
               challenge: string;
               timeout: number;
               userVerification: UserVerification;
@@ -565,6 +569,16 @@ export type APIOptions = {
 //     | { status: "INVALID_GENERATED_OPTIONS_ERROR" } // i.e. timeout expired
 //     | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
 
+// type RegisterCredentialPOSTErrorResponse =
+//     | {
+//           status: "REGISTER_CREDENTIAL_NOT_ALLOWED";
+//           reason: string;
+//       }
+//     | { status: "INVALID_CREDENTIALS_ERROR" } // the credential is not valid for various reasons - will discover this during implementation
+//     | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" } // i.e. options not found
+//     | { status: "INVALID_GENERATED_OPTIONS_ERROR" } // i.e. timeout expired
+//     | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
+
 export type APIInterface = {
     registerOptionsPOST:
         | undefined
@@ -578,6 +592,8 @@ export type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
+                    createdAt: string;
+                    expiresAt: string;
                     rp: {
                         id: string;
                         name: string;
@@ -623,6 +639,8 @@ export type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
+                    createdAt: string;
+                    expiresAt: string;
                     challenge: string;
                     timeout: number;
                     userVerification: UserVerification;
@@ -724,6 +742,31 @@ export type APIInterface = {
               | GeneralErrorResponse
               //   | RecoverAccountPOSTErrorResponse
               | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
+              | { status: "INVALID_CREDENTIALS_ERROR" } // the credential is not valid for various reasons - will discover this during implementation
+              | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" } // i.e. options not found
+              | { status: "INVALID_GENERATED_OPTIONS_ERROR" } // i.e. timeout expired
+              | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+          >);
+
+    registerCredentialPOST:
+        | undefined
+        | ((input: {
+              webauthnGeneratedOptionsId: string;
+              credential: CredentialPayload;
+              tenantId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+              //   | RegisterCredentialPOSTErrorResponse
+              | {
+                    status: "REGISTER_CREDENTIAL_NOT_ALLOWED";
+                    reason: string;
+                }
               | { status: "INVALID_CREDENTIALS_ERROR" } // the credential is not valid for various reasons - will discover this during implementation
               | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" } // i.e. options not found
               | { status: "INVALID_GENERATED_OPTIONS_ERROR" } // i.e. timeout expired

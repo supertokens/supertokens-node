@@ -149,8 +149,10 @@ export default class Recipe extends RecipeModule {
         // then, we try and find a primary user based on the email / phone number / third party ID.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
-            accountInfo: user.loginMethods[0],
+            accountInfo: user.loginMethods[0], // todo we might need to omit the credental id here
+
             doUnionOfAccountInfo: true,
+
             userContext,
         });
 

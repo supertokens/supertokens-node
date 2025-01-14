@@ -38,6 +38,8 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
                   webauthnGeneratedOptionsId: string;
+                  createdAt: string;
+                  expiresAt: string;
                   rp: {
                       id: string;
                       name: string;
@@ -114,6 +116,8 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
+                createdAt: response.createdAt,
+                expiresAt: response.expiresAt,
                 challenge: response.challenge,
                 timeout: response.timeout,
                 attestation: response.attestation,
@@ -139,6 +143,8 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
                   webauthnGeneratedOptionsId: string;
+                  createdAt: string;
+                  expiresAt: string;
                   challenge: string;
                   timeout: number;
                   userVerification: UserVerification;
@@ -179,6 +185,8 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
+                createdAt: response.createdAt,
+                expiresAt: response.expiresAt,
                 challenge: response.challenge,
                 timeout: response.timeout,
                 userVerification: response.userVerification,
@@ -287,6 +295,8 @@ export default function getAPIImplementation(): APIInterface {
                     doUnionOfAccountInfo: false,
                     userContext,
                 });
+
+                // this isn't mandatory to
                 if (
                     conflictingUsers.some((u) =>
                         u.loginMethods.some((lm) => lm.recipeId === "webauthn" && lm.hasSameEmailAs(email))
@@ -470,7 +480,7 @@ export default function getAPIImplementation(): APIInterface {
                 session,
                 shouldTryLinkingWithSessionUser,
             });
-            if (preAuthChecks.status === "SIGN_UP_NOT_ALLOWED") {
+            if (preAuthChecks.status === "SIGN_IN_NOT_ALLOWED") {
                 throw new Error("This should never happen: pre-auth checks should not fail for sign in");
             }
             if (preAuthChecks.status !== "OK") {
@@ -1111,6 +1121,85 @@ export default function getAPIImplementation(): APIInterface {
                     new RecipeUserId(userIdForWhomTokenWasGenerated)
                 );
             }
+        },
+
+        registerCredentialPOST: async function ({
+            webauthnGeneratedOptionsId,
+            credential,
+            tenantId,
+            options,
+            userContext,
+            session,
+        }: {
+            webauthnGeneratedOptionsId: string;
+            credential: CredentialPayload;
+            tenantId: string;
+            options: APIOptions;
+            userContext: UserContext;
+            session: SessionContainerInterface;
+        }): Promise<
+            | {
+                  status: "OK";
+              }
+            | GeneralErrorResponse
+            | {
+                  status: "REGISTER_CREDENTIAL_NOT_ALLOWED";
+                  reason: string;
+              }
+            | { status: "INVALID_CREDENTIALS_ERROR" }
+            | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" }
+            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
+            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
+        > {
+            // TODO update error codes (ERR_CODE_XXX) after final implementation
+            const errorCodeMap = {
+                REGISTER_CREDENTIAL_NOT_ALLOWED:
+                    "Cannot register credential due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
+                INVALID_AUTHENTICATOR_ERROR: {
+                    // TODO: add more cases
+                },
+                INVALID_CREDENTIALS_ERROR: "The credentials are incorrect. Please use a different authenticator.",
+            };
+
+            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
+                webauthnGeneratedOptionsId,
+                tenantId,
+                userContext,
+            });
+            if (generatedOptions.status !== "OK") {
+                return generatedOptions;
+            }
+
+            const email = generatedOptions.email;
+
+            // NOTE: Following checks will likely never throw an error as the
+            // check for type is done in a parent function but they are kept
+            // here to be on the safe side.
+            if (!email) {
+                throw new Error(
+                    "Should never come here since we already check that the email value is a string in validateEmailAddress"
+                );
+            }
+
+            // we are using the email from the register options
+            const registerCredentialResponse = await options.recipeImplementation.registerCredential({
+                webauthnGeneratedOptionsId,
+                credential,
+                userContext,
+                recipeUserId: session.getRecipeUserId(),
+            });
+
+            if (registerCredentialResponse.status !== "OK") {
+                return AuthUtils.getErrorStatusResponseWithReason(
+                    registerCredentialResponse,
+                    errorCodeMap,
+                    "REGISTER_CREDENTIAL_NOT_ALLOWED"
+                );
+            }
+
+            return {
+                status: "OK",
+            };
         },
     };
 }
