@@ -86,7 +86,8 @@ export type PluginRouteHandler = {
     path: string;
     handler: (
         req: BaseRequest,
-        res: BaseResponse
+        res: BaseResponse,
+        userContext: UserContext
     ) => Promise<{
         status: number;
         body: JSONObject;

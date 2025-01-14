@@ -399,6 +399,14 @@ export default class SuperTokens {
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
 
+        const handlerFromApis = this.pluginRouteHandlers.find(
+            (handler) => handler.path === path.getAsStringDangerous() && handler.method === method
+        );
+        if (handlerFromApis) {
+            handlerFromApis.handler(request, response, userContext);
+            return true;
+        }
+
         // if the prefix of the URL doesn't match the base path, we skip
         if (!path.startsWith(this.appInfo.apiBasePath)) {
             logDebugMessage(
