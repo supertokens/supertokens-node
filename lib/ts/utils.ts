@@ -525,7 +525,7 @@ export const isBuffer = (obj: any): boolean => {
 export function applyPlugins<T extends keyof AllRecipeConfigs>(
     recipeId: T,
     config: AllRecipeConfigs[T] | undefined,
-    plugins: SuperTokensPlugin["overrideMap"][]
+    plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]
 ): AllRecipeConfigs[T] {
     config = config ?? ({} as AllRecipeConfigs[T]);
     let functionLayers = [config.override?.functions];

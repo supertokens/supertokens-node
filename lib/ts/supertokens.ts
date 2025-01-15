@@ -13,7 +13,15 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo, UserContext, PluginRouteHandler } from "./types";
+import {
+    TypeInput,
+    NormalisedAppinfo,
+    HTTPMethod,
+    SuperTokensInfo,
+    UserContext,
+    PluginRouteHandler,
+    SuperTokensPlugin,
+} from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -53,18 +61,35 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
-        const pluginList = config.plugins ?? [];
+        const inputPluginList = config.plugins ?? [];
         this.pluginRouteHandlers = [];
-        for (const plugin of pluginList) {
-            const versionContraints = Array.isArray(plugin.sdkVersion) ? plugin.sdkVersion : [plugin.sdkVersion];
+        const finalPluginList: SuperTokensPlugin[] = [];
+        for (const plugin of inputPluginList) {
+            const versionContraints = Array.isArray(plugin.compatibleSDKVersions)
+                ? plugin.compatibleSDKVersions
+                : [plugin.compatibleSDKVersions];
             if (!versionContraints.includes(version)) {
                 // TODO: better checks
                 throw new Error("Plugin version mismatch");
             }
+            if (plugin.dependencies) {
+                const result = plugin.dependencies(finalPluginList, version);
+                if (result.status === "ERROR") {
+                    throw new Error(result.message);
+                }
+                if (result.pluginsToAdd) {
+                    finalPluginList.push(...result.pluginsToAdd);
+                }
+                finalPluginList.push(plugin);
+            }
+        }
+
+        for (const plugin of finalPluginList) {
             if (plugin.routeHandlers) {
                 this.pluginRouteHandlers.push(...plugin.routeHandlers);
             }
         }
+
         if (config.debug === true) {
             enableDebugLogs();
         }
@@ -138,7 +163,9 @@ export default class SuperTokens {
             const recipeModule = func(
                 this.appInfo,
                 this.isInServerlessEnv,
-                pluginList.map((p) => p.overrideMap)
+                finalPluginList.filter((p) => p.overrideMap !== undefined).map((p) => p.overrideMap) as NonNullable<
+                    SuperTokensPlugin["overrideMap"]
+                >[]
             );
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;

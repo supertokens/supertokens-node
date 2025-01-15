@@ -117,9 +117,14 @@ export type PluginRouteHandler = {
 };
 
 export type SuperTokensPlugin = {
-    id: string;
-    sdkVersion: string | string[]; // match the syntax of the engines field in package.json
-    overrideMap: {
+    id: string; // TODO: validate that no two plugins have the same id
+    version?: string;
+    compatibleSDKVersions?: string | string[]; // match the syntax of the engines field in package.json
+    dependencies?: (
+        pluginsAbove: SuperTokensPlugin[],
+        sdkVersion: string
+    ) => { status: "OK"; pluginsToAdd?: SuperTokensPlugin[] } | { status: "ERROR"; message: string };
+    overrideMap?: {
         [recipeId in keyof AllRecipeConfigs]?: RecipePluginOverride<recipeId> & {
             recipeInitRequired?: boolean | ((sdkVersion: string) => boolean);
         };
@@ -151,7 +156,7 @@ export interface HttpRequest {
 export type RecipeListFunction = (
     appInfo: NormalisedAppinfo,
     isInServerlessEnv: boolean,
-    overrideMaps?: SuperTokensPlugin["overrideMap"][]
+    overrideMaps?: NonNullable<SuperTokensPlugin["overrideMap"]>[]
 ) => RecipeModule;
 
 export type APIHandled = {

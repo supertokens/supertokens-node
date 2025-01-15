@@ -83,5 +83,5 @@ export declare const isBuffer: (obj: any) => boolean;
 export declare function applyPlugins<T extends keyof AllRecipeConfigs>(
     recipeId: T,
     config: AllRecipeConfigs[T] | undefined,
-    plugins: SuperTokensPlugin["overrideMap"][]
+    plugins: NonNullable<SuperTokensPlugin["overrideMap"]>[]
 ): AllRecipeConfigs[T];

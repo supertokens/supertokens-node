@@ -2317,7 +2317,7 @@ Supertokens.init({
     plugins: [
         {
             id: "asdf",
-            sdkVersion: "1.2.3",
+            compatibleSDKVersions: "1.2.3",
             overrideMap: {
                 emailpassword: {
                     id: "emailpassword",
