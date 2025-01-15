@@ -80,8 +80,8 @@ export default class SuperTokens {
                 if (result.pluginsToAdd) {
                     finalPluginList.push(...result.pluginsToAdd);
                 }
-                finalPluginList.push(plugin);
             }
+            finalPluginList.push(plugin);
         }
 
         for (const plugin of finalPluginList) {
@@ -159,14 +159,12 @@ export default class SuperTokens {
         let OpenIdRecipe = require("./recipe/openid/recipe").default;
         let jwtRecipe = require("./recipe/jwt/recipe").default;
 
+        const overrideMaps = finalPluginList
+            .filter((p) => p.overrideMap !== undefined)
+            .map((p) => p.overrideMap) as NonNullable<SuperTokensPlugin["overrideMap"]>[];
+
         this.recipeModules = config.recipeList.map((func) => {
-            const recipeModule = func(
-                this.appInfo,
-                this.isInServerlessEnv,
-                finalPluginList.filter((p) => p.overrideMap !== undefined).map((p) => p.overrideMap) as NonNullable<
-                    SuperTokensPlugin["overrideMap"]
-                >[]
-            );
+            const recipeModule = func(this.appInfo, this.isInServerlessEnv, overrideMaps);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
                 multitenancyFound = true;
             } else if (recipeModule.getRecipeId() === UserMetadataRecipe.RECIPE_ID) {

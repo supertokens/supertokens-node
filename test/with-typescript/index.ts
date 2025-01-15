@@ -2320,7 +2320,6 @@ Supertokens.init({
             compatibleSDKVersions: "1.2.3",
             overrideMap: {
                 emailpassword: {
-                    id: "emailpassword",
                     functions: (oI) => ({
                         ...oI,
                         signIn: (input) => {

@@ -88,7 +88,8 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance === undefined) {
             Recipe.init()(
                 supertokens.getInstanceOrThrowError().appInfo,
-                supertokens.getInstanceOrThrowError().isInServerlessEnv
+                supertokens.getInstanceOrThrowError().isInServerlessEnv,
+                {} as any // ??
             );
         }
         return Recipe.instance!;

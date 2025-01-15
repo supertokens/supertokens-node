@@ -97,7 +97,6 @@ export type AllRecipeConfigs = {
 };
 
 export type RecipePluginOverride<T extends keyof AllRecipeConfigs> = {
-    id: T;
     functions?: NonNullable<AllRecipeConfigs[T]["override"]>["functions"];
     apis?: NonNullable<AllRecipeConfigs[T]["override"]>["apis"];
     config?: (config: AllRecipeConfigs[T]) => AllRecipeConfigs[T];
@@ -156,7 +155,7 @@ export interface HttpRequest {
 export type RecipeListFunction = (
     appInfo: NormalisedAppinfo,
     isInServerlessEnv: boolean,
-    overrideMaps?: NonNullable<SuperTokensPlugin["overrideMap"]>[]
+    overrideMaps: NonNullable<SuperTokensPlugin["overrideMap"]>[]
 ) => RecipeModule;
 
 export type APIHandled = {
