@@ -18,7 +18,13 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User, UserContext } from "../../types";
-import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
+import type {
+    TypeNormalisedInput,
+    RecipeInterface,
+    TypeInput,
+    AccountInfoWithRecipeId,
+    AccountInfoInput,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
@@ -146,13 +152,22 @@ export default class Recipe extends RecipeModule {
             return user;
         }
 
-        // then, we try and find a primary user based on the email / phone number / third party ID.
+        const accountInfo: AccountInfoInput = {
+            ...user.loginMethods[0],
+            webauthn: undefined,
+        };
+        // any credentialId will identify the same user
+        if (user.loginMethods[0]?.webauthn?.credentialIds.length) {
+            accountInfo.webauthn = {
+                credentialId: user.loginMethods[0].webauthn.credentialIds[0],
+            };
+        }
+        // then, we try and find a primary user based on the email / phone number / third party ID / credentialId.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
-            accountInfo: user.loginMethods[0], // todo we might need to omit the credental id here
+            accountInfo,
 
             doUnionOfAccountInfo: true,
-
             userContext,
         });
 
@@ -202,10 +217,20 @@ export default class Recipe extends RecipeModule {
             return user;
         }
 
+        const accountInfo: AccountInfoInput = {
+            ...user.loginMethods[0],
+            webauthn: undefined,
+        };
+        // any credentialId will identify the same user
+        if (user.loginMethods[0]?.webauthn?.credentialIds.length) {
+            accountInfo.webauthn = {
+                credentialId: user.loginMethods[0].webauthn.credentialIds[0],
+            };
+        }
         // then, we try and find matching users based on the email / phone number / third party ID.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
-            accountInfo: user.loginMethods[0],
+            accountInfo,
             doUnionOfAccountInfo: true,
             userContext,
         });
@@ -322,9 +347,21 @@ export default class Recipe extends RecipeModule {
         // we do not pass in third party info, or both email or phone
         // cause we want to guarantee that the output array contains just one
         // primary user.
+
+        // map according to the correct types here so we don't have to change the types upstream
+        const accountInfoInput: AccountInfoInput = {
+            ...accountInfo,
+            webauthn: undefined,
+        };
+        // any credentialId will identify the same user
+        if (accountInfo.webauthn?.credentialIds.length) {
+            accountInfoInput.webauthn = {
+                credentialId: accountInfo.webauthn.credentialIds[0],
+            };
+        }
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
-            accountInfo,
+            accountInfo: accountInfoInput,
             doUnionOfAccountInfo: true,
             userContext,
         });
