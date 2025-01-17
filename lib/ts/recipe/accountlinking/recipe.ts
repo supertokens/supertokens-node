@@ -89,7 +89,7 @@ export default class Recipe extends RecipeModule {
             Recipe.init()(
                 supertokens.getInstanceOrThrowError().appInfo,
                 supertokens.getInstanceOrThrowError().isInServerlessEnv,
-                {} as any // ??
+                [] as any // ??
             );
         }
         return Recipe.instance!;

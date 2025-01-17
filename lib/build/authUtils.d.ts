@@ -20,14 +20,10 @@ export declare const AuthUtils: {
      * }
      * ```
      */
-    getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(
-        resp: {
-            status: string;
-            reason?: string;
-        },
-        errorCodeMap: Record<string, Record<string, string | undefined> | string | undefined>,
-        errorStatus: T
-    ): {
+    getErrorStatusResponseWithReason<T = "SIGN_IN_UP_NOT_ALLOWED">(resp: {
+        status: string;
+        reason?: string;
+    }, errorCodeMap: Record<string, Record<string, string | undefined> | string | undefined>, errorStatus: T): {
         status: T;
         reason: string;
     };
@@ -44,19 +40,7 @@ export declare const AuthUtils: {
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should become primary but we couldn't make it primary because of a conflicting primary user.
      */
-    preAuthChecks: ({
-        authenticatingAccountInfo,
-        tenantId,
-        isSignUp,
-        isVerified,
-        signInVerifiesLoginMethod,
-        authenticatingUser,
-        factorIds,
-        skipSessionUserUpdateInCore,
-        session,
-        shouldTryLinkingWithSessionUser,
-        userContext,
-    }: {
+    preAuthChecks: ({ authenticatingAccountInfo, tenantId, isSignUp, isVerified, signInVerifiesLoginMethod, authenticatingUser, factorIds, skipSessionUserUpdateInCore, session, shouldTryLinkingWithSessionUser, userContext, }: {
         authenticatingAccountInfo: AccountInfoWithRecipeId;
         authenticatingUser: User | undefined;
         tenantId: string;
@@ -68,23 +52,18 @@ export declare const AuthUtils: {
         session?: SessionContainerInterface;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              validFactorIds: string[];
-              isFirstFactor: boolean;
-          }
-        | {
-              status: "SIGN_UP_NOT_ALLOWED";
-          }
-        | {
-              status: "SIGN_IN_NOT_ALLOWED";
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        validFactorIds: string[];
+        isFirstFactor: boolean;
+    } | {
+        status: "SIGN_UP_NOT_ALLOWED";
+    } | {
+        status: "SIGN_IN_NOT_ALLOWED";
+    } | {
+        status: "LINKING_TO_SESSION_USER_FAILED";
+        reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+    }>;
     /**
      * Runs the linking process and all check we need to before creating a session + creates the new session if necessary:
      * - runs the linking process which will: try to link to the session user, or link by account info or try to make the authenticated user primary
@@ -102,17 +81,7 @@ export declare const AuthUtils: {
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
-    postAuthChecks: ({
-        authenticatedUser,
-        recipeUserId,
-        isSignUp,
-        factorId,
-        session,
-        req,
-        res,
-        tenantId,
-        userContext,
-    }: {
+    postAuthChecks: ({ authenticatedUser, recipeUserId, isSignUp, factorId, session, req, res, tenantId, userContext, }: {
         authenticatedUser: User;
         recipeUserId: RecipeUserId;
         tenantId: string;
@@ -122,16 +91,13 @@ export declare const AuthUtils: {
         userContext: UserContext;
         req: BaseRequest;
         res: BaseResponse;
-    }) => Promise<
-        | {
-              status: "OK";
-              session: SessionContainerInterface;
-              user: User;
-          }
-        | {
-              status: "SIGN_IN_NOT_ALLOWED";
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        session: SessionContainerInterface;
+        user: User;
+    } | {
+        status: "SIGN_IN_NOT_ALLOWED";
+    }>;
     /**
      * This function tries to find the authenticating user (we use this information to see if the current auth is sign in or up)
      * if a session was passed and the authenticating user was not found on the current tenant, it checks if the session user
@@ -142,45 +108,32 @@ export declare const AuthUtils: {
      * because it'll make managing MFA factors (i.e.: secondary passwords) a lot easier for the app, and,
      * most importantly, this way all secondary factors are app-wide instead of mixing app-wide (totp) and tenant-wide (password) factors.
      */
-    getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({
-        recipeId,
-        accountInfo,
-        checkCredentialsOnTenant,
-        tenantId,
-        session,
-        userContext,
-    }: {
+    getAuthenticatingUserAndAddToCurrentTenantIfRequired: ({ recipeId, accountInfo, checkCredentialsOnTenant, tenantId, session, userContext, }: {
         recipeId: string;
-        accountInfo:
-            | {
-                  email: string;
-                  thirdParty?: undefined;
-                  phoneNumber?: undefined;
-              }
-            | {
-                  email?: undefined;
-                  thirdParty?: undefined;
-                  phoneNumber: string;
-              }
-            | {
-                  email?: undefined;
-                  thirdParty: {
-                      id: string;
-                      userId: string;
-                  };
-                  phoneNumber?: undefined;
-              };
+        accountInfo: {
+            email: string;
+            thirdParty?: undefined;
+            phoneNumber?: undefined;
+        } | {
+            email?: undefined;
+            thirdParty?: undefined;
+            phoneNumber: string;
+        } | {
+            email?: undefined;
+            thirdParty: {
+                id: string;
+                userId: string;
+            };
+            phoneNumber?: undefined;
+        };
         tenantId: string;
         session: SessionContainerInterface | undefined;
         checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;
         userContext: UserContext;
-    }) => Promise<
-        | {
-              user: User;
-              loginMethod: LoginMethod;
-          }
-        | undefined
-    >;
+    }) => Promise<{
+        user: User;
+        loginMethod: LoginMethod;
+    } | undefined>;
     /**
      * This function checks if the current authentication attempt should be considered a first factor or not.
      * To do this it'll also need to (if a session was passed):
@@ -194,36 +147,24 @@ export declare const AuthUtils: {
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
-    checkAuthTypeAndLinkingStatus: (
-        session: SessionContainerInterface | undefined,
-        shouldTryLinkingWithSessionUser: boolean | undefined,
-        accountInfo: AccountInfoWithRecipeId,
-        inputUser: User | undefined,
-        skipSessionUserUpdateInCore: boolean,
-        userContext: UserContext
-    ) => Promise<
-        | {
-              status: "OK";
-              isFirstFactor: true;
-          }
-        | {
-              status: "OK";
-              isFirstFactor: false;
-              inputUserAlreadyLinkedToSessionUser: true;
-              sessionUser: User;
-          }
-        | {
-              status: "OK";
-              isFirstFactor: false;
-              inputUserAlreadyLinkedToSessionUser: false;
-              sessionUser: User;
-              linkingToSessionUserRequiresVerification: boolean;
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    checkAuthTypeAndLinkingStatus: (session: SessionContainerInterface | undefined, shouldTryLinkingWithSessionUser: boolean | undefined, accountInfo: AccountInfoWithRecipeId, inputUser: User | undefined, skipSessionUserUpdateInCore: boolean, userContext: UserContext) => Promise<{
+        status: "OK";
+        isFirstFactor: true;
+    } | {
+        status: "OK";
+        isFirstFactor: false;
+        inputUserAlreadyLinkedToSessionUser: true;
+        sessionUser: User;
+    } | {
+        status: "OK";
+        isFirstFactor: false;
+        inputUserAlreadyLinkedToSessionUser: false;
+        sessionUser: User;
+        linkingToSessionUserRequiresVerification: boolean;
+    } | {
+        status: "LINKING_TO_SESSION_USER_FAILED";
+        reason: "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+    }>;
     /**
      * This function checks the auth type (first factor or not), links by account info for first factor auths otherwise
      * it tries to link the input user to the session user
@@ -238,34 +179,20 @@ export declare const AuthUtils: {
      * - LINKING_TO_SESSION_USER_FAILED (SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR):
      * if the session user should be primary but we couldn't make it primary because of a conflicting primary user.
      */
-    linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo: ({
-        tenantId,
-        inputUser,
-        recipeUserId,
-        session,
-        shouldTryLinkingWithSessionUser,
-        userContext,
-    }: {
+    linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo: ({ tenantId, inputUser, recipeUserId, session, shouldTryLinkingWithSessionUser, userContext, }: {
         tenantId: string;
         inputUser: User;
         recipeUserId: RecipeUserId;
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "LINKING_TO_SESSION_USER_FAILED";
+        reason: "EMAIL_VERIFICATION_REQUIRED" | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+    }>;
     /**
      * This function loads the session user and tries to make it primary.
      * It returns:
@@ -276,22 +203,14 @@ export declare const AuthUtils: {
      *
      * It throws INVALID_CLAIM_ERROR if shouldDoAutomaticAccountLinking returned `{ shouldAutomaticallyLink: false }` but the email verification status was wrong
      */
-    tryAndMakeSessionUserIntoAPrimaryUser: (
-        session: SessionContainerInterface,
-        skipSessionUserUpdateInCore: boolean,
-        userContext: UserContext
-    ) => Promise<
-        | {
-              status: "OK";
-              sessionUser: User;
-          }
-        | {
-              status: "SHOULD_AUTOMATICALLY_LINK_FALSE";
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    tryAndMakeSessionUserIntoAPrimaryUser: (session: SessionContainerInterface, skipSessionUserUpdateInCore: boolean, userContext: UserContext) => Promise<{
+        status: "OK";
+        sessionUser: User;
+    } | {
+        status: "SHOULD_AUTOMATICALLY_LINK_FALSE";
+    } | {
+        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+    }>;
     /**
      * This function tries linking by session, and doesn't attempt to make the authenticated user a primary or link it by account info
      *
@@ -305,45 +224,22 @@ export declare const AuthUtils: {
      * - LINKING_TO_SESSION_USER_FAILED (INPUT_USER_IS_NOT_A_PRIMARY_USER):
      * if the session user is not primary. This can be resolved by making it primary and retrying the call.
      */
-    tryLinkingBySession: ({
-        linkingToSessionUserRequiresVerification,
-        authLoginMethod,
-        authenticatedUser,
-        sessionUser,
-        userContext,
-    }: {
+    tryLinkingBySession: ({ linkingToSessionUserRequiresVerification, authLoginMethod, authenticatedUser, sessionUser, userContext, }: {
         authenticatedUser: User;
         linkingToSessionUserRequiresVerification: boolean;
         sessionUser: User;
         authLoginMethod: LoginMethod;
         userContext: UserContext;
-    }) => Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
-          }
-    >;
-    filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid: (
-        factorIds: string[],
-        tenantId: string,
-        hasSession: boolean,
-        userContext: UserContext
-    ) => Promise<string[]>;
-    loadSessionInAuthAPIIfNeeded: (
-        req: BaseRequest,
-        res: BaseResponse,
-        shouldTryLinkingWithSessionUser: boolean | undefined,
-        userContext: UserContext
-    ) => Promise<SessionContainerInterface | undefined>;
+    }) => Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "LINKING_TO_SESSION_USER_FAILED";
+        reason: "EMAIL_VERIFICATION_REQUIRED" | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+    } | {
+        status: "LINKING_TO_SESSION_USER_FAILED";
+        reason: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+    }>;
+    filterOutInvalidFirstFactorsOrThrowIfAllAreInvalid: (factorIds: string[], tenantId: string, hasSession: boolean, userContext: UserContext) => Promise<string[]>;
+    loadSessionInAuthAPIIfNeeded: (req: BaseRequest, res: BaseResponse, shouldTryLinkingWithSessionUser: boolean | undefined, userContext: UserContext) => Promise<SessionContainerInterface | undefined>;
 };

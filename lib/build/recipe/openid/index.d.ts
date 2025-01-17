@@ -2,9 +2,7 @@
 import OpenIdRecipe from "./recipe";
 export default class OpenIdRecipeWrapper {
     static init: typeof OpenIdRecipe.init;
-    static getOpenIdDiscoveryConfiguration(
-        userContext?: Record<string, any>
-    ): Promise<{
+    static getOpenIdDiscoveryConfiguration(userContext?: Record<string, any>): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;

@@ -16,32 +16,13 @@ export default class Wrapper {
         THIRDPARTY: string;
         TOTP: string;
     };
-    static assertAllowedToSetupFactorElseThrowInvalidClaimError(
-        session: SessionContainerInterface,
-        factorId: string,
-        userContext?: Record<string, any>
-    ): Promise<void>;
-    static getMFARequirementsForAuth(
-        session: SessionContainerInterface,
-        userContext?: Record<string, any>
-    ): Promise<import("./types").MFARequirementList>;
-    static markFactorAsCompleteInSession(
-        session: SessionContainerInterface,
-        factorId: string,
-        userContext?: Record<string, any>
-    ): Promise<void>;
+    static assertAllowedToSetupFactorElseThrowInvalidClaimError(session: SessionContainerInterface, factorId: string, userContext?: Record<string, any>): Promise<void>;
+    static getMFARequirementsForAuth(session: SessionContainerInterface, userContext?: Record<string, any>): Promise<import("./types").MFARequirementList>;
+    static markFactorAsCompleteInSession(session: SessionContainerInterface, factorId: string, userContext?: Record<string, any>): Promise<void>;
     static getFactorsSetupForUser(userId: string, userContext?: Record<string, any>): Promise<string[]>;
     static getRequiredSecondaryFactorsForUser(userId: string, userContext?: Record<string, any>): Promise<string[]>;
-    static addToRequiredSecondaryFactorsForUser(
-        userId: string,
-        factorId: string,
-        userContext?: Record<string, any>
-    ): Promise<void>;
-    static removeFromRequiredSecondaryFactorsForUser(
-        userId: string,
-        factorId: string,
-        userContext?: Record<string, any>
-    ): Promise<void>;
+    static addToRequiredSecondaryFactorsForUser(userId: string, factorId: string, userContext?: Record<string, any>): Promise<void>;
+    static removeFromRequiredSecondaryFactorsForUser(userId: string, factorId: string, userContext?: Record<string, any>): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let assertAllowedToSetupFactorElseThrowInvalidClaimError: typeof Wrapper.assertAllowedToSetupFactorElseThrowInvalidClaimError;
