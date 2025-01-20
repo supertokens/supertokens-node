@@ -42,25 +42,22 @@ export declare type OAuthTokenResponse = {
 export declare type TypeInput = {
     providerConfigs: ProviderConfigInput[];
     override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
     providerConfigs: ProviderConfigInput[];
     override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type RecipeInterface = {
-    getProviderConfig(input: { clientId: string; userContext: UserContext }): Promise<ProviderConfigWithOIDCInfo>;
+    getProviderConfig(input: {
+        clientId: string;
+        userContext: UserContext;
+    }): Promise<ProviderConfigWithOIDCInfo>;
     signIn(input: {
         userId: string;
         oAuthTokens: OAuthTokens;
@@ -113,43 +110,35 @@ export declare type APIOptions = {
     appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
-    signInPOST: (
-        input: {
-            tenantId: string;
-            clientId?: string;
-            options: APIOptions;
-            userContext: UserContext;
-        } & (
-            | {
-                  redirectURIInfo: {
-                      redirectURI: string;
-                      redirectURIQueryParams: any;
-                      pkceCodeVerifier?: string;
-                  };
-              }
-            | {
-                  oAuthTokens: {
-                      [key: string]: any;
-                  };
-              }
-        )
-    ) => Promise<
-        | {
-              status: "OK";
-              user: User;
-              session: SessionContainerInterface;
-              oAuthTokens: {
-                  [key: string]: any;
-              };
-              rawUserInfo: {
-                  fromIdTokenPayload?: {
-                      [key: string]: any;
-                  };
-                  fromUserInfoAPI?: {
-                      [key: string]: any;
-                  };
-              };
-          }
-        | GeneralErrorResponse
-    >;
+    signInPOST: (input: {
+        tenantId: string;
+        clientId?: string;
+        options: APIOptions;
+        userContext: UserContext;
+    } & ({
+        redirectURIInfo: {
+            redirectURI: string;
+            redirectURIQueryParams: any;
+            pkceCodeVerifier?: string;
+        };
+    } | {
+        oAuthTokens: {
+            [key: string]: any;
+        };
+    })) => Promise<{
+        status: "OK";
+        user: User;
+        session: SessionContainerInterface;
+        oAuthTokens: {
+            [key: string]: any;
+        };
+        rawUserInfo: {
+            fromIdTokenPayload?: {
+                [key: string]: any;
+            };
+            fromUserInfoAPI?: {
+                [key: string]: any;
+            };
+        };
+    } | GeneralErrorResponse>;
 };

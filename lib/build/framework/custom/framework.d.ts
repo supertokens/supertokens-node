@@ -46,16 +46,7 @@ export declare class CollectingResponse extends BaseResponse {
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     removeHeader: (key: string) => void;
-    setCookie: (
-        key: string,
-        value: string,
-        domain: string | undefined,
-        secure: boolean,
-        httpOnly: boolean,
-        expires: number,
-        path: string,
-        sameSite: "strict" | "lax" | "none"
-    ) => void;
+    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
     /**
      * @param {number} statusCode
      */
@@ -63,47 +54,22 @@ export declare class CollectingResponse extends BaseResponse {
     sendJSONResponse: (content: any) => void;
 }
 export declare type NextFunction = (err?: any) => void;
-export declare const middleware: <OrigReqType = BaseRequest, OrigRespType = BaseResponse>(
-    wrapRequest?: (req: OrigReqType) => BaseRequest,
-    wrapResponse?: (req: OrigRespType) => BaseResponse
-) => (
-    request: OrigReqType,
-    response: OrigRespType,
-    next?: NextFunction | undefined
-) => Promise<
-    | {
-          handled: boolean;
-          error?: undefined;
-      }
-    | {
-          error: any;
-          handled?: undefined;
-      }
->;
-export declare const errorHandler: () => (
-    err: any,
-    request: BaseRequest,
-    response: BaseResponse,
-    next: NextFunction
-) => Promise<void>;
+export declare const middleware: <OrigReqType = BaseRequest, OrigRespType = BaseResponse>(wrapRequest?: (req: OrigReqType) => BaseRequest, wrapResponse?: (req: OrigRespType) => BaseResponse) => (request: OrigReqType, response: OrigRespType, next?: NextFunction | undefined) => Promise<{
+    handled: boolean;
+    error?: undefined;
+} | {
+    error: any;
+    handled?: undefined;
+}>;
+export declare const errorHandler: () => (err: any, request: BaseRequest, response: BaseResponse, next: NextFunction) => Promise<void>;
 export declare const CustomFrameworkWrapper: {
-    middleware: <OrigReqType = BaseRequest, OrigRespType = BaseResponse>(
-        wrapRequest?: (req: OrigReqType) => BaseRequest,
-        wrapResponse?: (req: OrigRespType) => BaseResponse
-    ) => (
-        request: OrigReqType,
-        response: OrigRespType,
-        next?: NextFunction | undefined
-    ) => Promise<
-        | {
-              handled: boolean;
-              error?: undefined;
-          }
-        | {
-              error: any;
-              handled?: undefined;
-          }
-    >;
+    middleware: <OrigReqType = BaseRequest, OrigRespType = BaseResponse>(wrapRequest?: (req: OrigReqType) => BaseRequest, wrapResponse?: (req: OrigRespType) => BaseResponse) => (request: OrigReqType, response: OrigRespType, next?: NextFunction | undefined) => Promise<{
+        handled: boolean;
+        error?: undefined;
+    } | {
+        error: any;
+        handled?: undefined;
+    }>;
     errorHandler: () => (err: any, request: BaseRequest, response: BaseResponse, next: NextFunction) => Promise<void>;
 };
 export {};
