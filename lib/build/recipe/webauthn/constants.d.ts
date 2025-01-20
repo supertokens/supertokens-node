@@ -7,7 +7,6 @@ export declare const GENERATE_RECOVER_ACCOUNT_TOKEN_API = "/user/webauthn/reset/
 export declare const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 export declare const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
 export declare const DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none";
-export declare const DEFAULT_REGISTER_OPTIONS_REQUIRE_RESIDENT_KEY = false;
 export declare const DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY = "required";
 export declare const DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION = "preferred";
 export declare const DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS: number[];

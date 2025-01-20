@@ -2,7 +2,7 @@
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { UserContext, User as UserType } from "./types";
-import { AccountInfo } from "./recipe/accountlinking/types";
+import { AccountInfoInput } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
 import { User } from "./user";
 export default class SuperTokensWrapper {
@@ -93,7 +93,7 @@ export default class SuperTokensWrapper {
     static getUser(userId: string, userContext?: Record<string, any>): Promise<UserType | undefined>;
     static listUsersByAccountInfo(
         tenantId: string,
-        accountInfo: AccountInfo,
+        accountInfo: AccountInfoInput,
         doUnionOfAccountInfo?: boolean,
         userContext?: Record<string, any>
     ): Promise<UserType[]>;

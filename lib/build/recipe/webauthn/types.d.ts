@@ -83,7 +83,6 @@ export declare type RecipeInterface = {
             relyingPartyName: string;
             displayName?: string;
             origin: string;
-            requireResidentKey: boolean | undefined;
             residentKey: ResidentKey | undefined;
             userVerification: UserVerification | undefined;
             attestation: Attestation | undefined;
@@ -103,6 +102,8 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
+              createdAt: string;
+              expiresAt: string;
               rp: {
                   id: string;
                   name: string;
@@ -153,6 +154,8 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
+              createdAt: string;
+              expiresAt: string;
               challenge: string;
               timeout: number;
               userVerification: UserVerification;
@@ -163,7 +166,7 @@ export declare type RecipeInterface = {
     >;
     signUp(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
@@ -201,7 +204,7 @@ export declare type RecipeInterface = {
     >;
     signIn(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
@@ -226,7 +229,7 @@ export declare type RecipeInterface = {
     >;
     verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -241,7 +244,7 @@ export declare type RecipeInterface = {
     >;
     createNewRecipeUser(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         tenantId: string;
         userContext: UserContext;
     }): Promise<
@@ -302,7 +305,7 @@ export declare type RecipeInterface = {
     >;
     registerCredential(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext: UserContext;
         recipeUserId: RecipeUserId;
     }): Promise<
@@ -499,6 +502,8 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
+                    createdAt: string;
+                    expiresAt: string;
                     rp: {
                         id: string;
                         name: string;
@@ -549,6 +554,8 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     webauthnGeneratedOptionsId: string;
+                    createdAt: string;
+                    expiresAt: string;
                     challenge: string;
                     timeout: number;
                     userVerification: UserVerification;
@@ -562,7 +569,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: RegistrationPayload;
               tenantId: string;
               session: SessionContainerInterface | undefined;
               shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -600,7 +607,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: AuthenticationPayload;
               tenantId: string;
               session: SessionContainerInterface | undefined;
               shouldTryLinkingWithSessionUser: boolean | undefined;
@@ -643,7 +650,7 @@ export declare type APIInterface = {
         | ((input: {
               token: string;
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: RegistrationPayload;
               tenantId: string;
               options: APIOptions;
               userContext: UserContext;
@@ -656,6 +663,38 @@ export declare type APIInterface = {
               | GeneralErrorResponse
               | {
                     status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
+                }
+              | {
+                    status: "INVALID_CREDENTIALS_ERROR";
+                }
+              | {
+                    status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
+                }
+              | {
+                    status: "INVALID_GENERATED_OPTIONS_ERROR";
+                }
+              | {
+                    status: "INVALID_AUTHENTICATOR_ERROR";
+                    reason: string;
+                }
+          >);
+    registerCredentialPOST:
+        | undefined
+        | ((input: {
+              webauthnGeneratedOptionsId: string;
+              credential: CredentialPayload;
+              tenantId: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: UserContext;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+              | {
+                    status: "REGISTER_CREDENTIAL_NOT_ALLOWED";
+                    reason: string;
                 }
               | {
                     status: "INVALID_CREDENTIALS_ERROR";
@@ -697,17 +736,39 @@ export declare type TypeWebauthnRecoverAccountEmailDeliveryInput = {
     tenantId: string;
 };
 export declare type TypeWebauthnEmailDeliveryInput = TypeWebauthnRecoverAccountEmailDeliveryInput;
-export declare type CredentialPayload = {
+export declare type CredentialPayloadBase = {
     id: string;
     rawId: string;
+    authenticatorAttachment?: "platform" | "cross-platform";
+    clientExtensionResults: Record<string, unknown>;
+    type: "public-key";
+};
+export declare type AuthenticatorAssertionResponseJSON = {
+    clientDataJSON: Base64URLString;
+    authenticatorData: Base64URLString;
+    signature: Base64URLString;
+    userHandle?: Base64URLString;
+};
+export declare type AuthenticatorAttestationResponseJSON = {
+    clientDataJSON: Base64URLString;
+    attestationObject: Base64URLString;
+    authenticatorData?: Base64URLString;
+    transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
+    publicKeyAlgorithm?: COSEAlgorithmIdentifier;
+    publicKey?: Base64URLString;
+};
+export declare type AuthenticationPayload = CredentialPayloadBase & {
+    response: AuthenticatorAssertionResponseJSON;
+};
+export declare type RegistrationPayload = CredentialPayloadBase & {
+    response: AuthenticatorAttestationResponseJSON;
+};
+export declare type CredentialPayload = CredentialPayloadBase & {
     response: {
         clientDataJSON: string;
         attestationObject: string;
         transports?: ("ble" | "cable" | "hybrid" | "internal" | "nfc" | "smart-card" | "usb")[];
         userHandle: string;
     };
-    authenticatorAttachment: "platform" | "cross-platform";
-    clientExtensionResults: Record<string, unknown>;
-    type: "public-key";
 };
 export {};

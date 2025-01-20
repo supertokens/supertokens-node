@@ -163,7 +163,7 @@ export declare type RecipeInterface = {
     getUser: (input: { userId: string; userContext: UserContext }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {
         tenantId: string;
-        accountInfo: AccountInfo;
+        accountInfo: AccountInfoInput;
         doUnionOfAccountInfo: boolean;
         userContext: UserContext;
     }) => Promise<User[]>;
@@ -184,6 +184,11 @@ export declare type AccountInfo = {
     };
     webauthn?: {
         credentialIds: string[];
+    };
+};
+export declare type AccountInfoInput = Omit<AccountInfo, "webauthn"> & {
+    webauthn?: {
+        credentialId: string;
     };
 };
 export declare type AccountInfoWithRecipeId = {

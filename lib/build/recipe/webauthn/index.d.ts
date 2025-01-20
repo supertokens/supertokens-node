@@ -10,6 +10,7 @@ import {
     UserVerification,
     ResidentKey,
     Attestation,
+    AuthenticationPayload,
 } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { SessionContainerInterface } from "../session/types";
@@ -19,7 +20,6 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static registerOptions({
-        requireResidentKey,
         residentKey,
         userVerification,
         attestation,
@@ -29,7 +29,6 @@ export default class Wrapper {
         userContext,
         ...rest
     }: {
-        requireResidentKey?: boolean;
         residentKey?: ResidentKey;
         userVerification?: UserVerification;
         attestation?: Attestation;
@@ -208,7 +207,7 @@ export default class Wrapper {
     }: {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         session?: SessionContainerInterface;
         userContext?: Record<string, any>;
     }): Promise<
@@ -237,7 +236,7 @@ export default class Wrapper {
     }: {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: AuthenticationPayload;
         userContext?: Record<string, any>;
     }): Promise<
         | {
