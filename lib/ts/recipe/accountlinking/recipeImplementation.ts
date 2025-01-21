@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { AccountInfo, RecipeInterface, TypeNormalisedInput } from "./types";
+import { AccountInfoInput, RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
@@ -308,7 +308,7 @@ export default function getRecipeImplementation(
                 userContext,
             }: {
                 tenantId: string;
-                accountInfo: AccountInfo;
+                accountInfo: AccountInfoInput;
                 doUnionOfAccountInfo: boolean;
                 userContext: UserContext;
             }

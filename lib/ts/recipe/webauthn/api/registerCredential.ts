@@ -13,11 +13,7 @@
  * under the License.
  */
 
-import {
-    getBackwardsCompatibleUserInfo,
-    getNormalisedShouldTryLinkingWithSessionUserFlag,
-    send200Response,
-} from "../../../utils";
+import { send200Response } from "../../../utils";
 import { validateWebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
 import STError from "../error";

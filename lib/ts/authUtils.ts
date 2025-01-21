@@ -326,9 +326,20 @@ export const AuthUtils = {
     }: {
         recipeId: string;
         accountInfo:
-            | { email: string; thirdParty?: undefined; phoneNumber?: undefined }
-            | { email?: undefined; thirdParty?: undefined; phoneNumber: string }
-            | { email?: undefined; thirdParty: { id: string; userId: string }; phoneNumber?: undefined };
+            | { email: string; thirdParty?: undefined; phoneNumber?: undefined; webauthn?: undefined }
+            | { email?: undefined; thirdParty?: undefined; phoneNumber: string; webauthn?: undefined }
+            | {
+                  email?: undefined;
+                  thirdParty: { id: string; userId: string };
+                  phoneNumber?: undefined;
+                  webauthn?: undefined;
+              }
+            | {
+                  email?: undefined;
+                  thirdParty?: undefined;
+                  phoneNumber?: undefined;
+                  webauthn: { credentialId: string };
+              };
         tenantId: string;
         session: SessionContainerInterface | undefined;
         checkCredentialsOnTenant: (tenantId: string) => Promise<boolean>;

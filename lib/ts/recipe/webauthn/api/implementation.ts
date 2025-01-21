@@ -19,7 +19,7 @@ import { getRecoverAccountLink } from "../utils";
 import { logDebugMessage } from "../../../logger";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { getUser } from "../../..";
-import { AuthenticationPayload, RegistrationPayload, ResidentKey, UserVerification } from "../types";
+import { AuthenticationPayload, CredentialPayload, RegistrationPayload, ResidentKey, UserVerification } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {

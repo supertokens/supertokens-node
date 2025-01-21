@@ -146,13 +146,17 @@ export default class Recipe extends RecipeModule {
             return user;
         }
 
-        // then, we try and find a primary user based on the email / phone number / third party ID.
+        // then, we try and find a primary user based on the email / phone number / third party ID / credentialId.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
-            accountInfo: user.loginMethods[0], // todo we might need to omit the credental id here
-
+            accountInfo: {
+                ...user.loginMethods[0],
+                // we don't need to list by (webauthn) credentialId because we are looking for
+                // a user to link to the current recipe user, but any search using the credentialId
+                // of the current user "will identify the same user" which is the current one.
+                webauthn: undefined,
+            },
             doUnionOfAccountInfo: true,
-
             userContext,
         });
 
@@ -205,7 +209,13 @@ export default class Recipe extends RecipeModule {
         // then, we try and find matching users based on the email / phone number / third party ID.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
-            accountInfo: user.loginMethods[0],
+            accountInfo: {
+                ...user.loginMethods[0],
+                // we don't need to list by (webauthn) credentialId because we are looking for
+                // a user to link to the current recipe user, but any search using the credentialId
+                // of the current user "will identify the same user" which is the current one.
+                webauthn: undefined,
+            },
             doUnionOfAccountInfo: true,
             userContext,
         });
@@ -322,9 +332,16 @@ export default class Recipe extends RecipeModule {
         // we do not pass in third party info, or both email or phone
         // cause we want to guarantee that the output array contains just one
         // primary user.
+
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
-            accountInfo,
+            accountInfo: {
+                ...accountInfo,
+                // we don't need to list by (webauthn) credentialId because we are looking for
+                // a user to link to the current recipe user, but any search using the credentialId
+                // of the current user "will identify the same user" which is the current one.
+                webauthn: undefined,
+            },
             doUnionOfAccountInfo: true,
             userContext,
         });
