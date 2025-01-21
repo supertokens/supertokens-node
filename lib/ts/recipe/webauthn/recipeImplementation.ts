@@ -98,14 +98,13 @@ export default function getRecipeInterface(
             );
         },
 
-        signInOptions: async function ({ relyingPartyId, origin, timeout, tenantId, userContext, email }) {
+        signInOptions: async function ({ relyingPartyId, origin, timeout, tenantId, userContext }) {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/signin`
                 ),
                 {
-                    email,
                     relyingPartyId,
                     origin,
                     timeout,

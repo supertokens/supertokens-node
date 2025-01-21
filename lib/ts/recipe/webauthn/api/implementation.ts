@@ -127,12 +127,10 @@ export default function getAPIImplementation(): APIInterface {
         },
 
         signInOptionsPOST: async function ({
-            email,
             tenantId,
             options,
             userContext,
         }: {
-            email: string;
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;
@@ -166,7 +164,6 @@ export default function getAPIImplementation(): APIInterface {
             const userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION;
 
             let response = await options.recipeImplementation.signInOptions({
-                email,
                 userVerification,
                 origin,
                 relyingPartyId,
@@ -427,7 +424,6 @@ export default function getAPIImplementation(): APIInterface {
                     status: "INVALID_CREDENTIALS_ERROR",
                 };
             }
-            let email = generatedOptions.email;
 
             const checkCredentialsOnTenant = async () => {
                 return true;
@@ -442,8 +438,10 @@ export default function getAPIImplementation(): APIInterface {
             //             lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) ||
             //             lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty))
             // );
+
+            const accountInfo = { webauthn: { credentialId: credential.id } };
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
-                accountInfo: { email },
+                accountInfo,
                 userContext,
                 recipeId,
                 session,
@@ -461,6 +459,15 @@ export default function getAPIImplementation(): APIInterface {
                     status: "INVALID_CREDENTIALS_ERROR",
                 };
             }
+
+            // we find the email of the user that has the same credentialId as the one we are verifying
+            const email = authenticatingUser.user.loginMethods.find(
+                (lm) => lm.recipeId === "webauthn" && lm.webauthn?.credentialIds.includes(credential.id)
+            )?.email;
+            if (email === undefined) {
+                throw new Error("This should never happen: webauthn user has no email");
+            }
+
             const preAuthChecks = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
                     recipeId,

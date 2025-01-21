@@ -89,7 +89,6 @@ export const getMockQuerier = (recipeId: string) => {
                 id,
                 origin: body.origin,
                 tenantId: body.tenantId,
-                email: body.email,
                 createdAt,
                 expiresAt,
             });
