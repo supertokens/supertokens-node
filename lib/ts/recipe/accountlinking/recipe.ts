@@ -151,7 +151,9 @@ export default class Recipe extends RecipeModule {
             tenantId,
             accountInfo: {
                 ...user.loginMethods[0],
-                // omit webauthn so we have the correct type
+                // we don't need to list by (webauthn) credentialId because we are looking for
+                // a user to link to the current recipe user, but any search using the credentialId
+                // of the current user "will identify the same user" which is the current one.
                 webauthn: undefined,
             },
             doUnionOfAccountInfo: true,
@@ -209,7 +211,9 @@ export default class Recipe extends RecipeModule {
             tenantId,
             accountInfo: {
                 ...user.loginMethods[0],
-                // omit webauthn so we have the correct type
+                // we don't need to list by (webauthn) credentialId because we are looking for
+                // a user to link to the current recipe user, but any search using the credentialId
+                // of the current user "will identify the same user" which is the current one.
                 webauthn: undefined,
             },
             doUnionOfAccountInfo: true,
@@ -329,12 +333,13 @@ export default class Recipe extends RecipeModule {
         // cause we want to guarantee that the output array contains just one
         // primary user.
 
-        // map according to the correct types here so we don't have to change the types upstream
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             tenantId,
             accountInfo: {
                 ...accountInfo,
-                // omit webauthn so we have the correct type
+                // we don't need to list by (webauthn) credentialId because we are looking for
+                // a user to link to the current recipe user, but any search using the credentialId
+                // of the current user "will identify the same user" which is the current one.
                 webauthn: undefined,
             },
             doUnionOfAccountInfo: true,
