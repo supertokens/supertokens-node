@@ -17,7 +17,15 @@ export default class OpenIdRecipe extends RecipeModule {
     static reset(): void;
     static getIssuer(userContext: UserContext): Promise<string>;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, _tenantId: string, req: BaseRequest, response: BaseResponse, _path: normalisedURLPath, _method: HTTPMethod, userContext: UserContext) => Promise<boolean>;
+    handleAPIRequest: (
+        id: string,
+        _tenantId: string,
+        req: BaseRequest,
+        response: BaseResponse,
+        _path: normalisedURLPath,
+        _method: HTTPMethod,
+        userContext: UserContext
+    ) => Promise<boolean>;
     handleError: (error: STError) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;

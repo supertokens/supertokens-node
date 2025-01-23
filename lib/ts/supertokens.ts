@@ -42,6 +42,8 @@ import { enableDebugLogs, logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 import { version } from "./version";
+import { SessionContainerInterface } from "./recipe/session/types";
+import Session from "./recipe/session/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -428,7 +430,16 @@ export default class SuperTokens {
             (handler) => handler.path === path.getAsStringDangerous() && handler.method === method
         );
         if (handlerFromApis) {
-            handlerFromApis.handler(request, response, userContext);
+            let session: SessionContainerInterface | undefined = undefined;
+            if (handlerFromApis.verifySessionOptions !== undefined) {
+                session = await Session.getInstanceOrThrowError().verifySession(
+                    handlerFromApis.verifySessionOptions,
+                    request,
+                    response,
+                    userContext
+                );
+            }
+            handlerFromApis.handler(request, response, session, userContext);
             return true;
         }
 

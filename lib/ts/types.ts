@@ -29,7 +29,11 @@ import type { TypeInput as MultitenancyTypeInput } from "./recipe/multitenancy/t
 import type { TypeInput as OAuth2ProviderTypeInput } from "./recipe/oauth2provider/types";
 import type { TypeInput as OpenIdTypeInput } from "./recipe/openid/types";
 import type { TypeInput as PasswordlessTypeInput } from "./recipe/passwordless/types";
-import type { TypeInput as SessionTypeInput } from "./recipe/session/types";
+import type {
+    SessionContainerInterface,
+    TypeInput as SessionTypeInput,
+    VerifySessionOptions,
+} from "./recipe/session/types";
 import type { TypeInput as ThirdPartyTypeInput } from "./recipe/thirdparty/types";
 import type { TypeInput as TotpTypeInput } from "./recipe/totp/types";
 import type { TypeInput as UserMetadataTypeInput } from "./recipe/usermetadata/types";
@@ -105,9 +109,11 @@ export type RecipePluginOverride<T extends keyof AllRecipeConfigs> = {
 export type PluginRouteHandler = {
     method: HTTPMethod;
     path: string; // this is appended to apiBasePath
+    verifySessionOptions?: VerifySessionOptions;
     handler: (
         req: BaseRequest,
         res: BaseResponse,
+        session: SessionContainerInterface | undefined,
         userContext: UserContext
     ) => Promise<{
         status: number;

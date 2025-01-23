@@ -23,9 +23,11 @@ export type TypeInputSendRawEmail = GetContentResult & {
 };
 export type ServiceInterface<T> = {
     sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
-    getContent: (input: T & {
-        userContext: UserContext;
-    }) => Promise<GetContentResult>;
+    getContent: (
+        input: T & {
+            userContext: UserContext;
+        }
+    ) => Promise<GetContentResult>;
 };
 export type TypeInput<T> = {
     smtpSettings: SMTPServiceConfig;

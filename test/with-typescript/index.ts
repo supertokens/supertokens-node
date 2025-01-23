@@ -1,6 +1,8 @@
 import * as express from "express";
 import { NextApiRequest, NextApiResponse } from "next";
+import { OverrideableBuilder } from "supertokens-js-override";
 import Supertokens, { RecipeUserId, User, getUser } from "../..";
+import { SuperTokensPlugin } from "../../types";
 import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
@@ -949,7 +951,7 @@ Multitenancy.init({
 });
 
 import { HTTPMethod, TypeInput, UserContext } from "../../types";
-import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
+import { SessionContainerInterface, TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
 import { serialize } from "cookie";
@@ -2311,6 +2313,59 @@ OAuth2Provider.createOAuth2Client({
     clientSecret: "nope!",
 });
 
+const createPluginInitFunction = <
+    Implementation extends Record<string, (...args: any[]) => any>,
+    Config,
+    NormalisedConfig = Config
+>(
+    init: (implementation: Implementation, config: NormalisedConfig) => SuperTokensPlugin,
+    getImplementation?: Implementation | ((config: NormalisedConfig) => Implementation),
+    getNormalisedConfig?: (config: Config) => NormalisedConfig
+): ((config: Config & { override: (oI: Implementation) => Implementation }) => SuperTokensPlugin) => {
+    const normalizedGetImplementation: (config: NormalisedConfig) => Implementation =
+        typeof getImplementation === "function"
+            ? getImplementation
+            : (_config: NormalisedConfig) => getImplementation as Implementation;
+
+    return (inputConfig) => {
+        const config = getNormalisedConfig ? getNormalisedConfig(inputConfig) : (inputConfig as NormalisedConfig);
+        const baseImplementation = normalizedGetImplementation(config);
+        const overrideBuilder = new OverrideableBuilder(baseImplementation);
+        if (inputConfig.override) {
+            overrideBuilder.override(inputConfig.override);
+        }
+        const actualImplementation = overrideBuilder.build();
+        return init(actualImplementation, config);
+    };
+};
+
+const customPlugin = createPluginInitFunction<{ log: (input: any) => void }, { prefix: string }>(
+    (implementation, config: { prefix: string }) => {
+        return {
+            id: "asdf",
+            compatibleSDKVersions: "1.2.3",
+            overrideMap: {
+                emailpassword: {
+                    functions: (oI) => ({
+                        ...oI,
+                        signIn: (input) => {
+                            implementation.log(input);
+                            return oI.signIn(input);
+                        },
+                    }),
+                },
+            },
+        };
+    },
+    (config) => {
+        return {
+            log: (input: any) => {
+                console.log(`${config.prefix} - input`);
+            },
+        };
+    }
+);
+
 Supertokens.init({
     appInfo,
     recipeList: [OpenId.init()],
@@ -2333,7 +2388,40 @@ Supertokens.init({
                         },
                     }),
                 },
+                passwordless: {
+                    functions: (oI) => ({
+                        ...oI,
+                        checkCode: (input) => {
+                            return oI.checkCode(input);
+                        },
+                    }),
+                },
             },
+            routeHandlers: [
+                {
+                    method: "get",
+                    path: "/asdf",
+                    verifySessionOptions: {},
+                    handler: async (req, res, userContext) => {
+                        return {
+                            status: 200,
+                            body: {},
+                        };
+                    },
+                },
+            ],
         },
+        customPlugin({
+            prefix: "asdf",
+            override: (oI) => ({
+                ...oI,
+                log: (input: any) => {
+                    console.log(`in log override - before oI.log`);
+                    const res = oI.log(input);
+                    console.log(`in log override - after oI.log`);
+                    return res;
+                },
+            }),
+        }),
     ],
 });
