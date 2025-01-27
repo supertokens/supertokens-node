@@ -177,14 +177,12 @@ export default class Wrapper {
     }
 
     static async signInOptions({
-        email,
         tenantId = DEFAULT_TENANT_ID,
         userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
         timeout = DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
         userContext,
         ...rest
     }: {
-        email: string;
         timeout?: number;
         userVerification?: UserVerification;
         tenantId?: string;
@@ -232,7 +230,6 @@ export default class Wrapper {
         }
 
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInOptions({
-            email,
             relyingPartyId,
             origin,
             timeout,
