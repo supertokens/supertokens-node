@@ -15,4 +15,7 @@ export declare function resetCombinedJWKS(): void;
 */
 export declare function getCombinedJWKS(config: {
     jwksRefreshIntervalSec: number;
-}): (protectedHeader?: import("jose").JWSHeaderParameters | undefined, token?: import("jose").FlattenedJWSInput | undefined) => Promise<import("jose").KeyLike>;
+}): (
+    protectedHeader?: import("jose").JWSHeaderParameters | undefined,
+    token?: import("jose").FlattenedJWSInput | undefined
+) => Promise<import("jose").KeyLike>;

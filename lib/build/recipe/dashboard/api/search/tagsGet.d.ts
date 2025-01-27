@@ -5,5 +5,10 @@ declare type TagsResponse = {
     status: "OK";
     tags: string[];
 };
-export declare const getSearchTags: (_: APIInterface, ___: string, options: APIOptions, userContext: UserContext) => Promise<TagsResponse>;
+export declare const getSearchTags: (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: UserContext
+) => Promise<TagsResponse>;
 export {};

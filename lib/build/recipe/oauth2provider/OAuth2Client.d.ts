@@ -139,6 +139,33 @@ export declare class OAuth2Client {
      * JSONRawMessage represents a json.RawMessage that works well with JSON, SQL, and Swagger.
      */
     metadata: Record<string, any>;
-    constructor({ clientId, clientSecret, clientName, scope, redirectUris, postLogoutRedirectUris, authorizationCodeGrantAccessTokenLifespan, authorizationCodeGrantIdTokenLifespan, authorizationCodeGrantRefreshTokenLifespan, clientCredentialsGrantAccessTokenLifespan, implicitGrantAccessTokenLifespan, implicitGrantIdTokenLifespan, refreshTokenGrantAccessTokenLifespan, refreshTokenGrantIdTokenLifespan, refreshTokenGrantRefreshTokenLifespan, tokenEndpointAuthMethod, clientUri, audience, grantTypes, responseTypes, logoUri, policyUri, tosUri, createdAt, updatedAt, metadata, }: OAuth2ClientOptions);
+    constructor({
+        clientId,
+        clientSecret,
+        clientName,
+        scope,
+        redirectUris,
+        postLogoutRedirectUris,
+        authorizationCodeGrantAccessTokenLifespan,
+        authorizationCodeGrantIdTokenLifespan,
+        authorizationCodeGrantRefreshTokenLifespan,
+        clientCredentialsGrantAccessTokenLifespan,
+        implicitGrantAccessTokenLifespan,
+        implicitGrantIdTokenLifespan,
+        refreshTokenGrantAccessTokenLifespan,
+        refreshTokenGrantIdTokenLifespan,
+        refreshTokenGrantRefreshTokenLifespan,
+        tokenEndpointAuthMethod,
+        clientUri,
+        audience,
+        grantTypes,
+        responseTypes,
+        logoUri,
+        policyUri,
+        tosUri,
+        createdAt,
+        updatedAt,
+        metadata,
+    }: OAuth2ClientOptions);
     static fromAPIResponse(response: any): OAuth2Client;
 }
