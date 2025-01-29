@@ -12,6 +12,7 @@ import { TypeInput as EmailVerificationTypeInput } from "../../../lib/build/reci
 import MultiFactorAuthRecipe from "../../../lib/build/recipe/multifactorauth/recipe";
 import MultitenancyRecipe from "../../../lib/build/recipe/multitenancy/recipe";
 import PasswordlessRecipe from "../../../lib/build/recipe/passwordless/recipe";
+import WebauthnRecipe from "../../../lib/build/recipe/webauthn/recipe";
 import { TypeInput as PasswordlessTypeInput } from "../../../lib/build/recipe/passwordless/types";
 import SessionRecipe from "../../../lib/build/recipe/session/recipe";
 import { TypeInput as SessionTypeInput } from "../../../lib/build/recipe/session/types";
@@ -29,6 +30,7 @@ import SuperTokensRecipe from "../../../lib/build/supertokens";
 import { RecipeListFunction } from "../../../lib/build/types";
 import AccountLinking from "../../../recipe/accountlinking";
 import EmailPassword from "../../../recipe/emailpassword";
+import WebAuthn from "../../../recipe/webauthn";
 import EmailVerification from "../../../recipe/emailverification";
 import MultiFactorAuth from "../../../recipe/multifactorauth";
 import Multitenancy from "../../../recipe/multitenancy";
@@ -46,6 +48,7 @@ import { logger } from "./logger";
 import multiFactorAuthRoutes from "./multifactorauth";
 import multitenancyRoutes from "./multitenancy";
 import passwordlessRoutes from "./passwordless";
+import webauthnRoutes from "./webauthn";
 import OAuth2ProviderRoutes from "./oauth2provider";
 import sessionRoutes from "./session";
 import supertokensRoutes from "./supertokens";
@@ -57,6 +60,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { resetOverrideLogs, logOverrideEvent, getOverrideLogs } from "./overrideLogging";
 import Dashboard from "../../../recipe/dashboard";
 import DashboardRecipe from "../../../lib/build/recipe/dashboard/recipe";
+import { TypeInput as WebauthnTypeInput } from "../../../lib/build/recipe/webauthn/types";
 
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
@@ -103,6 +107,7 @@ function STReset() {
     OAuth2ClientRecipe.reset();
     SuperTokensRecipe.reset();
     DashboardRecipe.reset();
+    WebauthnRecipe.reset();
 }
 
 function initST(config: any) {
@@ -343,6 +348,42 @@ function initST(config: any) {
             }
             recipeList.push(OAuth2Client.init(initConfig));
         }
+
+        if (recipe.recipeId === "webauthn") {
+            let init: WebauthnTypeInput = {
+                ...config,
+            };
+
+            recipeList.push(
+                WebAuthn.init({
+                    ...init,
+                    getRelyingPartyName: config?.getRelyingPartyName
+                        ? callbackWithLog("WebAuthn.getRelyingPartyName", config?.getRelyingPartyName)
+                        : undefined,
+                    getRelyingPartyId: config?.getRelyingPartyId
+                        ? callbackWithLog("WebAuthn.getRelyingPartyId", config?.getRelyingPartyId)
+                        : undefined,
+                    validateEmailAddress: config?.validateEmailAddress
+                        ? callbackWithLog("WebAuthn.validateEmailAddress", config?.validateEmailAddress)
+                        : undefined,
+                    getOrigin: config?.getOrigin ? callbackWithLog("WebAuthn.getOrigin", config?.getOrigin) : undefined,
+                    emailDelivery: {
+                        ...config?.emailDelivery,
+                        override: overrideBuilderWithLogging(
+                            "WebAuthn.emailDelivery.override",
+                            config?.emailDelivery?.override
+                        ),
+                    },
+                    override: {
+                        apis: overrideBuilderWithLogging("WebAuthn.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "WebAuthn.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
+        }
     });
 
     init.recipeList = recipeList;
@@ -435,6 +476,7 @@ app.use("/test/thirdparty", thirdPartyRoutes);
 app.use("/test/totp", TOTPRoutes);
 app.use("/test/usermetadata", userMetadataRoutes);
 app.use("/test/oauth2provider", OAuth2ProviderRoutes);
+app.use("/test/webauthn", webauthnRoutes);
 
 // *** Custom routes to help with session tests ***
 app.post("/create", async (req, res, next) => {

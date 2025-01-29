@@ -5,23 +5,17 @@ import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeR
 import * as supertokens from "../../../lib/build";
 import { logger } from "./logger";
 
-const namespace = "com.supertokens:node-test-server:emailpassword";
+const namespace = "com.supertokens:node-test-server:webauthn";
 const { logDebugMessage } = logger(namespace);
 
-const router = Router().post("/registeroptions", async (req, res, next) => {
+const router = Router().post("/getgeneratedoptions", async (req, res, next) => {
     try {
-        logDebugMessage("Webauthn:registerOptions %j", req.body);
-        const response = await Webauthn.registerOptions(
-            req.body.email,
-            req.body.recoverAccountToken,
-            req.body.relyingPartyId,
-            req.body.relyingPartyName,
-            req.body.origin,
-            req.body.timeout,
-            req.body.attestation,
-            req.body.tenantId || "public",
-            req.body.userContext
-        );
+        logDebugMessage("Webauthn:getGeneratedOptions %j", req.body);
+        const response = await Webauthn.getGeneratedOptions({
+            webauthnGeneratedOptionsId: req.body.webauthnGeneratedOptionsId,
+            tenantId: req.body.tenantId,
+            userContext: req.body.userContext,
+        });
         res.json(response);
     } catch (e) {
         next(e);

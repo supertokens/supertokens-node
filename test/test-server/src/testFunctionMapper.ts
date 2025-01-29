@@ -542,5 +542,45 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
         }
     }
 
+    if (evalStr.startsWith("webauthn.init.getRelyingPartyName")) {
+        return async (R) => {
+            if (evalStr.includes("testName")) {
+                return "testName";
+            }
+
+            return "SuperTokens";
+        };
+    }
+
+    if (evalStr.startsWith("webauthn.init.getRelyingPartyId")) {
+        return async (R) => {
+            if (evalStr.includes("testId.com")) {
+                return "testId.com";
+            }
+
+            return "api.supertokens.io";
+        };
+    }
+
+    if (evalStr.startsWith("webauthn.init.getOrigin")) {
+        return async (R) => {
+            if (evalStr.includes("testOrigin.com")) {
+                return "testOrigin.com";
+            }
+
+            return "api.supertokens.io";
+        };
+    }
+
+    if (evalStr.startsWith("webauthn.init.validateEmailAddress")) {
+        return async (email) => {
+            if (evalStr.includes("test@example.com")) {
+                return email === "test@example.com" ? undefined : "Invalid email";
+            }
+
+            return undefined;
+        };
+    }
+
     throw new Error("Unknown eval string: " + evalStr);
 }
