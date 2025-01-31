@@ -262,7 +262,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
             console.log("generatedOptions", generatedOptions);
 
-            assert(generatedOptions.rpId === "supertokens.io");
+            assert(generatedOptions.rpId === "api.supertokens.io");
             assert(generatedOptions.origin === "https://supertokens.io");
         });
 
