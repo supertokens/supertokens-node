@@ -88,6 +88,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert(registerOptionsResponse.status === "OK");
 
+            assert(typeof registerOptionsResponse.webauthnGeneratedOptionsId === "string");
             assert(typeof registerOptionsResponse.challenge === "string");
             assert(registerOptionsResponse.attestation === "none");
             assert(registerOptionsResponse.rp.id === "api.supertokens.io");
@@ -183,6 +184,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert(registerOptionsResponse.status === "OK");
 
+            assert(typeof registerOptionsResponse.webauthnGeneratedOptionsId === "string");
             assert(typeof registerOptionsResponse.challenge === "string");
             assert(registerOptionsResponse.attestation === "none");
             assert(registerOptionsResponse.rp.id === "testId.com");
@@ -318,6 +320,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert(signInOptionsResponse.status === "OK");
 
+            assert(typeof signInOptionsResponse.webauthnGeneratedOptionsId === "string");
             assert(typeof signInOptionsResponse.challenge === "string");
             assert(Number.isInteger(signInOptionsResponse.timeout));
             assert(signInOptionsResponse.userVerification === "preferred");
@@ -425,6 +428,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert(signUpResponse.status === "OK");
 
+            assert(typeof signInOptionsResponse.webauthnGeneratedOptionsId === "string");
             assert(signUpResponse?.user?.id !== undefined);
             assert(signUpResponse?.user?.emails?.length === 1);
             assert(signUpResponse?.user?.emails?.[0] === email);
