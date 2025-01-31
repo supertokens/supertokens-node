@@ -406,6 +406,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotPresent: false,
                 userNotVerified: false,
             });
+            console.log("credential", credential);
 
             let signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
@@ -521,6 +522,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotPresent: false,
                 userNotVerified: false,
             });
+            console.log("credential", credential);
 
             let signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
