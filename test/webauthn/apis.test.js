@@ -262,7 +262,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
             console.log("generatedOptions", generatedOptions);
 
-            assert(generatedOptions.rpId === "api.supertokens.io");
+            assert(generatedOptions.relyingPartyId === "api.supertokens.io");
             assert(generatedOptions.origin === "https://supertokens.io");
         });
 
@@ -333,7 +333,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
             console.log("generatedOptions", generatedOptions);
 
-            assert(generatedOptions.rpId === "testId.com");
+            assert(generatedOptions.relyingPartyId === "testId.com");
             assert(generatedOptions.origin === "testOrigin.com");
         });
     });
