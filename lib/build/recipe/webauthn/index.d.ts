@@ -146,10 +146,13 @@ export default class Wrapper {
               status: "OK";
               id: string;
               relyingPartyId: string;
+              relyingPartyName: string;
               origin: string;
               email: string;
               timeout: string;
               challenge: string;
+              createdAt: number;
+              expiresAt: number;
           }
         | {
               status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";

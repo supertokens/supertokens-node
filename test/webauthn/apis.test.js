@@ -347,6 +347,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const rpName = "SuperTokens";
 
             STExpress.init({
+                debug: true,
                 supertokens: {
                     connectionURI,
                 },
@@ -396,6 +397,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+            console.log("registerOptionsResponse", registerOptionsResponse);
             assert(registerOptionsResponse.status === "OK");
 
             const { createCredential } = await getWebauthnLib();
