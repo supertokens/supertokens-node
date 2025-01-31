@@ -112,11 +112,13 @@ export default class Wrapper {
     } & (
         | {
               relyingPartyId: string;
+              relyingPartyName: string;
               origin: string;
           }
         | {
               request: BaseRequest;
               relyingPartyId?: string;
+              relyingPartyName?: string;
               origin?: string;
           }
     )): Promise<

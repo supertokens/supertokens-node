@@ -152,6 +152,10 @@ export default function getAPIImplementation(): APIInterface {
                 request: options.req,
                 userContext,
             });
+            const relyingPartyName = await options.config.getRelyingPartyName({
+                tenantId,
+                userContext,
+            });
 
             // use this to get the full url instead of only the domain url
             const origin = await options.config.getOrigin({
@@ -167,6 +171,7 @@ export default function getAPIImplementation(): APIInterface {
                 userVerification,
                 origin,
                 relyingPartyId,
+                relyingPartyName,
                 timeout,
                 tenantId,
                 userContext,

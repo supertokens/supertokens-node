@@ -52,7 +52,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
-                    appName: "SuperTokensplm",
+                    appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [WebAuthn.init()],
@@ -84,12 +84,14 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
+            console.log("test registerOptions with default values", registerOptionsResponse);
+
             assert(registerOptionsResponse.status === "OK");
 
             assert(typeof registerOptionsResponse.challenge === "string");
             assert(registerOptionsResponse.attestation === "none");
-            assert(registerOptionsResponse.rp.id === "supertokens.io");
-            assert(registerOptionsResponse.rp.name === "SuperTokensplm");
+            assert(registerOptionsResponse.rp.id === "api.supertokens.io");
+            assert(registerOptionsResponse.rp.name === "SuperTokens");
             assert(registerOptionsResponse.user.name === "test@example.com");
             assert(registerOptionsResponse.user.displayName === "test@example.com");
             assert(Number.isInteger(registerOptionsResponse.timeout));
@@ -100,6 +102,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
                 {
                     webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
+                    userContext: {},
                 }
             );
 
@@ -115,7 +118,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
-                    appName: "SuperTokensplm",
+                    appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
@@ -176,6 +179,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+            console.log("test registerOptions with custom values", registerOptionsResponse);
 
             assert(registerOptionsResponse.status === "OK");
 
@@ -193,8 +197,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
                 {
                     webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
+                    userContext: {},
                 }
             );
+            console.log("generatedOptions", generatedOptions);
             assert(generatedOptions.origin === "testOrigin.com");
         });
     });
@@ -209,7 +215,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
-                    appName: "SuperTokensplm",
+                    appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [WebAuthn.init()],
@@ -238,6 +244,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+            console.log("test signInOptions with default values", signInOptionsResponse);
 
             assert(signInOptionsResponse.status === "OK");
 
@@ -248,8 +255,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
                 {
                     webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
+                    userContext: {},
                 }
             );
+            console.log("generatedOptions", generatedOptions);
 
             assert(generatedOptions.rpId === "supertokens.io");
             assert(generatedOptions.origin === "https://supertokens.io");
@@ -264,7 +273,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
-                    appName: "SuperTokensplm",
+                    appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
@@ -305,6 +314,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+            console.log("test signInOptions with custom values", signInOptionsResponse);
 
             assert(signInOptionsResponse.status === "OK");
 
@@ -315,8 +325,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
                 {
                     webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
+                    userContext: {},
                 }
             );
+            console.log("generatedOptions", generatedOptions);
 
             assert(generatedOptions.rpId === "testId.com");
             assert(generatedOptions.origin === "testOrigin.com");
@@ -329,7 +341,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             const origin = "https://supertokens.io";
             const rpId = "supertokens.io";
-            const rpName = "SuperTokensplm";
+            const rpName = "SuperTokens";
 
             STExpress.init({
                 supertokens: {
@@ -337,7 +349,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
-                    appName: "SuperTokensplm",
+                    appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
@@ -427,7 +439,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             const origin = "https://supertokens.io";
             const rpId = "supertokens.io";
-            const rpName = "SuperTokensplm";
+            const rpName = "SuperTokens";
 
             STExpress.init({
                 supertokens: {
@@ -435,7 +447,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
-                    appName: "SuperTokensplm",
+                    appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
@@ -574,7 +586,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             const origin = "https://supertokens.io";
             const rpId = "supertokens.io";
-            const rpName = "SuperTokensplm";
+            const rpName = "SuperTokens";
 
             STExpress.init({
                 supertokens: {
@@ -582,7 +594,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
-                    appName: "SuperTokensplm",
+                    appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [

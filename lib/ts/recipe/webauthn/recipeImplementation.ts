@@ -98,7 +98,7 @@ export default function getRecipeInterface(
             );
         },
 
-        signInOptions: async function ({ relyingPartyId, origin, timeout, tenantId, userContext }) {
+        signInOptions: async function ({ relyingPartyId, relyingPartyName, origin, timeout, tenantId, userContext }) {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
@@ -106,6 +106,7 @@ export default function getRecipeInterface(
                 ),
                 {
                     relyingPartyId,
+                    relyingPartyName,
                     origin,
                     timeout,
                 },
@@ -364,11 +365,9 @@ export default function getRecipeInterface(
         getGeneratedOptions: async function ({ webauthnGeneratedOptionsId, tenantId, userContext }) {
             return await querier.sendGetRequest(
                 new NormalisedURLPath(
-                    `/${
-                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
-                    }/recipe/webauthn/options/${webauthnGeneratedOptionsId}`
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options`
                 ),
-                {},
+                { webauthnGeneratedOptionsId },
                 userContext
             );
         },

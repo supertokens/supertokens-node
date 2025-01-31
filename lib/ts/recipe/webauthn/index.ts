@@ -188,8 +188,8 @@ export default class Wrapper {
         tenantId?: string;
         userContext?: Record<string, any>;
     } & (
-        | { relyingPartyId: string; origin: string }
-        | { request: BaseRequest; relyingPartyId?: string; origin?: string }
+        | { relyingPartyId: string; relyingPartyName: string; origin: string }
+        | { request: BaseRequest; relyingPartyId?: string; relyingPartyName?: string; origin?: string }
     )): Promise<
         | {
               status: "OK";
@@ -202,6 +202,7 @@ export default class Wrapper {
     > {
         let origin: string;
         let relyingPartyId: string;
+        let relyingPartyName: string;
         if ("request" in rest) {
             relyingPartyId =
                 rest.relyingPartyId ||
@@ -210,7 +211,12 @@ export default class Wrapper {
                     tenantId: tenantId,
                     userContext: getUserContext(userContext),
                 }));
-
+            relyingPartyName =
+                rest.relyingPartyName ||
+                (await Recipe.getInstanceOrThrowError().config.getRelyingPartyName({
+                    tenantId: tenantId,
+                    userContext: getUserContext(userContext),
+                }));
             origin =
                 rest.origin ||
                 (await Recipe.getInstanceOrThrowError().config.getOrigin({
@@ -222,15 +228,20 @@ export default class Wrapper {
             if (!rest.relyingPartyId) {
                 throw new Error({ type: "BAD_INPUT_ERROR", message: "RelyingPartyId missing from the input" });
             }
+            if (!rest.relyingPartyName) {
+                throw new Error({ type: "BAD_INPUT_ERROR", message: "RelyingPartyName missing from the input" });
+            }
             if (!rest.origin) {
                 throw new Error({ type: "BAD_INPUT_ERROR", message: "Origin missing from the input" });
             }
             relyingPartyId = rest.relyingPartyId;
+            relyingPartyName = rest.relyingPartyName;
             origin = rest.origin;
         }
 
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInOptions({
             relyingPartyId,
+            relyingPartyName,
             origin,
             timeout,
             tenantId,

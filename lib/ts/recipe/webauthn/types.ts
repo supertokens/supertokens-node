@@ -219,6 +219,7 @@ export type RecipeInterface = {
 
     signInOptions(input: {
         relyingPartyId: string;
+        relyingPartyName: string;
         origin: string;
         userVerification: UserVerification | undefined; // see register options
         timeout: number | undefined;

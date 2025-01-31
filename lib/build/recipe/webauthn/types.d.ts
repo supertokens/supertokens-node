@@ -144,6 +144,7 @@ export declare type RecipeInterface = {
     >;
     signInOptions(input: {
         relyingPartyId: string;
+        relyingPartyName: string;
         origin: string;
         userVerification: UserVerification | undefined;
         timeout: number | undefined;
