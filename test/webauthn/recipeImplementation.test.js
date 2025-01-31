@@ -102,7 +102,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert(generatedOptions.email === "test@example.com");
             assert(generatedOptions.relyingPartyId === "api.supertokens.io");
             assert(generatedOptions.relyingPartyName === "SuperTokens");
-            assert(typeof generatedOptions.id === "string");
+            assert(typeof generatedOptions.webauthnGeneratedOptionsId === "string");
             assert(typeof generatedOptions.challenge === "string");
             assert(typeof generatedOptions.createdAt === "number");
             assert(typeof generatedOptions.expiresAt === "number");
