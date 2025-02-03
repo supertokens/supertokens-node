@@ -460,7 +460,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              id: string;
+              webauthnGeneratedOptionsId: string;
               relyingPartyId: string;
               relyingPartyName: string;
               origin: string;

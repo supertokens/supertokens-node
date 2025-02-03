@@ -431,12 +431,14 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert(signUpResponse.status === "OK");
 
-            assert(typeof signInOptionsResponse.webauthnGeneratedOptionsId === "string");
+            assert(typeof registerOptionsResponse.webauthnGeneratedOptionsId === "string");
             assert(signUpResponse?.user?.id !== undefined);
             assert(signUpResponse?.user?.emails?.length === 1);
             assert(signUpResponse?.user?.emails?.[0] === email);
             assert(signUpResponse?.user?.webauthn?.credentialIds?.length === 1);
             assert(signUpResponse?.user?.webauthn?.credentialIds?.[0] === credential.id);
+            assert(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.length === 1);
+            assert(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.[0] === credential.id);
         });
     });
 
