@@ -483,7 +483,7 @@ export type RecipeInterface = {
     }): Promise<{
         status: "OK";
         credentials: {
-            id: string;
+            webauthnCredentialId: string;
             relyingPartyId: string;
             createdAt: number;
         }[];

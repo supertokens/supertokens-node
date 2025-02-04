@@ -252,6 +252,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert(typeof signInOptionsResponse.challenge === "string");
             assert(Number.isInteger(signInOptionsResponse.timeout));
+            assert(Number.isInteger(signInOptionsResponse.createdAt));
+            assert(Number.isInteger(signInOptionsResponse.expiresAt));
             assert(signInOptionsResponse.userVerification === "preferred");
 
             const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
@@ -323,6 +325,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             assert(typeof signInOptionsResponse.webauthnGeneratedOptionsId === "string");
             assert(typeof signInOptionsResponse.challenge === "string");
             assert(Number.isInteger(signInOptionsResponse.timeout));
+            assert(Number.isInteger(signInOptionsResponse.createdAt));
+            assert(Number.isInteger(signInOptionsResponse.expiresAt));
             assert(signInOptionsResponse.userVerification === "preferred");
 
             const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
@@ -331,7 +335,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     userContext: {},
                 }
             );
-            console.log("generatedOptions", generatedOptions);
 
             assert(generatedOptions.relyingPartyId === "testId.com");
             assert(generatedOptions.origin === "testOrigin.com");
@@ -500,6 +503,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+            console.log("registerOptionsResponse", registerOptionsResponse);
             assert(registerOptionsResponse.status === "OK");
 
             let signInOptionsResponse = await new Promise((resolve, reject) =>
@@ -516,6 +520,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+            console.log("signInOptionsResponse", signInOptionsResponse);
             assert(signInOptionsResponse.status === "OK");
 
             const { createAndAssertCredential } = await getWebauthnLib();
@@ -548,20 +553,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
 
             assert(signUpResponse.status === "OK");
-
-            // todo remove this when the core is implemented
-            // mock the core to return the user
-            nock("http://localhost:8080/", { allowUnmocked: true })
-                .get("/public/users/by-accountinfo")
-                .query({ email, doUnionOfAccountInfo: true })
-                .reply(200, (uri, body) => {
-                    return { status: "OK", users: [signUpResponse.user] };
-                })
-                .get("/user/id")
-                .query({ userId: signUpResponse.user.id })
-                .reply(200, (uri, body) => {
-                    return { status: "OK", user: signUpResponse.user };
-                });
 
             let signInResponse = await new Promise((resolve, reject) =>
                 request(app)

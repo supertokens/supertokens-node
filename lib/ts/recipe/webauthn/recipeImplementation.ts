@@ -315,20 +315,18 @@ export default function getRecipeInterface(
         getUserFromRecoverAccountToken: async function ({ token, tenantId, userContext }) {
             return await querier.sendGetRequest(
                 new NormalisedURLPath(
-                    `/${
-                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
-                    }/recipe/webauthn/user/recover/token/${token}`
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/recover/token`
                 ),
-                {},
+                { token },
                 userContext
             );
         },
 
         removeCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
             return await querier.sendDeleteRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/${webauthnCredentialId}`),
+                new NormalisedURLPath(`/recipe/webauthn/user/credential/remove`),
                 {},
-                {},
+                { recipeUserId, webauthnCredentialId },
                 userContext
             );
         },
