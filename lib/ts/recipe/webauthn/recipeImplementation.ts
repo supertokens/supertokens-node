@@ -316,7 +316,7 @@ export default function getRecipeInterface(
         },
 
         getUserFromRecoverAccountToken: async function ({ token, tenantId, userContext }) {
-            return await querier.sendGetRequest(
+            return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/recover/token`
                 ),

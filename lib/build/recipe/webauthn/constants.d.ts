@@ -11,5 +11,5 @@ export declare const DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY = "required";
 export declare const DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION = "preferred";
 export declare const DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS: number[];
 export declare const DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION = "preferred";
-export declare const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 5000;
+export declare const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 10000;
 export declare const DEFAULT_SIGNIN_OPTIONS_TIMEOUT = 5000;
