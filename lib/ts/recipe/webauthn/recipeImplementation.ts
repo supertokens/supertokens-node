@@ -7,7 +7,6 @@ import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
-import * as jose from "jose";
 import { isFakeEmail } from "../thirdparty/utils";
 
 export default function getRecipeInterface(
@@ -35,19 +34,23 @@ export default function getRecipeInterface(
             if (emailInput !== undefined) {
                 email = emailInput;
             } else if (recoverAccountTokenInput !== undefined) {
-                // the actual validation of the token will be done during consumeRecoverAccountToken
-                let decoded: jose.JWTPayload | undefined;
-                try {
-                    decoded = await jose.decodeJwt(recoverAccountTokenInput);
-                } catch (e) {
-                    console.error(e);
+                const result = await this.getUserFromRecoverAccountToken({
+                    token: recoverAccountTokenInput,
+                    tenantId,
+                    userContext,
+                });
+                if (result.status !== "OK") {
+                    return result;
+                }
 
+                const user = result.user as User;
+                // todo this might be wrong but will have to figure out - what happens when there are multiple webauthn login methods ?
+                const email = user.loginMethods.find((lm) => lm.recipeId === "webauthn")?.email;
+                if (!email) {
                     return {
                         status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
                     };
                 }
-
-                email = decoded?.email as string | undefined;
             }
 
             if (!email) {
