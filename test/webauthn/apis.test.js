@@ -27,8 +27,7 @@ let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible } = require("../utils");
 const { readFile } = require("fs/promises");
 const nock = require("nock");
-
-require("./wasm_exec");
+const getWebauthnLib = require("./lib/getWebAuthnLib");
 
 describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function () {
     beforeEach(async function () {
@@ -83,8 +82,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-
-            console.log("test registerOptions with default values", registerOptionsResponse);
 
             assert(registerOptionsResponse.status === "OK");
 
@@ -180,7 +177,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            console.log("test registerOptions with custom values", registerOptionsResponse);
 
             assert(registerOptionsResponse.status === "OK");
 
@@ -202,7 +198,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     userContext: {},
                 }
             );
-            console.log("generatedOptions", generatedOptions);
             assert(generatedOptions.origin === "testOrigin.com");
         });
     });
@@ -246,7 +241,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            console.log("test signInOptions with default values", signInOptionsResponse);
 
             assert(signInOptionsResponse.status === "OK");
 
@@ -262,7 +256,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     userContext: {},
                 }
             );
-            console.log("generatedOptions", generatedOptions);
 
             assert(generatedOptions.relyingPartyId === "api.supertokens.io");
             assert(generatedOptions.origin === "https://supertokens.io");
@@ -318,7 +311,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            console.log("test signInOptions with custom values", signInOptionsResponse);
 
             assert(signInOptionsResponse.status === "OK");
 
@@ -400,7 +392,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            console.log("registerOptionsResponse", registerOptionsResponse);
             assert(registerOptionsResponse.status === "OK");
 
             const { createCredential } = await getWebauthnLib();
@@ -411,7 +402,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotPresent: false,
                 userNotVerified: false,
             });
-            console.log("credential", credential);
 
             let signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
@@ -503,7 +493,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            console.log("registerOptionsResponse", registerOptionsResponse);
             assert(registerOptionsResponse.status === "OK");
 
             let signInOptionsResponse = await new Promise((resolve, reject) =>
@@ -724,83 +713,3 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         });
     });
 });
-
-const getWebauthnLib = async () => {
-    const wasmBuffer = await readFile(__dirname + "/webauthn.wasm");
-
-    // Set up the WebAssembly module instance
-    const go = new Go();
-    const { instance } = await WebAssembly.instantiate(wasmBuffer, go.importObject);
-    go.run(instance);
-
-    // Export extractURL from the global object
-    const createCredential = (
-        registerOptions,
-        { userNotPresent = true, userNotVerified = true, rpId, rpName, origin }
-    ) => {
-        const registerOptionsString = JSON.stringify(registerOptions);
-        const result = global.createCredential(
-            registerOptionsString,
-            rpId,
-            rpName,
-            origin,
-            userNotPresent,
-            userNotVerified
-        );
-
-        if (!result) {
-            throw new Error("Failed to create credential");
-        }
-
-        try {
-            const credential = JSON.parse(result);
-            return credential;
-        } catch (e) {
-            throw new Error("Failed to parse credential");
-        }
-    };
-
-    const createAndAssertCredential = (
-        registerOptions,
-        signInOptions,
-        { userNotPresent = false, userNotVerified = false, rpId, rpName, origin }
-    ) => {
-        const registerOptionsString = JSON.stringify(registerOptions);
-        const signInOptionsString = JSON.stringify(signInOptions);
-
-        const result = global.createAndAssertCredential(
-            registerOptionsString,
-            signInOptionsString,
-            rpId,
-            rpName,
-            origin,
-            userNotPresent,
-            userNotVerified
-        );
-
-        if (!result) {
-            throw new Error("Failed to create/assert credential");
-        }
-
-        try {
-            const parsedResult = JSON.parse(result);
-            return { attestation: parsedResult.attestation, assertion: parsedResult.assertion };
-        } catch (e) {
-            throw new Error("Failed to parse result");
-        }
-    };
-
-    return { createCredential, createAndAssertCredential };
-};
-
-const log = ({ ...args }) => {
-    Object.keys(args).forEach((key) => {
-        console.log();
-        console.log("------------------------------------------------");
-        console.log(`${key}`);
-        console.log("------------------------------------------------");
-        console.log(JSON.stringify(args[key], null, 2));
-        console.log("================================================");
-        console.log();
-    });
-};

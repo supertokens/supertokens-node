@@ -288,8 +288,9 @@ export default function getRecipeInterface(
 
         registerCredential: async function ({ webauthnGeneratedOptionsId, credential, userContext, recipeUserId }) {
             return await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/register`),
+                new NormalisedURLPath(`/recipe/webauthn/user/credential/register`),
                 {
+                    recipeUserId,
                     webauthnGeneratedOptionsId,
                     credential,
                 },
