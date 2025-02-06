@@ -53,7 +53,6 @@ describe(`configTest: ${printPath("[test/webauthn/config.test.js]")}`, function 
                 websiteDomain: "supertokens.io",
             },
             recipeList: [WebAuthn.init()],
-            debug: true,
         });
 
         let webauthn = await WebAuthnRecipe.getInstanceOrThrowError();
@@ -64,7 +63,7 @@ describe(`configTest: ${printPath("[test/webauthn/config.test.js]")}`, function 
         const relyingPartyName = await webauthn.config.getRelyingPartyName({ userContext: {} });
 
         assert(origin === "https://supertokens.io");
-        assert(relyingPartyId === "supertokens.io");
+        assert(relyingPartyId === "api.supertokens.io");
         assert(relyingPartyName === "SuperTokens");
 
         assert((await webauthn.config.validateEmailAddress("aaaaa")) === "Email is invalid");

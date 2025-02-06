@@ -340,8 +340,8 @@ export default function getRecipeInterface(
 
         listCredentials: async function ({ recipeUserId, userContext }) {
             return await querier.sendGetRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/list`),
-                {},
+                new NormalisedURLPath(`/recipe/webauthn/user/credential/list`),
+                { recipeUserId },
                 userContext
             );
         },

@@ -19,15 +19,15 @@ const request = require("supertest");
 const express = require("express");
 
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
 let WebAuthn = require("../../recipe/webauthn");
 let { ProcessState } = require("../../lib/build/processState");
-let SuperTokens = require("../../lib/build/supertokens").default;
 let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible } = require("../utils");
-const { readFile } = require("fs/promises");
 const nock = require("nock");
 const getWebauthnLib = require("./lib/getWebAuthnLib");
+const getWebAuthnRecipe = require("./lib/getWebAuthnRecipe");
+const createUser = require("./lib/createUser");
+const { initST, origin, rpId, rpName } = require("./lib/initST");
 
 describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function () {
     beforeEach(async function () {
@@ -41,21 +41,9 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         await cleanST();
     });
 
-    describe("[registerOptions]", function () {
+    describe("[registerOptionsPOST]", function () {
         it("test registerOptions with default values", async function () {
-            const connectionURI = await startST();
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [WebAuthn.init()],
-            });
+            await initST(false);
 
             // run test if current CDI version >= 2.11
             // todo update this to crrect version
@@ -75,7 +63,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -97,12 +84,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             assert(registerOptionsResponse.authenticatorSelection.requireResidentKey === true);
             assert(registerOptionsResponse.authenticatorSelection.residentKey === "required");
 
-            const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
-                {
-                    webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
-                    userContext: {},
-                }
-            );
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
+                webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
+                userContext: {},
+            });
 
             assert(generatedOptions.origin === "https://supertokens.io");
         });
@@ -170,7 +155,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -192,31 +176,17 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             assert(registerOptionsResponse.authenticatorSelection.requireResidentKey === true);
             assert(registerOptionsResponse.authenticatorSelection.residentKey === "required");
 
-            const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
-                {
-                    webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
-                    userContext: {},
-                }
-            );
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
+                webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
+                userContext: {},
+            });
             assert(generatedOptions.origin === "testOrigin.com");
         });
     });
 
-    describe("[signInOptions]", function () {
+    describe("[signInOptionsPOST]", function () {
         it("test signInOptions with default values", async function () {
-            const connectionURI = await startST();
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [WebAuthn.init()],
-            });
+            await initST(false);
 
             // run test if current CDI version >= 2.11
             // todo update this to crrect version
@@ -234,7 +204,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -250,12 +219,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             assert(Number.isInteger(signInOptionsResponse.expiresAt));
             assert(signInOptionsResponse.userVerification === "preferred");
 
-            const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
-                {
-                    webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
-                    userContext: {},
-                }
-            );
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
+                webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
+                userContext: {},
+            });
 
             assert(generatedOptions.relyingPartyId === "api.supertokens.io");
             assert(generatedOptions.origin === "https://supertokens.io");
@@ -304,7 +271,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -321,55 +287,19 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             assert(Number.isInteger(signInOptionsResponse.expiresAt));
             assert(signInOptionsResponse.userVerification === "preferred");
 
-            const generatedOptions = await SuperTokens.getInstanceOrThrowError().recipeModules[0].recipeInterfaceImpl.getGeneratedOptions(
-                {
-                    webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
-                    userContext: {},
-                }
-            );
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
+                webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
+                userContext: {},
+            });
 
             assert(generatedOptions.relyingPartyId === "testId.com");
             assert(generatedOptions.origin === "testOrigin.com");
         });
     });
 
-    describe("[signUp]", function () {
+    describe("[signUpPOST]", function () {
         it("test signUp with no account linking", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                debug: true,
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const app = express();
             app.use(middleware());
@@ -385,7 +315,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -414,7 +343,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -435,42 +363,9 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         });
     });
 
-    describe("[signIn]", function () {
+    describe("[signInPOST]", function () {
         it("test signIn with no account linking", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const app = express();
             app.use(middleware());
@@ -486,7 +381,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -502,14 +396,12 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
                         }
                     })
             );
-            console.log("signInOptionsResponse", signInOptionsResponse);
             assert(signInOptionsResponse.status === "OK");
 
             const { createAndAssertCredential } = await getWebauthnLib();
@@ -520,7 +412,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotPresent: false,
                 userNotVerified: false,
             });
-            console.log("credential", credential);
 
             let signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
@@ -533,7 +424,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -554,7 +444,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -572,40 +461,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         });
 
         it("test signIn fail with wrong credential", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const app = express();
             app.use(middleware());
@@ -621,7 +477,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -637,7 +492,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -666,7 +520,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -701,7 +554,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -710,6 +562,183 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
 
             assert(signInResponse.status === "INVALID_CREDENTIALS_ERROR");
+        });
+    });
+
+    describe("[generateRecoverAccountTokenPOST]", function () {
+        it("should return successfully for an existing user", async function () {
+            await initST();
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const { email } = await createUser(rpId, rpName, origin);
+
+            let generateRecoverAccountTokenResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/user/webauthn/reset/token")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(generateRecoverAccountTokenResponse.status === "OK");
+            // todo figure out how to test the token actually being generated
+        });
+
+        it("should return successfully for a non-existing user", async function () {
+            await initST();
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let generateRecoverAccountTokenResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/user/webauthn/reset/token")
+                    .send({
+                        email: "invalid@supertokens.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(generateRecoverAccountTokenResponse.status === "OK");
+        });
+    });
+
+    describe("[recoverAccountPOST]", function () {
+        it("should set a new credential for a user that recovered their account", async function () {
+            await initST();
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const { email, signUpResponse } = await createUser(rpId, rpName, origin);
+
+            const generateRecoverAccountTokenResponse = await getWebAuthnRecipe().recipeInterfaceImpl.generateRecoverAccountToken(
+                {
+                    userId: signUpResponse.user.id,
+                    email,
+                    tenantId: "public",
+                    userContext: {},
+                }
+            );
+            const token = generateRecoverAccountTokenResponse.token;
+
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+
+            const { createCredential } = await getWebauthnLib();
+            const credential = createCredential(registerOptionsResponse, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
+            let recoverAccountResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/user/webauthn/reset")
+                    .send({
+                        token,
+                        credential,
+                        webauthnGeneratedOptionsId,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(recoverAccountResponse.status === "OK");
+        });
+
+        it("should return the correct error if the token is invalid", async function () {
+            await initST();
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const { email } = await createUser(rpId, rpName, origin);
+
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+
+            const { createCredential } = await getWebauthnLib();
+            const credential = createCredential(registerOptionsResponse, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
+            let recoverAccountResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/user/webauthn/reset")
+                    .send({
+                        token: "invalid",
+                        credential,
+                        webauthnGeneratedOptionsId,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(recoverAccountResponse.status === "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR");
         });
     });
 });

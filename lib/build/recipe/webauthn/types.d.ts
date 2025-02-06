@@ -431,7 +431,7 @@ export declare type RecipeInterface = {
           }
     >;
     listCredentials(input: {
-        recipeUserId: RecipeUserId;
+        recipeUserId: string;
         userContext: UserContext;
     }): Promise<{
         status: "OK";

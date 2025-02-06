@@ -12,23 +12,18 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, stopST } = require("../utils");
+const { printPath, setupST, killAllST, cleanST } = require("../utils");
 let assert = require("assert");
 
 const request = require("supertest");
 const express = require("express");
 
-let STExpress = require("../..");
-let Session = require("../../recipe/session");
-let WebAuthn = require("../../recipe/webauthn");
 let { ProcessState } = require("../../lib/build/processState");
-let SuperTokens = require("../../lib/build/supertokens").default;
 let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible } = require("../utils");
-
+const { initST, origin, rpId, rpName } = require("./lib/initST");
 const getWebauthnLib = require("./lib/getWebAuthnLib");
 const getWebAuthnRecipe = require("./lib/getWebAuthnRecipe");
-
 const createUser = require("./lib/createUser");
 
 describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImplementation.test.js]")}`, function () {
@@ -45,19 +40,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
 
     describe("[getGeneratedOptions]", function () {
         it("returns an error if the email is invalid", async function () {
-            const connectionURI = await startST();
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [WebAuthn.init()],
-            });
+            await initST();
 
             // run test if current CDI version >= 2.11
             // todo update this to crrect version
@@ -77,7 +60,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -90,19 +72,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("returns all the required fields", async function () {
-            const connectionURI = await startST();
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [WebAuthn.init()],
-            });
+            await initST();
 
             // run test if current CDI version >= 2.11
             // todo update this to crrect version
@@ -122,7 +92,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -139,10 +108,10 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
 
             assert(generatedOptions.status === "OK");
 
-            assert(generatedOptions.origin === "https://supertokens.io");
+            assert(generatedOptions.origin === origin);
             assert(generatedOptions.email === "test@example.com");
-            assert(generatedOptions.relyingPartyId === "api.supertokens.io");
-            assert(generatedOptions.relyingPartyName === "SuperTokens");
+            assert(generatedOptions.relyingPartyId === rpId);
+            assert(generatedOptions.relyingPartyName === rpName);
             assert(typeof generatedOptions.webauthnGeneratedOptionsId === "string");
             assert(typeof generatedOptions.challenge === "string");
             assert(typeof generatedOptions.createdAt === "number");
@@ -153,40 +122,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
 
     describe("[generateRecoverAccountToken]", function () {
         it("should return an error if the user doesn't exist", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const generateRecoverAccountTokenResponse = await getWebAuthnRecipe().recipeInterfaceImpl.generateRecoverAccountToken(
                 {
@@ -201,40 +137,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("should generate a recover account token", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -254,23 +157,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
 
     describe("[getUserFromRecoverAccountToken]", function () {
         it("throws an error if the token is invalid", async function () {
-            const connectionURI = await startST();
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [WebAuthn.init()],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const app = express();
             app.use(middleware());
@@ -286,40 +173,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("return the correct user", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -348,40 +202,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
 
     describe("[consumeRecoverAccountToken]", function () {
         it("should return an error if the token is invalid", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const consumeRecoverAccountTokenResponse = await getWebAuthnRecipe().recipeInterfaceImpl.consumeRecoverAccountToken(
                 {
@@ -395,40 +216,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("should consume the token", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -457,40 +245,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
 
     describe("[registerCredential]", function () {
         it("should create a new credential for an existing user", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -507,7 +262,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -534,41 +288,85 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert(registerCredentialResponse.status === "OK");
         });
 
-        it("should return a parsable error if the options id is invalid", async function () {
-            const connectionURI = await startST();
+        it("should create multiple new credentials for an existing user", async function () {
+            await initST();
 
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
+            const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let registerOptionsResponse1 = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            const { createCredential } = await getWebauthnLib();
+            const credential1 = createCredential(registerOptionsResponse1, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
             });
 
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            const registerCredentialResponse1 = await getWebAuthnRecipe().recipeInterfaceImpl.registerCredential({
+                recipeUserId: signUpResponse.user.id,
+                webauthnGeneratedOptionsId: registerOptionsResponse1.webauthnGeneratedOptionsId,
+                credential: credential1,
+                userContext: {},
+            });
+
+            assert(registerCredentialResponse1.status === "OK");
+
+            let registerOptionsResponse2 = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            const credential2 = createCredential(registerOptionsResponse2, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
+            const registerCredentialResponse2 = await getWebAuthnRecipe().recipeInterfaceImpl.registerCredential({
+                recipeUserId: signUpResponse.user.id,
+                webauthnGeneratedOptionsId: registerOptionsResponse2.webauthnGeneratedOptionsId,
+                credential: credential2,
+                userContext: {},
+            });
+
+            assert(registerCredentialResponse2.status === "OK");
+        });
+
+        it("should return a parsable error if the options id is invalid", async function () {
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -585,7 +383,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -613,40 +410,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("should return the correct error if the credential is invalid", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -663,7 +427,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -698,40 +461,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("should return the correct error if the register options id is wrong", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -748,7 +478,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -776,40 +505,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("should return the correct error if the register options are wrong", async function () {
-            const connectionURI = await startST();
-
-            const origin = "https://supertokens.io";
-            const rpId = "supertokens.io";
-            const rpName = "SuperTokens";
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI,
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    WebAuthn.init({
-                        getOrigin: async () => {
-                            return origin;
-                        },
-                        getRelyingPartyId: async () => {
-                            return rpId;
-                        },
-                        getRelyingPartyName: async () => {
-                            return rpName;
-                        },
-                    }),
-                ],
-            });
-
-            // run test if current CDI version >= 2.11
-            // todo update this to crrect version
-            if (!(await isCDIVersionCompatible("2.11"))) return;
+            await initST();
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -826,7 +522,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             reject(err);
                         } else {
                             resolve(JSON.parse(res.text));
@@ -851,6 +546,27 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             });
 
             assert(registerCredentialResponse.status === "INVALID_GENERATED_OPTIONS_ERROR");
+        });
+    });
+
+    describe("[listCredentials]", function () {
+        it("should return only one credential if only one is registered for a user", async function () {
+            await initST();
+
+            const { email, signUpResponse } = await createUser(rpId, rpName, origin);
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const listCredentialsResponse = await getWebAuthnRecipe().recipeInterfaceImpl.listCredentials({
+                recipeUserId: signUpResponse.user.id,
+                tenantId: "public",
+                userContext: {},
+            });
+            console.log(listCredentialsResponse);
+
+            assert(listCredentialsResponse.status === "OK");
         });
     });
 });
