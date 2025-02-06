@@ -45,12 +45,13 @@ export default function getRecipeInterface(
 
                 const user = result.user as User;
                 // todo this might be wrong but will have to figure out - what happens when there are multiple webauthn login methods ?
-                const email = user.loginMethods.find((lm) => lm.recipeId === "webauthn")?.email;
-                if (!email) {
+                const parsedEmail = user.loginMethods.find((lm) => lm.recipeId === "webauthn")?.email;
+                if (!parsedEmail) {
                     return {
                         status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR",
                     };
                 }
+                email = parsedEmail;
             }
 
             if (!email) {
