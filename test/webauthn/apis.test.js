@@ -740,5 +740,207 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
             assert(recoverAccountResponse.status === "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR");
         });
+
+        it("should return the correct error if the credential is invalid", async function () {
+            await initST();
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const { email, signUpResponse } = await createUser(rpId, rpName, origin);
+
+            const generateRecoverAccountTokenResponse = await getWebAuthnRecipe().recipeInterfaceImpl.generateRecoverAccountToken(
+                {
+                    userId: signUpResponse.user.id,
+                    email,
+                    tenantId: "public",
+                    userContext: {},
+                }
+            );
+            const token = generateRecoverAccountTokenResponse.token;
+
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+
+            const { createCredential } = await getWebauthnLib();
+            const credential = createCredential(registerOptionsResponse, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
+            let recoverAccountResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/user/webauthn/reset")
+                    .send({
+                        token,
+                        credential: {
+                            ...credential,
+                            id: "invalid",
+                            response: {
+                                ...credential.response,
+                                clientDataJSON: "invalid",
+                            },
+                        },
+                        webauthnGeneratedOptionsId,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(recoverAccountResponse.status === "INVALID_CREDENTIALS_ERROR");
+        });
+
+        it("should return the correct error if the register options id is wrong", async function () {
+            await initST();
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const { email, signUpResponse } = await createUser(rpId, rpName, origin);
+
+            const generateRecoverAccountTokenResponse = await getWebAuthnRecipe().recipeInterfaceImpl.generateRecoverAccountToken(
+                {
+                    userId: signUpResponse.user.id,
+                    email,
+                    tenantId: "public",
+                    userContext: {},
+                }
+            );
+            const token = generateRecoverAccountTokenResponse.token;
+
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+
+            const { createCredential } = await getWebauthnLib();
+            const credential = createCredential(registerOptionsResponse, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
+            let recoverAccountResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/user/webauthn/reset")
+                    .send({
+                        token,
+                        credential,
+                        webauthnGeneratedOptionsId: "invalid",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(recoverAccountResponse.status === "INVALID_GENERATED_OPTIONS_ERROR");
+        });
+
+        it("should return the correct error if the register options are wrong", async function () {
+            await initST();
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const { email, signUpResponse } = await createUser(rpId, rpName, origin);
+
+            const generateRecoverAccountTokenResponse = await getWebAuthnRecipe().recipeInterfaceImpl.generateRecoverAccountToken(
+                {
+                    userId: signUpResponse.user.id,
+                    email,
+                    tenantId: "public",
+                    userContext: {},
+                }
+            );
+            const token = generateRecoverAccountTokenResponse.token;
+
+            let registerOptionsResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+
+            const { createCredential } = await getWebauthnLib();
+            const credential = createCredential(registerOptionsResponse, {
+                rpId: rpId + ".co",
+                rpName,
+                origin: origin + ".co",
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
+            let recoverAccountResponse = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/user/webauthn/reset")
+                    .send({
+                        token,
+                        credential,
+                        webauthnGeneratedOptionsId,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(recoverAccountResponse.status === "INVALID_GENERATED_OPTIONS_ERROR");
+        });
     });
 });
