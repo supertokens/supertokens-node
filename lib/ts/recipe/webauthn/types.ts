@@ -362,7 +362,7 @@ export type RecipeInterface = {
         webauthnGeneratedOptionsId: string;
         credential: RegistrationPayload;
         userContext: UserContext;
-        recipeUserId: RecipeUserId;
+        recipeUserId: string;
     }): Promise<
         | {
               status: "OK";

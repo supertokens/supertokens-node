@@ -450,6 +450,8 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             );
 
             assert(consumeRecoverAccountTokenResponse.status === "OK");
+            assert(consumeRecoverAccountTokenResponse.userId === signUpResponse.user.id);
+            assert(consumeRecoverAccountTokenResponse.email === email);
         });
     });
 

@@ -920,7 +920,7 @@ export default function getAPIImplementation(): APIInterface {
                 | GeneralErrorResponse
             > {
                 let updateResponse = await options.recipeImplementation.registerCredential({
-                    recipeUserId,
+                    recipeUserId: recipeUserId.getAsString(),
                     webauthnGeneratedOptionsId,
                     credential,
                     userContext,
@@ -1195,7 +1195,7 @@ export default function getAPIImplementation(): APIInterface {
                 webauthnGeneratedOptionsId,
                 credential,
                 userContext,
-                recipeUserId: session.getRecipeUserId(),
+                recipeUserId: session.getRecipeUserId().getAsString(),
             });
 
             if (registerCredentialResponse.status !== "OK") {
