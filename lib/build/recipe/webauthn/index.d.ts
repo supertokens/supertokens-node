@@ -336,7 +336,7 @@ export default class Wrapper {
         credential,
         userContext,
     }: {
-        recipeUserId: RecipeUserId;
+        recipeUserId: string;
         webauthnGeneratedOptionsId: string;
         credential: CredentialPayload;
         userContext?: Record<string, any>;

@@ -425,7 +425,7 @@ export default class Wrapper {
         }
 
         let result = await Wrapper.registerCredential({
-            recipeUserId: new RecipeUserId(consumeResp.userId),
+            recipeUserId: consumeResp.userId,
             webauthnGeneratedOptionsId,
             credential,
             userContext,
@@ -471,7 +471,7 @@ export default class Wrapper {
         credential,
         userContext,
     }: {
-        recipeUserId: RecipeUserId;
+        recipeUserId: string;
         webauthnGeneratedOptionsId: string;
         credential: CredentialPayload;
         userContext?: Record<string, any>;
