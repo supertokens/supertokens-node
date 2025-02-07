@@ -320,6 +320,7 @@ export default function getRecipeImplementation(
                     phoneNumber: accountInfo.phoneNumber,
                     thirdPartyId: accountInfo.thirdParty?.id,
                     thirdPartyUserId: accountInfo.thirdParty?.userId,
+                    webauthnCredentialId: accountInfo.webauthn?.credentialId,
                     doUnionOfAccountInfo,
                 },
                 userContext

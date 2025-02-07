@@ -66,6 +66,13 @@ export class LoginMethod implements RecipeLevelUser {
         );
     }
 
+    hasSameWebauthnInfoAs(webauthn?: { credentialId: string }): boolean {
+        if (webauthn === undefined) {
+            return false;
+        }
+        return this.webauthn !== undefined && this.webauthn.credentialIds.includes(webauthn.credentialId);
+    }
+
     toJson(): JSONObject {
         return {
             recipeId: this.recipeId,

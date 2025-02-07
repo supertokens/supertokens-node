@@ -23,7 +23,6 @@ let WebAuthn = require("../../recipe/webauthn");
 let { ProcessState } = require("../../lib/build/processState");
 let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible } = require("../utils");
-const nock = require("nock");
 const getWebauthnLib = require("./lib/getWebAuthnLib");
 const getWebAuthnRecipe = require("./lib/getWebAuthnRecipe");
 const createUser = require("./lib/createUser");
@@ -451,6 +450,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
+            console.log("signInResponse", signInResponse);
+
             assert(signInResponse.status === "OK");
 
             assert(signInResponse?.user?.id !== undefined);
@@ -528,20 +529,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
 
             assert(signUpResponse.status === "OK");
-
-            // todo remove this when the core is implemented
-            // mock the core to return the user
-            nock("http://localhost:8080/", { allowUnmocked: true })
-                .get("/public/users/by-accountinfo")
-                .query({ email, doUnionOfAccountInfo: true })
-                .reply(200, (uri, body) => {
-                    return { status: "OK", users: [signUpResponse.user] };
-                })
-                .get("/user/id")
-                .query({ userId: signUpResponse.user.id })
-                .reply(200, (uri, body) => {
-                    return { status: "OK", user: signUpResponse.user };
-                });
 
             let signInResponse = await new Promise((resolve, reject) =>
                 request(app)

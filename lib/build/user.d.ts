@@ -16,6 +16,7 @@ export declare class LoginMethod implements RecipeLevelUser {
     hasSameEmailAs(email: string | undefined): boolean;
     hasSamePhoneNumberAs(phoneNumber: string | undefined): boolean;
     hasSameThirdPartyInfoAs(thirdParty?: { id: string; userId: string }): boolean;
+    hasSameWebauthnInfoAs(webauthn?: { credentialId: string }): boolean;
     toJson(): JSONObject;
 }
 export declare class User implements UserType {

@@ -359,6 +359,7 @@ export const AuthUtils = {
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired got ${existingUsers.length} users from the core resp`
             );
+            console.log("existingUsers", existingUsers, accountInfo);
             const usersWithMatchingLoginMethods = existingUsers
                 .map((user) => ({
                     user,
@@ -367,7 +368,8 @@ export const AuthUtils = {
                             lm.recipeId === recipeId &&
                             ((accountInfo.email !== undefined && lm.hasSameEmailAs(accountInfo.email)) ||
                                 lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) ||
-                                lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty))
+                                lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty) ||
+                                lm.hasSameWebauthnInfoAs(accountInfo.webauthn))
                     )!,
                 }))
                 .filter(({ loginMethod }) => loginMethod !== undefined);

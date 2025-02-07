@@ -95,6 +95,7 @@ export declare type User = {
         hasSameEmailAs: (email: string | undefined) => boolean;
         hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
         hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
+        hasSameWebauthnInfoAs: (webauthn?: { credentialId: string }) => boolean;
         toJson: () => any;
     })[];
     toJson: () => any;

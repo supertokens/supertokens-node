@@ -217,11 +217,14 @@ export default function getRecipeInterface(
                 userContext
             );
 
+            console.log("response", response);
+
             if (response.status === "OK") {
                 return {
                     status: "OK",
                     user: new User(response.user),
-                    recipeUserId: new RecipeUserId(response.recipeUserId),
+                    // todo change this to response.recipeUserId when implemented,
+                    recipeUserId: new RecipeUserId(response.user.id),
                 };
             }
 
