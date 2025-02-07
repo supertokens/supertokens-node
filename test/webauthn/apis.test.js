@@ -550,6 +550,9 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert(signInResponse.status === "INVALID_CREDENTIALS_ERROR");
         });
+
+        it("should fail signIn if there is no credential registered for the user", async function () {});
+        it("should allow signIn multiple times with the same credential", async function () {});
     });
 
     describe("[generateRecoverAccountTokenPOST]", function () {

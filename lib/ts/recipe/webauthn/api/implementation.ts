@@ -424,7 +424,6 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
             });
-            console.log("generatedOptions", generatedOptions);
             if (generatedOptions.status !== "OK") {
                 return {
                     status: "INVALID_CREDENTIALS_ERROR",
@@ -461,7 +460,6 @@ export default function getAPIImplementation(): APIInterface {
             // the implementation of that function, this way we can guarantee that either isSignInAllowed or
             // isSignUpAllowed will be called as expected.
             if (authenticatingUser === undefined) {
-                console.log("authenticatingUser is undefined");
                 return {
                     status: "INVALID_CREDENTIALS_ERROR",
                 };
@@ -500,7 +498,6 @@ export default function getAPIImplementation(): APIInterface {
 
             if (isFakeEmail(email) && preAuthChecks.isFirstFactor) {
                 // Fake emails cannot be used as a first factor
-                console.log("isFakeEmail(email) && preAuthChecks.isFirstFactor");
                 return {
                     status: "INVALID_CREDENTIALS_ERROR",
                 };
@@ -514,14 +511,11 @@ export default function getAPIImplementation(): APIInterface {
                 tenantId,
                 userContext,
             });
-            console.log("signInPOST signInResponse", signInResponse);
 
             if (signInResponse.status === "INVALID_CREDENTIALS_ERROR") {
-                console.log("signInResponse.status === 'INVALID_CREDENTIALS_ERROR'");
                 return signInResponse;
             }
             if (signInResponse.status !== "OK") {
-                console.log("signInResponse.status !== 'OK'");
                 return AuthUtils.getErrorStatusResponseWithReason(signInResponse, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
@@ -538,7 +532,6 @@ export default function getAPIImplementation(): APIInterface {
             });
 
             if (postAuthChecks.status !== "OK") {
-                console.log("postAuthChecks.status !== 'OK'", postAuthChecks);
                 return AuthUtils.getErrorStatusResponseWithReason(postAuthChecks, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 

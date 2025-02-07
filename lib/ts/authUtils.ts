@@ -359,7 +359,6 @@ export const AuthUtils = {
             logDebugMessage(
                 `getAuthenticatingUserAndAddToCurrentTenantIfRequired got ${existingUsers.length} users from the core resp`
             );
-            console.log("existingUsers", existingUsers, accountInfo);
             const usersWithMatchingLoginMethods = existingUsers
                 .map((user) => ({
                     user,

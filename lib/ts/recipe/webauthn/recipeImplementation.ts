@@ -217,8 +217,6 @@ export default function getRecipeInterface(
                 userContext
             );
 
-            console.log("response", response);
-
             if (response.status === "OK") {
                 return {
                     status: "OK",
