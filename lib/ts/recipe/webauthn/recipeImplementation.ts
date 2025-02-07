@@ -76,6 +76,7 @@ export default function getRecipeInterface(
                 }
             }
 
+            console.log("userVerification", userVerification);
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/register`
@@ -96,13 +97,22 @@ export default function getRecipeInterface(
             );
         },
 
-        signInOptions: async function ({ relyingPartyId, relyingPartyName, origin, timeout, tenantId, userContext }) {
+        signInOptions: async function ({
+            relyingPartyId,
+            relyingPartyName,
+            origin,
+            timeout,
+            userVerification,
+            tenantId,
+            userContext,
+        }) {
             // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/signin`
                 ),
                 {
+                    userVerification,
                     relyingPartyId,
                     relyingPartyName,
                     origin,
