@@ -121,12 +121,13 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                             functions: (originalImplementation) => {
                                 return {
                                     ...originalImplementation,
-                                    signInOptions: (input) => {
-                                        return originalImplementation.signInOptions({
+                                    registerOptions: (input) => {
+                                        return originalImplementation.registerOptions({
                                             ...input,
                                             timeout: 10 * 1000,
                                             userVerification: "required",
                                             relyingPartyId: "testId.com",
+                                            userPresence: false,
                                         });
                                     },
                                 };
@@ -180,6 +181,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userContext: {},
             });
             assert(generatedOptions.origin === "testOrigin.com");
+            assert(generatedOptions.userPresence === false);
         });
     });
 
@@ -449,8 +451,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-
-            console.log("signInResponse", signInResponse);
 
             assert(signInResponse.status === "OK");
 

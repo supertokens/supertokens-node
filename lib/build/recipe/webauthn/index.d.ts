@@ -22,6 +22,7 @@ export default class Wrapper {
     static registerOptions({
         residentKey,
         userVerification,
+        userPresence,
         attestation,
         supportedAlgorithmIds,
         timeout,
@@ -31,6 +32,7 @@ export default class Wrapper {
     }: {
         residentKey?: ResidentKey;
         userVerification?: UserVerification;
+        userPresence?: boolean;
         attestation?: Attestation;
         supportedAlgorithmIds?: number[];
         timeout?: number;
@@ -101,12 +103,14 @@ export default class Wrapper {
     static signInOptions({
         tenantId,
         userVerification,
+        userPresence,
         timeout,
         userContext,
         ...rest
     }: {
         timeout?: number;
         userVerification?: UserVerification;
+        userPresence?: boolean;
         tenantId?: string;
         userContext?: Record<string, any>;
     } & (
@@ -147,6 +151,8 @@ export default class Wrapper {
               webauthnGeneratedOptionsId: string;
               relyingPartyId: string;
               relyingPartyName: string;
+              userVerification: UserVerification;
+              userPresence: boolean;
               origin: string;
               email: string;
               timeout: string;

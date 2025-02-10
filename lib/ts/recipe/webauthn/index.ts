@@ -41,6 +41,8 @@ import {
     DEFAULT_REGISTER_OPTIONS_TIMEOUT,
     DEFAULT_REGISTER_OPTIONS_ATTESTATION,
     DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
+    DEFAULT_REGISTER_OPTIONS_USER_PRESENCE,
+    DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE,
 } from "./constants";
 import { BaseRequest } from "../../framework";
 
@@ -52,6 +54,7 @@ export default class Wrapper {
     static async registerOptions({
         residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
         userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
+        userPresence = DEFAULT_REGISTER_OPTIONS_USER_PRESENCE,
         attestation = DEFAULT_REGISTER_OPTIONS_ATTESTATION,
         supportedAlgorithmIds = DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
         timeout = DEFAULT_REGISTER_OPTIONS_TIMEOUT,
@@ -61,6 +64,7 @@ export default class Wrapper {
     }: {
         residentKey?: ResidentKey;
         userVerification?: UserVerification;
+        userPresence?: boolean;
         attestation?: Attestation;
         supportedAlgorithmIds?: number[];
         timeout?: number;
@@ -165,6 +169,7 @@ export default class Wrapper {
             ...emailOrRecoverAccountToken,
             residentKey,
             userVerification,
+            userPresence,
             supportedAlgorithmIds,
             relyingPartyId,
             relyingPartyName,
@@ -179,12 +184,14 @@ export default class Wrapper {
     static async signInOptions({
         tenantId = DEFAULT_TENANT_ID,
         userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
+        userPresence = DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE,
         timeout = DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
         userContext,
         ...rest
     }: {
         timeout?: number;
         userVerification?: UserVerification;
+        userPresence?: boolean;
         tenantId?: string;
         userContext?: Record<string, any>;
     } & (
@@ -246,6 +253,7 @@ export default class Wrapper {
             timeout,
             tenantId,
             userVerification,
+            userPresence,
             userContext: getUserContext(userContext),
         });
     }

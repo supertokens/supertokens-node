@@ -112,6 +112,8 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert(generatedOptions.email === "test@example.com");
             assert(generatedOptions.relyingPartyId === rpId);
             assert(generatedOptions.relyingPartyName === rpName);
+            assert(generatedOptions.userVerification === "preferred");
+            assert(generatedOptions.userPresence === true);
             assert(typeof generatedOptions.webauthnGeneratedOptionsId === "string");
             assert(typeof generatedOptions.challenge === "string");
             assert(typeof generatedOptions.createdAt === "number");

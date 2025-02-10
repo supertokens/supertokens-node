@@ -24,6 +24,7 @@ export default function getRecipeInterface(
             userContext,
             supportedAlgorithmIds,
             userVerification,
+            userPresence,
             residentKey,
             ...rest
         }) {
@@ -76,7 +77,6 @@ export default function getRecipeInterface(
                 }
             }
 
-            console.log("userVerification", userVerification);
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/register`
@@ -91,6 +91,7 @@ export default function getRecipeInterface(
                     attestation,
                     supportedAlgorithmIds,
                     userVerification,
+                    userPresence,
                     residentKey,
                 },
                 userContext
@@ -103,6 +104,7 @@ export default function getRecipeInterface(
             origin,
             timeout,
             userVerification,
+            userPresence,
             tenantId,
             userContext,
         }) {
@@ -113,6 +115,7 @@ export default function getRecipeInterface(
                 ),
                 {
                     userVerification,
+                    userPresence,
                     relyingPartyId,
                     relyingPartyName,
                     origin,

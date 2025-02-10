@@ -48,7 +48,6 @@ import MultitenancyRecipe from "../multitenancy/recipe";
 import { User } from "../../user";
 import { isFakeEmail } from "../thirdparty/utils";
 import { FactorIds } from "../multifactorauth";
-// import { getMockQuerier } from "./core-mock";
 import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
@@ -80,7 +79,6 @@ export default class Recipe extends RecipeModule {
         {
             const getWebauthnConfig = () => this.config;
             const querier = Querier.getNewInstanceOrThrowError(recipeId);
-            // const querier = getMockQuerier(recipeId);
             let builder = new OverrideableBuilder(RecipeImplementation(querier, getWebauthnConfig));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }

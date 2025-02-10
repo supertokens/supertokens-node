@@ -160,6 +160,7 @@ export type RecipeInterface = {
             residentKey: ResidentKey | undefined;
             // default to 'preferred' in order to verify the user (biometrics, pin, etc) based on the device preferences
             userVerification: UserVerification | undefined;
+            userPresence: boolean | undefined;
             // default to 'none' in order to allow any authenticator and not verify attestation
             attestation: Attestation | undefined;
             // default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms.
@@ -222,6 +223,7 @@ export type RecipeInterface = {
         relyingPartyName: string;
         origin: string;
         userVerification: UserVerification | undefined; // see register options
+        userPresence: boolean | undefined;
         timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
@@ -510,6 +512,8 @@ export type RecipeInterface = {
               webauthnGeneratedOptionsId: string;
               relyingPartyId: string;
               relyingPartyName: string;
+              userVerification: UserVerification;
+              userPresence: boolean;
               origin: string;
               email: string;
               timeout: string;

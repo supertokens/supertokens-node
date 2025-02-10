@@ -13,6 +13,8 @@ import {
     DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
     DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
     DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
+    DEFAULT_REGISTER_OPTIONS_USER_PRESENCE,
+    DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE,
 } from "../constants";
 import RecipeUserId from "../../../recipeUserId";
 import { getRecoverAccountLink } from "../utils";
@@ -90,6 +92,7 @@ export default function getAPIImplementation(): APIInterface {
             const attestation = DEFAULT_REGISTER_OPTIONS_ATTESTATION;
             const residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY;
             const userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION;
+            const userPresence = DEFAULT_REGISTER_OPTIONS_USER_PRESENCE;
             const supportedAlgorithmIds = DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS;
 
             let response = await options.recipeImplementation.registerOptions({
@@ -97,6 +100,7 @@ export default function getAPIImplementation(): APIInterface {
                 attestation,
                 residentKey,
                 userVerification,
+                userPresence,
                 origin,
                 relyingPartyId,
                 relyingPartyName,
@@ -166,9 +170,11 @@ export default function getAPIImplementation(): APIInterface {
 
             const timeout = DEFAULT_SIGNIN_OPTIONS_TIMEOUT;
             const userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION;
+            const userPresence = DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE;
 
             let response = await options.recipeImplementation.signInOptions({
                 userVerification,
+                userPresence,
                 origin,
                 relyingPartyId,
                 relyingPartyName,

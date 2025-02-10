@@ -85,6 +85,7 @@ export declare type RecipeInterface = {
             origin: string;
             residentKey: ResidentKey | undefined;
             userVerification: UserVerification | undefined;
+            userPresence: boolean | undefined;
             attestation: Attestation | undefined;
             supportedAlgorithmIds: number[] | undefined;
             timeout: number | undefined;
@@ -147,6 +148,7 @@ export declare type RecipeInterface = {
         relyingPartyName: string;
         origin: string;
         userVerification: UserVerification | undefined;
+        userPresence: boolean | undefined;
         timeout: number | undefined;
         tenantId: string;
         userContext: UserContext;
@@ -463,6 +465,8 @@ export declare type RecipeInterface = {
               webauthnGeneratedOptionsId: string;
               relyingPartyId: string;
               relyingPartyName: string;
+              userVerification: UserVerification;
+              userPresence: boolean;
               origin: string;
               email: string;
               timeout: string;
