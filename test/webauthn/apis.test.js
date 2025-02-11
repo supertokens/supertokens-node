@@ -69,26 +69,26 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(registerOptionsResponse.status === "OK");
+            assert.equal(registerOptionsResponse.status, "OK");
 
-            assert(typeof registerOptionsResponse.webauthnGeneratedOptionsId === "string");
-            assert(typeof registerOptionsResponse.challenge === "string");
-            assert(registerOptionsResponse.attestation === "none");
-            assert(registerOptionsResponse.rp.id === "api.supertokens.io");
-            assert(registerOptionsResponse.rp.name === "SuperTokens");
-            assert(registerOptionsResponse.user.name === "test@example.com");
-            assert(registerOptionsResponse.user.displayName === "test@example.com");
+            assert.equal(typeof registerOptionsResponse.webauthnGeneratedOptionsId, "string");
+            assert.equal(typeof registerOptionsResponse.challenge, "string");
+            assert.equal(registerOptionsResponse.attestation, "none");
+            assert.equal(registerOptionsResponse.rp.id, "api.supertokens.io");
+            assert.equal(registerOptionsResponse.rp.name, "SuperTokens");
+            assert.equal(registerOptionsResponse.user.name, "test@example.com");
+            assert.equal(registerOptionsResponse.user.displayName, "test@example.com");
             assert(Number.isInteger(registerOptionsResponse.timeout));
-            assert(registerOptionsResponse.authenticatorSelection.userVerification === "preferred");
-            assert(registerOptionsResponse.authenticatorSelection.requireResidentKey === true);
-            assert(registerOptionsResponse.authenticatorSelection.residentKey === "required");
+            assert.equal(registerOptionsResponse.authenticatorSelection.userVerification, "preferred");
+            assert.equal(registerOptionsResponse.authenticatorSelection.requireResidentKey, true);
+            assert.equal(registerOptionsResponse.authenticatorSelection.residentKey, "required");
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
                 webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                 userContext: {},
             });
 
-            assert(generatedOptions.origin === "https://supertokens.io");
+            assert.equal(generatedOptions.origin, "https://supertokens.io");
         });
 
         it("test registerOptions with custom values", async function () {
@@ -162,26 +162,27 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(registerOptionsResponse.status === "OK");
+            assert.equal(registerOptionsResponse.status, "OK");
 
-            assert(typeof registerOptionsResponse.webauthnGeneratedOptionsId === "string");
-            assert(typeof registerOptionsResponse.challenge === "string");
-            assert(registerOptionsResponse.attestation === "none");
-            assert(registerOptionsResponse.rp.id === "testId.com");
-            assert(registerOptionsResponse.rp.name === "testName");
-            assert(registerOptionsResponse.user.name === "test@example.com");
-            assert(registerOptionsResponse.user.displayName === "test@example.com");
-            assert(Number.isInteger(registerOptionsResponse.timeout));
-            assert(registerOptionsResponse.authenticatorSelection.userVerification === "preferred");
-            assert(registerOptionsResponse.authenticatorSelection.requireResidentKey === true);
-            assert(registerOptionsResponse.authenticatorSelection.residentKey === "required");
+            assert.equal(typeof registerOptionsResponse.webauthnGeneratedOptionsId, "string");
+            assert.equal(typeof registerOptionsResponse.challenge, "string");
+            assert.equal(registerOptionsResponse.attestation, "none");
+            assert.equal(registerOptionsResponse.rp.id, "testId.com");
+            assert.equal(registerOptionsResponse.rp.name, "testName");
+            assert.equal(registerOptionsResponse.user.name, "test@example.com");
+            assert.equal(registerOptionsResponse.user.displayName, "test@example.com");
+            assert.equal(Number.isInteger(registerOptionsResponse.timeout), true);
+            assert.equal(registerOptionsResponse.authenticatorSelection.userVerification, "required");
+            assert.equal(registerOptionsResponse.authenticatorSelection.requireResidentKey, true);
+            assert.equal(registerOptionsResponse.authenticatorSelection.residentKey, "required");
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
                 webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                 userContext: {},
             });
-            assert(generatedOptions.origin === "testOrigin.com");
-            assert(generatedOptions.userPresence === false);
+
+            assert.equal(generatedOptions.origin, "testOrigin.com");
+            assert.equal(generatedOptions.userPresence, false);
         });
     });
 
@@ -212,21 +213,21 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(signInOptionsResponse.status === "OK");
+            assert.equal(signInOptionsResponse.status, "OK");
 
-            assert(typeof signInOptionsResponse.challenge === "string");
-            assert(Number.isInteger(signInOptionsResponse.timeout));
-            assert(Number.isInteger(signInOptionsResponse.createdAt));
-            assert(Number.isInteger(signInOptionsResponse.expiresAt));
-            assert(signInOptionsResponse.userVerification === "preferred");
+            assert.equal(typeof signInOptionsResponse.challenge, "string");
+            assert.equal(Number.isInteger(signInOptionsResponse.timeout), true);
+            assert.equal(Number.isInteger(signInOptionsResponse.createdAt), true);
+            assert.equal(Number.isInteger(signInOptionsResponse.expiresAt), true);
+            assert.equal(signInOptionsResponse.userVerification, "preferred");
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
                 webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
                 userContext: {},
             });
 
-            assert(generatedOptions.relyingPartyId === "api.supertokens.io");
-            assert(generatedOptions.origin === "https://supertokens.io");
+            assert.equal(generatedOptions.relyingPartyId, "api.supertokens.io");
+            assert.equal(generatedOptions.origin, "https://supertokens.io");
         });
 
         it("test signInOptions with custom values", async function () {
@@ -279,22 +280,22 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(signInOptionsResponse.status === "OK");
+            assert.equal(signInOptionsResponse.status, "OK");
 
-            assert(typeof signInOptionsResponse.webauthnGeneratedOptionsId === "string");
-            assert(typeof signInOptionsResponse.challenge === "string");
-            assert(Number.isInteger(signInOptionsResponse.timeout));
-            assert(Number.isInteger(signInOptionsResponse.createdAt));
-            assert(Number.isInteger(signInOptionsResponse.expiresAt));
-            assert(signInOptionsResponse.userVerification === "preferred");
+            assert.equal(typeof signInOptionsResponse.webauthnGeneratedOptionsId, "string");
+            assert.equal(typeof signInOptionsResponse.challenge, "string");
+            assert.equal(Number.isInteger(signInOptionsResponse.timeout), true);
+            assert.equal(Number.isInteger(signInOptionsResponse.createdAt), true);
+            assert.equal(Number.isInteger(signInOptionsResponse.expiresAt), true);
+            assert.equal(signInOptionsResponse.userVerification, "preferred");
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.getGeneratedOptions({
                 webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
                 userContext: {},
             });
 
-            assert(generatedOptions.relyingPartyId === "testId.com");
-            assert(generatedOptions.origin === "testOrigin.com");
+            assert.equal(generatedOptions.relyingPartyId, "testId.com");
+            assert.equal(generatedOptions.origin, "testOrigin.com");
         });
     });
 
@@ -322,7 +323,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(registerOptionsResponse.status === "OK");
 
             const { createCredential } = await getWebauthnLib();
             const credential = createCredential(registerOptionsResponse, {
@@ -351,16 +351,16 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(signUpResponse.status === "OK");
+            assert.equal(signUpResponse.status, "OK");
 
-            assert(typeof registerOptionsResponse.webauthnGeneratedOptionsId === "string");
-            assert(signUpResponse?.user?.id !== undefined);
-            assert(signUpResponse?.user?.emails?.length === 1);
-            assert(signUpResponse?.user?.emails?.[0] === email);
-            assert(signUpResponse?.user?.webauthn?.credentialIds?.length === 1);
-            assert(signUpResponse?.user?.webauthn?.credentialIds?.[0] === credential.id);
-            assert(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.length === 1);
-            assert(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.[0] === credential.id);
+            assert.equal(typeof registerOptionsResponse.webauthnGeneratedOptionsId, "string");
+            assert.equal(typeof signUpResponse?.user?.id, "string");
+            assert.equal(signUpResponse?.user?.emails?.length, 1);
+            assert.equal(signUpResponse?.user?.emails?.[0], email);
+            assert.equal(signUpResponse?.user?.webauthn?.credentialIds?.length, 1);
+            assert.equal(signUpResponse?.user?.webauthn?.credentialIds?.[0], credential.id);
+            assert.equal(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.length, 1);
+            assert.equal(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.[0], credential.id);
         });
     });
 
@@ -388,7 +388,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(registerOptionsResponse.status === "OK");
 
             let signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
@@ -403,7 +402,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(signInOptionsResponse.status === "OK");
 
             const { createAndAssertCredential } = await getWebauthnLib();
             const credential = createAndAssertCredential(registerOptionsResponse, signInOptionsResponse, {
@@ -432,8 +430,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(signUpResponse.status === "OK");
-
             let signInResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signin")
@@ -452,13 +448,13 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(signInResponse.status === "OK");
+            assert.equal(signInResponse.status, "OK");
 
-            assert(signInResponse?.user?.id !== undefined);
-            assert(signInResponse?.user?.emails?.length === 1);
-            assert(signInResponse?.user?.emails?.[0] === email);
-            assert(signInResponse?.user?.webauthn?.credentialIds?.length === 1);
-            assert(signInResponse?.user?.webauthn?.credentialIds?.[0] === credential.attestation.id);
+            assert.equal(typeof signInResponse?.user?.id, "string");
+            assert.equal(signInResponse?.user?.emails?.length, 1);
+            assert.equal(signInResponse?.user?.emails?.[0], email);
+            assert.equal(signInResponse?.user?.webauthn?.credentialIds?.length, 1);
+            assert.equal(signInResponse?.user?.webauthn?.credentialIds?.[0], credential.attestation.id);
         });
 
         it("test signIn fail with wrong credential", async function () {
@@ -467,6 +463,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
+
+            const { createCredential, createAndAssertCredential } = await getWebauthnLib();
 
             const email = `${Math.random().toString().slice(2)}@supertokens.com`;
             let registerOptionsResponse = await new Promise((resolve, reject) =>
@@ -484,9 +482,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(registerOptionsResponse.status === "OK");
 
-            let signInOptionsResponse = await new Promise((resolve, reject) =>
+            const signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/signin")
                     .send({ email: email + "wrong" })
@@ -499,10 +496,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(signInOptionsResponse.status === "OK");
 
-            const { createAndAssertCredential } = await getWebauthnLib();
-            const credential = createAndAssertCredential(registerOptionsResponse, signInOptionsResponse, {
+            const credential = createCredential(registerOptionsResponse, signInOptionsResponse, {
                 rpId,
                 rpName,
                 origin,
@@ -510,11 +505,11 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let signUpResponse = await new Promise((resolve, reject) =>
+            const signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signup")
                     .send({
-                        credential: credential.attestation,
+                        credential: credential,
                         webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                         shouldTryLinkingWithSessionUser: false,
                     })
@@ -528,13 +523,34 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(signUpResponse.status === "OK");
+            const registerOptionsResponse2 = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/webauthn/options/register")
+                    .send({
+                        email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            const credential2 = createAndAssertCredential(registerOptionsResponse2, signInOptionsResponse, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
 
-            let signInResponse = await new Promise((resolve, reject) =>
+            const signInResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signin")
                     .send({
-                        credential: credential.assertion,
+                        credential: credential2.assertion,
                         webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
                         shouldTryLinkingWithSessionUser: false,
                     })
@@ -548,7 +564,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert(signInResponse.status === "INVALID_CREDENTIALS_ERROR");
+            assert.equal(signInResponse.status, "INVALID_CREDENTIALS_ERROR");
         });
 
         it("should fail signIn if there is no credential registered for the user", async function () {});
@@ -580,7 +596,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(generateRecoverAccountTokenResponse.status === "OK");
+            assert.equal(generateRecoverAccountTokenResponse.status, "OK");
             // todo figure out how to test the token actually being generated
         });
 
@@ -606,7 +622,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(generateRecoverAccountTokenResponse.status === "OK");
+            assert.equal(generateRecoverAccountTokenResponse.status, "OK");
         });
     });
 
@@ -673,7 +689,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(recoverAccountResponse.status === "OK");
+            assert.equal(recoverAccountResponse.status, "OK");
         });
 
         it("should return the correct error if the token is invalid", async function () {
@@ -728,7 +744,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(recoverAccountResponse.status === "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR");
+            assert.equal(recoverAccountResponse.status, "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR");
         });
 
         it("should return the correct error if the credential is invalid", async function () {
@@ -800,7 +816,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(recoverAccountResponse.status === "INVALID_CREDENTIALS_ERROR");
+            assert.equal(recoverAccountResponse.status, "INVALID_CREDENTIALS_ERROR");
         });
 
         it("should return the correct error if the register options id is wrong", async function () {
@@ -865,7 +881,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(recoverAccountResponse.status === "INVALID_GENERATED_OPTIONS_ERROR");
+            assert.equal(recoverAccountResponse.status, "INVALID_GENERATED_OPTIONS_ERROR");
         });
 
         it("should return the correct error if the register options are wrong", async function () {
@@ -930,7 +946,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert(recoverAccountResponse.status === "INVALID_GENERATED_OPTIONS_ERROR");
+            assert.equal(recoverAccountResponse.status, "INVALID_GENERATED_OPTIONS_ERROR");
         });
     });
 });
