@@ -63,7 +63,7 @@ export default class SuperTokens {
     telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
-        const inputPluginList = config.plugins ?? [];
+        const inputPluginList = config.experimental?.plugins ?? [];
         this.pluginRouteHandlers = [];
         const finalPluginList: SuperTokensPlugin[] = [];
         for (const plugin of inputPluginList) {

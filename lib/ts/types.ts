@@ -145,7 +145,18 @@ export type TypeInput = {
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
     debug?: boolean;
-    plugins?: SuperTokensPlugin[];
+    /**
+     *
+     * Our experimental features are not yet stable and are subject to change. In practical terms, this means that their interface is subject to change without a major version update.
+     * They are also not tested as much as our "normal" features.
+     *
+     * If you want to use these features, or if you have any feedback please let us know at:
+     * https://supertokens.com/discord
+     *
+     */
+    experimental?: {
+        plugins?: SuperTokensPlugin[];
+    };
 };
 
 export type NetworkInterceptor = (request: HttpRequest, userContext: UserContext) => HttpRequest;

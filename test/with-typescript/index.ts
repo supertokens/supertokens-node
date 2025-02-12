@@ -2369,59 +2369,61 @@ const customPlugin = createPluginInitFunction<{ log: (input: any) => void }, { p
 Supertokens.init({
     appInfo,
     recipeList: [OpenId.init()],
-    plugins: [
-        {
-            id: "asdf",
-            compatibleSDKVersions: "1.2.3",
-            overrideMap: {
-                emailpassword: {
-                    functions: (oI) => ({
-                        ...oI,
-                        signIn: (input) => {
-                            return oI.signIn(input);
-                        },
-                    }),
-                    apis: (apis) => ({
-                        ...apis,
-                        signInPOST: (input) => {
-                            return apis.signInPOST!(input);
-                        },
-                    }),
-                },
-                passwordless: {
-                    functions: (oI) => ({
-                        ...oI,
-                        checkCode: (input) => {
-                            return oI.checkCode(input);
-                        },
-                    }),
-                },
-            },
-            routeHandlers: [
-                {
-                    method: "get",
-                    path: "/asdf",
-                    verifySessionOptions: {},
-                    handler: async (req, res, userContext) => {
-                        return {
-                            status: 200,
-                            body: {},
-                        };
+    experimental: {
+        plugins: [
+            {
+                id: "asdf",
+                compatibleSDKVersions: "1.2.3",
+                overrideMap: {
+                    emailpassword: {
+                        functions: (oI) => ({
+                            ...oI,
+                            signIn: (input) => {
+                                return oI.signIn(input);
+                            },
+                        }),
+                        apis: (apis) => ({
+                            ...apis,
+                            signInPOST: (input) => {
+                                return apis.signInPOST!(input);
+                            },
+                        }),
+                    },
+                    passwordless: {
+                        functions: (oI) => ({
+                            ...oI,
+                            checkCode: (input) => {
+                                return oI.checkCode(input);
+                            },
+                        }),
                     },
                 },
-            ],
-        },
-        customPlugin({
-            prefix: "asdf",
-            override: (oI) => ({
-                ...oI,
-                log: (input: any) => {
-                    console.log(`in log override - before oI.log`);
-                    const res = oI.log(input);
-                    console.log(`in log override - after oI.log`);
-                    return res;
-                },
+                routeHandlers: [
+                    {
+                        method: "get",
+                        path: "/asdf",
+                        verifySessionOptions: {},
+                        handler: async (req, res, userContext) => {
+                            return {
+                                status: 200,
+                                body: {},
+                            };
+                        },
+                    },
+                ],
+            },
+            customPlugin({
+                prefix: "asdf",
+                override: (oI) => ({
+                    ...oI,
+                    log: (input: any) => {
+                        console.log(`in log override - before oI.log`);
+                        const res = oI.log(input);
+                        console.log(`in log override - after oI.log`);
+                        return res;
+                    },
+                }),
             }),
-        }),
-    ],
+        ],
+    },
 });
