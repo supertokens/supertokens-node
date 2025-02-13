@@ -34,8 +34,7 @@ export default function getAPIImplementation(): APIInterface {
             tenantId: string;
             options: APIOptions;
             userContext: UserContext;
-            displayName?: string;
-        } & ({ email: string } | { recoverAccountToken: string })): Promise<
+        } & ({ email: string; displayName?: string } | { recoverAccountToken: string })): Promise<
             | {
                   status: "OK";
                   webauthnGeneratedOptionsId: string;
@@ -70,7 +69,7 @@ export default function getAPIImplementation(): APIInterface {
               }
             | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
             | { status: "INVALID_EMAIL_ERROR"; err: string }
-            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
+            | { status: "INVALID_OPTIONS_ERROR" }
         > {
             const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
@@ -97,6 +96,7 @@ export default function getAPIImplementation(): APIInterface {
 
             let response = await options.recipeImplementation.registerOptions({
                 ...props,
+                displayName: "displayName" in props ? props.displayName : undefined,
                 attestation,
                 residentKey,
                 userVerification,
@@ -149,7 +149,7 @@ export default function getAPIImplementation(): APIInterface {
                   userVerification: UserVerification;
               }
             | GeneralErrorResponse
-            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
+            | { status: "INVALID_OPTIONS_ERROR" }
         > {
             const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
@@ -227,8 +227,8 @@ export default function getAPIImplementation(): APIInterface {
                   reason: string;
               }
             | { status: "INVALID_CREDENTIALS_ERROR" }
-            | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" }
-            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
+            | { status: "OPTIONS_NOT_FOUND_ERROR" }
+            | { status: "INVALID_OPTIONS_ERROR" }
             | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -422,7 +422,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (verifyResult.status !== "OK") {
-                return verifyResult;
+                return { status: "INVALID_CREDENTIALS_ERROR" };
             }
 
             const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
@@ -618,13 +618,9 @@ export default function getAPIImplementation(): APIInterface {
             async function generateAndSendRecoverAccountToken(
                 primaryUserId: string,
                 recipeUserId: RecipeUserId | undefined
-            ): Promise<
-                | {
-                      status: "OK";
-                  }
-                | { status: "RECOVER_ACCOUNT_NOT_ALLOWED"; reason: string }
-                | GeneralErrorResponse
-            > {
+            ): Promise<{
+                status: "OK";
+            }> {
                 // the user ID here can be primary or recipe level.
                 let response = await options.recipeImplementation.generateRecoverAccountToken({
                     tenantId,
@@ -884,8 +880,8 @@ export default function getAPIImplementation(): APIInterface {
             | GeneralErrorResponse
             | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
             | { status: "INVALID_CREDENTIALS_ERROR" } // the credential is not valid for various reasons - will discover this during implementation
-            | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" } // i.e. options not found
-            | { status: "INVALID_GENERATED_OPTIONS_ERROR" } // i.e. timeout expired
+            | { status: "OPTIONS_NOT_FOUND_ERROR" } // i.e. options not found
+            | { status: "INVALID_OPTIONS_ERROR" } // i.e. timeout expired
             | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
         > {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
@@ -1075,8 +1071,8 @@ export default function getAPIImplementation(): APIInterface {
 
                     if (
                         createUserResponse.status === "INVALID_CREDENTIALS_ERROR" ||
-                        createUserResponse.status === "GENERATED_OPTIONS_NOT_FOUND_ERROR" ||
-                        createUserResponse.status === "INVALID_GENERATED_OPTIONS_ERROR" ||
+                        createUserResponse.status === "OPTIONS_NOT_FOUND_ERROR" ||
+                        createUserResponse.status === "INVALID_OPTIONS_ERROR" ||
                         createUserResponse.status === "INVALID_AUTHENTICATOR_ERROR"
                     ) {
                         return createUserResponse;
@@ -1162,8 +1158,8 @@ export default function getAPIImplementation(): APIInterface {
                   reason: string;
               }
             | { status: "INVALID_CREDENTIALS_ERROR" }
-            | { status: "GENERATED_OPTIONS_NOT_FOUND_ERROR" }
-            | { status: "INVALID_GENERATED_OPTIONS_ERROR" }
+            | { status: "OPTIONS_NOT_FOUND_ERROR" }
+            | { status: "INVALID_OPTIONS_ERROR" }
             | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
         > {
             // TODO update error codes (ERR_CODE_XXX) after final implementation

@@ -67,7 +67,7 @@ export default function getRecipeInterface(
             // set a nice default display name
             // if the user has a fake email, we use the username part of the email instead (which should be the recipe user id)
             let displayName: string;
-            if (rest.displayName) {
+            if ("displayName" in rest && rest.displayName !== undefined) {
                 displayName = rest.displayName;
             } else {
                 if (isFakeEmail(email)) {
@@ -307,24 +307,6 @@ export default function getRecipeInterface(
             );
         },
 
-        decodeCredential: async function ({ credential, userContext }) {
-            const response = await querier.sendPostRequest(
-                new NormalisedURLPath(`/recipe/webauthn/credential/decode`),
-                {
-                    credential,
-                },
-                userContext
-            );
-
-            if (response.status === "OK") {
-                return response;
-            }
-
-            return {
-                status: "INVALID_CREDENTIALS_ERROR",
-            };
-        },
-
         getUserFromRecoverAccountToken: async function ({ token, tenantId, userContext }) {
             return await querier.sendGetRequest(
                 new NormalisedURLPath(
@@ -346,8 +328,8 @@ export default function getRecipeInterface(
 
         getCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
             return await querier.sendGetRequest(
-                new NormalisedURLPath(`/recipe/webauthn/user/${recipeUserId}/credential/${webauthnCredentialId}`),
-                {},
+                new NormalisedURLPath(`/recipe/webauthn/user/credential`),
+                { webauthnCredentialId, recipeUserId },
                 userContext
             );
         },
@@ -379,6 +361,17 @@ export default function getRecipeInterface(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options`
                 ),
                 { webauthnGeneratedOptionsId },
+                userContext
+            );
+        },
+
+        updateUserEmail: async function ({ email, recipeUserId, tenantId, userContext }) {
+            return await querier.sendPutRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/email`
+                ),
+                { email, recipeUserId },
+                {},
                 userContext
             );
         },

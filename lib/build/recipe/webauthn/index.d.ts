@@ -12,9 +12,7 @@ import {
     Attestation,
     AuthenticationPayload,
 } from "./types";
-import RecipeUserId from "../../recipeUserId";
 import { SessionContainerInterface } from "../session/types";
-import { User } from "../../types";
 import { BaseRequest } from "../../framework";
 export default class Wrapper {
     static init: typeof Recipe.init;
@@ -54,14 +52,23 @@ export default class Wrapper {
         (
             | {
                   email: string;
+                  displayName?: string;
               }
             | {
                   recoverAccountToken: string;
               }
         )): Promise<
         | {
+              status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
+          }
+        | {
+              status: "INVALID_OPTIONS_ERROR";
+          }
+        | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
+              createdAt: string;
+              expiresAt: string;
               rp: {
                   id: string;
                   name: string;
@@ -78,7 +85,7 @@ export default class Wrapper {
                   type: "public-key";
                   transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
               }[];
-              attestation: "none" | "indirect" | "direct" | "enterprise";
+              attestation: Attestation;
               pubKeyCredParams: {
                   alg: number;
                   type: "public-key";
@@ -90,14 +97,8 @@ export default class Wrapper {
               };
           }
         | {
-              status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
-          }
-        | {
-              status: "INVALID_EMAIL_ERROR";
+              status: string;
               err: string;
-          }
-        | {
-              status: "INVALID_GENERATED_OPTIONS_ERROR";
           }
     >;
     static signInOptions({
@@ -127,14 +128,16 @@ export default class Wrapper {
           }
     )): Promise<
         | {
+              status: "INVALID_OPTIONS_ERROR";
+          }
+        | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
+              createdAt: string;
+              expiresAt: string;
               challenge: string;
               timeout: number;
               userVerification: UserVerification;
-          }
-        | {
-              status: "INVALID_GENERATED_OPTIONS_ERROR";
           }
     >;
     static getGeneratedOptions({
@@ -146,6 +149,9 @@ export default class Wrapper {
         tenantId?: string;
         userContext?: Record<string, any>;
     }): Promise<
+        | {
+              status: "OPTIONS_NOT_FOUND_ERROR";
+          }
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
@@ -159,9 +165,6 @@ export default class Wrapper {
               challenge: string;
               createdAt: number;
               expiresAt: number;
-          }
-        | {
-              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
           }
     >;
     static signUp({
@@ -177,34 +180,38 @@ export default class Wrapper {
         userContext?: Record<string, any>;
         session?: SessionContainerInterface;
     }): Promise<
+        | (
+              | (
+                    | {
+                          status: "EMAIL_ALREADY_EXISTS_ERROR";
+                      }
+                    | {
+                          status: "INVALID_CREDENTIALS_ERROR";
+                      }
+                    | {
+                          status: "OPTIONS_NOT_FOUND_ERROR";
+                      }
+                    | {
+                          status: "INVALID_OPTIONS_ERROR";
+                      }
+                    | {
+                          status: "INVALID_AUTHENTICATOR_ERROR";
+                          reason: string;
+                      }
+                )
+              | {
+                    status: "LINKING_TO_SESSION_USER_FAILED";
+                    reason:
+                        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "EMAIL_VERIFICATION_REQUIRED"
+                        | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                }
+          )
         | {
               status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-        | {
-              status: "INVALID_CREDENTIALS_ERROR";
-          }
-        | {
-              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
-          }
-        | {
-              status: "INVALID_GENERATED_OPTIONS_ERROR";
-          }
-        | {
-              status: "INVALID_AUTHENTICATOR_ERROR";
-              reason: string;
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              user: import("../../types").User;
+              recipeUserId: import("../..").RecipeUserId;
           }
     >;
     static signIn({
@@ -220,21 +227,40 @@ export default class Wrapper {
         session?: SessionContainerInterface;
         userContext?: Record<string, any>;
     }): Promise<
+        | (
+              | (
+                    | {
+                          status: "INVALID_CREDENTIALS_ERROR";
+                      }
+                    | {
+                          status: "INVALID_OPTIONS_ERROR";
+                      }
+                    | {
+                          status: "INVALID_AUTHENTICATOR_ERROR";
+                      }
+                    | {
+                          status: "CREDENTIAL_NOT_FOUND_ERROR";
+                      }
+                    | {
+                          status: "UNKNOWN_USER_ID_ERROR";
+                      }
+                    | {
+                          status: "OPTIONS_NOT_FOUND_ERROR";
+                      }
+                )
+              | {
+                    status: "LINKING_TO_SESSION_USER_FAILED";
+                    reason:
+                        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "EMAIL_VERIFICATION_REQUIRED"
+                        | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                }
+          )
         | {
               status: "OK";
-              user: User;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "INVALID_CREDENTIALS_ERROR";
-          }
-        | {
-              status: "LINKING_TO_SESSION_USER_FAILED";
-              reason:
-                  | "EMAIL_VERIFICATION_REQUIRED"
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              user: import("../../types").User;
+              recipeUserId: import("../..").RecipeUserId;
           }
     >;
     static verifyCredentials({
@@ -247,14 +273,16 @@ export default class Wrapper {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
         userContext?: Record<string, any>;
-    }): Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "INVALID_CREDENTIALS_ERROR";
-          }
-    >;
+    }): Promise<{
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "INVALID_CREDENTIALS_ERROR"
+            | "INVALID_OPTIONS_ERROR"
+            | "OPTIONS_NOT_FOUND_ERROR"
+            | "INVALID_AUTHENTICATOR_ERROR"
+            | "CREDENTIAL_NOT_FOUND_ERROR";
+    }>;
     /**
      * We do not make email optional here cause we want to
      * allow passing in primaryUserId. If we make email optional,
@@ -278,11 +306,11 @@ export default class Wrapper {
         userContext?: Record<string, any>;
     }): Promise<
         | {
-              status: "OK";
-              token: string;
+              status: "UNKNOWN_USER_ID_ERROR";
           }
         | {
-              status: "UNKNOWN_USER_ID_ERROR";
+              status: "OK";
+              token: string;
           }
     >;
     static recoverAccount({
@@ -299,23 +327,15 @@ export default class Wrapper {
         userContext?: Record<string, any>;
     }): Promise<
         | {
-              status: "OK";
-          }
-        | {
               status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
           }
         | {
-              status: "INVALID_CREDENTIALS_ERROR";
-          }
-        | {
-              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
-          }
-        | {
-              status: "INVALID_GENERATED_OPTIONS_ERROR";
-          }
-        | {
-              status: "INVALID_AUTHENTICATOR_ERROR";
+              status: string;
               failureReason: string;
+          }
+        | {
+              status: "OK" | "INVALID_CREDENTIALS_ERROR" | "INVALID_OPTIONS_ERROR" | "OPTIONS_NOT_FOUND_ERROR";
+              failureReason?: undefined;
           }
     >;
     static consumeRecoverAccountToken({
@@ -328,12 +348,12 @@ export default class Wrapper {
         userContext?: Record<string, any>;
     }): Promise<
         | {
+              status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
+          }
+        | {
               status: "OK";
               email: string;
               userId: string;
-          }
-        | {
-              status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
           }
     >;
     static registerCredential({
@@ -347,21 +367,23 @@ export default class Wrapper {
         credential: CredentialPayload;
         userContext?: Record<string, any>;
     }): Promise<
+        | (
+              | {
+                    status: "INVALID_CREDENTIALS_ERROR";
+                }
+              | {
+                    status: "OPTIONS_NOT_FOUND_ERROR";
+                }
+              | {
+                    status: "INVALID_OPTIONS_ERROR";
+                }
+              | {
+                    status: "INVALID_AUTHENTICATOR_ERROR";
+                    reason: string;
+                }
+          )
         | {
               status: "OK";
-          }
-        | {
-              status: "INVALID_CREDENTIALS_ERROR";
-          }
-        | {
-              status: "GENERATED_OPTIONS_NOT_FOUND_ERROR";
-          }
-        | {
-              status: "INVALID_GENERATED_OPTIONS_ERROR";
-          }
-        | {
-              status: "INVALID_AUTHENTICATOR_ERROR";
-              reason: string;
           }
     >;
     static createRecoverAccountLink({
@@ -376,11 +398,11 @@ export default class Wrapper {
         userContext?: Record<string, any>;
     }): Promise<
         | {
-              status: "OK";
-              link: string;
+              status: "UNKNOWN_USER_ID_ERROR";
           }
         | {
-              status: "UNKNOWN_USER_ID_ERROR";
+              status: string;
+              link: string;
           }
     >;
     static sendRecoverAccountEmail({
@@ -393,9 +415,15 @@ export default class Wrapper {
         userId: string;
         email: string;
         userContext?: Record<string, any>;
-    }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: string;
+              link: string;
+          }
+        | {
+              status: string;
+          }
+    >;
     static sendEmail(
         input: TypeWebauthnEmailDeliveryInput & {
             userContext?: Record<string, any>;
