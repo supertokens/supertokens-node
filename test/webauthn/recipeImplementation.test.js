@@ -103,7 +103,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert.equal(generatedOptions.user.displayName, email);
         });
 
-        it("should throw an error if the recover account token is invalid", async function () {
+        it("should return the correct error if the recover account token is invalid", async function () {
             await initST();
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
@@ -118,7 +118,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert.equal(generatedOptions.status, "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR");
         });
 
-        it("should throw an error if the email is invalid", async function () {
+        it("should return the correct error if the email is invalid", async function () {
             await initST();
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
@@ -133,7 +133,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert.equal(generatedOptions.status, "INVALID_EMAIL_ERROR");
         });
 
-        it("should return the correct error if the passed options are invalid", async function () {
+        it("when attestation is invalid, should return the correct error", async function () {
             await initST();
 
             const email = "test@example.com";
@@ -141,6 +141,108 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                 relyingPartyId: rpId,
                 relyingPartyName: rpName,
                 attestation: "invalid",
+                origin,
+                email,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when residentKey is invalid, should return the correct error", async function () {
+            await initST();
+
+            const email = "test@example.com";
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                residentKey: "invalid",
+                origin,
+                email,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when supportedAlgorithmIds is invalid, should return the correct error", async function () {
+            await initST();
+
+            const email = "test@example.com";
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                supportedAlgorithmIds: "invalid",
+                origin,
+                email,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when timeout is negative, should return the correct error", async function () {
+            await initST();
+
+            const email = "test@example.com";
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                timeout: -1000,
+                origin,
+                email,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when timeout is invalid, should return the correct error", async function () {
+            await initST();
+
+            const email = "test@example.com";
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                timeout: "invalid",
+                origin,
+                email,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when userPresence is invalid, should return the correct error", async function () {
+            await initST();
+
+            const email = "test@example.com";
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                userPresence: "invalid",
+                origin,
+                email,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when userVerification is invalid, should return the correct error", async function () {
+            await initST();
+
+            const email = "test@example.com";
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                userVerification: "invalid",
                 origin,
                 email,
                 tenantId: "public",
@@ -189,13 +291,58 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert.equal(generatedOptions.createdAt + generatedOptions.timeout, generatedOptions.expiresAt);
         });
 
-        it("should return the correct error if the passed options are invalid", async function () {
+        it("when userVerification is invalid, should return the correct error", async function () {
             await initST();
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.signInOptions({
                 relyingPartyId: rpId,
                 relyingPartyName: rpName,
                 userVerification: "invalid",
+                origin,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when userPresence is invalid, should return the correct error", async function () {
+            await initST();
+
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.signInOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                userPresence: "invalid",
+                origin,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when timeout is invalid, should return the correct error", async function () {
+            await initST();
+
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.signInOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                timeout: "invalid",
+                origin,
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
+        });
+
+        it("when timeout is negative, should return the correct error", async function () {
+            await initST();
+
+            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.signInOptions({
+                relyingPartyId: rpId,
+                relyingPartyName: rpName,
+                timeout: -1000,
                 origin,
                 tenantId: "public",
                 userContext,
@@ -325,8 +472,37 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             const signUpResponse2 = await getWebAuthnRecipe().recipeInterfaceImpl.signUp({
                 webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                 credential: {
-                    type: 1,
                     ...credential,
+                    type: 1,
+                },
+                tenantId: "public",
+                userContext,
+            });
+
+            assert.equal(signUpResponse2.status, "INVALID_CREDENTIALS_ERROR");
+        });
+
+        it("when credential id is null or undefined, should return the correct error if the credential is invalid", async function () {
+            await initST();
+
+            const email = "test@example.com";
+            const registerOptionsResponse = await createRegisterOptions(email);
+            assert(registerOptionsResponse.status === "OK");
+
+            const { createCredential } = await getWebauthnLib();
+            const credential = createCredential(registerOptionsResponse, {
+                rpId: rpId,
+                rpName: rpName,
+                origin: origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
+            const signUpResponse2 = await getWebAuthnRecipe().recipeInterfaceImpl.signUp({
+                webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
+                credential: {
+                    ...credential,
+                    id: null,
                 },
                 tenantId: "public",
                 userContext,
@@ -367,38 +543,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             const email = "test@example.com";
             const registerOptionsResponse = await createRegisterOptions(email);
             assert(registerOptionsResponse.status === "OK");
-
-            const { createCredential } = await getWebauthnLib();
-            const credential = createCredential(registerOptionsResponse, {
-                rpId,
-                rpName,
-                origin: "https://test.com",
-                userNotPresent: false,
-                userNotVerified: false,
-            });
-
-            const signUpResponse = await getWebAuthnRecipe().recipeInterfaceImpl.signUp({
-                webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
-                credential,
-                tenantId: "public",
-                userContext,
-            });
-
-            assert.equal(signUpResponse.status, "INVALID_OPTIONS_ERROR");
-        });
-
-        it("should return the correct error if the origin of the credential is not part of the relying party id", async function () {
-            await initST();
-
-            const email = "test@example.com";
-            const registerOptionsResponse = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
-                relyingPartyId: rpId,
-                relyingPartyName: rpName,
-                origin: "https://test.com",
-                email,
-                tenantId: "public",
-                userContext,
-            });
 
             const { createCredential } = await getWebauthnLib();
             const credential = createCredential(registerOptionsResponse, {
@@ -486,6 +630,8 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                 userContext,
             });
 
+            console.log(signInResponse);
+
             assert.equal(signInResponse.status, "CREDENTIAL_NOT_FOUND_ERROR");
         });
 
@@ -546,8 +692,25 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             const signInResponse2 = await getWebAuthnRecipe().recipeInterfaceImpl.signIn({
                 webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
                 credential: {
-                    type: 1,
                     ...credential.assertion,
+                    type: 1,
+                },
+                tenantId: "public",
+                userContext,
+            });
+            assert.equal(signInResponse2.status, "INVALID_CREDENTIALS_ERROR");
+        });
+
+        it("when credential id is null or undefined, should return the correct error if the credential is invalid", async function () {
+            await initST();
+
+            const { signUpResponse, signInOptionsResponse, credential } = await createUser(rpId, rpName, origin);
+
+            const signInResponse2 = await getWebAuthnRecipe().recipeInterfaceImpl.signIn({
+                webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
+                credential: {
+                    ...credential.assertion,
+                    id: null,
                 },
                 tenantId: "public",
                 userContext,

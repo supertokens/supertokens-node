@@ -101,16 +101,16 @@ export type TypeInputValidateEmailAddress = (
 type RegisterOptionsErrorResponse =
     | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" } // test yes
     | { status: "INVALID_EMAIL_ERROR"; err: string } // test yes
-    | { status: "INVALID_OPTIONS_ERROR" }; // test no - no validation on the core yet
+    | { status: "INVALID_OPTIONS_ERROR" }; // test yes
 
-type SignInOptionsErrorResponse = { status: "INVALID_OPTIONS_ERROR" }; // test no - no validation on the core yet
+type SignInOptionsErrorResponse = { status: "INVALID_OPTIONS_ERROR" }; // test yes
 
 type CreateNewRecipeUserErrorResponse =
     | { status: "EMAIL_ALREADY_EXISTS_ERROR" } // test yes
-    | { status: "INVALID_CREDENTIALS_ERROR" } // test yes - possibly wrong implementation
     | { status: "OPTIONS_NOT_FOUND_ERROR" } // test yes
-    | { status: "INVALID_OPTIONS_ERROR" } // test no - no validation on the core yet
-    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }; // test no - might drop this in favor of invalid credentials if not possible to distinguish
+    | { status: "INVALID_OPTIONS_ERROR" } // test yes
+    | { status: "INVALID_CREDENTIALS_ERROR" } // test yes
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }; // test no
 
 type SignUpErrorResponse =
     | CreateNewRecipeUserErrorResponse
@@ -124,12 +124,12 @@ type SignUpErrorResponse =
       };
 
 type VerifyCredentialsErrorResponse =
-    | { status: "INVALID_CREDENTIALS_ERROR" }
-    | { status: "INVALID_OPTIONS_ERROR" }
-    | { status: "INVALID_AUTHENTICATOR_ERROR" }
-    | { status: "CREDENTIAL_NOT_FOUND_ERROR" }
-    | { status: "UNKNOWN_USER_ID_ERROR" }
-    | { status: "OPTIONS_NOT_FOUND_ERROR" };
+    | { status: "INVALID_CREDENTIALS_ERROR" } // test yes
+    | { status: "INVALID_OPTIONS_ERROR" } // test yes
+    | { status: "INVALID_AUTHENTICATOR_ERROR" } // test no
+    | { status: "CREDENTIAL_NOT_FOUND_ERROR" } // test yes
+    | { status: "UNKNOWN_USER_ID_ERROR" } // this shouldn't happen - there should be a fk between the user and the credential
+    | { status: "OPTIONS_NOT_FOUND_ERROR" }; // test yes
 
 type SignInErrorResponse =
     | VerifyCredentialsErrorResponse
