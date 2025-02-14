@@ -1241,7 +1241,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert.equal(listCredentialsResponse.credentials.length, 0);
         });
 
-        it("should the correct credentials for a user when there are multiple users", async function () {
+        it("should return the correct credentials for a user when there are multiple users", async function () {
             await initST();
 
             await createUser(rpId, rpName, origin);
