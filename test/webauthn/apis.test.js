@@ -13,20 +13,22 @@
  * under the License.
  */
 const { printPath, setupST, startST, killAllST, cleanST, stopST } = require("../utils");
-let assert = require("assert");
+const assert = require("assert");
 
 const request = require("supertest");
 const express = require("express");
 
-let STExpress = require("../../");
-let WebAuthn = require("../../recipe/webauthn");
-let { ProcessState } = require("../../lib/build/processState");
-let { middleware, errorHandler } = require("../../framework/express");
-let { isCDIVersionCompatible } = require("../utils");
+const STExpress = require("../../");
+const WebAuthn = require("../../recipe/webauthn");
+const { ProcessState } = require("../../lib/build/processState");
+const { middleware, errorHandler } = require("../../framework/express");
+const { isCDIVersionCompatible } = require("../utils");
 const getWebauthnLib = require("./lib/getWebAuthnLib");
 const getWebAuthnRecipe = require("./lib/getWebAuthnRecipe");
 const createUser = require("./lib/createUser");
 const { initST, origin, rpId, rpName } = require("./lib/initST");
+const createRegisterOptions = require("./lib/createRegisterOptions");
+const createSignInOptions = require("./lib/createSignInOptions");
 
 describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function () {
     beforeEach(async function () {
@@ -51,9 +53,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            // passing valid field
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
+            const registerOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/register")
                     .send({
@@ -144,9 +144,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            // passing valid field
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
+            const registerOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/register")
                     .send({
@@ -197,9 +195,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            // passing valid field
-            let signInOptionsResponse = await new Promise((resolve, reject) =>
+            const signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/signin")
                     .send({ email: "test@example.com" })
@@ -264,9 +260,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            // passing valid field
-            let signInOptionsResponse = await new Promise((resolve, reject) =>
+            const signInOptionsResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/options/signin")
                     .send({ email: "test@example.com" })
@@ -303,26 +297,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         it("test signUp with no account linking", async function () {
             await initST();
 
-            const app = express();
-            app.use(middleware());
-            app.use(errorHandler());
-
             const email = `${Math.random().toString().slice(2)}@supertokens.com`;
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
+            const registerOptionsResponse = await createRegisterOptions(email);
 
             const { createCredential } = await getWebauthnLib();
             const credential = createCredential(registerOptionsResponse, {
@@ -333,7 +309,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let signUpResponse = await new Promise((resolve, reject) =>
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+            const signUpResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signup")
                     .send({
@@ -368,69 +347,12 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         it("test signIn with no account linking", async function () {
             await initST();
 
+            const { email, credential, signInOptionsResponse } = await createUser(rpId, rpName, origin);
+
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            const email = `${Math.random().toString().slice(2)}@supertokens.com`;
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            let signInOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/signin")
-                    .send({ email })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            const { createAndAssertCredential } = await getWebauthnLib();
-            const credential = createAndAssertCredential(registerOptionsResponse, signInOptionsResponse, {
-                rpId,
-                rpName,
-                origin,
-                userNotPresent: false,
-                userNotVerified: false,
-            });
-
-            let signUpResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/signup")
-                    .send({
-                        credential: credential.attestation,
-                        webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
-                        shouldTryLinkingWithSessionUser: false,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            let signInResponse = await new Promise((resolve, reject) =>
+            const signInResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signin")
                     .send({
@@ -460,97 +382,28 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         it("test signIn fail with wrong credential", async function () {
             await initST();
 
+            const { createAndAssertCredential } = await getWebauthnLib();
+            const { email } = await createUser(rpId, rpName, origin);
+
+            const registerOptionsResponse = await createRegisterOptions(email);
+            const signInOptionsResponse = await createSignInOptions();
+
+            const credential = createAndAssertCredential(registerOptionsResponse, signInOptionsResponse, {
+                rpId,
+                rpName,
+                origin,
+                userNotPresent: false,
+                userNotVerified: false,
+            });
+
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            const { createCredential, createAndAssertCredential } = await getWebauthnLib();
-
-            const email = `${Math.random().toString().slice(2)}@supertokens.com`;
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            const signInOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/signin")
-                    .send({ email: email + "wrong" })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            const credential = createCredential(registerOptionsResponse, signInOptionsResponse, {
-                rpId,
-                rpName,
-                origin,
-                userNotPresent: false,
-                userNotVerified: false,
-            });
-
-            const signUpResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/signup")
-                    .send({
-                        credential: credential,
-                        webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
-                        shouldTryLinkingWithSessionUser: false,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            const registerOptionsResponse2 = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-            const credential2 = createAndAssertCredential(registerOptionsResponse2, signInOptionsResponse, {
-                rpId,
-                rpName,
-                origin,
-                userNotPresent: false,
-                userNotVerified: false,
-            });
-
             const signInResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/webauthn/signin")
                     .send({
-                        credential: credential2.assertion,
+                        credential: credential.assertion,
                         webauthnGeneratedOptionsId: signInOptionsResponse.webauthnGeneratedOptionsId,
                         shouldTryLinkingWithSessionUser: false,
                     })
@@ -576,13 +429,12 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         it("should return successfully for an existing user", async function () {
             await initST();
 
+            const { email } = await createUser(rpId, rpName, origin);
+
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            const { email } = await createUser(rpId, rpName, origin);
-
-            let generateRecoverAccountTokenResponse = await new Promise((resolve, reject) =>
+            const generateRecoverAccountTokenResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/user/webauthn/reset/token")
                     .send({
@@ -598,7 +450,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
             assert.equal(generateRecoverAccountTokenResponse.status, "OK");
-            // todo figure out how to test the token actually being generated
         });
 
         it("should return successfully for a non-existing user", async function () {
@@ -607,8 +458,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             const app = express();
             app.use(middleware());
             app.use(errorHandler());
-
-            let generateRecoverAccountTokenResponse = await new Promise((resolve, reject) =>
+            const generateRecoverAccountTokenResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/user/webauthn/reset/token")
                     .send({
@@ -623,6 +473,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+
             assert.equal(generateRecoverAccountTokenResponse.status, "OK");
         });
     });
@@ -631,10 +482,6 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         it("should set a new credential for a user that recovered their account", async function () {
             await initST();
 
-            const app = express();
-            app.use(middleware());
-            app.use(errorHandler());
-
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
             const generateRecoverAccountTokenResponse = await getWebAuthnRecipe().recipeInterfaceImpl.generateRecoverAccountToken(
@@ -647,22 +494,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             );
             const token = generateRecoverAccountTokenResponse.token;
 
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+            const registerOptionsResponse = await createRegisterOptions(email);
 
             const { createCredential } = await getWebauthnLib();
             const credential = createCredential(registerOptionsResponse, {
@@ -673,13 +505,16 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let recoverAccountResponse = await new Promise((resolve, reject) =>
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+            const recoverAccountResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/user/webauthn/reset")
                     .send({
                         token,
                         credential,
-                        webauthnGeneratedOptionsId,
+                        webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -690,34 +525,16 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+
             assert.equal(recoverAccountResponse.status, "OK");
         });
 
         it("should return the correct error if the token is invalid", async function () {
             await initST();
 
-            const app = express();
-            app.use(middleware());
-            app.use(errorHandler());
-
             const { email } = await createUser(rpId, rpName, origin);
 
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+            const registerOptionsResponse = await createRegisterOptions(email);
 
             const { createCredential } = await getWebauthnLib();
             const credential = createCredential(registerOptionsResponse, {
@@ -728,13 +545,16 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let recoverAccountResponse = await new Promise((resolve, reject) =>
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+            const recoverAccountResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/user/webauthn/reset")
                     .send({
                         token: "invalid",
                         credential,
-                        webauthnGeneratedOptionsId,
+                        webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -745,15 +565,12 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+
             assert.equal(recoverAccountResponse.status, "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR");
         });
 
         it("should return the correct error if the credential is invalid", async function () {
             await initST();
-
-            const app = express();
-            app.use(middleware());
-            app.use(errorHandler());
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -765,23 +582,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     userContext: {},
                 }
             );
-            const token = generateRecoverAccountTokenResponse.token;
 
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
+            const registerOptionsResponse = await createRegisterOptions(email);
             const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
 
             const { createCredential } = await getWebauthnLib();
@@ -793,11 +595,14 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let recoverAccountResponse = await new Promise((resolve, reject) =>
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+            const recoverAccountResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/user/webauthn/reset")
                     .send({
-                        token,
+                        token: generateRecoverAccountTokenResponse.token,
                         credential: {
                             ...credential,
                             id: "invalid",
@@ -817,15 +622,12 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+
             assert.equal(recoverAccountResponse.status, "INVALID_CREDENTIALS_ERROR");
         });
 
         it("should return the correct error if the register options id is wrong", async function () {
             await initST();
-
-            const app = express();
-            app.use(middleware());
-            app.use(errorHandler());
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -837,24 +639,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     userContext: {},
                 }
             );
-            const token = generateRecoverAccountTokenResponse.token;
 
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+            const registerOptionsResponse = await createRegisterOptions(email);
 
             const { createCredential } = await getWebauthnLib();
             const credential = createCredential(registerOptionsResponse, {
@@ -865,11 +651,14 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let recoverAccountResponse = await new Promise((resolve, reject) =>
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+            const recoverAccountResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/user/webauthn/reset")
                     .send({
-                        token,
+                        token: generateRecoverAccountTokenResponse.token,
                         credential,
                         webauthnGeneratedOptionsId: "invalid",
                     })
@@ -882,15 +671,12 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+
             assert.equal(recoverAccountResponse.status, "INVALID_OPTIONS_ERROR");
         });
 
         it("should return the correct error if the register options are wrong", async function () {
             await initST();
-
-            const app = express();
-            app.use(middleware());
-            app.use(errorHandler());
 
             const { email, signUpResponse } = await createUser(rpId, rpName, origin);
 
@@ -902,24 +688,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     userContext: {},
                 }
             );
-            const token = generateRecoverAccountTokenResponse.token;
 
-            let registerOptionsResponse = await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/webauthn/options/register")
-                    .send({
-                        email,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-            const webauthnGeneratedOptionsId = registerOptionsResponse.webauthnGeneratedOptionsId;
+            const registerOptionsResponse = await createRegisterOptions(email);
 
             const { createCredential } = await getWebauthnLib();
             const credential = createCredential(registerOptionsResponse, {
@@ -930,13 +700,16 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userNotVerified: false,
             });
 
-            let recoverAccountResponse = await new Promise((resolve, reject) =>
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+            const recoverAccountResponse = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/user/webauthn/reset")
                     .send({
-                        token,
+                        token: generateRecoverAccountTokenResponse.token,
                         credential,
-                        webauthnGeneratedOptionsId,
+                        webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -947,6 +720,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
+
             assert.equal(recoverAccountResponse.status, "INVALID_AUTHENTICATOR_ERROR");
         });
     });
