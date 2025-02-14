@@ -88,7 +88,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userContext: {},
             });
 
-            assert.equal(generatedOptions.origin, "https://supertokens.io");
+            assert.equal(generatedOptions.origin, "https://api.supertokens.io");
         });
 
         it("test registerOptions with custom values", async function () {
@@ -106,10 +106,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 recipeList: [
                     WebAuthn.init({
                         getOrigin: () => {
-                            return "testOrigin.com";
+                            return "https://test.testId.com";
                         },
                         getRelyingPartyId: () => {
-                            return "testId.com";
+                            return "testOrigin.com"; // this should be ignored
                         },
                         getRelyingPartyName: () => {
                             return "testName";
@@ -181,7 +181,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userContext: {},
             });
 
-            assert.equal(generatedOptions.origin, "testOrigin.com");
+            assert.equal(generatedOptions.origin, "https://test.testId.com");
             assert.equal(generatedOptions.userPresence, false);
         });
     });
@@ -227,7 +227,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             });
 
             assert.equal(generatedOptions.relyingPartyId, "api.supertokens.io");
-            assert.equal(generatedOptions.origin, "https://supertokens.io");
+            assert.equal(generatedOptions.origin, "https://api.supertokens.io");
         });
 
         it("test signInOptions with custom values", async function () {
@@ -245,10 +245,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 recipeList: [
                     WebAuthn.init({
                         getOrigin: () => {
-                            return "testOrigin.com";
+                            return "https://test.testOrigin.com";
                         },
                         getRelyingPartyId: () => {
-                            return "testId.com";
+                            return "testOrigin.com"; // this should be ignored
                         },
                         getRelyingPartyName: () => {
                             return "testName";
@@ -294,8 +294,8 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                 userContext: {},
             });
 
-            assert.equal(generatedOptions.relyingPartyId, "testId.com");
-            assert.equal(generatedOptions.origin, "testOrigin.com");
+            assert.equal(generatedOptions.relyingPartyId, "testOrigin.com");
+            assert.equal(generatedOptions.origin, "https://test.testOrigin.com");
         });
     });
 
@@ -568,6 +568,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
         });
 
         it("should fail signIn if there is no credential registered for the user", async function () {});
+
         it("should allow signIn multiple times with the same credential", async function () {});
     });
 

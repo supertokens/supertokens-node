@@ -52,7 +52,11 @@ const initST = async ({
                       return origin;
                   },
               }
-            : {}),
+            : {
+                  getOrigin: async () => {
+                      return "https://api.supertokens.io"; // set it like this because the default value would actually use the origin and it would not match the default relying party id
+                  },
+              }),
         ...(rpId
             ? {
                   getRelyingPartyId: async () => {
