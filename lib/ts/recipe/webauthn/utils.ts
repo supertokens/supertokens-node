@@ -185,7 +185,7 @@ export function getRecoverAccountLink(input: {
             })
             .getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
-        "/recover-account?token=" +
+        "/webauthn/recover?token=" +
         input.token +
         "&tenantId=" +
         input.tenantId
