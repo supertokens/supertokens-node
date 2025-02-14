@@ -1,7 +1,8 @@
-let SuperTokens = require("../../../lib/build/supertokens").default;
+const WebAuthnRecipe = require("../../../lib/build/recipe/webauthn/recipe").default;
 
 const getWebAuthnRecipe = () => {
-    return SuperTokens.getInstanceOrThrowError().recipeModules.find((rm) => rm.getRecipeId() === "webauthn");
+    const recipe = WebAuthnRecipe.getInstanceOrThrowError();
+    return recipe;
 };
 
 module.exports = getWebAuthnRecipe;

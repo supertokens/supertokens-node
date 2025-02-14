@@ -1,6 +1,9 @@
 const request = require("supertest");
 const express = require("express");
 
+const createRegisterOptions = require("./createRegisterOptions");
+const createSignInOptions = require("./createSignInOptions");
+
 let { middleware, errorHandler } = require("../../../framework/express");
 
 const getWebauthnLib = require("./getWebAuthnLib");
@@ -11,25 +14,11 @@ const createUser = async (rpId, rpName, origin) => {
     app.use(errorHandler());
 
     const email = `${Math.random().toString().slice(2)}@supertokens.com`;
-    let registerOptionsResponse = await new Promise((resolve, reject) =>
-        request(app)
-            .post("/auth/webauthn/options/register")
-            .send({
-                email,
-            })
-            .expect(200)
-            .end((err, res) => {
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                } else {
-                    resolve(JSON.parse(res.text));
-                }
-            })
-    );
+    const registerOptionsResponse = await createRegisterOptions(email);
+    const signInOptionsResponse = await createSignInOptions();
 
-    const { createCredential } = await getWebauthnLib();
-    const credential = createCredential(registerOptionsResponse, {
+    const { createAndAssertCredential } = await getWebauthnLib();
+    const credential = createAndAssertCredential(registerOptionsResponse, signInOptionsResponse, {
         rpId,
         rpName,
         origin,
@@ -41,7 +30,7 @@ const createUser = async (rpId, rpName, origin) => {
         request(app)
             .post("/auth/webauthn/signup")
             .send({
-                credential,
+                credential: credential.attestation,
                 webauthnGeneratedOptionsId: registerOptionsResponse.webauthnGeneratedOptionsId,
                 shouldTryLinkingWithSessionUser: false,
             })
@@ -56,7 +45,7 @@ const createUser = async (rpId, rpName, origin) => {
             })
     );
 
-    return { email, signUpResponse, registerOptionsResponse, credential };
+    return { email, signUpResponse, registerOptionsResponse, signInOptionsResponse, credential };
 };
 
 module.exports = createUser;

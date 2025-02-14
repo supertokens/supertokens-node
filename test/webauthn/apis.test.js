@@ -42,7 +42,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
     describe("[registerOptionsPOST]", function () {
         it("test registerOptions with default values", async function () {
-            await initST(false);
+            await initST({ origin: null, rpId: null, rpName: null });
 
             // run test if current CDI version >= 2.11
             // todo update this to crrect version
@@ -188,7 +188,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
     describe("[signInOptionsPOST]", function () {
         it("test signInOptions with default values", async function () {
-            await initST(false);
+            await initST({ origin: null, rpId: null, rpName: null });
 
             // run test if current CDI version >= 2.11
             // todo update this to crrect version
@@ -881,7 +881,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert.equal(recoverAccountResponse.status, "INVALID_GENERATED_OPTIONS_ERROR");
+            assert.equal(recoverAccountResponse.status, "INVALID_OPTIONS_ERROR");
         });
 
         it("should return the correct error if the register options are wrong", async function () {
@@ -946,7 +946,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert.equal(recoverAccountResponse.status, "INVALID_GENERATED_OPTIONS_ERROR");
+            assert.equal(recoverAccountResponse.status, "INVALID_OPTIONS_ERROR");
         });
     });
 });
