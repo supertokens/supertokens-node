@@ -20,7 +20,6 @@ import {
 } from "../../../utils";
 import { validateWebauthnGeneratedOptionsIdOrThrowError, validateCredentialOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
-import STError from "../error";
 import { UserContext } from "../../../types";
 import { AuthUtils } from "../../../authUtils";
 

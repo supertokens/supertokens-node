@@ -91,13 +91,13 @@ declare type CreateNewRecipeUserErrorResponse =
           status: "EMAIL_ALREADY_EXISTS_ERROR";
       }
     | {
-          status: "INVALID_CREDENTIALS_ERROR";
-      }
-    | {
           status: "OPTIONS_NOT_FOUND_ERROR";
       }
     | {
           status: "INVALID_OPTIONS_ERROR";
+      }
+    | {
+          status: "INVALID_CREDENTIALS_ERROR";
       }
     | {
           status: "INVALID_AUTHENTICATOR_ERROR";

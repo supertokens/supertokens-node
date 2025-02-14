@@ -345,12 +345,10 @@ export default function getRecipeInterface(
         removeGeneratedOptions: async function ({ webauthnGeneratedOptionsId, tenantId, userContext }) {
             return await querier.sendDeleteRequest(
                 new NormalisedURLPath(
-                    `/${
-                        tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
-                    }/recipe/webauthn/options/${webauthnGeneratedOptionsId}`
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/remove`
                 ),
                 {},
-                {},
+                { webauthnGeneratedOptionsId },
                 userContext
             );
         },

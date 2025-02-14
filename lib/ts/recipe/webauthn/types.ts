@@ -134,7 +134,7 @@ type VerifyCredentialsErrorResponse =
 type SignInErrorResponse =
     | VerifyCredentialsErrorResponse
     | {
-          status: "LINKING_TO_SESSION_USER_FAILED";
+          status: "LINKING_TO_SESSION_USER_FAILED"; // test no
           reason:
               | "EMAIL_VERIFICATION_REQUIRED"
               | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
@@ -142,27 +142,27 @@ type SignInErrorResponse =
               | "SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
       };
 
-type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" };
+type GenerateRecoverAccountTokenErrorResponse = { status: "UNKNOWN_USER_ID_ERROR" }; // test yes
 
-type ConsumeRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
+type ConsumeRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }; // test yes
 
 type RegisterCredentialErrorResponse =
-    | { status: "INVALID_CREDENTIALS_ERROR" }
-    | { status: "OPTIONS_NOT_FOUND_ERROR" }
-    | { status: "INVALID_OPTIONS_ERROR" }
-    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
+    | { status: "INVALID_CREDENTIALS_ERROR" } // test yes
+    | { status: "OPTIONS_NOT_FOUND_ERROR" } // test yes
+    | { status: "INVALID_OPTIONS_ERROR" } // test yes
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }; // test yes - only if cred is for other rpId
 
-type GetUserFromRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" };
+type GetUserFromRecoverAccountTokenErrorResponse = { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }; // test yes
 
-type RemoveCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
+type RemoveCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" }; // test yes
 
-type GetCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" };
+type GetCredentialErrorResponse = { status: "CREDENTIAL_NOT_FOUND_ERROR" }; // test yes
 
-type RemoveGeneratedOptionsErrorResponse = { status: "OPTIONS_NOT_FOUND_ERROR" };
+type RemoveGeneratedOptionsErrorResponse = { status: "OPTIONS_NOT_FOUND_ERROR" }; // test yes
 
-type GetGeneratedOptionsErrorResponse = { status: "OPTIONS_NOT_FOUND_ERROR" };
+type GetGeneratedOptionsErrorResponse = { status: "OPTIONS_NOT_FOUND_ERROR" }; // test yes
 
-type UpdateUserEmailErrorResponse = { status: "EMAIL_ALREADY_EXISTS_ERROR" } | { status: "UNKNOWN_USER_ID_ERROR" };
+type UpdateUserEmailErrorResponse = { status: "EMAIL_ALREADY_EXISTS_ERROR" } | { status: "UNKNOWN_USER_ID_ERROR" }; // test yes
 
 type Base64URLString = string;
 

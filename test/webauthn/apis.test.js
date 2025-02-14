@@ -946,7 +946,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                         }
                     })
             );
-            assert.equal(recoverAccountResponse.status, "INVALID_OPTIONS_ERROR");
+            assert.equal(recoverAccountResponse.status, "INVALID_AUTHENTICATOR_ERROR");
         });
     });
 });
