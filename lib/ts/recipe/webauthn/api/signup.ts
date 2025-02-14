@@ -66,13 +66,6 @@ export default async function signUpAPI(
             status: "OK",
             ...getBackwardsCompatibleUserInfo(options.req, result, userContext),
         });
-    } else if (result.status === "GENERAL_ERROR") {
-        send200Response(options.res, result);
-    } else if (result.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "This email already exists. Please sign in instead.",
-        });
     } else {
         send200Response(options.res, result);
     }
