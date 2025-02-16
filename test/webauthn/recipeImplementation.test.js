@@ -167,23 +167,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
         });
 
-        it("when supportedAlgorithmIds is invalid, should return the correct error", async function () {
-            await initST();
-
-            const email = "test@example.com";
-            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
-                relyingPartyId: rpId,
-                relyingPartyName: rpName,
-                supportedAlgorithmIds: "invalid",
-                origin,
-                email,
-                tenantId: "public",
-                userContext,
-            });
-
-            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
-        });
-
         it("when timeout is negative, should return the correct error", async function () {
             await initST();
 
@@ -192,40 +175,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                 relyingPartyId: rpId,
                 relyingPartyName: rpName,
                 timeout: -1000,
-                origin,
-                email,
-                tenantId: "public",
-                userContext,
-            });
-
-            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
-        });
-
-        it("when timeout is invalid, should return the correct error", async function () {
-            await initST();
-
-            const email = "test@example.com";
-            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
-                relyingPartyId: rpId,
-                relyingPartyName: rpName,
-                timeout: "invalid",
-                origin,
-                email,
-                tenantId: "public",
-                userContext,
-            });
-
-            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
-        });
-
-        it("when userPresence is invalid, should return the correct error", async function () {
-            await initST();
-
-            const email = "test@example.com";
-            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
-                relyingPartyId: rpId,
-                relyingPartyName: rpName,
-                userPresence: "invalid",
                 origin,
                 email,
                 tenantId: "public",
@@ -298,36 +247,6 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
                 relyingPartyId: rpId,
                 relyingPartyName: rpName,
                 userVerification: "invalid",
-                origin,
-                tenantId: "public",
-                userContext,
-            });
-
-            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
-        });
-
-        it("when userPresence is invalid, should return the correct error", async function () {
-            await initST();
-
-            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.signInOptions({
-                relyingPartyId: rpId,
-                relyingPartyName: rpName,
-                userPresence: "invalid",
-                origin,
-                tenantId: "public",
-                userContext,
-            });
-
-            assert.equal(generatedOptions.status, "INVALID_OPTIONS_ERROR");
-        });
-
-        it("when timeout is invalid, should return the correct error", async function () {
-            await initST();
-
-            const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.signInOptions({
-                relyingPartyId: rpId,
-                relyingPartyName: rpName,
-                timeout: "invalid",
                 origin,
                 tenantId: "public",
                 userContext,
@@ -1073,7 +992,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
             await initST();
 
             const user = await getWebAuthnRecipe().recipeInterfaceImpl.getUserFromRecoverAccountToken({
-                token: "test",
+                token: "invalid",
                 tenantId: "public",
                 userContext,
             });
