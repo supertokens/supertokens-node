@@ -1887,4 +1887,71 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         );
         assert(invalidEmailResponse.status === "WRONG_CREDENTIALS_ERROR");
     });
+
+    // test case where more than the configured form fields are passed.
+    it("test bad case when too many formFields are passed", async function () {
+        const connectionURI = await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI,
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signInFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "testField",
+                            value: "some value",
+                        },
+                        {
+                            id: "extraField",
+                            value: "some value",
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.message == "Are you sending too many formFields?");
+    });
 });

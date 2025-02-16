@@ -23,6 +23,7 @@ import {
     TypeNormalisedInputResetPasswordUsingTokenFeature,
     NormalisedFormField,
     TypeInputFormField,
+    TypeInputSignIn,
 } from "./types";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -41,7 +42,11 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.signUpFeature
     );
 
-    let signInFeature = validateAndNormaliseSignInConfig(recipeInstance, appInfo, signUpFeature);
+    let signInFeature = validateAndNormaliseSignInConfig(
+        recipeInstance,
+        appInfo,
+        config === undefined ? undefined : config.signInFeature
+    );
 
     let resetPasswordUsingTokenFeature = validateAndNormaliseResetPasswordUsingTokenConfig(signUpFeature);
 
@@ -114,25 +119,58 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
     };
 }
 
-function normaliseSignInFormFields(formFields: NormalisedFormField[]) {
-    return formFields
-        .filter((filter) => filter.id === FORM_FIELD_EMAIL_ID || filter.id === FORM_FIELD_PASSWORD_ID)
-        .map((field) => {
-            return {
-                id: field.id,
-                // see issue: https://github.com/supertokens/supertokens-node/issues/36
-                validate: field.id === FORM_FIELD_EMAIL_ID ? field.validate : defaultValidator,
-                optional: false,
-            };
+function normaliseSignInFormFields(formFields?: TypeInputFormField[]) {
+    let normalisedFormFields: NormalisedFormField[] = [];
+    if (formFields !== undefined) {
+        formFields.forEach((field) => {
+            if (field.id === FORM_FIELD_PASSWORD_ID) {
+                normalisedFormFields.push({
+                    id: field.id,
+                    validate: field.validate === undefined ? defaultPasswordValidator : field.validate,
+                    optional: false,
+                });
+            } else if (field.id === FORM_FIELD_EMAIL_ID) {
+                normalisedFormFields.push({
+                    id: field.id,
+                    validate: field.validate === undefined ? defaultEmailValidator : field.validate,
+                    optional: false,
+                });
+            } else {
+                normalisedFormFields.push({
+                    id: field.id,
+                    validate: field.validate === undefined ? defaultValidator : field.validate,
+                    optional: field.optional === undefined ? false : field.optional,
+                });
+            }
         });
+    }
+    if (normalisedFormFields.filter((field) => field.id === FORM_FIELD_PASSWORD_ID).length === 0) {
+        // no password field give by user
+        normalisedFormFields.push({
+            id: FORM_FIELD_PASSWORD_ID,
+            validate: defaultPasswordValidator,
+            optional: false,
+        });
+    }
+    if (normalisedFormFields.filter((field) => field.id === FORM_FIELD_EMAIL_ID).length === 0) {
+        // no email field give by user
+        normalisedFormFields.push({
+            id: FORM_FIELD_EMAIL_ID,
+            validate: defaultEmailValidator,
+            optional: false,
+        });
+    }
+    return normalisedFormFields;
 }
 
 function validateAndNormaliseSignInConfig(
     _: Recipe,
     __: NormalisedAppinfo,
-    signUpConfig: TypeNormalisedInputSignUp
+    config?: TypeInputSignIn
 ): TypeNormalisedInputSignIn {
-    let formFields: NormalisedFormField[] = normaliseSignInFormFields(signUpConfig.formFields);
+    let formFields: NormalisedFormField[] = normaliseSignInFormFields(
+        config === undefined ? undefined : config.formFields
+    );
 
     return {
         formFields,

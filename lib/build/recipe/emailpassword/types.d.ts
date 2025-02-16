@@ -36,6 +36,9 @@ export declare type TypeFormField = {
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
 };
+export declare type TypeInputSignIn = {
+    formFields?: TypeInputFormField[];
+};
 export declare type NormalisedFormField = {
     id: string;
     validate: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
@@ -53,6 +56,7 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
+    signInFeature?: TypeInputSignIn;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     override?: {
         functions?: (

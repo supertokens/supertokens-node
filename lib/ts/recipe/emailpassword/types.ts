@@ -52,6 +52,10 @@ export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
 };
 
+export type TypeInputSignIn = {
+    formFields?: TypeInputFormField[];
+};
+
 export type NormalisedFormField = {
     id: string;
     validate: (value: any, tenantId: string, userContext: UserContext) => Promise<string | undefined>;
@@ -73,6 +77,7 @@ export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
+    signInFeature?: TypeInputSignIn;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     override?: {
         functions?: (
