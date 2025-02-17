@@ -239,9 +239,7 @@ export default function getRecipeInterface(
                 };
             }
 
-            return {
-                status: "INVALID_CREDENTIALS_ERROR",
-            };
+            return response;
         },
 
         createNewRecipeUser: async function (input) {

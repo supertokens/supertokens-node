@@ -672,7 +672,7 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
                     })
             );
 
-            assert.equal(recoverAccountResponse.status, "INVALID_OPTIONS_ERROR");
+            assert.equal(recoverAccountResponse.status, "OPTIONS_NOT_FOUND_ERROR");
         });
 
         it("should return the correct error if the register options are wrong", async function () {

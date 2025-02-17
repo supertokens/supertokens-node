@@ -918,6 +918,8 @@ export default function getAPIImplementation(): APIInterface {
                       email: string;
                   }
                 | { status: "INVALID_CREDENTIALS_ERROR" }
+                | { status: "INVALID_OPTIONS_ERROR" }
+                | { status: "OPTIONS_NOT_FOUND_ERROR" }
                 | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
                 | GeneralErrorResponse
             > {
@@ -938,6 +940,13 @@ export default function getAPIImplementation(): APIInterface {
                 } else if (updateResponse.status === "INVALID_CREDENTIALS_ERROR") {
                     return {
                         status: "INVALID_CREDENTIALS_ERROR",
+                    };
+                } else if (
+                    updateResponse.status === "INVALID_OPTIONS_ERROR" ||
+                    updateResponse.status === "OPTIONS_NOT_FOUND_ERROR"
+                ) {
+                    return {
+                        status: updateResponse.status,
                     };
                 } else {
                     // status: "OK"
