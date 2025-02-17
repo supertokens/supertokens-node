@@ -82,7 +82,7 @@ const initST = async ({
             appName: "SuperTokens",
             websiteDomain: "supertokens.io",
         },
-        recipeList: [Session.init(), WebAuthn.init(config)],
+        recipeList: [Session.init(), WebAuthn.init({ ...config })],
     });
 
     // run test if current CDI version >= 2.11

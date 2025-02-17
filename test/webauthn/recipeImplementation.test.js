@@ -168,7 +168,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("when timeout is negative, should return the correct error", async function () {
-            await initST();
+            await initST({ registerTimeout: null }); // make sure we're not overriding the default timeout
 
             const email = "test@example.com";
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.registerOptions({
@@ -256,7 +256,7 @@ describe(`recipeImplementationFunctions: ${printPath("[test/webauthn/recipeImple
         });
 
         it("when timeout is negative, should return the correct error", async function () {
-            await initST();
+            await initST({ signInTimeout: null }); // make sure we're not overriding the default timeout
 
             const generatedOptions = await getWebAuthnRecipe().recipeInterfaceImpl.signInOptions({
                 relyingPartyId: rpId,
