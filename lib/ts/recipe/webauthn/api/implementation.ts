@@ -114,12 +114,6 @@ export default function getAPIImplementation(): APIInterface {
                 return response;
             }
 
-            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
-                webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
-                tenantId,
-                userContext,
-            });
-
             return {
                 status: "OK",
                 webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
@@ -133,9 +127,6 @@ export default function getAPIImplementation(): APIInterface {
                 rp: response.rp,
                 user: response.user,
                 authenticatorSelection: response.authenticatorSelection,
-                // todo remove this after dev
-                // @ts-ignore dev only
-                __generatedOptions: generatedOptions,
             };
         },
 
@@ -153,6 +144,7 @@ export default function getAPIImplementation(): APIInterface {
                   webauthnGeneratedOptionsId: string;
                   createdAt: string;
                   expiresAt: string;
+                  rpId: string;
                   challenge: string;
                   timeout: number;
                   userVerification: UserVerification;
@@ -196,23 +188,15 @@ export default function getAPIImplementation(): APIInterface {
                 return response;
             }
 
-            const generatedOptions = await options.recipeImplementation.getGeneratedOptions({
-                webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
-                tenantId,
-                userContext,
-            });
-
             return {
                 status: "OK",
                 webauthnGeneratedOptionsId: response.webauthnGeneratedOptionsId,
+                rpId: relyingPartyId,
                 createdAt: response.createdAt,
                 expiresAt: response.expiresAt,
                 challenge: response.challenge,
                 timeout: response.timeout,
                 userVerification: response.userVerification,
-                // todo remove this after dev
-                // @ts-ignore dev only
-                __generatedOptions: generatedOptions,
             };
         },
 

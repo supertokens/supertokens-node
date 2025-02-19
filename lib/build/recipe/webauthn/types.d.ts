@@ -598,6 +598,7 @@ export declare type APIInterface = {
                     webauthnGeneratedOptionsId: string;
                     createdAt: string;
                     expiresAt: string;
+                    rpId: string;
                     challenge: string;
                     timeout: number;
                     userVerification: UserVerification;
