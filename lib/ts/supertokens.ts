@@ -90,6 +90,10 @@ export default class SuperTokens {
             if (plugin.routeHandlers) {
                 this.pluginRouteHandlers.push(...plugin.routeHandlers);
             }
+
+            if (plugin.config) {
+                config = { ...config, ...plugin.config(config) };
+            }
         }
 
         if (config.debug === true) {

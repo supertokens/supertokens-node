@@ -135,6 +135,7 @@ export type SuperTokensPlugin = {
         };
     };
     routeHandlers?: PluginRouteHandler[];
+    config?: (config: Omit<TypeInput, "recipeList">) => Omit<TypeInput, "recipeList"> | undefined;
 };
 
 export type TypeInput = {
