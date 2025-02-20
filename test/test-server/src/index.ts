@@ -63,6 +63,8 @@ import { TypeInput as WebauthnTypeInput } from "../../../lib/build/recipe/webaut
 const { logDebugMessage } = logger("com.supertokens:node-test-server");
 
 const API_PORT = Number(process.env.API_PORT || 3030);
+const CORE_PORT = process.env?.SUPERTOKENS_CORE_PORT ?? 3567;
+const CORE_HOST = process.env?.SUPERTOKENS_CORE_HOST ?? "localhost";
 
 function defaultSTInit() {
     STReset();
@@ -73,7 +75,7 @@ function defaultSTInit() {
             origin: (input) => input.request?.getHeaderValue("origin") || "localhost:3000",
         },
         supertokens: {
-            connectionURI: process.env.ST_CONNECTION_URI || "http://localhost:8080",
+            connectionURI: `http://${CORE_HOST}:${CORE_PORT}`,
         },
         recipeList: [
             Session.init(),
@@ -429,6 +431,10 @@ app.post("/test/mockexternalapi", async (req, res, next) => {
 
 app.get("/test/getoverridelogs", async (req, res, next) => {
     res.json({ logs: getOverrideLogs() });
+});
+
+app.get("/test/resetoverridelogs", async (req, res, next) => {
+    res.json({ logs: resetOverrideLogs() });
 });
 
 app.get("/test/waitforevent", async (req, res, next) => {
