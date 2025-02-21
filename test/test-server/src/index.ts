@@ -390,6 +390,10 @@ app.get("/test/getoverridelogs", async (req, res, next) => {
     res.json({ logs: getOverrideLogs() });
 });
 
+app.get("/test/resetoverridelogs", async (req, res, next) => {
+    res.json({ logs: resetOverrideLogs() });
+});
+
 app.get("/test/waitforevent", async (req, res, next) => {
     try {
         logDebugMessage("ProcessState:waitForEvent %j", req.query);
