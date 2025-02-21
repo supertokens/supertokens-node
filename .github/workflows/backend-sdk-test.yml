@@ -76,5 +76,5 @@ jobs:
             - uses: supertokens/backend-sdk-testing-action@main
               with:
                   # version: ${{ matrix.fdi-version }}
-                  version: ci/github-actions/containerized-core/4.0
+                  version: ci/github-actions/containerized-core/${{ matrix.fdi-version }}
                   path: backend-sdk-testing
