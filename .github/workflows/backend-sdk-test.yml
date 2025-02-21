@@ -13,7 +13,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             # fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
-            fdiVersions: '["4.0"]'
+            fdiVersions: '["4.0", "3.1"]'
             # cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
             cdiVersions: '["5.2"]'
             nodeVersions: '["20"]'
