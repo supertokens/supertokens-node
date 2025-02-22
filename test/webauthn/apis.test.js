@@ -334,12 +334,10 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
 
             assert.equal(typeof registerOptionsResponse.webauthnGeneratedOptionsId, "string");
             assert.equal(typeof signUpResponse?.user?.id, "string");
-            assert.equal(signUpResponse?.user?.emails?.length, 1);
-            assert.equal(signUpResponse?.user?.emails?.[0], email);
-            assert.equal(signUpResponse?.user?.webauthn?.credentialIds?.length, 1);
-            assert.equal(signUpResponse?.user?.webauthn?.credentialIds?.[0], credential.id);
-            assert.equal(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.length, 1);
-            assert.equal(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds?.[0], credential.id);
+            assert.deepEqual(signUpResponse?.user?.emails, [email]);
+            assert.deepEqual(signUpResponse?.user?.webauthn?.credentialIds, [credential.id]);
+            assert.equal(signUpResponse?.user?.loginMethods?.[0]?.email, email);
+            assert.deepEqual(signUpResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds, [credential.id]);
         });
     });
 
@@ -373,10 +371,12 @@ describe(`apisFunctions: ${printPath("[test/webauthn/apis.test.js]")}`, function
             assert.equal(signInResponse.status, "OK");
 
             assert.equal(typeof signInResponse?.user?.id, "string");
-            assert.equal(signInResponse?.user?.emails?.length, 1);
-            assert.equal(signInResponse?.user?.emails?.[0], email);
-            assert.equal(signInResponse?.user?.webauthn?.credentialIds?.length, 1);
-            assert.equal(signInResponse?.user?.webauthn?.credentialIds?.[0], credential.attestation.id);
+            assert.deepEqual(signInResponse?.user?.emails, [email]);
+            assert.deepEqual(signInResponse?.user?.webauthn?.credentialIds, [credential.attestation.id]);
+            assert.equal(signInResponse?.user?.loginMethods?.[0]?.email, email);
+            assert.deepEqual(signInResponse?.user?.loginMethods?.[0]?.webauthn?.credentialIds, [
+                credential.attestation.id,
+            ]);
         });
 
         it("test signIn fail with wrong credential", async function () {
