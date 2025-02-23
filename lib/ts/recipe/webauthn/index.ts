@@ -16,287 +16,124 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
-    RecipeInterface,
-    APIInterface,
-    APIOptions,
     TypeWebauthnEmailDeliveryInput,
     CredentialPayload,
     UserVerification,
     ResidentKey,
     Attestation,
     AuthenticationPayload,
+    RegistrationPayload,
 } from "./types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getRecoverAccountLink } from "./utils";
 import { getRequestFromUserContext, getUser } from "../..";
 import { getUserContext } from "../../utils";
 import { SessionContainerInterface } from "../session/types";
-import {
-    DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
-    DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
-    DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
-    DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
-    DEFAULT_REGISTER_OPTIONS_TIMEOUT,
-    DEFAULT_REGISTER_OPTIONS_ATTESTATION,
-    DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
-    DEFAULT_REGISTER_OPTIONS_USER_PRESENCE,
-    DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE,
-} from "./constants";
-import { BaseRequest } from "../../framework";
+import { RecipeInterface, APIOptions, APIInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static async registerOptions({
-        residentKey = DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY,
-        userVerification = DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION,
-        userPresence = DEFAULT_REGISTER_OPTIONS_USER_PRESENCE,
-        attestation = DEFAULT_REGISTER_OPTIONS_ATTESTATION,
-        supportedAlgorithmIds = DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS,
-        timeout = DEFAULT_REGISTER_OPTIONS_TIMEOUT,
-        tenantId = DEFAULT_TENANT_ID,
-        userContext,
-        ...rest
-    }: {
-        residentKey?: ResidentKey;
-        userVerification?: UserVerification;
-        userPresence?: boolean;
-        attestation?: Attestation;
-        supportedAlgorithmIds?: number[];
-        timeout?: number;
-        tenantId?: string;
-        userContext?: Record<string, any>;
-    } & (
-        | { relyingPartyId: string; relyingPartyName: string; origin: string }
-        | { request: BaseRequest; relyingPartyId?: string; relyingPartyName?: string; origin?: string }
-    ) &
-        (
+    static async registerOptions(
+        input: {
+            relyingPartyId: string;
+            relyingPartyName: string;
+            origin: string;
+            // default to 'required' in order store the private key locally on the device and not on the server
+            residentKey: ResidentKey | undefined;
+            // default to 'preferred' in order to verify the user (biometrics, pin, etc) based on the device preferences
+            userVerification: UserVerification | undefined;
+            userPresence: boolean | undefined;
+            // default to 'none' in order to allow any authenticator and not verify attestation
+            attestation: Attestation | undefined;
+            // default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms.
+            supportedAlgorithmIds: number[] | undefined;
+            // default to 5 seconds
+            timeout: number | undefined;
+            tenantId: string;
+            userContext: Record<string, any>;
+        } & (
             | {
-                  email: string;
-                  displayName?: string;
+                  recoverAccountToken: string;
               }
-            | { recoverAccountToken: string }
-        )) {
-        let emailOrRecoverAccountToken:
-            | { email: string; displayName: string | undefined }
-            | { recoverAccountToken: string };
-        if ("email" in rest || "recoverAccountToken" in rest) {
-            if ("email" in rest) {
-                emailOrRecoverAccountToken = {
-                    email: rest.email,
-                    displayName: rest.displayName,
-                };
-            } else {
-                emailOrRecoverAccountToken = { recoverAccountToken: rest.recoverAccountToken };
-            }
-        } else {
-            return { status: "INVALID_EMAIL_ERROR", err: "Email is missing" };
-        }
-
-        let relyingPartyId: string;
-        let relyingPartyName: string;
-        let origin: string;
-        if ("request" in rest) {
-            origin =
-                rest.origin ||
-                (await Recipe.getInstanceOrThrowError().config.getOrigin({
-                    request: rest.request,
-                    tenantId: tenantId,
-                    userContext: getUserContext(userContext),
-                }));
-            relyingPartyId =
-                rest.relyingPartyId ||
-                (await Recipe.getInstanceOrThrowError().config.getRelyingPartyId({
-                    request: rest.request,
-                    tenantId: tenantId,
-                    userContext: getUserContext(userContext),
-                }));
-            relyingPartyName =
-                rest.relyingPartyName ||
-                (await Recipe.getInstanceOrThrowError().config.getRelyingPartyName({
-                    tenantId: tenantId,
-                    userContext: getUserContext(userContext),
-                }));
-        } else {
-            if (!rest.origin) {
-                throw new Error({ type: "BAD_INPUT_ERROR", message: "Origin missing from the input" });
-            }
-            if (!rest.relyingPartyId) {
-                throw new Error({ type: "BAD_INPUT_ERROR", message: "RelyingPartyId missing from the input" });
-            }
-            if (!rest.relyingPartyName) {
-                throw new Error({ type: "BAD_INPUT_ERROR", message: "RelyingPartyName missing from the input" });
-            }
-
-            origin = rest.origin;
-            relyingPartyId = rest.relyingPartyId;
-            relyingPartyName = rest.relyingPartyName;
-        }
-
+            | {
+                  displayName: string | undefined;
+                  email: string;
+              }
+        )
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerOptions({
-            ...emailOrRecoverAccountToken,
-            residentKey,
-            userVerification,
-            userPresence,
-            supportedAlgorithmIds,
-            relyingPartyId,
-            relyingPartyName,
-            origin,
-            timeout,
-            attestation,
-            tenantId,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
-    static async signInOptions({
-        tenantId = DEFAULT_TENANT_ID,
-        userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION,
-        userPresence = DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE,
-        timeout = DEFAULT_SIGNIN_OPTIONS_TIMEOUT,
-        userContext,
-        ...rest
-    }: {
-        timeout?: number;
-        userVerification?: UserVerification;
-        userPresence?: boolean;
-        tenantId?: string;
-        userContext?: Record<string, any>;
-    } & (
-        | { relyingPartyId: string; relyingPartyName: string; origin: string }
-        | { request: BaseRequest; relyingPartyId?: string; relyingPartyName?: string; origin?: string }
-    )) {
-        let origin: string;
-        let relyingPartyId: string;
-        let relyingPartyName: string;
-        if ("request" in rest) {
-            relyingPartyId =
-                rest.relyingPartyId ||
-                (await Recipe.getInstanceOrThrowError().config.getRelyingPartyId({
-                    request: rest.request,
-                    tenantId: tenantId,
-                    userContext: getUserContext(userContext),
-                }));
-            relyingPartyName =
-                rest.relyingPartyName ||
-                (await Recipe.getInstanceOrThrowError().config.getRelyingPartyName({
-                    tenantId: tenantId,
-                    userContext: getUserContext(userContext),
-                }));
-            origin =
-                rest.origin ||
-                (await Recipe.getInstanceOrThrowError().config.getOrigin({
-                    request: rest.request,
-                    tenantId: tenantId,
-                    userContext: getUserContext(userContext),
-                }));
-        } else {
-            if (!rest.relyingPartyId) {
-                throw new Error({ type: "BAD_INPUT_ERROR", message: "RelyingPartyId missing from the input" });
-            }
-            if (!rest.relyingPartyName) {
-                throw new Error({ type: "BAD_INPUT_ERROR", message: "RelyingPartyName missing from the input" });
-            }
-            if (!rest.origin) {
-                throw new Error({ type: "BAD_INPUT_ERROR", message: "Origin missing from the input" });
-            }
-            relyingPartyId = rest.relyingPartyId;
-            relyingPartyName = rest.relyingPartyName;
-            origin = rest.origin;
-        }
-
+    static async signInOptions(input: {
+        relyingPartyId: string;
+        relyingPartyName: string;
+        origin: string;
+        userVerification: UserVerification | undefined; // see register options
+        userPresence: boolean | undefined;
+        timeout: number | undefined;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInOptions({
-            relyingPartyId,
-            relyingPartyName,
-            origin,
-            timeout,
-            tenantId,
-            userVerification,
-            userPresence,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
-    static getGeneratedOptions({
-        webauthnGeneratedOptionsId,
-        tenantId = DEFAULT_TENANT_ID,
-        userContext,
-    }: {
+    static getGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
-        tenantId?: string;
-        userContext?: Record<string, any>;
+        tenantId: string;
+        userContext: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getGeneratedOptions({
-            webauthnGeneratedOptionsId,
-            tenantId,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
-    static signUp({
-        tenantId = DEFAULT_TENANT_ID,
-        webauthnGeneratedOptionsId,
-        credential,
-        session,
-        userContext,
-    }: {
-        tenantId?: string;
+    static signUp(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
-        userContext?: Record<string, any>;
-        session?: SessionContainerInterface;
+        credential: RegistrationPayload;
+        session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
+        tenantId: string;
+        userContext: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
-            webauthnGeneratedOptionsId,
-            credential,
-            session,
-            shouldTryLinkingWithSessionUser: !!session,
-            tenantId,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
-    static signIn({
-        tenantId = DEFAULT_TENANT_ID,
-        webauthnGeneratedOptionsId,
-        credential,
-        session,
-        userContext,
-    }: {
-        tenantId?: string;
+    static signIn(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
-        session?: SessionContainerInterface;
-        userContext?: Record<string, any>;
+        session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
+        tenantId: string;
+        userContext: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
-            webauthnGeneratedOptionsId,
-            credential,
-            session,
-            shouldTryLinkingWithSessionUser: !!session,
-            tenantId,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
-    static async verifyCredentials({
-        tenantId = DEFAULT_TENANT_ID,
-        webauthnGeneratedOptionsId,
-        credential,
-        userContext,
-    }: {
-        tenantId?: string;
+    static async verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
-        userContext?: Record<string, any>;
+        tenantId: string;
+        userContext: Record<string, any>;
     }) {
         const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
-            webauthnGeneratedOptionsId,
-            credential,
-            tenantId,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
 
         // Here we intentionally skip the user and recipeUserId props, because we do not want apps to accidentally use this to sign in
@@ -316,22 +153,15 @@ export default class Wrapper {
      *
      * And we want to allow primaryUserId being passed in.
      */
-    static generateRecoverAccountToken({
-        tenantId = DEFAULT_TENANT_ID,
-        userId,
-        email,
-        userContext,
-    }: {
-        tenantId?: string;
+    static generateRecoverAccountToken(input: {
+        tenantId: string;
         userId: string;
         email: string;
-        userContext?: Record<string, any>;
+        userContext: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.generateRecoverAccountToken({
-            userId,
-            email,
-            tenantId,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
@@ -360,63 +190,39 @@ export default class Wrapper {
             credential,
             userContext,
         });
-        if (result.status === "INVALID_AUTHENTICATOR_ERROR") {
-            return {
-                status: "INVALID_AUTHENTICATOR_ERROR",
-                failureReason: result.reason,
-            };
-        }
 
-        return {
-            status: result.status,
-        };
+        return result;
     }
 
-    static consumeRecoverAccountToken({
-        tenantId = DEFAULT_TENANT_ID,
-        token,
-        userContext,
-    }: {
-        tenantId?: string;
-        token: string;
-        userContext?: Record<string, any>;
-    }) {
+    static consumeRecoverAccountToken(input: { tenantId: string; token: string; userContext?: Record<string, any> }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeRecoverAccountToken({
-            token,
-            tenantId,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
-    static registerCredential({
-        recipeUserId,
-        webauthnGeneratedOptionsId,
-        credential,
-        userContext,
-    }: {
+    static registerCredential(input: {
         recipeUserId: string;
         webauthnGeneratedOptionsId: string;
         credential: CredentialPayload;
         userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerCredential({
-            recipeUserId,
-            webauthnGeneratedOptionsId,
-            credential,
-            userContext: getUserContext(userContext),
+            ...input,
+            userContext: getUserContext(input.userContext),
         });
     }
 
     static async createRecoverAccountLink({
-        tenantId = DEFAULT_TENANT_ID,
+        tenantId,
         userId,
         email,
         userContext,
     }: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         email: string;
-        userContext?: Record<string, any>;
+        userContext: Record<string, any>;
     }) {
         let token = await this.generateRecoverAccountToken({ tenantId, userId, email, userContext });
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
@@ -438,15 +244,15 @@ export default class Wrapper {
     }
 
     static async sendRecoverAccountEmail({
-        tenantId = DEFAULT_TENANT_ID,
+        tenantId,
         userId,
         email,
         userContext,
     }: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         email: string;
-        userContext?: Record<string, any>;
+        userContext: Record<string, any>;
     }) {
         const user = await getUser(userId, userContext);
         if (!user) {
@@ -482,7 +288,6 @@ export default class Wrapper {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
             ...input,
-            tenantId: input.tenantId || DEFAULT_TENANT_ID,
             userContext: getUserContext(input.userContext),
         });
     }

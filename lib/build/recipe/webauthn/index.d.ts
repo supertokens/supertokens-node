@@ -2,68 +2,54 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
-    RecipeInterface,
-    APIInterface,
-    APIOptions,
     TypeWebauthnEmailDeliveryInput,
     CredentialPayload,
     UserVerification,
     ResidentKey,
     Attestation,
     AuthenticationPayload,
+    RegistrationPayload,
 } from "./types";
 import { SessionContainerInterface } from "../session/types";
-import { BaseRequest } from "../../framework";
+import { RecipeInterface, APIOptions, APIInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static registerOptions({
-        residentKey,
-        userVerification,
-        userPresence,
-        attestation,
-        supportedAlgorithmIds,
-        timeout,
-        tenantId,
-        userContext,
-        ...rest
-    }: {
-        residentKey?: ResidentKey;
-        userVerification?: UserVerification;
-        userPresence?: boolean;
-        attestation?: Attestation;
-        supportedAlgorithmIds?: number[];
-        timeout?: number;
-        tenantId?: string;
-        userContext?: Record<string, any>;
-    } & (
-        | {
-              relyingPartyId: string;
-              relyingPartyName: string;
-              origin: string;
-          }
-        | {
-              request: BaseRequest;
-              relyingPartyId?: string;
-              relyingPartyName?: string;
-              origin?: string;
-          }
-    ) &
-        (
-            | {
-                  email: string;
-                  displayName?: string;
-              }
+    static registerOptions(
+        input: {
+            relyingPartyId: string;
+            relyingPartyName: string;
+            origin: string;
+            residentKey: ResidentKey | undefined;
+            userVerification: UserVerification | undefined;
+            userPresence: boolean | undefined;
+            attestation: Attestation | undefined;
+            supportedAlgorithmIds: number[] | undefined;
+            timeout: number | undefined;
+            tenantId: string;
+            userContext: Record<string, any>;
+        } & (
             | {
                   recoverAccountToken: string;
               }
-        )): Promise<
-        | {
-              status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
-          }
-        | {
-              status: "INVALID_OPTIONS_ERROR";
-          }
+            | {
+                  displayName: string | undefined;
+                  email: string;
+              }
+        )
+    ): Promise<
+        | (
+              | {
+                    status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
+                }
+              | {
+                    status: "INVALID_EMAIL_ERROR";
+                    err: string;
+                }
+              | {
+                    status: "INVALID_OPTIONS_ERROR";
+                }
+          )
         | {
               status: "OK";
               webauthnGeneratedOptionsId: string;
@@ -96,37 +82,17 @@ export default class Wrapper {
                   userVerification: UserVerification;
               };
           }
-        | {
-              status: string;
-              err: string;
-          }
     >;
-    static signInOptions({
-        tenantId,
-        userVerification,
-        userPresence,
-        timeout,
-        userContext,
-        ...rest
-    }: {
-        timeout?: number;
-        userVerification?: UserVerification;
-        userPresence?: boolean;
-        tenantId?: string;
-        userContext?: Record<string, any>;
-    } & (
-        | {
-              relyingPartyId: string;
-              relyingPartyName: string;
-              origin: string;
-          }
-        | {
-              request: BaseRequest;
-              relyingPartyId?: string;
-              relyingPartyName?: string;
-              origin?: string;
-          }
-    )): Promise<
+    static signInOptions(input: {
+        relyingPartyId: string;
+        relyingPartyName: string;
+        origin: string;
+        userVerification: UserVerification | undefined;
+        userPresence: boolean | undefined;
+        timeout: number | undefined;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }): Promise<
         | {
               status: "INVALID_OPTIONS_ERROR";
           }
@@ -140,14 +106,10 @@ export default class Wrapper {
               userVerification: UserVerification;
           }
     >;
-    static getGeneratedOptions({
-        webauthnGeneratedOptionsId,
-        tenantId,
-        userContext,
-    }: {
+    static getGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
-        tenantId?: string;
-        userContext?: Record<string, any>;
+        tenantId: string;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "OPTIONS_NOT_FOUND_ERROR";
@@ -167,18 +129,13 @@ export default class Wrapper {
               expiresAt: number;
           }
     >;
-    static signUp({
-        tenantId,
-        webauthnGeneratedOptionsId,
-        credential,
-        session,
-        userContext,
-    }: {
-        tenantId?: string;
+    static signUp(input: {
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
-        userContext?: Record<string, any>;
-        session?: SessionContainerInterface;
+        credential: RegistrationPayload;
+        session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
+        tenantId: string;
+        userContext: Record<string, any>;
     }): Promise<
         | (
               | (
@@ -214,18 +171,13 @@ export default class Wrapper {
               recipeUserId: import("../..").RecipeUserId;
           }
     >;
-    static signIn({
-        tenantId,
-        webauthnGeneratedOptionsId,
-        credential,
-        session,
-        userContext,
-    }: {
-        tenantId?: string;
+    static signIn(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
-        session?: SessionContainerInterface;
-        userContext?: Record<string, any>;
+        session: SessionContainerInterface | undefined;
+        shouldTryLinkingWithSessionUser: boolean | undefined;
+        tenantId: string;
+        userContext: Record<string, any>;
     }): Promise<
         | (
               | (
@@ -263,16 +215,11 @@ export default class Wrapper {
               recipeUserId: import("../..").RecipeUserId;
           }
     >;
-    static verifyCredentials({
-        tenantId,
-        webauthnGeneratedOptionsId,
-        credential,
-        userContext,
-    }: {
-        tenantId?: string;
+    static verifyCredentials(input: {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
-        userContext?: Record<string, any>;
+        tenantId: string;
+        userContext: Record<string, any>;
     }): Promise<{
         status:
             | "OK"
@@ -294,16 +241,11 @@ export default class Wrapper {
      *
      * And we want to allow primaryUserId being passed in.
      */
-    static generateRecoverAccountToken({
-        tenantId,
-        userId,
-        email,
-        userContext,
-    }: {
-        tenantId?: string;
+    static generateRecoverAccountToken(input: {
+        tenantId: string;
         userId: string;
         email: string;
-        userContext?: Record<string, any>;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "UNKNOWN_USER_ID_ERROR";
@@ -329,21 +271,27 @@ export default class Wrapper {
         | {
               status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
           }
+        | (
+              | {
+                    status: "INVALID_CREDENTIALS_ERROR";
+                }
+              | {
+                    status: "OPTIONS_NOT_FOUND_ERROR";
+                }
+              | {
+                    status: "INVALID_OPTIONS_ERROR";
+                }
+              | {
+                    status: "INVALID_AUTHENTICATOR_ERROR";
+                    reason: string;
+                }
+          )
         | {
-              status: string;
-              failureReason: string;
-          }
-        | {
-              status: "OK" | "INVALID_CREDENTIALS_ERROR" | "INVALID_OPTIONS_ERROR" | "OPTIONS_NOT_FOUND_ERROR";
-              failureReason?: undefined;
+              status: "OK";
           }
     >;
-    static consumeRecoverAccountToken({
-        tenantId,
-        token,
-        userContext,
-    }: {
-        tenantId?: string;
+    static consumeRecoverAccountToken(input: {
+        tenantId: string;
         token: string;
         userContext?: Record<string, any>;
     }): Promise<
@@ -356,12 +304,7 @@ export default class Wrapper {
               userId: string;
           }
     >;
-    static registerCredential({
-        recipeUserId,
-        webauthnGeneratedOptionsId,
-        credential,
-        userContext,
-    }: {
+    static registerCredential(input: {
         recipeUserId: string;
         webauthnGeneratedOptionsId: string;
         credential: CredentialPayload;
@@ -392,10 +335,10 @@ export default class Wrapper {
         email,
         userContext,
     }: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         email: string;
-        userContext?: Record<string, any>;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: "UNKNOWN_USER_ID_ERROR";
@@ -411,10 +354,10 @@ export default class Wrapper {
         email,
         userContext,
     }: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         email: string;
-        userContext?: Record<string, any>;
+        userContext: Record<string, any>;
     }): Promise<
         | {
               status: string;
