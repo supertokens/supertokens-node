@@ -12,10 +12,8 @@ jobs:
     define-versions:
         runs-on: ubuntu-latest
         outputs:
-            # fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
-            fdiVersions: '["4.0", "3.1"]'
-            # cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
-            cdiVersions: '["5.2"]'
+            fdiVersions: ${{ steps.versions.outputs.fdiVersions }}
+            cdiVersions: ${{ steps.versions.outputs.cdiVersions }}
             nodeVersions: '["20"]'
         steps:
             - uses: actions/checkout@v4
