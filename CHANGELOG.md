@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Breaking changes
+
+-   Makes URL path normalization case sensitive
+    -   Updates `normalise_url_path_or_throw_error` to be case sensitive
+    -   URL paths will not be converted to lower-case, and will be kept as-is.
+
 ## [21.0.0] - 2024-10-07
 
 -   Added OAuth2Provider recipe
