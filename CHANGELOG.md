@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [22.0.0] - 2025-02-24
+
+-   Migrates backend-sdk-testing test to use a containerized core
+    -   Migrates from CircleCI to Github Actions
+
 ## [21.1.0] - 2024-11-19
 
 -   Adds `getCookieNameForTokenType` config option to allow customizing the cookie name for a token type.
