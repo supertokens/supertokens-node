@@ -19,6 +19,5 @@ services:
             retries: 5
 
     oauth:
-        build:
-            dockerfile: hydra.Dockerfile
-            context: ./docker/oauth
+        image: rishabhpoddar/oauth-server-cicd:latest
+        platform: linux/amd64
