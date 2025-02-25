@@ -69,7 +69,8 @@ jobs:
               env:
                   SUPERTOKENS_ENV: testing
               run: |
-                  npm install --include dev
+                  npm install
+                  sleep 2
                   npm start &
 
             - uses: supertokens/backend-sdk-testing-action@main
