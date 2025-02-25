@@ -64,13 +64,16 @@ jobs:
               env:
                   SUPERTOKENS_CORE_VERSION: ${{ steps.versions.outputs.coreVersionXy }}
 
+            - name: Install SDK dependencies
+              working-directory: supertokens-node
+              run: npm install
+
             - name: Start test server
               working-directory: supertokens-node/test/test-server
               env:
                   SUPERTOKENS_ENV: testing
               run: |
                   npm install
-                  sleep 2
                   npm start &
 
             - uses: supertokens/backend-sdk-testing-action@main
