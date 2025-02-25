@@ -36,7 +36,8 @@ jobs:
 
         env:
             API_PORT: 3030
-            ST_CONNECTION_URI: http://localhost:8081
+            SUPERTOKENS_CORE_PORT: 3567
+            SUPERTOKENS_CORE_HOST: localhost
 
         steps:
             - uses: actions/checkout@v4
