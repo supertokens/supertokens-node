@@ -20,4 +20,4 @@ services:
 
     oauth:
         image: supertokens/oauth2-test:latest
-        platform: linux/arm64
+        platform: linux/amd64
