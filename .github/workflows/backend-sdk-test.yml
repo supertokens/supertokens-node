@@ -80,4 +80,5 @@ jobs:
               with:
                   # version: ${{ matrix.fdi-version }}
                   version: ci/github-actions/containerized-core/${{ matrix.fdi-version }}
+                  check-name-suffix: "[CDI=${{ matrix.cdi-version }}][Core=${{ steps.versions.outputs.coreVersionXy }}][FDI=${{ matrix.fdi-version }}][Node=${{ matrix.node-version }}]"
                   path: backend-sdk-testing
