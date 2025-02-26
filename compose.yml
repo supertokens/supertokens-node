@@ -19,5 +19,5 @@ services:
             retries: 5
 
     oauth:
-        image: rishabhpoddar/oauth-server-cicd:latest
-        platform: linux/amd64
+        image: supertokens/oauth2-test:latest
+        platform: linux/arm64
