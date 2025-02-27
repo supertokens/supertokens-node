@@ -317,12 +317,18 @@ export class Querier {
                     this.invalidateCoreCallCache(userContext, false);
                 }
 
+                logDebugMessage("Checking cache existence");
                 if (!Querier.disableCache && uniqueKey in (userContext._default?.coreCallCache ?? {})) {
-                    return userContext._default.coreCallCache[uniqueKey];
+                    // Clone the cached response before returning it
+                    const cachedResponse = userContext._default.coreCallCache[uniqueKey];
+                    return cachedResponse.clone();
                 }
                 /* CACHE CHECK END */
 
+                logDebugMessage("Cache does not exist, making network request");
+
                 if (Querier.networkInterceptor !== undefined) {
+                    logDebugMessage("Network interceptor found, applying interceptor");
                     let request = Querier.networkInterceptor(
                         {
                             url: url,
@@ -355,13 +361,13 @@ export class Querier {
                 }
 
                 if (response.status === 200 && !Querier.disableCache) {
-                    // If the request was successful, we save the result into the cache
-                    // plus we update the cache tag
+                    // Clone the response before caching it
+                    const responseClone = response.clone();
                     userContext._default = {
                         ...userContext._default,
                         coreCallCache: {
                             ...userContext._default?.coreCallCache,
-                            [uniqueKey]: response,
+                            [uniqueKey]: responseClone,
                         },
                         globalCacheTag: Querier.globalCacheTag,
                     };

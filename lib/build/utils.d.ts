@@ -72,3 +72,16 @@ export declare const isTestEnv: () => boolean;
 export declare const encodeBase64: (value: string) => string;
 export declare const decodeBase64: (value: string) => string;
 export declare const isBuffer: (obj: any) => boolean;
+/**
+ * Clones a response by teeing the body so we can return two independent
+ * ReadableStreams from it. This avoids the bug in the undici library around
+ * response cloning.
+ *
+ * After cloning, the original response's body will be consumed and closed.
+ *
+ * @see https://github.com/supertokens/supertokens-node/issues/977
+ *
+ * @param original - The original response to clone.
+ * @returns A clone of the original response.
+ */
+export declare function cloneResponse(original: Response): Response;
