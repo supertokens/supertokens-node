@@ -326,7 +326,6 @@ export class Querier {
                 /* CACHE CHECK END */
 
                 logDebugMessage("Cache does not exist, making network request");
-
                 if (Querier.networkInterceptor !== undefined) {
                     logDebugMessage("Network interceptor found, applying interceptor");
                     let request = Querier.networkInterceptor(
