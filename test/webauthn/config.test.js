@@ -12,20 +12,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
 let WebAuthn = require("../../recipe/webauthn");
 let WebAuthnRecipe = require("../../lib/build/recipe/webauthn/recipe").default;
-let utils = require("../../lib/build/recipe/webauthn/utils");
-let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`configTest: ${printPath("[test/webauthn/config.test.js]")}`, function () {
     beforeEach(async function () {
