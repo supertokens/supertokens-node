@@ -291,6 +291,57 @@ export default class Wrapper {
             userContext: getUserContext(input.userContext),
         });
     }
+
+    static async getUserFromRecoverAccountToken(input: {
+        token: string;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserFromRecoverAccountToken({
+            ...input,
+            userContext: getUserContext(input.userContext),
+        });
+    }
+
+    static async removeGeneratedOptions(input: {
+        webauthnGeneratedOptionsId: string;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeGeneratedOptions({
+            ...input,
+            userContext: getUserContext(input.userContext),
+        });
+    }
+
+    static async removeCredential(input: {
+        webauthnCredentialId: string;
+        recipeUserId: string;
+        userContext: Record<string, any>;
+    }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeCredential({
+            ...input,
+            userContext: getUserContext(input.userContext),
+        });
+    }
+
+    static async getCredential(input: {
+        webauthnCredentialId: string;
+        recipeUserId: string;
+        userContext: Record<string, any>;
+    }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getCredential({
+            ...input,
+            userContext: getUserContext(input.userContext),
+        });
+    }
+
+    static async listCredentials(input: { recipeUserId: string; userContext: Record<string, any> }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCredentials({
+            ...input,
+            userContext: getUserContext(input.userContext),
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -302,6 +353,8 @@ export let registerOptions = Wrapper.registerOptions;
 export let signInOptions = Wrapper.signInOptions;
 
 export let signIn = Wrapper.signIn;
+
+export let signUp = Wrapper.signUp;
 
 export let verifyCredentials = Wrapper.verifyCredentials;
 
@@ -322,3 +375,13 @@ export let sendRecoverAccountEmail = Wrapper.sendRecoverAccountEmail;
 export let sendEmail = Wrapper.sendEmail;
 
 export let getGeneratedOptions = Wrapper.getGeneratedOptions;
+
+export let getUserFromRecoverAccountToken = Wrapper.getUserFromRecoverAccountToken;
+
+export let removeGeneratedOptions = Wrapper.removeGeneratedOptions;
+
+export let removeCredential = Wrapper.removeCredential;
+
+export let getCredential = Wrapper.getCredential;
+
+export let listCredentials = Wrapper.listCredentials;

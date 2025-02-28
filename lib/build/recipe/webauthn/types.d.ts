@@ -377,7 +377,7 @@ export declare type RecipeInterface = {
     >;
     removeCredential(input: {
         webauthnCredentialId: string;
-        recipeUserId: RecipeUserId;
+        recipeUserId: string;
         userContext: UserContext;
     }): Promise<
         | {

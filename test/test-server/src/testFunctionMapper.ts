@@ -542,44 +542,29 @@ export function getFunc(evalStr: string): (...args: any[]) => any {
         }
     }
 
+    // todo figure out if this is ok or not
     if (evalStr.startsWith("webauthn.init.getRelyingPartyName")) {
-        return async (R) => {
-            if (evalStr.includes("testName")) {
-                return "testName";
-            }
-
-            return "SuperTokens";
-        };
+        return eval(evalStr.replace("webauthn.init.getRelyingPartyName:", ""));
     }
 
     if (evalStr.startsWith("webauthn.init.getRelyingPartyId")) {
-        return async (R) => {
-            if (evalStr.includes("testId.com")) {
-                return "testId.com";
-            }
-
-            return "api.supertokens.io";
-        };
+        return eval(evalStr.replace("webauthn.init.getRelyingPartyId:", ""));
     }
 
     if (evalStr.startsWith("webauthn.init.getOrigin")) {
-        return async (R) => {
-            if (evalStr.includes("testOrigin.com")) {
-                return "testOrigin.com";
-            }
-
-            return "api.supertokens.io";
-        };
+        return eval(evalStr.replace("webauthn.init.getOrigin:", ""));
     }
 
     if (evalStr.startsWith("webauthn.init.validateEmailAddress")) {
-        return async (email) => {
-            if (evalStr.includes("test@example.com")) {
-                return email === "test@example.com" ? undefined : "Invalid email";
-            }
+        return eval(evalStr.replace("webauthn.init.validateEmailAddress:", ""));
+    }
 
-            return undefined;
-        };
+    if (evalStr.startsWith("webauthn.init.override.functions")) {
+        return eval(evalStr.replace("webauthn.init.override.functions:", ""));
+    }
+
+    if (evalStr.startsWith("webauthn.init.override.apis")) {
+        return eval(evalStr.replace("webauthn.init.override.apis:", ""));
     }
 
     throw new Error("Unknown eval string: " + evalStr);

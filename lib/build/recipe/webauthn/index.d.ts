@@ -372,12 +372,79 @@ export default class Wrapper {
             userContext?: Record<string, any>;
         }
     ): Promise<void>;
+    static getUserFromRecoverAccountToken(input: {
+        token: string;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }): Promise<
+        | {
+              status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
+          }
+        | {
+              status: "OK";
+              user: import("../../types").User;
+              recipeUserId: import("../..").RecipeUserId;
+          }
+    >;
+    static removeGeneratedOptions(input: {
+        webauthnGeneratedOptionsId: string;
+        tenantId: string;
+        userContext: Record<string, any>;
+    }): Promise<
+        | {
+              status: "OPTIONS_NOT_FOUND_ERROR";
+          }
+        | {
+              status: "OK";
+          }
+    >;
+    static removeCredential(input: {
+        webauthnCredentialId: string;
+        recipeUserId: string;
+        userContext: Record<string, any>;
+    }): Promise<
+        | {
+              status: "CREDENTIAL_NOT_FOUND_ERROR";
+          }
+        | {
+              status: "OK";
+          }
+    >;
+    static getCredential(input: {
+        webauthnCredentialId: string;
+        recipeUserId: string;
+        userContext: Record<string, any>;
+    }): Promise<
+        | {
+              status: "CREDENTIAL_NOT_FOUND_ERROR";
+          }
+        | {
+              status: "OK";
+              webauthnCredentialId: string;
+              relyingPartyId: string;
+              recipeUserId: import("../..").RecipeUserId;
+              createdAt: number;
+          }
+    >;
+    static listCredentials(input: {
+        recipeUserId: string;
+        userContext: Record<string, any>;
+    }): Promise<{
+        status: "OK";
+        credentials: {
+            webauthnCredentialId: string;
+            relyingPartyId: string;
+            recipeUserId: string;
+            createdAt: number;
+        }[];
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let registerOptions: typeof Wrapper.registerOptions;
 export declare let signInOptions: typeof Wrapper.signInOptions;
 export declare let signIn: typeof Wrapper.signIn;
+export declare let signUp: typeof Wrapper.signUp;
 export declare let verifyCredentials: typeof Wrapper.verifyCredentials;
 export declare let generateRecoverAccountToken: typeof Wrapper.generateRecoverAccountToken;
 export declare let recoverAccount: typeof Wrapper.recoverAccount;
@@ -388,3 +455,8 @@ export declare let createRecoverAccountLink: typeof Wrapper.createRecoverAccount
 export declare let sendRecoverAccountEmail: typeof Wrapper.sendRecoverAccountEmail;
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let getGeneratedOptions: typeof Wrapper.getGeneratedOptions;
+export declare let getUserFromRecoverAccountToken: typeof Wrapper.getUserFromRecoverAccountToken;
+export declare let removeGeneratedOptions: typeof Wrapper.removeGeneratedOptions;
+export declare let removeCredential: typeof Wrapper.removeCredential;
+export declare let getCredential: typeof Wrapper.getCredential;
+export declare let listCredentials: typeof Wrapper.listCredentials;

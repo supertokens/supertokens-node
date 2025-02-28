@@ -1,8 +1,6 @@
 import { Router } from "express";
-import EmailPassword from "../../../recipe/emailpassword";
 import Webauthn from "../../../recipe/webauthn";
-import { convertRequestSessionToSessionObject, serializeRecipeUserId, serializeResponse, serializeUser } from "./utils";
-import * as supertokens from "../../../lib/build";
+import { convertRequestSessionToSessionObject } from "./utils";
 import { logger } from "./logger";
 
 const namespace = "com.supertokens:node-test-server:webauthn";
@@ -155,6 +153,60 @@ const router = Router()
         } catch (e) {
             next(e);
         }
+    })
+    .post("/getuserfromrecoveraccounttoken", async (req, res, next) => {
+        try {
+            logDebugMessage("Webauthn:getUserFromRecoverAccountToken %j", req.body);
+            const response = await Webauthn.getUserFromRecoverAccountToken({
+                ...req.body,
+            });
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
+    })
+    .post("/removegeneratedoptions", async (req, res, next) => {
+        try {
+            logDebugMessage("Webauthn:removeGeneratedOptions %j", req.body);
+            const response = await Webauthn.removeGeneratedOptions({
+                ...req.body,
+            });
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
+    })
+    .post("/removecredential", async (req, res, next) => {
+        try {
+            logDebugMessage("Webauthn:removeCredential %j", req.body);
+            const response = await Webauthn.removeCredential({
+                ...req.body,
+            });
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
+    })
+    .post("/getcredential", async (req, res, next) => {
+        try {
+            logDebugMessage("Webauthn:getCredential %j", req.body);
+            const response = await Webauthn.getCredential({
+                ...req.body,
+            });
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
+    })
+    .post("/listcredentials", async (req, res, next) => {
+        try {
+            logDebugMessage("Webauthn:listCredentials %j", req.body);
+            const response = await Webauthn.listCredentials({
+                ...req.body,
+            });
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
     });
-
 export default router;
