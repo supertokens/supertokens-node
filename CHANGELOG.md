@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [21.1.1] - 2025-02-28
+
+-   Fixes an issue where the response body was not being cloned when using cache
+
 ## [21.1.0] - 2024-11-19
 
 -   Adds `getCookieNameForTokenType` config option to allow customizing the cookie name for a token type.
