@@ -252,8 +252,6 @@ export default class Recipe extends RecipeModule {
         Recipe.instance = undefined;
     }
 
-    // abstract instance functions below...............
-
     getAPIsHandled = (): APIHandled[] => {
         return [
             {

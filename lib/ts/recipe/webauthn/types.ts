@@ -452,10 +452,8 @@ type SignUpPOSTErrorResponse =
           reason: string;
       }
     | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-    | { status: "INVALID_CREDENTIALS_ERROR" }
     | { status: "OPTIONS_NOT_FOUND_ERROR" }
-    | { status: "INVALID_OPTIONS_ERROR" }
-    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
+    | { status: "INVALID_OPTIONS_ERROR" };
 
 type SignInPOSTErrorResponse =
     | { status: "INVALID_CREDENTIALS_ERROR" }
@@ -494,7 +492,7 @@ export type APIInterface = {
                   tenantId: string;
                   options: APIOptions;
                   userContext: UserContext;
-              } & ({ email: string } | { recoverAccountToken: string })
+              } & ({ email: string; displayName?: string } | { recoverAccountToken: string })
           ) => Promise<
               | {
                     status: "OK";

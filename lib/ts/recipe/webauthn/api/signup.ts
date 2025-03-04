@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -34,10 +34,10 @@ export default async function signUpAPI(
     }
 
     const requestBody = await options.req.getJSONBody();
-    const webauthnGeneratedOptionsId = await validateWebauthnGeneratedOptionsIdOrThrowError(
+    const webauthnGeneratedOptionsId = validateWebauthnGeneratedOptionsIdOrThrowError(
         requestBody.webauthnGeneratedOptionsId
     );
-    const credential = await validateCredentialOrThrowError(requestBody.credential);
+    const credential = validateCredentialOrThrowError(requestBody.credential);
 
     const shouldTryLinkingWithSessionUser = getNormalisedShouldTryLinkingWithSessionUserFlag(options.req, requestBody);
 
@@ -51,7 +51,7 @@ export default async function signUpAPI(
         tenantId = session.getTenantId();
     }
 
-    let result = await apiImplementation.signUpPOST({
+    const result = await apiImplementation.signUpPOST({
         credential,
         webauthnGeneratedOptionsId,
         tenantId,

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -14,9 +14,7 @@
  */
 import STError from "../error";
 
-export async function validateWebauthnGeneratedOptionsIdOrThrowError(
-    webauthnGeneratedOptionsId: string
-): Promise<string> {
+export function validateWebauthnGeneratedOptionsIdOrThrowError(webauthnGeneratedOptionsId: string): string {
     if (webauthnGeneratedOptionsId === undefined) {
         throw newBadRequestError("webauthnGeneratedOptionsId is required");
     }
@@ -24,7 +22,7 @@ export async function validateWebauthnGeneratedOptionsIdOrThrowError(
     return webauthnGeneratedOptionsId;
 }
 
-export async function validateCredentialOrThrowError<T>(credential: T): Promise<T> {
+export function validateCredentialOrThrowError<T>(credential: T): T {
     if (credential === undefined) {
         throw newBadRequestError("credential is required");
     }

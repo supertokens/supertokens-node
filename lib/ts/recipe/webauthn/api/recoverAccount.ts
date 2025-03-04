@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -30,12 +30,13 @@ export default async function recoverAccount(
     }
 
     const requestBody = await options.req.getJSONBody();
-    let webauthnGeneratedOptionsId = await validateWebauthnGeneratedOptionsIdOrThrowError(
+    const webauthnGeneratedOptionsId = validateWebauthnGeneratedOptionsIdOrThrowError(
         requestBody.webauthnGeneratedOptionsId
     );
-    let credential = await validateCredentialOrThrowError(requestBody.credential);
-    let token = requestBody.token;
 
+    const credential = validateCredentialOrThrowError(requestBody.credential);
+
+    const token = requestBody.token;
     if (token === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
@@ -49,7 +50,7 @@ export default async function recoverAccount(
         });
     }
 
-    let result = await apiImplementation.recoverAccountPOST({
+    const result = await apiImplementation.recoverAccountPOST({
         webauthnGeneratedOptionsId,
         credential,
         token,
