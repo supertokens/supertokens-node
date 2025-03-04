@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -41,16 +41,11 @@ export default class Wrapper {
             relyingPartyId: string;
             relyingPartyName: string;
             origin: string;
-            // default to 'required' in order store the private key locally on the device and not on the server
             residentKey: ResidentKey | undefined;
-            // default to 'preferred' in order to verify the user (biometrics, pin, etc) based on the device preferences
             userVerification: UserVerification | undefined;
             userPresence: boolean | undefined;
-            // default to 'none' in order to allow any authenticator and not verify attestation
             attestation: Attestation | undefined;
-            // default to [-8, -7, -257] as supported algorithms. See https://www.iana.org/assignments/cose/cose.xhtml#algorithms.
             supportedAlgorithmIds: number[] | undefined;
-            // default to 5 seconds
             timeout: number | undefined;
             tenantId: string;
             userContext: Record<string, any>;
@@ -74,7 +69,7 @@ export default class Wrapper {
         relyingPartyId: string;
         relyingPartyName: string;
         origin: string;
-        userVerification: UserVerification | undefined; // see register options
+        userVerification: UserVerification | undefined;
         userPresence: boolean | undefined;
         timeout: number | undefined;
         tenantId: string;
@@ -143,7 +138,7 @@ export default class Wrapper {
     }
 
     /**
-     * We do not make email optional here cause we want to
+     * We do not make email optional here because we want to
      * allow passing in primaryUserId. If we make email optional,
      * and if the user provides a primaryUserId, then it may result in two problems:
      *  - there is no recipeUserId = input primaryUserId, in this case,
@@ -224,7 +219,7 @@ export default class Wrapper {
         email: string;
         userContext: Record<string, any>;
     }) {
-        let token = await this.generateRecoverAccountToken({ tenantId, userId, email, userContext });
+        const token = await this.generateRecoverAccountToken({ tenantId, userId, email, userContext });
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
             return token;
         }
@@ -366,8 +361,6 @@ export let consumeRecoverAccountToken = Wrapper.consumeRecoverAccountToken;
 
 export let registerCredential = Wrapper.registerCredential;
 
-export type { RecipeInterface, APIOptions, APIInterface };
-
 export let createRecoverAccountLink = Wrapper.createRecoverAccountLink;
 
 export let sendRecoverAccountEmail = Wrapper.sendRecoverAccountEmail;
@@ -385,3 +378,5 @@ export let removeCredential = Wrapper.removeCredential;
 export let getCredential = Wrapper.getCredential;
 
 export let listCredentials = Wrapper.listCredentials;
+
+export type { RecipeInterface, APIOptions, APIInterface };

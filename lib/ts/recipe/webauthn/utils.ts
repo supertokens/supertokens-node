@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -70,7 +70,6 @@ export function validateAndNormaliseUserInput(
              * it it again get set to undefined, so we
              * set service at the end
              */
-            // todo implemenet this
             service: emailService,
         };
     }
@@ -96,7 +95,6 @@ function validateAndNormaliseRelyingPartyIdConfig(
         } else {
             const urlString = normalisedAppinfo.apiDomain.getAsStringDangerous();
 
-            // should let this throw if the url is invalid
             const url = new URL(urlString);
 
             const hostname = url.hostname;
@@ -151,10 +149,6 @@ function validateAndNormaliseValidateEmailAddressConfig(
 }
 
 export async function defaultEmailValidator(value: any) {
-    // We check if the email syntax is correct
-    // As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
-    // Regex from https://stackoverflow.com/a/46181/3867175
-
     if (typeof value !== "string") {
         return "Development bug: Please make sure the email field yields a string";
     }

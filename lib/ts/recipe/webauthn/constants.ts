@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -27,15 +27,13 @@ export const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 
 export const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
 
-// defaults that can be overridden by the developer
+export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 10000;
 export const DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none";
 export const DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY = "required";
 export const DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION = "preferred";
 export const DEFAULT_REGISTER_OPTIONS_USER_PRESENCE = true;
 export const DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS = [-8, -7, -257];
 
+export const DEFAULT_SIGNIN_OPTIONS_TIMEOUT = 5000;
 export const DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION = "preferred";
 export const DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE = true;
-export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 10000;
-
-export const DEFAULT_SIGNIN_OPTIONS_TIMEOUT = 5000;

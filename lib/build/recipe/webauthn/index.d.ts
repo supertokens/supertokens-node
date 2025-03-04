@@ -231,7 +231,7 @@ export default class Wrapper {
             | "CREDENTIAL_NOT_FOUND_ERROR";
     }>;
     /**
-     * We do not make email optional here cause we want to
+     * We do not make email optional here because we want to
      * allow passing in primaryUserId. If we make email optional,
      * and if the user provides a primaryUserId, then it may result in two problems:
      *  - there is no recipeUserId = input primaryUserId, in this case,
@@ -450,7 +450,6 @@ export declare let generateRecoverAccountToken: typeof Wrapper.generateRecoverAc
 export declare let recoverAccount: typeof Wrapper.recoverAccount;
 export declare let consumeRecoverAccountToken: typeof Wrapper.consumeRecoverAccountToken;
 export declare let registerCredential: typeof Wrapper.registerCredential;
-export type { RecipeInterface, APIOptions, APIInterface };
 export declare let createRecoverAccountLink: typeof Wrapper.createRecoverAccountLink;
 export declare let sendRecoverAccountEmail: typeof Wrapper.sendRecoverAccountEmail;
 export declare let sendEmail: typeof Wrapper.sendEmail;
@@ -460,3 +459,4 @@ export declare let removeGeneratedOptions: typeof Wrapper.removeGeneratedOptions
 export declare let removeCredential: typeof Wrapper.removeCredential;
 export declare let getCredential: typeof Wrapper.getCredential;
 export declare let listCredentials: typeof Wrapper.listCredentials;
+export type { RecipeInterface, APIOptions, APIInterface };

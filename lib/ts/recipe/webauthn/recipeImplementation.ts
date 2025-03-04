@@ -1,3 +1,18 @@
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
@@ -7,7 +22,6 @@ import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { LoginMethod, User } from "../../user";
 import { AuthUtils } from "../../authUtils";
-import { isFakeEmail } from "../thirdparty/utils";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -45,8 +59,9 @@ export default function getRecipeInterface(
                 }
 
                 const user = result.user as User;
-                // todo this might be wrong but will have to figure out - what happens when there are multiple webauthn login methods ?
-                email = user.loginMethods.find((lm) => lm.recipeId === "webauthn")?.email;
+                email = user.loginMethods.find(
+                    (lm) => lm.recipeId === "webauthn" && lm.recipeUserId === result.recipeUserId
+                )?.email;
             }
 
             if (!email) {
@@ -64,17 +79,11 @@ export default function getRecipeInterface(
                 };
             }
 
-            // set a nice default display name
-            // if the user has a fake email, we use the username part of the email instead (which should be the recipe user id)
             let displayName: string;
             if ("displayName" in rest && rest.displayName !== undefined) {
                 displayName = rest.displayName;
             } else {
-                if (isFakeEmail(email)) {
-                    displayName = email.split("@")[0];
-                } else {
-                    displayName = email;
-                }
+                displayName = email;
             }
 
             return await querier.sendPostRequest(
