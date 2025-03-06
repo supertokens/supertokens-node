@@ -629,7 +629,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: RegistrationPayload;
               tenantId: string;
               session: SessionContainerInterface;
               options: APIOptions;

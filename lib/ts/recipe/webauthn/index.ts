@@ -17,7 +17,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     TypeWebauthnEmailDeliveryInput,
-    CredentialPayload,
     UserVerification,
     ResidentKey,
     Attestation,
@@ -170,7 +169,7 @@ export default class Wrapper {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
         token: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext?: Record<string, any>;
     }) {
         const consumeResp = await Wrapper.consumeRecoverAccountToken({ tenantId, token, userContext });
@@ -199,7 +198,7 @@ export default class Wrapper {
     static registerCredential(input: {
         recipeUserId: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.registerCredential({
