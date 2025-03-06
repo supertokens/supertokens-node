@@ -3,7 +3,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     TypeWebauthnEmailDeliveryInput,
-    CredentialPayload,
     UserVerification,
     ResidentKey,
     Attestation,
@@ -265,7 +264,7 @@ export default class Wrapper {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
         token: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext?: Record<string, any>;
     }): Promise<
         | {
@@ -307,7 +306,7 @@ export default class Wrapper {
     static registerCredential(input: {
         recipeUserId: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext?: Record<string, any>;
     }): Promise<
         | (
