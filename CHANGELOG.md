@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [21.1.1] - 2024-12-27
+## [21.1.1] - 2025-03-06
 
+-   Fixes an issue where the response body was not being cloned when using cache
 -   Fixes type of `cookies` to `string[]` instead of `string` in:
     -   Return type of `authorization` in `RecipeInterface` in `oauth2provider` recipe
     -   Return type of `authGET` in `APIInterface` in `oauth2provider` recipe
