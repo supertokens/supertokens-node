@@ -27,13 +27,16 @@ export const RECOVER_ACCOUNT_API = "/user/webauthn/reset";
 
 export const SIGNUP_EMAIL_EXISTS_API = "/webauthn/email/exists";
 
-export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 10000;
+// 60 seconds (60 * 1000ms)
+export const DEFAULT_REGISTER_OPTIONS_TIMEOUT = 60000;
 export const DEFAULT_REGISTER_OPTIONS_ATTESTATION = "none";
 export const DEFAULT_REGISTER_OPTIONS_RESIDENT_KEY = "required";
 export const DEFAULT_REGISTER_OPTIONS_USER_VERIFICATION = "preferred";
 export const DEFAULT_REGISTER_OPTIONS_USER_PRESENCE = true;
+// -8 = EdDSA, -7 = ES256, -257 = RS256
 export const DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS = [-8, -7, -257];
 
-export const DEFAULT_SIGNIN_OPTIONS_TIMEOUT = 5000;
+// 60 seconds (60 * 1000ms)
+export const DEFAULT_SIGNIN_OPTIONS_TIMEOUT = 60000;
 export const DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION = "preferred";
 export const DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE = true;

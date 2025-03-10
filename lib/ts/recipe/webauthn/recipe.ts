@@ -192,22 +192,6 @@ export default class Recipe extends RecipeModule {
                         result = Array.from(new Set(result));
                     }
 
-                    // If the loginmethod associated with the session has an email address, we move it to the top of the list (if it's already in the list)
-                    if (sessionLoginMethod.email !== undefined && result.includes(sessionLoginMethod.email)) {
-                        result = [
-                            sessionLoginMethod.email,
-                            ...result.filter((email) => email !== sessionLoginMethod!.email),
-                        ];
-                    }
-
-                    // If the list is empty we generate an email address to make the flow where the user is never asked for
-                    // an email address easier to implement. In many cases when the user adds an email-password factor, they
-                    // actually only want to add a password and do not care about the associated email address.
-                    // Custom implementations can choose to ignore this, and ask the user for the email anyway.
-                    if (result.length === 0) {
-                        result.push(`${sessionRecipeUserId.getAsString()}@stfakeemail.supertokens.com`);
-                    }
-
                     return {
                         status: "OK",
                         factorIdToEmailsMap: {

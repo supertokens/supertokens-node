@@ -45,7 +45,7 @@ export default async function registerOptions(
 
     // same as for passwordless lib/ts/recipe/passwordless/api/createCode.ts
     if (email !== undefined) {
-        const validateError = await options.config.validateEmailAddress(email, tenantId);
+        const validateError = await options.config.validateEmailAddress(email, tenantId, userContext);
         if (validateError !== undefined) {
             send200Response(options.res, {
                 status: "INVALID_EMAIL_ERROR",

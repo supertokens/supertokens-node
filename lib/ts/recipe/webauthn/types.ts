@@ -49,6 +49,7 @@ export type TypeNormalisedInputRelyingPartyId = (input: {
 
 export type TypeNormalisedInputRelyingPartyName = (input: {
     tenantId: string;
+    request: BaseRequest | undefined;
     userContext: UserContext;
 }) => Promise<string>;
 
@@ -60,7 +61,8 @@ export type TypeNormalisedInputGetOrigin = (input: {
 
 export type TypeNormalisedInputValidateEmailAddress = (
     email: string,
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
 
 export type TypeInput = {
@@ -94,7 +96,8 @@ export type TypeInputGetOrigin = (input: {
 
 export type TypeInputValidateEmailAddress = (
     email: string,
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
 
 type RegisterOptionsErrorResponse =
@@ -425,10 +428,6 @@ export type RecipeInterface = {
           }
         | UpdateUserEmailErrorResponse
     >;
-
-    // todo add update user email
-    // throws UNKNOWN_USER_ID_ERROR
-    // throws email_already_exists_error
 };
 
 export type APIOptions = {

@@ -73,7 +73,7 @@ export default function getRecipeInterface(
                 };
             }
 
-            const err = await getWebauthnConfig().validateEmailAddress(email, tenantId);
+            const err = await getWebauthnConfig().validateEmailAddress(email, tenantId, userContext);
             if (err) {
                 return {
                     status: "INVALID_EMAIL_ERROR",

@@ -31,6 +31,7 @@ export default function getAPIImplementation(): APIInterface {
             });
             const relyingPartyName = await options.config.getRelyingPartyName({
                 tenantId,
+                request: options.req,
                 userContext,
             });
 
@@ -91,6 +92,7 @@ export default function getAPIImplementation(): APIInterface {
             });
             const relyingPartyName = await options.config.getRelyingPartyName({
                 tenantId,
+                request: options.req,
                 userContext,
             });
 
@@ -207,7 +209,6 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
 
-                // this isn't mandatory to
                 if (
                     conflictingUsers.some((u) =>
                         u.loginMethods.some((lm) => lm.recipeId === "webauthn" && lm.hasSameEmailAs(email))
