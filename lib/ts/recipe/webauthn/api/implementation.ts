@@ -778,13 +778,10 @@ export default function getAPIImplementation(): APIInterface {
                         status: "INVALID_AUTHENTICATOR_ERROR",
                         reason: updateResponse.reason,
                     };
-                } else if (updateResponse.status === "INVALID_CREDENTIALS_ERROR") {
-                    return {
-                        status: "INVALID_CREDENTIALS_ERROR",
-                    };
                 } else if (
                     updateResponse.status === "INVALID_OPTIONS_ERROR" ||
-                    updateResponse.status === "OPTIONS_NOT_FOUND_ERROR"
+                    updateResponse.status === "OPTIONS_NOT_FOUND_ERROR" ||
+                    updateResponse.status === "INVALID_CREDENTIALS_ERROR"
                 ) {
                     return {
                         status: updateResponse.status,
