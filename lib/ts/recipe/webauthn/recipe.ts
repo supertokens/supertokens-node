@@ -105,7 +105,7 @@ export default class Recipe extends RecipeModule {
                 mfaInstance.addFuncToGetFactorsSetupForUserFromOtherRecipes(async (user: User) => {
                     for (const loginMethod of user.loginMethods) {
                         // We don't check for tenantId here because if we find the user
-                        // with emailpassword loginMethod from different tenant, then
+                        // with webauthn loginMethod from different tenant, then
                         // we assume the factor is setup for this user. And as part of factor
                         // completion, we associate that loginMethod with the session's tenantId
                         if (loginMethod.recipeId === Recipe.RECIPE_ID) {
@@ -145,20 +145,20 @@ export default class Recipe extends RecipeModule {
                         // If there are login methods belonging to this recipe, the factor is set up
                         // In this case we only list email addresses that have a password associated with them
                         result = [
-                            // First we take the verified real emails associated with emailpassword login methods ordered by timeJoined (oldest first)
+                            // First we take the verified real emails associated with webauthn login methods ordered by timeJoined (oldest first)
                             ...recipeLoginMethodsOrderedByTimeJoinedOldestFirst
                                 .filter((lm) => !isFakeEmail(lm.email!) && lm.verified === true)
                                 .map((lm) => lm.email!),
-                            // Then we take the non-verified real emails associated with emailpassword login methods ordered by timeJoined (oldest first)
+                            // Then we take the non-verified real emails associated with webauthn login methods ordered by timeJoined (oldest first)
                             ...recipeLoginMethodsOrderedByTimeJoinedOldestFirst
                                 .filter((lm) => !isFakeEmail(lm.email!) && lm.verified === false)
                                 .map((lm) => lm.email!),
-                            // Lastly, fake emails associated with emailpassword login methods ordered by timeJoined (oldest first)
+                            // Lastly, fake emails associated with webauthn login methods ordered by timeJoined (oldest first)
                             // We also add these into the list because they already have a password added to them so they can be a valid choice when signing in
                             // We do not want to remove the previously added "MFA password", because a new email password user was linked
                             // E.g.:
                             // 1. A discord user adds a password for MFA (which will use the fake email associated with the discord user)
-                            // 2. Later they also sign up and (manually) link a full emailpassword user that they intend to use as a first factor
+                            // 2. Later they also sign up and (manually) link a full webauthn user that they intend to use as a first factor
                             // 3. The next time they sign in using Discord, they could be asked for a secondary password.
                             // In this case, they'd be checked against the first user that they originally created for MFA, not the one later linked to the account
                             ...recipeLoginMethodsOrderedByTimeJoinedOldestFirst

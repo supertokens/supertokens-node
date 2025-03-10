@@ -291,7 +291,7 @@ export type RecipeInterface = {
      * This function is meant only for creating the recipe in the core and nothing else.
      * We added this even though signUp exists cause devs may override signup expecting it
      * to be called just during sign up. But we also need a version of signing up which can be
-     * called during operations like creating a user during password reset flow.
+     * called during operations like creating a user during account recovery flow.
      */
     createNewRecipeUser(input: {
         webauthnGeneratedOptionsId: string;

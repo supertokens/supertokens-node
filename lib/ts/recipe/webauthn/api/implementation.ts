@@ -863,7 +863,7 @@ export default function getAPIImplementation(): APIInterface {
                     existingUser.loginMethods.find((lm) => {
                         // we check based on user ID and not email because the only time
                         // the primary user ID is used for token generation is if the webauthn
-                        // user did not exist - in which case the value of emailPasswordUserExists will
+                        // user did not exist - in which case the value of webauthnUserIsLinkedToExistingUser will
                         // resolve to false anyway, and that's what we want.
 
                         // there is an edge case where if the webauthn recipe user was created
