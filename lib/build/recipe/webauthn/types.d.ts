@@ -484,6 +484,13 @@ declare type SignUpPOSTErrorResponse =
           status: "EMAIL_ALREADY_EXISTS_ERROR";
       }
     | {
+          status: "INVALID_CREDENTIALS_ERROR";
+      }
+    | {
+          status: "INVALID_AUTHENTICATOR_ERROR";
+          reason: string;
+      }
+    | {
           status: "OPTIONS_NOT_FOUND_ERROR";
       }
     | {
