@@ -106,6 +106,14 @@ jobs:
         parallelism: 4
         steps:
             - checkout
+            - run:
+                  name: Switch to Node 18
+                  command: |
+                      export NVM_DIR="$HOME/.nvm"
+                      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                      nvm install 18
+                      nvm use 18
+                      node --version
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
             - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
