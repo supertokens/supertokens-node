@@ -97,7 +97,7 @@ jobs:
             - slack/status
     test-authreact:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: node:18
             - image: rishabhpoddar/oauth-server-cicd
         resource_class: large
         parameters:
@@ -106,12 +106,8 @@ jobs:
         parallelism: 4
         steps:
             - checkout
-            - run:
-                  name: Install Node 18
-                  command: |
-                      curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-                      sudo apt-get install -y nodejs
-                      node --version
+            - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+            - run: (cd .circleci/ && ./installJava.sh)
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
             - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
@@ -153,7 +149,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          only: /test-cicd\/.*|feat\/webauthn\/base/
+                          only: /test-cicd\/.*|fix\/ci-image-to-node-18/
             - test-unit:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -163,7 +159,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          only: /test-cicd\/.*|feat\/webauthn\/base/
+                          only: /test-cicd\/.*|fix\/ci-image-to-node-18/
                   matrix:
                       parameters:
                           cdi-version: placeholder
@@ -176,7 +172,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          only: /test-cicd\/.*|feat\/webauthn\/base/
+                          only: /test-cicd\/.*|fix\/ci-image-to-node-18/
                   matrix:
                       parameters:
                           cdi-version: placeholder
@@ -190,7 +186,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          only: /test-cicd\/.*|feat\/webauthn\/base/
+                          only: /test-cicd\/.*|fix\/ci-image-to-node-18/
                   matrix:
                       parameters:
                           fdi-version: placeholder
@@ -203,7 +199,7 @@ workflows:
                       tags:
                           only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
-                          only: /test-cicd\/.*|feat\/webauthn\/base/
+                          only: /test-cicd\/.*|fix\/ci-image-to-node-18/
                   matrix:
                       parameters:
                           fdi-version: placeholder
