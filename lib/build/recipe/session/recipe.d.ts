@@ -54,5 +54,4 @@ export default class SessionRecipe extends RecipeModule {
         response: BaseResponse,
         userContext: UserContext
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
-    getNormalisedOverwriteSessionDuringSignInUp: (req: any) => boolean;
 }

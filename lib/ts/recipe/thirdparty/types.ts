@@ -98,21 +98,21 @@ export type TypeProvider = {
 
     getConfigForClientType: (input: {
         clientType?: string;
-        userContext: UserContext;
+        userContext?: UserContext;
     }) => Promise<ProviderConfigForClientType>;
     getAuthorisationRedirectURL: (input: {
         redirectURIOnProviderDashboard: string;
-        userContext: UserContext;
+        userContext?: UserContext;
     }) => Promise<{ urlWithQueryParams: string; pkceCodeVerifier?: string }>;
     exchangeAuthCodeForOAuthTokens: (input: {
         redirectURIInfo: {
             redirectURIOnProviderDashboard: string;
-            redirectURIQueryParams: any;
+            redirectURIQueryParams: Record<string, string>;
             pkceCodeVerifier?: string;
         };
-        userContext: UserContext;
+        userContext?: UserContext;
     }) => Promise<any>;
-    getUserInfo: (input: { oAuthTokens: any; userContext: UserContext }) => Promise<UserInfo>;
+    getUserInfo: (input: { oAuthTokens: any; userContext?: UserContext }) => Promise<UserInfo>;
 };
 
 export type ProviderConfig = CommonProviderConfig & {

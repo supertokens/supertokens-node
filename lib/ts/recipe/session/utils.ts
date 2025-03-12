@@ -22,10 +22,18 @@ import {
     SessionContainerInterface,
     VerifySessionOptions,
     TokenTransferMethod,
+    TokenType,
 } from "./types";
 import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
 import SessionRecipe from "./recipe";
-import { REFRESH_API_PATH, oneYearInMs } from "./constants";
+import {
+    REFRESH_API_PATH,
+    accessTokenCookieKey,
+    accessTokenHeaderKey,
+    oneYearInMs,
+    refreshTokenCookieKey,
+    refreshTokenHeaderKey,
+} from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo, UserContext } from "../../types";
 import { isAnIpAddress, send200Response } from "../../utils";
@@ -294,6 +302,9 @@ export function validateAndNormaliseUserInput(
             config?.getTokenTransferMethod === undefined
                 ? defaultGetTokenTransferMethod
                 : config.getTokenTransferMethod,
+        getCookieNameForTokenType: config?.getCookieNameForTokenType ?? getCookieNameForTokenType,
+        getResponseHeaderNameForTokenType:
+            config?.getResponseHeaderNameForTokenType ?? getResponseHeaderNameForTokenType,
         cookieDomain,
         olderCookieDomain,
         getCookieSameSite: cookieSameSite,
@@ -303,7 +314,6 @@ export function validateAndNormaliseUserInput(
         antiCsrfFunctionOrString: antiCsrf,
         override,
         invalidClaimStatusCode,
-        overwriteSessionDuringSignInUp: config?.overwriteSessionDuringSignInUp,
         jwksRefreshIntervalSec: config?.jwksRefreshIntervalSec ?? 3600 * 4,
     };
 }
@@ -323,7 +333,7 @@ export function setAccessTokenInResponse(
     frontToken: string,
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
-    req: BaseRequest | undefined,
+    req: BaseRequest,
     userContext: UserContext
 ) {
     setFrontTokenInHeaders(res, frontToken);
@@ -422,5 +432,27 @@ function defaultGetTokenTransferMethod({
             return "cookie";
         default:
             return "any";
+    }
+}
+
+export function getCookieNameForTokenType(_req: BaseRequest, tokenType: TokenType) {
+    switch (tokenType) {
+        case "access":
+            return accessTokenCookieKey;
+        case "refresh":
+            return refreshTokenCookieKey;
+        default:
+            throw new Error("Unknown token type, should never happen.");
+    }
+}
+
+export function getResponseHeaderNameForTokenType(_req: BaseRequest, tokenType: TokenType) {
+    switch (tokenType) {
+        case "access":
+            return accessTokenHeaderKey;
+        case "refresh":
+            return refreshTokenHeaderKey;
+        default:
+            throw new Error("Unknown token type, should never happen.");
     }
 }

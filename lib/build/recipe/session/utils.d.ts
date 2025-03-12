@@ -7,6 +7,7 @@ import {
     SessionContainerInterface,
     VerifySessionOptions,
     TokenTransferMethod,
+    TokenType,
 } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo, UserContext } from "../../types";
@@ -56,7 +57,7 @@ export declare function setAccessTokenInResponse(
     frontToken: string,
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod,
-    req: BaseRequest | undefined,
+    req: BaseRequest,
     userContext: UserContext
 ): void;
 export declare function getRequiredClaimValidators(
@@ -74,3 +75,11 @@ export declare function validateClaimsInPayload(
         reason: import("../../types").JSONValue;
     }[]
 >;
+export declare function getCookieNameForTokenType(
+    _req: BaseRequest,
+    tokenType: TokenType
+): "sAccessToken" | "sRefreshToken";
+export declare function getResponseHeaderNameForTokenType(
+    _req: BaseRequest,
+    tokenType: TokenType
+): "st-access-token" | "st-refresh-token";

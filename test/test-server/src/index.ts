@@ -22,8 +22,6 @@ import { TypeInput as MFATypeInput } from "../../../lib/build/recipe/multifactor
 import TOTPRecipe from "../../../lib/build/recipe/totp/recipe";
 import OAuth2ProviderRecipe from "../../../lib/build/recipe/oauth2provider/recipe";
 import { TypeInput as OAuth2ProviderTypeInput } from "../../../lib/build/recipe/oauth2provider/types";
-import OAuth2ClientRecipe from "../../../lib/build/recipe/oauth2client/recipe";
-import { TypeInput as OAuth2ClientTypeInput } from "../../../lib/build/recipe/oauth2client/types";
 import { TypeInput as OpenIdRecipeTypeInput } from "../../../lib/build/recipe/openid/types";
 import UserMetadataRecipe from "../../../lib/build/recipe/usermetadata/recipe";
 import SuperTokensRecipe from "../../../lib/build/supertokens";
@@ -37,10 +35,10 @@ import Multitenancy from "../../../recipe/multitenancy";
 import Passwordless from "../../../recipe/passwordless";
 import Session from "../../../recipe/session";
 import { verifySession } from "../../../recipe/session/framework/express";
+import { getResponseHeaderNameForTokenType, getCookieNameForTokenType } from "../../../lib/build/recipe/session/utils";
 import ThirdParty from "../../../recipe/thirdparty";
 import TOTP from "../../../recipe/totp";
 import OAuth2Provider from "../../../recipe/oauth2provider";
-import OAuth2Client from "../../../recipe/oauth2client";
 import accountlinkingRoutes from "./accountlinking";
 import emailpasswordRoutes from "./emailpassword";
 import emailverificationRoutes from "./emailverification";
@@ -104,7 +102,6 @@ function STReset() {
     MultiFactorAuthRecipe.reset();
     TOTPRecipe.reset();
     OAuth2ProviderRecipe.reset();
-    OAuth2ClientRecipe.reset();
     SuperTokensRecipe.reset();
     DashboardRecipe.reset();
     WebauthnRecipe.reset();
@@ -156,6 +153,14 @@ function initST(config: any) {
             recipeList.push(
                 Session.init({
                     ...config,
+                    getResponseHeaderNameForTokenType: loggingOverrideFuncSync(
+                        "Session.getResponseHeaderNameForTokenType",
+                        getResponseHeaderNameForTokenType
+                    ),
+                    getCookieNameForTokenType: loggingOverrideFuncSync(
+                        "Session.getCookieNameForTokenType",
+                        getCookieNameForTokenType
+                    ),
                     override: {
                         apis: overrideBuilderWithLogging("Session.override.apis", config?.override?.apis),
                         functions: overrideBuilderWithLogging(
@@ -173,9 +178,9 @@ function initST(config: any) {
                     shouldDoAutomaticAccountLinking: callbackWithLog(
                         "AccountLinking.shouldDoAutomaticAccountLinking",
                         config.shouldDoAutomaticAccountLinking,
-                        {
+                        () => ({
                             shouldAutomaticallyLink: false,
-                        }
+                        })
                     ),
                     onAccountLinked: callbackWithLog("AccountLinking.onAccountLinked", config.onAccountLinked),
                     override: {
@@ -228,7 +233,9 @@ function initST(config: any) {
                     getEmailForRecipeUserId: callbackWithLog(
                         "EmailVerification.getEmailForRecipeUserId",
                         config?.getEmailForRecipeUserId,
-                        { status: "UNKNOWN_USER_ID_ERROR" }
+                        () => ({
+                            status: "UNKNOWN_USER_ID_ERROR",
+                        })
                     ),
                     override: {
                         apis: overrideBuilderWithLogging("EmailVerification.override.apis", config?.override?.apis),
@@ -313,40 +320,18 @@ function initST(config: any) {
             );
         }
         if (recipe.recipeId === "oauth2provider") {
-            let initConfig: OAuth2ProviderTypeInput = {
-                ...config,
-            };
-            if (initConfig.override?.functions) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    functions: getFunc(`${initConfig.override.functions}`),
-                };
-            }
-            if (initConfig.override?.apis) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    apis: getFunc(`${initConfig.override.apis}`),
-                };
-            }
-            recipeList.push(OAuth2Provider.init(initConfig));
-        }
-        if (recipe.recipeId === "oauth2client") {
-            let initConfig: OAuth2ClientTypeInput = {
-                ...config,
-            };
-            if (initConfig.override?.functions) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    functions: getFunc(`${initConfig.override.functions}`),
-                };
-            }
-            if (initConfig.override?.apis) {
-                initConfig.override = {
-                    ...initConfig.override,
-                    apis: getFunc(`${initConfig.override.apis}`),
-                };
-            }
-            recipeList.push(OAuth2Client.init(initConfig));
+            recipeList.push(
+                OAuth2Provider.init({
+                    ...config,
+                    override: {
+                        apis: overrideBuilderWithLogging("OAuth2Provider.override.apis", config?.override?.apis),
+                        functions: overrideBuilderWithLogging(
+                            "OAuth2Provider.override.functions",
+                            config?.override?.functions
+                        ),
+                    },
+                })
+            );
         }
 
         if (recipe.recipeId === "webauthn") {
@@ -427,7 +412,7 @@ app.get("/test/overrideparams", async (req, res, next) => {
 });
 
 app.get("/test/featureflag", async (req, res, next) => {
-    res.json([]);
+    res.json(["removedOverwriteSessionDuringSignInUp", "configurableCookieAndHeaderNames"]);
 });
 
 app.post("/test/resetoverrideparams", async (req, res, next) => {
@@ -531,7 +516,7 @@ app.listen(API_PORT, "localhost", () => {
     logDebugMessage(`node-test-server-server started on localhost:${API_PORT}`);
 });
 
-function loggingOverrideFuncSync<T>(name: string, originalImpl: (...args: any[]) => Promise<T>) {
+function loggingOverrideFuncSync<T>(name: string, originalImpl: (...args: any[]) => T) {
     return function (...args: any[]) {
         logOverrideEvent(name, "CALL", args);
         try {
@@ -558,8 +543,8 @@ function loggingOverrideFunc<T>(name: string, originalImpl: (...args: any[]) => 
     };
 }
 
-function callbackWithLog<T = undefined>(name: string, overrideName: string, defaultValue?: T) {
-    const impl = overrideName ? getFunc(overrideName) : () => defaultValue;
+function callbackWithLog<T = undefined>(name: string, overrideName: string, defaultImpl?: (...args: any[]) => T) {
+    const impl = overrideName ? getFunc(overrideName) : defaultImpl ?? (() => undefined);
     return loggingOverrideFunc<T>(name, impl);
 }
 

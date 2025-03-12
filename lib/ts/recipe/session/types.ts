@@ -68,13 +68,14 @@ export type TypeInput = {
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
     olderCookieDomain?: string;
-    overwriteSessionDuringSignInUp?: boolean;
 
     getTokenTransferMethod?: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
         userContext: UserContext;
     }) => TokenTransferMethod | "any";
+    getCookieNameForTokenType?: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
+    getResponseHeaderNameForTokenType?: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
 
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
@@ -100,9 +101,10 @@ export type TypeNormalisedInput = {
         userContext: UserContext;
     }) => "strict" | "lax" | "none";
     cookieSecure: boolean;
+    getCookieNameForTokenType: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
+    getResponseHeaderNameForTokenType: (req: BaseRequest, tokenType: TokenType, userContext: UserContext) => string;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    overwriteSessionDuringSignInUp: boolean | undefined;
 
     antiCsrfFunctionOrString:
         | "VIA_TOKEN"

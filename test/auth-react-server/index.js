@@ -847,7 +847,6 @@ function initST({ passwordlessConfig } = {}) {
         [
             "session",
             Session.init({
-                overwriteSessionDuringSignIn: true,
                 override: {
                     apis: function (originalImplementation) {
                         return {

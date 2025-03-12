@@ -30,7 +30,10 @@ export default async function removeDeviceAPI(
     const session = await Session.getSession(
         options.req,
         options.res,
-        { overrideGlobalClaimValidators: () => [], sessionRequired: true },
+        {
+            overrideGlobalClaimValidators: () => [],
+            sessionRequired: true,
+        },
         userContext
     );
 
