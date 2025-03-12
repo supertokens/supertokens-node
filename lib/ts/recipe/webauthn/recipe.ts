@@ -192,6 +192,14 @@ export default class Recipe extends RecipeModule {
                         result = Array.from(new Set(result));
                     }
 
+                    // If the loginmethod associated with the session has an email address, we move it to the top of the list (if it's already in the list)
+                    if (sessionLoginMethod.email !== undefined && result.includes(sessionLoginMethod.email)) {
+                        result = [
+                            sessionLoginMethod.email,
+                            ...result.filter((email) => email !== sessionLoginMethod!.email),
+                        ];
+                    }
+
                     return {
                         status: "OK",
                         factorIdToEmailsMap: {
