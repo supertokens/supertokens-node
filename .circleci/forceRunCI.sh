@@ -2,8 +2,8 @@ PAT=`cat .pat`
 auth=`echo "${PAT}:" | tr -d '\n' | base64 --wrap=0`
 branch=`git rev-parse --abbrev-ref HEAD`
 
-cdiCoreMap='{ "5.3": "feat/webauthn-base" }'
-cdiPluginInterfaceMap='{ "5.3": "feat/webauthn-base" }'
+cdiCoreMap='{ }'
+cdiPluginInterfaceMap='{ }'
 fdiNodeMap='{ "3.1": "21.0", "4.0": "feat/webauthn/base" }'
 fdiWebsiteMap='{ "1.17": "20.1", "1.18": "20.1", "1.19": "20.1", "2.0": "20.1", "3.0": "20.1", "3.1": "20.1", "4.0": "20.1" }'
 fdiAuthReactMap='{ "3.1": "0.49", "4.0": "feat/webauthn/base" }'
