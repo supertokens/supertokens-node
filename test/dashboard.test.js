@@ -159,6 +159,9 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
                     },
                 ],
                 timeJoined: user.timeJoined,
+                webauthn: {
+                    credentialIds: [],
+                },
                 loginMethods: [
                     {
                         email: "test@example.com",
@@ -551,11 +554,15 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
             epLoginMethod.verified = true;
             delete epLoginMethod.phoneNumber;
             delete epLoginMethod.thirdParty;
+            delete epLoginMethod.webauthn;
 
             assert.deepStrictEqual(res.body.users, [
                 {
                     ...user.toJson(),
                     thirdParty: [],
+                    webauthn: {
+                        credentialIds: [],
+                    },
                     timeJoined: epUser.user.timeJoined,
                     loginMethods: [epLoginMethod],
                 },
@@ -637,6 +644,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
 
             const expectedUser = user.toJson();
             delete expectedUser.loginMethods[0].phoneNumber;
+            delete expectedUser.loginMethods[0].webauthn;
             assert.deepStrictEqual(res.body.users, [expectedUser]);
         });
     });

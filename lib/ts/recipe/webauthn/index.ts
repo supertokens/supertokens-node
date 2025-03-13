@@ -47,7 +47,7 @@ export default class Wrapper {
             supportedAlgorithmIds: number[] | undefined;
             timeout: number | undefined;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext?: Record<string, any>;
         } & (
             | {
                   recoverAccountToken: string;
@@ -72,7 +72,7 @@ export default class Wrapper {
         userPresence: boolean | undefined;
         timeout: number | undefined;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInOptions({
             ...input,
@@ -83,7 +83,7 @@ export default class Wrapper {
     static getGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getGeneratedOptions({
             ...input,
@@ -97,7 +97,7 @@ export default class Wrapper {
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             ...input,
@@ -111,7 +111,7 @@ export default class Wrapper {
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             ...input,
@@ -123,7 +123,7 @@ export default class Wrapper {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         const resp = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCredentials({
             ...input,
@@ -151,7 +151,7 @@ export default class Wrapper {
         tenantId: string;
         userId: string;
         email: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.generateRecoverAccountToken({
             ...input,
@@ -216,7 +216,7 @@ export default class Wrapper {
         tenantId: string;
         userId: string;
         email: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         const token = await this.generateRecoverAccountToken({ tenantId, userId, email, userContext });
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
@@ -246,7 +246,7 @@ export default class Wrapper {
         tenantId: string;
         userId: string;
         email: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         const user = await getUser(userId, userContext);
         if (!user) {
@@ -289,7 +289,7 @@ export default class Wrapper {
     static async getUserFromRecoverAccountToken(input: {
         token: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserFromRecoverAccountToken({
             ...input,
@@ -300,7 +300,7 @@ export default class Wrapper {
     static async removeGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeGeneratedOptions({
             ...input,
@@ -311,7 +311,7 @@ export default class Wrapper {
     static async removeCredential(input: {
         webauthnCredentialId: string;
         recipeUserId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeCredential({
             ...input,
@@ -322,7 +322,7 @@ export default class Wrapper {
     static async getCredential(input: {
         webauthnCredentialId: string;
         recipeUserId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getCredential({
             ...input,
@@ -330,7 +330,7 @@ export default class Wrapper {
         });
     }
 
-    static async listCredentials(input: { recipeUserId: string; userContext: Record<string, any> }) {
+    static async listCredentials(input: { recipeUserId: string; userContext?: Record<string, any> }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCredentials({
             ...input,
             userContext: getUserContext(input.userContext),
