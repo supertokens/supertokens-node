@@ -117,6 +117,7 @@ function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userI
 
 let webauthnStore = new Map();
 const saveWebauthnToken = async ({ user, recoverAccountLink }) => {
+    console.log("saveWebauthnToken: ", user, recoverAccountLink);
     const webauthn = webauthnStore.get(user.email) || {
         email: user.email,
         recoverAccountLink: "",
@@ -561,6 +562,7 @@ app.get("/test/webauthn/get-token", async (req, res) => {
         res.status(404).send({ error: "Webauthn not found" });
         return;
     }
+    console.log("webauthn details fetched: ", webauthn);
     res.send({ token: webauthn.token });
 });
 
