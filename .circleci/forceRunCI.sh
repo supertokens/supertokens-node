@@ -4,9 +4,9 @@ branch=`git rev-parse --abbrev-ref HEAD`
 
 cdiCoreMap='{ }'
 cdiPluginInterfaceMap='{ }'
-fdiNodeMap='{ "3.1": "21.0", "4.0": "feat/webauthn/base" }'
-fdiWebsiteMap='{ "1.17": "20.1", "1.18": "20.1", "1.19": "20.1", "2.0": "20.1", "3.0": "20.1", "3.1": "20.1", "4.0": "20.1" }'
-fdiAuthReactMap='{ "3.1": "0.49", "4.0": "feat/webauthn/base" }'
+fdiNodeMap='{ "4.1": "feat/webauthn/base" }'
+fdiWebsiteMap='{ "1.17": "20.1", "1.18": "20.1", "1.19": "20.1", "2.0": "20.1", "3.0": "20.1", "3.1": "20.1", "4.0": "20.1", "4.1": "20.1" }'
+fdiAuthReactMap='{ "4.1": "feat/webauthn/base" }'
 
 data=`jq -cn --arg branch "$branch" \
   --arg cdiCoreMap "$cdiCoreMap" \

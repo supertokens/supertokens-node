@@ -125,8 +125,9 @@ const saveWebauthnToken = async ({ user, recoverAccountLink }) => {
     };
     webauthn.recoverAccountLink = recoverAccountLink;
 
-    // Parse the token from the recoverAccountLink
-    const token = recoverAccountLink.split("token=")[1].replace("&tenantId=public", "");
+    // Parse the token from the recoverAccountLink using URL and URLSearchParams
+    const url = new URL(recoverAccountLink);
+    const token = url.searchParams.get("token");
     webauthn.token = token;
 
     webauthnStore.set(user.email, webauthn);
