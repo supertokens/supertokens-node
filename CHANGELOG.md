@@ -10,10 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added WebAuthn (Passkeys) Support
 
 -   Added WebAuthn recipe with authentication support:
+
     -   Registration, sign-in, and credential verification flows
     -   Account recovery functionality
 
 -   Added new API endpoints for WebAuthn operations:
+
     -   GET `/api/webauthn/email/exists` - Check if email exists in system
     -   POST `/api/webauthn/options/register` - Handle registration options
     -   POST `/api/webauthn/options/signin` - Handle sign-in options
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   POST `/api/user/webauthn/reset/token` - Generate recovery tokens
 
 -   Added WebAuthn support to account linking functionality:
+
     -   Support for linking users based on WebAuthn `credentialId`
     -   Updated `AccountInfo` type to `AccountInfoInput` with WebAuthn fields
     -   Added `hasSameWebauthnInfoAs` method for credential comparison
@@ -30,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Updated FDI support to `4.1`
 
 ### Breaking Changes
+
 -   Updated CDI supported version from `5.2` to `5.3`
 -   Changed `AccountInfo` to `AccountInfoInput` in various methods for better type safety. This is required in order to allow querying by a single WebAuthn `credentialId`, while the WebAuthn login method contains an array of `credentialId`
 
