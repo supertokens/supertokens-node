@@ -103,7 +103,7 @@ jobs:
             - slack/status
     test-authreact:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: node:18
             - image: rishabhpoddar/oauth-server-cicd
         resource_class: large
         parameters:
@@ -112,6 +112,9 @@ jobs:
         parallelism: 4
         steps:
             - checkout
+            - run: apt update && apt install -y bc jq lsof libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm1 libxss1 libasound2 libxshmfence1 xvfb
+            - run: chmod +x .circleci/installJava.sh
+            - run: (cd .circleci/ && ./installJava.sh)
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
             - run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
