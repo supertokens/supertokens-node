@@ -25,7 +25,6 @@ async function createAndSendEmailUsingSupertokensService(input: {
     if (isTestEnv()) {
         return;
     }
-    console.log("createAndSendEmailUsingSupertokensService: input:", input);
 
     const result = await postWithFetch(
         "https://api.supertokens.com/0/st/auth/webauthn/recover",
@@ -43,9 +42,6 @@ async function createAndSendEmailUsingSupertokensService(input: {
             errorLogHeader: "Error sending webauthn recover account email",
         }
     );
-
-    console.log("createAndSendEmailUsingSupertokensService: api result:", result);
-    console.log("createAndSendEmailUsingSupertokensService: stack:", new Error().stack);
 
     if ("error" in result) {
         throw result.error;
