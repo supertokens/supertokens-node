@@ -28,7 +28,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
     console.log("createAndSendEmailUsingSupertokensService: input:", input);
 
     const result = await postWithFetch(
-        "https://api.supertokens.io/0/st/auth/webauthn/recover",
+        "https://dev.api.supertokens.io/0/st/auth/webauthn/recover",
         {
             "api-version": "0",
             "content-type": "application/json; charset=utf-8",
