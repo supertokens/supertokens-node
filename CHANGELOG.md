@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Updated FDI support to `4.1`
 
-## [21.1.1] - 2025-03-06
+## [21.1.1] - 2025-03-18
 
 -   Fixes an issue where the response body was not being cloned when using cache
 -   Fixes type of `cookies` to `string[]` instead of `string` in:
