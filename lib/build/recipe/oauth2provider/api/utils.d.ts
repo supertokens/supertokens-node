@@ -15,7 +15,7 @@ export declare function loginGET({
     loginChallenge: string;
     session?: SessionContainerInterface;
     shouldTryRefresh: boolean;
-    cookies?: string;
+    cookies?: string[];
     userContext: UserContext;
     isDirectCall: boolean;
 }): Promise<
@@ -23,11 +23,11 @@ export declare function loginGET({
     | {
           status: string;
           redirectTo: string;
-          cookies: string | undefined;
+          cookies: string[] | undefined;
       }
     | {
           redirectTo: string;
-          cookies: string | undefined;
+          cookies: string[] | undefined;
           status?: undefined;
       }
 >;
@@ -41,7 +41,7 @@ export declare function handleLoginInternalRedirects({
 }: {
     response: {
         redirectTo: string;
-        cookies?: string;
+        cookies?: string[];
     };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
@@ -51,7 +51,7 @@ export declare function handleLoginInternalRedirects({
 }): Promise<
     | {
           redirectTo: string;
-          cookies?: string;
+          cookies?: string[];
       }
     | ErrorOAuth2
 >;

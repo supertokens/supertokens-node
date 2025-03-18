@@ -22,7 +22,7 @@ export async function loginGET({
     loginChallenge: string;
     session?: SessionContainerInterface;
     shouldTryRefresh: boolean;
-    cookies?: string;
+    cookies?: string[];
     userContext: UserContext;
     isDirectCall: boolean;
 }) {
@@ -143,7 +143,7 @@ export async function loginGET({
     };
 }
 
-function getMergedCookies({ origCookies = "", newCookies }: { origCookies?: string; newCookies?: string }): string {
+function getMergedCookies({ origCookies = "", newCookies }: { origCookies?: string; newCookies?: string[] }): string {
     if (!newCookies) {
         return origCookies;
     }
@@ -168,14 +168,18 @@ function getMergedCookies({ origCookies = "", newCookies }: { origCookies?: stri
         .join(";");
 }
 
-function mergeSetCookieHeaders(setCookie1?: string, setCookie2?: string): string {
-    if (!setCookie1) {
-        return setCookie2 || "";
+function mergeSetCookieHeaders(setCookie1?: string[], setCookie2?: string[]): string[] {
+    if (setCookie1 == undefined || setCookie1.length === 0) {
+        return setCookie2 === undefined ? [] : setCookie2;
     }
-    if (!setCookie2 || setCookie1 === setCookie2) {
+    if (
+        !setCookie2 ||
+        (new Set(setCookie1).size === new Set(setCookie2).size &&
+            new Set(setCookie1).size === new Set([...setCookie1, ...setCookie2]).size)
+    ) {
         return setCookie1;
     }
-    return `${setCookie1}, ${setCookie2}`;
+    return [...setCookie1, ...setCookie2];
 }
 
 function isLoginInternalRedirect(redirectTo: string): boolean {
@@ -202,13 +206,13 @@ export async function handleLoginInternalRedirects({
     cookie = "",
     userContext,
 }: {
-    response: { redirectTo: string; cookies?: string };
+    response: { redirectTo: string; cookies?: string[] };
     recipeImplementation: RecipeInterface;
     session?: SessionContainerInterface;
     shouldTryRefresh: boolean;
     cookie?: string;
     userContext: UserContext;
-}): Promise<{ redirectTo: string; cookies?: string } | ErrorOAuth2> {
+}): Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2> {
     if (!isLoginInternalRedirect(response.redirectTo)) {
         return response;
     }

@@ -104,7 +104,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               redirectTo: string;
-              cookies: string | undefined;
+              cookies: string[] | undefined;
           }
         | ErrorOAuth2
     >;
@@ -379,7 +379,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     frontendRedirectTo: string;
-                    cookies?: string;
+                    cookies?: string[];
                 }
               | ErrorOAuth2
               | GeneralErrorResponse
@@ -396,7 +396,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     redirectTo: string;
-                    cookies?: string;
+                    cookies?: string[];
                 }
               | ErrorOAuth2
               | GeneralErrorResponse
