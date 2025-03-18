@@ -369,42 +369,6 @@ function initST(config: any) {
                 })
             );
         }
-
-        if (recipe.recipeId === "webauthn") {
-            let init: WebauthnTypeInput = {
-                ...config,
-            };
-
-            recipeList.push(
-                WebAuthn.init({
-                    ...init,
-                    getRelyingPartyName: config?.getRelyingPartyName
-                        ? callbackWithLog("WebAuthn.getRelyingPartyName", config?.getRelyingPartyName)
-                        : undefined,
-                    getRelyingPartyId: config?.getRelyingPartyId
-                        ? callbackWithLog("WebAuthn.getRelyingPartyId", config?.getRelyingPartyId)
-                        : undefined,
-                    validateEmailAddress: config?.validateEmailAddress
-                        ? callbackWithLog("WebAuthn.validateEmailAddress", config?.validateEmailAddress)
-                        : undefined,
-                    getOrigin: config?.getOrigin ? callbackWithLog("WebAuthn.getOrigin", config?.getOrigin) : undefined,
-                    emailDelivery: {
-                        ...config?.emailDelivery,
-                        override: overrideBuilderWithLogging(
-                            "WebAuthn.emailDelivery.override",
-                            config?.emailDelivery?.override
-                        ),
-                    },
-                    override: {
-                        apis: overrideBuilderWithLogging("WebAuthn.override.apis", config?.override?.apis),
-                        functions: overrideBuilderWithLogging(
-                            "WebAuthn.override.functions",
-                            config?.override?.functions
-                        ),
-                    },
-                })
-            );
-        }
     });
 
     init.recipeList = recipeList;

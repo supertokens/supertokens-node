@@ -42,6 +42,7 @@ async function createAndSendEmailUsingSupertokensService(input: {
             errorLogHeader: "Error sending webauthn recover account email",
         }
     );
+
     if ("error" in result) {
         throw result.error;
     }

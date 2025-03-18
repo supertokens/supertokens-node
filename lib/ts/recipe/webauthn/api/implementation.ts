@@ -716,6 +716,7 @@ export default function getAPIImplementation(): APIInterface {
                 webauthnAccount.recipeUserId
             );
         },
+
         recoverAccountPOST: async function ({
             webauthnGeneratedOptionsId,
             credential,
