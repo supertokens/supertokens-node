@@ -581,75 +581,73 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         }
     });
 
-    it("testing URL path normalisation", async function () {
+    describe("testing URL path normalisation", async function () {
         function normaliseURLPathOrThrowError(input) {
             return new NormalisedURLPath(input).getAsStringDangerous();
         }
 
-        assert.strictEqual(normaliseURLPathOrThrowError("exists?email=john.doe%40gmail.com"), "/exists");
-        assert.strictEqual(
-            normaliseURLPathOrThrowError("/auth/email/exists?email=john.doe%40gmail.com"),
-            "/auth/email/exists"
-        );
-        assert.strictEqual(normaliseURLPathOrThrowError("exists"), "/exists");
-        assert.strictEqual(normaliseURLPathOrThrowError("/exists"), "/exists");
-        assert.strictEqual(normaliseURLPathOrThrowError("/exists?email=john.doe%40gmail.com"), "/exists");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("https://api.example.com"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com?hello=1"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com/hello"), "/hello");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com/"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com:8080"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com#random2"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("api.example.com/"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("api.example.com#random"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError(".example.com"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError("api.example.com/?hello=1&bye=2"), "");
+        const params = [
+            ["exists?email=john.doe%40gmail.com", "/exists"],
+            ["/auth/email/exists?email=john.doe%40gmail.com", "/auth/email/exists"],
+            ["exists", "/exists"],
+            ["eXiStS", "/eXiStS"],
+            ["/exists", "/exists"],
+            ["/eXiStS", "/eXiStS"],
+            ["/exists?email=john.doe%40gmail.com", "/exists"],
+            ["http://api.example.com", ""],
+            ["https://api.example.com", ""],
+            ["http://api.example.com?hello=1", ""],
+            ["http://api.example.com/hello", "/hello"],
+            ["http://api.example.com/HellO", "/HellO"],
+            ["http://api.example.com/", ""],
+            ["http://api.example.com:8080", ""],
+            ["http://api.example.com#random2", ""],
+            ["api.example.com/", ""],
+            ["api.example.com#random", ""],
+            [".example.com", ""],
+            ["api.example.com/?hello=1&bye=2", ""],
+            ["http://api.example.com/one/two", "/one/two"],
+            ["http://1.2.3.4/one/two", "/one/two"],
+            ["1.2.3.4/one/two", "/one/two"],
+            ["https://api.example.com/one/two/", "/one/two"],
+            ["http://api.example.com/one/two?hello=1", "/one/two"],
+            ["http://api.example.com/hello/", "/hello"],
+            ["http://api.example.com/one/two/", "/one/two"],
+            ["http://api.example.com:8080/one/two", "/one/two"],
+            ["http://api.example.com/one/two#random2", "/one/two"],
+            ["api.example.com/one/two", "/one/two"],
+            ["api.example.com/one/two/#random", "/one/two"],
+            [".example.com/one/two", "/one/two"],
+            ["api.example.com/one/two?hello=1&bye=2", "/one/two"],
+            ["/one/two", "/one/two"],
+            ["one/two", "/one/two"],
+            ["one/two/", "/one/two"],
+            ["/one", "/one"],
+            ["one", "/one"],
+            ["one/", "/one"],
+            ["/one/two/", "/one/two"],
+            ["/one/two?hello=1", "/one/two"],
+            ["one/two?hello=1", "/one/two"],
+            ["/one/two/#random", "/one/two"],
+            ["one/two#random", "/one/two"],
+            ["localhost:4000/one/two", "/one/two"],
+            ["127.0.0.1:4000/one/two", "/one/two"],
+            ["127.0.0.1/one/two", "/one/two"],
+            ["https://127.0.0.1:80/one/two", "/one/two"],
+            ["/", ""],
+            ["", ""],
+            ["/.netlify/functions/api", "/.netlify/functions/api"],
+            ["/netlify/.functions/api", "/netlify/.functions/api"],
+            ["app.example.com/.netlify/functions/api", "/.netlify/functions/api"],
+            ["app.example.com/netlify/.functions/api", "/netlify/.functions/api"],
+            ["/app.example.com", "/app.example.com"],
+        ];
 
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://1.2.3.4/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("1.2.3.4/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("https://api.example.com/one/two/"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com/one/two?hello=1"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com/hello/"), "/hello");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com/one/two/"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com:8080/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("http://api.example.com/one/two#random2"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("api.example.com/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("api.example.com/one/two/#random"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError(".example.com/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("api.example.com/one/two?hello=1&bye=2"), "/one/two");
-
-        assert.strictEqual(normaliseURLPathOrThrowError("/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("one/two/"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("/one"), "/one");
-        assert.strictEqual(normaliseURLPathOrThrowError("one"), "/one");
-        assert.strictEqual(normaliseURLPathOrThrowError("one/"), "/one");
-        assert.strictEqual(normaliseURLPathOrThrowError("/one/two/"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("/one/two?hello=1"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("one/two?hello=1"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("/one/two/#random"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("one/two#random"), "/one/two");
-
-        assert.strictEqual(normaliseURLPathOrThrowError("localhost:4000/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("127.0.0.1:4000/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("127.0.0.1/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("https://127.0.0.1:80/one/two"), "/one/two");
-        assert.strictEqual(normaliseURLPathOrThrowError("/"), "");
-        assert.strictEqual(normaliseURLPathOrThrowError(""), "");
-
-        assert.strictEqual(normaliseURLPathOrThrowError("/.netlify/functions/api"), "/.netlify/functions/api");
-        assert.strictEqual(normaliseURLPathOrThrowError("/netlify/.functions/api"), "/netlify/.functions/api");
-        assert.strictEqual(
-            normaliseURLPathOrThrowError("app.example.com/.netlify/functions/api"),
-            "/.netlify/functions/api"
-        );
-        assert.strictEqual(
-            normaliseURLPathOrThrowError("app.example.com/netlify/.functions/api"),
-            "/netlify/.functions/api"
-        );
-        assert.strictEqual(normaliseURLPathOrThrowError("/app.example.com"), "/app.example.com");
+        params.forEach(([input, expectation]) => {
+            it(`'${input}' -> '${expectation}'`, () => {
+                assert.strictEqual(normaliseURLPathOrThrowError(input), expectation);
+            });
+        });
     });
 
     it("testing URL domain normalisation", async function () {

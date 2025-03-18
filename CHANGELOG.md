@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [unreleased]
+## [22.0.0] - 2025-03-19
+
+### Breaking changes
+
+-   Makes URL path normalization case sensitive
+    -   Updates `normalise_url_path_or_throw_error` to be case sensitive
+    -   URL paths will not be converted to lower-case, and will be kept as-is.
+-   Updated CDI supported version from `5.2` to `5.3`
+-   Changed `AccountInfo` to `AccountInfoInput` in various methods for better type safety. This is required in order to allow querying by a single WebAuthn `credentialId`, while the WebAuthn login method contains an array of `credentialId`
 
 ### Added WebAuthn (Passkeys) Support
 
@@ -31,11 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Added `hasSameWebauthnInfoAs` method for credential comparison
 
 -   Updated FDI support to `4.1`
-
-### Breaking Changes
-
--   Updated CDI supported version from `5.2` to `5.3`
--   Changed `AccountInfo` to `AccountInfoInput` in various methods for better type safety. This is required in order to allow querying by a single WebAuthn `credentialId`, while the WebAuthn login method contains an array of `credentialId`
 
 ## [21.1.1] - 2025-03-06
 

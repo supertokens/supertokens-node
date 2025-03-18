@@ -43,31 +43,32 @@ export default class NormalisedURLPath {
 }
 
 function normaliseURLPathOrThrowError(input: string): string {
-    input = input.trim().toLowerCase();
+    input = input.trim();
+    const inputLower = input.toLowerCase();
 
     try {
-        if (!input.startsWith("http://") && !input.startsWith("https://")) {
+        if (!inputLower.startsWith("http://") && !inputLower.startsWith("https://")) {
             throw new Error("converting to proper URL");
         }
         let urlObj = new URL(input);
-        input = urlObj.pathname;
+        const urlPath = urlObj.pathname;
 
-        if (input.charAt(input.length - 1) === "/") {
-            return input.substr(0, input.length - 1);
+        if (urlPath.charAt(urlPath.length - 1) === "/") {
+            return urlPath.substr(0, urlPath.length - 1);
         }
 
-        return input;
+        return urlPath;
     } catch (err) {}
     // not a valid URL
 
     // If the input contains a . it means they have given a domain name.
     // So we try assuming that they have given a domain name + path
     if (
-        (domainGiven(input) || input.startsWith("localhost")) &&
-        !input.startsWith("http://") &&
-        !input.startsWith("https://")
+        (domainGiven(inputLower) || inputLower.startsWith("localhost")) &&
+        !inputLower.startsWith("http://") &&
+        !inputLower.startsWith("https://")
     ) {
-        input = "http://" + input;
+        input = `http://${input}`;
         return normaliseURLPathOrThrowError(input);
     }
 
@@ -78,9 +79,9 @@ function normaliseURLPathOrThrowError(input: string): string {
     // at this point, we should be able to convert it into a fake URL and recursively call this function.
     try {
         // test that we can convert this to prevent an infinite loop
-        new URL("http://example.com" + input);
+        new URL(`http://example.com${input}`);
 
-        return normaliseURLPathOrThrowError("http://example.com" + input);
+        return normaliseURLPathOrThrowError(`http://example.com${input}`);
     } catch (err) {
         throw Error("Please provide a valid URL path");
     }
