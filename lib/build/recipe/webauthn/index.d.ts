@@ -437,6 +437,24 @@ export default class Wrapper {
             createdAt: number;
         }[];
     }>;
+    static updateUserEmail(input: {
+        email: string;
+        recipeUserId: string;
+        tenantId: string;
+        userContext?: Record<string, any>;
+    }): Promise<
+        | (
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | {
+                    status: "UNKNOWN_USER_ID_ERROR";
+                }
+          )
+        | {
+              status: "OK";
+          }
+    >;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -458,4 +476,5 @@ export declare let removeGeneratedOptions: typeof Wrapper.removeGeneratedOptions
 export declare let removeCredential: typeof Wrapper.removeCredential;
 export declare let getCredential: typeof Wrapper.getCredential;
 export declare let listCredentials: typeof Wrapper.listCredentials;
+export declare let updateUserEmail: typeof Wrapper.updateUserEmail;
 export type { RecipeInterface, APIOptions, APIInterface };
