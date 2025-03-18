@@ -82,6 +82,11 @@ export default async function login(
             frontendRedirectTo: response.frontendRedirectTo,
         });
     } else if ("statusCode" in response) {
+        // We want to avoid returning a 401 to the frontend, as it may trigger a refresh loop
+        if (response.statusCode === 401) {
+            response.statusCode = 400;
+        }
+
         sendNon200Response(options.res, response.statusCode ?? 400, {
             error: response.error,
             error_description: response.errorDescription,

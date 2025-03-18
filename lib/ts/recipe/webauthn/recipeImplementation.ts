@@ -60,7 +60,9 @@ export default function getRecipeInterface(
 
                 const user = result.user as User;
                 email = user.loginMethods.find(
-                    (lm) => lm.recipeId === "webauthn" && lm.recipeUserId === result.recipeUserId
+                    (lm) =>
+                        lm.recipeId === "webauthn" &&
+                        lm.recipeUserId.getAsString() === result.recipeUserId.getAsString()
                 )?.email;
             }
 
@@ -71,7 +73,7 @@ export default function getRecipeInterface(
                 };
             }
 
-            const err = await getWebauthnConfig().validateEmailAddress(email, tenantId);
+            const err = await getWebauthnConfig().validateEmailAddress(email, tenantId, userContext);
             if (err) {
                 return {
                     status: "INVALID_EMAIL_ERROR",
@@ -117,7 +119,6 @@ export default function getRecipeInterface(
             tenantId,
             userContext,
         }) {
-            // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/options/signin`
@@ -148,8 +149,6 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            let updatedUser = response.user;
-
             const linkResult = await AuthUtils.linkToSessionIfRequiredElseCreatePrimaryUserIdOrLinkByAccountInfo({
                 tenantId,
                 inputUser: response.user,
@@ -158,15 +157,13 @@ export default function getRecipeInterface(
                 shouldTryLinkingWithSessionUser,
                 userContext,
             });
-
             if (linkResult.status != "OK") {
                 return linkResult;
             }
-            updatedUser = linkResult.user;
 
             return {
                 status: "OK",
-                user: updatedUser,
+                user: linkResult.user,
                 recipeUserId: response.recipeUserId,
             };
         },
@@ -195,16 +192,6 @@ export default function getRecipeInterface(
                     recipeUserId: response.recipeUserId,
                     userContext,
                 });
-
-                // Unlike in the sign up recipe function, we do not do account linking here
-                // cause we do not want sign in to change the potentially user ID of a user
-                // due to linking when this function is called by the dev in their API -
-                // for example in their update password API. If we did account linking
-                // then we would have to ask the dev to also change the session
-                // in such API calls.
-                // In the case of sign up, since we are creating a new user, it's fine
-                // to link there since there is no user id change really from the dev's
-                // point of view who is calling the sign up recipe function.
 
                 // We do this so that we get the updated user (in case the above
                 // function updated the verification status) and can return that
@@ -243,8 +230,7 @@ export default function getRecipeInterface(
                 return {
                     status: "OK",
                     user: new User(response.user),
-                    // todo change this to response.recipeUserId when implemented,
-                    recipeUserId: new RecipeUserId(response.user.id),
+                    recipeUserId: new RecipeUserId(response.recipeUserId),
                 };
             }
 
@@ -275,7 +261,6 @@ export default function getRecipeInterface(
         },
 
         generateRecoverAccountToken: async function ({ userId, email, tenantId, userContext }) {
-            // the input user ID can be a recipe or a primary user ID.
             return await querier.sendPostRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/recover/token`
@@ -315,13 +300,23 @@ export default function getRecipeInterface(
         },
 
         getUserFromRecoverAccountToken: async function ({ token, tenantId, userContext }) {
-            return await querier.sendGetRequest(
+            const resp = await querier.sendGetRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/webauthn/user/recover`
                 ),
                 { token },
                 userContext
             );
+
+            if (resp.status === "OK") {
+                return {
+                    ...resp,
+                    user: new User(resp.user),
+                    recipeUserId: new RecipeUserId(resp.recipeUserId),
+                };
+            }
+
+            return resp;
         },
 
         removeCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
@@ -334,11 +329,20 @@ export default function getRecipeInterface(
         },
 
         getCredential: async function ({ webauthnCredentialId, recipeUserId, userContext }) {
-            return await querier.sendGetRequest(
+            const resp = await querier.sendGetRequest(
                 new NormalisedURLPath(`/recipe/webauthn/user/credential`),
                 { webauthnCredentialId, recipeUserId },
                 userContext
             );
+
+            if (resp.status === "OK") {
+                return {
+                    ...resp,
+                    recipeUserId: new RecipeUserId(resp.recipeUserId),
+                };
+            }
+
+            return resp;
         },
 
         listCredentials: async function ({ recipeUserId, userContext }) {

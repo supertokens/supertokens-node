@@ -56,6 +56,19 @@ const router = Router()
             next(e);
         }
     })
+    .post("/validateoauth2refreshtoken", async (req, res, next) => {
+        try {
+            logDebugMessage("OAuth2Provider:validateOAuth2RefreshToken %j", req.body);
+            const response = await OAuth2Provider.validateOAuth2RefreshToken(
+                req.body.token,
+                req.body.scopes,
+                req.body.userContext
+            );
+            res.json(response);
+        } catch (e) {
+            next(e);
+        }
+    })
     .post("/createtokenforclientcredentials", async (req, res, next) => {
         try {
             logDebugMessage("OAuth2Provider:createTokenForClientCredentials %j", req.body);

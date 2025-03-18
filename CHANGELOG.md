@@ -5,44 +5,91 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [unreleased]
+## [22.0.0] - 2025-03-19
 
 ### Breaking changes
 
 -   Makes URL path normalization case sensitive
     -   Updates `normalise_url_path_or_throw_error` to be case sensitive
     -   URL paths will not be converted to lower-case, and will be kept as-is.
+-   Updated CDI supported version from `5.2` to `5.3`
+-   Changed `AccountInfo` to `AccountInfoInput` in various methods for better type safety. This is required in order to allow querying by a single WebAuthn `credentialId`, while the WebAuthn login method contains an array of `credentialId`
+
+### Added WebAuthn (Passkeys) Support
+
+-   Added WebAuthn recipe with authentication support:
+
+    -   Registration, sign-in, and credential verification flows
+    -   Account recovery functionality
+
+-   Added new API endpoints for WebAuthn operations:
+
+    -   GET `/api/webauthn/email/exists` - Check if email exists in system
+    -   POST `/api/webauthn/options/register` - Handle registration options
+    -   POST `/api/webauthn/options/signin` - Handle sign-in options
+    -   POST `/api/webauthn/signin` - Handle WebAuthn sign-in
+    -   POST `/api/webauthn/signup` - Handle WebAuthn sign-up
+    -   POST `/api/user/webauthn/reset` - Handle account recovery
+    -   POST `/api/user/webauthn/reset/token` - Generate recovery tokens
+
+-   Added WebAuthn support to account linking functionality:
+
+    -   Support for linking users based on WebAuthn `credentialId`
+    -   Updated `AccountInfo` type to `AccountInfoInput` with WebAuthn fields
+    -   Added `hasSameWebauthnInfoAs` method for credential comparison
+
+-   Updated FDI support to `4.1`
+
+## [21.1.1] - 2025-03-06
+
+-   Fixes an issue where the response body was not being cloned when using cache
+-   Fixes type of `cookies` to `string[]` instead of `string` in:
+    -   Return type of `authorization` in `RecipeInterface` in `oauth2provider` recipe
+    -   Return type of `authGET` in `APIInterface` in `oauth2provider` recipe
+    -   Return type of `loginGET` in `APIInterface` in `oauth2provider` recipe
+
+## [21.1.0] - 2024-11-19
+
+-   Adds `getCookieNameForTokenType` config option to allow customizing the cookie name for a token type.
+-   Adds `getResponseHeaderNameForTokenType` config option to allow customizing the response header name for a token type.
+    -   Please note, that using this will require further customizations on the frontend
+-   Fixes an issue where `removeDevice` API allowed removing verified TOTP devices without the user completing MFA.
 
 ## [21.0.0] - 2024-10-07
 
 -   Added OAuth2Provider recipe
 -   Added a way to run CI on unmerged PRs
--   Added support for FDIs: 3.1 and 4.0. Required by: auth-react >=0.49.0 and web-js>=0.15.0
+-   Added support for FDIs: 3.1 and 4.0. Required by: auth-react >=0.48.0 and web-js>=0.14.0
 -   The `networkInterceptor` now also gets a new `params` prop in the request config.
 -   Adds `customFramework` util functions to minimize code required in custom frameworks like remix, astro etc.
 -   Replicates `fastify` types based on requirement for the SDK instead of using the original module.
+-   Improved type definitions for `TypeProvider`
 
 ### Breaking change
 
 -   Changes type of value in formField object to be `unknown` instead of `string` to add support for accepting any type of value in form fields.
--   Only supporting CDI 5.2, Compatible with Core version >= 10.0
--   Changed the default value of `overwriteSessionDuringSignInUp` to true.
+-   Only supporting CDI 5.2, Compatible with Core version >= 9.3
+-   Removed the `overwriteSessionDuringSignInUp` option.
 -   Added a new `shouldTryLinkingWithSessionUser` to sign in/up related APIs (and the related recipe functions)
     -   This will default to false on the API
     -   This will be set to true in function calls if you pass a session, otherwise it is set to false
     -   By setting this to true you can enable MFA flows (trying to connect to the session user)
     -   If set to false, the sign-in/up will be considered a first-factor
     -   Changed APIs:
+        -   `EmailPassword.signInPOST`
+        -   `EmailPassword.signUpPOST`
         -   `ThirdParty.signInUpPOST`
         -   `Passwordless.createCodePOST`
         -   `Passwordless.consumeCodePOST`
-        -   `Passwordless.consumeCodePOST`
+        -   `Passwordless.resendCodePOST`
     -   Changed functions:
+        -   `EmailPassword.signIn`
+        -   `EmailPassword.signUp`
         -   `ThirdParty.signInUp`
         -   `ThirdPary.manuallyCreateOrUpdateUser`
         -   `Passwordless.createCode`
         -   `Passwordless.consumeCode`
--   We no longer try to load the session if `shouldTryLinkingWithSessionUser` is set to false and overwriteSessionDuringSignInUp is set to true or left as the default value.
+-   We no longer try to load the session if `shouldTryLinkingWithSessionUser` is set to false.
 -   Changed the return type of `getOpenIdConfiguration` and `getOpenIdDiscoveryConfigurationGET`, and added the following props:
     -   authorization_endpoint
     -   token_endpoint

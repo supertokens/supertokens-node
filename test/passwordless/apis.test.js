@@ -2446,6 +2446,7 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
     }
 
     assert.strictEqual(validUserInputCodeResponse.user.thirdParty.length, 0);
+    assert.strictEqual(validUserInputCodeResponse.user.webauthn.credentialIds.length, 0);
 
     assert.strictEqual(validUserInputCodeResponse.user.loginMethods.length, 1);
     const loginMethod = {
@@ -2463,6 +2464,6 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
     }
     assert.deepStrictEqual(validUserInputCodeResponse.user.loginMethods, [loginMethod]);
 
-    assert.strictEqual(Object.keys(validUserInputCodeResponse.user).length, 8);
+    assert.strictEqual(Object.keys(validUserInputCodeResponse.user).length, 9);
     assert.strictEqual(Object.keys(validUserInputCodeResponse).length, 3);
 }

@@ -80,7 +80,12 @@ export async function getSessionFromRequest({
         userContext,
     });
 
-    const { requestTransferMethod, accessToken } = getAccessTokenFromRequest(req, allowedTransferMethod);
+    const { requestTransferMethod, accessToken } = getAccessTokenFromRequest(
+        config,
+        req,
+        allowedTransferMethod,
+        userContext
+    );
 
     let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
     let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
@@ -161,14 +166,19 @@ export async function getSessionFromRequest({
     return session;
 }
 
-export function getAccessTokenFromRequest(req: any, allowedTransferMethod: TokenTransferMethod | "any") {
+export function getAccessTokenFromRequest(
+    config: TypeNormalisedInput,
+    req: any,
+    allowedTransferMethod: TokenTransferMethod | "any",
+    userContext: UserContext
+) {
     const accessTokens: {
         [key in TokenTransferMethod]?: ParsedJWTInfo;
     } = {};
 
     // We check all token transfer methods for available access tokens
     for (const transferMethod of availableTokenTransferMethods) {
-        const tokenString = getToken(req, "access", transferMethod);
+        const tokenString = getToken(config, req, "access", transferMethod, userContext);
         if (tokenString !== undefined) {
             try {
                 const info = parseJWTWithoutSignatureVerification(tokenString);
@@ -202,7 +212,7 @@ export function getAccessTokenFromRequest(req: any, allowedTransferMethod: Token
         // If multiple access tokens exist in the request cookie, throw TRY_REFRESH_TOKEN.
         // This prompts the client to call the refresh endpoint, clearing olderCookieDomain cookies (if set).
         // ensuring outdated token payload isn't used.
-        const hasMultipleAccessTokenCookies = hasMultipleCookiesForTokenType(req, "access");
+        const hasMultipleAccessTokenCookies = hasMultipleCookiesForTokenType(config, req, "access", userContext);
         if (hasMultipleAccessTokenCookies) {
             logDebugMessage(
                 "getSession: Throwing TRY_REFRESH_TOKEN because multiple access tokens are present in request cookies"
@@ -259,7 +269,7 @@ export async function refreshSessionInRequest({
     // We check all token transfer methods for available refresh tokens
     // We do this so that we can later clear all we are not overwriting
     for (const transferMethod of availableTokenTransferMethods) {
-        refreshTokens[transferMethod] = getToken(req, "refresh", transferMethod);
+        refreshTokens[transferMethod] = getToken(config, req, "refresh", transferMethod, userContext);
         if (refreshTokens[transferMethod] !== undefined) {
             logDebugMessage("refreshSession: got refresh token from " + transferMethod);
         }
@@ -300,7 +310,7 @@ export async function refreshSessionInRequest({
         // See: https://github.com/supertokens/supertokens-node/issues/790
         if (
             (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
-            getToken(req, "access", "cookie") !== undefined
+            getToken(config, req, "access", "cookie", userContext) !== undefined
         ) {
             logDebugMessage(
                 "refreshSession: cleared all session tokens and returning UNAUTHORISED because refresh token in request is undefined"
@@ -518,7 +528,10 @@ export async function createNewSessionInRequest({
     logDebugMessage("createNewSession: Session created in core built");
 
     for (const transferMethod of availableTokenTransferMethods) {
-        if (transferMethod !== outputTransferMethod && getToken(req, "access", transferMethod) !== undefined) {
+        if (
+            transferMethod !== outputTransferMethod &&
+            getToken(config, req, "access", transferMethod, userContext) !== undefined
+        ) {
             clearSession(config, res, transferMethod, req, userContext);
         }
     }

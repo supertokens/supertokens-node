@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -29,8 +29,8 @@ export default async function generateRecoverAccountToken(
     }
 
     const requestBody = await options.req.getJSONBody();
-    const email = requestBody.email;
 
+    const email = requestBody.email;
     if (email === undefined || typeof email !== "string") {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
@@ -38,7 +38,7 @@ export default async function generateRecoverAccountToken(
         });
     }
 
-    let result = await apiImplementation.generateRecoverAccountTokenPOST({
+    const result = await apiImplementation.generateRecoverAccountTokenPOST({
         email,
         tenantId,
         options,

@@ -5,14 +5,14 @@ import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 export declare function clearSessionFromAllTokenTransferMethods(
     config: TypeNormalisedInput,
     res: BaseResponse,
-    request: BaseRequest | undefined,
+    request: BaseRequest,
     userContext: UserContext
 ): void;
 export declare function clearSession(
     config: TypeNormalisedInput,
     res: BaseResponse,
     transferMethod: TokenTransferMethod,
-    request: BaseRequest | undefined,
+    request: BaseRequest,
     userContext: UserContext
 ): void;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
@@ -20,12 +20,12 @@ export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfTok
 export declare function buildFrontToken(userId: string, atExpiry: number, accessTokenPayload: any): string;
 export declare function setFrontTokenInHeaders(res: BaseResponse, frontToken: string): void;
 export declare function getCORSAllowedHeaders(): string[];
-export declare function getCookieNameFromTokenType(tokenType: TokenType): "sAccessToken" | "sRefreshToken";
-export declare function getResponseHeaderNameForTokenType(tokenType: TokenType): "st-access-token" | "st-refresh-token";
 export declare function getToken(
+    config: TypeNormalisedInput,
     req: BaseRequest,
     tokenType: TokenType,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    userContext: UserContext
 ): string | undefined;
 export declare function setToken(
     config: TypeNormalisedInput,
@@ -34,7 +34,7 @@ export declare function setToken(
     value: string,
     expires: number,
     transferMethod: TokenTransferMethod,
-    req: BaseRequest | undefined,
+    req: BaseRequest,
     userContext: UserContext
 ): void;
 export declare function setHeader(res: BaseResponse, name: string, value: string): void;
@@ -83,4 +83,9 @@ export declare function clearSessionCookiesFromOlderCookieDomain({
     config: TypeNormalisedInput;
     userContext: UserContext;
 }): void;
-export declare function hasMultipleCookiesForTokenType(req: BaseRequest, tokenType: TokenType): boolean;
+export declare function hasMultipleCookiesForTokenType(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    tokenType: TokenType,
+    userContext: UserContext
+): boolean;

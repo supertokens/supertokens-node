@@ -139,9 +139,9 @@ function validateAndNormaliseGetOriginConfig(
 function validateAndNormaliseValidateEmailAddressConfig(
     validateEmailAddressConfig: TypeInputValidateEmailAddress | undefined
 ): TypeNormalisedInputValidateEmailAddress {
-    return (email, tenantId) => {
+    return (email, tenantId, userContext) => {
         if (typeof validateEmailAddressConfig === "function") {
-            return validateEmailAddressConfig(email, tenantId);
+            return validateEmailAddressConfig(email, tenantId, userContext);
         } else {
             return defaultEmailValidator(email);
         }

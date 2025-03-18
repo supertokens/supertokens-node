@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -24,14 +24,11 @@ export default async function emailExists(
     options: APIOptions,
     userContext: UserContext
 ): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
-
     if (apiImplementation.emailExistsGET === undefined) {
         return false;
     }
 
-    let email = options.req.getKeyValueFromQuery("email");
-
+    const email = options.req.getKeyValueFromQuery("email");
     if (email === undefined || typeof email !== "string") {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,

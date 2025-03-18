@@ -556,6 +556,11 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                     shouldNotContain: ["userContext: Record<String, any>", "userContext?: UserContext"],
                     canContain: [{ text: "userContext?: Record<String, any>", count: 1 }],
                 },
+                {
+                    fileName: "lib/ts/recipe/thirdparty/types.ts",
+                    shouldNotContain: ["userContext: Record<String, any>", "userContext?: Record<String, any>"],
+                    canContain: [{ text: "userContext?: UserContext", count: 4 }],
+                },
             ];
 
             let fileExceptionFound = false;

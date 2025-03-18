@@ -104,7 +104,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               redirectTo: string;
-              cookies: string | undefined;
+              cookies: string[] | undefined;
           }
         | ErrorOAuth2
     >;
@@ -354,9 +354,12 @@ export declare type RecipeInterface = {
     acceptLogoutRequest(input: {
         challenge: string;
         userContext: UserContext;
-    }): Promise<{
-        redirectTo: string;
-    }>;
+    }): Promise<
+        | {
+              redirectTo: string;
+          }
+        | ErrorOAuth2
+    >;
     rejectLogoutRequest(input: {
         challenge: string;
         userContext: UserContext;
@@ -376,7 +379,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     frontendRedirectTo: string;
-                    cookies?: string;
+                    cookies?: string[];
                 }
               | ErrorOAuth2
               | GeneralErrorResponse
@@ -393,7 +396,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     redirectTo: string;
-                    cookies?: string;
+                    cookies?: string[];
                 }
               | ErrorOAuth2
               | GeneralErrorResponse
@@ -533,6 +536,7 @@ export declare type OAuth2ClientOptions = {
     policyUri?: string;
     tosUri?: string;
     metadata?: Record<string, any>;
+    enableRefreshTokenRotation?: boolean;
 };
 export declare type GetOAuth2ClientsInput = {
     /**
@@ -548,9 +552,7 @@ export declare type GetOAuth2ClientsInput = {
      */
     clientName?: string;
 };
-export declare type CreateOAuth2ClientInput = Partial<
-    Omit<OAuth2ClientOptions, "createdAt" | "updatedAt" | "clientId" | "clientSecret">
->;
+export declare type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
 export declare type UpdateOAuth2ClientInput = NonNullableProperties<
     Omit<CreateOAuth2ClientInput, "redirectUris" | "grantTypes" | "responseTypes" | "metadata">
 > & {

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -30,8 +30,8 @@ export default async function registerOptions(
 
     const requestBody = await options.req.getJSONBody();
 
-    let email = requestBody.email?.trim();
-    let recoverAccountToken = requestBody.recoverAccountToken;
+    const email = requestBody.email?.trim();
+    const recoverAccountToken = requestBody.recoverAccountToken;
 
     if (
         (email === undefined || typeof email !== "string") &&
@@ -43,9 +43,8 @@ export default async function registerOptions(
         });
     }
 
-    // same as for passwordless lib/ts/recipe/passwordless/api/createCode.ts
     if (email !== undefined) {
-        const validateError = await options.config.validateEmailAddress(email, tenantId);
+        const validateError = await options.config.validateEmailAddress(email, tenantId, userContext);
         if (validateError !== undefined) {
             send200Response(options.res, {
                 status: "INVALID_EMAIL_ERROR",
@@ -55,7 +54,7 @@ export default async function registerOptions(
         }
     }
 
-    let result = await apiImplementation.registerOptionsPOST({
+    const result = await apiImplementation.registerOptionsPOST({
         email,
         recoverAccountToken,
         tenantId,

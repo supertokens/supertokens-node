@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd assistant-cli
+npm run cli -- $@

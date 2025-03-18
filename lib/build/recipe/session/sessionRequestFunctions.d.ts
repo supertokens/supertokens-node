@@ -26,8 +26,10 @@ export declare function getSessionFromRequest({
     userContext: UserContext;
 }): Promise<SessionContainerInterface | undefined>;
 export declare function getAccessTokenFromRequest(
+    config: TypeNormalisedInput,
     req: any,
-    allowedTransferMethod: TokenTransferMethod | "any"
+    allowedTransferMethod: TokenTransferMethod | "any",
+    userContext: UserContext
 ): {
     requestTransferMethod: TokenTransferMethod | undefined;
     accessToken: ParsedJWTInfo | undefined;

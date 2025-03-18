@@ -32,6 +32,7 @@ export declare type TypeNormalisedInputRelyingPartyId = (input: {
 }) => Promise<string>;
 export declare type TypeNormalisedInputRelyingPartyName = (input: {
     tenantId: string;
+    request: BaseRequest | undefined;
     userContext: UserContext;
 }) => Promise<string>;
 export declare type TypeNormalisedInputGetOrigin = (input: {
@@ -41,7 +42,8 @@ export declare type TypeNormalisedInputGetOrigin = (input: {
 }) => Promise<string>;
 export declare type TypeNormalisedInputValidateEmailAddress = (
     email: string,
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
 export declare type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeWebauthnEmailDeliveryInput>;
@@ -70,7 +72,8 @@ export declare type TypeInputGetOrigin = (input: {
 }) => Promise<string>;
 export declare type TypeInputValidateEmailAddress = (
     email: string,
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
 declare type RegisterOptionsErrorResponse =
     | {
@@ -314,7 +317,7 @@ export declare type RecipeInterface = {
      * This function is meant only for creating the recipe in the core and nothing else.
      * We added this even though signUp exists cause devs may override signup expecting it
      * to be called just during sign up. But we also need a version of signing up which can be
-     * called during operations like creating a user during password reset flow.
+     * called during operations like creating a user during account recovery flow.
      */
     createNewRecipeUser(input: {
         webauthnGeneratedOptionsId: string;
@@ -484,14 +487,14 @@ declare type SignUpPOSTErrorResponse =
           status: "INVALID_CREDENTIALS_ERROR";
       }
     | {
+          status: "INVALID_AUTHENTICATOR_ERROR";
+          reason: string;
+      }
+    | {
           status: "OPTIONS_NOT_FOUND_ERROR";
       }
     | {
           status: "INVALID_OPTIONS_ERROR";
-      }
-    | {
-          status: "INVALID_AUTHENTICATOR_ERROR";
-          reason: string;
       };
 declare type SignInPOSTErrorResponse =
     | {
@@ -551,6 +554,7 @@ export declare type APIInterface = {
               } & (
                   | {
                         email: string;
+                        displayName?: string;
                     }
                   | {
                         recoverAccountToken: string;
@@ -686,7 +690,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: RegistrationPayload;
               tenantId: string;
               session: SessionContainerInterface;
               options: APIOptions;

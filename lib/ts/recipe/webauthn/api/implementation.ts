@@ -1,10 +1,9 @@
-import { APIInterface, APIOptions } from "..";
-import { GeneralErrorResponse, User, UserContext } from "../../../types";
+import { APIInterface } from "..";
+import { GeneralErrorResponse, User } from "../../../types";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { AuthUtils } from "../../../authUtils";
 import { isFakeEmail } from "../../thirdparty/utils";
-import { SessionContainerInterface } from "../../session/types";
 import {
     DEFAULT_REGISTER_OPTIONS_ATTESTATION,
     DEFAULT_REGISTER_OPTIONS_TIMEOUT,
@@ -21,56 +20,10 @@ import { getRecoverAccountLink } from "../utils";
 import { logDebugMessage } from "../../../logger";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import { getUser } from "../../..";
-import { AuthenticationPayload, CredentialPayload, RegistrationPayload, ResidentKey, UserVerification } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        registerOptionsPOST: async function ({
-            tenantId,
-            options,
-            userContext,
-            ...props
-        }: {
-            tenantId: string;
-            options: APIOptions;
-            userContext: UserContext;
-        } & ({ email: string; displayName?: string } | { recoverAccountToken: string })): Promise<
-            | {
-                  status: "OK";
-                  webauthnGeneratedOptionsId: string;
-                  createdAt: string;
-                  expiresAt: string;
-                  rp: {
-                      id: string;
-                      name: string;
-                  };
-                  user: {
-                      id: string;
-                      name: string;
-                      displayName: string;
-                  };
-                  challenge: string;
-                  timeout: number;
-                  excludeCredentials: {
-                      id: string;
-                      type: "public-key";
-                      transports: ("ble" | "hybrid" | "internal" | "nfc" | "usb")[];
-                  }[];
-                  attestation: "none" | "indirect" | "direct" | "enterprise";
-                  pubKeyCredParams: {
-                      alg: number;
-                      type: "public-key";
-                  }[];
-                  authenticatorSelection: {
-                      requireResidentKey: boolean;
-                      residentKey: ResidentKey;
-                      userVerification: UserVerification;
-                  };
-              }
-            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-            | { status: "INVALID_EMAIL_ERROR"; err: string }
-            | { status: "INVALID_OPTIONS_ERROR" }
-        > {
+        registerOptionsPOST: async function ({ tenantId, options, userContext, ...props }) {
             const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
                 request: options.req,
@@ -78,6 +31,7 @@ export default function getAPIImplementation(): APIInterface {
             });
             const relyingPartyName = await options.config.getRelyingPartyName({
                 tenantId,
+                request: options.req,
                 userContext,
             });
 
@@ -94,7 +48,7 @@ export default function getAPIImplementation(): APIInterface {
             const userPresence = DEFAULT_REGISTER_OPTIONS_USER_PRESENCE;
             const supportedAlgorithmIds = DEFAULT_REGISTER_OPTIONS_SUPPORTED_ALGORITHM_IDS;
 
-            let response = await options.recipeImplementation.registerOptions({
+            const response = await options.recipeImplementation.registerOptions({
                 ...props,
                 displayName: "displayName" in props ? props.displayName : undefined,
                 attestation,
@@ -130,28 +84,7 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
 
-        signInOptionsPOST: async function ({
-            tenantId,
-            options,
-            userContext,
-        }: {
-            tenantId: string;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  webauthnGeneratedOptionsId: string;
-                  createdAt: string;
-                  expiresAt: string;
-                  rpId: string;
-                  challenge: string;
-                  timeout: number;
-                  userVerification: UserVerification;
-              }
-            | GeneralErrorResponse
-            | { status: "INVALID_OPTIONS_ERROR" }
-        > {
+        signInOptionsPOST: async function ({ tenantId, options, userContext }) {
             const relyingPartyId = await options.config.getRelyingPartyId({
                 tenantId,
                 request: options.req,
@@ -159,6 +92,7 @@ export default function getAPIImplementation(): APIInterface {
             });
             const relyingPartyName = await options.config.getRelyingPartyName({
                 tenantId,
+                request: options.req,
                 userContext,
             });
 
@@ -173,7 +107,7 @@ export default function getAPIImplementation(): APIInterface {
             const userVerification = DEFAULT_SIGNIN_OPTIONS_USER_VERIFICATION;
             const userPresence = DEFAULT_SIGNIN_OPTIONS_USER_PRESENCE;
 
-            let response = await options.recipeImplementation.signInOptions({
+            const response = await options.recipeImplementation.signInOptions({
                 userVerification,
                 userPresence,
                 origin,
@@ -208,50 +142,19 @@ export default function getAPIImplementation(): APIInterface {
             shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }: {
-            webauthnGeneratedOptionsId: string;
-            credential: RegistrationPayload;
-            tenantId: string;
-            session: SessionContainerInterface | undefined;
-            shouldTryLinkingWithSessionUser: boolean | undefined;
-            options: APIOptions;
-            userContext: UserContext;
-            // should also have the email or recoverAccountToken in order to do the preauth checks
-        }): Promise<
-            | {
-                  status: "OK";
-                  session: SessionContainerInterface;
-                  user: User;
-              }
-            | GeneralErrorResponse
-            | {
-                  status: "SIGN_UP_NOT_ALLOWED";
-                  reason: string;
-              }
-            | { status: "INVALID_CREDENTIALS_ERROR" }
-            | { status: "OPTIONS_NOT_FOUND_ERROR" }
-            | { status: "INVALID_OPTIONS_ERROR" }
-            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-        > {
-            // TODO update error codes (ERR_CODE_XXX) after final implementation
+        }) {
             const errorCodeMap = {
                 SIGN_UP_NOT_ALLOWED:
-                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                INVALID_AUTHENTICATOR_ERROR: {
-                    // TODO: add more cases
-                },
-                INVALID_CREDENTIALS_ERROR:
-                    "The sign up credentials are incorrect. Please use a different authenticator.",
+                    "Cannot sign up due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_025)",
                 LINKING_TO_SESSION_USER_FAILED: {
                     EMAIL_VERIFICATION_REQUIRED:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_013)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_026)",
                     RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_014)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_027)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_015)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_028)",
                     SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_016)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_029)",
                 },
             };
 
@@ -275,7 +178,6 @@ export default function getAPIImplementation(): APIInterface {
                 );
             }
 
-            // todo familiarize with this method
             const preAuthCheckRes = await AuthUtils.preAuthChecks({
                 authenticatingAccountInfo: {
                     recipeId: "webauthn",
@@ -303,7 +205,6 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
 
-                // this isn't mandatory to
                 if (
                     conflictingUsers.some((u) =>
                         u.loginMethods.some((lm) => lm.recipeId === "webauthn" && lm.hasSameEmailAs(email))
@@ -335,15 +236,23 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
 
-            if (signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                return signUpResponse;
-            }
-            if (signUpResponse.status !== "OK") {
+            if (
+                signUpResponse.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
+                signUpResponse.status === "INVALID_CREDENTIALS_ERROR" ||
+                signUpResponse.status === "INVALID_OPTIONS_ERROR" ||
+                signUpResponse.status === "OPTIONS_NOT_FOUND_ERROR"
+            ) {
+                // we should only return the status, because the core also adds a reason for most of these errors
+                return { status: signUpResponse.status };
+            } else if (signUpResponse.status === "INVALID_AUTHENTICATOR_ERROR") {
+                return {
+                    status: "INVALID_AUTHENTICATOR_ERROR",
+                    reason: signUpResponse.reason,
+                };
+            } else if (signUpResponse.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(signUpResponse, errorCodeMap, "SIGN_UP_NOT_ALLOWED");
             }
 
-            // todo familiarize with this method
-            // todo check if we need to remove webauthn credential ids from the type - it is not used atm.
             const postAuthChecks = await AuthUtils.postAuthChecks({
                 authenticatedUser: signUpResponse.user,
                 recipeUserId: signUpResponse.recipeUserId,
@@ -379,39 +288,19 @@ export default function getAPIImplementation(): APIInterface {
             shouldTryLinkingWithSessionUser,
             options,
             userContext,
-        }: {
-            webauthnGeneratedOptionsId: string;
-            credential: AuthenticationPayload;
-            tenantId: string;
-            session?: SessionContainerInterface;
-            shouldTryLinkingWithSessionUser: boolean | undefined;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  session: SessionContainerInterface;
-                  user: User;
-              }
-            | { status: "INVALID_CREDENTIALS_ERROR" }
-            | {
-                  status: "SIGN_IN_NOT_ALLOWED";
-                  reason: string;
-              }
-            | GeneralErrorResponse
-        > {
+        }) {
             const errorCodeMap = {
                 SIGN_IN_NOT_ALLOWED:
-                    "Cannot sign in due to security reasons. Please try recovering your account, use a different login method or contact support. (ERR_CODE_008)",
+                    "Cannot sign in due to security reasons. Please try recovering your account, use a different login method or contact support. (ERR_CODE_030)",
                 LINKING_TO_SESSION_USER_FAILED: {
                     EMAIL_VERIFICATION_REQUIRED:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_009)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_031)",
                     RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_010)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_032)",
                     ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_011)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_033)",
                     SESSION_USER_ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR:
-                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_012)",
+                        "Cannot sign in / up due to security reasons. Please contact support. (ERR_CODE_034)",
                 },
             };
 
@@ -441,16 +330,6 @@ export default function getAPIImplementation(): APIInterface {
             const checkCredentialsOnTenant = async () => {
                 return true;
             };
-
-            // todo familiarize with this method
-            // todo make sure the section below (from getAuthenticatingUserAndAddToCurrentTenantIfRequired to isVerified) is correct
-            // const matchingLoginMethodsFromSessionUser = sessionUser.loginMethods.filter(
-            //     (lm) =>
-            //         lm.recipeId === recipeId &&
-            //         (lm.hasSameEmailAs(accountInfo.email) ||
-            //             lm.hasSamePhoneNumberAs(accountInfo.phoneNumber) ||
-            //             lm.hasSameThirdPartyInfoAs(accountInfo.thirdParty))
-            // );
 
             const accountInfo = { webauthn: { credentialId: credential.id } };
             const authenticatingUser = await AuthUtils.getAuthenticatingUserAndAddToCurrentTenantIfRequired({
@@ -523,7 +402,17 @@ export default function getAPIImplementation(): APIInterface {
             if (signInResponse.status === "INVALID_CREDENTIALS_ERROR") {
                 return signInResponse;
             }
-            if (signInResponse.status !== "OK") {
+            if (
+                signInResponse.status === "INVALID_OPTIONS_ERROR" ||
+                signInResponse.status === "INVALID_AUTHENTICATOR_ERROR" ||
+                signInResponse.status === "CREDENTIAL_NOT_FOUND_ERROR" ||
+                signInResponse.status === "UNKNOWN_USER_ID_ERROR" ||
+                signInResponse.status === "OPTIONS_NOT_FOUND_ERROR"
+            ) {
+                return {
+                    status: "INVALID_CREDENTIALS_ERROR",
+                };
+            } else if (signInResponse.status !== "OK") {
                 return AuthUtils.getErrorStatusResponseWithReason(signInResponse, errorCodeMap, "SIGN_IN_NOT_ALLOWED");
             }
 
@@ -550,26 +439,11 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
 
-        emailExistsGET: async function ({
-            email,
-            tenantId,
-            userContext,
-        }: {
-            email: string;
-            tenantId: string;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  exists: boolean;
-              }
-            | GeneralErrorResponse
-        > {
+        emailExistsGET: async function ({ email, tenantId, userContext }) {
             // even if the above returns true, we still need to check if there
             // exists an webauthn user with the same email cause the function
             // above does not check for that.
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
                 accountInfo: {
                     email,
@@ -577,7 +451,7 @@ export default function getAPIImplementation(): APIInterface {
                 doUnionOfAccountInfo: false,
                 userContext,
             });
-            let webauthnUserExists =
+            const webauthnUserExists =
                 users.find((u) => {
                     return (
                         u.loginMethods.find((lm) => lm.recipeId === "webauthn" && lm.hasSameEmailAs(email)) !==
@@ -591,30 +465,15 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
 
-        generateRecoverAccountTokenPOST: async function ({
-            email,
-            tenantId,
-            options,
-            userContext,
-        }: {
-            email: string;
-            tenantId: string;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-              }
-            | { status: "RECOVER_ACCOUNT_NOT_ALLOWED"; reason: string }
-            | GeneralErrorResponse
-        > {
+        generateRecoverAccountTokenPOST: async function ({ email, tenantId, options, userContext }) {
             // NOTE: Check for email being a non-string value. This check will likely
             // never evaluate to `true` as there is an upper-level check for the type
             // in validation but kept here to be safe.
-            if (typeof email !== "string")
+            if (typeof email !== "string") {
                 throw new Error(
                     "Should never come here since we already check that the email value is a string in validateFormFieldsOrThrowError"
                 );
+            }
 
             // this function will be reused in different parts of the flow below..
             async function generateAndSendRecoverAccountToken(
@@ -642,7 +501,7 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
 
-                let recoverAccountLink = getRecoverAccountLink({
+                const recoverAccountLink = getRecoverAccountLink({
                     appInfo: options.appInfo,
                     token: response.token,
                     tenantId,
@@ -668,10 +527,8 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            /**
-             * check if primaryUserId is linked with this email
-             */
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            //check if primaryUserId is linked with this email
+            const users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 tenantId,
                 accountInfo: {
                     email,
@@ -684,7 +541,7 @@ export default function getAPIImplementation(): APIInterface {
             // for later use.
             let webauthnAccount: RecipeLevelUser | undefined = undefined;
             for (let i = 0; i < users.length; i++) {
-                let webauthnAccountTmp = users[i].loginMethods.find(
+                const webauthnAccountTmp = users[i].loginMethods.find(
                     (l) => l.recipeId === "webauthn" && l.hasSameEmailAs(email)
                 );
                 if (webauthnAccountTmp !== undefined) {
@@ -694,7 +551,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             // we find the primary user ID from the user's list for later use.
-            let primaryUserAssociatedWithEmail = users.find((u) => u.isPrimaryUser);
+            const primaryUserAssociatedWithEmail = users.find((u) => u.isPrimaryUser);
 
             // first we check if there even exists a primary user that has the input email
             // if not, then we do the regular flow for recover account
@@ -714,7 +571,7 @@ export default function getAPIImplementation(): APIInterface {
             // Next we check if there is any login method in which the input email is verified.
             // If that is the case, then it's proven that the user owns the email and we can
             // trust linking of the webauthn account.
-            let emailVerified =
+            const emailVerified =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
                     return lm.hasSameEmailAs(email) && lm.verified;
                 }) !== undefined;
@@ -722,7 +579,7 @@ export default function getAPIImplementation(): APIInterface {
             // finally, we check if the primary user has any other email / phone number
             // associated with this account - and if it does, then it means that
             // there is a risk of account takeover, so we do not allow the token to be generated
-            let hasOtherEmailOrPhone =
+            const hasOtherEmailOrPhone =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
                     // we do the extra undefined check below cause
                     // hasSameEmailAs returns false if the lm.email is undefined, and
@@ -739,7 +596,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+            const shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
                 webauthnAccount !== undefined
                     ? webauthnAccount
                     : {
@@ -774,7 +631,7 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
 
-                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                const isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "webauthn",
                         email,
@@ -803,7 +660,7 @@ export default function getAPIImplementation(): APIInterface {
             // and also some primary user ID exist. We now need to find out if they are linked
             // together or not. If they are linked together, then we can just generate the token
             // else we check for more security conditions (since we will be linking them post token generation)
-            let areTheTwoAccountsLinked =
+            const areTheTwoAccountsLinked =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
                     return lm.recipeUserId.getAsString() === webauthnAccount!.recipeUserId.getAsString();
                 }) !== undefined;
@@ -866,26 +723,7 @@ export default function getAPIImplementation(): APIInterface {
             tenantId,
             options,
             userContext,
-        }: {
-            token: string;
-            webauthnGeneratedOptionsId: string;
-            credential: RegistrationPayload;
-            tenantId: string;
-            options: APIOptions;
-            userContext: UserContext;
-        }): Promise<
-            | {
-                  status: "OK";
-                  user: User;
-                  email: string;
-              }
-            | GeneralErrorResponse
-            | { status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR" }
-            | { status: "INVALID_CREDENTIALS_ERROR" } // the credential is not valid for various reasons - will discover this during implementation
-            | { status: "OPTIONS_NOT_FOUND_ERROR" } // i.e. options not found
-            | { status: "INVALID_OPTIONS_ERROR" } // i.e. timeout expired
-            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-        > {
+        }) {
             async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
@@ -925,7 +763,7 @@ export default function getAPIImplementation(): APIInterface {
                 | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
                 | GeneralErrorResponse
             > {
-                let updateResponse = await options.recipeImplementation.registerCredential({
+                const updateResponse = await options.recipeImplementation.registerCredential({
                     recipeUserId: recipeUserId.getAsString(),
                     webauthnGeneratedOptionsId,
                     credential,
@@ -939,13 +777,10 @@ export default function getAPIImplementation(): APIInterface {
                         status: "INVALID_AUTHENTICATOR_ERROR",
                         reason: updateResponse.reason,
                     };
-                } else if (updateResponse.status === "INVALID_CREDENTIALS_ERROR") {
-                    return {
-                        status: "INVALID_CREDENTIALS_ERROR",
-                    };
                 } else if (
                     updateResponse.status === "INVALID_OPTIONS_ERROR" ||
-                    updateResponse.status === "OPTIONS_NOT_FOUND_ERROR"
+                    updateResponse.status === "OPTIONS_NOT_FOUND_ERROR" ||
+                    updateResponse.status === "INVALID_CREDENTIALS_ERROR"
                 ) {
                     return {
                         status: updateResponse.status,
@@ -1002,7 +837,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            let tokenConsumptionResponse = await options.recipeImplementation.consumeRecoverAccountToken({
+            const tokenConsumptionResponse = await options.recipeImplementation.consumeRecoverAccountToken({
                 token,
                 tenantId,
                 userContext,
@@ -1012,10 +847,10 @@ export default function getAPIImplementation(): APIInterface {
                 return tokenConsumptionResponse;
             }
 
-            let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
-            let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
+            const userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
+            const emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
 
-            let existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
+            const existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
 
             if (existingUser === undefined) {
                 // This should happen only cause of a race condition where the user
@@ -1034,11 +869,11 @@ export default function getAPIImplementation(): APIInterface {
             if (existingUser.isPrimaryUser) {
                 // If this user contains an webauthn account for whom the token was generated,
                 // then we update that user's credential.
-                let webauthnUserIsLinkedToExistingUser =
+                const webauthnUserIsLinkedToExistingUser =
                     existingUser.loginMethods.find((lm) => {
                         // we check based on user ID and not email because the only time
                         // the primary user ID is used for token generation is if the webauthn
-                        // user did not exist - in which case the value of emailPasswordUserExists will
+                        // user did not exist - in which case the value of webauthnUserIsLinkedToExistingUser will
                         // resolve to false anyway, and that's what we want.
 
                         // there is an edge case where if the webauthn recipe user was created
@@ -1073,7 +908,7 @@ export default function getAPIImplementation(): APIInterface {
                     // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
                     // really cause any security issue.
 
-                    let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
+                    const createUserResponse = await options.recipeImplementation.createNewRecipeUser({
                         tenantId,
                         webauthnGeneratedOptionsId,
                         credential,
@@ -1152,35 +987,14 @@ export default function getAPIImplementation(): APIInterface {
             options,
             userContext,
             session,
-        }: {
-            webauthnGeneratedOptionsId: string;
-            credential: CredentialPayload;
-            tenantId: string;
-            options: APIOptions;
-            userContext: UserContext;
-            session: SessionContainerInterface;
-        }): Promise<
-            | {
-                  status: "OK";
-              }
-            | GeneralErrorResponse
-            | {
-                  status: "REGISTER_CREDENTIAL_NOT_ALLOWED";
-                  reason: string;
-              }
-            | { status: "INVALID_CREDENTIALS_ERROR" }
-            | { status: "OPTIONS_NOT_FOUND_ERROR" }
-            | { status: "INVALID_OPTIONS_ERROR" }
-            | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
-        > {
-            // TODO update error codes (ERR_CODE_XXX) after final implementation
+        }) {
             const errorCodeMap = {
                 REGISTER_CREDENTIAL_NOT_ALLOWED:
                     "Cannot register credential due to security reasons. Please try logging in, use a different login method or contact support. (ERR_CODE_007)",
-                INVALID_AUTHENTICATOR_ERROR: {
-                    // TODO: add more cases
-                },
-                INVALID_CREDENTIALS_ERROR: "The credentials are incorrect. Please use a different authenticator.",
+                INVALID_AUTHENTICATOR_ERROR:
+                    "The device used for authentication is not supported. Please use a different device. (ERR_CODE_026)",
+                INVALID_CREDENTIALS_ERROR:
+                    "The credentials are incorrect. Please make sure you are using the correct credentials. (ERR_CODE_025)",
             };
 
             const generatedOptions = await options.recipeImplementation.getGeneratedOptions({

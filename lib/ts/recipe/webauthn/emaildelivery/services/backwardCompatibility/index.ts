@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2025, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -19,16 +19,15 @@ import { isTestEnv, postWithFetch } from "../../../../../utils";
 
 async function createAndSendEmailUsingSupertokensService(input: {
     appInfo: NormalisedAppinfo;
-    // Where the message should be delivered.
     user: { email: string; id: string };
-    // This has to be entered on the starting device  to finish sign in/up
     recoverAccountLink: string;
 }): Promise<void> {
     if (isTestEnv()) {
         return;
     }
+
     const result = await postWithFetch(
-        "https://api.supertokens.io/0/st/auth/webauthn/recover",
+        "https://api.supertokens.com/0/st/auth/webauthn/recover",
         {
             "api-version": "0",
             "content-type": "application/json; charset=utf-8",

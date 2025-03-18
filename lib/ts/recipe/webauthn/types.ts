@@ -49,6 +49,7 @@ export type TypeNormalisedInputRelyingPartyId = (input: {
 
 export type TypeNormalisedInputRelyingPartyName = (input: {
     tenantId: string;
+    request: BaseRequest | undefined;
     userContext: UserContext;
 }) => Promise<string>;
 
@@ -60,7 +61,8 @@ export type TypeNormalisedInputGetOrigin = (input: {
 
 export type TypeNormalisedInputValidateEmailAddress = (
     email: string,
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
 
 export type TypeInput = {
@@ -94,7 +96,8 @@ export type TypeInputGetOrigin = (input: {
 
 export type TypeInputValidateEmailAddress = (
     email: string,
-    tenantId: string
+    tenantId: string,
+    userContext: UserContext
 ) => Promise<string | undefined> | string | undefined;
 
 type RegisterOptionsErrorResponse =
@@ -288,7 +291,7 @@ export type RecipeInterface = {
      * This function is meant only for creating the recipe in the core and nothing else.
      * We added this even though signUp exists cause devs may override signup expecting it
      * to be called just during sign up. But we also need a version of signing up which can be
-     * called during operations like creating a user during password reset flow.
+     * called during operations like creating a user during account recovery flow.
      */
     createNewRecipeUser(input: {
         webauthnGeneratedOptionsId: string;
@@ -425,10 +428,6 @@ export type RecipeInterface = {
           }
         | UpdateUserEmailErrorResponse
     >;
-
-    // todo add update user email
-    // throws UNKNOWN_USER_ID_ERROR
-    // throws email_already_exists_error
 };
 
 export type APIOptions = {
@@ -453,9 +452,9 @@ type SignUpPOSTErrorResponse =
       }
     | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
     | { status: "INVALID_CREDENTIALS_ERROR" }
+    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string }
     | { status: "OPTIONS_NOT_FOUND_ERROR" }
-    | { status: "INVALID_OPTIONS_ERROR" }
-    | { status: "INVALID_AUTHENTICATOR_ERROR"; reason: string };
+    | { status: "INVALID_OPTIONS_ERROR" };
 
 type SignInPOSTErrorResponse =
     | { status: "INVALID_CREDENTIALS_ERROR" }
@@ -494,7 +493,7 @@ export type APIInterface = {
                   tenantId: string;
                   options: APIOptions;
                   userContext: UserContext;
-              } & ({ email: string } | { recoverAccountToken: string })
+              } & ({ email: string; displayName?: string } | { recoverAccountToken: string })
           ) => Promise<
               | {
                     status: "OK";
@@ -631,7 +630,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               webauthnGeneratedOptionsId: string;
-              credential: CredentialPayload;
+              credential: RegistrationPayload;
               tenantId: string;
               session: SessionContainerInterface;
               options: APIOptions;

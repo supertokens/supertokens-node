@@ -30,6 +30,7 @@ import { getCombinedJWKS } from "../../combinedRemoteJWKSet";
 import SessionRecipe from "../session/recipe";
 import OpenIdRecipe from "../openid/recipe";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { decodeBase64 } from "../../utils";
 
 function getUpdatedRedirectTo(appInfo: NormalisedAppinfo, redirectTo: string) {
     return redirectTo.replace(
@@ -279,6 +280,7 @@ export default function getRecipeInterface(
                         ...input.params,
                         scope: scopes.join(" "),
                     },
+                    iss: await OpenIdRecipe.getIssuer(input.userContext),
                     cookies: input.cookies,
                     session: payloads,
                 },
@@ -353,7 +355,11 @@ export default function getRecipeInterface(
             }
 
             if (input.body.grant_type === "client_credentials") {
-                if (input.body.client_id === undefined) {
+                let clientId =
+                    input.authorizationHeader !== undefined
+                        ? decodeBase64(input.authorizationHeader.replace(/^Basic /, "").trim()).split(":")[0]
+                        : input.body.client_id;
+                if (clientId === undefined) {
                     return {
                         status: "ERROR",
                         statusCode: 400,
@@ -363,8 +369,9 @@ export default function getRecipeInterface(
                 }
 
                 const scopes = input.body.scope?.split(" ") ?? [];
+
                 const clientInfo = await this.getOAuth2Client({
-                    clientId: input.body.client_id as string,
+                    clientId,
                     userContext: input.userContext,
                 });
 
@@ -452,6 +459,15 @@ export default function getRecipeInterface(
                 body,
                 input.userContext
             );
+
+            if (res.status === "CLIENT_NOT_FOUND_ERROR") {
+                return {
+                    status: "ERROR",
+                    statusCode: 400,
+                    error: "invalid_request",
+                    errorDescription: "client_id not found",
+                };
+            }
 
             if (res.status !== "OK") {
                 return {
@@ -803,12 +819,14 @@ export default function getRecipeInterface(
                     };
                 } else {
                     // Accept the logout challenge immediately as there is no supertokens session
-                    redirectTo = (
-                        await this.acceptLogoutRequest({
-                            challenge: logoutChallenge,
-                            userContext: input.userContext,
-                        })
-                    ).redirectTo;
+                    const acceptLogoutResponse = await this.acceptLogoutRequest({
+                        challenge: logoutChallenge,
+                        userContext: input.userContext,
+                    });
+                    if ("error" in acceptLogoutResponse) {
+                        return acceptLogoutResponse;
+                    }
+                    return { redirectTo: acceptLogoutResponse.redirectTo };
                 }
             }
 
@@ -834,6 +852,15 @@ export default function getRecipeInterface(
                 {},
                 input.userContext
             );
+
+            if (resp.status !== "OK") {
+                return {
+                    status: "ERROR",
+                    statusCode: resp.statusCode,
+                    error: resp.error,
+                    errorDescription: resp.errorDescription,
+                };
+            }
 
             const redirectTo = getUpdatedRedirectTo(appInfo, resp.redirectTo);
 

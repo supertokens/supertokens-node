@@ -3,7 +3,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     TypeWebauthnEmailDeliveryInput,
-    CredentialPayload,
     UserVerification,
     ResidentKey,
     Attestation,
@@ -27,7 +26,7 @@ export default class Wrapper {
             supportedAlgorithmIds: number[] | undefined;
             timeout: number | undefined;
             tenantId: string;
-            userContext: Record<string, any>;
+            userContext?: Record<string, any>;
         } & (
             | {
                   recoverAccountToken: string;
@@ -91,7 +90,7 @@ export default class Wrapper {
         userPresence: boolean | undefined;
         timeout: number | undefined;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "INVALID_OPTIONS_ERROR";
@@ -109,7 +108,7 @@ export default class Wrapper {
     static getGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "OPTIONS_NOT_FOUND_ERROR";
@@ -135,7 +134,7 @@ export default class Wrapper {
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | (
               | (
@@ -177,7 +176,7 @@ export default class Wrapper {
         session: SessionContainerInterface | undefined;
         shouldTryLinkingWithSessionUser: boolean | undefined;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | (
               | (
@@ -219,7 +218,7 @@ export default class Wrapper {
         webauthnGeneratedOptionsId: string;
         credential: AuthenticationPayload;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<{
         status:
             | "OK"
@@ -245,7 +244,7 @@ export default class Wrapper {
         tenantId: string;
         userId: string;
         email: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "UNKNOWN_USER_ID_ERROR";
@@ -265,7 +264,7 @@ export default class Wrapper {
         tenantId?: string;
         webauthnGeneratedOptionsId: string;
         token: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext?: Record<string, any>;
     }): Promise<
         | {
@@ -307,7 +306,7 @@ export default class Wrapper {
     static registerCredential(input: {
         recipeUserId: string;
         webauthnGeneratedOptionsId: string;
-        credential: CredentialPayload;
+        credential: RegistrationPayload;
         userContext?: Record<string, any>;
     }): Promise<
         | (
@@ -338,7 +337,7 @@ export default class Wrapper {
         tenantId: string;
         userId: string;
         email: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "UNKNOWN_USER_ID_ERROR";
@@ -357,7 +356,7 @@ export default class Wrapper {
         tenantId: string;
         userId: string;
         email: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: string;
@@ -375,7 +374,7 @@ export default class Wrapper {
     static getUserFromRecoverAccountToken(input: {
         token: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "RECOVER_ACCOUNT_TOKEN_INVALID_ERROR";
@@ -389,7 +388,7 @@ export default class Wrapper {
     static removeGeneratedOptions(input: {
         webauthnGeneratedOptionsId: string;
         tenantId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "OPTIONS_NOT_FOUND_ERROR";
@@ -401,7 +400,7 @@ export default class Wrapper {
     static removeCredential(input: {
         webauthnCredentialId: string;
         recipeUserId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "CREDENTIAL_NOT_FOUND_ERROR";
@@ -413,7 +412,7 @@ export default class Wrapper {
     static getCredential(input: {
         webauthnCredentialId: string;
         recipeUserId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<
         | {
               status: "CREDENTIAL_NOT_FOUND_ERROR";
@@ -428,7 +427,7 @@ export default class Wrapper {
     >;
     static listCredentials(input: {
         recipeUserId: string;
-        userContext: Record<string, any>;
+        userContext?: Record<string, any>;
     }): Promise<{
         status: "OK";
         credentials: {

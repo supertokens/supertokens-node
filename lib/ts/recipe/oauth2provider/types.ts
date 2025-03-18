@@ -136,8 +136,7 @@ export type LoginRequest = {
 export type TokenInfo = {
     // The access token issued by the authorization server.
     access_token?: string;
-    // The lifetime in seconds of the access token. For example, the value "3600" denotes that the access token will expire in one hour from the time the response was generated.
-    // integer <int64>
+    // The lifetime in seconds of the access token (integer). For example, the value "3600" denotes that the access token will expire in one hour from the time the response was generated.
     expires_in: number;
     // To retrieve a refresh token request the id_token scope.
     id_token?: string;
@@ -182,7 +181,7 @@ export type RecipeInterface = {
         cookies: string | undefined;
         session: SessionContainerInterface | undefined;
         userContext: UserContext;
-    }): Promise<{ redirectTo: string; cookies: string | undefined } | ErrorOAuth2>;
+    }): Promise<{ redirectTo: string; cookies: string[] | undefined } | ErrorOAuth2>;
     tokenExchange(input: {
         authorizationHeader?: string;
         body: Record<string, string | undefined>;
@@ -413,7 +412,10 @@ export type RecipeInterface = {
         shouldTryRefresh: boolean;
         userContext: UserContext;
     }): Promise<{ redirectTo: string } | ErrorOAuth2>;
-    acceptLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ redirectTo: string }>;
+    acceptLogoutRequest(input: {
+        challenge: string;
+        userContext: UserContext;
+    }): Promise<{ redirectTo: string } | ErrorOAuth2>;
     rejectLogoutRequest(input: { challenge: string; userContext: UserContext }): Promise<{ status: "OK" }>;
 };
 
@@ -426,7 +428,7 @@ export type APIInterface = {
               session?: SessionContainerInterface;
               shouldTryRefresh: boolean;
               userContext: UserContext;
-          }) => Promise<{ frontendRedirectTo: string; cookies?: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ frontendRedirectTo: string; cookies?: string[] } | ErrorOAuth2 | GeneralErrorResponse>);
 
     authGET:
         | undefined
@@ -437,7 +439,7 @@ export type APIInterface = {
               shouldTryRefresh: boolean;
               options: APIOptions;
               userContext: UserContext;
-          }) => Promise<{ redirectTo: string; cookies?: string } | ErrorOAuth2 | GeneralErrorResponse>);
+          }) => Promise<{ redirectTo: string; cookies?: string[] } | ErrorOAuth2 | GeneralErrorResponse>);
     tokenPOST:
         | undefined
         | ((input: {
@@ -541,6 +543,7 @@ export type OAuth2ClientOptions = {
     policyUri?: string;
     tosUri?: string;
     metadata?: Record<string, any>;
+    enableRefreshTokenRotation?: boolean;
 };
 
 export type GetOAuth2ClientsInput = {
@@ -560,9 +563,7 @@ export type GetOAuth2ClientsInput = {
     clientName?: string;
 };
 
-export type CreateOAuth2ClientInput = Partial<
-    Omit<OAuth2ClientOptions, "createdAt" | "updatedAt" | "clientId" | "clientSecret">
->;
+export type CreateOAuth2ClientInput = Partial<Omit<OAuth2ClientOptions, "createdAt" | "updatedAt">>;
 
 export type UpdateOAuth2ClientInput = NonNullableProperties<
     Omit<CreateOAuth2ClientInput, "redirectUris" | "grantTypes" | "responseTypes" | "metadata">

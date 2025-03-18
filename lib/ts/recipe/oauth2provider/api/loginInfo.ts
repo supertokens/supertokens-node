@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { send200Response, sendNon200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "..";
 import { UserContext } from "../../../types";
 import SuperTokensError from "../../../error";
@@ -43,6 +43,18 @@ export default async function loginInfoGET(
         userContext,
     });
 
-    send200Response(options.res, response);
+    if ("error" in response) {
+        // We want to avoid returning a 401 to the frontend, as it may trigger a refresh loop
+        if (response.statusCode === 401) {
+            response.statusCode = 400;
+        }
+        sendNon200Response(options.res, response.statusCode ?? 400, {
+            error: response.error,
+            error_description: response.errorDescription,
+        });
+    } else {
+        send200Response(options.res, response);
+    }
+
     return true;
 }
