@@ -336,6 +336,18 @@ export default class Wrapper {
             userContext: getUserContext(input.userContext),
         });
     }
+
+    static async updateUserEmail(input: {
+        email: string;
+        recipeUserId: string;
+        tenantId: string;
+        userContext?: Record<string, any>;
+    }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserEmail({
+            ...input,
+            userContext: getUserContext(input.userContext),
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -377,5 +389,7 @@ export let removeCredential = Wrapper.removeCredential;
 export let getCredential = Wrapper.getCredential;
 
 export let listCredentials = Wrapper.listCredentials;
+
+export let updateUserEmail = Wrapper.updateUserEmail;
 
 export type { RecipeInterface, APIOptions, APIInterface };
