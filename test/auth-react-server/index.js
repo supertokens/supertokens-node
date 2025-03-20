@@ -551,6 +551,7 @@ app.get("/test/featureFlags", (req, res) => {
     available.push("recipeConfig");
     available.push("accountlinking-fixes"); // this is related to 19.0 release in which we fixed a bunch of issues with account linking, including changing error codes.
     available.push("oauth2");
+    available.push("webauthn");
 
     res.send({
         available,
