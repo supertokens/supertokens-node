@@ -59,11 +59,10 @@ export default function getRecipeInterface(
                 }
 
                 const user = result.user as User;
-                email = user.loginMethods.find(
-                    (lm) =>
-                        lm.recipeId === "webauthn" &&
-                        lm.recipeUserId.getAsString() === result.recipeUserId.getAsString()
-                )?.email;
+                // if the recipeUserId is not present, it means that the user does not have a webauthn login method and we should just use the user id
+                // this will make account recovery act as a sign up
+                const userId = result.recipeUserId?.getAsString() || user.id;
+                email = user.loginMethods.find((lm) => lm.recipeUserId.getAsString() === userId)?.email;
             }
 
             if (!email) {
