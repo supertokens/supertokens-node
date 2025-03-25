@@ -67,6 +67,7 @@ export function factorIdToRecipe(factorId: string): string {
         "link-email": "Passwordless",
         "link-phone": "Passwordless",
         totp: "Totp",
+        webauthn: "WebAuthn",
     };
 
     return factorIdToRecipe[factorId];
