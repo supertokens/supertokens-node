@@ -20,10 +20,9 @@ const [major, minor, patch] = process.versions.node.split(".").map(Number);
 if (major >= 18) {
     const {
         printPath,
-        setupST,
-        startST,
-        killAllST,
-        cleanST,
+
+        createCoreApplication,
+
         delay,
         killAllSTCoresOnly,
         extractInfoFromResponse,
@@ -92,9 +91,8 @@ if (major >= 18) {
         describe("with superTokensNextWrapper", function () {
             before(async function () {
                 process.env.user = undefined;
-                await killAllST();
-                await setupST();
-                const connectionURI = await startST();
+
+                const connectionURI = await createCoreApplication();
                 ProcessState.getInstance().reset();
                 SuperTokens.init({
                     supertokens: {
@@ -126,10 +124,7 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
+            after(async function () {});
 
             it("Sign Up", async function () {
                 await testApiHandler({
@@ -433,9 +428,8 @@ if (major >= 18) {
         describe("with superTokensNextWrapper, body parser tests", function () {
             before(async function () {
                 process.env.user = undefined;
-                await killAllST();
-                await setupST();
-                const connectionURI = await startST();
+
+                const connectionURI = await createCoreApplication();
                 ProcessState.getInstance().reset();
                 SuperTokens.init({
                     supertokens: {
@@ -487,10 +481,7 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
+            after(async function () {});
 
             it("testing JSON body", async function () {
                 await testApiHandler({
@@ -556,9 +547,8 @@ if (major >= 18) {
         describe("with superTokensNextWrapper, overriding throws error", function () {
             before(async function () {
                 process.env.user = undefined;
-                await killAllST();
-                await setupST();
-                const connectionURI = await startST();
+
+                const connectionURI = await createCoreApplication();
                 ProcessState.getInstance().reset();
                 SuperTokens.init({
                     supertokens: {
@@ -593,10 +583,7 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
+            after(async function () {});
 
             it("Sign Up", async function () {
                 await testApiHandler({
@@ -634,9 +621,8 @@ if (major >= 18) {
     describe(`Next.js App Router: ${printPath("[test/nextjs.test.js]")}`, function () {
         before(async function () {
             process.env.user = undefined;
-            await killAllST();
-            await setupST();
-            const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
+
+            const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 2 } });
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
@@ -669,10 +655,7 @@ if (major >= 18) {
             });
         });
 
-        after(async function () {
-            await killAllST();
-            await cleanST();
-        });
+        after(async function () {});
 
         it("Sign Up", async function () {
             const handleCall = getAppDirRequestHandler(NextResponse);
@@ -994,9 +977,8 @@ if (major >= 18) {
     describe("session refresh test", async () => {
         before(async function () {
             process.env.user = undefined;
-            await killAllST();
-            await setupST();
-            const connectionURI = await startST();
+
+            const connectionURI = await createCoreApplication();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
@@ -1017,10 +999,7 @@ if (major >= 18) {
             });
         });
 
-        after(async function () {
-            await killAllST();
-            await cleanST();
-        });
+        after(async function () {});
 
         it("should successfully refresh session", async () => {
             const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
@@ -1049,9 +1028,8 @@ if (major >= 18) {
         describe("tokenTransferMethod = any", function () {
             before(async function () {
                 process.env.user = undefined;
-                await killAllST();
-                await setupST();
-                const connectionURI = await startST();
+
+                const connectionURI = await createCoreApplication();
                 ProcessState.getInstance().reset();
                 SuperTokens.init({
                     supertokens: {
@@ -1072,10 +1050,7 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
+            after(async function () {});
 
             it("should return hasToken value correctly", async function () {
                 const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
@@ -1109,9 +1084,8 @@ if (major >= 18) {
         describe("tokenTransferMethod = cookie", function () {
             before(async function () {
                 process.env.user = undefined;
-                await killAllST();
-                await setupST();
-                const connectionURI = await startST();
+
+                const connectionURI = await createCoreApplication();
                 ProcessState.getInstance().reset();
                 SuperTokens.init({
                     supertokens: {
@@ -1132,10 +1106,7 @@ if (major >= 18) {
                 });
             });
 
-            after(async function () {
-                await killAllST();
-                await cleanST();
-            });
+            after(async function () {});
 
             it("should return hasToken value correctly", async function () {
                 const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
@@ -1179,9 +1150,8 @@ if (major >= 18) {
     describe("with email verification should throw st-ev claim has expired", async () => {
         before(async function () {
             process.env.user = undefined;
-            await killAllST();
-            await setupST();
-            const connectionURI = await startST();
+
+            const connectionURI = await createCoreApplication();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
@@ -1205,10 +1175,7 @@ if (major >= 18) {
             });
         });
 
-        after(async function () {
-            await killAllST();
-            await cleanST();
-        });
+        after(async function () {});
 
         it("should throw st-ev claim has expired for unverified email", async () => {
             const tokens = await getValidTokensAfterSignup();

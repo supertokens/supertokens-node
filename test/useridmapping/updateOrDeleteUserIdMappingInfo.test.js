@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
@@ -12,19 +12,14 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
     "[test/useridmapping/updateOrDeleteUserIdMappingInfo.test.js]"
 )}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     describe("updateOrDeleteUserIdMappingInfoTest", () => {
         it("update externalUserId mapping info with unknown userId", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -79,7 +74,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
         });
 
         it("update externalUserId mapping info with userIdType as SUPERTOKENS and EXTERNAL", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -182,7 +177,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
         });
 
         it("update externalUserId mapping info with userIdType as ANY", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {

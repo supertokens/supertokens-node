@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
-    setKeyValueInConfig,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
 } = require("./utils");
 let assert = require("assert");
@@ -36,18 +34,13 @@ let Passwordless = require("../recipe/passwordless");
 
 describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test rid with session and non existant API in session recipe still works if the other recipe is initialized", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -81,7 +74,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test no rid with existent API does not give 404", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -114,7 +107,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test wrong rid with existent API works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -167,7 +160,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test random rid with existent API works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -220,7 +213,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test wrong rid returns 404 if recipe missing", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -272,7 +265,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test rid as anti-csrf with existent API does not give 404", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -306,7 +299,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("test random rid with existent API still works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -340,7 +333,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
     });
 
     it("custom response express", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

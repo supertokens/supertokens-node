@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
@@ -27,22 +27,17 @@ let PasswordlessRecipe = require("../../lib/build/recipe/passwordless/recipe").d
 
 describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     /*
         contactMethod: EMAIL_OR_PHONE
             - minimal config
     */
     it("test minimum config with EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -91,7 +86,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - adding custom validators for phone and email and making sure that they are called
     */
     it("test adding custom validators for phone and email with EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isValidateEmailAddressCalled = false;
         let isValidatePhoneNumberCalled = false;
@@ -198,7 +193,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
      */
 
     it("test custom function to send email with EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isCreateAndSendCustomEmailCalled = false;
 
@@ -276,7 +271,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
      */
 
     it("test custom function to send text SMS with EMAIL_OR_PHONE contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isCreateAndSendCustomTextMessageCalled = false;
 
@@ -352,7 +347,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - minimal input works
     */
     it("test minimum config with phone contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -396,7 +391,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test if validatePhoneNumber is called with phone contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isValidatePhoneNumberCalled = false;
         STExpress.init({
@@ -464,8 +459,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         {
             // If you return a string from the function, the API throws a GENERIC ERROR
 
-            await killAllST();
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             isValidatePhoneNumberCalled = false;
 
@@ -529,7 +523,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE and phone contact method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         let isOtherInputValid = false;
@@ -606,7 +600,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomTextMessage with flowType: MAGIC_LINK and phone contact method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
@@ -672,7 +666,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
     */
     it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE_AND_MAGIC_LINK and phone contact method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
@@ -739,7 +733,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomTextMessage, if error is thrown, it should contain a general error in the response", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isCreateAndSendCustomTextMessageCalled = false;
         STExpress.init({
@@ -809,7 +803,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test minimum config with email contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -854,7 +848,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test if validateEmailAddress is called with email contactMethod", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isValidateEmailAddressCalled = false;
         STExpress.init({
@@ -922,8 +916,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         {
             // If you return a string from the function, the API throws a GENERIC ERROR
 
-            await killAllST();
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             isValidateEmailAddressCalled = false;
 
@@ -986,7 +979,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomEmail with flowType: USER_INPUT_CODE and email contact method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         let isOtherInputValid = false;
@@ -1063,7 +1056,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomEmail with flowType: MAGIC_LINK and email contact method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
@@ -1129,7 +1122,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
             - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
     */
     it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE_AND_MAGIC_LINK and email contact method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isUserInputCodeAndUrlWithLinkCodeValid = false;
         STExpress.init({
@@ -1196,7 +1189,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test createAndSendCustomEmail, if error is thrown, the status in the response should be a general error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let isCreateAndSendCustomEmailCalled = false;
         STExpress.init({
@@ -1268,7 +1261,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test missing compulsory configs throws an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         {
             // missing flowType
@@ -1298,8 +1291,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         }
 
         {
-            await killAllST();
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             // missing contactMethod
             try {
@@ -1336,7 +1328,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     */
 
     it("test passing getCustomUserInputCode using different codes", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let customCode = undefined;
         let userCodeSent = undefined;
@@ -1425,7 +1417,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
     });
 
     it("test passing getCustomUserInputCode using the same code", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         // using the same customCode
         let customCode = "customCode";
@@ -1520,7 +1512,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
 
     // Check basic override usage
     it("test basic override usage in passwordless", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let customDeviceId = "customDeviceId";
 

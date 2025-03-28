@@ -2,7 +2,7 @@ let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 const OpenIdRecipe = require("../../lib/build/recipe/openid/recipe").default;
@@ -13,18 +13,13 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("Test overriding open id functions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -85,7 +80,7 @@ describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, functio
     });
 
     it("Test overriding open id apis", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

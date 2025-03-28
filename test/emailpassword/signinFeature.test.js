@@ -15,11 +15,9 @@
 
 const {
     printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
@@ -72,18 +70,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         };
     });
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test singinAPI works when rid is thirdpartyemailpassword", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -180,7 +173,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     /*
      */
     it("test that disabling api, the default signin API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -248,7 +241,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     Setting  invalid email or password values in the request body when sending a request to /signin 
     */
     it("test singinAPI works when input is fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -302,7 +295,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test password must be of type string in input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -355,7 +348,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test email must be of type string in input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -411,7 +404,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     Setting the email value in form field as random@gmail.com causes the test to fail
     */
     it("test singinAPI throws an error when email does not match", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -466,7 +459,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     passing the correct password "validpass123" causes the test to fail
     */
     it("test singinAPI throws an error if password is incorrect", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -527,7 +520,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     setting valid JSON body to /singin API
     */
     it("test bad input, not a JSON to /signin API", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -574,7 +567,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     setting valid formFields JSON body to /singin API
     */
     it("test bad input, no POST body to /signin API", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -617,7 +610,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     setting valid JSON body to /singin API
     */
     it("test bad input, input is Json but incorrect structure to /signin API", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -662,7 +655,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     Passing invalid credentials to the /signin API fails the test
     */
     it("test that a successfull signin yields a session", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -738,7 +731,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     having the email start with "test" (requierment of the custom validator) will cause the test to fail
     */
     it("test custom email validators to sign up and make sure they are applied to sign in", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -813,7 +806,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     sending the correct password "valid" will cause the test to fail
     */
     it("test custom password validators to sign up and make sure they are applied to sign in", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let failsValidatorCtr = 0;
         let passesValidatorCtr = 0;
@@ -895,7 +888,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     sending the correct password to the /signin API will cause the test to fail
     */
     it("test password field validation error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -949,7 +942,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     //sending the correct email to the /signin API will cause the test to fail
 
     it("test email field validation error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1004,7 +997,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     // Input formFields has no email field
     //passing the email field in formFields will cause the test to fail
     it("test formFields has no email field", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1055,7 +1048,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     // Input formFields has no password field
     //passing the password field in formFields will cause the test to fail
     it("test formFields has no password field", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1108,7 +1101,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     passing email with valid syntax and correct password will cause the test to fail
     */
     it("test invalid email and wrong password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1167,7 +1160,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
      *    - User exists
      */
     it("test getUserByEmail when user does not exist", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -1213,7 +1206,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test the handlePostSignIn function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let customUser = undefined;
         STExpress.init({
@@ -1317,7 +1310,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI works when input is fine and user has added JSON middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1372,7 +1365,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI works when input is fine and user has added urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1427,7 +1420,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI works when input is fine and user has added both JSON and urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1483,7 +1476,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI works when input is fine and user has added bodyParser JSON middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1538,7 +1531,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI works when input is fine and user has added bodyParser urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1593,7 +1586,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI works when input is fine and user has added both bodyParser JSON and bodyParser urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1649,7 +1642,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI with empty JSON and user has added JSON middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1675,7 +1668,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI with empty JSON and user has added urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1701,7 +1694,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI with empty JSON and user has added both JSON and urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1728,7 +1721,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI with empty JSON and user has added both bodyParser JSON and bodyParser urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1755,7 +1748,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI with empty request body and user has added JSON middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1781,7 +1774,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI with empty request body and user has added urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1807,7 +1800,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     });
 
     it("test singinAPI with empty request body and user has added both JSON and urlencoded middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1838,7 +1831,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
     */
     // testing error gets corectly routed to sub-recipe
     it("test singinAPI throws an error when email does not match", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

@@ -1,12 +1,10 @@
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
-    setKeyValueInConfig,
-    killAllSTCoresOnly,
+
     mockResponse,
     mockRequest,
     signUPRequest,
@@ -25,19 +23,14 @@ let { middleware, errorHandler } = require("../framework/express");
 
 describe(`interceptor: ${printPath("[test/interceptor.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("network interceptor sanity", async function () {
         let isNetworkIntercepted = false;
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -72,7 +65,7 @@ describe(`interceptor: ${printPath("[test/interceptor.test.js]")}`, function () 
 
     it("network interceptor - incorrect core url", async function () {
         let isNetworkIntercepted = false;
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -108,7 +101,7 @@ describe(`interceptor: ${printPath("[test/interceptor.test.js]")}`, function () 
 
     it("network interceptor - incorrect query params", async function () {
         let isNetworkIntercepted = false;
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -151,7 +144,7 @@ describe(`interceptor: ${printPath("[test/interceptor.test.js]")}`, function () 
 
     it("network interceptor - incorrect request body", async function () {
         let isNetworkIntercepted = false;
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

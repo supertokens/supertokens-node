@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, signUPRequest } = require("../utils");
+const { printPath, createCoreApplication, signUPRequest } = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -26,18 +26,13 @@ const express = require("express");
 
 describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test getUsersOldestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -101,7 +96,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersOldestFirst with search queries", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -146,7 +141,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersNewestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -210,7 +205,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersNewestFirst with search queries", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -249,7 +244,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUserCount", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("./utils");
+const { printPath, createCoreApplication } = require("./utils");
 let ST = require("../");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
@@ -28,19 +28,14 @@ const { default: fetch } = require("cross-fetch");
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     // Check that once the API version is there, it doesn't need to query again
     it("test that if that once API version is there, it doesn't need to query again", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         ST.init({
             supertokens: {
                 connectionURI,
@@ -73,7 +68,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     // Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
     it("test that rid is added to the header if it's a recipe request", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         ST.init({
             supertokens: {
                 connectionURI,
@@ -146,9 +141,9 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("three cores and round robin", async function () {
-        const connectionURI = await startST();
-        await startST({ host: "localhost", port: 8081 });
-        await startST({ host: "localhost", port: 8082 });
+        const connectionURI = await createCoreApplication();
+        await createCoreApplication({ host: "localhost", port: 8081 });
+        await createCoreApplication({ host: "localhost", port: 8082 });
 
         ST.init({
             supertokens: {
@@ -175,8 +170,8 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("three cores, one dead and round robin", async function () {
-        const connectionURI = await startST();
-        await startST({ host: "localhost", port: 8082 });
+        const connectionURI = await createCoreApplication();
+        await createCoreApplication({ host: "localhost", port: 8082 });
         ST.init({
             supertokens: {
                 connectionURI: `${connectionURI};http://localhost:8081/;http://localhost:8082`,
@@ -202,7 +197,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("test that no connectionURI given, but recipe used throws an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         ST.init({
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -224,7 +219,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("test that no connectionURI given, recipe override and used doesn't thrown an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         ST.init({
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -254,7 +249,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with core base path", async function () {
         // first we need to know if the core used supports base_path config
-        const connectionURI = await startST({ port: 8081, coreConfig: { base_path: "/test" } });
+        const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/test" } });
 
         try {
             const res = await fetch(`${connectionURI}/test/hello`);
@@ -284,7 +279,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with incorrect core base path should fail", async function () {
         // first we need to know if the core used supports base_path config
-        const connectionURI = await startST({ port: 8081, coreConfig: { base_path: "/some/path" } });
+        const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/some/path" } });
 
         try {
             const res = await fetch(`${connectionURI}/some/path/hello`);
@@ -324,7 +319,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with multiple core base path", async function () {
         // first we need to know if the core used supports base_path config
-        const connectionURI = await startST({ port: 8081, coreConfig: { base_path: "/some/path" } });
+        const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/some/path" } });
 
         try {
             const res = await fetch(`${connectionURI}/some/path/hello`);
@@ -339,7 +334,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             throw error;
         }
 
-        await startST({
+        await createCoreApplication({
             host: "localhost",
             port: 8082,
             coreConfig: {
@@ -373,7 +368,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("test that no-cache header is added when querying the core", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         ST.init({
             supertokens: {
                 connectionURI,

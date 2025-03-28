@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, signInUPCustomRequest } = require("../utils");
+const { printPath, createCoreApplication, signInUPCustomRequest } = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -48,18 +48,13 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     });
 
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test getUsersOldestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -130,7 +125,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     });
 
     it("test getUsersNewestFirst", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -201,7 +196,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     });
 
     it("test getUserCount", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

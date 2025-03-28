@@ -40,6 +40,8 @@ const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
 const { join } = require("path");
 let debug = require("debug");
+const { randomUUID } = require("node:crypto");
+const setCookieParser = require("set-cookie-parser");
 
 const users = require("./users.json");
 let assert = require("assert");
@@ -63,28 +65,6 @@ module.exports.executeCommand = async function (cmd) {
     });
 };
 
-module.exports.setKeyValueInConfig = async function (key, value) {
-    return new Promise((resolve, reject) => {
-        let installationPath = process.env.INSTALL_PATH;
-        fs.readFile(installationPath + "/config.yaml", "utf8", function (err, data) {
-            if (err) {
-                reject(err);
-                return;
-            }
-            let oldStr = new RegExp("((#\\s)?)" + key + "(:|((:\\s).+))\n");
-            let newStr = key + ": " + value + "\n";
-            let result = data.replace(oldStr, newStr);
-            fs.writeFile(installationPath + "/config.yaml", result, "utf8", function (err) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    });
-};
-
 module.exports.extractInfoFromResponse = function (res) {
     let headers;
     let accessToken = undefined;
@@ -99,64 +79,42 @@ module.exports.extractInfoFromResponse = function (res) {
     let idRefreshTokenHttpOnly = false;
     let refreshTokenHttpOnly = false;
 
+    let cookies = [];
     if (res instanceof CollectingResponse) {
-        const accessTokenCookie = res.cookies.find((info) => info.key === "sAccessToken");
-        if (accessTokenCookie) {
-            accessToken = accessTokenCookie.value;
-            accessTokenExpiry = new Date(accessTokenCookie.expires).toUTCString();
-            accessTokenDomain = accessTokenCookie.domain;
-            accessTokenHttpOnly = accessTokenCookie.httpOnly;
-        }
-        const refreshTokenCookie = res.cookies.find((info) => info.key === "sRefreshToken");
-        if (refreshTokenCookie) {
-            refreshToken = refreshTokenCookie.value;
-            refreshTokenExpiry = new Date(refreshTokenCookie.expires).toUTCString();
-            refreshTokenDomain = refreshTokenCookie.domain;
-            refreshTokenHttpOnly = refreshTokenCookie.httpOnly;
-        }
         headers = Object.fromEntries(res.headers.entries());
+        cookies = res.cookies;
     } else {
         headers = res.headers;
-        let cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
+        cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
         cookies = cookies === undefined ? [] : cookies;
         if (!Array.isArray(cookies)) {
             cookies = [cookies];
         }
 
-        cookies.forEach((i) => {
-            if (i.split(";")[0].split("=")[0] === "sAccessToken") {
-                /**
-                 * if token is sAccessToken=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0=.eyJzZXNzaW9uSGFuZGxlIjoiMWI4NDBhOTAtMjVmYy00ZjQ4LWE2YWMtMDc0MDIzZjNjZjQwIiwidXNlcklkIjoiIiwicmVmcmVzaFRva2VuSGFzaDEiOiJjYWNhZDNlMGNhMDVkNzRlNWYzNTc4NmFlMGQ2MzJjNDhmMTg1YmZmNmUxNThjN2I2OThkZDYwMzA1NzAyYzI0IiwidXNlckRhdGEiOnt9LCJhbnRpQ3NyZlRva2VuIjoiYTA2MjRjYWItZmIwNy00NTFlLWJmOTYtNWQ3YzU2MjMwZTE4IiwiZXhwaXJ5VGltZSI6MTYyNjUxMjM3NDU4NiwidGltZUNyZWF0ZWQiOjE2MjY1MDg3NzQ1ODYsImxtcnQiOjE2MjY1MDg3NzQ1ODZ9.f1sCkjt0OduS6I6FBQDBLV5zhHXpCU2GXnbe+8OCU6HKG00TX5CM8AyFlOlqzSHABZ7jES/+5k0Ff/rdD34cczlNqICcC4a23AjJg2a097rFrh8/8V7J5fr4UrHLIM4ojZNFz1NyVyDK/ooE6I7soHshEtEVr2XsnJ4q3d+fYs2wwx97PIT82hfHqgbRAzvlv952GYt+OH4bWQE4vTzDqGN7N2OKpn9l2fiCB1Ytzr3ocHRqKuQ8f6xW1n575Q1sSs9F9TtD7lrKfFQH+//6lyKFe2Q1SDc7YU4pE5Cy9Kc/LiqiTU+gsGIJL5qtMzUTG4lX38ugF4QDyNjDBMqCKw==; Max-Age=3599; Expires=Sat, 17 Jul 2021 08:59:34 GMT; Secure; HttpOnly; SameSite=Lax; Path=/'
-                 * i.split(";")[0].split("=")[1] will result in eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0
-                 */
-                accessToken = decodeURIComponent(i.split(";")[0].split("=").slice(1).join("="));
-                if (i.split(";")[2].includes("Expires=")) {
-                    accessTokenExpiry = i.split(";")[2].split("=")[1];
-                } else if (i.split(";")[2].includes("expires=")) {
-                    accessTokenExpiry = i.split(";")[2].split("=")[1];
-                } else {
-                    accessTokenExpiry = i.split(";")[3].split("=")[1];
-                }
-                if (i.split(";")[1].includes("Domain=")) {
-                    accessTokenDomain = i.split(";")[1].split("=")[1];
-                }
-                accessTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
-            } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
-                refreshToken = i.split(";")[0].split("=").slice(1).join("=");
-                if (i.split(";")[2].includes("Expires=")) {
-                    refreshTokenExpiry = i.split(";")[2].split("=")[1];
-                } else if (i.split(";")[2].includes("expires=")) {
-                    refreshTokenExpiry = i.split(";")[2].split("=")[1];
-                } else {
-                    refreshTokenExpiry = i.split(";")[3].split("=")[1];
-                }
-                if (i.split(";")[1].includes("Domain=")) {
-                    refreshTokenDomain = i.split(";")[1].split("=").slice(1).join("=");
-                }
-                refreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
-            }
-        });
+        cookies = cookies
+            .flat() // Ensure we have a flat array of cookies
+            // Split cookie strings into arrays
+            .map((cookieStr) => setCookieParser.splitCookiesString(cookieStr))
+            .flat() // Since we have an array of arrays now
+            // `parse` the cookies
+            .map(setCookieParser.parseString);
     }
+    // `CollectingResponse` objects use `key`, `set-cookie-parser` objects use `name`
+    const accessTokenCookie = cookies.find((info) => (info?.key ?? info?.name) == "sAccessToken");
+    if (accessTokenCookie) {
+        accessToken = accessTokenCookie?.value;
+        accessTokenExpiry = new Date(accessTokenCookie.expires).toUTCString();
+        accessTokenDomain = accessTokenCookie.domain;
+        accessTokenHttpOnly = accessTokenCookie.httpOnly;
+    }
+    const refreshTokenCookie = cookies.find((info) => (info?.key ?? info?.name) === "sRefreshToken");
+    if (refreshTokenCookie) {
+        refreshToken = refreshTokenCookie?.value;
+        refreshTokenExpiry = new Date(refreshTokenCookie.expires).toUTCString();
+        refreshTokenDomain = refreshTokenCookie.domain;
+        refreshTokenHttpOnly = refreshTokenCookie.httpOnly;
+    }
+
     let antiCsrf = headers["anti-csrf"];
     let frontToken = headers["front-token"];
 
@@ -214,43 +172,6 @@ module.exports.extractCookieCountInfo = function (res) {
     };
 };
 
-module.exports.setupST = async function () {
-    let installationPath = process.env.INSTALL_PATH;
-    try {
-        await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
-    } catch (ignore) {}
-    await module.exports.executeCommand("cd " + installationPath + " && cp temp/config.yaml ./config.yaml");
-};
-
-module.exports.cleanST = async function () {
-    let installationPath = process.env.INSTALL_PATH;
-    try {
-        await module.exports.executeCommand("cd " + installationPath + " && rm licenseKey");
-    } catch (ignore) {}
-    await module.exports.executeCommand("cd " + installationPath + " && rm config.yaml");
-    await module.exports.executeCommand("cd " + installationPath + " && rm -rf .webserver-temp-*");
-    await module.exports.executeCommand("cd " + installationPath + " && rm -rf .started");
-};
-
-module.exports.stopST = async function (pid) {
-    let pidsBefore = await getListOfPids();
-    if (pidsBefore.length === 0) {
-        return;
-    }
-    await module.exports.executeCommand("kill " + pid);
-    let startTime = Date.now();
-    while (Date.now() - startTime < 10000) {
-        let pidsAfter = await getListOfPids();
-        if (pidsAfter.includes(pid)) {
-            await new Promise((r) => setTimeout(r, 100));
-            continue;
-        } else {
-            return;
-        }
-    }
-    throw new Error("error while stopping ST with PID: " + pid);
-};
-
 module.exports.resetAll = function (disableLogging = true) {
     SuperTokens.reset();
     AccountLinkingRecipe.reset();
@@ -275,6 +196,7 @@ module.exports.resetAll = function (disableLogging = true) {
     }
 };
 
+// todo remove this
 module.exports.killAllST = async function () {
     let pids = await getListOfPids();
     for (let i = 0; i < pids.length; i++) {
@@ -284,6 +206,7 @@ module.exports.killAllST = async function () {
     nock.cleanAll();
 };
 
+// todo remove this
 module.exports.killAllSTCoresOnly = async function () {
     let pids = await getListOfPids();
     for (let i = 0; i < pids.length; i++) {
@@ -291,104 +214,67 @@ module.exports.killAllSTCoresOnly = async function () {
     }
 };
 
-module.exports.startST = async function (config = {}) {
-    const host = config.host ?? "localhost";
-    const port = config.port ?? 8080;
-    const notUsingTestApp =
-        process.env.REAL_DB_TEST !== "true" || host !== "localhost" || port !== 8080 || config.noApp === true;
-    if (config.coreConfig && notUsingTestApp) {
-        for (const [k, v] of Object.entries(config.coreConfig)) {
-            await module.exports.setKeyValueInConfig(k, v);
-        }
-    }
-    return new Promise(async (resolve, reject) => {
-        let installationPath = process.env.INSTALL_PATH;
-        let pidsBefore = await getListOfPids();
-        let returned = false;
-        module.exports
-            .executeCommand(
-                "cd " +
-                    installationPath +
-                    ` && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=` +
-                    host +
-                    " port=" +
-                    port +
-                    " test_mode"
-            )
-            .catch((err) => {
-                if (!returned) {
-                    returned = true;
-                    reject(err);
-                }
-            });
-        let startTime = Date.now();
-        while (Date.now() - startTime < 30000) {
-            let pidsAfter = await getListOfPids();
-            if (pidsAfter.length <= pidsBefore.length) {
-                await new Promise((r) => setTimeout(r, 100));
-                continue;
-            }
-            let nonIntersection = pidsAfter.filter((x) => !pidsBefore.includes(x));
-            if (nonIntersection.length !== 1) {
-                if (!returned) {
-                    returned = true;
-                    reject("something went wrong while starting ST");
-                }
-            } else {
-                if (!returned) {
-                    returned = true;
-                    if (notUsingTestApp) {
-                        return resolve(`http://${host}:${port}`);
-                    }
-                    try {
-                        // Math.random is an unsafe random but it doesn't actually matter here
-                        // const appId = configs.appId ?? `testapp-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-                        const appId = config.appId ?? `testapp`;
+module.exports.getCoreUrl = () => {
+    const host = process.env?.SUPERTOKENS_CORE_HOST ?? "localhost";
+    const port = process.env?.SUPERTOKENS_CORE_PORT ?? "3567";
 
-                        await module.exports.removeAppAndTenants(appId);
+    const coreUrl = `http://${host}:${port}`;
 
-                        const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
-                            "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
-
-                        await fetch(`http://${host}:${port}/ee/license`, {
-                            method: "PUT",
-                            headers: {
-                                "content-type": "application/json; charset=utf-8",
-                            },
-                            body: JSON.stringify({
-                                licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
-                            }),
-                        });
-
-                        // Create app
-                        const createAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app/v2`, {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                appId,
-                                coreConfig: config.coreConfig,
-                            }),
-                        });
-                        const respBody = await createAppResp.json();
-                        assert.strictEqual(respBody.status, "OK");
-                        resolve(`http://${host}:${port}/appid-${appId}`);
-                    } catch (err) {
-                        reject(err);
-                    }
-                }
-            }
-        }
-        if (!returned) {
-            returned = true;
-            reject("could not start ST process");
-        }
-    });
+    return coreUrl;
 };
 
-module.exports.startSTWithMultitenancy = async function (config) {
-    const connectionURI = await module.exports.startST(config);
+module.exports.createCoreApplication = async function ({ appId, coreConfig } = {}) {
+    const coreUrl = module.exports.getCoreUrl();
+
+    if (!appId) {
+        appId = randomUUID();
+    }
+
+    if (!coreConfig) {
+        coreConfig = {};
+    } else {
+        console.log("Using provided coreConfig", coreConfig);
+    }
+
+    const createAppResp = await fetch(`${coreUrl}/recipe/multitenancy/app/v2`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            appId,
+            coreConfig,
+        }),
+    });
+
+    const respBody = await createAppResp.json();
+    assert.strictEqual(respBody.status, "OK");
+    assert.strictEqual(respBody.createdNew, true);
+
+    return `${coreUrl}/appid-${appId}`;
+};
+
+module.exports.removeCoreApplication = async function ({ appId } = {}) {
+    const coreUrl = module.exports.getCoreUrl();
+
+    const createAppResp = await fetch(`${coreUrl}/recipe/multitenancy/app`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            appId,
+        }),
+    });
+
+    const respBody = await createAppResp.json();
+    assert.strictEqual(respBody.status, "OK");
+
+    return true;
+};
+
+module.exports.createCoreApplicationWithMultitenancy = async function (config) {
+    const connectionURI = await module.exports.createCoreApplication(config);
     const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
         "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
 
@@ -404,8 +290,8 @@ module.exports.startSTWithMultitenancy = async function (config) {
     return connectionURI;
 };
 
-module.exports.startSTWithMultitenancyAndAccountLinking = async function (config) {
-    const connectionURI = await module.exports.startST(config);
+module.exports.createCoreApplicationWithMultitenancyAndAccountLinking = async function (config) {
+    const connectionURI = await module.exports.createCoreApplication(config);
 
     const OPAQUE_KEY_WITH_FEATURES =
         "N2yITHflaFS4BPm7n0bnfFCjP4sJoTERmP0J=kXQ5YONtALeGnfOOe2rf2QZ0mfOh0aO3pBqfF-S0jb0ABpat6pySluTpJO6jieD6tzUOR1HrGjJO=50Ob3mHi21tQHJ";

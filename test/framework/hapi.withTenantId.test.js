@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
@@ -30,8 +30,6 @@ const ThirdParty = require("../../recipe/thirdparty");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
         this.server = Hapi.server({
             port: 3000,
@@ -44,14 +42,11 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
             await this.sever.stop();
         } catch (err) {}
     });
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -111,7 +106,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -166,7 +161,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     //- check for token theft detection
     it("token theft detection", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -280,7 +275,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     //- check for token theft detection
     it("token theft detection with auto refresh middleware", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -365,7 +360,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     //check basic usage of session
     it("test basic usage of sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -492,7 +487,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test signout API works", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -543,7 +538,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     //check basic usage of session
     it("test basic usage of sessions with auto refresh", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -671,7 +666,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     // check session verify for with / without anti-csrf present
     it("test session verify with anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -746,7 +741,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -827,7 +822,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     //check revoking session(s)**
     it("test revoking sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -944,7 +939,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     //check manipulating session data
     it("test manipulating session data", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1086,7 +1081,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
 
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1293,7 +1288,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("sending custom response hapi", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1339,7 +1334,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1385,7 +1380,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test verifySession/getSession without accessToken", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1439,7 +1434,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that tags request respond with correct tags", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1494,7 +1489,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1549,7 +1544,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1603,7 +1598,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
         assert(resp.result.users.length === 0);
     });
     it("test that search results correct output for multiple search items", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1658,7 +1653,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1716,7 +1711,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1774,7 +1769,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that search results correct output for 'provider: google, phone: 1'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {
@@ -1877,7 +1872,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             framework: "hapi",
             supertokens: {

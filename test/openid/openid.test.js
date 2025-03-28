@@ -1,6 +1,6 @@
 let assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 const OpenIdRecipe = require("../../lib/build/recipe/openid/recipe").default;
@@ -10,18 +10,13 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("Test that with default config discovery configuration is as expected", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -48,7 +43,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
     });
 
     it("Test that with default config discovery configuration is as expected with api base path", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -76,7 +71,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
     });
 
     it("Test that with default config discovery configuration is as expected with custom issuer", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

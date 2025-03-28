@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const { printPath, createCoreApplication, resetAll, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -45,18 +45,13 @@ TODO:
 
 describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test good input, email exists with new path", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -102,7 +97,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     // disable the email exists API, and check that calling it returns a 404.
     it("test that if disabling api, the default email exists API does not work", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -153,7 +148,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     // email exists
     it("test good input, email exists", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -199,7 +194,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     //email does not exist
     it("test good input, email does not exists", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -241,7 +236,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     //pass an invalid (syntactically) email and check that you get exists: false
     it("test email exists a syntactically invalid email", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -287,7 +282,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     //pass an unnormalised email, and check that you get exists true
     it("test sending an unnormalised email and you get exists is true", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -333,7 +328,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     //do not pass email
     it("test bad input, do not pass email", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -370,7 +365,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     // pass an array instead of string in the email
     it("test passing an array instead of a string in the email", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -413,7 +408,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     // email exists
     it("test good input, email exists, with bodyParser applied before", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -462,7 +457,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
     // email exists
     it("test good input, email exists, with bodyParser applied after", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, resetAll } = require("../utils");
+const { printPath, createCoreApplication, extractInfoFromResponse, resetAll } = require("../utils");
 const assert = require("assert");
 const { Querier } = require("../../lib/build/querier");
 const express = require("express");
@@ -30,19 +30,14 @@ const { validateAccessTokenStructure } = require("../../lib/build/recipe/session
 
 describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     describe("createNewSession", () => {
         it("should create a V5 token", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -84,7 +79,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should create a V5 token signed by a static key if set in session recipe config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -130,7 +125,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should ignore protected props", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -176,7 +171,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should ignore protected props when creating from prev payload", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -256,7 +251,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should make sign in/up return a 500 when adding protected props", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -321,7 +316,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("mergeIntoAccessTokenPayload", () => {
         it("should help migrating a v2 token using protected props", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -422,7 +417,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should help migrating a v2 token using protected props when called using session handle", async () => {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -491,7 +486,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("verifySession", () => {
         it("should validate v2 tokens", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -550,7 +545,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v2 tokens with check database enabled", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -639,7 +634,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v4 tokens", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -707,7 +702,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v4 tokens with check database enabled", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -806,7 +801,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v5 tokens with check database enabled", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -888,7 +883,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should not validate token signed by a static key if not set in session recipe config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -962,7 +957,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("refresh session", () => {
         it("should refresh legacy sessions to new version", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
@@ -1017,7 +1012,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should throw when refreshing legacy session with protected prop in payload", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             SuperTokens.init({
                 supertokens: {
                     connectionURI,
