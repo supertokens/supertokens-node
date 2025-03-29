@@ -38,8 +38,8 @@ export const protectedProps = [
 ];
 export const authorizationHeaderKey = "authorization";
 export const accessTokenHeaderKey = "st-access-token";
-export const accessTokenCookieKey = "sAccessToken";
-export const refreshTokenCookieKey = "sRefreshToken";
+export const accessTokenCookieKey = "stAccessToken";
+export const refreshTokenCookieKey = "stRefreshToken";
 export const refreshTokenHeaderKey = "st-refresh-token";
 
 export const antiCsrfHeaderKey = "anti-csrf";
