@@ -28,6 +28,7 @@ import AccountLinking from "../accountlinking/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import PasswordlessRecipe from "../passwordless/recipe";
+import WebAuthnRecipe from "../webauthn/recipe";
 import RecipeUserId from "../../recipeUserId";
 import { User, UserContext } from "../../types";
 import { logDebugMessage } from "../../logger";
@@ -62,7 +63,12 @@ export function sendUnauthorisedAccess(res: BaseResponse) {
 }
 
 export function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser {
-    return recipeId === "emailpassword" || recipeId === "thirdparty" || recipeId === "passwordless";
+    return (
+        recipeId === "emailpassword" ||
+        recipeId === "thirdparty" ||
+        recipeId === "passwordless" ||
+        recipeId === "webauthn"
+    );
 }
 
 export async function getUserForRecipeId(
@@ -71,7 +77,7 @@ export async function getUserForRecipeId(
     userContext: UserContext
 ): Promise<{
     user: UserWithFirstAndLastName | undefined;
-    recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
+    recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 }> {
     let userResponse = await _getUserForRecipeId(recipeUserId, recipeId, userContext);
     let user: UserWithFirstAndLastName | undefined = undefined;
@@ -94,9 +100,9 @@ async function _getUserForRecipeId(
     userContext: UserContext
 ): Promise<{
     user: User | undefined;
-    recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
+    recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 }> {
-    let recipe: "emailpassword" | "thirdparty" | "passwordless" | undefined;
+    let recipe: "emailpassword" | "thirdparty" | "passwordless" | "webauthn" | undefined;
 
     const user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
         userId: recipeUserId.getAsString(),
@@ -140,6 +146,13 @@ async function _getUserForRecipeId(
         try {
             PasswordlessRecipe.getInstanceOrThrowError();
             recipe = "passwordless";
+        } catch (e) {
+            // No - op
+        }
+    } else if (recipeId === WebAuthnRecipe.RECIPE_ID) {
+        try {
+            WebAuthnRecipe.getInstanceOrThrowError();
+            recipe = "webauthn";
         } catch (e) {
             // No - op
         }

@@ -90,6 +90,9 @@ export default function getAPIInterface(): APIInterface {
                     enabled: validFirstFactors.includes("thirdparty"),
                     providers: finalProviderList,
                 },
+                webauthn: {
+                    enabled: validFirstFactors.includes("webauthn"),
+                },
                 passwordless: {
                     enabled:
                         validFirstFactors.includes("otp-email") ||

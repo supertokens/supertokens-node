@@ -72,7 +72,7 @@ export type APIFunction = (
     userContext: UserContext
 ) => Promise<any>;
 
-export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
+export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless" | "webauthn";
 
 export type AuthMode = "api-key" | "email-password";
 
