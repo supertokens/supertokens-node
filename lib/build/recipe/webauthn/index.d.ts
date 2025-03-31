@@ -223,9 +223,9 @@ export default class Wrapper {
         status:
             | "OK"
             | "UNKNOWN_USER_ID_ERROR"
-            | "INVALID_CREDENTIALS_ERROR"
             | "INVALID_OPTIONS_ERROR"
             | "OPTIONS_NOT_FOUND_ERROR"
+            | "INVALID_CREDENTIALS_ERROR"
             | "INVALID_AUTHENTICATOR_ERROR"
             | "CREDENTIAL_NOT_FOUND_ERROR";
     }>;
