@@ -440,9 +440,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     });
 
                     it(`should match line ${i + 1} with a expired token`, async () => {
-                        console.log(`should match line ${i + 1} with a expired token: START`);
                         const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 2 } });
-                        console.log(`should match line ${i + 1} with a expired token: DONE`);
 
                         SuperTokens.init({
                             supertokens: {

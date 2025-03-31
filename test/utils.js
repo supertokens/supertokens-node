@@ -233,7 +233,6 @@ module.exports.createCoreApplication = async function ({ appId, coreConfig } = {
     if (!coreConfig) {
         coreConfig = {};
     } else {
-        console.log("Using provided coreConfig", coreConfig);
     }
 
     const createAppResp = await fetch(`${coreUrl}/recipe/multitenancy/app/v2`, {
