@@ -195,7 +195,15 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
 
             let pkceCodeVerifier: string | undefined = undefined;
 
-            if (impl.config.clientSecret === undefined || impl.config.forcePKCE) {
+            // Check if the OIDC response had specified PKCE to be used.
+            // Reference: https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+            //
+            // Generally, we should try to use the best method supported by the provider.
+            // However, we will only use the S256 method if it is present and ignore otherwise,
+            // i.e. if `plain` is present etc.
+            const isS256MethodSupported = impl.config.codeChallengeMethodsSupported?.includes("S256");
+
+            if (impl.config.clientSecret === undefined || impl.config.forcePKCE || isS256MethodSupported) {
                 const { code_challenge, code_verifier } = pkceChallenge(64); // According to https://www.rfc-editor.org/rfc/rfc7636, length must be between 43 and 128
                 queryParams["code_challenge"] = code_challenge;
                 queryParams["code_challenge_method"] = "S256";
