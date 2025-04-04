@@ -44,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Updated FDI support to `4.1`
 
+## [21.1.2] - 2025-04-04
+
+-   Adds support for using `code_challenge_method` from OIDC provider response to determine whether to use PKCE or not.
+
 ## [21.1.1] - 2025-03-18
 
 -   Fixes an issue where the response body was not being cloned when using cache
