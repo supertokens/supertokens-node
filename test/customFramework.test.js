@@ -10,7 +10,7 @@ let SuperTokens = require("../lib/build/").default;
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const { PreParsedRequest } = require("../lib/build/framework/custom");
-const { printPath, setupST, startST, killAllST, cleanST } = require("./utils");
+const { printPath, createCoreApplication } = require("./utils");
 const { generateKeyPair, SignJWT, exportJWK, importJWK, decodeJwt } = require("jose");
 
 // Helper function to create a JWKS
@@ -72,9 +72,8 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
 
     before(async function () {
         process.env.user = undefined;
-        await killAllST();
-        await setupST();
-        connectionURI = await startST();
+
+        connectionURI = await createCoreApplication();
         ProcessState.getInstance().reset();
         SuperTokens.init({
             supertokens: {
@@ -110,10 +109,7 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
         jwks = jwksGenerated;
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     const CustomResponse = class extends Response {};
 

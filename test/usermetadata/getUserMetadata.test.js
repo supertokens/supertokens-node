@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 const STExpress = require("../../");
 const { ProcessState } = require("../../lib/build/processState");
 const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata").default;
@@ -9,19 +9,14 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     describe("getUserMetadata", () => {
         it("should return an empty object for unknown userIds", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
 
@@ -51,7 +46,7 @@ describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.t
         });
 
         it("should return an object if it's created.", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testMetadata = {

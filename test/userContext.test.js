@@ -14,12 +14,10 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
-    setKeyValueInConfig,
 } = require("./utils");
 let assert = require("assert");
 const express = require("express");
@@ -40,18 +38,13 @@ const { fail } = require("assert");
 
 describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("testing context across interface and recipe function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let works = false;
         let signUpContextWorks = false;
         STExpress.init({
@@ -188,7 +181,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
     });
 
     it("testing default context across interface and recipe function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let signInContextWorks = false;
         let signInAPIContextWorks = false;
         let createNewSessionContextWorks = false;
@@ -291,7 +284,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
     });
 
     it("Test that SuperTokens.getRequestFromUserContext works as expected", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let signInContextWorks = false;
         let signInAPIContextWorks = false;
         let createNewSessionContextWorks = false;

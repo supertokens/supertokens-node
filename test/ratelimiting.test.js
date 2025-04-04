@@ -1,5 +1,5 @@
 const { ProcessState } = require("../lib/build/processState");
-const { printPath, killAllST, setupST, cleanST, startST } = require("./utils");
+const { printPath, createCoreApplication } = require("./utils");
 let STExpress = require("../");
 let Dashboard = require("../recipe/dashboard");
 let EmailVerification = require("../recipe/emailverification");
@@ -14,19 +14,15 @@ const RateLimitedStatus = 429;
 
 describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, () => {
     beforeEach(async () => {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
     after(async function () {
-        await killAllST();
-        await cleanST();
         Querier.apiVersion = undefined;
     });
 
     it("Test that network call is retried properly", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 // Using 8083 because we need querier to call the test express server instead of the core
@@ -105,7 +101,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
     });
 
     it("Test that rate limiting errors are thrown back to the user", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 // Using 8083 because we need querier to call the test express server instead of the core
@@ -159,7 +155,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
     });
 
     it("Test that parallel calls have independent retry counters", async () => {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 // Using 8083 because we need querier to call the test express server instead of the core

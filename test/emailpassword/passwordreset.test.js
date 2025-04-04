@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const { printPath, createCoreApplication, resetAll, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -50,15 +50,10 @@ let { maxVersion } = require("../../lib/build/utils");
 
 describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     /*
      * generate token API:
@@ -67,7 +62,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
      *      - check that the generated password reset link is correct
      */
     it("test email validation checks in generate token API", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -112,7 +107,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test invalid email type in generate token API", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -154,7 +149,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test that generated password link is correct", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let resetURL = "";
         let tokenInfo = "";
@@ -230,7 +225,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
      *        - input is valid, check that password has changed (call sign in)
      */
     it("test password validation", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -298,7 +293,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test invalid type of password", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -341,7 +336,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test token missing from input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -383,7 +378,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test invalid token input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -426,7 +421,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test valid token input and passoword has changed with email verification", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let passwordResetUserId = undefined;
         let token = "";
@@ -591,7 +586,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test valid token input and passoword has changed without email verification", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let passwordResetUserId = undefined;
         let token = "";
@@ -756,7 +751,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
     describe("createPasswordResetToken tests", function () {
         it("createPasswordResetToken with random user ID fails", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -775,7 +770,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
 
         it("createPasswordResetToken with primary user, non email password succeeds", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -823,7 +818,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
     describe("consumePasswordResetToken tests", function () {
         it("consumePasswordResetToken works when token is valid", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -852,7 +847,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
 
         it("consumePasswordResetToken returns RESET_PASSWORD_INVALID_TOKEN_ERROR error if the token does not exist", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -871,7 +866,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
 
         it("consumePasswordResetToken with primary user, non email password succeeds", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -928,7 +923,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("Test that reset password link uses the correct origin", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let emailPasswordLink = "";
         STExpress.init({
             supertokens: {
@@ -1021,7 +1016,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test the reset password link", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1055,7 +1050,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test the reset password link for invalid input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -1084,7 +1079,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test sendResetPasswordEmail", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let emailPasswordLink = "";
         STExpress.init({
             supertokens: {
@@ -1132,7 +1127,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test sendResetPasswordEmail: invalid input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

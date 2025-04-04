@@ -15,10 +15,9 @@
 
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     signInUPCustomRequest,
     extractInfoFromResponse,
     emailVerifyTokenRequest,
@@ -64,18 +63,13 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
     });
 
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test default backward compatibility api being called: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -149,7 +143,7 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
     });
 
     it("test default backward compatibility api being called, error message not sent back to user: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -224,7 +218,7 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
     });
 
     it("test custom override: email verify", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         let email = undefined;
         let emailVerifyURL = undefined;
         let type = undefined;
@@ -312,7 +306,7 @@ describe(`emailverify: ${printPath("[test/thirdparty/emailverify.test.js]")}`, f
     });
 
     it("test that providing your own email callback and make sure it is called", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         let userInfo = null;
         let emailToken = null;

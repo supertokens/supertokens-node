@@ -15,15 +15,12 @@
 
 const {
     printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
-    setKeyValueInConfig,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -44,19 +41,14 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     // Test the default route and it should revoke the session (with clearing the cookies)
     it("test the default route and it should revoke the session", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -113,7 +105,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
     // Disable default route and test that that API returns 404
     it("test that disabling default route and calling the API returns 404", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -163,7 +155,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
     // Call the API without a session and it should return "401"
     it("test that calling the API without a session should return 401", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {
@@ -201,7 +193,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
     //Call the API with an expired access token, refresh, and call the API again to get OK and clear cookies
     it("test that signout API reutrns try refresh token, refresh session and signout should return OK", async function () {
-        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
+        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 2 } });
 
         STExpress.init({
             supertokens: {

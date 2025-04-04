@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy } = require("../utils");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -25,18 +25,13 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test creation of tenants", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -65,7 +60,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test get tenant", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -109,7 +104,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test update tenant", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -150,7 +145,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test delete tenant", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -188,7 +183,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test creation of thirdParty config", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -222,7 +217,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test creation of thirdParty config with nulls", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -290,7 +285,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test deletion of thirdparty id", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -326,7 +321,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test updation of thirdparty provider", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -370,7 +365,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test user association and disassociation with tenants", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

@@ -1,6 +1,6 @@
 let assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 const OpenIdRecipe = require("../../lib/build/recipe/openid/recipe").default;
@@ -9,18 +9,13 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("Test that the default config sets values correctly for OpenID recipe", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -44,7 +39,7 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
     });
 
     it("Test that the default config sets values correctly for OpenID recipe with apiBasePath", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -69,7 +64,7 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
     });
 
     it("Test that the config sets values correctly for OpenID recipe with issuer", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -109,7 +104,7 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
     });
 
     it("Test that issuer with gateway path works fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

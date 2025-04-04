@@ -14,11 +14,9 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
-    setKeyValueInConfig,
+
+    createCoreApplication,
+
     killAllSTCoresOnly,
     mockRequest,
 } = require("./utils");
@@ -49,8 +47,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 )}`, function () {
     let requestMock;
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
         requestMock.reset();
         requestMock.callThrough();
@@ -62,12 +58,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
     after(async function () {
         requestMock.restore();
-        await killAllST();
-        await cleanST();
     });
 
     it("check that if signing key changes, things are still fine", async function () {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
         }); // 5 seconds is the update interval
         SuperTokens.init({
@@ -214,7 +208,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via token query, old tokens don't query the core", async function () {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
         }); // 5 seconds is the update interval
         SuperTokens.init({
@@ -305,7 +299,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
         }); // 5 seconds is the update interval
         SuperTokens.init({
@@ -393,7 +387,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
         }); // 5 seconds is the update interval
         SuperTokens.init({
@@ -485,7 +479,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
     it("test reducing access token signing key update interval time", async function () {
         const appId = "testapp-" + Date.now();
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             appId,
             coreConfig: {
                 access_token_dynamic_signing_key_update_interval: "0.0041", // 10 seconds
@@ -533,10 +527,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         // we kill the core
         await killAllSTCoresOnly();
-        await setupST();
 
         // start server again
-        await startST({
+        await createCoreApplication({
             appId,
             coreConfig: {
                 access_token_dynamic_signing_key_update_interval: "0.0041", // 10 seconds
@@ -648,7 +641,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("no access token signing key update", async function () {
-        const connectionURI = await startST({
+        const connectionURI = await createCoreApplication({
             coreConfig: {
                 access_token_signing_key_dynamic: "false",
                 access_token_dynamic_signing_key_update_interval: "0.0011", // 4 seconds

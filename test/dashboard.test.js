@@ -1,12 +1,11 @@
 const {
     printPath,
-    setupST,
-    startSTWithMultitenancyAndAccountLinki,
-    startSTWithMultitenancyAndAccountLinkingng,
-    killAllST,
-    cleanST,
+
+    createCoreApplicationWithMultitenancyAndAccountLinki,
+    createCoreApplicationWithMultitenancyAndAccountLinkingng,
+
     resetAll,
-    startSTWithMultitenancyAndAccountLinking,
+    createCoreApplicationWithMultitenancyAndAccountLinking,
 } = require("./utils");
 let STExpress = require("../");
 let Session = require("../recipe/session");
@@ -26,18 +25,13 @@ let { middleware, errorHandler } = require("../framework/express");
 
 describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("Test that normalised config is generated correctly", async function () {
-        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+        const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
 
         {
             STExpress.init({
@@ -82,7 +76,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
 
     describe("with account linking", () => {
         it("should get user info with first&last names", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -225,7 +219,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should reset password of linked user", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -318,7 +312,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should link accounts after verification", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -404,7 +398,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should delete all linked users if removeAllLinkedAccounts is true", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -478,7 +472,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should not delete all linked users if removeAllLinkedAccounts is false when deleting the primary user", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -570,7 +564,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should not delete all linked users if removeAllLinkedAccounts is false when deleting the recipe user", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -651,7 +645,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
 
     describe("deleteUser", () => {
         it("should respond with error if userId is missing", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -711,7 +705,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should respond with error if userId is empty", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,
@@ -773,7 +767,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
 
     describe("userPut", () => {
         it("should respond with error if another user exists with the same email", async function () {
-            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            const connectionURI = await createCoreApplicationWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
                     connectionURI,

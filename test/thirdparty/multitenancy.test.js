@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy } = require("../utils");
 let SuperTokens = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -21,20 +21,15 @@ let Multitenancy = require("../../recipe/multitenancy");
 
 describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test recipe functions", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -101,7 +96,7 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
     });
 
     it("test getProvider", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -165,7 +160,7 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
     });
 
     it("test getProvider merges the config from static and core 1", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -207,7 +202,7 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
     });
 
     it("test getProvider returns correct config from core", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

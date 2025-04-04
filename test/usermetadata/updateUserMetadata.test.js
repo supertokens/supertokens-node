@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata").default;
@@ -9,19 +9,14 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMetadata.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     describe("updateUserMetadata", () => {
         it("should create metadata for unknown user id", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -58,7 +53,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
         });
 
         it("should create metadata with utf8 encoding", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -95,7 +90,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
         });
 
         it("should create metadata for cleared user id", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -135,7 +130,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
         });
 
         it("should update metadata by shallow merge", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             const testUserId = "userId";
             const testMetadata = {

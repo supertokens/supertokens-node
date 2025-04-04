@@ -1,4 +1,4 @@
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 const { ProcessState } = require("../../lib/build/processState");
 const STExpress = require("../..");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles/recipe").default;
@@ -8,19 +8,14 @@ const { default: SessionRecipe } = require("../../lib/build/recipe/session/recip
 
 describe(`configTest: ${printPath("[test/userroles/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     describe("recipe init", () => {
         it("should work fine without config", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
             STExpress.init({
                 supertokens: {
                     connectionURI,

@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const { printPath, createCoreApplication, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
@@ -11,19 +11,14 @@ const { maxVersion } = require("../../lib/build/utils");
 
 describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserIdMapping.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     describe("deleteUserIdMapping:", () => {
         it("delete an unknown userId mapping", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -67,7 +62,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
         });
 
         it("delete a userId mapping with userIdType as SUPERTOKENS", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -121,7 +116,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
         });
 
         it("delete a userId mapping with userIdType as EXTERNAL", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -175,7 +170,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
         });
 
         it("delete a userId mapping with userIdType as ANY", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {
@@ -256,7 +251,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
         });
 
         it("delete a userId mapping when userMetadata exists with externalId with and without force", async function () {
-            const connectionURI = await startST();
+            const connectionURI = await createCoreApplication();
 
             STExpress.init({
                 supertokens: {

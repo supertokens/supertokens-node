@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST, removeAppAndTenants } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy, removeAppAndTenants } = require("../utils");
 let STExpress = require("../..");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -29,15 +29,10 @@ const { configsForVerification, providers } = require("./tpConfigsForVerificatio
 
 describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     describe("test built-in provider computed config from static config with overrides", async function () {
         const overrides = [
@@ -105,7 +100,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
                 it(`should work for ${provider.config.thirdPartyId} with override ${JSON.stringify(
                     overrideVal.input
                 )}`, async function () {
-                    const connectionURI = await startSTWithMultitenancy();
+                    const connectionURI = await createCoreApplicationWithMultitenancy();
 
                     STExpress.init({
                         supertokens: {

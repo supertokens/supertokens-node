@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let Multitenancy = require("../../lib/build/recipe/multitenancy");
 let assert = require("assert");
@@ -60,18 +60,13 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
         };
     });
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test that using development OAuth keys will use the development authorisation url", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         // testing with the google OAuth development key
         STExpress.init({
@@ -133,7 +128,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test calling authorisation url API with empty init", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         // testing with the google OAuth development key
         STExpress.init({
@@ -179,7 +174,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test calling authorisation url API with empty init with dynamic third party provider", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         // testing with the google OAuth development key
         STExpress.init({
@@ -239,7 +234,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test minimum config for thirdparty module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -287,7 +282,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test thirdparty provider doesn't exist", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -329,7 +324,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     });
 
     it("test invalid GET params for thirdparty module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,

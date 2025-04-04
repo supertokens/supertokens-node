@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, createCoreApplicationWithMultitenancy, resetAll } = require("../utils");
 let SuperTokens = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -29,18 +29,13 @@ let Multitenancy = require("../../recipe/multitenancy");
 
 describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("test recipe functions", async function () {
-        const connectionURI = await startSTWithMultitenancy();
+        const connectionURI = await createCoreApplicationWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

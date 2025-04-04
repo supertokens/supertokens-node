@@ -14,13 +14,11 @@
  */
 const {
     printPath,
-    setupST,
-    startST,
-    killAllST,
-    cleanST,
+
+    createCoreApplication,
+
     extractInfoFromResponse,
-    setKeyValueInConfig,
-    killAllSTCoresOnly,
+
     mockResponse,
     mockRequest,
 } = require("./utils");
@@ -50,19 +48,14 @@ const { default: RecipeUserId } = require("../lib/build/recipeUserId");
 
 describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     // check if output headers and set cookies for create session is fine
     it("test that output headers and set cookie for create session is fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -117,7 +110,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     // check if output headers and set cookies for refresh session is fine
     it("test that output headers and set cookie for refresh session is fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -186,7 +179,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that session tokens are cleared if refresh token api is called without the refresh token but with access token", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -246,7 +239,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that custom cookie format does nto throw an error during cookie parsing", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -304,7 +297,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that session tokens are cleared if refresh token api is called without the refresh token but with an expired access token", async function () {
-        const connectionURI = await startST({ coreConfig: { access_token_validity: 1 } });
+        const connectionURI = await createCoreApplication({ coreConfig: { access_token_validity: 1 } });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -367,7 +360,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that access and refresh token for olderCookieDomain is cleared if multiple tokens are passed to the refresh endpoint", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -418,7 +411,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that refresh endpoint throws a 500 if multiple tokens are passed and olderCookieDomain is undefined", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -461,7 +454,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that verifySession returns 401 if multiple tokens are passed in the request", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -530,7 +523,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test verifySession returns 200 in header based auth even if multiple tokens are present in the cookie", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -597,7 +590,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that refresh endpoint refreshes the token in header based auth even if multiple tokens are present in the cookie", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -664,7 +657,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     // check if input cookies are missing, an appropriate error is thrown
     // Failure condition: if valid cookies are set in the refresh call the test will fail
     it("test that if input cookies are missing, an appropriate error is thrown", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -718,7 +711,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     // check if input cookies are there, no error is thrown
     // Failure condition: if cookies are no set in the refresh call the test will fail
     it("test that if input cookies are there, no error is thrown", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -772,7 +765,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //- check for token theft detection
     it("token theft detection", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -832,7 +825,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("token theft detection with API key", async function () {
-        const connectionURI = await startST({ coreConfig: { api_keys: "shfo3h98308hOIHoei309saiho" } });
+        const connectionURI = await createCoreApplication({ coreConfig: { api_keys: "shfo3h98308hOIHoei309saiho" } });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -893,7 +886,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("query without API key", async function () {
-        const connectionURI = await startST({ coreConfig: { api_keys: "shfo3h98308hOIHoei309saiho" } });
+        const connectionURI = await createCoreApplication({ coreConfig: { api_keys: "shfo3h98308hOIHoei309saiho" } });
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -921,7 +914,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //check basic usage of session
     it("test basic usage of sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1019,7 +1012,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //check session verify for with / without anti-csrf present
     it("test session verify with anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1071,7 +1064,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //check session verify for with / without anti-csrf present**
     it("test session verify without anti-csrf present", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1131,7 +1124,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //check revoking session(s)
     it("test revoking of sessions", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1236,7 +1229,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //check manipulating session data
     it("test manipulating session data", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1270,7 +1263,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test manipulating session data with new get session function", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1310,7 +1303,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test null and undefined values passed for session data", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1365,7 +1358,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test null and undefined values passed for session data with new get session method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1424,7 +1417,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1459,7 +1452,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test manipulating jwt payload with new get session method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1500,7 +1493,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test null and undefined values passed for jwt payload", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1555,7 +1548,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test null and undefined values passed for jwt payload with new get session method", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1614,7 +1607,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
     it("test that when anti-csrf is disabled from ST core not having that in input to verify session is fine", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1667,7 +1660,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that anti-csrf disabled and sameSite none does not throw an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         SuperTokens.init({
             supertokens: {
@@ -1685,7 +1678,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that anti-csrf disabled and sameSite lax does now throw an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1705,7 +1698,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that anti-csrf disabled and sameSite strict does now throw an error", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1725,7 +1718,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that custom user id is returned correctly", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1764,7 +1757,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that get session by session handle payload is correct", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1807,7 +1800,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that revoked session throws error when calling get session by session handle", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -1854,7 +1847,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("should use override functions in sessioncontainer methods", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         SuperTokens.init({
             supertokens: {
                 connectionURI,

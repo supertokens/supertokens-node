@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -21,20 +21,15 @@ let WebAuthnRecipe = require("../../lib/build/recipe/webauthn/recipe").default;
 
 describe(`configTest: ${printPath("[test/webauthn/config.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for webauthn module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -71,7 +66,7 @@ describe(`configTest: ${printPath("[test/webauthn/config.test.js]")}`, function 
 
     // Failure condition: passing data of invalid type/ syntax to the module
     it("test config for webauthn module", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
 
         STExpress.init({
             supertokens: {

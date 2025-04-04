@@ -1,24 +1,19 @@
 let assert = require("assert");
 
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, createCoreApplication } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let OAuth2Recipe = require("../../recipe/oauth2provider");
 
 describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`, function () {
     beforeEach(async function () {
-        await killAllST();
-        await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    after(async function () {});
 
     it("should create an OAuth2Client instance with empty input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -39,7 +34,7 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
     });
 
     it("should create an OAuth2Client instance with custom input", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -63,7 +58,7 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
     });
 
     it("should update the OAuth2Client", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -108,7 +103,7 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
     });
 
     it("should delete the OAuth2Client", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -138,7 +133,7 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
     });
 
     it("should get OAuth2Clients with pagination", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
@@ -180,7 +175,7 @@ describe(`OAuth2ClientTests: ${printPath("[test/oauth2/oauth2client.test.js]")}`
     });
 
     it("should get OAuth2Clients with filter", async function () {
-        const connectionURI = await startST();
+        const connectionURI = await createCoreApplication();
         STExpress.init({
             supertokens: {
                 connectionURI,
