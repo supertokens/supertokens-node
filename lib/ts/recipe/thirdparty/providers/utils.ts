@@ -118,6 +118,13 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
         if (oidcInfo.jwks_uri !== undefined && config.jwksURI === undefined) {
             config.jwksURI = oidcInfo.jwks_uri;
         }
+
+        if (
+            oidcInfo.code_challenge_methods_supported !== undefined &&
+            config.codeChallengeMethodsSupported === undefined
+        ) {
+            config.codeChallengeMethodsSupported = oidcInfo.code_challenge_methods_supported;
+        }
     }
 }
 

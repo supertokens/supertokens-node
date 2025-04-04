@@ -61,6 +61,7 @@ declare type CommonProviderConfig = {
         [key: string]: string | null;
     };
     jwksURI?: string;
+    codeChallengeMethodsSupported?: string[];
     oidcDiscoveryEndpoint?: string;
     userInfoMap?: UserInfoMap;
     validateIdTokenPayload?: (input: {
