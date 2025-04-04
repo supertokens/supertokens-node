@@ -672,6 +672,7 @@ function testGet(app, info, url, expectedStatus) {
             .get(url)
             .set("Cookie", ["sAccessToken=" + info.accessToken])
             .set("anti-csrf", info.antiCsrf)
+            .timeout(10000)
             .expect(expectedStatus)
             .end((err, res) => {
                 if (err) {

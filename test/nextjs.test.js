@@ -136,6 +136,7 @@ if (major >= 18) {
                             headers: {
                                 rid: "emailpassword",
                             },
+                            timeout: 10000,
                             body: JSON.stringify({
                                 formFields: [
                                     {
@@ -172,6 +173,7 @@ if (major >= 18) {
                             headers: {
                                 rid: "emailpassword",
                             },
+                            timeout: 10000,
                             body: JSON.stringify({
                                 formFields: [
                                     {
@@ -212,6 +214,7 @@ if (major >= 18) {
                             headers: {
                                 authorization: `Bearer ${tokens.access}`,
                             },
+                            timeout: 10000,
                             body: JSON.stringify({
                                 formFields: [
                                     {
@@ -242,6 +245,7 @@ if (major >= 18) {
                             headers: {
                                 rid: "emailpassword",
                             },
+                            timeout: 10000,
                             headers: {},
                             body: JSON.stringify({
                                 formFields: [
@@ -273,6 +277,7 @@ if (major >= 18) {
                             headers: {
                                 rid: "emailpassword",
                             },
+                            timeout: 10000,
                             body: JSON.stringify({
                                 formFields: [
                                     {
@@ -299,6 +304,7 @@ if (major >= 18) {
                             headers: {
                                 rid: "emailpassword",
                             },
+                            timeout: 10000,
                             body: JSON.stringify({
                                 formFields: [
                                     {
@@ -326,6 +332,7 @@ if (major >= 18) {
                     test: async ({ fetch }) => {
                         const res = await fetch({
                             method: "GET",
+                            timeout: 10000,
                             headers: {
                                 rid: "emailpassword",
                             },
@@ -347,6 +354,7 @@ if (major >= 18) {
                     test: async ({ fetch }) => {
                         const res = await fetch({
                             method: "GET",
+                            timeout: 10000,
                             headers: {
                                 rid: "emailpassword",
                             },
@@ -375,6 +383,7 @@ if (major >= 18) {
                     test: async ({ fetch }) => {
                         const res = await fetch({
                             method: "GET",
+                            timeout: 10000,
                             headers: {
                                 rid: "emailpassword",
                             },
@@ -414,6 +423,7 @@ if (major >= 18) {
                     test: async ({ fetch }) => {
                         const res = await fetch({
                             method: "GET",
+                            timeout: 10000,
                         });
                         assert.strictEqual(res.status, 200);
                         assert.deepStrictEqual(await res.json(), {
@@ -493,6 +503,7 @@ if (major >= 18) {
                             headers: {
                                 rid: "emailpassword",
                             },
+                            timeout: 10000,
                             body: JSON.stringify({
                                 token: "hello",
                                 formFields: [
@@ -531,6 +542,7 @@ if (major >= 18) {
                                 rid: "thirdparty",
                                 "content-type": "application/x-www-form-urlencoded",
                             },
+                            timeout: 10000,
                             body: encodedData,
                             redirect: "manual",
                         });
@@ -595,6 +607,7 @@ if (major >= 18) {
                             headers: {
                                 rid: "emailpassword",
                             },
+                            timeout: 10000,
                             body: JSON.stringify({
                                 formFields: [
                                     {
@@ -664,6 +677,7 @@ if (major >= 18) {
             const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", {
                 method: "POST",
                 headers: { rid: "emailpassword" },
+                timeout: 10000,
                 body: JSON.stringify({
                     formFields: [
                         { id: "email", value: userEmail },
@@ -691,6 +705,7 @@ if (major >= 18) {
             const requestInfo = {
                 method: "POST",
                 headers: { rid: "emailpassword" },
+                timeout: 10000,
                 body: JSON.stringify({
                     formFields: [
                         { id: "email", value: userEmail },
@@ -725,6 +740,7 @@ if (major >= 18) {
                 headers: {
                     Cookie: `sAccessToken=${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             let sessionContainer = await getSSRSession(authenticatedRequest.cookies.getAll());
@@ -732,7 +748,7 @@ if (major >= 18) {
             assert.equal(sessionContainer.hasToken, true);
             assert.equal(sessionContainer.accessTokenPayload.sub, process.env.user);
 
-            const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
+            const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", { timeout: 10000 });
 
             sessionContainer = await getSSRSession(unAuthenticatedRequest.cookies.getAll());
 
@@ -744,6 +760,7 @@ if (major >= 18) {
                 headers: {
                     Cookie: `sAccessToken=${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             sessionContainer = await getSSRSession(requestWithExpiredToken.cookies.getAll());
@@ -758,6 +775,7 @@ if (major >= 18) {
                 headers: {
                     Authorization: `Bearer ${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
@@ -793,7 +811,7 @@ if (major >= 18) {
                 assert.strictEqual(error, unknownError);
             }
 
-            const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user");
+            const unAuthenticatedRequest = new NextRequest("http://localhost:3000/api/get-user", { timeout: 10000 });
 
             const unAuthenticatedResponse = await withSession(unAuthenticatedRequest, async (err, session) => {
                 if (err) return NextResponse.json(err, { status: 500 });
@@ -809,6 +827,7 @@ if (major >= 18) {
                 headers: {
                     Cookie: `sAccessToken=${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             const responseWithFailedClaim = await withSession(
@@ -836,6 +855,7 @@ if (major >= 18) {
                 headers: {
                     Authorization: `Bearer ${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             const responseWithExpiredToken = await withSession(requestWithExpiredToken, async (err, session) => {
@@ -866,6 +886,7 @@ if (major >= 18) {
                 headers: {
                     Authorization: `Bearer ${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
@@ -902,6 +923,7 @@ if (major >= 18) {
                 headers: {
                     Authorization: `Bearer ${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             const authenticatedResponse = await withPreParsedRequestResponse(
@@ -948,6 +970,7 @@ if (major >= 18) {
                 headers: {
                     Cookie: `sAccessToken=${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             // Manually kill to get error when withSession is called
@@ -1009,6 +1032,7 @@ if (major >= 18) {
                     Cookie: `sAccessToken=${tokens.access};sRefreshToken=${tokens.refresh}`,
                     "st-auth-mode": "cookie",
                 },
+                timeout: 10000,
             });
 
             const authenticatedResponse = await withPreParsedRequestResponse(
@@ -1055,7 +1079,7 @@ if (major >= 18) {
             it("should return hasToken value correctly", async function () {
                 const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "header" });
 
-                const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
+                const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user", { timeout: 10000 });
 
                 sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll());
 
@@ -1065,6 +1089,7 @@ if (major >= 18) {
                     headers: {
                         Cookie: `sAccessToken=some-random-token`,
                     },
+                    timeout: 10000,
                 });
 
                 sessionContainer = await getSSRSession(requestWithInvalidToken.cookies.getAll());
@@ -1074,6 +1099,7 @@ if (major >= 18) {
                     headers: {
                         Cookie: `sAccessToken=${tokens.access}`,
                     },
+                    timeout: 10000,
                 });
 
                 sessionContainer = await getSSRSession(requestWithTokenInCookie.cookies.getAll());
@@ -1111,7 +1137,7 @@ if (major >= 18) {
             it("should return hasToken value correctly", async function () {
                 const tokens = await getValidTokensAfterSignup({ tokenTransferMethod: "cookie" });
 
-                const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user");
+                const requestWithNoToken = new NextRequest("http://localhost:3000/api/get-user", { timeout: 10000 });
 
                 sessionContainer = await getSSRSession(requestWithNoToken.cookies.getAll());
 
@@ -1121,6 +1147,7 @@ if (major >= 18) {
                     headers: {
                         Cookie: `sAccessToken=some-random-token`,
                     },
+                    timeout: 10000,
                 });
 
                 sessionContainer = await getSSRSession(requestWithInvalidToken.cookies.getAll());
@@ -1130,6 +1157,7 @@ if (major >= 18) {
                     headers: {
                         Authorization: `Bearer ${tokens.access}`,
                     },
+                    timeout: 10000,
                 });
 
                 sessionContainer = await getSSRSession(requestWithTokenInHeader.cookies.getAll());
@@ -1139,6 +1167,7 @@ if (major >= 18) {
                     headers: {
                         Cookie: `sAccessToken=${tokens.access}`,
                     },
+                    timeout: 10000,
                 });
 
                 sessionContainer = await getSSRSession(requestWithTokenInCookie.cookies.getAll());
@@ -1183,6 +1212,7 @@ if (major >= 18) {
                 headers: {
                     Cookie: `sAccessToken=${tokens.access}`,
                 },
+                timeout: 10000,
             });
 
             const authenticatedResponse = await withSession(authenticatedRequest, async (err, session) => {
@@ -1221,6 +1251,7 @@ if (major >= 18) {
                     { id: "password", value: "P@sSW0rd" },
                 ],
             }),
+            timeout: 10000,
         };
 
         const signUpRequest = new NextRequest("http://localhost:3000/api/auth/signup", requestInfo);
