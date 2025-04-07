@@ -1471,6 +1471,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
+
         assert(userInfo.id === signUpUserInfo.id);
         assert(userInfo.email === signUpUserInfo.email);
     });

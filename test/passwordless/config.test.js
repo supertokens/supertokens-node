@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication } = require("../utils");
+const { printPath, createCoreApplication, resetAll } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
@@ -459,7 +459,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         {
             // If you return a string from the function, the API throws a GENERIC ERROR
 
-            const connectionURI = await createCoreApplication();
+            resetAll();
 
             isValidatePhoneNumberCalled = false;
 
@@ -916,7 +916,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         {
             // If you return a string from the function, the API throws a GENERIC ERROR
 
-            const connectionURI = await createCoreApplication();
+            resetAll();
 
             isValidateEmailAddressCalled = false;
 
@@ -1291,7 +1291,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         }
 
         {
-            const connectionURI = await createCoreApplication();
+            resetAll();
 
             // missing contactMethod
             try {

@@ -7,10 +7,11 @@ const {
 } = require("../lib/build/customFramework");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../lib/build/").default;
+let SuperTokensWrapper = require("../lib/build/supertokens").default;
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const { PreParsedRequest } = require("../lib/build/framework/custom");
-const { printPath, createCoreApplication } = require("./utils");
+const { printPath, createCoreApplication, getCoreUrlFromConnectionURI } = require("./utils");
 const { generateKeyPair, SignJWT, exportJWK, importJWK, decodeJwt } = require("jose");
 
 // Helper function to create a JWKS
@@ -66,15 +67,14 @@ async function signJWT(privateKey, jwks, payload, expiresIn = "2h") {
 }
 
 describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, () => {
-    let connectionURI;
-    let accessToken, accessTokenPayload;
     let privateKey, jwks;
 
-    before(async function () {
+    beforeEach(async function () {
         process.env.user = undefined;
 
-        connectionURI = await createCoreApplication();
         ProcessState.getInstance().reset();
+        const connectionURI = await createCoreApplication();
+
         SuperTokens.init({
             supertokens: {
                 connectionURI,
@@ -116,6 +116,10 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
     it("should sign-up successfully", async () => {
         const handleCall = handleAuthAPIRequest(CustomResponse);
 
+        const connectionURI = getCoreUrlFromConnectionURI(
+            SuperTokensWrapper.getInstanceOrThrowError().supertokens.connectionURI
+        );
+
         const mockRequest = new Request(`${connectionURI}/api/auth/signup/`, {
             method: "POST",
             headers: {
@@ -150,7 +154,31 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
     it("should sign-in successfully", async () => {
         const handleCall = handleAuthAPIRequest(CustomResponse);
 
-        const mockRequest = new Request(`${connectionURI}/api/auth/signin/`, {
+        const connectionURI = getCoreUrlFromConnectionURI(
+            SuperTokensWrapper.getInstanceOrThrowError().supertokens.connectionURI
+        );
+
+        const mockSignUpRequest = new Request(`${connectionURI}/api/auth/signup/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+        await handleCall(mockSignUpRequest);
+
+        const mockSignInRequest = new Request(`${connectionURI}/api/auth/signin/`, {
             method: "POST",
             headers: {
                 rid: "emailpassword",
@@ -170,7 +198,7 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
         });
 
         // Call handleCall
-        const response = await handleCall(mockRequest);
+        const response = await handleCall(mockSignInRequest);
 
         // Assertions for response
         assert.strictEqual(response.status, 200, "Should return status 200");
@@ -182,8 +210,7 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
             "User email should be returned correctly"
         );
 
-        accessToken = response.headers.get("st-access-token");
-        accessTokenPayload = decodeJwt(accessToken);
+        const accessToken = response.headers.get("st-access-token");
 
         assert.ok(accessToken, "st-access-token header should be set");
         assert.ok(response.headers.get("st-refresh-token"), "st-refresh-token header should be set");
@@ -192,6 +219,54 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
 
     // Case 1: Successful => add session to request object.
     it("withSession should create a session properly", async () => {
+        const handleCall = handleAuthAPIRequest(CustomResponse);
+
+        const connectionURI = getCoreUrlFromConnectionURI(
+            SuperTokensWrapper.getInstanceOrThrowError().supertokens.connectionURI
+        );
+
+        const mockSignUpRequest = new Request(`${connectionURI}/api/auth/signup/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+        await handleCall(mockSignUpRequest);
+
+        const mockSignInRequest = new Request(`${connectionURI}/api/auth/signin/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+        const signInResponse = await handleCall(mockSignInRequest);
+
+        const accessToken = signInResponse.headers.get("st-access-token");
+
         const mockSessionRequest = new Request(`${connectionURI}/api/user/`, {
             method: "POST",
             headers: {
@@ -246,6 +321,52 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
 
     // Case 2: Error => throws error when no access token is passed.
     it("withSession should pass error when session fails", async () => {
+        const handleCall = handleAuthAPIRequest(CustomResponse);
+
+        const connectionURI = getCoreUrlFromConnectionURI(
+            SuperTokensWrapper.getInstanceOrThrowError().supertokens.connectionURI
+        );
+
+        const mockSignUpRequest = new Request(`${connectionURI}/api/auth/signup/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+        await handleCall(mockSignUpRequest);
+
+        const mockSignInRequest = new Request(`${connectionURI}/api/auth/signin/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+        const signInResponse = await handleCall(mockSignInRequest);
+
         const mockSessionRequest = new Request(`${connectionURI}/api/user/`, {
             method: "POST",
             headers: {
@@ -277,6 +398,10 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
     it("should return 404 for unhandled routes", async () => {
         const handleCall = handleAuthAPIRequest(CustomResponse);
 
+        const connectionURI = getCoreUrlFromConnectionURI(
+            SuperTokensWrapper.getInstanceOrThrowError().supertokens.connectionURI
+        );
+
         const mockRequest = new Request(`${connectionURI}/api/auth/test/`, {
             method: "GET",
             headers: {
@@ -292,6 +417,55 @@ describe(`handleAuthAPIRequest ${printPath("[test/customFramework.test.js]")}`, 
     });
 
     it("getSessionForSSR should return session for valid token", async () => {
+        const handleCall = handleAuthAPIRequest(CustomResponse);
+
+        const connectionURI = getCoreUrlFromConnectionURI(
+            SuperTokensWrapper.getInstanceOrThrowError().supertokens.connectionURI
+        );
+
+        const mockSignUpRequest = new Request(`${connectionURI}/api/auth/signup/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+        await handleCall(mockSignUpRequest);
+
+        const mockSignInRequest = new Request(`${connectionURI}/api/auth/signin/`, {
+            method: "POST",
+            headers: {
+                rid: "emailpassword",
+            },
+            body: JSON.stringify({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "john.doe@supertokens.io",
+                    },
+                    {
+                        id: "password",
+                        value: "P@sSW0rd",
+                    },
+                ],
+            }),
+        });
+        const signInResponse = await handleCall(mockSignInRequest);
+
+        const accessToken = signInResponse.headers.get("st-access-token");
+        const accessTokenPayload = decodeJwt(accessToken);
+
         // Create a mock request containing the valid token as a cookie
         const mockRequest = new Request("https://example.com", {
             headers: { Cookie: `sAccessToken=${accessToken}` },

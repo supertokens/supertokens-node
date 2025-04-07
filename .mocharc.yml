@@ -1,7 +1,7 @@
 spec: test/**/*.test.js
 exit: true
 slow: 10000
-timeout: 30000
+timeout: 11000
 reporter: mocha-multi-reporters
 require: test/hooks.js
 reporter-option:

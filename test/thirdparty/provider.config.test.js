@@ -468,24 +468,11 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     });
 
     it("test getProvider and signInUp on an app and tenant", async function () {
-        const connectionURI = await createCoreApplicationWithMultitenancy({ noApp: true });
-
-        await removeAppAndTenants("a1");
-
-        // Create app
-        await fetch(`http://localhost:8080/recipe/multitenancy/app/v2`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                appId: "a1",
-            }),
-        });
+        const connectionURI = await createCoreApplicationWithMultitenancy();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080/appid-a1",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

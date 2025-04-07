@@ -17,6 +17,7 @@ const {
 
     createCoreApplication,
     createCoreApplicationWithMultitenancy,
+    resetAll,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -2258,7 +2259,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 phoneNumber: "+1234567890",
             });
 
-            const connectionURI = await createCoreApplication();
+            resetAll();
 
             STExpress.init({
                 supertokens: {

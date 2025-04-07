@@ -835,7 +835,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             let hosts = Querier.hosts;
             assert(hosts.length === 4);
 
-            assert(hosts[0].domain.getAsStringDangerous() === "http://localhost:8080");
+            assert(
+                hosts[0].domain.getAsStringDangerous() === new NormalisedURLDomain(connectionURI).getAsStringDangerous()
+            );
             assert(hosts[1].domain.getAsStringDangerous() === "https://try.supertokens.io");
             assert(hosts[2].domain.getAsStringDangerous() === "https://try.supertokens.io:8080");
             assert(hosts[3].domain.getAsStringDangerous() === "http://localhost:90");

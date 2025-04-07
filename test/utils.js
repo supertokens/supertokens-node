@@ -223,6 +223,20 @@ module.exports.getCoreUrl = () => {
     return coreUrl;
 };
 
+module.exports.getCoreUrlFromConnectionURI = (connectionURI) => {
+    let coreUrl = connectionURI;
+
+    if (coreUrl.includes("appid-")) {
+        coreUrl = connectionURI.split("appid-")[0];
+    }
+
+    if (coreUrl.endsWith("/")) {
+        coreUrl = coreUrl.slice(0, -1);
+    }
+
+    return coreUrl;
+};
+
 module.exports.createCoreApplication = async function ({ appId, coreConfig } = {}) {
     const coreUrl = module.exports.getCoreUrl();
 
@@ -253,10 +267,16 @@ module.exports.createCoreApplication = async function ({ appId, coreConfig } = {
     return `${coreUrl}/appid-${appId}`;
 };
 
-module.exports.removeCoreApplication = async function ({ appId } = {}) {
+module.exports.getAppIdFromConnectionURI = function (connectionURI) {
+    return connectionURI.split("/").pop().split("-").pop();
+};
+
+module.exports.removeCoreApplication = async function ({ connectionURI } = {}) {
     const coreUrl = module.exports.getCoreUrl();
 
-    const createAppResp = await fetch(`${coreUrl}/recipe/multitenancy/app`, {
+    const appId = module.exports.getAppIdFromConnectionURI(connectionURI);
+
+    const createAppResp = await fetch(`${coreUrl}/recipe/multitenancy/app/remove`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

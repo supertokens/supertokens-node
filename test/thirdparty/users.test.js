@@ -81,7 +81,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
+        await signInUPCustomRequest(app, "test0@gmail.com", "testPass0");
         await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
         await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
         await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
@@ -93,7 +93,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test0@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
@@ -152,7 +152,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
+        await signInUPCustomRequest(app, "test0@gmail.com", "testPass0");
         await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
         await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
         await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
