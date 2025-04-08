@@ -88,8 +88,9 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             Math.random() + "@gmail.com",
             Math.random() + "@gmail.com",
         ];
-        for (let i = 0; i < emails.length; i++) {
-            await signInUPCustomRequest(app, emails[i], "testPass" + i);
+        for (const [i, email] of emails.entries()) {
+            await signInUPCustomRequest(app, email, "testPass" + i);
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
@@ -164,8 +165,9 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             Math.random() + "@gmail.com",
             Math.random() + "@gmail.com",
         ];
-        for (let i = 0; i < emails.length; i++) {
-            await signInUPCustomRequest(app, emails[i], "testPass" + i);
+        for (const [i, email] of emails.entries()) {
+            await signInUPCustomRequest(app, email, "testPass" + i);
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
