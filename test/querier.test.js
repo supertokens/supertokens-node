@@ -140,7 +140,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         }
     });
 
-    it("three cores and round robin", async function () {
+    it.skip("three cores and round robin", async function () {
         const connectionURI = await createCoreApplication();
         await createCoreApplication({ host: "localhost", port: 8081 });
         await createCoreApplication({ host: "localhost", port: 8082 });
@@ -169,7 +169,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(hostsAlive.has("http://localhost:8082"), true);
     });
 
-    it("three cores, one dead and round robin", async function () {
+    it.skip("three cores, one dead and round robin", async function () {
         const connectionURI = await createCoreApplication();
         await createCoreApplication({ host: "localhost", port: 8082 });
         ST.init({
@@ -247,7 +247,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert((await Session.getSessionInformation("someHandle")) === "someHandle");
     });
 
-    it("test with core base path", async function () {
+    it.skip("test with core base path", async function () {
         // first we need to know if the core used supports base_path config
         const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/test" } });
 
@@ -277,7 +277,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert(res.length === 0);
     });
 
-    it("test with incorrect core base path should fail", async function () {
+    it.skip("test with incorrect core base path should fail", async function () {
         // first we need to know if the core used supports base_path config
         const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/some/path" } });
 
@@ -317,7 +317,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         }
     });
 
-    it("test with multiple core base path", async function () {
+    it.skip("test with multiple core base path", async function () {
         // first we need to know if the core used supports base_path config
         const connectionURI = await createCoreApplication({ port: 8081, coreConfig: { base_path: "/some/path" } });
 

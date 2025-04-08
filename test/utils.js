@@ -83,7 +83,7 @@ module.exports.extractInfoFromResponse = function (res) {
     if (res instanceof CollectingResponse) {
         headers = Object.fromEntries(res.headers.entries());
         cookies = res.cookies;
-    } else {
+    } else if (res) {
         headers = res.headers;
         cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
         cookies = cookies === undefined ? [] : cookies;

@@ -81,11 +81,16 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test0@gmail.com", "testPass0");
-        await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
-        await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
-        await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
-        await signInUPCustomRequest(app, "test4@gmail.com", "testPass4");
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for (let i = 0; i < emails.length; i++) {
+            await signInUPCustomRequest(app, emails[i], "testPass" + i);
+        }
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -93,12 +98,12 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test0@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[0]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test1@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[1]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -152,11 +157,16 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test0@gmail.com", "testPass0");
-        await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
-        await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
-        await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
-        await signInUPCustomRequest(app, "test4@gmail.com", "testPass4");
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for (let i = 0; i < emails.length; i++) {
+            await signInUPCustomRequest(app, emails[i], "testPass" + i);
+        }
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -164,12 +174,12 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test4@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[emails.length - 1]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test3@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], emails[emails.length - 2]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -177,7 +187,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         try {
-            await getUsersOldestFirst({ tenantId: "public", limit: 10, paginationToken: "invalid-pagination-token" });
+            await getUsersNewestFirst({ tenantId: "public", limit: 10, paginationToken: "invalid-pagination-token" });
             assert(false);
         } catch (err) {
             if (!err.message.includes("invalid pagination token")) {
@@ -186,7 +196,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         }
 
         try {
-            await getUsersOldestFirst({ tenantId: "public", limit: -1 });
+            await getUsersNewestFirst({ tenantId: "public", limit: -1 });
             assert(false);
         } catch (err) {
             if (!err.message.includes("limit must a positive integer with min value 1")) {
@@ -230,10 +240,10 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         userCount = await getUserCount();
         assert.strictEqual(userCount, 1);
 
-        await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
-        await signInUPCustomRequest(app, "test2@gmail.com", "testPass2");
-        await signInUPCustomRequest(app, "test3@gmail.com", "testPass3");
-        await signInUPCustomRequest(app, "test4@gmail.com", "testPass4");
+        await signInUPCustomRequest(app, "test70@gmail.com", "testPass1");
+        await signInUPCustomRequest(app, "test71@gmail.com", "testPass2");
+        await signInUPCustomRequest(app, "test72@gmail.com", "testPass3");
+        await signInUPCustomRequest(app, "test73@gmail.com", "testPass4");
 
         userCount = await getUserCount();
         assert.strictEqual(userCount, 5);

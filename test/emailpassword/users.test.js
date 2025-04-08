@@ -52,11 +52,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "test4@gmail.com", "testPass123");
+        await signUPRequest(app, "test00@gmail.com", "testPass123");
+        await signUPRequest(app, "test01@gmail.com", "testPass123");
+        await signUPRequest(app, "test02@gmail.com", "testPass123");
+        await signUPRequest(app, "test03@gmail.com", "testPass123");
+        await signUPRequest(app, "test04@gmail.com", "testPass123");
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -64,12 +64,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test00@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test1@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test01@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -121,21 +121,21 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             return;
         }
 
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "john@gmail.com", "testPass123");
+        await signUPRequest(app, "test10@gmail.com", "testPass123");
+        await signUPRequest(app, "test11@gmail.com", "testPass123");
+        await signUPRequest(app, "test12@gmail.com", "testPass123");
+        await signUPRequest(app, "test13@gmail.com", "testPass123");
+        await signUPRequest(app, "john1@gmail.com", "testPass123");
 
         let users = await getUsersOldestFirst({ tenantId: "public", query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
 
         users = await getUsersOldestFirst({ tenantId: "public", query: { email: "john" } });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "john@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "john1@gmail.com");
         assert.strictEqual(users.users[0].phoneNumbers[0], undefined);
         assert.strictEqual(users.users[0].thirdParty[0], undefined);
-        assert.strictEqual(users.users[0].loginMethods[0].email, "john@gmail.com");
+        assert.strictEqual(users.users[0].loginMethods[0].email, "john1@gmail.com");
         assert.strictEqual(users.users[0].loginMethods[0].phoneNumber, undefined);
         assert.strictEqual(users.users[0].loginMethods[0].thirdParty, undefined);
     });
@@ -161,11 +161,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "test4@gmail.com", "testPass123");
+        await signUPRequest(app, "test20@gmail.com", "testPass123");
+        await signUPRequest(app, "test21@gmail.com", "testPass123");
+        await signUPRequest(app, "test22@gmail.com", "testPass123");
+        await signUPRequest(app, "test23@gmail.com", "testPass123");
+        await signUPRequest(app, "test24@gmail.com", "testPass123");
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
@@ -173,12 +173,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test4@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test24@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].emails[0], "test3@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test23@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
@@ -230,11 +230,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             return;
         }
 
-        await signUPRequest(app, "test@gmail.com", "testPass123");
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "john@gmail.com", "testPass123");
+        await signUPRequest(app, "test30@gmail.com", "testPass123");
+        await signUPRequest(app, "test31@gmail.com", "testPass123");
+        await signUPRequest(app, "test32@gmail.com", "testPass123");
+        await signUPRequest(app, "test33@gmail.com", "testPass123");
+        await signUPRequest(app, "john3@gmail.com", "testPass123");
 
         let users = await getUsersNewestFirst({ tenantId: "public", query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
@@ -271,10 +271,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         userCount = await getUserCount();
         assert.strictEqual(userCount, 1);
 
-        await signUPRequest(app, "test1@gmail.com", "testPass123");
-        await signUPRequest(app, "test2@gmail.com", "testPass123");
-        await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "test4@gmail.com", "testPass123");
+        await signUPRequest(app, "test40@gmail.com", "testPass123");
+        await signUPRequest(app, "test41@gmail.com", "testPass123");
+        await signUPRequest(app, "test42@gmail.com", "testPass123");
+        await signUPRequest(app, "test43@gmail.com", "testPass123");
 
         userCount = await getUserCount();
         assert.strictEqual(userCount, 5);

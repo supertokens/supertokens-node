@@ -70,7 +70,8 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         app.use(errorHandler());
 
-        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
+        const email = Math.random() + "@gmail.com";
+        let signUpResponse = await signUPRequest(app, email, "validPass123");
         assert(signUpResponse.status === 200);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
@@ -78,7 +79,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             request(app)
                 .get("/auth/emailpassword/email/exists")
                 .query({
-                    email: "random@gmail.com",
+                    email,
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -89,10 +90,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                     }
                 })
         );
-
+        assert(response?.status === "OK");
+        assert(response?.exists === true);
         assert(Object.keys(response).length === 2);
-        assert(response.status === "OK");
-        assert(response.exists === true);
     });
 
     // disable the email exists API, and check that calling it returns a 404.
