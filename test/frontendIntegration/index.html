@@ -10,25 +10,25 @@
         if (axios.default) {
             axios = axios.default;
         }
-        async function getNumberOfTimesRefreshCalled(BASE_URL = "http://localhost.org:8080") {
+        async function getNumberOfTimesRefreshCalled(BASE_URL = "http://localhost:8080") {
             let instance = axios.create();
             let response = await instance.get(BASE_URL + "/refreshCalledTime");
             return response.data;
         }
 
-        async function getNumberOfTimesRefreshAttempted(BASE_URL = "http://localhost.org:8080") {
+        async function getNumberOfTimesRefreshAttempted(BASE_URL = "http://localhost:8080") {
             let instance = axios.create();
             let response = await instance.get(BASE_URL + "/refreshAttemptedTime");
             return response.data;
         }
 
-        async function getNumberOfTimesGetSessionCalled(BASE_URL = "http://localhost.org:8080") {
+        async function getNumberOfTimesGetSessionCalled(BASE_URL = "http://localhost:8080") {
             let instance = axios.create();
             let response = await instance.get(BASE_URL + "/getSessionCalledTime");
             return response.data;
         }
 
-        async function getPackageVersion(BASE_URL = "http://localhost.org:8080") {
+        async function getPackageVersion(BASE_URL = "http://localhost:8080") {
             let instance = axios.create();
             let response = await instance.get(BASE_URL + "/getPackageVersion");
             return response.data;
