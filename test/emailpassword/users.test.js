@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, createCoreApplication, signUPRequest } = require("../utils");
+const { printPath, createCoreApplication, signUPRequest, resetAll } = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -26,7 +26,7 @@ const express = require("express");
 
 describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, function () {
     beforeEach(async function () {
-        ProcessState.getInstance().reset();
+        resetAll();
     });
 
     after(async function () {});
