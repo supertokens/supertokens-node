@@ -248,7 +248,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         const randomValue = Math.random();
 
-        await signInUPCustomRequest(app, "test70@gmail.com", "testPass-${randomValue}-4");
+        await signInUPCustomRequest(app, Math.random() + "@gmail.com", `testPass-${randomValue}-4`);
         userCount = await getUserCount();
         assert.strictEqual(userCount, 1);
 

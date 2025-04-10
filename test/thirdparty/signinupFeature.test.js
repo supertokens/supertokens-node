@@ -1118,7 +1118,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         app.use(errorHandler());
 
-        nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
+        nock("https://test.com").post("/oauth/token").times(1).reply(200, {});
 
         let response1 = await request(app)
             .post("/auth/signinup")
