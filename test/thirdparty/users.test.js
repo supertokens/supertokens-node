@@ -91,10 +91,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             Math.random() + "@gmail.com",
         ];
         for await (const [i, email] of emails.entries()) {
-            const res = await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
-            console.log("getUsersOldestFirst: created user for " + email);
-            console.log(res.body);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
         }
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
@@ -172,10 +169,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             Math.random() + "@gmail.com",
         ];
         for await (const [i, email] of emails.entries()) {
-            const res = await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
-            console.log("getUsersNewestFirst: created user for " + email);
-            console.log(res.body);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
         }
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
@@ -260,7 +254,6 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         ];
         for await (const [i, email] of emails.entries()) {
             await signInUPCustomRequest(app, email, `testPass-${randomValue}-${i}`);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         userCount = await getUserCount();
