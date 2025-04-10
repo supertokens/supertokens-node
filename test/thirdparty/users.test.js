@@ -88,14 +88,17 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             Math.random() + "@gmail.com",
             Math.random() + "@gmail.com",
             Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
         ];
         for await (const [i, email] of emails.entries()) {
             await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
+            console.log("getUsersNewestFirst: created user for " + email);
+            console.log(res.body);
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         let users = await getUsersOldestFirst({ tenantId: "public" });
-        assert.strictEqual(users.users.length, 4);
+        assert.strictEqual(users.users.length, 5);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
@@ -108,7 +111,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         assert.strictEqual(users.users[0].emails[0], emails[1]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersOldestFirst({ tenantId: "public", limit: 4, paginationToken: users.nextPaginationToken });
+        users = await getUsersOldestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 3);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
@@ -166,14 +169,17 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             Math.random() + "@gmail.com",
             Math.random() + "@gmail.com",
             Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
         ];
         for await (const [i, email] of emails.entries()) {
-            await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
+            const res = await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
+            console.log("getUsersNewestFirst: created user for " + email);
+            console.log(res.body);
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         let users = await getUsersNewestFirst({ tenantId: "public" });
-        assert.strictEqual(users.users.length, 4);
+        assert.strictEqual(users.users.length, 5);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         users = await getUsersNewestFirst({ tenantId: "public", limit: 1 });
@@ -186,7 +192,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         assert.strictEqual(users.users[0].emails[0], emails[emails.length - 2]);
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersNewestFirst({ tenantId: "public", limit: 4, paginationToken: users.nextPaginationToken });
+        users = await getUsersNewestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 3);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
