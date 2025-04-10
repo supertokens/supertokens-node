@@ -246,14 +246,22 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
 
         app.use(errorHandler());
 
-        await signInUPCustomRequest(app, "test70@gmail.com", "testPass0");
+        const randomValue = Math.random();
+
+        await signInUPCustomRequest(app, "test70@gmail.com", "testPass-${randomValue}-4");
         userCount = await getUserCount();
         assert.strictEqual(userCount, 1);
 
-        await signInUPCustomRequest(app, "test71@gmail.com", "testPass1");
-        await signInUPCustomRequest(app, "test72@gmail.com", "testPass2");
-        await signInUPCustomRequest(app, "test73@gmail.com", "testPass3");
-        await signInUPCustomRequest(app, "test74@gmail.com", "testPass4");
+        const emails = [
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+            Math.random() + "@gmail.com",
+        ];
+        for await (const [i, email] of emails.entries()) {
+            await signInUPCustomRequest(app, email, `testPass-${randomValue}-${i}`);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
 
         userCount = await getUserCount();
         assert.strictEqual(userCount, 5);

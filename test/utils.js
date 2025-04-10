@@ -487,7 +487,7 @@ module.exports.signUPRequestNoBody = async function (app) {
 };
 
 module.exports.signInUPCustomRequest = async function (app, email, id) {
-    const n = nock("https://test.com").post("/oauth/token").reply(200, {
+    nock("https://test.com").post("/oauth/token").reply(200, {
         id,
         email,
     });
@@ -504,8 +504,6 @@ module.exports.signInUPCustomRequest = async function (app, email, id) {
                 },
             })
             .end((err, res) => {
-                n.done();
-
                 if (err) {
                     resolve(undefined);
                 } else {
