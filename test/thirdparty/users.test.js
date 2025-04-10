@@ -91,8 +91,8 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             Math.random() + "@gmail.com",
         ];
         for await (const [i, email] of emails.entries()) {
-            await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
-            console.log("getUsersNewestFirst: created user for " + email);
+            const res = await signInUPCustomRequest(app, email, `testPass-${randomValue}` + i);
+            console.log("getUsersOldestFirst: created user for " + email);
             console.log(res.body);
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
